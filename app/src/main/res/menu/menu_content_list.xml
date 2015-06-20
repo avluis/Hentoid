@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="me.devsaki.hentoid.DownloadsActivity">
+    <item android:id="@+id/action_search"
+        android:title="Search"
+        android:icon="@android:drawable/ic_menu_search"
+        app:showAsAction="always"
+        app:actionViewClass="android.widget.SearchView" />
+    <item android:id="@+id/action_order_alphabetic" android:title="@string/action_order_alphabetic"
+        android:orderInCategory="98" app:showAsAction="never"/>
+    <item android:id="@+id/action_order_by_date" android:title="@string/action_order_date"
+        android:orderInCategory="99" app:showAsAction="never"/>
+</menu>

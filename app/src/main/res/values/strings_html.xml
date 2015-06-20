@@ -1,0 +1,59 @@
+<resources>
+	<string name="help_to_fakkudroid">
+		<![CDATA[
+			<!DOCTYPE html>
+			<HTML>
+			<BODY>
+			        <h2 style=\"text-align: center; color: #9D0A0A;\">Click the ads or make a donation (PayPal) to support Hentoid!</h2>
+                    <div style=\"text-align: center; margin-top: 20px;\">Click the advertisements of the <a href=\"http://fakkudroid.blogspot.com/\">blog</a> to support Hentoid!
+                    <br /><br />
+                    <br />
+                    <br /><br /><br />
+					<div style=\"text-align: center; margin-top: 20px;\"> A click helps a lot! Thanks for supporting Hentoid!</div>
+			</BODY>
+			</HTML>
+		]]>
+	</string>
+	<string name="image_loading">
+        <![CDATA[
+	    	<html>
+	    		<body style=\"margin: 0 0 0 0;\">
+	    			<img src =\"file:///android_asset/images/loading.gif\" style=\"padding:0px;display: block;   margin-left: auto;   margin-right: auto;\"/>
+	    		</body>
+	    	</html>
+	    ]]>
+    </string>
+	<string name="hack_add_tags">
+		<![CDATA[
+			javascript:
+			try{
+				var select = document.getElementsByClassName(\'mobile-select\')[0];
+				var currentOptions = select.childNodes;
+				var alreadyExistsTags = false;
+				var item;
+				for (item in currentOptions) {
+					if(currentOptions[item].innerHTML===\'Tags\'){
+						alreadyExistsTags =true;
+						break;
+					}
+				}
+				if(!alreadyExistsTags){
+					var tagOption = document.createElement(\'option\');
+					var textnode = document.createTextNode(\'Tags\');
+					tagOption.setAttribute(\'value\',\'/@category/tags\');
+					tagOption.appendChild(textnode);
+					select.appendChild(tagOption);
+
+					select = document.getElementsByClassName(\'browse-links\')[0];
+					tagOption = document.createElement(\'a\');
+					textnode = document.createTextNode(\'Tags\');
+					tagOption.setAttribute(\'href\',\'/@category/tags\');
+					tagOption.appendChild(textnode);
+					select.appendChild(tagOption);
+				}
+			}catch(e){
+				console.log(e);
+			}
+	    ]]>
+	</string>
+</resources>

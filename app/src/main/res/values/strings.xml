@@ -1,6 +1,68 @@
 <resources>
     <string name="app_name">Hentoid</string>
-
+    <string name="title_activity_search">Search : @search</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="action_order_alphabetic">order alphabetic</string>
+    <string name="action_order_date">order by date</string>
+    <string name="title_activity_downloads">Downloads</string>
+    <string name="title_activity_download_manager">Download Manager</string>
+    <string name="title_activity_preferences">Preferences</string>
+
+    <string name="read">Read</string>
+    <string name="view_browser">View</string>
+    <string name="delete">Delete</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+
+    <string name="tvTitleEmpty">[No data]</string>
+    <string name="tvSeries"><![CDATA[<b>Series:</b> @serie@]]></string>
+    <string name="tvArtists"><![CDATA[<b>Artist:</b> @artist@]]></string>
+    <string name="tvTags"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>
+
+    <string name="default_folder">Default</string>
+    <string name="explore">Explore</string>
+
+    <string name="tutorial_select_folder">Select the app download folder.\nIf you don\'t know what are you doing, select default folder.</string>
+
+    <string name="save">Save</string>
+
+    <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
+    <string name="error_creating_folder">Folder is not valid.</string>
+    <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
+
+    <string name="detect_contents">The app detected that you have contents in your FakkuDroid folder.\nDo you want to import them?</string>
+    <string name="search_hint">Title, Tag, Series or Artist</string>
+
+    <string name="ask_delete">Are you sure you wish to delete this content?</string>
+    <string name="deleted">Content @content deleted.</string>
+
+    <string name="not_limit_per_page">Not limit per page.</string>
+    <string name="not_previus_page">Not previous page.</string>
+    <string name="error_page_out">Error: Number Page.</string>
+
+    <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it by Google Play.</string>
+    <string name="title_activity_message_support">MessageSupportActivity</string>
+
+
+    <string name="downloads_manager_empty">Download queue is empty.</string>
+    <string name="downloads_library_empty">Your downloads library is empty.</string>
+    <string name="no_data">No data.</string>
+    <string name="crash_app">Crash report log was sent.</string>
+    <string name="close">Close</string>
+    <string name="new_version_available">A new version is available!</string>
+    <string name="version_number">Your version is @oldVersion and the new one is @newVersion</string>
+
+
+    <string name="looking_new_versions">Looking for updates.</string>
+    <string name="find_new_version">An update is available.</string>
+    <string name="not_find_new_version">You have the latest version, no need to update.</string>
+    <string name="error_update_checker">Update Checker Error: Server Down.</string>
+
+    <string name="select_the_action">Select how to open the content.\nYou can configure the default action in preferences.</string>
+    <string name="open_default_image_viewer">Default image viewer</string>
+    <string name="open_perfect_viewer">Perfect Viewer</string>
+    <string name="not_image_file_found">Not jpg file found in @dir</string>
 </resources>

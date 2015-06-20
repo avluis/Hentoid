@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="FakkuTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="actionBarStyle">@style/FakkuDroidActionBar</item>
+        <item name="android:actionBarStyle">@style/FakkuDroidActionBar</item>
+        <item name="icon">@drawable/ic_fakkudroid_launcher</item>
+        <item name="android:icon">@drawable/ic_fakkudroid_launcher</item>
+    </style>
+
+    <style name="FakkuDroidActionBar" parent="Widget.AppCompat.ActionBar.Solid">
+        <item name="background">@drawable/normal_state</item>
+        <item name="android:background">@drawable/normal_state</item>
+        <item name="android:displayOptions">showHome|showTitle</item>
+        <item name="displayOptions">showHome|showTitle</item>
+    </style>
+
+</resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
+
+    <string name="navigation_drawer_wev_view">Web View</string>
+    <string name="navigation_drawer_home">Home</string>
+    <string name="navigation_drawer_manga">Manga</string>
+    <string name="navigation_drawer_doujinshi">Doujinshi</string>
+    <string name="navigation_drawer_downloads">Downloads</string>
+    <string name="navigation_drawer_download_manager">Download Manager</string>
+    <string name="navigation_drawer_check_updates">Check for updates</string>
+    <string name="navigation_drawer_preferences">Preferences</string>
+    <string name="navigation_drawer_browser">Browser</string>
+</resources>

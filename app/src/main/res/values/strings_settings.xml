@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pref_perfomance_category">Performance</string>
+    <string name="pref_image_quality_title">Image Quality</string>
+    <string name="pref_image_quality_summary">Image quality in the lists.</string>
+    <string name="pref_image_quality_default">Low</string>
+    <string name="pref_quantity_per_page_title">Quantity Per Page</string>
+    <string name="pref_quantity_per_page_summary">Quantity per page in the lists.</string>
+    <string name="pref_quantity_per_page_default">20</string>
+
+
+    <string name="pref_library_category">Library</string>
+    <string name="pref_read_content_title">Read Content</string>
+    <string name="pref_read_content_summary">Select the default read action.</string>
+    <string name="pref_read_content_default">0</string>
+    <string name="pref_select_folder_title">Select FakkuDroid Folder</string>
+    <string name="pref_select_folder_summary">Select the folder where Hentoid will store your downloads.</string>
+    <string name="pref_add_no_media_file_title">Add .nomedia file</string>
+    <string name="pref_add_no_media_file_summary">A .nomedia file is a blank file placed inside a folder. When the media scanner detects the .nomedia file, the media scanner does not scan that folder so the images in that folder don\'t appear in the Gallery app.</string>
+
+    <string name="nomedia_file_created">.nomedia file created.</string>
+    <string name="nomedia_file_error">Error creating .nomedia file.</string>
+
+
+    <string name="pref_others_category">Others</string>
+    <string name="pref_check_updates_title">Check Updates</string>
+    <string name="pref_check_updates_summary">Enable or disable the automatic update service.</string>
+    <string name="pref_check_updates_default">1</string>
+
+    <string name="pref_check_updates_now_title">Check Updates now</string>
+    <string name="pref_check_updates_now_summary">The app will check for updates.</string>
+</resources>
