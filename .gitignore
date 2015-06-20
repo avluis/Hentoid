@@ -25,3 +25,16 @@ proguard/
 
 # Log Files
 *.log
+
+# Windows thumbnail db
+Thumbs.db
+
+# OSX files
+.DS_Store
+
+# Signing files
+.signing/
+
+# User-specific configurations
+.idea/
+*.iml
