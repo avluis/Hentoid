@@ -83,7 +83,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
             }
         tvTags.setText(Html.fromHtml(tags));
 
-        final File dir = Helper.getDownloadDir(content.getFakkuId(), getContext());
+        final File dir = Helper.getDownloadDir(content.getUniqueSiteId(), getContext());
         File coverFile = new File(dir, "thumb.jpg");
 
         ((HentoidApplication)getContext().getApplicationContext()).loadBitmap(coverFile, ivCover);

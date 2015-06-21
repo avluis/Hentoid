@@ -5,7 +5,7 @@ import android.content.SharedPreferences;
 import android.view.View;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.FakkuDroidDB;
+import me.devsaki.hentoid.database.HentoidDB;
 
 /**
  * Created by neko on 06/06/2015.
@@ -17,7 +17,7 @@ public abstract class HentoidFragment extends ListFragment {
         return ((HentoidActivity) getActivity()).getSharedPreferences();
     }
 
-    protected FakkuDroidDB getDB(){
+    protected HentoidDB getDB(){
         return ((HentoidActivity) getActivity()).getDB();
     }
 

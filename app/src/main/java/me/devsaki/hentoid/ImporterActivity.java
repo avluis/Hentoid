@@ -7,7 +7,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.TextView;
 
-import me.devsaki.hentoid.database.FakkuDroidDB;
+import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
@@ -42,7 +42,7 @@ public class ImporterActivity extends ActionBarActivity {
         private int currentPercent;
         private DonutProgress donutProgress;
         private TextView tvCurrentStatus;
-        private FakkuDroidDB fakkuDroidDB;
+        private HentoidDB hentoidDB;
 
         @Override
         protected void onPreExecute() {
@@ -51,13 +51,13 @@ public class ImporterActivity extends ActionBarActivity {
 
             donutProgress = (DonutProgress) findViewById(R.id.donut_progress);
             tvCurrentStatus = (TextView) findViewById(R.id.tvCurrentStatus);
-            fakkuDroidDB = new FakkuDroidDB(ImporterActivity.this);
+            hentoidDB = new HentoidDB(ImporterActivity.this);
         }
 
         @Override
         protected void onPostExecute(List<Content> contents) {
             if(contents!=null&&contents.size()>0)
-                fakkuDroidDB.insertContents(contents.toArray(new Content[contents.size()]));
+                hentoidDB.insertContents(contents.toArray(new Content[contents.size()]));
             Intent intent = new Intent(ImporterActivity.this, DownloadsActivity.class);
             startActivity(intent);
             finish();

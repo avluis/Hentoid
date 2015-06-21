@@ -34,14 +34,14 @@ public class Helper {
         File file = null;
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(context);
-        String settingDir = prefs.getString(Constants.SETTINGS_FAKKUDROID_FOLDER, "");
+        String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         if (settingDir.isEmpty()) {
-            return getDefaultDir(Constants.DEFAULT_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir, context);
+            return getDefaultDir(Constants.FAKKU_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir, context);
         }
-        file = new File(settingDir, Constants.DEFAULT_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir);
+        file = new File(settingDir, Constants.FAKKU_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir);
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                file = new File(settingDir + Constants.DEFAULT_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir);
+                file = new File(settingDir + Constants.FAKKU_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir);
                 if (!file.exists()) {
                     file.mkdirs();
                 }

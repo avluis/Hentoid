@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
 import me.devsaki.hentoid.database.contants.ContentTable;
+import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.Status;
 import com.google.gson.annotations.Expose;
 
@@ -51,13 +52,20 @@ public class Content extends ContentTable{
     private boolean downloadable;
     @Expose(serialize = false, deserialize = false)
     private double percent;
+    @Expose
+    private Site site;
 
     public int getId() {
         return url.hashCode();
     }
 
-    public String getFakkuId() {
-        return url.substring(url.lastIndexOf("/")+1);
+    public String getUniqueSiteId() {
+        if(getSite()==Site.FAKKU)
+            return url.substring(url.lastIndexOf("/")+1);
+        else if(getSite()==Site.PURURIN){
+            return url.substring(url.lastIndexOf("/")+1).replace(".html", "");
+        }
+        return null;
     }
 
     public String getCategory() {
@@ -222,6 +230,17 @@ public class Content extends ContentTable{
 
     public void setPercent(double percent) {
         this.percent = percent;
+    }
+
+    public Site getSite() {
+        //to keep compatibility, if null return Fakku
+        if(site==null)
+            return Site.FAKKU;
+        return site;
+    }
+
+    public void setSite(Site site) {
+        this.site = site;
     }
 
     @Override

@@ -13,7 +13,7 @@
     <string name="pref_read_content_title">Read Content</string>
     <string name="pref_read_content_summary">Select the default read action.</string>
     <string name="pref_read_content_default">0</string>
-    <string name="pref_select_folder_title">Select FakkuDroid Folder</string>
+    <string name="pref_select_folder_title">Select Downloads Folder</string>
     <string name="pref_select_folder_summary">Select the folder where Hentoid will store your downloads.</string>
     <string name="pref_add_no_media_file_title">Add .nomedia file</string>
     <string name="pref_add_no_media_file_summary">A .nomedia file is a blank file placed inside a folder. When the media scanner detects the .nomedia file, the media scanner does not scan that folder so the images in that folder don\'t appear in the Gallery app.</string>

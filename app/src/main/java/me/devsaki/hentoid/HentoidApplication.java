@@ -9,7 +9,7 @@ import android.util.LruCache;
 import android.widget.ImageView;
 
 import me.devsaki.hentoid.asynctasks.UpdateCheckerTask;
-import me.devsaki.hentoid.database.FakkuDroidDB;
+import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.Status;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
@@ -26,7 +26,7 @@ import java.io.File;
 /**
  * Created by DevSaki on 20/05/2015.
  */
-@ReportsCrashes(formUri = "http://devsaki.me:5984/acra-fakkudroid/_design/acra-storage/_update/report",
+@ReportsCrashes(formUri = "http://acra.devsaki.me/acra-hentoid/_design/acra-storage/_update/report",
         httpMethod = HttpSender.Method.PUT,
         reportType = HttpSender.Type.JSON,
         formUriBasicAuthLogin = "reportuser",
@@ -47,7 +47,7 @@ public class HentoidApplication extends Application {
 
         AndroidHelper.ignoreSslErros();
 
-        FakkuDroidDB db = new FakkuDroidDB(this);
+        HentoidDB db = new HentoidDB(this);
         db.updateContentStatus(Status.PAUSED, Status.DOWNLOADING);
 
         // Get max available VM memory, exceeding this amount will throw an

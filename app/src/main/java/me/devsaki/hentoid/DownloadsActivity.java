@@ -145,7 +145,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                     }
                 }
             });
-            String settingDir = getSharedPreferences().getString(Constants.SETTINGS_FAKKUDROID_FOLDER, "");
+            String settingDir = getSharedPreferences().getString(Constants.SETTINGS_FOLDER, "");
             boolean showMessageSupport = true;
             if (settingDir.isEmpty()) {
                 Intent intent = new Intent(getActivity(), SelectFolderActivity.class);

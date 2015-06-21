@@ -13,7 +13,7 @@ import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.FakkuDroidDB;
+import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.Status;
@@ -36,7 +36,7 @@ public class DownloadManagerService extends IntentService {
     public static final String NOTIFICATION = "me.devsaki.hentoid.service";
 
     private NotificationManager notificationManager;
-    private FakkuDroidDB db;
+    private HentoidDB db;
     public static boolean paused;
 
     @Override
@@ -44,7 +44,7 @@ public class DownloadManagerService extends IntentService {
         super.onCreate();
         Log.i(TAG, "onCreate");
 
-        db = new FakkuDroidDB(this);
+        db = new HentoidDB(this);
         notificationManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
@@ -61,7 +61,7 @@ public class DownloadManagerService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Content content = db.selectContentByStatus(Status.DOWNLOADING);
-        if(content==null||content.getStatus()==Status.DOWNLOADED||content.getStatus()==Status.ERROR)
+        if(content==null||content.getStatus()==Status.DOWNLOADED)
             return;
 
         if(paused){
@@ -71,7 +71,7 @@ public class DownloadManagerService extends IntentService {
 
         content.setImageFiles(new ArrayList<ImageFile>());
         try {
-            URL url = new URL(Constants.FAKKU_URL + content.getUrl() + Constants.FAKKU_READ);
+            URL url = new URL(content.getSite().getUrl() + content.getUrl() + Constants.FAKKU_READ);
             String site = null;
             String extention = null;
             String html = HttpClientHelper.call(url);
@@ -128,7 +128,7 @@ public class DownloadManagerService extends IntentService {
 
         boolean error = false;
         //Directory
-        File dir = Helper.getDownloadDir(content.getFakkuId(), DownloadManagerService.this);
+        File dir = Helper.getDownloadDir(content.getUniqueSiteId(), DownloadManagerService.this);
         try {
             //Download Cover Image
             Helper.saveInStorage(new File(dir, "thumb.jpg"), content.getCoverImageUrl());

@@ -18,7 +18,7 @@ import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.FakkuDroidDB;
+import me.devsaki.hentoid.database.HentoidDB;
 
 /**
  * Created by DevSaki on 04/06/2015.
@@ -26,14 +26,14 @@ import me.devsaki.hentoid.database.FakkuDroidDB;
 public abstract class HentoidActivity<T extends HentoidFragment> extends ActionBarActivity {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
-    private FakkuDroidDB db;
+    private HentoidDB db;
     private SharedPreferences sharedPreferences;
     private T fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fakkudroid);
+        setContentView(R.layout.activity_hentoid);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(
@@ -60,7 +60,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends ActionB
         getSupportActionBar().setHomeButtonEnabled(true);
 
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        db = new FakkuDroidDB(this);
+        db = new HentoidDB(this);
 
         fragment = buildFragment();
         FragmentManager fragmentManager = getFragmentManager();
@@ -124,7 +124,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends ActionB
         startActivity(intent);
     }
 
-    public FakkuDroidDB getDB() {
+    public HentoidDB getDB() {
         return db;
     }
 

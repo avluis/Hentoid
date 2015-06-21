@@ -16,8 +16,9 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import me.devsaki.hentoid.database.FakkuDroidDB;
+import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.Status;
 import me.devsaki.hentoid.parser.FakkuParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
@@ -43,9 +44,11 @@ public class MainActivity extends ActionBarActivity {
     private static final String TAG = MainActivity.class.getName();
 
     public static final String INTENT_URL = "url";
+    public static final String INTENT_SITE = "site";
 
-    private FakkuDroidDB db;
+    private HentoidDB db;
     private Content currentContent;
+    private Site site;
     private FloatingActionButton fabRead, fabDownload;
 
     @Override
@@ -66,7 +69,8 @@ public class MainActivity extends ActionBarActivity {
         });
         webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
         String intentVar = getIntent().getStringExtra(INTENT_URL);
-        webview.loadUrl(intentVar == null ? Constants.FAKKU_URL : intentVar);
+        site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
+        webview.loadUrl(intentVar == null ? site.getUrl() : intentVar);
 
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabRead.setOnClickListener(new View.OnClickListener() {
@@ -86,7 +90,7 @@ public class MainActivity extends ActionBarActivity {
         });
         fabDownload.setVisibility(View.INVISIBLE);
 
-        db = new FakkuDroidDB(MainActivity.this);
+        db = new HentoidDB(MainActivity.this);
 
         FloatingActionButton fabDownloads = (FloatingActionButton) findViewById(R.id.fabDownloads);
         fabDownloads.setOnClickListener(new View.OnClickListener() {
@@ -259,7 +263,7 @@ public class MainActivity extends ActionBarActivity {
                 db.insertContent(content);
                 //Save JSON file
                 try {
-                    File dir = Helper.getDownloadDir(content.getFakkuId(), MainActivity.this);
+                    File dir = Helper.getDownloadDir(content.getUniqueSiteId(), MainActivity.this);
                     Helper.saveJson(content, dir);
                 } catch (IOException e) {
                     Log.e(TAG, "Error Save JSON " + content.getTitle(), e);

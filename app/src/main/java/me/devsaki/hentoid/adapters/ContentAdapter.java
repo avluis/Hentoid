@@ -20,7 +20,7 @@ import android.widget.Toast;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.FakkuDroidDB;
+import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.AndroidHelper;
@@ -102,7 +102,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             }
         tvTags.setText(Html.fromHtml(tags));
 
-        final File dir = Helper.getDownloadDir(content.getFakkuId(), getContext());
+        final File dir = Helper.getDownloadDir(content.getUniqueSiteId(), getContext());
         File coverFile = new File(dir, "thumb.jpg");
 
         ((HentoidApplication) getContext().getApplicationContext()).loadBitmap(coverFile, ivCover);
@@ -137,7 +137,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 .setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                FakkuDroidDB db = new FakkuDroidDB(getContext());
+                                HentoidDB db = new HentoidDB(getContext());
 
                                 try {
                                     FileUtils.deleteDirectory(dir);
@@ -160,8 +160,8 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private void viewContent(Content content) {
         Intent intent = new Intent(getContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(MainActivity.INTENT_URL, Constants.FAKKU_URL + content.getUrl());
-
+        intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + content.getUrl());
+        intent.putExtra(MainActivity.INTENT_SITE, content.getSite().getCode());
         getContext().startActivity(intent);
     }
 }

@@ -15,6 +15,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.AttributeType;
+import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.Status;
 
 import java.util.ArrayList;
@@ -23,10 +24,10 @@ import java.util.List;
 /**
  * Created by DevSaki on 10/05/2015.
  */
-public class FakkuDroidDB extends SQLiteOpenHelper {
+public class HentoidDB extends SQLiteOpenHelper {
 
-    private static FakkuDroidDB instance;
-    private static final String TAG = FakkuDroidDB.class.getName();
+    private static HentoidDB instance;
+    private static final String TAG = HentoidDB.class.getName();
     private static final Object locker = new Object();
 
     // All Static variables
@@ -34,9 +35,9 @@ public class FakkuDroidDB extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
 
     // Database Name
-    private static final String DATABASE_NAME = "fakkudroid.db";
+    private static final String DATABASE_NAME = "hentoid.db";
 
-    public FakkuDroidDB(Context context) {
+    public HentoidDB(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -78,7 +79,7 @@ public class FakkuDroidDB extends SQLiteOpenHelper {
 
                     statement.clearBindings();
                     statement.bindLong(1, row.getId());
-                    statement.bindString(2, row.getFakkuId());
+                    statement.bindString(2, row.getUniqueSiteId());
                     statement.bindString(3, row.getCategory());
                     statement.bindString(4, row.getUrl());
                     if (row.getHtmlDescription() == null)
@@ -97,6 +98,7 @@ public class FakkuDroidDB extends SQLiteOpenHelper {
                         statement.bindNull(11);
                     else
                         statement.bindString(11, row.getCoverImageUrl());
+                    statement.bindLong(12, row.getSite().getCode());
                     statement.execute();
 
                     if (row.getImageFiles() != null)
@@ -338,7 +340,7 @@ public class FakkuDroidDB extends SQLiteOpenHelper {
         content.setDownloadDate(cursorContent.getLong(8));
         content.setStatus(Status.searchByCode(cursorContent.getInt(9)));
         content.setCoverImageUrl(cursorContent.getString(10));
-
+        content.setSite(Site.searchByCode(cursorContent.getInt(11)));
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()));
 
         //populate attributes

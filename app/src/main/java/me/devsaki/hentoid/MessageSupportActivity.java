@@ -25,7 +25,7 @@ public class MessageSupportActivity extends ActionBarActivity {
         }catch (Exception ex){}
 
         WebView wvHelp = (WebView) findViewById(R.id.wbSupport);
-        wvHelp.loadDataWithBaseURL(null, getResources().getString(R.string.help_to_fakkudroid),"text/html", "utf-8",null);
+        wvHelp.loadDataWithBaseURL(null, getResources().getString(R.string.support_html),"text/html", "utf-8",null);
     }
 
     public void close(View view) {

@@ -33,7 +33,7 @@
     <string name="error_creating_folder">Folder is not valid.</string>
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
 
-    <string name="detect_contents">The app detected that you have contents in your FakkuDroid folder.\nDo you want to import them?</string>
+    <string name="detect_contents">The app detected that you have contents in your folder.\nDo you want to import them?</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
 
     <string name="ask_delete">Are you sure you wish to delete this content?</string>

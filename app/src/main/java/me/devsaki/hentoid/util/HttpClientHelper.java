@@ -2,7 +2,7 @@ package me.devsaki.hentoid.util;
 
 import android.text.TextUtils;
 
-import me.devsaki.hentoid.dto.LastVersionDto;
+import me.devsaki.hentoid.dto.VersionDto;
 import me.devsaki.hentoid.dto.UserRequest;
 import me.devsaki.hentoid.exceptions.HttpClientException;
 import com.google.gson.Gson;
@@ -65,7 +65,7 @@ public class HttpClientHelper {
         return result;
     }
 
-    public static LastVersionDto checkLastVersion(UserRequest userRequest) throws HttpClientException, IOException {
+    public static VersionDto checkLastVersion(UserRequest userRequest) throws HttpClientException, IOException {
         URL url = new URL("http://devsaki.me/versions/last");
 
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -106,6 +106,6 @@ public class HttpClientHelper {
             throw new HttpClientException(result, code);
         }
 
-        return new Gson().fromJson(result, LastVersionDto.class);
+        return new Gson().fromJson(result, VersionDto.class);
     }
 }

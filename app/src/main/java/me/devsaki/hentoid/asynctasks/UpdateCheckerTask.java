@@ -16,18 +16,18 @@ import android.util.Log;
 import android.widget.Toast;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.dto.LastVersionDto;
+import me.devsaki.hentoid.dto.VersionDto;
 import me.devsaki.hentoid.dto.UserRequest;
 import me.devsaki.hentoid.util.HttpClientHelper;
 
 /**
  * Created by neko on 17/06/2015.
  */
-public class UpdateCheckerTask extends AsyncTask<String, Void, LastVersionDto> {
+public class UpdateCheckerTask extends AsyncTask<String, Void, VersionDto> {
 
     private static final String TAG = UpdateCheckerTask.class.getName();
     private Context mContext;
-    private LastVersionDto lastVersionDto;
+    private VersionDto versionDto;
     private NotificationManager notificationManager;
     private NotificationCompat.Builder mBuilder;
 
@@ -38,12 +38,12 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, LastVersionDto> {
 
     @Override
     protected void onPreExecute() {
-        this.lastVersionDto = null;
+        this.versionDto = null;
         Toast.makeText(mContext, R.string.looking_new_versions, Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    protected LastVersionDto doInBackground(String... params) {
+    protected VersionDto doInBackground(String... params) {
         try {
             PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
             UserRequest userRequest = new UserRequest();
@@ -64,22 +64,22 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, LastVersionDto> {
     }
 
     @Override
-    protected void onPostExecute(LastVersionDto result) {
+    protected void onPostExecute(VersionDto result) {
         super.onPostExecute(result);
         if (result != null) {
             try {
                 PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
 
-                if (result.getLastVersionCode() > pInfo.versionCode) {
-                    this.lastVersionDto = result;
+                if (result.getVersionCode() > pInfo.versionCode) {
+                    this.versionDto = result;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(lastVersionDto.getDocumentationLink()));
+                    intent.setData(Uri.parse(versionDto.getDocumentationLink()));
                     PendingIntent resultPendingIntent = PendingIntent.getActivity(mContext,
                             0, intent, PendingIntent.FLAG_ONE_SHOT);
                     mBuilder = new NotificationCompat.Builder(
                             mContext).setSmallIcon(
                             R.drawable.ic_fakkudroid_launcher).setContentTitle(mContext.getString(R.string.new_version_available));
-                    mBuilder.setContentText(mContext.getString(R.string.version_number).replace("@oldVersion", pInfo.versionName).replace("@newVersion", lastVersionDto.getLastVersionName()));
+                    mBuilder.setContentText(mContext.getString(R.string.version_number).replace("@oldVersion", pInfo.versionName).replace("@newVersion", versionDto.getVersionName()));
                     mBuilder.setProgress(0, 0, false);
                     Notification notif = mBuilder.build();
                     notif.contentIntent = resultPendingIntent;

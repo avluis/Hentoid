@@ -39,7 +39,7 @@ public class SelectFolderActivity extends Activity implements
         prefs = PreferenceManager
                 .getDefaultSharedPreferences(this);
         editor = prefs.edit();
-        String settingDir = prefs.getString(Constants.SETTINGS_FAKKUDROID_FOLDER, "");
+        String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         if (!settingDir.isEmpty()) {
             EditText editText = (EditText) findViewById(R.id.etFolder);
             editText.setText(settingDir);
@@ -83,7 +83,7 @@ public class SelectFolderActivity extends Activity implements
             Toast.makeText(this, R.string.error_write_permission, Toast.LENGTH_SHORT).show();
             return;
         }
-        editor.putString(Constants.SETTINGS_FAKKUDROID_FOLDER, fakkuFolder);
+        editor.putString(Constants.SETTINGS_FOLDER, fakkuFolder);
         boolean directorySaved = editor.commit();
         if(!directorySaved){
             Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();

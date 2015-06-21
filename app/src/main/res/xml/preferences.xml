@@ -32,8 +32,8 @@
             android:entryValues="@array/pref_read_content_entry_values"/>
         <Preference android:title="@string/pref_select_folder_title" android:summary="@string/pref_select_folder_summary">
             <intent android:action="android.intent.action.VIEW"
-                android:targetPackage="com.devsaki.fakkudroid"
-                android:targetClass="com.devsaki.fakkudroid.SelectFolderActivity"/>
+                android:targetPackage="me.devsaki.hentoid"
+                android:targetClass="me.devsaki.hentoid.SelectFolderActivity"/>
         </Preference>
         <Preference android:key="pref_add_no_media_file"
             android:title="@string/pref_add_no_media_file_title"

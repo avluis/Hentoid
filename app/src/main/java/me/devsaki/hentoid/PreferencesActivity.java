@@ -41,7 +41,7 @@ public class PreferencesActivity extends PreferenceActivity{
                 public boolean onPreferenceClick(Preference preference) {
                     SharedPreferences prefs = PreferenceManager
                             .getDefaultSharedPreferences(getActivity());
-                    String settingDir = prefs.getString(Constants.SETTINGS_FAKKUDROID_FOLDER, "");
+                    String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
                     File nomedia = new File(settingDir, ".nomedia");
                     if (!nomedia.exists())
                         try {
