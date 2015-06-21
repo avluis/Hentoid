@@ -16,6 +16,7 @@ import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Status;
 import me.devsaki.hentoid.util.Helper;
 
@@ -56,29 +57,40 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         TextView tvTags = (TextView) rowView.findViewById(R.id.tvTags);
 
         tvTitle.setText(content.getTitle());
-        if (content.getSerie() != null)
-            tvSerie.setText(Html.fromHtml(templateTvSerie.replace("@serie@", content.getSerie().getName())));
-        else
-            tvSerie.setText(Html.fromHtml(templateTvSerie.replace("@serie@", "")));
+        String series = "";
+        List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
+        if (seriesAttributes != null)
+            for (int i = 0; i < seriesAttributes.size(); i++) {
+                Attribute attribute = seriesAttributes.get(i);
+                series += attribute.getName();
+                if (i != seriesAttributes.size() - 1) {
+                    series += ", ";
+                }
+            }
+        tvSerie.setText(Html.fromHtml(templateTvSerie.replace("@serie@", series)));
 
         String artists = "";
-        if (content.getArtists() != null)
-            for (int i = 0; i < content.getArtists().size(); i++) {
-                Attribute attribute = content.getArtists().get(i);
+        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
+        if (artistAttributes != null)
+            for (int i = 0; i < artistAttributes.size(); i++) {
+                Attribute attribute = artistAttributes.get(i);
                 artists += attribute.getName();
-                if (i != content.getArtists().size() - 1) {
+                if (i != artistAttributes.size() - 1) {
                     artists += ", ";
                 }
             }
         tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
 
         String tags = "";
-        if (content.getTags() != null)
-            for (int i = 0; i < content.getTags().size(); i++) {
-                Attribute attribute = content.getTags().get(i);
-                tags += templateTvTags.replace("@tag@", attribute.getName());
-                if (i != content.getTags().size() - 1) {
-                    tags += ", ";
+        List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
+        if (tagsAttributes != null)
+            for (int i = 0; i < tagsAttributes.size(); i++) {
+                Attribute attribute = tagsAttributes.get(i);
+                if(attribute.getName()!=null){
+                    tags += templateTvTags.replace("@tag@", attribute.getName());
+                    if (i != tagsAttributes.size() - 1) {
+                        tags += ", ";
+                    }
                 }
             }
         tvTags.setText(Html.fromHtml(tags));

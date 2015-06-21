@@ -105,20 +105,11 @@ public class HentoidDB extends SQLiteOpenHelper {
                         insertImageFiles(db, row);
 
                     List<Attribute> attributes = new ArrayList<>();
-                    if (row.getSerie() != null)
-                        attributes.add(row.getSerie());
-                    if (row.getArtists() != null)
-                        attributes.addAll(row.getArtists());
-                    if (row.getPublishers() != null)
-                        attributes.addAll(row.getPublishers());
-                    if (row.getLanguage() != null)
-                        attributes.add(row.getLanguage());
-                    if (row.getTags() != null)
-                        attributes.addAll(row.getTags());
-                    if (row.getTranslators() != null)
-                        attributes.addAll(row.getTranslators());
-                    if (row.getUser() != null)
-                        attributes.add(row.getUser());
+                    for(AttributeType attributeType : AttributeType.values()){
+                        if(row.getAttributes().get(attributeType)!=null){
+                            attributes.addAll(row.getAttributes().get(attributeType));
+                        }
+                    }
                     insertAttributes(db, row, attributes);
                 }
                 db.setTransactionSuccessful();
@@ -347,29 +338,10 @@ public class HentoidDB extends SQLiteOpenHelper {
         List<Attribute> attributes = selectAttributesByContentId(db, content.getId());
         if (attributes != null)
             for (Attribute attribute : attributes) {
-                if (attribute.getType() == AttributeType.ARTIST) {
-                    if (content.getArtists() == null)
-                        content.setArtists(new ArrayList<Attribute>());
-                    content.getArtists().add(attribute);
-                } else if (attribute.getType() == AttributeType.SERIE) {
-                    content.setSerie(attribute);
-                } else if (attribute.getType() == AttributeType.PUBLISHER) {
-                    if (content.getPublishers() == null)
-                        content.setPublishers(new ArrayList<Attribute>());
-                    content.getPublishers().add(attribute);
-                } else if (attribute.getType() == AttributeType.UPLOADER) {
-                    content.setUser(attribute);
-                } else if (attribute.getType() == AttributeType.LANGUAGE) {
-                    content.setLanguage(attribute);
-                } else if (attribute.getType() == AttributeType.TAG) {
-                    if (content.getTags() == null)
-                        content.setTags(new ArrayList<Attribute>());
-                    content.getTags().add(attribute);
-                } else if (attribute.getType() == AttributeType.TRANSLATOR) {
-                    if (content.getTranslators() == null)
-                        content.setTranslators(new ArrayList<Attribute>());
-                    content.getTranslators().add(attribute);
+                if(content.getAttributes().get(attribute.getType())==null){
+                    content.getAttributes().put(attribute.getType(), new ArrayList<Attribute>());
                 }
+                content.getAttributes().get(attribute.getType()).add(attribute);
             }
         return content;
     }

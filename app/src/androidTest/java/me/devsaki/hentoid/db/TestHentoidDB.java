@@ -11,6 +11,7 @@ import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Status;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -103,32 +104,29 @@ public class TestHentoidDB extends AndroidTestCase {
         for (int i=0; i<10;i++){
             int k = randomGenerator.nextInt();
             Content content = new Content();
-            List<Attribute> attributes = new ArrayList<>();
-            for (int j=0; j<10;j++){
-                int l = randomGenerator.nextInt();
-                Attribute attribute = new Attribute();
-                attribute.setUrl("" + l);
-                attribute.setName("n" + l);
-                attribute.setType(AttributeType.ARTIST);
-                attributes.add(attribute);
+            content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
+            for(AttributeType type : AttributeType.values()){
+                List<Attribute> attributes = new ArrayList<>();
+                for (int j=0; j<10;j++){
+                    int l = randomGenerator.nextInt();
+                    Attribute attribute = new Attribute();
+                    attribute.setUrl("" + l);
+                    attribute.setName("n" + l);
+                    attribute.setType(type);
+                    attributes.add(attribute);
+                }
+                content.getAttributes().put(type, attributes);
             }
-            content.setArtists(attributes);
             content.setUrl("/doujinshi/u" + k);
             content.setCoverImageUrl("c" + k);
             content.setDownloadable(false);
             content.setDownloadDate(1000 * k);
             content.setHtmlDescription("html " + k);
-            content.setLanguage(attributes.get(i));
             content.setPercent(10.0 * k);
-            content.setPublishers(attributes);
-            content.setTranslators(attributes);
-            content.setUser(attributes.get(i));
             content.setQtyFavorites(k * 11);
             content.setQtyPages(k * 12);
             content.setTitle("t " + k);
             content.setStatus(Status.DOWNLOADED);
-            content.setSampleImageUrl("asdas " + k);
-            content.setTags(attributes);
             content.setUploadDate(k * 2000);
             contents.add(content);
         }

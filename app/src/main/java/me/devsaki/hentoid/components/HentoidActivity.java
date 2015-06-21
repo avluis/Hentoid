@@ -19,6 +19,7 @@ import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.enums.Site;
 
 /**
  * Created by DevSaki on 04/06/2015.
@@ -98,8 +99,16 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends ActionB
         return super.onOptionsItemSelected(item);
     }
 
-    public void ndWebView(View view){
+    public void ndFakkuWb(View view){
         Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(MainActivity.INTENT_SITE, Site.FAKKU);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
+    public void ndPururinWb(View view){
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(MainActivity.INTENT_SITE, Site.PURURIN);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }

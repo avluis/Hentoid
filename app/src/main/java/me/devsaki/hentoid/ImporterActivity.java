@@ -10,12 +10,15 @@ import android.widget.TextView;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.database.enums.AttributeType;
+import me.devsaki.hentoid.database.enums.Status;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.v2.bean.DoujinBean;
 import me.devsaki.hentoid.v2.bean.URLBean;
+
 import com.github.lzyzsd.circleprogress.DonutProgress;
 import com.google.gson.Gson;
 
@@ -28,6 +31,7 @@ import java.util.List;
 public class ImporterActivity extends ActionBarActivity {
 
     private static final String TAG = ImporterActivity.class.getName();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +40,7 @@ public class ImporterActivity extends ActionBarActivity {
         AndroidHelper.executeAsyncTask(new ImporterAsyncTask());
     }
 
-    class ImporterAsyncTask extends AsyncTask<Integer,String,List<Content>>{
+    class ImporterAsyncTask extends AsyncTask<Integer, String, List<Content>> {
 
         private File downloadDir;
         private int currentPercent;
@@ -56,7 +60,7 @@ public class ImporterActivity extends ActionBarActivity {
 
         @Override
         protected void onPostExecute(List<Content> contents) {
-            if(contents!=null&&contents.size()>0)
+            if (contents != null && contents.size() > 0)
                 hentoidDB.insertContents(contents.toArray(new Content[contents.size()]));
             Intent intent = new Intent(ImporterActivity.this, DownloadsActivity.class);
             startActivity(intent);
@@ -74,58 +78,70 @@ public class ImporterActivity extends ActionBarActivity {
             List<Content> contents = null;
             File[] files = downloadDir.listFiles();
             int processeds = 0;
-            if(files.length>0){
+            if (files.length > 0) {
                 contents = new ArrayList<>();
                 Date importedDate = new Date();
-                for(File file : files){
+                for (File file : files) {
                     processeds++;
-                    currentPercent = (int) (processeds*100.0/files.length);
-                    if(file.isDirectory()){
+                    currentPercent = (int) (processeds * 100.0 / files.length);
+                    if (file.isDirectory()) {
                         publishProgress(file.getName());
-                        File json = new File(file, Constants.JSON_FILE_NAME);
-                        if(json.exists()){
+                        File json = new File(file, Constants.JSON_FILE_NAME_V2);
+                        if (json.exists()) {
                             try {
                                 Content content = new Gson().fromJson(Helper.readTextFile(json), Content.class);
-                                if(content.getStatus() != me.devsaki.hentoid.database.enums.Status.DOWNLOADED)
+                                if (content.getStatus() != me.devsaki.hentoid.database.enums.Status.DOWNLOADED && content.getStatus() != me.devsaki.hentoid.database.enums.Status.ERROR)
                                     content.setStatus(me.devsaki.hentoid.database.enums.Status.MIGRATED);
                                 contents.add(content);
                             } catch (Exception e) {
                                 Log.e(TAG, "Reading json file", e);
                             }
-                        }else{
-                            json = new File(file, Constants.JSON_FILE_NAME_V2);
-                            if(json.exists()){
+                        } else {
+                            json = new File(file, Constants.JSON_FILE_NAME);
+                            if (json.exists()) {
                                 try {
-                                    DoujinBean doujinBean = new Gson().fromJson(Helper.readTextFile(json), DoujinBean.class);
-                                    Content content = new Content();
-                                    content.setUrl(doujinBean.getId());
-                                    content.setHtmlDescription(doujinBean.getDescription());
-                                    content.setTitle(doujinBean.getTitle());
-                                    content.setSerie(from(doujinBean.getSerie(), AttributeType.SERIE));
-                                    Attribute artist = from(doujinBean.getArtist(), AttributeType.ARTIST);
-                                    List<Attribute> artists = null;
-                                    if(artist!=null){
-                                        artists = new ArrayList<>(1);
-                                        artists.add(artist);
-                                    }
-                                    content.setArtists(artists);
-                                    content.setCoverImageUrl(doujinBean.getUrlImageTitle());
-                                    content.setQtyPages(doujinBean.getQtyPages());
-                                    Attribute translator = from(doujinBean.getTranslator(), AttributeType.TRANSLATOR);
-                                    List<Attribute> translators = null;
-                                    if(translator!=null){
-                                        translators = new ArrayList<>(1);
-                                        translators.add(translator);
-                                    }
-                                    content.setTranslators(translators);
-                                    content.setTags(from(doujinBean.getLstTags(), AttributeType.TAG));
-                                    content.setLanguage(from(doujinBean.getLanguage(), AttributeType.LANGUAGE));
-
-                                    content.setStatus(me.devsaki.hentoid.database.enums.Status.MIGRATED);
-                                    content.setDownloadDate(importedDate.getTime());
-                                    contents.add(content);
+                                    ContentV1 content = new Gson().fromJson(Helper.readTextFile(json), ContentV1.class);
+                                    if (content.getStatus() != me.devsaki.hentoid.database.enums.Status.DOWNLOADED && content.getStatus() != me.devsaki.hentoid.database.enums.Status.ERROR)
+                                        content.setStatus(me.devsaki.hentoid.database.enums.Status.MIGRATED);
+                                    contents.add(content.toContent());
                                 } catch (Exception e) {
-                                    Log.e(TAG, "Reading json file v2", e);
+                                    Log.e(TAG, "Reading json file", e);
+                                }
+                            } else {
+                                json = new File(file, Constants.OLD_JSON_FILE_NAME);
+                                if (json.exists()) {
+                                    try {
+                                        DoujinBean doujinBean = new Gson().fromJson(Helper.readTextFile(json), DoujinBean.class);
+                                        ContentV1 content = new ContentV1();
+                                        content.setUrl(doujinBean.getId());
+                                        content.setHtmlDescription(doujinBean.getDescription());
+                                        content.setTitle(doujinBean.getTitle());
+                                        content.setSerie(from(doujinBean.getSerie(), AttributeType.SERIE));
+                                        Attribute artist = from(doujinBean.getArtist(), AttributeType.ARTIST);
+                                        List<Attribute> artists = null;
+                                        if (artist != null) {
+                                            artists = new ArrayList<>(1);
+                                            artists.add(artist);
+                                        }
+                                        content.setArtists(artists);
+                                        content.setCoverImageUrl(doujinBean.getUrlImageTitle());
+                                        content.setQtyPages(doujinBean.getQtyPages());
+                                        Attribute translator = from(doujinBean.getTranslator(), AttributeType.TRANSLATOR);
+                                        List<Attribute> translators = null;
+                                        if (translator != null) {
+                                            translators = new ArrayList<>(1);
+                                            translators.add(translator);
+                                        }
+                                        content.setTranslators(translators);
+                                        content.setTags(from(doujinBean.getLstTags(), AttributeType.TAG));
+                                        content.setLanguage(from(doujinBean.getLanguage(), AttributeType.LANGUAGE));
+
+                                        content.setStatus(me.devsaki.hentoid.database.enums.Status.MIGRATED);
+                                        content.setDownloadDate(importedDate.getTime());
+                                        contents.add(content.toContent());
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "Reading json file v2", e);
+                                    }
                                 }
                             }
                         }
@@ -135,27 +151,27 @@ public class ImporterActivity extends ActionBarActivity {
             return contents;
         }
 
-        private List<Attribute> from(List<URLBean> urlBeans, AttributeType type){
+        private List<Attribute> from(List<URLBean> urlBeans, AttributeType type) {
             List<Attribute> attributes = null;
-            if(urlBeans==null)
+            if (urlBeans == null)
                 return null;
-            if(urlBeans.size()>0){
+            if (urlBeans.size() > 0) {
                 attributes = new ArrayList<>();
-                for (URLBean urlBean : urlBeans){
+                for (URLBean urlBean : urlBeans) {
                     Attribute attribute = from(urlBean, type);
-                    if(attribute!=null)
+                    if (attribute != null)
                         attributes.add(attribute);
                 }
             }
             return attributes;
         }
 
-        private Attribute from(URLBean urlBean, AttributeType type){
-            if(urlBean == null){
+        private Attribute from(URLBean urlBean, AttributeType type) {
+            if (urlBean == null) {
                 return null;
             }
-            try{
-                if(urlBean.getDescription()==null){
+            try {
+                if (urlBean.getDescription() == null) {
                     throw new RuntimeException("Problems loading attribute v2.");
                 }
                 Attribute attribute = new Attribute();
@@ -163,8 +179,8 @@ public class ImporterActivity extends ActionBarActivity {
                 attribute.setUrl(urlBean.getId());
                 attribute.setType(type);
                 return attribute;
-            }catch (Exception ex){
-                Log.e(TAG, "Parsing urlBean to attribute" ,ex);
+            } catch (Exception ex) {
+                Log.e(TAG, "Parsing urlBean to attribute", ex);
                 return null;
             }
         }

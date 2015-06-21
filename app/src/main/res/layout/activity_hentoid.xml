@@ -21,8 +21,16 @@
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="ndWebView"
-            android:text="@string/navigation_drawer_wev_view"
+            android:onClick="ndFakkuWb"
+            android:text="@string/navigation_drawer_fakku_wb"
+            android:padding="10dp"
+            android:background="@drawable/image_button"
+            android:textColor="@android:color/white"/>
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="ndPururinWb"
+            android:text="@string/navigation_drawer_pururin_wb"
             android:padding="10dp"
             android:background="@drawable/image_button"
             android:textColor="@android:color/white"/>

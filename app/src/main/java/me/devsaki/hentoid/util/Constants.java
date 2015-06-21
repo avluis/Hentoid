@@ -12,5 +12,6 @@ public abstract class Constants {
     public static final String FAKKU_READ = "/read";
 
     public static final String JSON_FILE_NAME = "content.json";
-    public static final String JSON_FILE_NAME_V2 = "data.json";
+    public static final String JSON_FILE_NAME_V2 = "contentV2.json";
+    public static final String OLD_JSON_FILE_NAME = "data.json";
 }

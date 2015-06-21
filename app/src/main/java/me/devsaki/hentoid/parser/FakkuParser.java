@@ -15,6 +15,7 @@ import org.jsoup.select.Elements;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -52,10 +53,12 @@ public class FakkuParser {
 
             int rowIndex = 1;
 
+            result.setAttributes(new HashMap<AttributeType, List<Attribute>>());
+
             //series
-            result.setSerie(parseAttribute(rows.get(rowIndex++).select("a").first(), AttributeType.SERIE));
+            result.getAttributes().put(AttributeType.SERIE, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.SERIE));
             //Artist
-            result.setArtists(parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.ARTIST));
+            result.getAttributes().put(AttributeType.ARTIST, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.ARTIST));
 
             if(rows.get(rowIndex).select("div.left").html().equals("Event")){
                 rowIndex++;
@@ -65,12 +68,12 @@ public class FakkuParser {
             }
             //Publisher or Translator
             if(rows.get(rowIndex).select("div.left").html().equals("Publisher")){
-                result.setPublishers(parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.PUBLISHER));
+                result.getAttributes().put(AttributeType.PUBLISHER, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.PUBLISHER));
             }else if(rows.get(rowIndex).select("div.left").html().equals("Translator")){
-                result.setTranslators(parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TRANSLATOR));
+                result.getAttributes().put(AttributeType.TRANSLATOR, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TRANSLATOR));
             }
             //Language
-            result.setLanguage(parseAttribute(rows.get(rowIndex++).select("a").first(), AttributeType.LANGUAGE));
+            result.getAttributes().put(AttributeType.LANGUAGE, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.LANGUAGE));
             //Pages
             result.setQtyPages(Integer.parseInt(rows.get(rowIndex++).select(".right").html().replace(" pages", "")));
             //Favorites
@@ -83,10 +86,12 @@ public class FakkuParser {
             Elements user = uploader.select("a");
 
             if(user.size()>0){
-                result.setUser(new Attribute());
-                result.getUser().setUrl(user.first().attr("href"));
-                result.getUser().setName(user.first().html());
-                result.getUser().setType(AttributeType.UPLOADER);
+                result.getAttributes().put(AttributeType.UPLOADER, new ArrayList<Attribute>(1));
+
+                result.getAttributes().get(AttributeType.UPLOADER).add(new Attribute());
+                result.getAttributes().get(AttributeType.UPLOADER).get(0).setUrl(user.first().attr("href"));
+                result.getAttributes().get(AttributeType.UPLOADER).get(0).setName(user.first().html());
+                result.getAttributes().get(AttributeType.UPLOADER).get(0).setType(AttributeType.UPLOADER);
             }
             String date = uploader.html().substring(uploader.html().lastIndexOf(" on ") + 4).trim();
             date = date.replace("st,",",").replace("nd,", ",").replace("rd,",",").replace("th,",",");
@@ -101,7 +106,7 @@ public class FakkuParser {
             //Description
             result.setHtmlDescription(rows.get(rowIndex++).select(".right").html());
             //Tags
-            result.setTags(parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TAG));
+            result.getAttributes().put(AttributeType.TAG, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TAG));
             result.setStatus(Status.SAVED);
 
             //IsDownloadable
@@ -121,23 +126,22 @@ public class FakkuParser {
         Elements rows = content.select(".row");
         //images
         result.setCoverImageUrl(content.select(".cover").attr("src"));
-        result.setSampleImageUrl(content.select(".sample").attr("src"));
         //series
-        result.setSerie(parseAttribute(rows.get(rowIndex++).select("a").first(), AttributeType.SERIE));
+        result.getAttributes().put(AttributeType.SERIE, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.SERIE));
         //Artist
-        result.setArtists(parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.ARTIST));
+        result.getAttributes().put(AttributeType.ARTIST, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.ARTIST));
         //Publisher or Translator
         if(rows.get(rowIndex).select("div.left").html().equals("Publisher")){
-            result.setPublishers(parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.PUBLISHER));
+            result.getAttributes().put(AttributeType.PUBLISHER, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.PUBLISHER));
         }else if(rows.get(rowIndex).select("div.left").html().equals("Translator")){
-            result.setTranslators(parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TRANSLATOR));
+            result.getAttributes().put(AttributeType.TRANSLATOR, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TRANSLATOR));
         }
         //Language
-        result.setLanguage(parseAttribute(rows.get(rowIndex++).select("a").first(), AttributeType.LANGUAGE));
+        result.getAttributes().put(AttributeType.LANGUAGE, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.LANGUAGE));
         //Description
         result.setHtmlDescription(rows.get(rowIndex++).select(".right").html());
         //Tags
-        result.setTags(parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TAG));
+        result.getAttributes().put(AttributeType.TAG, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TAG));
         result.setStatus(Status.SAVED);
         return result;
     }

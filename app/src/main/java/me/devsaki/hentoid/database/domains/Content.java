@@ -1,10 +1,12 @@
 package me.devsaki.hentoid.database.domains;
 
 import me.devsaki.hentoid.database.contants.ContentTable;
+import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.Status;
 import com.google.gson.annotations.Expose;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -19,29 +21,15 @@ public class Content extends ContentTable{
     @Expose
     private String htmlDescription;
     @Expose
-    private Attribute serie;
-    @Expose
-    private List<Attribute> artists;
-    @Expose
-    private List<Attribute> publishers;
-    @Expose
-    private Attribute language;
-    @Expose
-    private List<Attribute> tags;
-    @Expose
-    private List<Attribute> translators;
+    private HashMap<AttributeType, List<Attribute>> attributes;
     @Expose
     private String coverImageUrl;
-    @Expose(serialize = false, deserialize = false)
-    private String sampleImageUrl;
     @Expose
     private Integer qtyPages;
     @Expose(serialize = false, deserialize = false)
     private Integer qtyFavorites;
     @Expose
     private long uploadDate;
-    @Expose
-    private Attribute user;
     @Expose
     private long downloadDate;
     @Expose
@@ -54,6 +42,14 @@ public class Content extends ContentTable{
     private double percent;
     @Expose
     private Site site;
+
+    public HashMap<AttributeType, List<Attribute>> getAttributes() {
+        return attributes;
+    }
+
+    public void setAttributes(HashMap<AttributeType, List<Attribute>> attributes) {
+        this.attributes = attributes;
+    }
 
     public int getId() {
         return url.hashCode();
@@ -96,68 +92,12 @@ public class Content extends ContentTable{
         this.htmlDescription = htmlDescription;
     }
 
-    public Attribute getSerie() {
-        return serie;
-    }
-
-    public void setSerie(Attribute serie) {
-        this.serie = serie;
-    }
-
-    public List<Attribute> getArtists() {
-        return artists;
-    }
-
-    public void setArtists(List<Attribute> artists) {
-        this.artists = artists;
-    }
-
-    public List<Attribute> getPublishers() {
-        return publishers;
-    }
-
-    public void setPublishers(List<Attribute> publishers) {
-        this.publishers = publishers;
-    }
-
-    public Attribute getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(Attribute language) {
-        this.language = language;
-    }
-
-    public List<Attribute> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<Attribute> tags) {
-        this.tags = tags;
-    }
-
-    public List<Attribute> getTranslators() {
-        return translators;
-    }
-
-    public void setTranslators(List<Attribute> translators) {
-        this.translators = translators;
-    }
-
     public String getCoverImageUrl() {
         return coverImageUrl;
     }
 
     public void setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
-    }
-
-    public String getSampleImageUrl() {
-        return sampleImageUrl;
-    }
-
-    public void setSampleImageUrl(String sampleImageUrl) {
-        this.sampleImageUrl = sampleImageUrl;
     }
 
     public Integer getQtyPages() {
@@ -174,14 +114,6 @@ public class Content extends ContentTable{
 
     public void setQtyFavorites(Integer qtyFavorites) {
         this.qtyFavorites = qtyFavorites;
-    }
-
-    public Attribute getUser() {
-        return user;
-    }
-
-    public void setUser(Attribute user) {
-        this.user = user;
     }
 
     public long getUploadDate() {
@@ -233,9 +165,6 @@ public class Content extends ContentTable{
     }
 
     public Site getSite() {
-        //to keep compatibility, if null return Fakku
-        if(site==null)
-            return Site.FAKKU;
         return site;
     }
 
@@ -243,20 +172,4 @@ public class Content extends ContentTable{
         this.site = site;
     }
 
-    @Override
-    public String toString() {
-        return "Content{" +
-                "url='" + url + '\'' +
-                ", title='" + title + '\'' +
-                ", htmlDescription='" + htmlDescription + '\'' +
-                ", serie=" + serie +
-                ", artists=" + artists +
-                ", publishers=" + publishers +
-                ", language=" + language +
-                ", tags=" + tags +
-                ", translators=" + translators +
-                ", coverImageUrl='" + coverImageUrl + '\'' +
-                ", sampleImageUrl='" + sampleImageUrl + '\'' +
-                '}';
-    }
 }
