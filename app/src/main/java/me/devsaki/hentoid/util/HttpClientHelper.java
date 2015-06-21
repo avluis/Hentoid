@@ -66,7 +66,7 @@ public class HttpClientHelper {
     }
 
     public static VersionDto checkLastVersion(UserRequest userRequest) throws HttpClientException, IOException {
-        URL url = new URL("http://devsaki.me/versions/last");
+        URL url = new URL("http://api.devsaki.me/versions/last");
 
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod("POST");

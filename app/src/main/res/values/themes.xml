@@ -5,8 +5,8 @@
     <style name="HentoidTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="actionBarStyle">@style/HentoidActionBar</item>
         <item name="android:actionBarStyle">@style/HentoidActionBar</item>
-        <item name="icon">@drawable/ic_fakkudroid_launcher</item>
-        <item name="android:icon">@drawable/ic_fakkudroid_launcher</item>
+        <item name="icon">@drawable/ic_hentoid</item>
+        <item name="android:icon">@drawable/ic_hentoid</item>
     </style>
 
     <style name="HentoidActionBar" parent="Widget.AppCompat.ActionBar.Solid">

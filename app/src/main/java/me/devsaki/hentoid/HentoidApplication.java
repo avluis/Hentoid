@@ -93,7 +93,7 @@ public class HentoidApplication extends Application {
         if (bitmap != null) {
             mImageView.setImageBitmap(bitmap);
         } else {
-            mImageView.setImageResource(R.drawable.ic_fakkudroid_launcher);
+            mImageView.setImageResource(R.drawable.ic_hentoid);
             BitmapWorkerTask task = new BitmapWorkerTask(mImageView);
             task.execute(file);
         }
@@ -139,7 +139,7 @@ public class HentoidApplication extends Application {
             if (bitmap != null) {
                 imageView.setImageBitmap(bitmap);
             } else {
-                imageView.setImageResource(R.drawable.ic_fakkudroid_launcher);
+                imageView.setImageResource(R.drawable.ic_hentoid);
             }
         }
     }

@@ -65,12 +65,11 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, VersionDto> {
 
     @Override
     protected void onPostExecute(VersionDto result) {
-        super.onPostExecute(result);
         if (result != null) {
             try {
                 PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
 
-                if (result.getVersionCode() > pInfo.versionCode) {
+                if (result.getVersionCode()!=null && result.getVersionCode() > pInfo.versionCode) {
                     this.versionDto = result;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(versionDto.getDocumentationLink()));
@@ -78,7 +77,7 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, VersionDto> {
                             0, intent, PendingIntent.FLAG_ONE_SHOT);
                     mBuilder = new NotificationCompat.Builder(
                             mContext).setSmallIcon(
-                            R.drawable.ic_fakkudroid_launcher).setContentTitle(mContext.getString(R.string.new_version_available));
+                            R.drawable.ic_hentoid).setContentTitle(mContext.getString(R.string.new_version_available));
                     mBuilder.setContentText(mContext.getString(R.string.version_number).replace("@oldVersion", pInfo.versionName).replace("@newVersion", versionDto.getVersionName()));
                     mBuilder.setProgress(0, 0, false);
                     Notification notif = mBuilder.build();

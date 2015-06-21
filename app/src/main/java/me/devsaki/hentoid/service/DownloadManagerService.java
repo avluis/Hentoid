@@ -210,7 +210,7 @@ public class DownloadManagerService extends IntentService {
     private void showNotification(double percent, Content content) {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
                 DownloadManagerService.this).setSmallIcon(
-                R.drawable.ic_fakkudroid_launcher).setContentTitle(content.getTitle());
+                content.getSite().getIco()).setContentTitle(content.getTitle());
 
         Intent resultIntent = null;
         if(content.getStatus()==Status.DOWNLOADED||content.getStatus()==Status.ERROR){
