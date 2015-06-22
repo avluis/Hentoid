@@ -276,6 +276,7 @@ public class ContentV1 extends ContentTable{
         content.setTitle(this.title);
         content.setQtyPages(this.qtyPages);
         content.setDownloadDate(this.downloadDate);
+        content.setStatus(this.status);
         return content;
     }
 

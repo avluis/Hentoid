@@ -19,6 +19,7 @@ import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.Status;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -333,7 +334,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         content.setCoverImageUrl(cursorContent.getString(10));
         content.setSite(Site.searchByCode(cursorContent.getInt(11)));
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()));
-
+        content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
         //populate attributes
         List<Attribute> attributes = selectAttributesByContentId(db, content.getId());
         if (attributes != null)
