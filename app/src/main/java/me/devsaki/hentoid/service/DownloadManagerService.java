@@ -16,7 +16,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
@@ -60,8 +60,8 @@ public class DownloadManagerService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Content content = db.selectContentByStatus(Status.DOWNLOADING);
-        if(content==null||content.getStatus()==Status.DOWNLOADED)
+        Content content = db.selectContentByStatus(StatusContent.DOWNLOADING);
+        if(content==null||content.getStatus()== StatusContent.DOWNLOADED)
             return;
 
         if(paused){
@@ -97,7 +97,7 @@ public class DownloadManagerService extends IntentService {
                 ImageFile imageFile = new ImageFile();
                 imageFile.setUrl(site + name);
                 imageFile.setOrder(i);
-                imageFile.setStatus(Status.SAVED);
+                imageFile.setStatusContent(StatusContent.SAVED);
                 imageFile.setName(name);
                 content.getImageFiles().add(imageFile);
             }
@@ -110,7 +110,7 @@ public class DownloadManagerService extends IntentService {
                 ImageFile imageFile = new ImageFile();
                 imageFile.setUrl(urlCdn + name);
                 imageFile.setOrder(i);
-                imageFile.setStatus(Status.SAVED);
+                imageFile.setStatusContent(StatusContent.SAVED);
                 imageFile.setName(name);
                 content.getImageFiles().add(imageFile);
             }
@@ -145,7 +145,7 @@ public class DownloadManagerService extends IntentService {
                 paused = false;
                 content = db.selectContentById(content.getId());
                 showNotification(0, content);
-                if(content.getStatus()==Status.SAVED){
+                if(content.getStatus()== StatusContent.SAVED){
                     try {
                         FileUtils.deleteDirectory(dir);
                     } catch (IOException e) {
@@ -156,7 +156,7 @@ public class DownloadManagerService extends IntentService {
             }
             boolean imageFileErrorDownload = false;
             try {
-                if (imageFile.getStatus() != Status.IGNORED) {
+                if (imageFile.getStatusContent() != StatusContent.IGNORED) {
                     Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
                     Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / " + content.getTitle());
                 }
@@ -170,18 +170,18 @@ public class DownloadManagerService extends IntentService {
                 imageFileErrorDownload=true;
             }
             if (imageFileErrorDownload) {
-                imageFile.setStatus(Status.ERROR);
+                imageFile.setStatusContent(StatusContent.ERROR);
             } else {
-                imageFile.setStatus(Status.DOWNLOADED);
+                imageFile.setStatusContent(StatusContent.DOWNLOADED);
             }
             db.updateImageFileStatus(imageFile);
         }
         db.updateContentStatus(content);
         content.setDownloadDate(new Date().getTime());
         if (error) {
-            content.setStatus(Status.ERROR);
+            content.setStatus(StatusContent.ERROR);
         } else {
-            content.setStatus(Status.DOWNLOADED);
+            content.setStatus(StatusContent.DOWNLOADED);
         }
         //Save JSON file
         try {
@@ -193,7 +193,7 @@ public class DownloadManagerService extends IntentService {
         Log.i(TAG, "Finish Download Content : " + content.getTitle());
         showNotification(0, content);
         updateActivity(-1);
-        content = db.selectContentByStatus(Status.DOWNLOADING);
+        content = db.selectContentByStatus(StatusContent.DOWNLOADING);
         if(content!=null){
             Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
             intentService.putExtra("content_id", content.getId());
@@ -213,13 +213,13 @@ public class DownloadManagerService extends IntentService {
                 content.getSite().getIco()).setContentTitle(content.getTitle());
 
         Intent resultIntent = null;
-        if(content.getStatus()==Status.DOWNLOADED||content.getStatus()==Status.ERROR){
+        if(content.getStatus()== StatusContent.DOWNLOADED||content.getStatus()== StatusContent.ERROR){
             resultIntent= new Intent(DownloadManagerService.this,
                     DownloadsActivity.class);
-        }else if(content.getStatus()==Status.DOWNLOADING||content.getStatus()==Status.PAUSED){
+        }else if(content.getStatus()== StatusContent.DOWNLOADING||content.getStatus()== StatusContent.PAUSED){
             resultIntent= new Intent(DownloadManagerService.this,
                     DownloadManagerActivity.class);
-        }else if(content.getStatus()==Status.SAVED){
+        }else if(content.getStatus()== StatusContent.SAVED){
             resultIntent = new Intent(DownloadManagerService.this,
                     MainActivity.class);
             resultIntent.putExtra("url", content.getUrl());
@@ -231,19 +231,19 @@ public class DownloadManagerService extends IntentService {
                 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
 
 
-        if (content.getStatus()==Status.DOWNLOADING) {
+        if (content.getStatus()== StatusContent.DOWNLOADING) {
             mBuilder.setContentText(getResources().getString(R.string.downloading)
                     + String.format("%.2f", percent) + "%");
             mBuilder.setProgress(100, (int)percent, false);
         } else {
             int resource = 0;
-            if(content.getStatus()==Status.DOWNLOADED){
+            if(content.getStatus()== StatusContent.DOWNLOADED){
                 resource = R.string.download_completed;
-            }else if(content.getStatus()==Status.PAUSED){
+            }else if(content.getStatus()== StatusContent.PAUSED){
                 resource = R.string.download_paused;
-            }else if(content.getStatus()==Status.SAVED){
+            }else if(content.getStatus()== StatusContent.SAVED){
                 resource = R.string.download_cancelled;
-            }else if(content.getStatus()==Status.ERROR){
+            }else if(content.getStatus()== StatusContent.ERROR){
                 resource = R.string.download_error;
             }
             mBuilder.setContentText(getResources().getString(resource));

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.text.TextUtils;
+import android.util.Log;
 
 import me.devsaki.hentoid.dto.VersionDto;
 import me.devsaki.hentoid.dto.UserRequest;
@@ -15,6 +16,8 @@ import java.io.OutputStreamWriter;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 /**
@@ -23,6 +26,11 @@ import java.net.URL;
 public class HttpClientHelper {
 
     public static String call(URL url) throws HttpClientException, IOException {
+        URI uri = null;
+        try {
+            uri = new URI(url.toString());
+        } catch (URISyntaxException e) {
+        }
         CookieManager cookieManager = (CookieManager)CookieHandler.getDefault();
 
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
@@ -31,7 +39,7 @@ public class HttpClientHelper {
         if(cookieManager.getCookieStore().getCookies().size() > 0)
         {
             urlConnection.setRequestProperty("Cookie",
-                    TextUtils.join("; ", cookieManager.getCookieStore().getCookies()));
+                    TextUtils.join("; ", cookieManager.getCookieStore().get(uri)));
         }
         urlConnection.connect();
 

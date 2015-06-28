@@ -101,14 +101,14 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends ActionB
 
     public void ndFakkuWb(View view){
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(MainActivity.INTENT_SITE, Site.FAKKU);
+        intent.putExtra(MainActivity.INTENT_SITE, Site.FAKKU.getCode());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 
     public void ndPururinWb(View view){
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(MainActivity.INTENT_SITE, Site.PURURIN);
+        intent.putExtra(MainActivity.INTENT_SITE, Site.PURURIN.getCode());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }

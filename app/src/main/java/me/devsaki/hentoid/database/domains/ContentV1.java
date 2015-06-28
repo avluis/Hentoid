@@ -9,7 +9,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -50,7 +50,7 @@ public class ContentV1 extends ContentTable{
     @Expose
     private long downloadDate;
     @Expose
-    private Status status;
+    private StatusContent status;
     @Expose
     private List<ImageFile> imageFiles;
     @Expose(serialize = false, deserialize = false)
@@ -205,11 +205,11 @@ public class ContentV1 extends ContentTable{
         this.downloadDate = downloadDate;
     }
 
-    public Status getStatus() {
+    public StatusContent getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(StatusContent status) {
         this.status = status;
     }
 

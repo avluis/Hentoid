@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
 import me.devsaki.hentoid.database.contants.ImageFileTable;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import com.google.gson.annotations.Expose;
 
 /**
@@ -16,7 +16,7 @@ public class ImageFile extends ImageFileTable {
     @Expose
     private String name;
     @Expose
-    private Status status;
+    private StatusContent statusContent;
 
     public Integer getId() {
         return url.hashCode();
@@ -46,11 +46,11 @@ public class ImageFile extends ImageFileTable {
         this.name = name;
     }
 
-    public Status getStatus() {
-        return status;
+    public StatusContent getStatusContent() {
+        return statusContent;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setStatusContent(StatusContent statusContent) {
+        this.statusContent = statusContent;
     }
 }

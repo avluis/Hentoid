@@ -10,7 +10,7 @@ import android.widget.ImageView;
 
 import me.devsaki.hentoid.asynctasks.UpdateCheckerTask;
 import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.Helper;
@@ -48,7 +48,7 @@ public class HentoidApplication extends Application {
         AndroidHelper.ignoreSslErros();
 
         HentoidDB db = new HentoidDB(this);
-        db.updateContentStatus(Status.PAUSED, Status.DOWNLOADING);
+        db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         // Get max available VM memory, exceeding this amount will throw an
         // OutOfMemory exception. Stored in kilobytes as LruCache takes an

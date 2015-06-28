@@ -17,7 +17,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
 
 import java.io.File;
@@ -112,7 +112,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         btnPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(content.getStatus()!=Status.DOWNLOADING){
+                if(content.getStatus()!= StatusContent.DOWNLOADING){
                     ((DownloadManagerActivity)getContext()).getFragment().resume(content);
                 }else {
                     ((DownloadManagerActivity)getContext()).getFragment().pause(content);
@@ -120,12 +120,12 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
                 }
             }
         });
-        if(content.getStatus()!=Status.DOWNLOADING){
+        if(content.getStatus()!= StatusContent.DOWNLOADING){
             btnPause.setText(R.string.resume);
         }
 
         ProgressBar pb = (ProgressBar) rowView.findViewById(R.id.pbDownload);
-        if(content.getStatus() == Status.PAUSED){
+        if(content.getStatus() == StatusContent.PAUSED){
             pb.setVisibility(View.INVISIBLE);
         }else if(content.getPercent()>0){
             pb.setVisibility(View.VISIBLE);

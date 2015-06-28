@@ -12,7 +12,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
@@ -90,8 +90,8 @@ public class ImporterActivity extends ActionBarActivity {
                         if (json.exists()) {
                             try {
                                 Content content = new Gson().fromJson(Helper.readTextFile(json), Content.class);
-                                if (content.getStatus() != me.devsaki.hentoid.database.enums.Status.DOWNLOADED && content.getStatus() != me.devsaki.hentoid.database.enums.Status.ERROR)
-                                    content.setStatus(me.devsaki.hentoid.database.enums.Status.MIGRATED);
+                                if (content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.ERROR)
+                                    content.setStatus(StatusContent.MIGRATED);
                                 contents.add(content);
                             } catch (Exception e) {
                                 Log.e(TAG, "Reading json file", e);
@@ -101,8 +101,8 @@ public class ImporterActivity extends ActionBarActivity {
                             if (json.exists()) {
                                 try {
                                     ContentV1 content = new Gson().fromJson(Helper.readTextFile(json), ContentV1.class);
-                                    if (content.getStatus() != me.devsaki.hentoid.database.enums.Status.DOWNLOADED && content.getStatus() != me.devsaki.hentoid.database.enums.Status.ERROR)
-                                        content.setStatus(me.devsaki.hentoid.database.enums.Status.MIGRATED);
+                                    if (content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.ERROR)
+                                        content.setStatus(StatusContent.MIGRATED);
                                     contents.add(content.toContent());
                                 } catch (Exception e) {
                                     Log.e(TAG, "Reading json file", e);
@@ -136,7 +136,7 @@ public class ImporterActivity extends ActionBarActivity {
                                         content.setTags(from(doujinBean.getLstTags(), AttributeType.TAG));
                                         content.setLanguage(from(doujinBean.getLanguage(), AttributeType.LANGUAGE));
 
-                                        content.setStatus(me.devsaki.hentoid.database.enums.Status.MIGRATED);
+                                        content.setStatus(StatusContent.MIGRATED);
                                         content.setDownloadDate(importedDate.getTime());
                                         contents.add(content.toContent());
                                     } catch (Exception e) {

@@ -5,7 +5,8 @@ import android.util.Log;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.database.enums.StatusContent;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -107,10 +108,12 @@ public class FakkuParser {
             result.setHtmlDescription(rows.get(rowIndex++).select(".right").html());
             //Tags
             result.getAttributes().put(AttributeType.TAG, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TAG));
-            result.setStatus(Status.SAVED);
+            result.setStatus(StatusContent.SAVED);
 
             //IsDownloadable
             result.setDownloadable(doc.select(".button.green:contains(Read Online)").size()>0);
+
+            result.setSite(Site.FAKKU);
         }
         return result;
     }
@@ -142,7 +145,8 @@ public class FakkuParser {
         result.setHtmlDescription(rows.get(rowIndex++).select(".right").html());
         //Tags
         result.getAttributes().put(AttributeType.TAG, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TAG));
-        result.setStatus(Status.SAVED);
+        result.setStatus(StatusContent.SAVED);
+        result.setSite(Site.FAKKU);
         return result;
     }
 

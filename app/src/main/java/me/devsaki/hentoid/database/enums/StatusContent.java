@@ -3,14 +3,14 @@ package me.devsaki.hentoid.database.enums;
 /**
  * Created by DevSaki on 10/05/2015.
  */
-public enum Status {
+public enum StatusContent {
 
     SAVED(0, "Saved"), DOWNLOADED(1, "Downloaded"), DOWNLOADING(2, "Downloading"), PAUSED(3, "Paused"), ERROR(4, "Error"), MIGRATED(5, "Migrated"), IGNORED(6, "Ignored");
 
     private int code;
     private String description;
 
-    Status(int code, String description) {
+    StatusContent(int code, String description) {
         this.code = code;
         this.description = description;
     }
@@ -23,9 +23,9 @@ public enum Status {
         return description;
     }
 
-    public static Status searchByCode(int code){
+    public static StatusContent searchByCode(int code){
 
-        for(Status s : Status.values()){
+        for(StatusContent s : StatusContent.values()){
             if(s.getCode()==code)
                 return s;
         }

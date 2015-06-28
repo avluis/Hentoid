@@ -19,12 +19,13 @@ import android.widget.Toast;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.FakkuParser;
+import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
+
 import com.melnykov.fab.FloatingActionButton;
 
 import java.io.File;
@@ -112,7 +113,7 @@ public class MainActivity extends ActionBarActivity {
     private void readContent() {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
-            if (Status.DOWNLOADED == currentContent.getStatus() || Status.ERROR == currentContent.getStatus()) {
+            if (StatusContent.DOWNLOADED == currentContent.getStatus() || StatusContent.ERROR == currentContent.getStatus()) {
                 AndroidHelper.openContent(currentContent, this);
             } else {
                 fabRead.setVisibility(View.INVISIBLE);
@@ -122,14 +123,14 @@ public class MainActivity extends ActionBarActivity {
 
     private void downloadContent() {
         currentContent = db.selectContentById(currentContent.getId());
-        if (Status.DOWNLOADED == currentContent.getStatus()) {
+        if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
             fabDownload.setVisibility(View.INVISIBLE);
             return;
         }
         Toast.makeText(this, R.string.in_queue, Toast.LENGTH_SHORT).show();
         currentContent.setDownloadDate(new Date().getTime());
-        currentContent.setStatus(Status.DOWNLOADING);
+        currentContent.setStatus(StatusContent.DOWNLOADING);
 
         db.updateContentStatus(currentContent);
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
@@ -160,7 +161,9 @@ public class MainActivity extends ActionBarActivity {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
                 URL u = new URL(url);
-                if (u.getHost().equals("www.fakku.net")) {
+                if (u.getHost().endsWith("fakku.net") && site == Site.FAKKU) {
+                    return false;
+                } else if (u.getHost().endsWith("pururin.com") && site == Site.PURURIN) {
                     return false;
                 } else {
                     Intent i = new Intent(Intent.ACTION_VIEW);
@@ -181,29 +184,6 @@ public class MainActivity extends ActionBarActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            try {
-                String cookies = CookieManager.getInstance().getCookie(url);
-                Log.i(TAG, "COOKIES ---- > " + cookies);
-                java.net.CookieManager cookieManager = (java.net.CookieManager) CookieHandler.getDefault();
-                if (cookieManager == null)
-                    cookieManager = new java.net.CookieManager();
-                cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-                CookieHandler.setDefault(cookieManager);
-                String[] cookiesArray = cookies.split(";");
-                URI fakkuCookie = new URI("https://fakku.net/");
-                for (String cookie : cookiesArray) {
-                    String key = cookie.split("=")[0].trim();
-                    String value = cookie.split("=")[1].trim();
-                    HttpCookie httpCookie = new HttpCookie(key, value);
-                    httpCookie.setDomain("fakku.net");
-                    httpCookie.setPath("/");
-                    httpCookie.setVersion(0);
-                    cookieManager.getCookieStore().removeAll();
-                    cookieManager.getCookieStore().add(fakkuCookie, httpCookie);
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "trying to get the cookies", ex);
-            }
 
             URI uri = null;
             try {
@@ -212,27 +192,59 @@ public class MainActivity extends ActionBarActivity {
                 Log.e(TAG, "Error reading current url form webview", e);
             }
 
+            try {
+                String cookies = CookieManager.getInstance().getCookie(url);
+                java.net.CookieManager cookieManager = (java.net.CookieManager) CookieHandler.getDefault();
+                if (cookieManager == null)
+                    cookieManager = new java.net.CookieManager();
+                cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+                CookieHandler.setDefault(cookieManager);
+                String[] cookiesArray = cookies.split(";");
+                for (String cookie : cookiesArray) {
+                    String key = cookie.split("=")[0].trim();
+                    String value = cookie.split("=")[1].trim();
+                    HttpCookie httpCookie = new HttpCookie(key, value);
+                    httpCookie.setDomain(uri.getHost());
+                    httpCookie.setPath("/");
+                    httpCookie.setVersion(0);
+                    cookieManager.getCookieStore().removeAll();
+                    cookieManager.getCookieStore().add(uri, httpCookie);
+                }
+            } catch (Exception ex) {
+                Log.e(TAG, "trying to get the cookies", ex);
+            }
+
             if (uri != null && uri.getPath() != null) {
                 String[] paths = uri.getPath().split("/");
-                if (paths.length >= 3) {
-                    if (paths[1].equals("doujinshi") || paths[1].equals("manga")) {
-                        if (paths.length == 3 || !paths[3].equals("read")) {
+                if (site == Site.FAKKU) {
+                    if (paths.length >= 3) {
+                        if (paths[1].equals("doujinshi") || paths[1].equals("manga")) {
+                            if (paths.length == 3 || !paths[3].equals("read")) {
+                                try {
+                                    view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                                } catch (Exception ex) {
+                                    Log.e(TAG, "Error executing javascript in webview", ex);
+                                }
+                            }
+                        }
+                    } else if (paths.length == 2) {
+                        String category = paths[1];
+                        if (paths[1].equals("doujinshi") || paths[1].equals("manga"))
                             try {
-                                view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                                String javascript = getString(R.string.hack_add_tags).replace("@category", category);
+                                view.loadUrl(javascript);
                             } catch (Exception ex) {
                                 Log.e(TAG, "Error executing javascript in webview", ex);
                             }
-                        }
                     }
-                } else if (paths.length == 2) {
-                    String category = paths[1];
-                    if (paths[1].equals("doujinshi") || paths[1].equals("manga"))
+                } else if (site == Site.PURURIN) {
+                    if (paths.length>0 && paths[1].startsWith("gallery")) {
                         try {
-                            String javascript = getString(R.string.hack_add_tags).replace("@category", category);
-                            view.loadUrl(javascript);
+                            view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
                         } catch (Exception ex) {
                             Log.e(TAG, "Error executing javascript in webview", ex);
                         }
+                    }
                 }
             }
         }
@@ -244,7 +256,12 @@ public class MainActivity extends ActionBarActivity {
         public void processHTML(String html) {
             if (html == null)
                 return;
-            Content content = FakkuParser.parseContent(html);
+            Content content = null;
+            if (site == Site.FAKKU) {
+                content = FakkuParser.parseContent(html);
+            } else if (site == Site.PURURIN) {
+                content = PururinParser.parseContent(html);
+            }
             if (content == null) {
                 return;
             }
@@ -258,8 +275,8 @@ public class MainActivity extends ActionBarActivity {
                     Log.e(TAG, "Saving content", e);
                     return;
                 }
-            } else if (contentbd.getStatus() == Status.MIGRATED) {
-                content.setStatus(Status.DOWNLOADED);
+            } else if (contentbd.getStatus() == StatusContent.MIGRATED) {
+                content.setStatus(StatusContent.DOWNLOADED);
                 db.insertContent(content);
                 //Save JSON file
                 try {
@@ -271,7 +288,7 @@ public class MainActivity extends ActionBarActivity {
             } else {
                 content.setStatus(contentbd.getStatus());
             }
-            if (content.isDownloadable() && content.getStatus() != Status.DOWNLOADED && content.getStatus() != Status.DOWNLOADING) {
+            if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.DOWNLOADING) {
                 currentContent = content;
                 runOnUiThread(new Runnable() {
                     @Override
@@ -287,7 +304,7 @@ public class MainActivity extends ActionBarActivity {
                     }
                 });
             }
-            if (content.getStatus() == Status.DOWNLOADED || content.getStatus() == Status.ERROR) {
+            if (content.getStatus() == StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR) {
                 currentContent = content;
                 runOnUiThread(new Runnable() {
                     @Override

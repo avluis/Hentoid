@@ -15,7 +15,7 @@ import me.devsaki.hentoid.adapters.ContentDownloadManagerAdapter;
 import me.devsaki.hentoid.components.HentoidActivity;
 import me.devsaki.hentoid.components.HentoidFragment;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.service.DownloadManagerService;
 
 import java.util.ArrayList;
@@ -72,7 +72,7 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
             btnStart.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    getDB().updateContentStatus(Status.DOWNLOADING, Status.PAUSED);
+                    getDB().updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                     update();
                     Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(), DownloadManagerService.class);
                     getActivity().startService(intent);
@@ -82,7 +82,7 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
             btnPause.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    getDB().updateContentStatus(Status.PAUSED, Status.DOWNLOADING);
+                    getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
                     DownloadManagerService.paused = true;
                     update();
                 }
@@ -91,7 +91,7 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
         }
 
         public void resume(Content content){
-            content.setStatus(Status.DOWNLOADING);
+            content.setStatus(StatusContent.DOWNLOADING);
             getDB().updateContentStatus(content);
             update();
             if(content.getId()==contents.get(0).getId()){
@@ -101,7 +101,7 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
         }
 
         public void pause(Content content){
-            content.setStatus(Status.PAUSED);
+            content.setStatus(StatusContent.PAUSED);
             getDB().updateContentStatus(content);
             update();
             if(content.getId()==contents.get(0).getId()){
@@ -110,7 +110,7 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
         }
 
         public void cancel(Content content){
-            content.setStatus(Status.SAVED);
+            content.setStatus(StatusContent.SAVED);
             getDB().updateContentStatus(content);
             if(content.getId()==contents.get(0).getId()){
                 DownloadManagerService.paused = true;

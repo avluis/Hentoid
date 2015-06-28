@@ -5,7 +5,7 @@ package me.devsaki.hentoid.database.enums;
  */
 public enum AttributeType {
 
-    ARTIST(0, "Artist"), PUBLISHER(1, "Publisher"), LANGUAGE(2, "Language"), TAG(3, "Tag"), TRANSLATOR(4, "Translator"), SERIE(5, "Serie"), UPLOADER(6, "Uploader");
+    ARTIST(0, "Artist"), PUBLISHER(1, "Publisher"), LANGUAGE(2, "Language"), TAG(3, "Tag"), TRANSLATOR(4, "Translator"), SERIE(5, "Serie"), UPLOADER(6, "Uploader"), CIRCLE(7, "Circle"), CHARACTER(8, "Character"), CATEGORY(9, "Category");
 
     private int code;
     private String description;

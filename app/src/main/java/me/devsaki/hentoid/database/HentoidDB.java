@@ -16,7 +16,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -143,7 +143,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     statement.bindLong(3, row.getOrder());
                     statement.bindString(4, row.getUrl());
                     statement.bindString(5, row.getName());
-                    statement.bindLong(6, row.getStatus().getCode());
+                    statement.bindLong(6, row.getStatusContent().getCode());
                     statement.execute();
                 }
                 db.setTransactionSuccessful();
@@ -186,7 +186,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             statement.bindLong(3, row.getOrder());
             statement.bindString(4, row.getUrl());
             statement.bindString(5, row.getName());
-            statement.bindLong(6, row.getStatus().getCode());
+            statement.bindLong(6, row.getStatusContent().getCode());
             statement.execute();
         }
     }
@@ -218,7 +218,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public Content selectContentByStatus(Status status) {
+    public Content selectContentByStatus(StatusContent statusContent) {
         Content result = null;
 
         synchronized (locker){
@@ -229,7 +229,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             try {
 
                 db = this.getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_BY_STATUS, new String[]{status.getCode() + ""});
+                cursorContent = db.rawQuery(ContentTable.SELECT_BY_STATUS, new String[]{statusContent.getCode() + ""});
 
                 if (cursorContent.moveToFirst()) {
                     result = populateContent(cursorContent, db);
@@ -257,7 +257,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             try {
 
                 db = this.getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_IN_DOWNLOAD_MANAGER, new String[]{Status.DOWNLOADING.getCode() + "", Status.PAUSED.getCode() + ""});
+                cursorContent = db.rawQuery(ContentTable.SELECT_IN_DOWNLOAD_MANAGER, new String[]{StatusContent.DOWNLOADING.getCode() + "", StatusContent.PAUSED.getCode() + ""});
 
                 if (cursorContent.moveToFirst()) {
                     result = new ArrayList<>();
@@ -297,9 +297,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                     sql += ContentTable.ORDER_BY_DATE;
                 }
                 if (qty < 0) {
-                    cursorContent = db.rawQuery(sql, new String[]{Status.DOWNLOADED.getCode() + "", Status.ERROR.getCode() + "", Status.MIGRATED.getCode() + "", query, query, AttributeType.ARTIST.getCode() + "", AttributeType.TAG.getCode() + "", AttributeType.SERIE.getCode() + ""});
+                    cursorContent = db.rawQuery(sql, new String[]{StatusContent.DOWNLOADED.getCode() + "", StatusContent.ERROR.getCode() + "", StatusContent.MIGRATED.getCode() + "", query, query, AttributeType.ARTIST.getCode() + "", AttributeType.TAG.getCode() + "", AttributeType.SERIE.getCode() + ""});
                 } else {
-                    cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE, new String[]{Status.DOWNLOADED.getCode() + "", Status.ERROR.getCode() + "", Status.MIGRATED.getCode() + "", query, query, AttributeType.ARTIST.getCode() + "", AttributeType.TAG.getCode() + "", AttributeType.SERIE.getCode() + "", start + "", qty + ""});
+                    cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE, new String[]{StatusContent.DOWNLOADED.getCode() + "", StatusContent.ERROR.getCode() + "", StatusContent.MIGRATED.getCode() + "", query, query, AttributeType.ARTIST.getCode() + "", AttributeType.TAG.getCode() + "", AttributeType.SERIE.getCode() + "", start + "", qty + ""});
                 }
 
 
@@ -330,7 +330,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         content.setQtyPages(cursorContent.getInt(6));
         content.setUploadDate(cursorContent.getLong(7));
         content.setDownloadDate(cursorContent.getLong(8));
-        content.setStatus(Status.searchByCode(cursorContent.getInt(9)));
+        content.setStatus(StatusContent.searchByCode(cursorContent.getInt(9)));
         content.setCoverImageUrl(cursorContent.getString(10));
         content.setSite(Site.searchByCode(cursorContent.getInt(11)));
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()));
@@ -359,7 +359,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 do {
                     ImageFile item = new ImageFile();
                     item.setOrder(cursorImageFiles.getInt(2));
-                    item.setStatus(Status.searchByCode(cursorImageFiles.getInt(3)));
+                    item.setStatusContent(StatusContent.searchByCode(cursorImageFiles.getInt(3)));
                     item.setUrl(cursorImageFiles.getString(4));
                     item.setName(cursorImageFiles.getString(5));
                     result.add(item);
@@ -409,7 +409,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 SQLiteStatement statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_STATEMENT);
                 db.beginTransaction();
                 statement.clearBindings();
-                statement.bindLong(1, row.getStatus().getCode());
+                statement.bindLong(1, row.getStatusContent().getCode());
                 statement.bindLong(2, row.getId());
                 statement.execute();
                 db.setTransactionSuccessful();
@@ -489,7 +489,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    public void updateContentStatus(Status updateTo, Status updateFrom) {
+    public void updateContentStatus(StatusContent updateTo, StatusContent updateFrom) {
         synchronized (locker){
             Log.i(TAG, "updateContentStatus2");
             SQLiteDatabase db = null;

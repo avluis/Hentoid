@@ -8,7 +8,7 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -83,7 +83,7 @@ public class TestHentoidDB extends AndroidTestCase {
                         RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
                         HentoidDB db = new HentoidDB(context);
                         for (int i = 0; i <100; i++){
-                            db.selectContentByStatus(Status.DOWNLOADED);
+                            db.selectContentByStatus(StatusContent.DOWNLOADED);
                         }
                     }catch (Exception ex){
                         Log.e("error", "error" , ex);
@@ -126,7 +126,7 @@ public class TestHentoidDB extends AndroidTestCase {
             content.setQtyFavorites(k * 11);
             content.setQtyPages(k * 12);
             content.setTitle("t " + k);
-            content.setStatus(Status.DOWNLOADED);
+            content.setStatus(StatusContent.DOWNLOADED);
             content.setUploadDate(k * 2000);
             contents.add(content);
         }

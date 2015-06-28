@@ -3,7 +3,7 @@ package me.devsaki.hentoid.database.domains;
 import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.Status;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import com.google.gson.annotations.Expose;
 
 import java.util.HashMap;
@@ -33,7 +33,7 @@ public class Content extends ContentTable{
     @Expose
     private long downloadDate;
     @Expose
-    private Status status;
+    private StatusContent status;
     @Expose
     private List<ImageFile> imageFiles;
     @Expose(serialize = false, deserialize = false)
@@ -65,7 +65,12 @@ public class Content extends ContentTable{
     }
 
     public String getCategory() {
-        return url.substring(1, url.lastIndexOf("/"));
+        if(getSite()==Site.FAKKU)
+            return url.substring(1, url.lastIndexOf("/"));
+        else if(getSite()==Site.PURURIN){
+            return getAttributes().get(AttributeType.CATEGORY).get(0).getName();
+        }
+        return null;
     }
 
     public String getUrl() {
@@ -132,11 +137,11 @@ public class Content extends ContentTable{
         this.downloadDate = downloadDate;
     }
 
-    public Status getStatus() {
+    public StatusContent getStatus() {
         return status;
     }
 
-    public void setStatus(Status status) {
+    public void setStatus(StatusContent status) {
         this.status = status;
     }
 
