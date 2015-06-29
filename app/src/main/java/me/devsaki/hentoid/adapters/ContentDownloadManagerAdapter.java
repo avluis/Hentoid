@@ -55,6 +55,9 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         TextView tvSerie = (TextView) rowView.findViewById(R.id.tvSerie);
         TextView tvArtist = (TextView) rowView.findViewById(R.id.tvArtist);
         TextView tvTags = (TextView) rowView.findViewById(R.id.tvTags);
+        TextView tvSite = (TextView) rowView.findViewById(R.id.tvSite);
+
+        tvSite.setText(content.getSite().getDescription());
 
         tvTitle.setText(content.getTitle());
         String series = "";

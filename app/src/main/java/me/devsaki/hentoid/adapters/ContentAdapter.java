@@ -33,6 +33,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -44,12 +46,14 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private final Context context;
     private final List<Content> contents;
     private SharedPreferences sharedPreferences;
+    private SimpleDateFormat sdf;
 
     public ContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.row_download, contents);
         this.context = context;
         this.contents = contents;
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
+        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     }
 
 
@@ -70,6 +74,13 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         TextView tvSerie = (TextView) rowView.findViewById(R.id.tvSerie);
         TextView tvArtist = (TextView) rowView.findViewById(R.id.tvArtist);
         TextView tvTags = (TextView) rowView.findViewById(R.id.tvTags);
+        TextView tvSite = (TextView) rowView.findViewById(R.id.tvSite);
+        TextView tvStatus = (TextView) rowView.findViewById(R.id.tvStatus);
+        TextView tvSavedDate = (TextView) rowView.findViewById(R.id.tvSavedDate);
+
+        tvSite.setText(content.getSite().getDescription());
+        tvStatus.setText(content.getStatus().getDescription());
+        tvSavedDate.setText(sdf.format(new Date(content.getDownloadDate())));
 
         if(content.getTitle()==null)
             tvTitle.setText(R.string.tvTitleEmpty);

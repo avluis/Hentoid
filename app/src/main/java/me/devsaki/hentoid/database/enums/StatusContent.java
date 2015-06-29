@@ -5,7 +5,7 @@ package me.devsaki.hentoid.database.enums;
  */
 public enum StatusContent {
 
-    SAVED(0, "Saved"), DOWNLOADED(1, "Downloaded"), DOWNLOADING(2, "Downloading"), PAUSED(3, "Paused"), ERROR(4, "Error"), MIGRATED(5, "Migrated"), IGNORED(6, "Ignored");
+    SAVED(0, "Saved"), DOWNLOADED(1, "Downloaded"), DOWNLOADING(2, "Downloading"), PAUSED(3, "Paused"), ERROR(4, "Error"), MIGRATED(5, "Migrated"), IGNORED(6, "Ignored"), UNHANDLED_ERROR(7, "Unhandled Error");
 
     private int code;
     private String description;

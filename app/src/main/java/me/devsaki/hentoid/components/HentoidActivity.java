@@ -18,8 +18,10 @@ import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.asynctasks.UpdateCheckerTask;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.util.AndroidHelper;
 
 /**
  * Created by DevSaki on 04/06/2015.
@@ -113,14 +115,13 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends ActionB
         startActivity(intent);
     }
 
-    public void ndHome(View view){
-        Intent intent = new Intent(this, ContentListActivity.class);
-        startActivity(intent);
-    }
-
     public void ndPreferences(View view){
         Intent intent = new Intent(this, PreferencesActivity.class);
         startActivity(intent);
+    }
+
+    public void ndCheckUpdates(View view){
+        AndroidHelper.executeAsyncTask(new UpdateCheckerTask(this));
     }
 
     public void ndDownloads(View view){

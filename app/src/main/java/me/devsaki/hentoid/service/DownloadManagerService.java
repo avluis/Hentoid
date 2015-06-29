@@ -75,7 +75,15 @@ public class DownloadManagerService extends IntentService {
             return;
         }
 
-        parseImageFiles(content);
+        try {
+            parseImageFiles(content);
+        }catch (Exception e){
+            content.setStatus(StatusContent.UNHANDLED_ERROR);
+            showNotification(0, content);
+            content.setStatus(StatusContent.PAUSED);
+            db.updateContentStatus(content);
+            return;
+        }
 
         if(paused){
             paused = false;
@@ -193,7 +201,7 @@ public class DownloadManagerService extends IntentService {
         if (content.getStatus()== StatusContent.DOWNLOADING) {
             mBuilder.setContentText(getResources().getString(R.string.downloading)
                     + String.format("%.2f", percent) + "%");
-            mBuilder.setProgress(100, (int)percent, false);
+            mBuilder.setProgress(100, (int)percent, percent==0);
         } else {
             int resource = 0;
             if(content.getStatus()== StatusContent.DOWNLOADED){
@@ -204,6 +212,8 @@ public class DownloadManagerService extends IntentService {
                 resource = R.string.download_cancelled;
             }else if(content.getStatus()== StatusContent.ERROR){
                 resource = R.string.download_error;
+            }else if(content.getStatus()== StatusContent.UNHANDLED_ERROR){
+                resource = R.string.unhandled_download_error;
             }
             mBuilder.setContentText(getResources().getString(resource));
             mBuilder.setProgress(0, 0, false);
@@ -218,7 +228,7 @@ public class DownloadManagerService extends IntentService {
         notificationManager.notify(content.getId(), notif);
     }
 
-    private void parseImageFiles(Content content){
+    private void parseImageFiles(Content content) throws Exception{
         content.setImageFiles(new ArrayList<ImageFile>());
         if(content.getSite()== Site.FAKKU){
             try {
@@ -285,9 +295,8 @@ public class DownloadManagerService extends IntentService {
                     content.getImageFiles().add(imageFile);
                 }
             } catch (Exception e) {
-                for (int i = 1; i <= content.getQtyPages(); i++) {
-                    content.getImageFiles().add(null);
-                }
+                Log.e(TAG, "Error getting image urls", e);
+                throw e;
             }
         }
         db.insertImageFiles(content);
