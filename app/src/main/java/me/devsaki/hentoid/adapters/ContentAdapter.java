@@ -24,6 +24,7 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
+import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
@@ -112,7 +113,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             }
         tvTags.setText(Html.fromHtml(tags));
 
-        final File dir = Helper.getDownloadDir(content.getUniqueSiteId(), getContext());
+        final File dir = Helper.getDownloadDir(content, getContext());
         File coverFile = new File(dir, "thumb.jpg");
 
         ((HentoidApplication) getContext().getApplicationContext()).loadBitmap(coverFile, ivCover);
@@ -170,7 +171,10 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private void viewContent(Content content) {
         Intent intent = new Intent(getContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + content.getUrl());
+        if(content.getSite()== Site.FAKKU)
+            intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + content.getUrl());
+        else if(content.getSite()==Site.PURURIN)
+            intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + Constants.PURURIN_GALLERY + content.getUrl());
         intent.putExtra(MainActivity.INTENT_SITE, content.getSite().getCode());
         getContext().startActivity(intent);
     }

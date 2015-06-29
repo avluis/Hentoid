@@ -25,23 +25,46 @@ import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.enums.Site;
+
 /**
  * Created by DevSaki on 10/05/2015.
  */
 public class Helper {
 
-    public static File getDownloadDir(String dir, Context context) {
+    public static File getDownloadDir(Content content, Context context) {
         File file = null;
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(context);
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         if (settingDir.isEmpty()) {
-            return getDefaultDir(Constants.FAKKU_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir, context);
+            return getDefaultDir(content.getSite().getFolder() + "/" + content.getUniqueSiteId(), context);
         }
-        file = new File(settingDir, Constants.FAKKU_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir);
+        file = new File(settingDir, content.getSite().getFolder() + "/" + content.getUniqueSiteId());
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                file = new File(settingDir + Constants.FAKKU_DOWNLOAD_LOCAL_DIRECTORY + "/" + dir);
+                file = new File(settingDir + content.getSite().getFolder() + "/" + content.getUniqueSiteId());
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+            }
+        }
+        return file;
+    }
+
+    public static File getDownloadDir(Site site, Context context) {
+        File file = null;
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(context);
+        String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+        if (settingDir.isEmpty()) {
+            return getDefaultDir(site.getFolder() + "/", context);
+        }
+        file = new File(settingDir, site.getFolder() + "/");
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                file = new File(settingDir + site.getFolder() + "/");
                 if (!file.exists()) {
                     file.mkdirs();
                 }

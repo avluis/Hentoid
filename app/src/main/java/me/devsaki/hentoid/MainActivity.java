@@ -269,7 +269,8 @@ public class MainActivity extends ActionBarActivity {
             if (contentbd == null) {
                 Log.i(TAG, "Saving content : " + content.getUrl());
                 try {
-                    content.setCoverImageUrl("http://" + content.getCoverImageUrl().substring(2));
+                    if(site==Site.FAKKU)
+                        content.setCoverImageUrl("http://" + content.getCoverImageUrl().substring(2));
                     db.insertContent(content);
                 } catch (Exception e) {
                     Log.e(TAG, "Saving content", e);
@@ -280,7 +281,7 @@ public class MainActivity extends ActionBarActivity {
                 db.insertContent(content);
                 //Save JSON file
                 try {
-                    File dir = Helper.getDownloadDir(content.getUniqueSiteId(), MainActivity.this);
+                    File dir = Helper.getDownloadDir(content, MainActivity.this);
                     Helper.saveJson(content, dir);
                 } catch (IOException e) {
                     Log.e(TAG, "Error Save JSON " + content.getTitle(), e);

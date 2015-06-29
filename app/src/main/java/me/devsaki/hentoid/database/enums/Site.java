@@ -7,18 +7,20 @@ import me.devsaki.hentoid.R;
  */
 public enum Site {
 
-    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_fakku), PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_pururin);
+    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_fakku, "/Downloads"), PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_pururin, "/Pururin");
 
     private int code;
     private String description;
     private String url;
+    private String folder;
     private int ico;
 
-    Site(int code, String description, String url, int ico) {
+    Site(int code, String description, String url, int ico, String folder) {
         this.code = code;
         this.description = description;
         this.url = url;
         this.ico = ico;
+        this.folder = folder;
     }
 
     public int getCode() {
@@ -35,6 +37,10 @@ public enum Site {
 
     public int getIco() {
         return ico;
+    }
+
+    public String getFolder() {
+        return folder;
     }
 
     public static Site searchByCode(int code){

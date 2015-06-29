@@ -16,7 +16,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
@@ -28,6 +30,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class DownloadManagerService extends IntentService {
 
@@ -64,58 +67,15 @@ public class DownloadManagerService extends IntentService {
         if(content==null||content.getStatus()== StatusContent.DOWNLOADED)
             return;
 
+        showNotification(0, content);
         if(paused){
             paused = false;
+            content = db.selectContentById(content.getId());
+            showNotification(0, content);
             return;
         }
 
-        content.setImageFiles(new ArrayList<ImageFile>());
-        try {
-            URL url = new URL(content.getSite().getUrl() + content.getUrl() + Constants.FAKKU_READ);
-            String site = null;
-            String extention = null;
-            String html = HttpClientHelper.call(url);
-
-            String find = "imgpath(x)";
-            int indexImgpath = html.indexOf(find) + find.length();
-            if(indexImgpath==find.length()-1){
-                throw new RuntimeException("Not find image url.");
-            }
-            find = "return '";
-            int indexReturn = html.indexOf(find, indexImgpath) + find.length();
-            find = "'";
-            int indexFinishSite = html.indexOf(find, indexReturn);
-            site = html.substring(indexReturn, indexFinishSite);
-            if(site.startsWith("//")){
-                site = "https:" + site;
-            }
-            int indexStartExtension = html.indexOf(find, indexFinishSite + find.length()) + find.length();
-            int indexFinishExtension = html.indexOf(find, indexStartExtension);
-            extention = html.substring(indexStartExtension, indexFinishExtension);
-            for (int i = 1; i <= content.getQtyPages(); i++) {
-                String name = String.format("%03d", i) + extention;
-                ImageFile imageFile = new ImageFile();
-                imageFile.setUrl(site + name);
-                imageFile.setOrder(i);
-                imageFile.setStatusContent(StatusContent.SAVED);
-                imageFile.setName(name);
-                content.getImageFiles().add(imageFile);
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "Guessing extension");
-            String urlCdn = content.getCoverImageUrl().substring(2, content.getCoverImageUrl().lastIndexOf("/thumbs/")) + "/images/";
-            for (int i = 1; i <= content.getQtyPages(); i++) {
-                String name = String.format("%03d", i) + ".jpg";
-                ImageFile imageFile = new ImageFile();
-                imageFile.setUrl(urlCdn + name);
-                imageFile.setOrder(i);
-                imageFile.setStatusContent(StatusContent.SAVED);
-                imageFile.setName(name);
-                content.getImageFiles().add(imageFile);
-            }
-        }
-        db.insertImageFiles(content);
+        parseImageFiles(content);
 
         if(paused){
             paused = false;
@@ -128,7 +88,7 @@ public class DownloadManagerService extends IntentService {
 
         boolean error = false;
         //Directory
-        File dir = Helper.getDownloadDir(content.getUniqueSiteId(), DownloadManagerService.this);
+        File dir = Helper.getDownloadDir(content, DownloadManagerService.this);
         try {
             //Download Cover Image
             Helper.saveInStorage(new File(dir, "thumb.jpg"), content.getCoverImageUrl());
@@ -138,7 +98,6 @@ public class DownloadManagerService extends IntentService {
         }
 
 
-        showNotification(0, content);
         int count = 0;
         for (ImageFile imageFile : content.getImageFiles()) {
             if(paused){
@@ -156,7 +115,7 @@ public class DownloadManagerService extends IntentService {
             }
             boolean imageFileErrorDownload = false;
             try {
-                if (imageFile.getStatusContent() != StatusContent.IGNORED) {
+                if (imageFile.getStatus() != StatusContent.IGNORED) {
                     Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
                     Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / " + content.getTitle());
                 }
@@ -170,9 +129,9 @@ public class DownloadManagerService extends IntentService {
                 imageFileErrorDownload=true;
             }
             if (imageFileErrorDownload) {
-                imageFile.setStatusContent(StatusContent.ERROR);
+                imageFile.setStatus(StatusContent.ERROR);
             } else {
-                imageFile.setStatusContent(StatusContent.DOWNLOADED);
+                imageFile.setStatus(StatusContent.DOWNLOADED);
             }
             db.updateImageFileStatus(imageFile);
         }
@@ -257,5 +216,80 @@ public class DownloadManagerService extends IntentService {
             notif.flags = notif.flags | Notification.DEFAULT_LIGHTS
                     | Notification.FLAG_AUTO_CANCEL;
         notificationManager.notify(content.getId(), notif);
+    }
+
+    private void parseImageFiles(Content content){
+        content.setImageFiles(new ArrayList<ImageFile>());
+        if(content.getSite()== Site.FAKKU){
+            try {
+                URL url = new URL(content.getSite().getUrl() + content.getUrl() + Constants.FAKKU_READ);
+                String site = null;
+                String extention = null;
+                String html = HttpClientHelper.call(url);
+
+                String find = "imgpath(x)";
+                int indexImgpath = html.indexOf(find) + find.length();
+                if(indexImgpath==find.length()-1){
+                    throw new RuntimeException("Not find image url.");
+                }
+                find = "return '";
+                int indexReturn = html.indexOf(find, indexImgpath) + find.length();
+                find = "'";
+                int indexFinishSite = html.indexOf(find, indexReturn);
+                site = html.substring(indexReturn, indexFinishSite);
+                if(site.startsWith("//")){
+                    site = "https:" + site;
+                }
+                int indexStartExtension = html.indexOf(find, indexFinishSite + find.length()) + find.length();
+                int indexFinishExtension = html.indexOf(find, indexStartExtension);
+                extention = html.substring(indexStartExtension, indexFinishExtension);
+                for (int i = 1; i <= content.getQtyPages(); i++) {
+                    String name = String.format("%03d", i) + extention;
+                    ImageFile imageFile = new ImageFile();
+                    imageFile.setUrl(site + name);
+                    imageFile.setOrder(i);
+                    imageFile.setStatus(StatusContent.SAVED);
+                    imageFile.setName(name);
+                    content.getImageFiles().add(imageFile);
+                }
+
+            } catch (Exception e) {
+                Log.e(TAG, "Guessing extension");
+                String urlCdn = content.getCoverImageUrl().substring(2, content.getCoverImageUrl().lastIndexOf("/thumbs/")) + "/images/";
+                for (int i = 1; i <= content.getQtyPages(); i++) {
+                    String name = String.format("%03d", i) + ".jpg";
+                    ImageFile imageFile = new ImageFile();
+                    imageFile.setUrl(urlCdn + name);
+                    imageFile.setOrder(i);
+                    imageFile.setStatus(StatusContent.SAVED);
+                    imageFile.setName(name);
+                    content.getImageFiles().add(imageFile);
+                }
+            }
+        }else if(content.getSite()==Site.PURURIN){
+            try {
+                URL url = new URL(content.getSite().getUrl() + Constants.PURURIN_THUMBS + content.getUrl());
+                String html = HttpClientHelper.call(url);
+                List<String> aUrls = PururinParser.parseImageList(html);
+                int i = 1;
+                for(String a : aUrls){
+                    URL aUrl = new URL(content.getSite().getUrl() + a);
+                    String aHtml = HttpClientHelper.call(aUrl);
+                    String cdnUrl = PururinParser.parseImagePage(aHtml);
+                    String name = String.format("%03d", i) + ".jpg";
+                    ImageFile imageFile = new ImageFile();
+                    imageFile.setUrl(content.getSite().getUrl() + cdnUrl);
+                    imageFile.setOrder(i++);
+                    imageFile.setStatus(StatusContent.SAVED);
+                    imageFile.setName(name);
+                    content.getImageFiles().add(imageFile);
+                }
+            } catch (Exception e) {
+                for (int i = 1; i <= content.getQtyPages(); i++) {
+                    content.getImageFiles().add(null);
+                }
+            }
+        }
+        db.insertImageFiles(content);
     }
 }

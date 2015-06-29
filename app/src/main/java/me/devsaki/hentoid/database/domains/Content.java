@@ -59,7 +59,8 @@ public class Content extends ContentTable{
         if(getSite()==Site.FAKKU)
             return url.substring(url.lastIndexOf("/")+1);
         else if(getSite()==Site.PURURIN){
-            return url.substring(url.lastIndexOf("/")+1).replace(".html", "");
+            String[] paths = url.split("/");
+            return paths[2].replace(".html", "") + "-" + paths[1];
         }
         return null;
     }

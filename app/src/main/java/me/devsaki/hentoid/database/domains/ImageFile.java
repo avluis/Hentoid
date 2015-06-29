@@ -16,7 +16,7 @@ public class ImageFile extends ImageFileTable {
     @Expose
     private String name;
     @Expose
-    private StatusContent statusContent;
+    private StatusContent status;
 
     public Integer getId() {
         return url.hashCode();
@@ -46,11 +46,11 @@ public class ImageFile extends ImageFileTable {
         this.name = name;
     }
 
-    public StatusContent getStatusContent() {
-        return statusContent;
+    public StatusContent getStatus() {
+        return status;
     }
 
-    public void setStatusContent(StatusContent statusContent) {
-        this.statusContent = statusContent;
+    public void setStatus(StatusContent status) {
+        this.status = status;
     }
 }

@@ -28,7 +28,7 @@ public class PururinParser {
         Elements info = doc.select(".gallery-info-block");
         if(info.size()>0){
             result = new Content();
-            result.setCoverImageUrl(info.select(".gallery-cover").select("img").attr("src"));
+            result.setCoverImageUrl(Site.PURURIN.getUrl() + info.select(".gallery-cover").select("img").attr("src"));
             Element title = doc.select(".otitle").first();
             result.setUrl(doc.select("[itemprop=breadcrumb]").select("a").last().attr("href").replace("/gallery", ""));
             result.setTitle(title.html());
@@ -93,5 +93,20 @@ public class PururinParser {
             attributes.add(attribute);
         }
         return attributes;
+    }
+
+    public static List<String> parseImageList(String html){
+        List<String> imagesUrl = new ArrayList<>();
+        Document doc = Jsoup.parse(html);
+        Elements aUrls = doc.select(".thumblist").select("a");
+        for(Element a : aUrls){
+            imagesUrl.add(a.attr("href"));
+        }
+        return imagesUrl;
+    }
+
+    public static String parseImagePage(String html){
+        Document doc = Jsoup.parse(html);
+        return doc.select(".b").first().attr("src");
     }
 }

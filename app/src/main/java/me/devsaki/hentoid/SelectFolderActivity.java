@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 
@@ -19,6 +20,9 @@ import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 public class SelectFolderActivity extends Activity implements
@@ -89,7 +93,17 @@ public class SelectFolderActivity extends Activity implements
             Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
             return;
         }
-        if (Helper.getDownloadDir("", this).listFiles()!=null&&Helper.getDownloadDir("", this).listFiles().length > 0) {
+        List<File> downloadDirs = new ArrayList<>();
+        for(Site s : Site.values()){
+            downloadDirs.add(Helper.getDownloadDir(s, SelectFolderActivity.this));
+        }
+        List<File> files = new ArrayList<>();
+        for(File downloadDir : downloadDirs){
+            File[] contentFiles = downloadDir.listFiles();
+            if(contentFiles !=null)
+                files.addAll(Arrays.asList(contentFiles));
+        }
+        if (files.size() > 0) {
             new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle(R.string.app_name)

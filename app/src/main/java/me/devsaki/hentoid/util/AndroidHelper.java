@@ -24,7 +24,7 @@ public class AndroidHelper {
 
     public static void openContent(Content content, final Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        File dir = Helper.getDownloadDir(content.getUniqueSiteId(), context);
+        File dir = Helper.getDownloadDir(content, context);
 
         File imageFile = null;
         File[] files = dir.listFiles();

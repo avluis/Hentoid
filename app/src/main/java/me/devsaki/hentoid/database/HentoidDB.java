@@ -143,7 +143,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     statement.bindLong(3, row.getOrder());
                     statement.bindString(4, row.getUrl());
                     statement.bindString(5, row.getName());
-                    statement.bindLong(6, row.getStatusContent().getCode());
+                    statement.bindLong(6, row.getStatus().getCode());
                     statement.execute();
                 }
                 db.setTransactionSuccessful();
@@ -186,7 +186,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             statement.bindLong(3, row.getOrder());
             statement.bindString(4, row.getUrl());
             statement.bindString(5, row.getName());
-            statement.bindLong(6, row.getStatusContent().getCode());
+            statement.bindLong(6, row.getStatus().getCode());
             statement.execute();
         }
     }
@@ -359,7 +359,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 do {
                     ImageFile item = new ImageFile();
                     item.setOrder(cursorImageFiles.getInt(2));
-                    item.setStatusContent(StatusContent.searchByCode(cursorImageFiles.getInt(3)));
+                    item.setStatus(StatusContent.searchByCode(cursorImageFiles.getInt(3)));
                     item.setUrl(cursorImageFiles.getString(4));
                     item.setName(cursorImageFiles.getString(5));
                     result.add(item);
@@ -409,7 +409,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 SQLiteStatement statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_STATEMENT);
                 db.beginTransaction();
                 statement.clearBindings();
-                statement.bindLong(1, row.getStatusContent().getCode());
+                statement.bindLong(1, row.getStatus().getCode());
                 statement.bindLong(2, row.getId());
                 statement.execute();
                 db.setTransactionSuccessful();

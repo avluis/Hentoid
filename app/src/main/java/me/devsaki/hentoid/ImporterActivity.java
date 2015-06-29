@@ -12,6 +12,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.database.enums.AttributeType;
+import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
@@ -24,6 +25,7 @@ import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -42,7 +44,7 @@ public class ImporterActivity extends ActionBarActivity {
 
     class ImporterAsyncTask extends AsyncTask<Integer, String, List<Content>> {
 
-        private File downloadDir;
+        private List<File> downloadDirs;
         private int currentPercent;
         private DonutProgress donutProgress;
         private TextView tvCurrentStatus;
@@ -51,7 +53,11 @@ public class ImporterActivity extends ActionBarActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            downloadDir = Helper.getDownloadDir("", ImporterActivity.this);
+            downloadDirs = new ArrayList<>();
+
+            for(Site s : Site.values()){
+                downloadDirs.add(Helper.getDownloadDir(s, ImporterActivity.this));
+            }
 
             donutProgress = (DonutProgress) findViewById(R.id.donut_progress);
             tvCurrentStatus = (TextView) findViewById(R.id.tvCurrentStatus);
@@ -76,14 +82,17 @@ public class ImporterActivity extends ActionBarActivity {
         @Override
         protected List<Content> doInBackground(Integer... params) {
             List<Content> contents = null;
-            File[] files = downloadDir.listFiles();
+            List<File> files = new ArrayList<>();
+            for(File downloadDir : downloadDirs){
+                files.addAll(Arrays.asList(downloadDir.listFiles()));
+            }
             int processeds = 0;
-            if (files.length > 0) {
+            if (files.size() > 0) {
                 contents = new ArrayList<>();
                 Date importedDate = new Date();
                 for (File file : files) {
                     processeds++;
-                    currentPercent = (int) (processeds * 100.0 / files.length);
+                    currentPercent = (int) (processeds * 100.0 / files.size());
                     if (file.isDirectory()) {
                         publishProgress(file.getName());
                         File json = new File(file, Constants.JSON_FILE_NAME_V2);
