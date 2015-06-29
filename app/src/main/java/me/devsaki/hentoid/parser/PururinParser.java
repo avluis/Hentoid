@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parser;
 
+import com.google.gson.Gson;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -14,6 +16,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.pururin.PururinDto;
 
 /**
  * Created by neko on 20/06/2015.
@@ -108,5 +111,17 @@ public class PururinParser {
     public static String parseImagePage(String html){
         Document doc = Jsoup.parse(html);
         return doc.select(".b").first().attr("src");
+    }
+
+
+    public static PururinDto catchPururinDto(String html){
+        PururinDto result = null;
+        String f = "Pururin.ImageViewer2.init(";
+        int index = html.indexOf(f) + f.length();
+        int lastIndex = html.indexOf(")", index);
+        String json = html.substring(index, lastIndex);
+        result = new Gson().fromJson(json, PururinDto.class);
+
+        return result;
     }
 }

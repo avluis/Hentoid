@@ -19,6 +19,8 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.PururinParser;
+import me.devsaki.hentoid.pururin.ImageDto;
+import me.devsaki.hentoid.pururin.PururinDto;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
@@ -180,12 +182,16 @@ public class DownloadManagerService extends IntentService {
                 content.getSite().getIco()).setContentTitle(content.getTitle());
 
         Intent resultIntent = null;
-        if(content.getStatus()== StatusContent.DOWNLOADED||content.getStatus()== StatusContent.ERROR){
+        if(content.getStatus()== StatusContent.DOWNLOADED||content.getStatus()== StatusContent.ERROR||content.getStatus()== StatusContent.UNHANDLED_ERROR){
             resultIntent= new Intent(DownloadManagerService.this,
                     DownloadsActivity.class);
         }else if(content.getStatus()== StatusContent.DOWNLOADING||content.getStatus()== StatusContent.PAUSED){
             resultIntent= new Intent(DownloadManagerService.this,
                     DownloadManagerActivity.class);
+        }else if(content.getStatus()== StatusContent.SAVED){
+            resultIntent = new Intent(DownloadManagerService.this,
+                    MainActivity.class);
+            resultIntent.putExtra("url", content.getUrl());
         }else if(content.getStatus()== StatusContent.SAVED){
             resultIntent = new Intent(DownloadManagerService.this,
                     MainActivity.class);
@@ -282,13 +288,14 @@ public class DownloadManagerService extends IntentService {
                 String html = HttpClientHelper.call(url);
                 List<String> aUrls = PururinParser.parseImageList(html);
                 int i = 1;
-                for(String a : aUrls){
-                    URL aUrl = new URL(content.getSite().getUrl() + a);
-                    String aHtml = HttpClientHelper.call(aUrl);
-                    String cdnUrl = PururinParser.parseImagePage(aHtml);
+                String a = aUrls.get(0);
+                URL aUrl = new URL(content.getSite().getUrl() + a);
+                String aHtml = HttpClientHelper.call(aUrl);
+                PururinDto pururinDto = PururinParser.catchPururinDto(aHtml);
+                for(ImageDto imageDto : pururinDto.getImages()){
                     String name = String.format("%03d", i) + ".jpg";
                     ImageFile imageFile = new ImageFile();
-                    imageFile.setUrl(content.getSite().getUrl() + cdnUrl);
+                    imageFile.setUrl(content.getSite().getUrl() + "/f/" + imageDto.getF().replace(".jpg", "/a.jpg"));
                     imageFile.setOrder(i++);
                     imageFile.setStatus(StatusContent.SAVED);
                     imageFile.setName(name);
