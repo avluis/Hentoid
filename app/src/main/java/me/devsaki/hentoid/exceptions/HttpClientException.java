@@ -3,7 +3,7 @@ package me.devsaki.hentoid.exceptions;
 /**
  * Created by DevSaki on 15/05/2015.
  */
-public class HttpClientException extends Exception{
+public class HttpClientException extends Exception {
 
     private String result;
     private int code;

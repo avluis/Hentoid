@@ -2,8 +2,8 @@ package me.devsaki.hentoid.v2.bean;
 
 public class URLBean {
 
-	private String url;
-	private String description;
+    private String url;
+    private String description;
 
     public String getId() {
         int idxStart = url.lastIndexOf("/");
@@ -14,16 +14,19 @@ public class URLBean {
         return category + id;
     }
 
-	public String getUrl() {
-		return url;
-	}
-	public void setUrl(String url) {
-		this.url = url;
-	}
-	public String getDescription() {
-		return description;
-	}
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

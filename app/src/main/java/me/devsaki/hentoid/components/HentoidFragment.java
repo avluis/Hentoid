@@ -13,24 +13,24 @@ import me.devsaki.hentoid.database.HentoidDB;
 
 public abstract class HentoidFragment extends ListFragment {
 
-    protected SharedPreferences getSharedPreferences(){
+    protected SharedPreferences getSharedPreferences() {
         return ((HentoidActivity) getActivity()).getSharedPreferences();
     }
 
-    protected HentoidDB getDB(){
+    protected HentoidDB getDB() {
         return ((HentoidActivity) getActivity()).getDB();
     }
 
-    protected HentoidActivity getFakkuDroidActivity(){
+    protected HentoidActivity getFakkuDroidActivity() {
         return (HentoidActivity) getActivity();
     }
 
-    public void showLoading(){
+    public void showLoading() {
         getView().findViewById(R.id.content_main).setVisibility(View.GONE);
         getView().findViewById(R.id.content_loading).setVisibility(View.VISIBLE);
     }
 
-    public void hideLoading(){
+    public void hideLoading() {
         getView().findViewById(R.id.content_loading).setVisibility(View.GONE);
         getView().findViewById(R.id.content_main).setVisibility(View.VISIBLE);
     }

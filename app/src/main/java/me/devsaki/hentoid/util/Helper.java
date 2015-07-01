@@ -176,13 +176,14 @@ public class Helper {
             br = new BufferedReader(new FileReader(f));
 
             while ((sCurrentLine = br.readLine()) != null) {
-                json+=sCurrentLine;
+                json += sCurrentLine;
             }
 
         } finally {
             try {
-                if (br != null)br.close();
-            } catch (IOException ex) {}
+                if (br != null) br.close();
+            } catch (IOException ex) {
+            }
         }
         return json;
     }
@@ -201,10 +202,9 @@ public class Helper {
 
                 URL url = new URL(imageUrl);
 
-                HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
-                if(cookieManager.getCookieStore().getCookies().size() > 0)
-                {
+                if (cookieManager.getCookieStore().getCookies().size() > 0) {
                     connection.setRequestProperty("Cookie",
                             TextUtils.join(",", cookieManager.getCookieStore().getCookies()));
                 }

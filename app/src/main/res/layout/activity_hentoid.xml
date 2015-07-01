@@ -1,8 +1,8 @@
-<android.support.v4.widget.DrawerLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/drawer_layout">
+    android:layout_height="match_parent">
+
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
@@ -10,62 +10,68 @@
     <!-- The navigation drawer -->
     <LinearLayout
         android:id="@+id/left_drawer"
-        android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/primary_color"
-
         android:divider="@android:color/white"
-        android:dividerPadding="10dp">
+
+        android:dividerPadding="10dp"
+        android:orientation="vertical">
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/image_button"
             android:onClick="ndFakkuWb"
+            android:padding="10dp"
             android:text="@string/navigation_drawer_fakku_wb"
-            android:padding="10dp"
-            android:background="@drawable/image_button"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/image_button"
             android:onClick="ndPururinWb"
+            android:padding="10dp"
             android:text="@string/navigation_drawer_pururin_wb"
-            android:padding="10dp"
-            android:background="@drawable/image_button"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/image_button"
             android:onClick="ndDownloads"
+            android:padding="10dp"
             android:text="@string/navigation_drawer_downloads"
-            android:padding="10dp"
-            android:background="@drawable/image_button"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/image_button"
             android:onClick="ndDownloadManager"
+            android:padding="10dp"
             android:text="@string/navigation_drawer_download_manager"
-            android:padding="10dp"
-            android:background="@drawable/image_button"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@drawable/image_button"
             android:onClick="ndPreferences"
-            android:text="@string/navigation_drawer_preferences"
             android:padding="10dp"
-            android:background="@drawable/image_button"
-            android:textColor="@android:color/white"/>
+            android:text="@string/navigation_drawer_preferences"
+            android:textColor="@android:color/white" />
+
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="ndCheckUpdates"
-            android:text="@string/navigation_drawer_check_updates"
-            android:padding="10dp"
             android:background="@drawable/image_button"
-            android:textColor="@android:color/white"/>
+            android:onClick="ndCheckUpdates"
+            android:padding="10dp"
+            android:text="@string/navigation_drawer_check_updates"
+            android:textColor="@android:color/white" />
     </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>

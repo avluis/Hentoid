@@ -12,10 +12,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.Helper;
-
 import net.rdrei.android.dirchooser.DirectoryChooserFragment;
 
 import java.io.File;
@@ -23,6 +19,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.Helper;
 
 
 public class SelectFolderActivity extends Activity implements
@@ -67,7 +67,7 @@ public class SelectFolderActivity extends Activity implements
 
         //Validation folder
         File file = new File(fakkuFolder);
-        if (!file.exists()&&!file.isDirectory()) {
+        if (!file.exists() && !file.isDirectory()) {
             if (!file.mkdirs()) {
                 Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
                 return;
@@ -76,31 +76,31 @@ public class SelectFolderActivity extends Activity implements
         File nomedia = new File(fakkuFolder, ".nomedia");
         boolean hasPermission = false;
         try {
-            if(nomedia.exists()){
+            if (nomedia.exists()) {
                 nomedia.delete();
             }
             hasPermission = nomedia.createNewFile();
         } catch (IOException e) {
             hasPermission = false;
         }
-        if(!hasPermission){
+        if (!hasPermission) {
             Toast.makeText(this, R.string.error_write_permission, Toast.LENGTH_SHORT).show();
             return;
         }
         editor.putString(Constants.SETTINGS_FOLDER, fakkuFolder);
         boolean directorySaved = editor.commit();
-        if(!directorySaved){
+        if (!directorySaved) {
             Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
             return;
         }
         List<File> downloadDirs = new ArrayList<>();
-        for(Site s : Site.values()){
+        for (Site s : Site.values()) {
             downloadDirs.add(Helper.getDownloadDir(s, SelectFolderActivity.this));
         }
         List<File> files = new ArrayList<>();
-        for(File downloadDir : downloadDirs){
+        for (File downloadDir : downloadDirs) {
             File[] contentFiles = downloadDir.listFiles();
-            if(contentFiles !=null)
+            if (contentFiles != null)
                 files.addAll(Arrays.asList(contentFiles));
         }
         if (files.size() > 0) {

@@ -18,7 +18,7 @@ public abstract class ImageFileTable {
             + ID_COLUMN + " INTEGER PRIMARY KEY," + CONTENT_ID_COLUMN + " INTEGER," + ORDER_COLUMN + " INTEGER,"
             + URL_COLUMN + " TEXT" + "," + NAME_COLUMN + " TEXT" + "," + STATUS_COLUMN + " INTEGER" + ")";
 
-    public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO "+ TABLE_NAME +" VALUES (?,?,?,?,?,?);";
+    public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO " + TABLE_NAME + " VALUES (?,?,?,?,?,?);";
     public static final String UPDATE_IMAGE_FILE_STATUS_STATEMENT = "UPDATE " + TABLE_NAME + " SET " + STATUS_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
     public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE " + CONTENT_ID_COLUMN + " = ?";
 

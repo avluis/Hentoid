@@ -11,6 +11,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.io.File;
+import java.util.List;
+
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
@@ -19,9 +22,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.Helper;
-
-import java.io.File;
-import java.util.List;
 
 /**
  * Created by neko on 11/05/2015.
@@ -52,7 +52,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
 
         TextView tvTitle = (TextView) rowView.findViewById(R.id.tvTitle);
         ImageView ivCover = (ImageView) rowView.findViewById(R.id.ivCover);
-        TextView tvSerie = (TextView) rowView.findViewById(R.id.tvSerie);
+        TextView tvSerie = (TextView) rowView.findViewById(R.id.tvSeries);
         TextView tvArtist = (TextView) rowView.findViewById(R.id.tvArtist);
         TextView tvTags = (TextView) rowView.findViewById(R.id.tvTags);
         TextView tvSite = (TextView) rowView.findViewById(R.id.tvSite);
@@ -89,7 +89,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         if (tagsAttributes != null)
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
-                if(attribute.getName()!=null){
+                if (attribute.getName() != null) {
                     tags += templateTvTags.replace("@tag@", attribute.getName());
                     if (i != tagsAttributes.size() - 1) {
                         tags += ", ";
@@ -101,7 +101,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         final File dir = Helper.getDownloadDir(content, getContext());
         File coverFile = new File(dir, "thumb.jpg");
 
-        ((HentoidApplication)getContext().getApplicationContext()).loadBitmap(coverFile, ivCover);
+        ((HentoidApplication) getContext().getApplicationContext()).loadBitmap(coverFile, ivCover);
 
         Button btnCancel = (Button) rowView.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(new View.OnClickListener() {
@@ -115,26 +115,26 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         btnPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(content.getStatus()!= StatusContent.DOWNLOADING){
-                    ((DownloadManagerActivity)getContext()).getFragment().resume(content);
-                }else {
-                    ((DownloadManagerActivity)getContext()).getFragment().pause(content);
+                if (content.getStatus() != StatusContent.DOWNLOADING) {
+                    ((DownloadManagerActivity) getContext()).getFragment().resume(content);
+                } else {
+                    ((DownloadManagerActivity) getContext()).getFragment().pause(content);
                     notifyDataSetChanged();
                 }
             }
         });
-        if(content.getStatus()!= StatusContent.DOWNLOADING){
+        if (content.getStatus() != StatusContent.DOWNLOADING) {
             btnPause.setText(R.string.resume);
         }
 
         ProgressBar pb = (ProgressBar) rowView.findViewById(R.id.pbDownload);
-        if(content.getStatus() == StatusContent.PAUSED){
+        if (content.getStatus() == StatusContent.PAUSED) {
             pb.setVisibility(View.INVISIBLE);
-        }else if(content.getPercent()>0){
+        } else if (content.getPercent() > 0) {
             pb.setVisibility(View.VISIBLE);
             pb.setIndeterminate(false);
-            pb.setProgress((int)content.getPercent());
-        }else{
+            pb.setProgress((int) content.getPercent());
+        } else {
             pb.setVisibility(View.VISIBLE);
             pb.setIndeterminate(true);
         }

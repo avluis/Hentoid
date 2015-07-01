@@ -16,8 +16,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.dto.VersionDto;
 import me.devsaki.hentoid.dto.UserRequest;
+import me.devsaki.hentoid.dto.VersionDto;
 import me.devsaki.hentoid.util.HttpClientHelper;
 
 /**
@@ -33,7 +33,7 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, VersionDto> {
 
     public UpdateCheckerTask(Context mContext) {
         this.mContext = mContext;
-        notificationManager = (NotificationManager)mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
     }
 
     @Override
@@ -69,7 +69,7 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, VersionDto> {
             try {
                 PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
 
-                if (result.getVersionCode()!=null && result.getVersionCode() > pInfo.versionCode) {
+                if (result.getVersionCode() != null && result.getVersionCode() > pInfo.versionCode) {
                     this.versionDto = result;
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse(versionDto.getDocumentationLink()));
@@ -87,13 +87,13 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, VersionDto> {
 
                     notificationManager.notify(0, notif);
                     Toast.makeText(mContext, R.string.find_new_version, Toast.LENGTH_SHORT).show();
-                }else{
+                } else {
                     Toast.makeText(mContext, R.string.not_find_new_version, Toast.LENGTH_SHORT).show();
                 }
             } catch (PackageManager.NameNotFoundException e) {
                 Log.e(TAG, "update checker asynctask - onpost ", e);
             }
-        }else{
+        } else {
             Toast.makeText(mContext, R.string.error_update_checker, Toast.LENGTH_SHORT).show();
         }
     }

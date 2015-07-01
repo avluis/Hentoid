@@ -8,6 +8,13 @@ import android.preference.PreferenceManager;
 import android.util.LruCache;
 import android.widget.ImageView;
 
+import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
+import org.acra.sender.HttpSender;
+
+import java.io.File;
+
 import me.devsaki.hentoid.asynctasks.UpdateCheckerTask;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.StatusContent;
@@ -15,13 +22,6 @@ import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageQuality;
-
-import org.acra.ACRA;
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
-import org.acra.sender.HttpSender;
-
-import java.io.File;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -68,7 +68,7 @@ public class HentoidApplication extends Application {
         };
 
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        if(sharedPreferences.getString(ConstantsPreferences.PREF_CHECK_UPDATES_LISTS, ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT+"").equals(ConstantsPreferences.PREF_CHECK_UPDATES_ENABLE+"")) {
+        if (sharedPreferences.getString(ConstantsPreferences.PREF_CHECK_UPDATES_LISTS, ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT + "").equals(ConstantsPreferences.PREF_CHECK_UPDATES_ENABLE + "")) {
             AndroidHelper.executeAsyncTask(new UpdateCheckerTask(this));
         }
     }

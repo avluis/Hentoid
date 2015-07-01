@@ -7,6 +7,15 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.github.lzyzsd.circleprogress.DonutProgress;
+import com.google.gson.Gson;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -19,15 +28,6 @@ import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.v2.bean.DoujinBean;
 import me.devsaki.hentoid.v2.bean.URLBean;
-
-import com.github.lzyzsd.circleprogress.DonutProgress;
-import com.google.gson.Gson;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
 
 
 public class ImporterActivity extends ActionBarActivity {
@@ -55,7 +55,7 @@ public class ImporterActivity extends ActionBarActivity {
             super.onPreExecute();
             downloadDirs = new ArrayList<>();
 
-            for(Site s : Site.values()){
+            for (Site s : Site.values()) {
                 downloadDirs.add(Helper.getDownloadDir(s, ImporterActivity.this));
             }
 
@@ -83,7 +83,7 @@ public class ImporterActivity extends ActionBarActivity {
         protected List<Content> doInBackground(Integer... params) {
             List<Content> contents = null;
             List<File> files = new ArrayList<>();
-            for(File downloadDir : downloadDirs){
+            for (File downloadDir : downloadDirs) {
                 files.addAll(Arrays.asList(downloadDir.listFiles()));
             }
             int processeds = 0;

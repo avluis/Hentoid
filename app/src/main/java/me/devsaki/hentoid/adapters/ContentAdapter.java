@@ -17,6 +17,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.R;
@@ -28,14 +36,6 @@ import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
-
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 
 /**
  * Created by neko on 11/05/2015.
@@ -71,7 +71,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
         TextView tvTitle = (TextView) rowView.findViewById(R.id.tvTitle);
         ImageView ivCover = (ImageView) rowView.findViewById(R.id.ivCover);
-        TextView tvSerie = (TextView) rowView.findViewById(R.id.tvSerie);
+        TextView tvSerie = (TextView) rowView.findViewById(R.id.tvSeries);
         TextView tvArtist = (TextView) rowView.findViewById(R.id.tvArtist);
         TextView tvTags = (TextView) rowView.findViewById(R.id.tvTags);
         TextView tvSite = (TextView) rowView.findViewById(R.id.tvSite);
@@ -82,7 +82,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         tvStatus.setText(content.getStatus().getDescription());
         tvSavedDate.setText(sdf.format(new Date(content.getDownloadDate())));
 
-        if(content.getTitle()==null)
+        if (content.getTitle() == null)
             tvTitle.setText(R.string.tvTitleEmpty);
         else
             tvTitle.setText(content.getTitle());
@@ -115,7 +115,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         if (tagsAttributes != null)
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
-                if(attribute.getName()!=null){
+                if (attribute.getName() != null) {
                     tags += templateTvTags.replace("@tag@", attribute.getName());
                     if (i != tagsAttributes.size() - 1) {
                         tags += ", ";
@@ -182,9 +182,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private void viewContent(Content content) {
         Intent intent = new Intent(getContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        if(content.getSite()== Site.FAKKU)
+        if (content.getSite() == Site.FAKKU)
             intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + content.getUrl());
-        else if(content.getSite()==Site.PURURIN)
+        else if (content.getSite() == Site.PURURIN)
             intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + Constants.PURURIN_GALLERY + content.getUrl());
         intent.putExtra(MainActivity.INTENT_SITE, content.getSite().getCode());
         getContext().startActivity(intent);

@@ -43,10 +43,10 @@ public enum Site {
         return folder;
     }
 
-    public static Site searchByCode(int code){
+    public static Site searchByCode(int code) {
 
-        for(Site s : Site.values()){
-            if(s.getCode()==code)
+        for (Site s : Site.values()) {
+            if (s.getCode() == code)
                 return s;
         }
 

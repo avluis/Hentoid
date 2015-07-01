@@ -1,18 +1,19 @@
 package me.devsaki.hentoid.database.domains;
 
-import me.devsaki.hentoid.database.contants.ContentTable;
-import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
 import com.google.gson.annotations.Expose;
 
 import java.util.HashMap;
 import java.util.List;
 
+import me.devsaki.hentoid.database.contants.ContentTable;
+import me.devsaki.hentoid.database.enums.AttributeType;
+import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.database.enums.StatusContent;
+
 /**
  * Created by DevSaki on 09/05/2015.
  */
-public class Content extends ContentTable{
+public class Content extends ContentTable {
 
     @Expose
     private String url;
@@ -56,9 +57,9 @@ public class Content extends ContentTable{
     }
 
     public String getUniqueSiteId() {
-        if(getSite()==Site.FAKKU)
-            return url.substring(url.lastIndexOf("/")+1);
-        else if(getSite()==Site.PURURIN){
+        if (getSite() == Site.FAKKU)
+            return url.substring(url.lastIndexOf("/") + 1);
+        else if (getSite() == Site.PURURIN) {
             String[] paths = url.split("/");
             return paths[2].replace(".html", "") + "-" + paths[1];
         }
@@ -66,9 +67,9 @@ public class Content extends ContentTable{
     }
 
     public String getCategory() {
-        if(getSite()==Site.FAKKU)
+        if (getSite() == Site.FAKKU)
             return url.substring(1, url.lastIndexOf("/"));
-        else if(getSite()==Site.PURURIN){
+        else if (getSite() == Site.PURURIN) {
             return getAttributes().get(AttributeType.CATEGORY).get(0).getName();
         }
         return null;

@@ -8,17 +8,17 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.IOException;
+
 import me.devsaki.hentoid.asynctasks.UpdateCheckerTask;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  * Created by DevSaki on 20/05/2015.
  */
-public class PreferencesActivity extends PreferenceActivity{
+public class PreferencesActivity extends PreferenceActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,15 +26,13 @@ public class PreferencesActivity extends PreferenceActivity{
         getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
     }
 
-    public static class MyPreferenceFragment extends PreferenceFragment
-    {
+    public static class MyPreferenceFragment extends PreferenceFragment {
         @Override
-        public void onCreate(final Bundle savedInstanceState)
-        {
+        public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
 
-            Preference addNoMediaFile = (Preference) getPreferenceScreen().findPreference("pref_add_no_media_file");
+            Preference addNoMediaFile = getPreferenceScreen().findPreference("pref_add_no_media_file");
             addNoMediaFile.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
                 @Override
@@ -55,7 +53,7 @@ public class PreferencesActivity extends PreferenceActivity{
                 }
             });
 
-            Preference checkUpdates = (Preference) getPreferenceScreen().findPreference("pref_check_updates_now");
+            Preference checkUpdates = getPreferenceScreen().findPreference("pref_check_updates_now");
             checkUpdates.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
                 @Override

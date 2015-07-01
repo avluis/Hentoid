@@ -15,12 +15,12 @@ import android.widget.ImageButton;
 import android.widget.SearchView;
 import android.widget.Toast;
 
+import java.util.List;
+
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.components.HentoidActivity;
 import me.devsaki.hentoid.components.HentoidFragment;
 import me.devsaki.hentoid.database.domains.Content;
-
-import java.util.List;
 
 
 public class ContentListActivity extends HentoidActivity<ContentListActivity.ContentListFragment> {
@@ -86,15 +86,15 @@ public class ContentListActivity extends HentoidActivity<ContentListActivity.Con
                     loadContent();
                 }
             });
-            ImageButton btnPrevius = (ImageButton) rootView.findViewById(R.id.btnPrevius);
-            btnPrevius.setOnClickListener(new View.OnClickListener() {
+            ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
+            btnPrevious.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (currentPage > 1) {
                         currentPage--;
                         loadContent();
                     } else {
-                        Toast.makeText(getActivity(), R.string.not_previus_page, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), R.string.not_previous_page, Toast.LENGTH_SHORT).show();
                     }
                 }
             });
@@ -104,10 +104,11 @@ public class ContentListActivity extends HentoidActivity<ContentListActivity.Con
         private void loadContent() {
             btnPage.setText("" + currentPage);
         }
+
         private Button btnPage;
     }
 
-    private class LoadContentTask extends AsyncTask<String, Integer, List<Content>>{
+    private class LoadContentTask extends AsyncTask<String, Integer, List<Content>> {
 
         @Override
         protected void onPreExecute() {

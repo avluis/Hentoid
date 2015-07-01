@@ -23,10 +23,10 @@ public enum StatusContent {
         return description;
     }
 
-    public static StatusContent searchByCode(int code){
+    public static StatusContent searchByCode(int code) {
 
-        for(StatusContent s : StatusContent.values()){
-            if(s.getCode()==code)
+        for (StatusContent s : StatusContent.values()) {
+            if (s.getCode() == code)
                 return s;
         }
 
