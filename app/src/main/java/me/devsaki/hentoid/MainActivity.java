@@ -16,16 +16,6 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.parser.FakkuParser;
-import me.devsaki.hentoid.parser.PururinParser;
-import me.devsaki.hentoid.service.DownloadManagerService;
-import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Helper;
-
 import com.melnykov.fab.FloatingActionButton;
 
 import java.io.File;
@@ -38,6 +28,16 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
+
+import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.parser.FakkuParser;
+import me.devsaki.hentoid.parser.PururinParser;
+import me.devsaki.hentoid.service.DownloadManagerService;
+import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -238,7 +238,7 @@ public class MainActivity extends ActionBarActivity {
                             }
                     }
                 } else if (site == Site.PURURIN) {
-                    if (paths.length>0 && paths[1].startsWith("gallery")) {
+                    if (paths.length > 0 && paths[1].startsWith("gallery")) {
                         try {
                             view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
                         } catch (Exception ex) {
@@ -269,7 +269,7 @@ public class MainActivity extends ActionBarActivity {
             if (contentbd == null) {
                 Log.i(TAG, "Saving content : " + content.getUrl());
                 try {
-                    if(site==Site.FAKKU)
+                    if (site == Site.FAKKU)
                         content.setCoverImageUrl("http://" + content.getCoverImageUrl().substring(2));
                     db.insertContent(content);
                 } catch (Exception e) {

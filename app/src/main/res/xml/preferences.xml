@@ -1,57 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
-        android:title="@string/pref_perfomance_category"
-        android:key="pref_key_perfomance_settings">
+        android:key="pref_key_performance_settings"
+        android:title="@string/pref_performance_category">
         <ListPreference
-            android:key="pref_image_quality_lists"
-            android:title="@string/pref_image_quality_title"
-            android:summary="@string/pref_image_quality_summary"
+            android:icon="@null"
             android:defaultValue="@string/pref_image_quality_default"
             android:entries="@array/pref_image_quality_entries"
-            android:entryValues="@array/pref_image_quality_entry_values"/>
+            android:entryValues="@array/pref_image_quality_entry_values"
+            android:key="pref_image_quality_lists"
+            android:summary="@string/pref_image_quality_summary"
+            android:title="@string/pref_image_quality_title" />
 
         <ListPreference
-            android:key="pref_quantity_per_page_lists"
-            android:title="@string/pref_quantity_per_page_title"
-            android:summary="@string/pref_quantity_per_page_summary"
+            android:icon="@null"
             android:defaultValue="@string/pref_quantity_per_page_default"
             android:entries="@array/pref_quantity_per_page_entries"
-            android:entryValues="@array/pref_quantity_per_page_entry_values"/>
+            android:entryValues="@array/pref_quantity_per_page_entry_values"
+            android:key="pref_quantity_per_page_lists"
+            android:summary="@string/pref_quantity_per_page_summary"
+            android:title="@string/pref_quantity_per_page_title" />
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="@string/pref_library_category"
-        android:key="pref_key_library_settings">
+        android:key="pref_key_library_settings"
+        android:title="@string/pref_library_category">
 
         <ListPreference
-            android:key="pref_read_content_lists"
-            android:title="@string/pref_read_content_title"
-            android:summary="@string/pref_read_content_summary"
+            android:icon="@null"
             android:defaultValue="@string/pref_read_content_default"
             android:entries="@array/pref_read_content_entries"
-            android:entryValues="@array/pref_read_content_entry_values"/>
-        <Preference android:title="@string/pref_select_folder_title" android:summary="@string/pref_select_folder_summary">
-            <intent android:action="android.intent.action.VIEW"
-                android:targetPackage="me.devsaki.hentoid"
-                android:targetClass="me.devsaki.hentoid.SelectFolderActivity"/>
+            android:entryValues="@array/pref_read_content_entry_values"
+            android:key="pref_read_content_lists"
+            android:summary="@string/pref_read_content_summary"
+            android:title="@string/pref_read_content_title" />
+        <Preference
+            android:icon="@null"
+            android:summary="@string/pref_select_folder_summary"
+            android:title="@string/pref_select_folder_title">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:targetClass="me.devsaki.hentoid.SelectFolderActivity"
+                android:targetPackage="me.devsaki.hentoid" />
         </Preference>
-        <Preference android:key="pref_add_no_media_file"
-            android:title="@string/pref_add_no_media_file_title"
-            android:summary="@string/pref_add_no_media_file_summary"/>
+        <Preference
+            android:icon="@null"
+            android:key="pref_add_no_media_file"
+            android:summary="@string/pref_add_no_media_file_summary"
+            android:title="@string/pref_add_no_media_file_title" />
     </PreferenceCategory>
     <PreferenceCategory
-        android:title="@string/pref_others_category"
-        android:key="pref_key_others_settings">
+        android:key="pref_key_others_settings"
+        android:title="@string/pref_others_category">
 
         <ListPreference
-            android:key="pref_check_updates_lists"
-            android:title="@string/pref_check_updates_title"
-            android:summary="@string/pref_check_updates_summary"
+            android:icon="@null"
             android:defaultValue="@string/pref_check_updates_default"
             android:entries="@array/pref_check_updates_entries"
-            android:entryValues="@array/pref_check_updates_entry_values"/>
-        <Preference android:key="pref_check_updates_now"
-            android:title="@string/pref_check_updates_now_title"
-            android:summary="@string/pref_check_updates_now_summary"/>
+            android:entryValues="@array/pref_check_updates_entry_values"
+            android:key="pref_check_updates_lists"
+            android:summary="@string/pref_check_updates_summary"
+            android:title="@string/pref_check_updates_title" />
+        <Preference
+            android:icon="@null"
+            android:key="pref_check_updates_now"
+            android:summary="@string/pref_check_updates_now_summary"
+            android:title="@string/pref_check_updates_now_title" />
     </PreferenceCategory>
 </PreferenceScreen>

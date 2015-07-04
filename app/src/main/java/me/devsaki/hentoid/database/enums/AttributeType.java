@@ -23,10 +23,10 @@ public enum AttributeType {
         return description;
     }
 
-    public static AttributeType searchByCode(int code){
+    public static AttributeType searchByCode(int code) {
 
-        for(AttributeType s : AttributeType.values()){
-            if(s.getCode()==code)
+        for (AttributeType s : AttributeType.values()) {
+            if (s.getCode() == code)
                 return s;
         }
 

@@ -1,11 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.text.TextUtils;
-import android.util.Log;
 
-import me.devsaki.hentoid.dto.VersionDto;
-import me.devsaki.hentoid.dto.UserRequest;
-import me.devsaki.hentoid.exceptions.HttpClientException;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -20,6 +16,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
+import me.devsaki.hentoid.dto.UserRequest;
+import me.devsaki.hentoid.dto.VersionDto;
+import me.devsaki.hentoid.exceptions.HttpClientException;
+
 /**
  * Created by DevSaki on 14/05/2015.
  */
@@ -31,13 +31,12 @@ public class HttpClientHelper {
             uri = new URI(url.toString());
         } catch (URISyntaxException e) {
         }
-        CookieManager cookieManager = (CookieManager)CookieHandler.getDefault();
+        CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
 
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod("GET");
         urlConnection.setConnectTimeout(10000);
-        if(cookieManager.getCookieStore().getCookies().size() > 0)
-        {
+        if (cookieManager.getCookieStore().getCookies().size() > 0) {
             urlConnection.setRequestProperty("Cookie",
                     TextUtils.join("; ", cookieManager.getCookieStore().get(uri)));
         }
@@ -66,7 +65,7 @@ public class HttpClientHelper {
 
         String result = buffer.toString();
 
-        if(code!=200){
+        if (code != 200) {
             throw new HttpClientException(result, code);
         }
 
@@ -81,7 +80,7 @@ public class HttpClientHelper {
         urlConnection.setConnectTimeout(10000);
 
         urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        OutputStreamWriter os= new OutputStreamWriter(urlConnection.getOutputStream());
+        OutputStreamWriter os = new OutputStreamWriter(urlConnection.getOutputStream());
         os.write(new Gson().toJson(userRequest));
         os.flush();
         os.close();
@@ -110,7 +109,7 @@ public class HttpClientHelper {
 
         String result = buffer.toString();
 
-        if(code!=200){
+        if (code != 200) {
             throw new HttpClientException(result, code);
         }
 

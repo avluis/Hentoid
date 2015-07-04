@@ -82,7 +82,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC).apply();
             getFragment().searchContent();
             return true;
-        }else if (id == R.id.action_order_by_date) {
+        } else if (id == R.id.action_order_by_date) {
             SharedPreferences.Editor editor = getSharedPreferences().edit();
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE).apply();
             getFragment().searchContent();
@@ -128,8 +128,8 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                     }
                 }
             });
-            ImageButton btnPrevius = (ImageButton) rootView.findViewById(R.id.btnPrevius);
-            btnPrevius.setOnClickListener(new View.OnClickListener() {
+            ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
+            btnPrevious.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     int qtyPages = Integer.parseInt(getSharedPreferences().getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS, ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
@@ -140,7 +140,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                             currentPage--;
                             searchContent();
                         } else {
-                            Toast.makeText(getActivity(), R.string.not_previus_page, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), R.string.not_previous_page, Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -154,11 +154,12 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             } else {
                 searchContent();
             }
-            try{
+            try {
                 PackageInfo pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
                 showMessageSupport = getSharedPreferences().getBoolean(ConstantsPreferences.SHOW_MESSAGE_SUPPORT + pInfo.versionCode, true);
 
-            }catch (Exception ex){}
+            } catch (Exception ex) {
+            }
             if (showMessageSupport) {
                 Intent intent = new Intent(getActivity(), MessageSupportActivity.class);
                 startActivity(intent);
@@ -172,7 +173,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             if (qtyPages < 0) {
                 qtyPages = ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT;
             }
-            contents = getDB().selectContentByQuery(query, currentPage, qtyPages, order==ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+            contents = getDB().selectContentByQuery(query, currentPage, qtyPages, order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
             if (contents == null) {
                 contents = new ArrayList<>();
             }

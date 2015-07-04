@@ -1,13 +1,14 @@
 package me.devsaki.hentoid.database.domains;
 
+import com.google.gson.annotations.Expose;
+
 import me.devsaki.hentoid.database.contants.AttributeTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
-import com.google.gson.annotations.Expose;
 
 /**
  * Created by DevSaki on 09/05/2015.
  */
-public class Attribute extends AttributeTable{
+public class Attribute extends AttributeTable {
 
     @Expose
     private String url;
@@ -16,7 +17,7 @@ public class Attribute extends AttributeTable{
     @Expose
     private AttributeType type;
 
-    public Integer getId(){
+    public Integer getId() {
         return url.hashCode();
     }
 

@@ -8,59 +8,64 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/ll"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="10dp"
         android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"></ListView>
+        android:layout_marginRight="10dp"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="10dp"></ListView>
+
     <TextView
         android:id="@android:id/empty"
-        android:layout_above="@+id/ll"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@+id/ll"
         android:gravity="center"
         android:text="@string/downloads_library_empty"
         android:textAppearance="?android:attr/textAppearanceLarge" />
+
     <LinearLayout
+        android:id="@+id/ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:background="@drawable/normal_state"
-        android:id="@+id/ll"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal">
+
         <ImageButton
-            android:id="@+id/btnPrevius"
+            android:id="@+id/btnPrevious"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
-            android:src="@drawable/ic_action_previous_item"
-            android:background="@drawable/image_button"
-            android:scaleType="fitXY"
             android:layout_gravity="center"
-            android:padding="3dp"/>
+            android:background="@drawable/image_button"
+            android:padding="3dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_action_previous_item" />
+
         <Button
             android:id="@+id/btnPage"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
-            android:text="1"/>
+            android:text="1" />
+
         <ImageButton
             android:id="@+id/btnNext"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
-            android:src="@drawable/ic_action_next_item"
-            android:background="@drawable/image_button"
-            android:scaleType="fitXY"
             android:layout_gravity="center"
-            android:padding="3dp"/>
+            android:background="@drawable/image_button"
+            android:padding="3dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_action_next_item" />
 
         <ImageButton
             android:id="@+id/btnRefresh"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
-            android:src="@drawable/ic_action_refresh"
-            android:background="@drawable/image_button"
-            android:scaleType="fitXY"
             android:layout_gravity="center"
-            android:padding="3dp"/>
+            android:background="@drawable/image_button"
+            android:padding="3dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_action_refresh" />
 
 
     </LinearLayout>

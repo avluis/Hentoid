@@ -9,7 +9,7 @@ import me.devsaki.hentoid.R;
 /**
  * Created by neko on 07/06/2015.
  */
-public class GifWebView extends WebView{
+public class GifWebView extends WebView {
 
     public GifWebView(Context context) {
         super(context);

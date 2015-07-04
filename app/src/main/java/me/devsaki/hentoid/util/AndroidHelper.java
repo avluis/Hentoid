@@ -11,11 +11,11 @@ import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.widget.Toast;
 
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.domains.Content;
-
 import java.io.File;
 import java.util.Arrays;
+
+import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.domains.Content;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -35,10 +35,10 @@ public class AndroidHelper {
                 break;
             }
         }
-        if(imageFile==null){
+        if (imageFile == null) {
             String message = context.getString(R.string.not_image_file_found).replace("@dir", dir.getAbsolutePath());
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
-        }else{
+        } else {
             int readContentPreference = Integer.parseInt(sharedPreferences.getString(ConstantsPreferences.PREF_READ_CONTENT_LISTS, ConstantsPreferences.PREF_READ_CONTENT_DEFAULT + ""));
             if (readContentPreference == ConstantsPreferences.PREF_READ_CONTENT_ASK) {
                 final File file = imageFile;

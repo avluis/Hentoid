@@ -2,12 +2,6 @@ package me.devsaki.hentoid.parser;
 
 import android.util.Log;
 
-import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,6 +14,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.enums.AttributeType;
+import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.database.enums.StatusContent;
+
 /**
  * Created by DevSaki on 09/05/2015.
  */
@@ -27,25 +27,25 @@ public class FakkuParser {
 
     private final static String TAG = FakkuParser.class.getName();
 
-    public static List<Content> parseListContents(String html){
+    public static List<Content> parseListContents(String html) {
         Document doc = Jsoup.parse(html);
         Elements contentRow = doc.select(".content-row");
         List<Content> result = null;
-        if(contentRow.size()>0){
+        if (contentRow.size() > 0) {
             result = new ArrayList<>(contentRow.size());
-            for (Element content : contentRow){
+            for (Element content : contentRow) {
                 result.add(parseContent(content));
             }
         }
         return result;
     }
 
-    public static Content parseContent(String html){
+    public static Content parseContent(String html) {
         Content result = null;
         Document doc = Jsoup.parse(html);
         Elements content = doc.select(".content-wrap").select(".row");
         Elements rows = content.select(".row");
-        if(content.size()>0){
+        if (content.size() > 0) {
             result = new Content();
             result.setCoverImageUrl(content.select(".cover").attr("src"));
             Element title = doc.select(".breadcrumbs").select("a").get(1);
@@ -61,16 +61,16 @@ public class FakkuParser {
             //Artist
             result.getAttributes().put(AttributeType.ARTIST, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.ARTIST));
 
-            if(rows.get(rowIndex).select("div.left").html().equals("Event")){
+            if (rows.get(rowIndex).select("div.left").html().equals("Event")) {
                 rowIndex++;
             }
-            if(rows.get(rowIndex).select("div.left").html().equals("Magazine")){
+            if (rows.get(rowIndex).select("div.left").html().equals("Magazine")) {
                 rowIndex++;
             }
             //Publisher or Translator
-            if(rows.get(rowIndex).select("div.left").html().equals("Publisher")){
+            if (rows.get(rowIndex).select("div.left").html().equals("Publisher")) {
                 result.getAttributes().put(AttributeType.PUBLISHER, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.PUBLISHER));
-            }else if(rows.get(rowIndex).select("div.left").html().equals("Translator")){
+            } else if (rows.get(rowIndex).select("div.left").html().equals("Translator")) {
                 result.getAttributes().put(AttributeType.TRANSLATOR, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TRANSLATOR));
             }
             //Language
@@ -78,7 +78,7 @@ public class FakkuParser {
             //Pages
             result.setQtyPages(Integer.parseInt(rows.get(rowIndex++).select(".right").html().replace(" pages", "")));
             //Favorites
-            if(rows.get(rowIndex).select("div.left").html().equals("Favorites")){
+            if (rows.get(rowIndex).select("div.left").html().equals("Favorites")) {
                 result.setQtyFavorites(Integer.parseInt(rows.get(rowIndex++).select(".right").html().replace(" favorites", "").replace(",", "")));
             }
             //Uploader
@@ -86,7 +86,7 @@ public class FakkuParser {
 
             Elements user = uploader.select("a");
 
-            if(user.size()>0){
+            if (user.size() > 0) {
                 result.getAttributes().put(AttributeType.UPLOADER, new ArrayList<Attribute>(1));
 
                 result.getAttributes().get(AttributeType.UPLOADER).add(new Attribute());
@@ -95,7 +95,7 @@ public class FakkuParser {
                 result.getAttributes().get(AttributeType.UPLOADER).get(0).setType(AttributeType.UPLOADER);
             }
             String date = uploader.html().substring(uploader.html().lastIndexOf(" on ") + 4).trim();
-            date = date.replace("st,",",").replace("nd,", ",").replace("rd,",",").replace("th,",",");
+            date = date.replace("st,", ",").replace("nd,", ",").replace("rd,", ",").replace("th,", ",");
 
             SimpleDateFormat sdf = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
             try {
@@ -111,14 +111,14 @@ public class FakkuParser {
             result.setStatus(StatusContent.SAVED);
 
             //IsDownloadable
-            result.setDownloadable(doc.select(".button.green:contains(Read Online)").size()>0);
+            result.setDownloadable(doc.select(".button.green:contains(Read Online)").size() > 0);
 
             result.setSite(Site.FAKKU);
         }
         return result;
     }
 
-    private static Content parseContent(Element content){
+    private static Content parseContent(Element content) {
         Content result = new Content();
         Element contentTitle = content.select(".content-title").first();
         result.setUrl(contentTitle.attr("href"));
@@ -134,9 +134,9 @@ public class FakkuParser {
         //Artist
         result.getAttributes().put(AttributeType.ARTIST, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.ARTIST));
         //Publisher or Translator
-        if(rows.get(rowIndex).select("div.left").html().equals("Publisher")){
+        if (rows.get(rowIndex).select("div.left").html().equals("Publisher")) {
             result.getAttributes().put(AttributeType.PUBLISHER, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.PUBLISHER));
-        }else if(rows.get(rowIndex).select("div.left").html().equals("Translator")){
+        } else if (rows.get(rowIndex).select("div.left").html().equals("Translator")) {
             result.getAttributes().put(AttributeType.TRANSLATOR, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TRANSLATOR));
         }
         //Language
@@ -150,7 +150,7 @@ public class FakkuParser {
         return result;
     }
 
-    private static Attribute parseAttribute(Element attribute, AttributeType type){
+    private static Attribute parseAttribute(Element attribute, AttributeType type) {
         Attribute result = new Attribute();
         result.setName(attribute.html());
         result.setUrl(attribute.attr("href"));
@@ -158,12 +158,12 @@ public class FakkuParser {
         return result;
     }
 
-    private static List<Attribute> parseAttributes(Elements attributes, AttributeType type){
+    private static List<Attribute> parseAttributes(Elements attributes, AttributeType type) {
         List<Attribute> result = null;
 
-        if(attributes.size()>0){
+        if (attributes.size() > 0) {
             result = new ArrayList<>(attributes.size());
-            for (Element attribute : attributes){
+            for (Element attribute : attributes) {
                 result.add(parseAttribute(attribute, type));
             }
         }

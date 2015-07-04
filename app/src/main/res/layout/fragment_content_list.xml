@@ -38,7 +38,7 @@
             android:orientation="horizontal">
 
             <ImageButton
-                android:id="@+id/btnPrevius"
+                android:id="@+id/btnPrevious"
                 android:layout_width="?android:attr/actionBarSize"
                 android:layout_height="?android:attr/actionBarSize"
                 android:layout_gravity="center"

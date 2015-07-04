@@ -25,11 +25,11 @@ public class PururinParser {
 
     private final static String TAG = FakkuParser.class.getName();
 
-    public static Content parseContent(String html){
+    public static Content parseContent(String html) {
         Content result = null;
         Document doc = Jsoup.parse(html);
         Elements info = doc.select(".gallery-info-block");
-        if(info.size()>0){
+        if (info.size() > 0) {
             result = new Content();
             result.setCoverImageUrl(Site.PURURIN.getUrl() + info.select(".gallery-cover").select("img").attr("src"));
             Element title = doc.select(".otitle").first();
@@ -40,25 +40,25 @@ public class PururinParser {
 
             result.setAttributes(new HashMap<AttributeType, List<Attribute>>());
 
-            for (Element element : rows){
+            for (Element element : rows) {
                 Element td = element.select("td").first();
-                if(td.html().startsWith("Artist")){
+                if (td.html().startsWith("Artist")) {
                     result.getAttributes().put(AttributeType.ARTIST, parseAttributes(element, AttributeType.ARTIST));
-                }else if(td.html().startsWith("Circle")){
+                } else if (td.html().startsWith("Circle")) {
                     result.getAttributes().put(AttributeType.CIRCLE, parseAttributes(element, AttributeType.CIRCLE));
-                }else if(td.html().startsWith("Parody")){
+                } else if (td.html().startsWith("Parody")) {
                     result.getAttributes().put(AttributeType.SERIE, parseAttributes(element, AttributeType.SERIE));
-                }else if(td.html().startsWith("Character")){
+                } else if (td.html().startsWith("Character")) {
                     result.getAttributes().put(AttributeType.CHARACTER, parseAttributes(element, AttributeType.CHARACTER));
-                }else if(td.html().startsWith("Contents")){
+                } else if (td.html().startsWith("Contents")) {
                     result.getAttributes().put(AttributeType.TAG, parseAttributes(element, AttributeType.TAG));
-                }else if(td.html().startsWith("Language")){
+                } else if (td.html().startsWith("Language")) {
                     result.getAttributes().put(AttributeType.LANGUAGE, parseAttributes(element, AttributeType.LANGUAGE));
-                }else if(td.html().startsWith("Scanlators")){
+                } else if (td.html().startsWith("Scanlators")) {
                     result.getAttributes().put(AttributeType.TRANSLATOR, parseAttributes(element, AttributeType.TRANSLATOR));
-                }else if(td.html().startsWith("Category")){
+                } else if (td.html().startsWith("Category")) {
                     result.getAttributes().put(AttributeType.CATEGORY, parseAttributes(element, AttributeType.CATEGORY));
-                }else if(td.html().startsWith("Uploader")){
+                } else if (td.html().startsWith("Uploader")) {
                     List<Attribute> attributes = new ArrayList<>(1);
                     Attribute attribute = new Attribute();
                     Element aUser = element.select("a").first();
@@ -67,7 +67,7 @@ public class PururinParser {
                     attribute.setType(AttributeType.UPLOADER);
                     attributes.add(attribute);
                     result.getAttributes().put(AttributeType.UPLOADER, attributes);
-                }else if(td.html().startsWith("Pages")){
+                } else if (td.html().startsWith("Pages")) {
                     Element tdPage = element.select("td").last();
                     Integer pages = Integer.parseInt(tdPage.html().split(" ")[0]);
                     result.setQtyPages(pages);
@@ -84,11 +84,11 @@ public class PururinParser {
         return result;
     }
 
-    private static List<Attribute> parseAttributes(Element element, AttributeType attributeType){
+    private static List<Attribute> parseAttributes(Element element, AttributeType attributeType) {
         Elements elements = element.select("li");
 
         List<Attribute> attributes = new ArrayList<>(elements.size());
-        for (Element li : elements){
+        for (Element li : elements) {
             Attribute attribute = new Attribute();
             attribute.setType(attributeType);
             attribute.setUrl(li.select("a").attr("href"));
@@ -98,23 +98,23 @@ public class PururinParser {
         return attributes;
     }
 
-    public static List<String> parseImageList(String html){
+    public static List<String> parseImageList(String html) {
         List<String> imagesUrl = new ArrayList<>();
         Document doc = Jsoup.parse(html);
         Elements aUrls = doc.select(".thumblist").select("a");
-        for(Element a : aUrls){
+        for (Element a : aUrls) {
             imagesUrl.add(a.attr("href"));
         }
         return imagesUrl;
     }
 
-    public static String parseImagePage(String html){
+    public static String parseImagePage(String html) {
         Document doc = Jsoup.parse(html);
         return doc.select(".b").first().attr("src");
     }
 
 
-    public static PururinDto catchPururinDto(String html){
+    public static PururinDto catchPururinDto(String html) {
         PururinDto result = null;
         String f = "Pururin.ImageViewer2.init(";
         int index = html.indexOf(f) + f.length();

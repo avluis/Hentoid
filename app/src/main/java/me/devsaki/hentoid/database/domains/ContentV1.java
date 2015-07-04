@@ -15,7 +15,7 @@ import me.devsaki.hentoid.database.enums.StatusContent;
  * Created by DevSaki on 09/05/2015.
  */
 @Deprecated
-public class ContentV1 extends ContentTable{
+public class ContentV1 extends ContentTable {
 
     @Expose
     private String url;
@@ -65,10 +65,10 @@ public class ContentV1 extends ContentTable{
     }
 
     public String getUniqueSiteId() {
-        if(getSite()==Site.FAKKU)
-            return url.substring(url.lastIndexOf("/")+1);
-        else if(getSite()==Site.PURURIN){
-            return url.substring(url.lastIndexOf("/")+1).replace(".html", "");
+        if (getSite() == Site.FAKKU)
+            return url.substring(url.lastIndexOf("/") + 1);
+        else if (getSite() == Site.PURURIN) {
+            return url.substring(url.lastIndexOf("/") + 1).replace(".html", "");
         }
         return null;
     }
@@ -239,7 +239,7 @@ public class ContentV1 extends ContentTable{
 
     public Site getSite() {
         //to keep compatibility, if null return Fakku
-        if(site==null)
+        if (site == null)
             return Site.FAKKU;
         return site;
     }
@@ -248,7 +248,7 @@ public class ContentV1 extends ContentTable{
         this.site = site;
     }
 
-    public Content toContent(){
+    public Content toContent() {
         Content content = new Content();
         content.setSite(this.getSite());
         content.setUrl(this.url);
@@ -256,18 +256,18 @@ public class ContentV1 extends ContentTable{
         content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
         content.getAttributes().put(AttributeType.ARTIST, getArtists());
         List<Attribute> aux = new ArrayList<>();
-        if(getSerie()!=null)
+        if (getSerie() != null)
             aux.add(getSerie());
         content.getAttributes().put(AttributeType.SERIE, aux);
         aux = new ArrayList<>();
-        if(getLanguage()!=null)
+        if (getLanguage() != null)
             aux.add(getLanguage());
         content.getAttributes().put(AttributeType.LANGUAGE, aux);
         content.getAttributes().put(AttributeType.PUBLISHER, getPublishers());
         content.getAttributes().put(AttributeType.TAG, getTags());
         content.getAttributes().put(AttributeType.TRANSLATOR, getTranslators());
         aux = new ArrayList<>();
-        if(getUser()!=null)
+        if (getUser() != null)
             aux.add(getUser());
         content.getAttributes().put(AttributeType.UPLOADER, aux);
         content.setImageFiles(this.imageFiles);

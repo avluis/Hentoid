@@ -12,6 +12,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:indeterminate="true" />
 
     <TextView
@@ -19,6 +21,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
         android:singleLine="false"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/holo_red_dark"
@@ -49,7 +53,7 @@
             android:orientation="vertical">
 
             <TextView
-                android:id="@+id/tvSerie"
+                android:id="@+id/tvSeries"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
@@ -81,27 +85,33 @@
         android:layout_height="1dp"
         android:layout_margin="10dp"
         android:background="@android:color/holo_red_light" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:orientation="horizontal">
+
         <TextView
             android:id="@+id/tvSite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:singleLine="false"
-            android:textColor="@android:color/white"
+            android:layout_marginLeft="10dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:layout_weight="0"
             android:background="@android:color/holo_red_dark"
-            android:textAppearance="?android:attr/textAppearanceSmall" />
+            android:singleLine="false"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@android:color/white" />
     </LinearLayout>
 
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
-        android:background="@android:color/holo_red_light"
-        android:layout_margin="10dp"/>
+        android:layout_margin="10dp"
+        android:background="@android:color/holo_red_light" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -111,20 +121,20 @@
 
         <Button
             android:id="@+id/btnPause"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="3"
             android:text="@string/pause"
-            style="?android:attr/borderlessButtonStyle"
             android:textStyle="bold" />
 
         <Button
             android:id="@+id/btnCancel"
+            style="?android:attr/borderlessButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="3"
             android:text="@string/cancel"
-            style="?android:attr/borderlessButtonStyle"
             android:textStyle="bold" />
     </LinearLayout>
 </LinearLayout>

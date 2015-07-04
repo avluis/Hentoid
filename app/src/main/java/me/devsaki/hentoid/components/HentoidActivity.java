@@ -12,7 +12,6 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 import android.view.View;
 
-import me.devsaki.hentoid.ContentListActivity;
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.MainActivity;
@@ -101,35 +100,35 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends ActionB
         return super.onOptionsItemSelected(item);
     }
 
-    public void ndFakkuWb(View view){
+    public void ndFakkuWb(View view) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(MainActivity.INTENT_SITE, Site.FAKKU.getCode());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 
-    public void ndPururinWb(View view){
+    public void ndPururinWb(View view) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(MainActivity.INTENT_SITE, Site.PURURIN.getCode());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
 
-    public void ndPreferences(View view){
+    public void ndPreferences(View view) {
         Intent intent = new Intent(this, PreferencesActivity.class);
         startActivity(intent);
     }
 
-    public void ndCheckUpdates(View view){
+    public void ndCheckUpdates(View view) {
         AndroidHelper.executeAsyncTask(new UpdateCheckerTask(this));
     }
 
-    public void ndDownloads(View view){
+    public void ndDownloads(View view) {
         Intent intent = new Intent(this, DownloadsActivity.class);
         startActivity(intent);
     }
 
-    public void ndDownloadManager(View view){
+    public void ndDownloadManager(View view) {
         Intent intent = new Intent(this, DownloadManagerActivity.class);
         startActivity(intent);
     }
