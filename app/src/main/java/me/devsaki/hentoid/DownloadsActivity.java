@@ -164,6 +164,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                 Intent intent = new Intent(getActivity(), MessageSupportActivity.class);
                 startActivity(intent);
             }
+            
             return rootView;
         }
 

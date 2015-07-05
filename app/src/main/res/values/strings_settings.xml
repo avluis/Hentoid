@@ -27,6 +27,7 @@
     <string name="pref_check_updates_summary">Enable or disable the automatic update service.</string>
     <string name="pref_check_updates_default">1</string>
 
-    <string name="pref_check_updates_now_title">Check for Updates</string>
-    <string name="pref_check_updates_now_summary">The app will check for updates.</string>
+
+    <string name="pref_app_lock_title">App Lock</string>
+    <string name="pref_app_lock_summary">Set a PIN password to open the app.\nLeave empty if you don\'t want to be asked.</string>
 </resources>

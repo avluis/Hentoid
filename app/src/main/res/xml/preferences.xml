@@ -62,8 +62,8 @@
             android:title="@string/pref_check_updates_title" />
         <Preference
             android:icon="@null"
-            android:key="pref_check_updates_now"
-            android:summary="@string/pref_check_updates_now_summary"
-            android:title="@string/pref_check_updates_now_title" />
+            android:key="pref_app_lock"
+            android:summary="@string/pref_app_lock_summary"
+            android:title="@string/pref_app_lock_title" />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -21,4 +21,6 @@ public abstract class ConstantsPreferences {
     public static final int PREF_CHECK_UPDATES_DEFAULT = 1;
     public static final int PREF_CHECK_UPDATES_ENABLE = 1;
     public static final String SHOW_MESSAGE_SUPPORT = "show_message_support_v";
+
+    public static final String PREF_APP_LOCK = "pref_app_lock";
 }
