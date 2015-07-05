@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -45,20 +46,18 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private final static String TAG = ContentAdapter.class.getName();
     private final Context context;
     private final List<Content> contents;
-    private SharedPreferences sharedPreferences;
     private SimpleDateFormat sdf;
 
     public ContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.row_download, contents);
         this.context = context;
         this.contents = contents;
-        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
     }
 
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, final ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View rowView = inflater.inflate(R.layout.row_download, parent, false);
@@ -140,7 +139,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         btnDelete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                deleteContent(content, dir);
+                deleteContent(content, dir, (ListView) parent);
             }
         });
         Button btnView = (Button) rowView.findViewById(R.id.btnViewBrowser);
@@ -153,7 +152,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         return rowView;
     }
 
-    private void deleteContent(final Content content, final File dir) {
+    private void deleteContent(final Content content, final File dir, final ListView listView) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
@@ -174,7 +173,12 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                                 .replace("@content", content.getTitle()),
                                         Toast.LENGTH_SHORT).show();
                                 contents.remove(content);
+                                int index = listView.getFirstVisiblePosition();
+                                View v = listView.getChildAt(0);
+                                int top = (v == null) ? 0 : (v.getTop() - listView.getPaddingTop());
+
                                 notifyDataSetChanged();
+                                listView.setSelectionFromTop(index, top);
                             }
                         }).setNegativeButton(android.R.string.no, null).create().show();
     }

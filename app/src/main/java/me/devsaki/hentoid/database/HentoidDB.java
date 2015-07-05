@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -81,7 +82,11 @@ public class HentoidDB extends SQLiteOpenHelper {
                     statement.clearBindings();
                     statement.bindLong(1, row.getId());
                     statement.bindString(2, row.getUniqueSiteId());
-                    statement.bindString(3, row.getCategory());
+                    String category = row.getCategory();
+                    if (category == null)
+                        statement.bindNull(3);
+                    else
+                        statement.bindString(3, category);
                     statement.bindString(4, row.getUrl());
                     if (row.getHtmlDescription() == null)
                         statement.bindNull(5);
@@ -281,7 +286,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     public List<Content> selectContentByQuery(String query, int page, int qty, boolean orderAlphabetic) {
         List<Content> result = null;
 
-        synchronized (locker) {
+        synchronized (locker){
             Log.i(TAG, "selectContentByQuery");
 
             SQLiteDatabase db = null;
@@ -310,7 +315,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     } while (cursorContent.moveToNext());
                 }
             } finally {
-                if (cursorContent != null) {
+                if(cursorContent!=null){
                     cursorContent.close();
                 }
                 Log.i(TAG, "selectContentByQuery - trying to close the db connection. Condition : " + (db != null && db.isOpen()));

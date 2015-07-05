@@ -70,7 +70,9 @@ public class Content extends ContentTable {
         if (getSite() == Site.FAKKU)
             return url.substring(1, url.lastIndexOf("/"));
         else if (getSite() == Site.PURURIN) {
-            return getAttributes().get(AttributeType.CATEGORY).get(0).getName();
+            List<Attribute> attributes = getAttributes().get(AttributeType.CATEGORY);
+            if(attributes!=null||attributes.size()>0)
+                return attributes.get(0).getName();
         }
         return null;
     }

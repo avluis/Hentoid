@@ -84,6 +84,7 @@ public class DownloadManagerService extends IntentService {
             showNotification(0, content);
             content.setStatus(StatusContent.PAUSED);
             db.updateContentStatus(content);
+            updateActivity(-1);
             return;
         }
 
