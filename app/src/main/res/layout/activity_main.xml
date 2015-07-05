@@ -62,24 +62,11 @@
         android:id="@+id/fabDownloads"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/fabSettings"
-        android:layout_alignParentRight="true"
-        android:layout_gravity="bottom"
-        android:layout_margin="5dp"
-        android:src="@drawable/ic_action_sd_storage"
-        fab:fab_colorNormal="@color/primary"
-        fab:fab_colorPressed="@color/primary_dark"
-        fab:fab_colorRipple="@color/ripple" />
-
-    <com.melnykov.fab.FloatingActionButton
-        android:id="@+id/fabSettings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_gravity="bottom"
         android:layout_margin="5dp"
-        android:src="@drawable/ic_action_settings"
+        android:src="@drawable/ic_action_sd_storage"
         fab:fab_colorNormal="@color/primary"
         fab:fab_colorPressed="@color/primary_dark"
         fab:fab_colorRipple="@color/ripple" />

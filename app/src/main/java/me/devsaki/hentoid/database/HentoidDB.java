@@ -34,7 +34,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 1;
 
     // Database Name
     private static final String DATABASE_NAME = "hentoid.db";
@@ -53,10 +53,14 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        if(oldVersion==1&&newVersion==2){
-            db.execSQL("UPDATE content set title = replace(title, '&amp;', '&')");
-            db.execSQL("UPDATE attribute set name = replace(name, '&amp;', '&')");
-        }
+        // Drop older table if existed
+        db.execSQL("DROP TABLE IF EXISTS " + ContentAttributeTable.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + AttributeTable.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + ContentTable.TABLE_NAME);
+        db.execSQL("DROP TABLE IF EXISTS " + ImageFileTable.TABLE_NAME);
+
+        // Create tables again
+        onCreate(db);
     }
 
     public void insertContent(Content row) {
