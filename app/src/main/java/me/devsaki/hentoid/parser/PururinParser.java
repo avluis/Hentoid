@@ -46,17 +46,17 @@ public class PururinParser {
                     result.getAttributes().put(AttributeType.ARTIST, parseAttributes(element, AttributeType.ARTIST));
                 } else if (td.html().startsWith("Circle")) {
                     result.getAttributes().put(AttributeType.CIRCLE, parseAttributes(element, AttributeType.CIRCLE));
-                } else if (td.html().startsWith("Parody")) {
+                } else if (td.html().startsWith("Parod")) {
                     result.getAttributes().put(AttributeType.SERIE, parseAttributes(element, AttributeType.SERIE));
                 } else if (td.html().startsWith("Character")) {
                     result.getAttributes().put(AttributeType.CHARACTER, parseAttributes(element, AttributeType.CHARACTER));
-                } else if (td.html().startsWith("Contents")) {
+                } else if (td.html().startsWith("Content")) {
                     result.getAttributes().put(AttributeType.TAG, parseAttributes(element, AttributeType.TAG));
                 } else if (td.html().startsWith("Language")) {
                     result.getAttributes().put(AttributeType.LANGUAGE, parseAttributes(element, AttributeType.LANGUAGE));
-                } else if (td.html().startsWith("Scanlators")) {
+                } else if (td.html().startsWith("Scanlator")) {
                     result.getAttributes().put(AttributeType.TRANSLATOR, parseAttributes(element, AttributeType.TRANSLATOR));
-                } else if (td.html().startsWith("Category")) {
+                } else if (td.html().startsWith("Categor")) {
                     result.getAttributes().put(AttributeType.CATEGORY, parseAttributes(element, AttributeType.CATEGORY));
                 } else if (td.html().startsWith("Uploader")) {
                     List<Attribute> attributes = new ArrayList<>(1);
