@@ -55,7 +55,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         super(context, R.layout.row_download, contents);
         this.context = context;
         this.contents = contents;
-        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+        sdf = new SimpleDateFormat("MM/dd/yy HH:mm");
     }
 
 
