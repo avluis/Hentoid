@@ -32,8 +32,11 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
@@ -142,6 +145,18 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 deleteContent(content, dir, (ListView) parent);
             }
         });
+        Button btnDownloadAgain = (Button) rowView.findViewById(R.id.btnDownloadAgain);
+        if(content.getStatus()==StatusContent.ERROR){
+            btnDownloadAgain.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    downloadAgain(content, dir, (ListView) parent);
+                }
+            });
+            btnDownloadAgain.setVisibility(View.VISIBLE);
+        }else{
+            btnDownloadAgain.setVisibility(View.GONE);
+        }
         Button btnView = (Button) rowView.findViewById(R.id.btnViewBrowser);
         btnView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -150,6 +165,40 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             }
         });
         return rowView;
+    }
+
+    private void downloadAgain(final Content content, final File dir, final ListView listView) {
+        int numberImages = 0;
+        int numberImagesError = 0;
+        numberImages = content.getImageFiles().size();
+        for (ImageFile img : content.getImageFiles()) {
+            if (img.getStatus() == StatusContent.ERROR) {
+                numberImagesError++;
+            }
+        }
+        String message = context.getString(R.string.download_again_dialog).replace("@error", numberImagesError + "").replace("@total", numberImages + "");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+        builder.setMessage(message)
+                .setPositiveButton(android.R.string.yes,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                HentoidDB db = new HentoidDB(getContext());
+                                content.setStatus(StatusContent.DOWNLOADING);
+                                content.setDownloadDate(new Date().getTime());
+                                db.updateContentStatus(content);
+                                Intent intent = new Intent(Intent.ACTION_SYNC, null, context, DownloadManagerService.class);
+                                context.startService(intent);
+
+                                Toast.makeText(context, R.string.in_queue, Toast.LENGTH_SHORT).show();
+                                contents.remove(content);
+                                int index = listView.getFirstVisiblePosition();
+                                View v = listView.getChildAt(0);
+                                int top = (v == null) ? 0 : (v.getTop() - listView.getPaddingTop());
+
+                                notifyDataSetChanged();
+                                listView.setSelectionFromTop(index, top);
+                            }
+                        }).setNegativeButton(android.R.string.no, null).create().show();
     }
 
     private void deleteContent(final Content content, final File dir, final ListView listView) {

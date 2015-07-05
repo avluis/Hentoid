@@ -204,7 +204,7 @@ public class Helper {
 
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
-                if (cookieManager.getCookieStore().getCookies().size() > 0) {
+                if (cookieManager!=null&&cookieManager.getCookieStore().getCookies().size() > 0) {
                     connection.setRequestProperty("Cookie",
                             TextUtils.join(",", cookieManager.getCookieStore().getCookies()));
                 }

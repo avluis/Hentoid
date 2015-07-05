@@ -12,6 +12,7 @@
     <string name="read">Read</string>
     <string name="view_browser">View</string>
     <string name="delete">Delete</string>
+    <string name="download_again">Download Again</string>
 
     <string name="cancel">Cancel</string>
     <string name="pause">Pause</string>
@@ -36,6 +37,7 @@
     <string name="detect_contents">The app detected that you have contents in your folder.\nDo you want to import them?</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
 
+    <string name="download_again_dialog">Total images : @total\nImage Error: @error</string>
     <string name="ask_delete">Are you sure you wish to delete this content?</string>
     <string name="deleted">Content @content deleted.</string>
 
