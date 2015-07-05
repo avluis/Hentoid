@@ -50,7 +50,7 @@ public class FakkuParser {
             result.setCoverImageUrl(content.select(".cover").attr("src"));
             Element title = doc.select(".breadcrumbs").select("a").get(1);
             result.setUrl(title.attr("href"));
-            result.setTitle(title.html());
+            result.setTitle(title.text());
 
             int rowIndex = 1;
 
@@ -152,7 +152,7 @@ public class FakkuParser {
 
     private static Attribute parseAttribute(Element attribute, AttributeType type) {
         Attribute result = new Attribute();
-        result.setName(attribute.html());
+        result.setName(attribute.text());
         result.setUrl(attribute.attr("href"));
         result.setType(type);
         return result;

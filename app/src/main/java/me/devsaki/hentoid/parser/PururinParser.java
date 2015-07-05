@@ -34,7 +34,7 @@ public class PururinParser {
             result.setCoverImageUrl(Site.PURURIN.getUrl() + info.select(".gallery-cover").select("img").attr("src"));
             Element title = doc.select(".otitle").first();
             result.setUrl(doc.select("[itemprop=breadcrumb]").select("a").last().attr("href").replace("/gallery", ""));
-            result.setTitle(title.html());
+            result.setTitle(title.text());
 
             Elements rows = doc.select(".table-info").select("tr");
 
@@ -62,7 +62,7 @@ public class PururinParser {
                     List<Attribute> attributes = new ArrayList<>(1);
                     Attribute attribute = new Attribute();
                     Element aUser = element.select("a").first();
-                    attribute.setName(aUser.html());
+                    attribute.setName(aUser.text());
                     attribute.setUrl(aUser.attr("href"));
                     attribute.setType(AttributeType.UPLOADER);
                     attributes.add(attribute);
@@ -92,7 +92,7 @@ public class PururinParser {
             Attribute attribute = new Attribute();
             attribute.setType(attributeType);
             attribute.setUrl(li.select("a").attr("href"));
-            attribute.setName(li.select("a").html());
+            attribute.setName(li.select("a").text());
             attributes.add(attribute);
         }
         return attributes;
