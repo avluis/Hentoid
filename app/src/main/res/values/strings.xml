@@ -73,4 +73,5 @@
     <string name="pin_invalid">PIN Invalid!</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="button_ok">OK</string>
+    <string name="menu_content_list">Search</string>
 </resources>

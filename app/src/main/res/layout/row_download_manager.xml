@@ -98,10 +98,10 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginLeft="10dp"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
             android:layout_weight="0"
             android:background="@android:color/holo_red_dark"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:singleLine="false"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="@android:color/white" />
