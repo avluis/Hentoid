@@ -4,7 +4,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -40,7 +40,7 @@ import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Helper;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = MainActivity.class.getName();
 
@@ -66,6 +66,7 @@ public class MainActivity extends ActionBarActivity {
                 super.onProgressChanged(view, newProgress);
                 ProgressBar pb = (ProgressBar) findViewById(R.id.pbMain);
                 pb.setProgress(newProgress);
+                pb.setVisibility(View.VISIBLE);
             }
         });
         webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");

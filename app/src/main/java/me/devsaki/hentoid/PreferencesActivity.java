@@ -9,6 +9,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.text.InputType;
+import android.view.Gravity;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -64,6 +65,7 @@ public class PreferencesActivity extends PreferenceActivity {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     builder.setTitle(R.string.app_lock_pin);
                     final EditText input = new EditText(getActivity());
+                    input.setGravity(Gravity.CENTER);
                     input.setInputType(InputType.TYPE_CLASS_NUMBER);
                     builder.setView(input);
                     builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {

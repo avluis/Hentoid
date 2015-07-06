@@ -57,7 +57,6 @@
     <string name="new_version_available">A new version is available!</string>
     <string name="version_number">Your version is @oldVersion and the new one is @newVersion</string>
 
-
     <string name="looking_new_versions">Looking for updates.</string>
     <string name="find_new_version">An update is available.</string>
     <string name="not_find_new_version">Latest version already installed.</string>
@@ -68,9 +67,10 @@
     <string name="open_perfect_viewer">Perfect Viewer</string>
     <string name="not_image_file_found">Not jpg file found in @dir</string>
 
-    <string name="app_lock_pin">App lock pin</string>
-    <string name="app_lock_enable">App lock enable</string>
-    <string name="app_lock_disable">App lock disable</string>
-    <string name="pin_invalid">PIN invalid</string>
+    <string name="app_lock_pin">App Lock PIN</string>
+    <string name="app_lock_enable">App Lock Enabled</string>
+    <string name="app_lock_disable">App Lock Disabled</string>
+    <string name="pin_invalid">PIN Invalid!</string>
     <string name="title_activity_app_lock">App Lock</string>
+    <string name="button_ok">OK</string>
 </resources>

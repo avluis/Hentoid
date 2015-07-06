@@ -7,8 +7,8 @@ import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -25,7 +25,7 @@ import me.devsaki.hentoid.util.AndroidHelper;
 /**
  * Created by DevSaki on 04/06/2015.
  */
-public abstract class HentoidActivity<T extends HentoidFragment> extends ActionBarActivity {
+public abstract class HentoidActivity<T extends HentoidFragment> extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private HentoidDB db;

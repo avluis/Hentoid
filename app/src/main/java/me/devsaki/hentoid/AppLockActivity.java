@@ -3,7 +3,9 @@ package me.devsaki.hentoid;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -11,7 +13,7 @@ import android.widget.Toast;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 
-public class AppLockActivity extends ActionBarActivity {
+public class AppLockActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,6 +26,19 @@ public class AppLockActivity extends ActionBarActivity {
             Intent intent = new Intent(this, DownloadsActivity.class);
             startActivity(intent);
         }
+
+        final EditText etPin = (EditText) findViewById(R.id.etPin);
+        etPin.setGravity(Gravity.CENTER);
+        etPin.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    checkPin(etPin);
+                    return true;
+                }
+                return false;
+            }
+        });
     }
 
     public void checkPin(View view) {
