@@ -3,7 +3,7 @@ package me.devsaki.hentoid;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
 
@@ -30,7 +30,7 @@ import me.devsaki.hentoid.v2.bean.DoujinBean;
 import me.devsaki.hentoid.v2.bean.URLBean;
 
 
-public class ImporterActivity extends ActionBarActivity {
+public class ImporterActivity extends AppCompatActivity {
 
     private static final String TAG = ImporterActivity.class.getName();
 
