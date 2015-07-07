@@ -5,6 +5,7 @@
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_download_manager">Download Manager</string>
     <string name="title_activity_preferences">Preferences</string>
+    <string name="title_activity_message_support">MessageSupportActivity</string>
     <!-- Menu -->
     <string name="menu_content_list">Search</string>
     <!-- Actions -->
@@ -34,6 +35,7 @@
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
+    <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it by Google Play.</string>
 
     <string name="detect_contents">The app detected that you have contents in your folder.\nDo you want to import them?</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
@@ -46,21 +48,19 @@
     <string name="not_previous_page">Not previous page.</string>
     <string name="error_page_out">Error: Number Page.</string>
 
-    <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it by Google Play.</string>
-    <string name="title_activity_message_support">MessageSupportActivity</string>
-
     <string name="downloads_manager_empty">Download queue is empty.</string>
     <string name="downloads_library_empty">Your downloads library is empty.</string>
     <string name="no_data">No data.</string>
     <string name="crash_app">Crash report log was sent.</string>
     <string name="close">Close</string>
-    <string name="new_version_available">A new version is available!</string>
-    <string name="version_number">Your version is @oldVersion and the new one is @newVersion</string>
     <!-- Updates -->
     <string name="looking_new_versions">Looking for updates.</string>
     <string name="find_new_version">An update is available.</string>
     <string name="not_find_new_version">Latest version already installed.</string>
     <string name="error_update_checker">Update Checker Error: Server Down.</string>
+    <string name="update_check_not_online">Not currently online.</string>
+    <string name="new_version_available">A new version is available!</string>
+    <string name="version_number">Your version is @oldVersion and the new one is @newVersion</string>
     <!-- Image Viewer -->
     <string name="select_the_action">Select how to open the content.\nYou can configure the default action in preferences.</string>
     <string name="open_default_image_viewer">Default image viewer</string>

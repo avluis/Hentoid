@@ -99,7 +99,7 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, VersionDto> {
                 Toast.makeText(mContext, R.string.error_update_checker, Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(mContext, "Not currently online.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.update_check_not_online, Toast.LENGTH_SHORT).show();
         }
     }
 }
