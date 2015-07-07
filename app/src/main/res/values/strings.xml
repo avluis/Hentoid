@@ -7,11 +7,9 @@
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_message_support">MessageSupportActivity</string>
     <!-- Menu -->
-    <string name="menu_content_list">Search</string>
-    <!-- Actions -->
-    <string name="action_settings">Settings</string>
-    <string name="action_order_alphabetic">order alphabetic</string>
-    <string name="action_order_date">order by date</string>
+    <string name="menu_search">Search</string>
+    <string name="menu_order_alphabetically">order alphabetic</string>
+    <string name="menu_order_date">order by date</string>
     <!-- Floating Action Buttons -->
     <string name="read">Read</string>
     <string name="view_browser">View</string>
