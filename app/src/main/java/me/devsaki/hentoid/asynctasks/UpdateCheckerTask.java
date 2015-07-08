@@ -19,6 +19,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.dto.UserRequest;
 import me.devsaki.hentoid.dto.VersionDto;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Created by neko on 17/06/2015.
@@ -65,36 +66,40 @@ public class UpdateCheckerTask extends AsyncTask<String, Void, VersionDto> {
 
     @Override
     protected void onPostExecute(VersionDto result) {
-        if (result != null) {
-            try {
-                PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
+        if (NetworkStatus.getInstance(mContext).isOnline()) {
+            if (result != null) {
+                try {
+                    PackageInfo pInfo = mContext.getPackageManager().getPackageInfo(mContext.getPackageName(), 0);
 
-                if (result.getVersionCode() != null && result.getVersionCode() > pInfo.versionCode) {
-                    this.versionDto = result;
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse(versionDto.getDocumentationLink()));
-                    PendingIntent resultPendingIntent = PendingIntent.getActivity(mContext,
-                            0, intent, PendingIntent.FLAG_ONE_SHOT);
-                    mBuilder = new NotificationCompat.Builder(
-                            mContext).setSmallIcon(
-                            R.drawable.ic_hentoid).setContentTitle(mContext.getString(R.string.new_version_available));
-                    mBuilder.setContentText(mContext.getString(R.string.version_number).replace("@oldVersion", pInfo.versionName).replace("@newVersion", versionDto.getVersionName()));
-                    mBuilder.setProgress(0, 0, false);
-                    Notification notif = mBuilder.build();
-                    notif.contentIntent = resultPendingIntent;
-                    notif.flags = notif.flags | Notification.DEFAULT_LIGHTS
-                            | Notification.FLAG_AUTO_CANCEL;
+                    if (result.getVersionCode() != null && result.getVersionCode() > pInfo.versionCode) {
+                        this.versionDto = result;
+                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        intent.setData(Uri.parse(versionDto.getDocumentationLink()));
+                        PendingIntent resultPendingIntent = PendingIntent.getActivity(mContext,
+                                0, intent, PendingIntent.FLAG_ONE_SHOT);
+                        mBuilder = new NotificationCompat.Builder(
+                                mContext).setSmallIcon(
+                                R.drawable.ic_hentoid).setContentTitle(mContext.getString(R.string.new_version_available));
+                        mBuilder.setContentText(mContext.getString(R.string.version_number).replace("@oldVersion", pInfo.versionName).replace("@newVersion", versionDto.getVersionName()));
+                        mBuilder.setProgress(0, 0, false);
+                        Notification notif = mBuilder.build();
+                        notif.contentIntent = resultPendingIntent;
+                        notif.flags = notif.flags | Notification.DEFAULT_LIGHTS
+                                | Notification.FLAG_AUTO_CANCEL;
 
-                    notificationManager.notify(0, notif);
-                    Toast.makeText(mContext, R.string.find_new_version, Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(mContext, R.string.not_find_new_version, Toast.LENGTH_SHORT).show();
+                        notificationManager.notify(0, notif);
+                        Toast.makeText(mContext, R.string.find_new_version, Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(mContext, R.string.not_find_new_version, Toast.LENGTH_SHORT).show();
+                    }
+                } catch (PackageManager.NameNotFoundException e) {
+                    Log.e(TAG, "update checker asynctask - onpost ", e);
                 }
-            } catch (PackageManager.NameNotFoundException e) {
-                Log.e(TAG, "update checker asynctask - onpost ", e);
+            } else {
+                Toast.makeText(mContext, R.string.error_update_checker, Toast.LENGTH_SHORT).show();
             }
         } else {
-            Toast.makeText(mContext, R.string.error_update_checker, Toast.LENGTH_SHORT).show();
+            Toast.makeText(mContext, R.string.update_check_not_online, Toast.LENGTH_SHORT).show();
         }
     }
 }
