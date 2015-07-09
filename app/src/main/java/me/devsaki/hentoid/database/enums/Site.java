@@ -7,7 +7,9 @@ import me.devsaki.hentoid.R;
  */
 public enum Site {
 
-    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_fakku, "/Downloads"), PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_pururin, "/Pururin");
+    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_fakku, "/Downloads"),
+    PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_pururin, "/Pururin"),
+    HITOMI(2, "Hitomi", "http://hitomi.la", R.drawable.ic_hitomi, "/Hitomi");
 
     private int code;
     private String description;

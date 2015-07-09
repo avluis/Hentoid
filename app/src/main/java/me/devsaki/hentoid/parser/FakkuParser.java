@@ -47,7 +47,7 @@ public class FakkuParser {
         Elements rows = content.select(".row");
         if (content.size() > 0) {
             result = new Content();
-            result.setCoverImageUrl(content.select(".cover").attr("src"));
+            result.setCoverImageUrl("http:" + content.select(".cover").attr("src"));
             Element title = doc.select(".breadcrumbs").select("a").get(1);
             result.setUrl(title.attr("href"));
             result.setTitle(title.text());

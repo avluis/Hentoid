@@ -23,7 +23,7 @@ import me.devsaki.hentoid.pururin.PururinDto;
  */
 public class PururinParser {
 
-    private final static String TAG = FakkuParser.class.getName();
+    private final static String TAG = PururinParser.class.getName();
 
     public static Content parseContent(String html) {
         Content result = null;
@@ -107,12 +107,6 @@ public class PururinParser {
         }
         return imagesUrl;
     }
-
-    public static String parseImagePage(String html) {
-        Document doc = Jsoup.parse(html);
-        return doc.select(".b").first().attr("src");
-    }
-
 
     public static PururinDto catchPururinDto(String html) {
         PururinDto result = null;

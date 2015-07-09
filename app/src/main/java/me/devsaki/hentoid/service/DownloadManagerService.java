@@ -27,6 +27,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.parser.HitomiParser;
 import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.pururin.ImageDto;
 import me.devsaki.hentoid.pururin.PururinDto;
@@ -128,7 +129,7 @@ public class DownloadManagerService extends IntentService {
             boolean imageFileErrorDownload = false;
             try {
                 if (imageFile.getStatus() != StatusContent.IGNORED) {
-                    if(!NetworkStatus.getInstance(this).isOnline())
+                    if (!NetworkStatus.getInstance(this).isOnline())
                         throw new Exception("Not connection");
                     Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
                     Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / " + content.getTitle());
@@ -300,6 +301,26 @@ public class DownloadManagerService extends IntentService {
                     String name = String.format("%03d", i) + ".jpg";
                     ImageFile imageFile = new ImageFile();
                     imageFile.setUrl(content.getSite().getUrl() + "/f/" + imageDto.getF().replace(".jpg", "/a.jpg"));
+                    imageFile.setOrder(i++);
+                    imageFile.setStatus(StatusContent.SAVED);
+                    imageFile.setName(name);
+                    content.getImageFiles().add(imageFile);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting image urls", e);
+                throw e;
+            }
+        } else if (content.getSite() == Site.HITOMI) {
+            try {
+                URL url = new URL(content.getSite().getUrl() + Constants.HITOMI_READER + content.getUrl());
+                String html = HttpClientHelper.call(url);
+                List<String> aUrls = HitomiParser.parseImageList(html);
+                int i = 1;
+                for (String str : aUrls) {
+                    String name = String.format("%03d", i) + ".jpg";
+                    ImageFile imageFile = new ImageFile();
+                    str = "https:" + str;
+                    imageFile.setUrl(str);
                     imageFile.setOrder(i++);
                     imageFile.setStatus(StatusContent.SAVED);
                     imageFile.setName(name);

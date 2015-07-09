@@ -114,6 +114,13 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         startActivity(intent);
     }
 
+    public void ndHitomiWb(View view) {
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.putExtra(MainActivity.INTENT_SITE, Site.HITOMI.getCode());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+    }
+
     public void ndPreferences(View view) {
         Intent intent = new Intent(this, PreferencesActivity.class);
         startActivity(intent);

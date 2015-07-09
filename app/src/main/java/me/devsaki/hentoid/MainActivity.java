@@ -34,6 +34,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.FakkuParser;
+import me.devsaki.hentoid.parser.HitomiParser;
 import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
@@ -166,6 +167,8 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 } else if (u.getHost().endsWith("pururin.com") && site == Site.PURURIN) {
                     return false;
+                } else if (u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) {
+                    return false;
                 } else {
                     Intent i = new Intent(Intent.ACTION_VIEW);
                     i.setData(Uri.parse(url));
@@ -246,6 +249,14 @@ public class MainActivity extends AppCompatActivity {
                             Log.e(TAG, "Error executing javascript in webview", ex);
                         }
                     }
+                } else if (site == Site.HITOMI) {
+                    if (paths.length > 0 && paths[1].startsWith("galleries")) {
+                        try {
+                            view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Error executing javascript in webview", ex);
+                        }
+                    }
                 }
             }
         }
@@ -262,34 +273,18 @@ public class MainActivity extends AppCompatActivity {
                 content = FakkuParser.parseContent(html);
             } else if (site == Site.PURURIN) {
                 content = PururinParser.parseContent(html);
+            } else if (site == Site.HITOMI) {
+                content = HitomiParser.parseContent(html);
             }
             if (content == null) {
                 return;
             }
             Content contentbd = db.selectContentById(content.getUrl().hashCode());
-            if (contentbd == null) {
-                Log.i(TAG, "Saving content : " + content.getUrl());
-                try {
-                    if (site == Site.FAKKU)
-                        content.setCoverImageUrl("http://" + content.getCoverImageUrl().substring(2));
-                    db.insertContent(content);
-                } catch (Exception e) {
-                    Log.e(TAG, "Saving content", e);
-                    return;
-                }
-            } else if (contentbd.getStatus() == StatusContent.MIGRATED) {
-                content.setStatus(StatusContent.DOWNLOADED);
-                db.insertContent(content);
-                //Save JSON file
-                try {
-                    File dir = Helper.getDownloadDir(content, MainActivity.this);
-                    Helper.saveJson(content, dir);
-                } catch (IOException e) {
-                    Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
-                }
-            } else {
-                content.setStatus(contentbd.getStatus());
-            }
+            content.setStatus(contentbd.getStatus());
+            content.setImageFiles(contentbd.getImageFiles());
+            content.setDownloadDate(contentbd.getDownloadDate());
+            db.insertContent(content);
+
             if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.DOWNLOADING) {
                 currentContent = content;
                 runOnUiThread(new Runnable() {
