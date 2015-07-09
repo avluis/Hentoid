@@ -124,7 +124,10 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                         Toast.makeText(getActivity(), R.string.not_limit_per_page, Toast.LENGTH_SHORT).show();
                     } else {
                         currentPage++;
-                        searchContent();
+                        if (!searchContent()) {
+                            btnPage.setText("" + --currentPage);
+                            Toast.makeText(getActivity(), R.string.not_next_page, Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
             });
@@ -164,20 +167,22 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                 Intent intent = new Intent(getActivity(), MessageSupportActivity.class);
                 startActivity(intent);
             }
-            
+
             return rootView;
         }
 
-        private void searchContent() {
+        private boolean searchContent() {
             int order = getSharedPreferences().getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
             int qtyPages = Integer.parseInt(getSharedPreferences().getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS, ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
             if (qtyPages < 0) {
                 qtyPages = ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT;
             }
-            contents = getDB().selectContentByQuery(query, currentPage, qtyPages, order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
-            if (contents == null) {
-                contents = new ArrayList<>();
-            }
+            List<Content> result = getDB().selectContentByQuery(query, currentPage, qtyPages, order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+            if (result != null && !result.isEmpty())
+                contents = result;
+
+            if (contents == null)
+                contents = new ArrayList<>(0);
             if (query.isEmpty())
                 getActivity().setTitle(R.string.title_activity_downloads);
             else
@@ -186,8 +191,9 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
             setListAdapter(adapter);
 
-
             btnPage.setText("" + currentPage);
+
+            return result != null && !result.isEmpty();
         }
 
         private Button btnPage;

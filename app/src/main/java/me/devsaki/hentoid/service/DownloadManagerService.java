@@ -33,6 +33,7 @@ import me.devsaki.hentoid.pururin.PururinDto;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.NetworkStatus;
 
 public class DownloadManagerService extends IntentService {
 
@@ -127,6 +128,8 @@ public class DownloadManagerService extends IntentService {
             boolean imageFileErrorDownload = false;
             try {
                 if (imageFile.getStatus() != StatusContent.IGNORED) {
+                    if(!NetworkStatus.getInstance(this).isOnline())
+                        throw new Exception("Not connection");
                     Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
                     Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / " + content.getTitle());
                 }

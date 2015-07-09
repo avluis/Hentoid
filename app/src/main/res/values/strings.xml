@@ -44,6 +44,7 @@
 
     <string name="not_limit_per_page">Not limit per page.</string>
     <string name="not_previous_page">Not previous page.</string>
+    <string name="not_next_page">Not next page.</string>
     <string name="error_page_out">Error: Number Page.</string>
 
     <string name="downloads_manager_empty">Download queue is empty.</string>
