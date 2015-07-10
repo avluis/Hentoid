@@ -96,6 +96,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         private static String query = "";
         private int currentPage = 1;
         private List<Content> contents;
+        Toast mToast;
 
         public void setQuery(String query) {
             DownloadsFragment.query = query;
@@ -107,6 +108,10 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
             btnPage = (Button) rootView.findViewById(R.id.btnPage);
+
+            if (mToast == null) { // Initialize toast if needed
+                mToast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
+            }
 
             ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
             btnRefresh.setOnClickListener(new View.OnClickListener() {
@@ -121,12 +126,14 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                 public void onClick(View v) {
                     int qtyPages = Integer.parseInt(getSharedPreferences().getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS, ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
                     if (qtyPages <= 0) {
-                        Toast.makeText(getActivity(), R.string.not_limit_per_page, Toast.LENGTH_SHORT).show();
+                        mToast.setText(R.string.not_limit_per_page);
+                        mToast.show();
                     } else {
                         currentPage++;
                         if (!searchContent()) {
                             btnPage.setText("" + --currentPage);
-                            Toast.makeText(getActivity(), R.string.not_next_page, Toast.LENGTH_SHORT).show();
+                            mToast.setText(R.string.not_next_page);
+                            mToast.show();
                         }
                     }
                 }
@@ -137,13 +144,15 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                 public void onClick(View v) {
                     int qtyPages = Integer.parseInt(getSharedPreferences().getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS, ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
                     if (qtyPages <= 0) {
-                        Toast.makeText(getActivity(), R.string.not_limit_per_page, Toast.LENGTH_SHORT).show();
+                        mToast.setText(R.string.not_limit_per_page);
+                        mToast.show();
                     } else {
                         if (currentPage > 1) {
                             currentPage--;
                             searchContent();
                         } else {
-                            Toast.makeText(getActivity(), R.string.not_previous_page, Toast.LENGTH_SHORT).show();
+                            mToast.setText(R.string.not_previous_page);
+                            mToast.show();
                         }
                     }
                 }
