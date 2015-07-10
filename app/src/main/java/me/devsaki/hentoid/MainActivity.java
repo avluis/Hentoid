@@ -70,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
                 pb.setVisibility(View.VISIBLE);
             }
         });
+        webview.getSettings().setBuiltInZoomControls(true);
+        webview.getSettings().setDisplayZoomControls(false);
         webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
         String intentVar = getIntent().getStringExtra(INTENT_URL);
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
