@@ -169,11 +169,6 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 } else if (u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) {
                     return false;
-                } else {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(url));
-                    startActivity(i);
-                    return true;
                 }
             } catch (MalformedURLException e) {
             }
