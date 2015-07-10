@@ -275,9 +275,11 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             Content contentbd = db.selectContentById(content.getUrl().hashCode());
-            content.setStatus(contentbd.getStatus());
-            content.setImageFiles(contentbd.getImageFiles());
-            content.setDownloadDate(contentbd.getDownloadDate());
+            if(contentbd!=null){
+                content.setStatus(contentbd.getStatus());
+                content.setImageFiles(contentbd.getImageFiles());
+                content.setDownloadDate(contentbd.getDownloadDate());
+            }
             db.insertContent(content);
 
             if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.DOWNLOADING) {
