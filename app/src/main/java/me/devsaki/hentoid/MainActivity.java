@@ -239,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                     }
                 } else if (site == Site.PURURIN) {
-                    if (paths.length > 0 && paths[1].startsWith("gallery")) {
+                    if (paths.length > 1 && paths[1].startsWith("gallery")) {
                         try {
                             view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
                         } catch (Exception ex) {
@@ -247,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 } else if (site == Site.HITOMI) {
-                    if (paths.length > 0 && paths[1].startsWith("galleries")) {
+                    if (paths.length > 1 && paths[1].startsWith("galleries")) {
                         try {
                             view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
                         } catch (Exception ex) {
