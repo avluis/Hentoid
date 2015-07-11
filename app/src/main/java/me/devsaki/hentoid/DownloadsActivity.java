@@ -1,11 +1,14 @@
 package me.devsaki.hentoid;
 
+import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.view.MenuItemCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -95,6 +98,10 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
     public static class DownloadsFragment extends HentoidFragment {
         private static String query = "";
         private int currentPage = 1;
+        private int prevPage = 0;
+        private int qtyPages;
+        private int order;
+        private Button btnPage;
         private List<Content> contents;
         Toast mToast;
 
@@ -103,28 +110,41 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             currentPage = 1;
         }
 
+        @SuppressLint("ShowToast")
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+        public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
-            btnPage = (Button) rootView.findViewById(R.id.btnPage);
 
-            if (mToast == null) { // Initialize toast if needed
+
+            qtyPages = Integer.parseInt(getSharedPreferences()
+                    .getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
+                            ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+
+            order = getSharedPreferences()
+                    .getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
+                            ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+
+            // Initialize toast if needed
+            if (mToast == null) {
                 mToast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
             }
 
+            btnPage = (Button) rootView.findViewById(R.id.btnPage);
             ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
+            ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
+            ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
+
             btnRefresh.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     searchContent();
                 }
             });
-            ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
+
             btnNext.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int qtyPages = Integer.parseInt(getSharedPreferences().getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS, ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
                     if (qtyPages <= 0) {
                         mToast.setText(R.string.not_limit_per_page);
                         mToast.show();
@@ -138,40 +158,39 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                     }
                 }
             });
-            ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
+
             btnPrevious.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int qtyPages = Integer.parseInt(getSharedPreferences().getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS, ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
-                    if (qtyPages <= 0) {
-                        mToast.setText(R.string.not_limit_per_page);
+                    if (currentPage > 1) {
+                        currentPage--;
+                        searchContent();
+                    } else if (qtyPages > 0) {
+                        mToast.setText(R.string.not_previous_page);
                         mToast.show();
                     } else {
-                        if (currentPage > 1) {
-                            currentPage--;
-                            searchContent();
-                        } else {
-                            mToast.setText(R.string.not_previous_page);
-                            mToast.show();
-                        }
+                        mToast.setText(R.string.not_limit_per_page);
+                        mToast.show();
                     }
                 }
             });
+
             String settingDir = getSharedPreferences().getString(Constants.SETTINGS_FOLDER, "");
             boolean showMessageSupport = true;
+
             if (settingDir.isEmpty()) {
                 Intent intent = new Intent(getActivity(), SelectFolderActivity.class);
                 startActivity(intent);
                 getActivity().finish();
-            } else {
-                searchContent();
-            }
+            } else searchContent();
+
             try {
                 PackageInfo pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
                 showMessageSupport = getSharedPreferences().getBoolean(ConstantsPreferences.SHOW_MESSAGE_SUPPORT + pInfo.versionCode, true);
 
-            } catch (Exception ex) {
+            } catch (PackageManager.NameNotFoundException ignored) {
             }
+
             if (showMessageSupport) {
                 Intent intent = new Intent(getActivity(), MessageSupportActivity.class);
                 startActivity(intent);
@@ -181,30 +200,36 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         }
 
         private boolean searchContent() {
-            int order = getSharedPreferences().getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
-            int qtyPages = Integer.parseInt(getSharedPreferences().getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS, ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
             if (qtyPages < 0) {
                 qtyPages = ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT;
             }
-            List<Content> result = getDB().selectContentByQuery(query, currentPage, qtyPages, order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+
+            List<Content> result = getDB()
+                    .selectContentByQuery(query, currentPage, qtyPages,
+                            order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+
             if (result != null && !result.isEmpty())
                 contents = result;
 
             if (contents == null)
                 contents = new ArrayList<>(0);
-            if (query.isEmpty())
-                getActivity().setTitle(R.string.title_activity_downloads);
-            else
-                getActivity().setTitle(getResources().getString(R.string.title_activity_search).replace("@search", query));
 
+            if (query.isEmpty()) {
+                getActivity().setTitle(R.string.title_activity_downloads);
+            } else {
+                getActivity().setTitle(getResources()
+                        .getString(R.string.title_activity_search)
+                        .replace("@search", query));
+            }
             ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
             setListAdapter(adapter);
 
-            btnPage.setText("" + currentPage);
+            if (prevPage != currentPage) {
+                btnPage.setText("" + currentPage);
+            }
+            prevPage = currentPage;
 
             return result != null && !result.isEmpty();
         }
-
-        private Button btnPage;
     }
 }
