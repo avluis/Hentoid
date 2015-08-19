@@ -61,6 +61,16 @@ public class MainActivity extends AppCompatActivity {
 
         final WebView webview = (WebView) findViewById(R.id.wbMain);
         webview.getSettings().setJavaScriptEnabled(true);
+
+        webview.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return true;
+            }
+        });
+
+        webview.setLongClickable(false);
+        webview.setHapticFeedbackEnabled(false);
         webview.setWebViewClient(new CustomWebViewClient());
         webview.setWebChromeClient(new WebChromeClient() {
             @Override
