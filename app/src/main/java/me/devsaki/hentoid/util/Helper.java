@@ -11,7 +11,6 @@ import android.text.TextUtils;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -214,7 +213,7 @@ public class Helper {
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setConnectTimeout(10000);
                 urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
-                if (cookieManager!=null&&cookieManager.getCookieStore().getCookies().size() > 0) {
+                if (cookieManager != null && cookieManager.getCookieStore().getCookies().size() > 0) {
                     urlConnection.setRequestProperty("Cookie",
                             TextUtils.join("; ", cookieManager.getCookieStore().get(uri)));
                 }

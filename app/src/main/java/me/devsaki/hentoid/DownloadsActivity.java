@@ -5,8 +5,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MenuItemCompat;
@@ -97,13 +95,13 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
     public static class DownloadsFragment extends HentoidFragment {
         private static String query = "";
+        Toast mToast;
         private int currentPage = 1;
         private int prevPage = 0;
         private int qtyPages;
         private int order;
         private Button btnPage;
         private List<Content> contents;
-        Toast mToast;
 
         public void setQuery(String query) {
             DownloadsFragment.query = query;

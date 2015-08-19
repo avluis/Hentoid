@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parser;
 
-import com.google.gson.Gson;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -16,7 +14,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.pururin.PururinDto;
 
 /**
  * Created by neko on 08/07/2015.

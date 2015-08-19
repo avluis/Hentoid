@@ -2,7 +2,6 @@ package me.devsaki.hentoid;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -18,8 +17,6 @@ import android.widget.Toast;
 
 import com.melnykov.fab.FloatingActionButton;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
@@ -39,16 +36,13 @@ import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.Helper;
 
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = MainActivity.class.getName();
-
     public static final String INTENT_URL = "url";
     public static final String INTENT_SITE = "site";
-
+    private static final String TAG = MainActivity.class.getName();
     private HentoidDB db;
     private Content currentContent;
     private Site site;
@@ -215,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
                 String[] cookiesArray = cookies.split(";");
                 for (String cookie : cookiesArray) {
                     String key = cookie.split("=")[0].trim();
-                    if(key.equals("cf_clearance")||site != Site.PURURIN){
+                    if (key.equals("cf_clearance") || site != Site.PURURIN) {
                         String value = cookie.split("=")[1].trim();
                         HttpCookie httpCookie = new HttpCookie(key, value);
                         httpCookie.setDomain(uri.getHost());
@@ -290,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
             Content contentbd = db.selectContentById(content.getUrl().hashCode());
-            if(contentbd!=null){
+            if (contentbd != null) {
                 content.setStatus(contentbd.getStatus());
                 content.setImageFiles(contentbd.getImageFiles());
                 content.setDownloadDate(contentbd.getDownloadDate());
