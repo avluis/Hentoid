@@ -176,25 +176,12 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             });
 
             String settingDir = getSharedPreferences().getString(Constants.SETTINGS_FOLDER, "");
-            boolean showMessageSupport = true;
 
             if (settingDir.isEmpty()) {
                 Intent intent = new Intent(getActivity(), SelectFolderActivity.class);
                 startActivity(intent);
                 getActivity().finish();
             } else searchContent();
-
-            try {
-                PackageInfo pInfo = getActivity().getPackageManager().getPackageInfo(getActivity().getPackageName(), 0);
-                showMessageSupport = getSharedPreferences().getBoolean(ConstantsPreferences.SHOW_MESSAGE_SUPPORT + pInfo.versionCode, true);
-
-            } catch (PackageManager.NameNotFoundException ignored) {
-            }
-
-            if (showMessageSupport) {
-                Intent intent = new Intent(getActivity(), MessageSupportActivity.class);
-                startActivity(intent);
-            }
 
             return rootView;
         }

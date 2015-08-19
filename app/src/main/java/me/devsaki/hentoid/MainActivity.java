@@ -38,6 +38,7 @@ import me.devsaki.hentoid.parser.HitomiParser;
 import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 
 
@@ -72,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         });
         webview.getSettings().setBuiltInZoomControls(true);
         webview.getSettings().setDisplayZoomControls(false);
+        webview.getSettings().setUserAgentString(Constants.USER_AGENT);
         webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
         String intentVar = getIntent().getStringExtra(INTENT_URL);
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
@@ -203,13 +205,14 @@ public class MainActivity extends AppCompatActivity {
                 String[] cookiesArray = cookies.split(";");
                 for (String cookie : cookiesArray) {
                     String key = cookie.split("=")[0].trim();
-                    String value = cookie.split("=")[1].trim();
-                    HttpCookie httpCookie = new HttpCookie(key, value);
-                    httpCookie.setDomain(uri.getHost());
-                    httpCookie.setPath("/");
-                    httpCookie.setVersion(0);
-                    cookieManager.getCookieStore().removeAll();
-                    cookieManager.getCookieStore().add(uri, httpCookie);
+                    if(key.equals("cf_clearance")||site != Site.PURURIN){
+                        String value = cookie.split("=")[1].trim();
+                        HttpCookie httpCookie = new HttpCookie(key, value);
+                        httpCookie.setDomain(uri.getHost());
+                        httpCookie.setPath("/");
+                        httpCookie.setVersion(0);
+                        cookieManager.getCookieStore().add(uri, httpCookie);
+                    }
                 }
             } catch (Exception ex) {
                 Log.e(TAG, "trying to get the cookies", ex);

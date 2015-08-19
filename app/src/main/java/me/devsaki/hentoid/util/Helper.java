@@ -23,6 +23,8 @@ import java.io.OutputStream;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -200,19 +202,26 @@ public class Helper {
             if (!file.exists()) {
                 final int BUFFER_SIZE = 23 * 1024;
 
+                URI uri = null;
                 URL url = new URL(imageUrl);
-
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
-                if (cookieManager!=null&&cookieManager.getCookieStore().getCookies().size() > 0) {
-                    connection.setRequestProperty("Cookie",
-                            TextUtils.join(",", cookieManager.getCookieStore().getCookies()));
+                try {
+                    uri = new URI(url.toString());
+                } catch (URISyntaxException e) {
                 }
-                connection.setDoInput(true);
+                CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
 
-                connection.connect();
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setConnectTimeout(10000);
+                urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
+                if (cookieManager!=null&&cookieManager.getCookieStore().getCookies().size() > 0) {
+                    urlConnection.setRequestProperty("Cookie",
+                            TextUtils.join("; ", cookieManager.getCookieStore().get(uri)));
+                }
 
-                input = new BufferedInputStream(url.openStream(), BUFFER_SIZE);
+                urlConnection.connect();
+
+                input = urlConnection.getInputStream();
 
                 output = new FileOutputStream(file);
 
