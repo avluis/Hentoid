@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -28,16 +27,14 @@ import me.devsaki.hentoid.database.enums.StatusContent;
  */
 public class HentoidDB extends SQLiteOpenHelper {
 
-    private static HentoidDB instance;
     private static final String TAG = HentoidDB.class.getName();
     private static final Object locker = new Object();
-
     // All Static variables
     // Database Version
     private static final int DATABASE_VERSION = 1;
-
     // Database Name
     private static final String DATABASE_NAME = "hentoid.db";
+    private static HentoidDB instance;
 
     public HentoidDB(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

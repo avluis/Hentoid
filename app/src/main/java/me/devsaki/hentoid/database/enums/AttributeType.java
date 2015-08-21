@@ -15,14 +15,6 @@ public enum AttributeType {
         this.description = description;
     }
 
-    public int getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     public static AttributeType searchByCode(int code) {
 
         for (AttributeType s : AttributeType.values()) {
@@ -31,5 +23,13 @@ public enum AttributeType {
         }
 
         return null;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

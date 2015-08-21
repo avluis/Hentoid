@@ -37,7 +37,7 @@ public class HttpClientHelper {
         urlConnection.setRequestMethod("GET");
         urlConnection.setConnectTimeout(10000);
         urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
-        if (cookieManager!=null&&cookieManager.getCookieStore().getCookies().size() > 0) {
+        if (cookieManager != null && cookieManager.getCookieStore().getCookies().size() > 0) {
             urlConnection.setRequestProperty("Cookie",
                     TextUtils.join("; ", cookieManager.getCookieStore().get(uri)));
         }

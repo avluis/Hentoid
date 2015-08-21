@@ -38,13 +38,16 @@ import me.devsaki.hentoid.util.NetworkStatus;
 
 public class DownloadManagerService extends IntentService {
 
-    private static final String TAG = DownloadManagerService.class.getName();
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
     public static final String NOTIFICATION = "me.devsaki.hentoid.service";
-
+    private static final String TAG = DownloadManagerService.class.getName();
+    public static boolean paused;
     private NotificationManager notificationManager;
     private HentoidDB db;
-    public static boolean paused;
+
+    public DownloadManagerService() {
+        super(DownloadManagerService.class.getName());
+    }
 
     @Override
     public void onCreate() {
@@ -59,10 +62,6 @@ public class DownloadManagerService extends IntentService {
     public void onDestroy() {
         super.onDestroy();
         Log.i(TAG, "onDestroy");
-    }
-
-    public DownloadManagerService() {
-        super(DownloadManagerService.class.getName());
     }
 
     @Override

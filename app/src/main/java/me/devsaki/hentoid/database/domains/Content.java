@@ -62,7 +62,7 @@ public class Content extends ContentTable {
         else if (getSite() == Site.PURURIN) {
             String[] paths = url.split("/");
             return paths[2].replace(".html", "") + "-" + paths[1];
-        }else if (getSite() == Site.HITOMI) {
+        } else if (getSite() == Site.HITOMI) {
             String[] paths = url.split("/");
             return paths[1].replace(".html", "") + "-" + title.replaceAll("[^a-zA-Z0-9.-]", "_");
         }
@@ -74,7 +74,7 @@ public class Content extends ContentTable {
             return url.substring(1, url.lastIndexOf("/"));
         else {
             List<Attribute> attributes = getAttributes().get(AttributeType.CATEGORY);
-            if(attributes!=null&&attributes.size()>0)
+            if (attributes != null && attributes.size() > 0)
                 return attributes.get(0).getName();
         }
         return null;

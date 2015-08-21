@@ -64,6 +64,7 @@ public class ContentListActivity extends HentoidActivity<ContentListActivity.Con
         private static String url;
         private int currentPage = 1;
         private List<Content> contents;
+        private Button btnPage;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -104,8 +105,6 @@ public class ContentListActivity extends HentoidActivity<ContentListActivity.Con
         private void loadContent() {
             btnPage.setText("" + currentPage);
         }
-
-        private Button btnPage;
     }
 
     private class LoadContentTask extends AsyncTask<String, Integer, List<Content>> {

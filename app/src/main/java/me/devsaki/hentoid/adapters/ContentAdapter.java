@@ -4,8 +4,6 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -146,7 +144,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             }
         });
         Button btnDownloadAgain = (Button) rowView.findViewById(R.id.btnDownloadAgain);
-        if(content.getStatus()==StatusContent.ERROR){
+        if (content.getStatus() == StatusContent.ERROR) {
             btnDownloadAgain.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -154,7 +152,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 }
             });
             btnDownloadAgain.setVisibility(View.VISIBLE);
-        }else{
+        } else {
             btnDownloadAgain.setVisibility(View.GONE);
         }
         Button btnView = (Button) rowView.findViewById(R.id.btnViewBrowser);

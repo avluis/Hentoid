@@ -4,19 +4,19 @@
         android:key="pref_key_performance_settings"
         android:title="@string/pref_performance_category">
         <ListPreference
-            android:icon="@null"
             android:defaultValue="@string/pref_image_quality_default"
             android:entries="@array/pref_image_quality_entries"
             android:entryValues="@array/pref_image_quality_entry_values"
+            android:icon="@null"
             android:key="pref_image_quality_lists"
             android:summary="@string/pref_image_quality_summary"
             android:title="@string/pref_image_quality_title" />
 
         <ListPreference
-            android:icon="@null"
             android:defaultValue="@string/pref_quantity_per_page_default"
             android:entries="@array/pref_quantity_per_page_entries"
             android:entryValues="@array/pref_quantity_per_page_entry_values"
+            android:icon="@null"
             android:key="pref_quantity_per_page_lists"
             android:summary="@string/pref_quantity_per_page_summary"
             android:title="@string/pref_quantity_per_page_title" />
@@ -26,10 +26,10 @@
         android:title="@string/pref_library_category">
 
         <ListPreference
-            android:icon="@null"
             android:defaultValue="@string/pref_read_content_default"
             android:entries="@array/pref_read_content_entries"
             android:entryValues="@array/pref_read_content_entry_values"
+            android:icon="@null"
             android:key="pref_read_content_lists"
             android:summary="@string/pref_read_content_summary"
             android:title="@string/pref_read_content_title" />
@@ -53,10 +53,10 @@
         android:title="@string/pref_others_category">
 
         <ListPreference
-            android:icon="@null"
             android:defaultValue="@string/pref_check_updates_default"
             android:entries="@array/pref_check_updates_entries"
             android:entryValues="@array/pref_check_updates_entry_values"
+            android:icon="@null"
             android:key="pref_check_updates_lists"
             android:summary="@string/pref_check_updates_summary"
             android:title="@string/pref_check_updates_title" />

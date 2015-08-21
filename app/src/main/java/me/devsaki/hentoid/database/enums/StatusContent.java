@@ -15,14 +15,6 @@ public enum StatusContent {
         this.description = description;
     }
 
-    public int getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
     public static StatusContent searchByCode(int code) {
 
         for (StatusContent s : StatusContent.values()) {
@@ -31,5 +23,13 @@ public enum StatusContent {
         }
 
         return null;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public String getDescription() {
+        return description;
     }
 }

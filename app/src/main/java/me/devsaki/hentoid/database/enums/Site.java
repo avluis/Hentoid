@@ -25,6 +25,16 @@ public enum Site {
         this.folder = folder;
     }
 
+    public static Site searchByCode(int code) {
+
+        for (Site s : Site.values()) {
+            if (s.getCode() == code)
+                return s;
+        }
+
+        return null;
+    }
+
     public int getCode() {
         return code;
     }
@@ -43,15 +53,5 @@ public enum Site {
 
     public String getFolder() {
         return folder;
-    }
-
-    public static Site searchByCode(int code) {
-
-        for (Site s : Site.values()) {
-            if (s.getCode() == code)
-                return s;
-        }
-
-        return null;
     }
 }
