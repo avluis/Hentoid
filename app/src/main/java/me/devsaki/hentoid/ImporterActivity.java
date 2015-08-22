@@ -11,6 +11,7 @@ import com.github.lzyzsd.circleprogress.DonutProgress;
 import com.google.gson.Gson;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -112,7 +113,13 @@ public class ImporterActivity extends AppCompatActivity {
                                     ContentV1 content = new Gson().fromJson(Helper.readTextFile(json), ContentV1.class);
                                     if (content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.ERROR)
                                         content.setStatus(StatusContent.MIGRATED);
-                                    contents.add(content.toContent());
+                                    Content contentV2 = content.toContent();
+                                    try {
+                                        Helper.saveJson(contentV2, file);
+                                    } catch (IOException e) {
+                                        Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                                    }
+                                    contents.add(contentV2);
                                 } catch (Exception e) {
                                     Log.e(TAG, "Reading json file", e);
                                 }
@@ -147,7 +154,13 @@ public class ImporterActivity extends AppCompatActivity {
 
                                         content.setStatus(StatusContent.MIGRATED);
                                         content.setDownloadDate(importedDate.getTime());
-                                        contents.add(content.toContent());
+                                        Content contentV2 = content.toContent();
+                                        try {
+                                            Helper.saveJson(contentV2, file);
+                                        } catch (IOException e) {
+                                            Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                                        }
+                                        contents.add(contentV2);
                                     } catch (Exception e) {
                                         Log.e(TAG, "Reading json file v2", e);
                                     }
