@@ -73,7 +73,7 @@ public class HentoidApplication extends Application {
                 ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
                 ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT + "").equals(
                 ConstantsPreferences.PREF_CHECK_UPDATES_ENABLE + "")) {
-            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, new UpdateCheck.UpdateCheckCallback() {
+            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, false, new UpdateCheck.UpdateCheckCallback() {
                 @Override
                 public void noUpdateAvailable() {
                     System.out.println("No Update Available~");

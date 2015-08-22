@@ -95,7 +95,7 @@ public class UpdateCheck implements IUpdateCheck {
         if (networkInfo != null && networkInfo.isConnected()) {
             runAsyncTask(updateURL);
         } else {
-            throw new RuntimeException("Network is not connected!");
+            Log.e("networkInfo", "Network is not connected!");
         }
     }
 

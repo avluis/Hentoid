@@ -127,7 +127,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     }
 
     public void ndCheckUpdates(View view) {
-        UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, new UpdateCheck.UpdateCheckCallback() {
+        UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, false, new UpdateCheck.UpdateCheckCallback() {
             @Override
             public void noUpdateAvailable() {
                 System.out.println("No Update Available~");
