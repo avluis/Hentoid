@@ -74,7 +74,9 @@
     <string name="title_activity_app_lock">App Lock</string>
     <string name="button_ok">OK</string>
     <!-- About Activity -->
-    <string name="about_hentoid">The Hentoid App was created by Cesar Arasaki.\nPlease support his app any way you can.</string>
+    <string name="about"><![CDATA[Hentoid is a Hentai Manga reader & archiving app initially designed for use with Fakku (known then as FakkuDroid).\nIt was then expanded to support Pururin and Hitomi.\nHentoid offers you a way to archive H-Manga to your device without the worry of being removed from your collection.]]></string>
+    <string name="about_url">https://github.com/csaki/Hentoid</string>
+    <string name="about_hentoid">The Hentoid App (and its prior incarnations) was created by Cesar Arasaki.\nPlease support his app any way you can.</string>
     <string name="about_hentoid_url">http://fakkudroid.blogspot.com/</string>
     <string name="about_community">We have a Google+ Community!\nCome join us and discover where the app is headed to next!</string>
     <string name="about_community_url">https://plus.google.com/communities/110496467189870321840</string>

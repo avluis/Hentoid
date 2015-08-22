@@ -47,6 +47,26 @@ public class AboutActivity extends AppCompatActivity {
 
         final Intent intent = new Intent(Intent.ACTION_VIEW);
 
+        ImageView ivAbout = (ImageView) findViewById(R.id.iv_about);
+        TextView tvAbout = (TextView) findViewById(R.id.tv_about);
+        final String urlAbout = getString(R.string.about_url);
+
+        ivAbout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intent.setData(Uri.parse(urlAbout));
+                startActivity(intent);
+            }
+        });
+
+        tvAbout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intent.setData(Uri.parse(urlAbout));
+                startActivity(intent);
+            }
+        });
+
         ImageView ivHentoid = (ImageView) findViewById(R.id.iv_about_hentoid);
         TextView tvHentoid = (TextView) findViewById(R.id.tv_about_hentoid);
         final String urlHentoid = getString(R.string.about_hentoid_url);
