@@ -219,7 +219,7 @@ public class UpdateCheck implements IUpdateCheck {
         builder = new NotificationCompat
                 .Builder(context)
                 .setSmallIcon(R.drawable.ic_hentoid)
-                .setTicker(context.getString(R.string.install_update))
+                .setTicker(context.getString(R.string.update_available))
                 .setContent(notificationView);
         notificationView.setTextViewText(R.id.tv_2, context.getString(R.string.download_update));
         notificationView.setOnClickPendingIntent(R.id.rl_notify_root, updateIntent);
@@ -242,7 +242,7 @@ public class UpdateCheck implements IUpdateCheck {
         builder = new NotificationCompat
                 .Builder(context)
                 .setSmallIcon(R.drawable.ic_hentoid)
-                .setTicker(context.getString(R.string.download_update))
+                .setTicker(context.getString(R.string.downloading_update))
                 .setContent(notificationView)
                 .setDeleteIntent(removeIntent);
         notificationView.setProgressBar(R.id.pb_notification, 100, 0, true);
