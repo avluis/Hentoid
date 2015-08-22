@@ -15,9 +15,9 @@ import org.acra.sender.HttpSender;
 
 import java.io.File;
 
-import me.devsaki.hentoid.asynctasks.UpdateCheckerTask;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.Helper;
@@ -38,6 +38,7 @@ public class HentoidApplication extends Application {
     private static final String TAG = HentoidApplication.class.getName();
     private LruCache<String, Bitmap> mMemoryCache;
     private SharedPreferences sharedPreferences;
+    private static final String updateURL = "https://github.com/csaki/Hentoid/tree/master/update.json";
 
     @Override
     public void onCreate() {
@@ -68,8 +69,21 @@ public class HentoidApplication extends Application {
         };
 
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        if (sharedPreferences.getString(ConstantsPreferences.PREF_CHECK_UPDATES_LISTS, ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT + "").equals(ConstantsPreferences.PREF_CHECK_UPDATES_ENABLE + "")) {
-            AndroidHelper.executeAsyncTask(new UpdateCheckerTask(this));
+        if (sharedPreferences.getString(
+                ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
+                ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT + "").equals(
+                ConstantsPreferences.PREF_CHECK_UPDATES_ENABLE + "")) {
+            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, new UpdateCheck.UpdateCheckCallback() {
+                @Override
+                public void noUpdateAvailable() {
+                    System.out.println("No Update Available~");
+                }
+
+                @Override
+                public void onUpdateAvailable() {
+                    System.out.println("Update Available!");
+                }
+            });
         }
     }
 

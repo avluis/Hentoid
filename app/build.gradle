@@ -7,8 +7,8 @@ android {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 10
-        versionName "1.0.9"
+        versionCode 11
+        versionName '1.1.0'
     }
     buildTypes {
         release {
@@ -34,4 +34,5 @@ dependencies {
     compile 'com.github.lzyzsd:circleprogress:1.1.0@aar'
     compile 'commons-io:commons-io:2.4'
     compile 'ch.acra:acra:4.6.2'
+    compile project(':ThinDownloadManager')
 }

@@ -79,6 +79,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <receiver
+            android:name=".updater.UpdateNotificationReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED" />
+                <action android:name="me.devsaki.hentoid.updater.NOTIFICATION_REMOVED" />
+                <action android:name="me.devsaki.hentoid.updater.INSTALL_UPDATE" />
+                <action android:name="me.devsaki.hentoid.updater.UPDATE_DOWNLOADED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
