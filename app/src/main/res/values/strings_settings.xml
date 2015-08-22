@@ -23,7 +23,7 @@
     <!-- Other -->
     <string name="pref_others_category">Other</string>
     <string name="pref_check_updates_title">Update Service</string>
-    <string name="pref_check_updates_summary">Enable or disable the automatic update service.</string>
+    <string name="pref_check_updates_summary">Enable updates over mobile data.</string>
     <string name="pref_check_updates_default">1</string>
     <!-- App Lock -->
     <string name="pref_app_lock_title">App Lock</string>

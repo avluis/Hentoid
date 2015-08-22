@@ -84,6 +84,18 @@ public class HentoidApplication extends Application {
                     System.out.println("Update Available!");
                 }
             });
+        } else {
+            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, new UpdateCheck.UpdateCheckCallback() {
+                @Override
+                public void noUpdateAvailable() {
+                    System.out.println("No Update Available~");
+                }
+
+                @Override
+                public void onUpdateAvailable() {
+                    System.out.println("Update Available!");
+                }
+            });
         }
     }
 
