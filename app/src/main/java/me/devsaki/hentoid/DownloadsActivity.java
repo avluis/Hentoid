@@ -195,8 +195,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
             if (result != null && !result.isEmpty())
                 contents = result;
-
-            if (contents == null)
+            else if (contents == null)
                 contents = new ArrayList<>(0);
 
             if (query.isEmpty()) {
@@ -206,8 +205,11 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                         .getString(R.string.title_activity_search)
                         .replace("@search", query));
             }
-            ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
-            setListAdapter(adapter);
+
+            if(contents==result||contents.isEmpty()){
+                ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
+                setListAdapter(adapter);
+            }
 
             if (prevPage != currentPage) {
                 btnPage.setText("" + currentPage);
