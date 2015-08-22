@@ -326,10 +326,10 @@ public class UpdateCheck implements IUpdateCheck {
                         }
 
                         @Override
-                        public void onProgress(int id, long totalBytes, long downlaodedBytes, int progress) {
+                        public void onProgress(int id, long totalBytes, long downloadedBytes, int progress) {
                             progressBar = progress;
                             total = totalBytes;
-                            done = downlaodedBytes;
+                            done = downloadedBytes;
 
                             if (!posted) {
                                 posted = true;
