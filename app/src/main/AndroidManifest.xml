@@ -79,6 +79,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".AboutActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_about"
+            android:launchMode="singleTask"
+            android:parentActivityName="me.devsaki.hentoid.MainActivity"
+            tools:ignore="UnusedAttribute">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="me.devsaki.hentoid.MainActivity" />
+        </activity>
 
         <receiver
             android:name=".updater.UpdateNotificationReceiver"

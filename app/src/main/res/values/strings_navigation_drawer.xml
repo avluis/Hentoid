@@ -14,4 +14,5 @@
     <string name="navigation_drawer_check_updates">Check for updates</string>
     <string name="navigation_drawer_preferences">Preferences</string>
     <string name="navigation_drawer_browser">Browser</string>
+    <string name="navigation_drawer_about">About</string>
 </resources>
