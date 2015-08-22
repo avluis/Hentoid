@@ -17,10 +17,9 @@ import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.asynctasks.UpdateCheckerTask;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.updater.UpdateCheck;
 
 /**
  * Created by DevSaki on 04/06/2015.
@@ -31,6 +30,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     private HentoidDB db;
     private SharedPreferences sharedPreferences;
     private T fragment;
+    private static final String updateURL = "https://avnet.ws/apps/hentoid/updates/update.json";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +127,17 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     }
 
     public void ndCheckUpdates(View view) {
-        AndroidHelper.executeAsyncTask(new UpdateCheckerTask(this));
+        UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, new UpdateCheck.UpdateCheckCallback() {
+            @Override
+            public void noUpdateAvailable() {
+                System.out.println("No Update Available~");
+            }
+
+            @Override
+            public void onUpdateAvailable() {
+                System.out.println("Update Available!");
+            }
+        });
     }
 
     public void ndDownloads(View view) {
