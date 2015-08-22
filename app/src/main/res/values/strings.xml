@@ -53,12 +53,13 @@
     <string name="crash_app">Crash report log was sent.</string>
     <string name="close">Close</string>
     <!-- Updates -->
-    <string name="download_update">Update is available, Tap to start downloading</string>
-    <string name="downloading_update">Your update is being downloaded</string>
+    <string name="download_update">An update is available!\nTap to start downloading.</string>
+    <string name="update_available">An update is available!</string>
+    <string name="downloading_update">Your update is being downloaded.</string>
     <string name="install_update">Tap to install the update!</string>
-    <string name="error_network">Network Error</string>
-    <string name="error">Connection timed out, please try again later</string>
-    <string name="update_failed">Cannot find update file on Server</string>
+    <string name="error_network">Network Error!</string>
+    <string name="error">Connection timed out, please try again later.</string>
+    <string name="update_failed">Cannot find update file on Server.</string>
     <!-- Image Viewer -->
     <string name="select_the_action">Select how to open the content.\nYou can configure the default action in preferences.</string>
     <string name="open_default_image_viewer">Default image viewer</string>
