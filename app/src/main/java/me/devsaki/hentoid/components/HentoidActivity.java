@@ -12,6 +12,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 
+import me.devsaki.hentoid.AboutActivity;
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.MainActivity;
@@ -147,6 +148,11 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
 
     public void ndDownloadManager(View view) {
         Intent intent = new Intent(this, DownloadManagerActivity.class);
+        startActivity(intent);
+    }
+
+    public void ndAbout(View view) {
+        Intent intent = new Intent(this, AboutActivity.class);
         startActivity(intent);
     }
 

@@ -6,6 +6,7 @@
     <string name="title_activity_download_manager">Download Manager</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_message_support">MessageSupportActivity</string>
+    <string name="title_activity_about">About</string>
     <!-- Menu -->
     <string name="menu_search">Search</string>
     <string name="menu_order_alphabetically">order alphabetic</string>
@@ -72,4 +73,9 @@
     <string name="pin_invalid">PIN Invalid!</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="button_ok">OK</string>
+    <!-- About Activity -->
+    <string name="about_hentoid">The Hentoid App was created by Cesar Arasaki.\nPlease support his app any way you can.</string>
+    <string name="about_hentoid_url">http://fakkudroid.blogspot.com/</string>
+    <string name="about_community">We have a Google+ Community!\nCome join us and discover where the app is headed to next!</string>
+    <string name="about_community_url">https://plus.google.com/communities/110496467189870321840</string>
 </resources>
