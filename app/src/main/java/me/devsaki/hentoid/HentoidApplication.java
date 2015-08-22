@@ -38,7 +38,7 @@ public class HentoidApplication extends Application {
     private static final String TAG = HentoidApplication.class.getName();
     private LruCache<String, Bitmap> mMemoryCache;
     private SharedPreferences sharedPreferences;
-    private static final String updateURL = "https://github.com/csaki/Hentoid/tree/master/update.json";
+    private static final String updateURL = "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
 
     @Override
     public void onCreate() {

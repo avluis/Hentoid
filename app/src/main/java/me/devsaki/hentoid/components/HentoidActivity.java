@@ -30,7 +30,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     private HentoidDB db;
     private SharedPreferences sharedPreferences;
     private T fragment;
-    private static final String updateURL = "https://github.com/csaki/Hentoid/tree/master/update.json";
+    private static final String updateURL = "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
