@@ -31,7 +31,7 @@
         android:layout_marginLeft="3dp"
         android:layout_toRightOf="@+id/iv_notification"
         android:text=""
-        android:textColor="@android:color/black" />
+        android:textAppearance="@style/TextAppearance.StatusBar.EventContent" />
 
     <TextView
         android:id="@+id/tv_2"
@@ -40,7 +40,7 @@
         android:layout_alignLeft="@+id/tv_1"
         android:layout_below="@+id/pb_notification"
         android:text=""
-        android:textColor="@android:color/black" />
+        android:textAppearance="@style/TextAppearance.StatusBar.EventContent" />
 
     <ProgressBar
         android:id="@+id/pb_notification"

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_notify_root"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:id="@+id/rl_notify_root" >
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/iv_notification"
@@ -19,6 +19,6 @@
         android:layout_marginTop="5dp"
         android:layout_toRightOf="@id/iv_notification"
         android:text=""
-        android:textColor="@android:color/black"/>
+        android:textAppearance="@style/TextAppearance.StatusBar.EventContent" />
 
 </RelativeLayout>
