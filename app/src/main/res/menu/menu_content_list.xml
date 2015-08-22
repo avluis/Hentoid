@@ -7,7 +7,8 @@
         android:icon="@android:drawable/ic_menu_search"
         android:title="@string/menu_search"
         app:actionViewClass="android.widget.SearchView"
-        app:showAsAction="always" />
+        app:showAsAction="always"
+        tools:ignore="AlwaysShowAction" />
     <item
         android:id="@+id/action_order_alphabetic"
         android:orderInCategory="98"

@@ -73,15 +73,6 @@
             android:padding="10dp"
             android:text="@string/navigation_drawer_preferences"
             android:textColor="@android:color/white" />
-
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/image_button"
-            android:onClick="ndCheckUpdates"
-            android:padding="10dp"
-            android:text="@string/navigation_drawer_check_updates"
-            android:textColor="@android:color/white" />
     </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>
