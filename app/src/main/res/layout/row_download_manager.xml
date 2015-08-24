@@ -11,7 +11,6 @@
         style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:indeterminate="true" />
@@ -75,8 +74,6 @@
                 android:layout_gravity="center_horizontal"
                 android:singleLine="false"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
-
-
         </LinearLayout>
     </LinearLayout>
 
@@ -98,6 +95,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginLeft="10dp"
+            android:layout_marginStart="10dp"
             android:layout_weight="0"
             android:background="@android:color/holo_red_dark"
             android:paddingLeft="10dp"

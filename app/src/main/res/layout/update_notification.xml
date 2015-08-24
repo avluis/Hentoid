@@ -15,6 +15,7 @@
         android:layout_width="wrap_content"
         android:layout_height="30dp"
         android:layout_alignBaseline="@anim/fade_in"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
         android:layout_marginLeft="3dp"
@@ -29,6 +30,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_marginLeft="3dp"
+        android:layout_marginStart="3dp"
+        android:layout_toEndOf="@+id/iv_notification"
         android:layout_toRightOf="@+id/iv_notification"
         android:text=""
         android:textAppearance="@style/TextAppearance.StatusBar.EventContent" />
@@ -38,6 +41,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/tv_1"
+        android:layout_alignStart="@+id/tv_1"
         android:layout_below="@+id/pb_notification"
         android:text=""
         android:textAppearance="@style/TextAppearance.StatusBar.EventContent" />
@@ -48,7 +52,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/tv_1"
+        android:layout_alignStart="@+id/tv_1"
         android:layout_below="@+id/tv_1"
-        android:layout_toLeftOf="@+id/bt_cancel" />
-
+        android:layout_toLeftOf="@+id/bt_cancel"
+        android:layout_toStartOf="@+id/bt_cancel" />
 </RelativeLayout>

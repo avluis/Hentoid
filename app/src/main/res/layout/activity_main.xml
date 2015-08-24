@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
     <ProgressBar
         android:id="@+id/pbMain"
         style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
