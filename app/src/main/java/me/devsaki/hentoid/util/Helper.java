@@ -117,7 +117,7 @@ public class Helper {
     }
 
     public static File getDefaultDir(String dir, Context context) {
-        File file = null;
+        File file;
         try {
             file = new File(Environment.getExternalStorageDirectory()
                     + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);

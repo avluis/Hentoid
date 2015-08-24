@@ -47,7 +47,7 @@ public class HttpClientHelper {
 
         // Read the input stream into a String
         InputStream inputStream = urlConnection.getInputStream();
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         if (inputStream == null) {
             // Nothing to do.
             return null;
@@ -56,15 +56,15 @@ public class HttpClientHelper {
 
         String line;
         while ((line = reader.readLine()) != null) {
-            buffer.append(line);
+            builder.append(line);
         }
 
-        if (buffer.length() == 0) {
+        if (builder.length() == 0) {
             // Stream was empty.  No point in parsing.
             return null;
         }
 
-        String result = buffer.toString();
+        String result = builder.toString();
 
         if (code != 200) {
             throw new HttpClientException(result, code);
@@ -91,7 +91,7 @@ public class HttpClientHelper {
 
         // Read the input stream into a String
         InputStream inputStream = urlConnection.getInputStream();
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
         if (inputStream == null) {
             // Nothing to do.
             return null;
@@ -100,15 +100,15 @@ public class HttpClientHelper {
 
         String line;
         while ((line = reader.readLine()) != null) {
-            buffer.append(line);
+            builder.append(line);
         }
 
-        if (buffer.length() == 0) {
+        if (builder.length() == 0) {
             // Stream was empty.  No point in parsing.
             return null;
         }
 
-        String result = buffer.toString();
+        String result = builder.toString();
 
         if (code != 200) {
             throw new HttpClientException(result, code);

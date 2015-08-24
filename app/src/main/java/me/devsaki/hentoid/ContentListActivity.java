@@ -2,7 +2,6 @@ package me.devsaki.hentoid;
 
 import android.app.SearchManager;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.view.LayoutInflater;
@@ -17,7 +16,6 @@ import android.widget.Toast;
 
 import java.util.List;
 
-import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.components.HentoidActivity;
 import me.devsaki.hentoid.components.HentoidFragment;
 import me.devsaki.hentoid.database.domains.Content;
@@ -104,26 +102,6 @@ public class ContentListActivity extends HentoidActivity<ContentListActivity.Con
 
         private void loadContent() {
             btnPage.setText("" + currentPage);
-        }
-    }
-
-    private class LoadContentTask extends AsyncTask<String, Integer, List<Content>> {
-
-        @Override
-        protected void onPreExecute() {
-            getFragment().showLoading();
-        }
-
-        @Override
-        protected List<Content> doInBackground(String... params) {
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<Content> contents) {
-            ContentAdapter adapter = new ContentAdapter(ContentListActivity.this, contents);
-            getFragment().setListAdapter(adapter);
-            getFragment().hideLoading();
         }
     }
 }

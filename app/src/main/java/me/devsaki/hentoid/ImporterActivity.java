@@ -87,13 +87,13 @@ public class ImporterActivity extends AppCompatActivity {
             for (File downloadDir : downloadDirs) {
                 files.addAll(Arrays.asList(downloadDir.listFiles()));
             }
-            int processeds = 0;
+            int processed = 0;
             if (files.size() > 0) {
                 contents = new ArrayList<>();
                 Date importedDate = new Date();
                 for (File file : files) {
-                    processeds++;
-                    currentPercent = (int) (processeds * 100.0 / files.size());
+                    processed++;
+                    currentPercent = (int) (processed * 100.0 / files.size());
                     if (file.isDirectory()) {
                         publishProgress(file.getName());
                         File json = new File(file, Constants.JSON_FILE_NAME_V2);

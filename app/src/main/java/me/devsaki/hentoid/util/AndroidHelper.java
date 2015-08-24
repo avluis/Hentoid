@@ -39,7 +39,9 @@ public class AndroidHelper {
             String message = context.getString(R.string.not_image_file_found).replace("@dir", dir.getAbsolutePath());
             Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
         } else {
-            int readContentPreference = Integer.parseInt(sharedPreferences.getString(ConstantsPreferences.PREF_READ_CONTENT_LISTS, ConstantsPreferences.PREF_READ_CONTENT_DEFAULT + ""));
+            int readContentPreference = Integer.parseInt(sharedPreferences.getString(
+                    ConstantsPreferences.PREF_READ_CONTENT_LISTS,
+                    ConstantsPreferences.PREF_READ_CONTENT_DEFAULT + ""));
             if (readContentPreference == ConstantsPreferences.PREF_READ_CONTENT_ASK) {
                 final File file = imageFile;
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
