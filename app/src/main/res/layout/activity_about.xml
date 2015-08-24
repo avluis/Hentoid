@@ -50,6 +50,7 @@
                         android:layout_marginStart="5dp"
                         android:layout_marginTop="@dimen/about_ic_icons_layout_marginTop"
                         android:text="@string/about_github"
+                        android:textSize="@dimen/about_ic_icons_textSize"
                         android:textAppearance="?android:attr/textAppearanceLarge" />
                 </LinearLayout>
 
@@ -76,6 +77,7 @@
                         android:layout_marginStart="5dp"
                         android:layout_marginTop="@dimen/about_ic_icons_layout_marginTop"
                         android:text="@string/about_community"
+                        android:textSize="@dimen/about_ic_icons_textSize"
                         android:textAppearance="?android:attr/textAppearanceLarge" />
                 </LinearLayout>
 
@@ -102,6 +104,7 @@
                         android:layout_marginStart="5dp"
                         android:layout_marginTop="@dimen/about_ic_icons_layout_marginTop"
                         android:text="@string/about_blog"
+                        android:textSize="@dimen/about_ic_icons_textSize"
                         android:textAppearance="?android:attr/textAppearanceLarge" />
                 </LinearLayout>
             </LinearLayout>
@@ -117,6 +120,7 @@
             android:layout_marginStart="10dp"
             android:layout_marginTop="15dp"
             android:text="@string/about"
+            android:textSize="@dimen/about_textSize"
             android:textAppearance="?android:attr/textAppearanceLarge" />
     </LinearLayout>
 </ScrollView>

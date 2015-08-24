@@ -7,5 +7,7 @@
     <dimen name="about_ic_icons_group_layout_margin_top">65dp</dimen>
     <dimen name="about_ic_icons_width">65dp</dimen>
     <dimen name="about_ic_icons_height">65dp</dimen>
+    <dimen name="about_ic_icons_textSize">30sp</dimen>
     <dimen name="about_ic_icons_layout_spacing">20dp</dimen>
+    <dimen name="about_textSize">30sp</dimen>
 </resources>
