@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-
     <ProgressBar
         android:id="@+id/pbMain"
         style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
@@ -13,11 +12,17 @@
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true" />
 
-    <WebView
-        android:id="@+id/wbMain"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/pbMain" />
+        android:layout_below="@+id/pbMain">
+
+        <WebView
+            android:id="@+id/wbMain"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </android.support.v4.widget.SwipeRefreshLayout>
 
     <com.melnykov.fab.FloatingActionButton
         android:id="@+id/fabRead"

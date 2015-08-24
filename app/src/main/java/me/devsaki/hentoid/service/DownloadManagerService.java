@@ -196,10 +196,6 @@ public class DownloadManagerService extends IntentService {
             resultIntent = new Intent(DownloadManagerService.this,
                     MainActivity.class);
             resultIntent.putExtra("url", content.getUrl());
-        } else if (content.getStatus() == StatusContent.SAVED) {
-            resultIntent = new Intent(DownloadManagerService.this,
-                    MainActivity.class);
-            resultIntent.putExtra("url", content.getUrl());
         }
 
         // Adds the Intent to the top of the stack
@@ -246,8 +242,9 @@ public class DownloadManagerService extends IntentService {
                 String site = null;
                 String extention = null;
                 String html = HttpClientHelper.call(url);
-
                 String find = "imgpath(x)";
+                
+                assert html != null;
                 int indexImgpath = html.indexOf(find) + find.length();
                 if (indexImgpath == find.length() - 1) {
                     throw new RuntimeException("Not find image url.");

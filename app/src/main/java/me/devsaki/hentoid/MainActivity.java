@@ -3,6 +3,8 @@ package me.devsaki.hentoid;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -47,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
     private Content currentContent;
     private Site site;
     private FloatingActionButton fabRead, fabDownload;
+    private SwipeRefreshLayout swipeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,7 +84,9 @@ public class MainActivity extends AppCompatActivity {
         webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
         String intentVar = getIntent().getStringExtra(INTENT_URL);
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
-        webview.loadUrl(intentVar == null ? site.getUrl() : intentVar);
+        if (site != null) {
+            webview.loadUrl(intentVar == null ? site.getUrl() : intentVar);
+        }
 
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabRead.setOnClickListener(new View.OnClickListener() {
@@ -118,6 +123,26 @@ public class MainActivity extends AppCompatActivity {
                 webview.reload();
             }
         });
+
+        // Swipe down to refresh webView.
+        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeLayout.setRefreshing(false);
+                    }
+                }, 5000);
+                webview.reload();
+            }
+        });
+        swipeLayout.setColorSchemeResources(
+                android.R.color.holo_blue_bright,
+                android.R.color.holo_green_light,
+                android.R.color.holo_orange_light,
+                android.R.color.holo_red_light);
     }
 
     private void readContent() {
@@ -212,7 +237,9 @@ public class MainActivity extends AppCompatActivity {
                     if (key.equals("cf_clearance") || site != Site.PURURIN) {
                         String value = cookie.split("=")[1].trim();
                         HttpCookie httpCookie = new HttpCookie(key, value);
-                        httpCookie.setDomain(uri.getHost());
+                        if (uri != null) {
+                            httpCookie.setDomain(uri.getHost());
+                        }
                         httpCookie.setPath("/");
                         httpCookie.setVersion(0);
                         cookieManager.getCookieStore().add(uri, httpCookie);

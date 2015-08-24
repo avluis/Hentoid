@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.adapters;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -49,6 +50,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private final List<Content> contents;
     private SimpleDateFormat sdf;
 
+    @SuppressLint("SimpleDateFormat")
     public ContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.row_download, contents);
         this.context = context;

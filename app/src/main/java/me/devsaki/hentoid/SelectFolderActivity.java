@@ -1,5 +1,6 @@
 package me.devsaki.hentoid;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
@@ -29,10 +30,10 @@ public class SelectFolderActivity extends Activity implements
         DirectoryChooserFragment.OnFragmentInteractionListener {
 
     private DirectoryChooserFragment mDialog;
-    private SharedPreferences prefs;
     private SharedPreferences.Editor editor;
 
 
+    @SuppressLint("CommitPrefEdits")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,7 +41,7 @@ public class SelectFolderActivity extends Activity implements
 
         mDialog = DirectoryChooserFragment.newInstance("DialogSample", null);
 
-        prefs = PreferenceManager
+        SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(this);
         editor = prefs.edit();
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
@@ -63,18 +64,18 @@ public class SelectFolderActivity extends Activity implements
 
     public void save(View view) {
         EditText editText = (EditText) findViewById(R.id.etFolder);
-        String fakkuFolder = editText.getText().toString();
+        String hentoidFolder = editText.getText().toString();
 
         //Validation folder
-        File file = new File(fakkuFolder);
+        File file = new File(hentoidFolder);
         if (!file.exists() && !file.isDirectory()) {
             if (!file.mkdirs()) {
                 Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
                 return;
             }
         }
-        File nomedia = new File(fakkuFolder, ".nomedia");
-        boolean hasPermission = false;
+        File nomedia = new File(hentoidFolder, ".nomedia");
+        boolean hasPermission;
         try {
             if (nomedia.exists()) {
                 nomedia.delete();
@@ -87,7 +88,7 @@ public class SelectFolderActivity extends Activity implements
             Toast.makeText(this, R.string.error_write_permission, Toast.LENGTH_SHORT).show();
             return;
         }
-        editor.putString(Constants.SETTINGS_FOLDER, fakkuFolder);
+        editor.putString(Constants.SETTINGS_FOLDER, hentoidFolder);
         boolean directorySaved = editor.commit();
         if (!directorySaved) {
             Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
