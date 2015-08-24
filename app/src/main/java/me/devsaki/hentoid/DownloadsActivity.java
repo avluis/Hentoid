@@ -206,7 +206,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                         .replace("@search", query));
             }
 
-            if(contents==result||contents.isEmpty()){
+            if (contents == result || contents.isEmpty()) {
                 ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
                 setListAdapter(adapter);
             }

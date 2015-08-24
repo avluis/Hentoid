@@ -49,9 +49,23 @@
             android:title="@string/pref_add_no_media_file_title" />
     </PreferenceCategory>
     <PreferenceCategory
-        android:key="pref_key_others_settings"
-        android:title="@string/pref_others_category">
+        android:key="pref_key_applock_settings"
+        android:title="@string/pref_applock_category">
+        <Preference
+            android:icon="@null"
+            android:key="pref_app_lock"
+            android:summary="@string/pref_app_lock_summary"
+            android:title="@string/pref_app_lock_title" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="pref_key_update_settings"
+        android:title="@string/pref_updates_category">
 
+        <Preference
+            android:icon="@null"
+            android:key="pref_check_updates_manual"
+            android:summary="@string/pref_check_updates_manual_summary"
+            android:title="@string/pref_check_updates_manual_title" />
         <ListPreference
             android:defaultValue="@string/pref_check_updates_default"
             android:entries="@array/pref_check_updates_entries"
@@ -60,10 +74,5 @@
             android:key="pref_check_updates_lists"
             android:summary="@string/pref_check_updates_summary"
             android:title="@string/pref_check_updates_title" />
-        <Preference
-            android:icon="@null"
-            android:key="pref_app_lock"
-            android:summary="@string/pref_app_lock_summary"
-            android:title="@string/pref_app_lock_title" />
     </PreferenceCategory>
 </PreferenceScreen>

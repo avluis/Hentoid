@@ -36,9 +36,9 @@ import me.devsaki.hentoid.util.ImageQuality;
 public class HentoidApplication extends Application {
 
     private static final String TAG = HentoidApplication.class.getName();
+    private static final String updateURL = "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
     private LruCache<String, Bitmap> mMemoryCache;
     private SharedPreferences sharedPreferences;
-    private static final String updateURL = "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
 
     @Override
     public void onCreate() {
@@ -73,27 +73,35 @@ public class HentoidApplication extends Application {
                 ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
                 ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT + "").equals(
                 ConstantsPreferences.PREF_CHECK_UPDATES_ENABLE + "")) {
-            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, false, new UpdateCheck.UpdateCheckCallback() {
-                @Override
-                public void noUpdateAvailable() {
-                    System.out.println("No Update Available~");
-                }
-
-                @Override
-                public void onUpdateAvailable() {
-                    System.out.println("Update Available!");
-                }
-            });
+            UpdateCheck(false);
         } else {
+            UpdateCheck(true);
+        }
+    }
+
+    private void UpdateCheck(boolean onlyWifi) {
+        if (onlyWifi) {
             UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, new UpdateCheck.UpdateCheckCallback() {
                 @Override
                 public void noUpdateAvailable() {
-                    System.out.println("No Update Available~");
+                    System.out.println("No update available.");
                 }
 
                 @Override
                 public void onUpdateAvailable() {
-                    System.out.println("Update Available!");
+                    System.out.println("Update available!");
+                }
+            });
+        } else {
+            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, false, new UpdateCheck.UpdateCheckCallback() {
+                @Override
+                public void noUpdateAvailable() {
+                    System.out.println("No update available.");
+                }
+
+                @Override
+                public void onUpdateAvailable() {
+                    System.out.println("Update available!");
                 }
             });
         }

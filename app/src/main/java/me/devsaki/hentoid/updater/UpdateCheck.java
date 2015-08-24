@@ -47,7 +47,7 @@ public class UpdateCheck implements IUpdateCheck {
 
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
-
+    private static volatile UpdateCheck instance;
     private final int NOTIFICATION_ID = 1;
     private NotificationCompat.Builder builder;
     private NotificationManager notificationManager;
@@ -55,13 +55,14 @@ public class UpdateCheck implements IUpdateCheck {
     private int downloadID = -1;
     private DownloadManager downloadManager;
     private String updateDownloadPath;
-
     private Context context;
     private UpdateCheckCallback updateCheckResult;
     private Handler mHandler = null;
     private String downloadURL = null;
-
-    private static volatile UpdateCheck instance;
+    private UpdateNotificationRunnable updateNotificationRunnable = new UpdateNotificationRunnable();
+    private int progressBar;
+    private long total;
+    private long done;
 
     private UpdateCheck() {
     }
@@ -115,86 +116,6 @@ public class UpdateCheck implements IUpdateCheck {
             throw new NullPointerException("context is null");
         }
     }
-
-    public interface UpdateCheckCallback {
-        void noUpdateAvailable();
-
-        void onUpdateAvailable();
-    }
-
-    public class UpdateCheckTask extends AsyncTask<String, Void, Void> {
-        @Override
-        protected Void doInBackground(String... params) {
-            try {
-                JSONObject jsonObject = downloadURL(params[0]);
-                if (jsonObject != null) {
-                    int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
-                    if (getAppVersionCode(context) < updateVersionCode) {
-                        if (updateCheckResult != null) {
-                            updateCheckResult.onUpdateAvailable();
-                        }
-                        downloadURL = jsonObject.getString(KEY_UPDATED_URL);
-                        updateAvailableNotification(downloadURL);
-                    } else {
-                        if (updateCheckResult != null) {
-                            updateCheckResult.noUpdateAvailable();
-                        }
-                        Log.i(DEBUG_TAG, "NO_UPDATE_FOUND_ON_SERVER");
-                    }
-                }
-            } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        private JSONObject downloadURL(String updateURL) throws IOException, JSONException {
-            InputStream inputStream = null;
-
-            try {
-                disableConnectionReuse();
-                URL url = new URL(updateURL);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                connection.setReadTimeout(10000);
-                connection.setConnectTimeout(15000);
-                connection.setRequestMethod("GET");
-                connection.setDoInput(true);
-
-                connection.connect();
-                int response = connection.getResponseCode();
-
-                Log.d(DEBUG_TAG, "The response is: " + response);
-
-                inputStream = connection.getInputStream();
-                String contentString = readInputStream(inputStream);
-                return new JSONObject(contentString);
-            } finally {
-                if (inputStream != null) {
-                    inputStream.close();
-                }
-            }
-        }
-
-        private void disableConnectionReuse() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
-                System.setProperty("http.keepAlive", "false");
-            }
-        }
-
-        private String readInputStream(InputStream inputStream) throws IOException {
-            StringBuilder stringBuilder = new StringBuilder(inputStream.available());
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
-            String line = reader.readLine();
-
-            while (line != null) {
-                stringBuilder.append(line);
-                line = reader.readLine();
-            }
-            return stringBuilder.toString();
-        }
-    }
-
-    private UpdateNotificationRunnable updateNotificationRunnable = new UpdateNotificationRunnable();
 
     public void updateAvailableNotification(String updateURL) {
         if (downloadManager != null) {
@@ -374,9 +295,95 @@ public class UpdateCheck implements IUpdateCheck {
         }
     }
 
-    private int progressBar;
-    private long total;
-    private long done;
+    public interface UpdateCheckCallback {
+        void noUpdateAvailable();
+
+        void onUpdateAvailable();
+    }
+
+    public class UpdateCheckTask extends AsyncTask<String, Void, Void> {
+        @Override
+        protected Void doInBackground(String... params) {
+            try {
+                JSONObject jsonObject = downloadURL(params[0]);
+                if (jsonObject != null) {
+                    int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
+                    if (getAppVersionCode(context) < updateVersionCode) {
+                        if (updateCheckResult != null) {
+                            updateCheckResult.onUpdateAvailable();
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(context, "Update available!", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                        downloadURL = jsonObject.getString(KEY_UPDATED_URL);
+                        updateAvailableNotification(downloadURL);
+                    } else {
+                        if (updateCheckResult != null) {
+                            updateCheckResult.noUpdateAvailable();
+                            mHandler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(context, "No update available.", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                        Log.i(DEBUG_TAG, "NO_UPDATE_FOUND_ON_SERVER");
+                    }
+                }
+            } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        private JSONObject downloadURL(String updateURL) throws IOException, JSONException {
+            InputStream inputStream = null;
+
+            try {
+                disableConnectionReuse();
+                URL url = new URL(updateURL);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setReadTimeout(10000);
+                connection.setConnectTimeout(15000);
+                connection.setRequestMethod("GET");
+                connection.setDoInput(true);
+
+                connection.connect();
+                int response = connection.getResponseCode();
+
+                Log.d(DEBUG_TAG, "The response is: " + response);
+
+                inputStream = connection.getInputStream();
+                String contentString = readInputStream(inputStream);
+                return new JSONObject(contentString);
+            } finally {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            }
+        }
+
+        private void disableConnectionReuse() {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
+                System.setProperty("http.keepAlive", "false");
+            }
+        }
+
+        private String readInputStream(InputStream inputStream) throws IOException {
+            StringBuilder stringBuilder = new StringBuilder(inputStream.available());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+            String line = reader.readLine();
+
+            while (line != null) {
+                stringBuilder.append(line);
+                line = reader.readLine();
+            }
+            return stringBuilder.toString();
+        }
+    }
 
     class UpdateNotificationRunnable implements Runnable {
         @Override

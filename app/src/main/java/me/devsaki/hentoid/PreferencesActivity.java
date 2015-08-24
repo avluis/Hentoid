@@ -36,6 +36,7 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 
+import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
@@ -186,6 +187,7 @@ public class PreferencesActivity extends PreferenceActivity {
     }
 
     public static class MyPreferenceFragment extends PreferenceFragment {
+        private static final String updateURL = "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
 
 
         @Override
@@ -249,6 +251,25 @@ public class PreferencesActivity extends PreferenceActivity {
                     });
 
                     builder.show();
+                    return true;
+                }
+            });
+
+            Preference mUpdateCheck = getPreferenceScreen().findPreference("pref_check_updates_manual");
+            mUpdateCheck.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+                @Override
+                public boolean onPreferenceClick(Preference preference) {
+                    UpdateCheck.getInstance().checkForUpdate(getActivity().getApplicationContext(), updateURL, false, new UpdateCheck.UpdateCheckCallback() {
+                        @Override
+                        public void noUpdateAvailable() {
+                            System.out.println("Manual update check: No update available.");
+                        }
+
+                        @Override
+                        public void onUpdateAvailable() {
+                            System.out.println("Manual update check: Update available!");
+                        }
+                    });
                     return true;
                 }
             });

@@ -35,7 +35,6 @@
         <item>1</item>
     </string-array>
 
-
     <string-array name="pref_check_updates_entries">
         <item>Enable</item>
         <item>Disable</item>

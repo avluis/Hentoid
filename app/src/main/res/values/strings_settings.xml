@@ -3,10 +3,10 @@
     <!-- Performance -->
     <string name="pref_performance_category">Performance</string>
     <string name="pref_image_quality_title">Image Quality</string>
-    <string name="pref_image_quality_summary">Tune image quality in the lists.</string>
+    <string name="pref_image_quality_summary">Tune cover image quality in the download list.</string>
     <string name="pref_image_quality_default">Low</string>
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
-    <string name="pref_quantity_per_page_summary">Quantity of images per page in the lists.</string>
+    <string name="pref_quantity_per_page_summary">Quantity of downloaded items per page in the lists.</string>
     <string name="pref_quantity_per_page_default">20</string>
     <!-- Library -->
     <string name="pref_library_category">Library</string>
@@ -20,12 +20,15 @@
     <!-- .nomedia -->
     <string name="nomedia_file_created">.nomedia file created.</string>
     <string name="nomedia_file_error">Error creating .nomedia file.</string>
-    <!-- Other -->
-    <string name="pref_others_category">Other</string>
-    <string name="pref_check_updates_title">Update Service</string>
-    <string name="pref_check_updates_summary">Enable updates over mobile data.</string>
-    <string name="pref_check_updates_default">1</string>
     <!-- App Lock -->
-    <string name="pref_app_lock_title">App Lock</string>
+    <string name="pref_applock_category">App Lock</string>
+    <string name="pref_app_lock_title">Application Lock</string>
     <string name="pref_app_lock_summary">Set a PIN password to open the app.\nLeave empty if you don\'t want to be asked.</string>
+    <!-- Updates -->
+    <string name="pref_updates_category">Updates</string>
+    <string name="pref_check_updates_manual_title">Manual Update Check</string>
+    <string name="pref_check_updates_manual_summary">Manually check for updates now.</string>
+    <string name="pref_check_updates_title">Automatic Updates</string>
+    <string name="pref_check_updates_summary">Enable automatic update checks over mobile data.</string>
+    <string name="pref_check_updates_default">1</string>
 </resources>

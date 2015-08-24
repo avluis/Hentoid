@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,7 +21,6 @@ import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.updater.UpdateCheck;
 
 /**
  * Created by DevSaki on 04/06/2015.
@@ -31,7 +31,6 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     private HentoidDB db;
     private SharedPreferences sharedPreferences;
     private T fragment;
-    private static final String updateURL = "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,6 +67,8 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         fragment = buildFragment();
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+
+        mDrawerLayout.closeDrawer(GravityCompat.START);
     }
 
     protected abstract T buildFragment();
@@ -101,7 +102,17 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
     public void ndFakkuWb(View view) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(MainActivity.INTENT_SITE, Site.FAKKU.getCode());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -109,6 +120,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     }
 
     public void ndPururinWb(View view) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(MainActivity.INTENT_SITE, Site.PURURIN.getCode());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -116,6 +128,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     }
 
     public void ndHitomiWb(View view) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra(MainActivity.INTENT_SITE, Site.HITOMI.getCode());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -123,35 +136,25 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     }
 
     public void ndPreferences(View view) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, PreferencesActivity.class);
         startActivity(intent);
     }
 
-    public void ndCheckUpdates(View view) {
-        UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, false, new UpdateCheck.UpdateCheckCallback() {
-            @Override
-            public void noUpdateAvailable() {
-                System.out.println("No Update Available~");
-            }
-
-            @Override
-            public void onUpdateAvailable() {
-                System.out.println("Update Available!");
-            }
-        });
-    }
-
     public void ndDownloads(View view) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, DownloadsActivity.class);
         startActivity(intent);
     }
 
     public void ndDownloadManager(View view) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, DownloadManagerActivity.class);
         startActivity(intent);
     }
 
     public void ndAbout(View view) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, AboutActivity.class);
         startActivity(intent);
     }
