@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="about_ic_hentoid_width">320dp</dimen>
+    <dimen name="about_ic_hentoid_height">320dp</dimen>
+    <dimen name="about_ic_icons_group_layout_margin_left">15dp</dimen>
+    <dimen name="about_ic_icons_group_layout_margin_start">15dp</dimen>
+    <dimen name="about_ic_icons_group_layout_margin_top">65dp</dimen>
+    <dimen name="about_ic_icons_width">65dp</dimen>
+    <dimen name="about_ic_icons_height">65dp</dimen>
+    <dimen name="about_ic_icons_layout_spacing">20dp</dimen>
+</resources>

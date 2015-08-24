@@ -314,7 +314,7 @@ public class UpdateCheck implements IUpdateCheck {
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(context, "Update available!", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, "Update Check: An update is available!", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
@@ -326,7 +326,7 @@ public class UpdateCheck implements IUpdateCheck {
                             mHandler.post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(context, "No update available.", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, "Update Check: No new updates.", Toast.LENGTH_SHORT).show();
                                 }
                             });
                         }
