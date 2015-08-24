@@ -1,89 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scroll"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
 
-    <ImageView
-        android:id="@+id/iv_about"
-        android:layout_width="@dimen/notification_large_icon_width"
-        android:layout_height="@dimen/notification_large_icon_height"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="15dp"
-        android:src="@mipmap/ic_launcher" />
-
-    <TextView
-        android:id="@+id/tv_about"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/iv_about"
-        android:layout_marginEnd="15dp"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginStart="10dp"
-        android:layout_marginTop="5dp"
-        android:layout_toEndOf="@+id/iv_about"
-        android:layout_toRightOf="@+id/iv_about"
-        android:text="@string/about"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:orientation="vertical">
 
-    <ImageView
-        android:id="@+id/iv_about_hentoid"
-        android:layout_width="@dimen/notification_large_icon_width"
-        android:layout_height="@dimen/notification_large_icon_height"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/tv_about"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="25dp"
-        android:src="@mipmap/ic_launcher" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/tv_about_hentoid"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/tv_about"
-        android:layout_alignStart="@+id/tv_about"
-        android:layout_alignTop="@+id/iv_about_hentoid"
-        android:layout_below="@+id/tv_about"
-        android:layout_marginEnd="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="5dp"
-        android:layout_toEndOf="@+id/iv_about_hentoid"
-        android:layout_toRightOf="@+id/iv_about_hentoid"
-        android:text="@string/about_hentoid"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+            <ImageView
+                android:id="@+id/iv_about"
+                android:layout_width="180dp"
+                android:layout_height="180dp"
+                android:src="@drawable/ic_launcher_web" />
 
-    <ImageView
-        android:id="@+id/iv_about_community"
-        android:layout_width="@dimen/notification_large_icon_width"
-        android:layout_height="@dimen/notification_large_icon_height"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_below="@+id/tv_about_hentoid"
-        android:layout_marginLeft="10dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="25dp"
-        android:src="@drawable/google_plus" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="-15dp"
+                android:layout_marginStart="-15dp"
+                android:layout_marginTop="15dp"
+                android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tv_about_community"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignLeft="@+id/tv_about_hentoid"
-        android:layout_alignStart="@+id/tv_about_hentoid"
-        android:layout_alignTop="@+id/iv_about_community"
-        android:layout_below="@+id/tv_about_hentoid"
-        android:layout_marginEnd="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="5dp"
-        android:layout_toEndOf="@+id/tv_about_hentoid"
-        android:layout_toRightOf="@+id/iv_about_community"
-        android:text="@string/about_community"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-</RelativeLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:cropToPadding="true"
+                        android:src="@drawable/ic_github_mark" />
+
+                    <TextView
+                        android:id="@+id/tv_github"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="15dp"
+                        android:text="@string/about_github"
+                        android:textAppearance="?android:attr/textAppearanceLarge" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/google_plus"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:cropToPadding="true"
+                        android:src="@drawable/ic_google_plus" />
+
+                    <TextView
+                        android:id="@+id/tv_community"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="15dp"
+                        android:text="@string/about_community"
+                        android:textAppearance="?android:attr/textAppearanceLarge" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="5dp"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/blog"
+                        android:layout_width="50dp"
+                        android:layout_height="50dp"
+                        android:cropToPadding="true"
+                        android:src="@drawable/ic_fakku" />
+
+                    <TextView
+                        android:id="@+id/tv_blog"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:layout_marginStart="5dp"
+                        android:layout_marginTop="15dp"
+                        android:text="@string/about_blog"
+                        android:textAppearance="?android:attr/textAppearanceLarge" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="15dp"
+            android:text="@string/about"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+    </LinearLayout>
+</ScrollView>

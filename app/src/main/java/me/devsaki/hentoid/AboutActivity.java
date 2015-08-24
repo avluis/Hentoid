@@ -19,12 +19,13 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatRadioButton;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.AttributeSet;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
@@ -47,58 +48,22 @@ public class AboutActivity extends AppCompatActivity {
 
         final Intent intent = new Intent(Intent.ACTION_VIEW);
 
-        ImageView ivAbout = (ImageView) findViewById(R.id.iv_about);
-        TextView tvAbout = (TextView) findViewById(R.id.tv_about);
-        final String urlAbout = getString(R.string.about_url);
-
-        ivAbout.setOnClickListener(new View.OnClickListener() {
+        Spanned spGitHub = Html.fromHtml(getString(R.string.about_github));
+        TextView tvGitHub = (TextView) findViewById(R.id.tv_github);
+        final String urlGitHub = getString(R.string.about_github_url);
+        tvGitHub.setText(spGitHub);
+        tvGitHub.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                intent.setData(Uri.parse(urlAbout));
+                intent.setData(Uri.parse(urlGitHub));
                 startActivity(intent);
             }
         });
 
-        tvAbout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                intent.setData(Uri.parse(urlAbout));
-                startActivity(intent);
-            }
-        });
-
-        ImageView ivHentoid = (ImageView) findViewById(R.id.iv_about_hentoid);
-        TextView tvHentoid = (TextView) findViewById(R.id.tv_about_hentoid);
-        final String urlHentoid = getString(R.string.about_hentoid_url);
-
-        ivHentoid.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                intent.setData(Uri.parse(urlHentoid));
-                startActivity(intent);
-            }
-        });
-
-        tvHentoid.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                intent.setData(Uri.parse(urlHentoid));
-                startActivity(intent);
-            }
-        });
-
-        ImageView ivCommunity = (ImageView) findViewById(R.id.iv_about_community);
-        TextView tvCommunity = (TextView) findViewById(R.id.tv_about_community);
+        Spanned spCommunity = Html.fromHtml(getString(R.string.about_community));
+        TextView tvCommunity = (TextView) findViewById(R.id.tv_community);
         final String urlCommunity = getString(R.string.about_community_url);
-
-        ivCommunity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                intent.setData(Uri.parse(urlCommunity));
-                startActivity(intent);
-            }
-        });
-
+        tvCommunity.setText(spCommunity);
         tvCommunity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,6 +71,22 @@ public class AboutActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        Spanned spBlog = Html.fromHtml(getString(R.string.about_blog));
+        TextView tvBlog = (TextView) findViewById(R.id.tv_blog);
+        final String urlBlog = getString(R.string.about_blog_url);
+        tvBlog.setText(spBlog);
+        tvBlog.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                intent.setData(Uri.parse(urlBlog));
+                startActivity(intent);
+            }
+        });
+
+        Spanned spAbout = Html.fromHtml(getString(R.string.about));
+        TextView tvAbout = (TextView) findViewById(R.id.tv_about);
+        tvAbout.setText(spAbout);
     }
 
     @Override
