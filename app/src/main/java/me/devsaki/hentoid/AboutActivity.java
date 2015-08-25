@@ -189,7 +189,7 @@ public class AboutActivity extends AppCompatActivity {
     }
 
     @Override
-    public View onCreateView(String name, Context context, AttributeSet attrs) {
+    public View onCreateView(String name, @NonNull Context context, @NonNull AttributeSet attrs) {
         // Allow super to try and create a view first
         final View result = super.onCreateView(name, context, attrs);
         if (result != null) {

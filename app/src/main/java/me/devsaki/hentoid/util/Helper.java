@@ -23,7 +23,6 @@ import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -35,7 +34,7 @@ import me.devsaki.hentoid.database.enums.Site;
 public class Helper {
 
     public static File getDownloadDir(Content content, Context context) {
-        File file = null;
+        File file;
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(context);
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
@@ -55,7 +54,7 @@ public class Helper {
     }
 
     public static File getDownloadDir(Site site, Context context) {
-        File file = null;
+        File file;
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(context);
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
@@ -181,10 +180,7 @@ public class Helper {
             }
 
         } finally {
-            try {
-                if (br != null) br.close();
-            } catch (IOException ex) {
-            }
+            if (br != null) br.close();
         }
         return json;
     }
@@ -203,10 +199,7 @@ public class Helper {
 
                 URI uri = null;
                 URL url = new URL(imageUrl);
-                try {
-                    uri = new URI(url.toString());
-                } catch (URISyntaxException e) {
-                }
+                uri = new URI(url.toString());
                 CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
 
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();

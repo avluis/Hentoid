@@ -11,11 +11,11 @@ public enum Site {
     PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_pururin, "/Pururin"),
     HITOMI(2, "Hitomi", "http://hitomi.la", R.drawable.ic_hitomi, "/Hitomi");
 
-    private int code;
-    private String description;
-    private String url;
-    private String folder;
-    private int ico;
+    private final int code;
+    private final String description;
+    private final String url;
+    private final String folder;
+    private final int ico;
 
     Site(int code, String description, String url, int ico, String folder) {
         this.code = code;

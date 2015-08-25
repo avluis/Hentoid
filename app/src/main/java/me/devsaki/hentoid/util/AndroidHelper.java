@@ -90,12 +90,13 @@ public class AndroidHelper {
         }
     }
 
+    @SafeVarargs
     public static <T> void executeAsyncTask(AsyncTask<T, ?, ?> task,
                                             T... params) {
         task.execute(params);
     }
 
-    public static void ignoreSslErros() {
+    public static void ignoreSslErrors() {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
     }

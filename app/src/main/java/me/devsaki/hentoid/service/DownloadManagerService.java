@@ -239,11 +239,11 @@ public class DownloadManagerService extends IntentService {
         if (content.getSite() == Site.FAKKU) {
             try {
                 URL url = new URL(content.getSite().getUrl() + content.getUrl() + Constants.FAKKU_READ);
-                String site = null;
-                String extention = null;
+                String site;
+                String extention;
                 String html = HttpClientHelper.call(url);
                 String find = "imgpath(x)";
-                
+
                 assert html != null;
                 int indexImgpath = html.indexOf(find) + find.length();
                 if (indexImgpath == find.length() - 1) {

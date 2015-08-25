@@ -46,7 +46,7 @@ public class HentoidApplication extends Application {
 
         ACRA.init(this);
 
-        AndroidHelper.ignoreSslErros();
+        AndroidHelper.ignoreSslErrors();
 
         HentoidDB db = new HentoidDB(this);
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
@@ -135,7 +135,7 @@ public class HentoidApplication extends Application {
 
     class BitmapWorkerTask extends AsyncTask<File, Void, Bitmap> {
 
-        private ImageView imageView;
+        private final ImageView imageView;
 
         public BitmapWorkerTask(ImageView imageView) {
             this.imageView = imageView;

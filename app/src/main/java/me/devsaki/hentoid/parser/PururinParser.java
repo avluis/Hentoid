@@ -109,7 +109,7 @@ public class PururinParser {
     }
 
     public static PururinDto catchPururinDto(String html) {
-        PururinDto result = null;
+        PururinDto result;
         String f = "Pururin.ImageViewer2.init(";
         int index = html.indexOf(f) + f.length();
         int lastIndex = html.indexOf(")", index);

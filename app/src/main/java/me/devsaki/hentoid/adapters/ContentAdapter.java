@@ -48,7 +48,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private final static String TAG = ContentAdapter.class.getName();
     private final Context context;
     private final List<Content> contents;
-    private SimpleDateFormat sdf;
+    private final SimpleDateFormat sdf;
 
     @SuppressLint("SimpleDateFormat")
     public ContentAdapter(Context context, List<Content> contents) {
@@ -168,7 +168,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void downloadAgain(final Content content, final File dir, final ListView listView) {
-        int numberImages = 0;
+        int numberImages;
         int numberImagesError = 0;
         numberImages = content.getImageFiles().size();
         for (ImageFile img : content.getImageFiles()) {

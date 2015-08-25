@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/rl_notify_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
@@ -8,17 +9,19 @@
         android:id="@+id/iv_notification"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="3dp"
-        android:src="@mipmap/ic_launcher" />
+        android:layout_margin="5dp"
+        android:src="@mipmap/ic_launcher"
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/tv_2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:layout_marginTop="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/iv_notification"
-        android:layout_toRightOf="@id/iv_notification"
-        android:text=""
-        android:textAppearance="@style/TextAppearance.StatusBar.EventContent" />
+        android:layout_toRightOf="@+id/iv_notification"
+        android:textAppearance="@style/TextAppearance.StatusBar.EventContent"
+        android:textSize="18sp" />
 </RelativeLayout>

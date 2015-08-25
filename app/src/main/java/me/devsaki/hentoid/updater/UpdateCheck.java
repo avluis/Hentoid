@@ -49,6 +49,7 @@ public class UpdateCheck implements IUpdateCheck {
     private static final String KEY_UPDATED_URL = "updateURL";
     private static volatile UpdateCheck instance;
     private final int NOTIFICATION_ID = 1;
+    private final UpdateNotificationRunnable updateNotificationRunnable = new UpdateNotificationRunnable();
     private NotificationCompat.Builder builder;
     private NotificationManager notificationManager;
     private RemoteViews notificationView;
@@ -59,7 +60,6 @@ public class UpdateCheck implements IUpdateCheck {
     private UpdateCheckCallback updateCheckResult;
     private Handler mHandler = null;
     private String downloadURL = null;
-    private UpdateNotificationRunnable updateNotificationRunnable = new UpdateNotificationRunnable();
     private int progressBar;
     private long total;
     private long done;
@@ -143,6 +143,9 @@ public class UpdateCheck implements IUpdateCheck {
         builder = new NotificationCompat
                 .Builder(context)
                 .setSmallIcon(R.drawable.ic_hentoid)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setVibrate(new long[]{1, 1, 1})
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setTicker(context.getString(R.string.update_available))
                 .setContent(notificationView);
         notificationView.setTextViewText(R.id.tv_2, context.getString(R.string.download_update));
@@ -188,6 +191,9 @@ public class UpdateCheck implements IUpdateCheck {
         builder = new NotificationCompat
                 .Builder(context)
                 .setSmallIcon(R.drawable.ic_hentoid)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setVibrate(new long[]{1, 1, 1})
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setTicker(context.getString(R.string.install_update))
                 .setContent(notificationView);
         notificationView.setTextViewText(R.id.tv_2, context.getString(R.string.install_update));
@@ -219,6 +225,7 @@ public class UpdateCheck implements IUpdateCheck {
             cancelDownload();
 
             Uri downloadUri = Uri.parse(downloadURL);
+            assert context.getExternalCacheDir() != null;
             Uri destinationUri = Uri.parse(updateDownloadPath = context.getExternalCacheDir().toString() + "/hentoid_update.apk");
 
             DownloadRequest downloadRequest = new DownloadRequest(downloadUri)

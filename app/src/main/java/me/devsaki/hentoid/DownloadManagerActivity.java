@@ -26,7 +26,7 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
 
     private static final String TAG = DownloadManagerActivity.class.getName();
 
-    private BroadcastReceiver receiver = new BroadcastReceiver() {
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
 
         @Override
         public void onReceive(Context context, Intent intent) {

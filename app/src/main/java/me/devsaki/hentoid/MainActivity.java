@@ -194,16 +194,19 @@ public class MainActivity extends AppCompatActivity {
     class CustomWebViewClient extends WebViewClient {
 
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            URL u = null;
             try {
-                URL u = new URL(url);
-                if (u.getHost().endsWith("fakku.net") && site == Site.FAKKU) {
-                    return false;
-                } else if (u.getHost().endsWith("pururin.com") && site == Site.PURURIN) {
-                    return false;
-                } else if (u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) {
-                    return false;
-                }
+                u = new URL(url);
             } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+            assert u != null;
+            if (u.getHost().endsWith("fakku.net") && site == Site.FAKKU) {
+                return false;
+            } else if (u.getHost().endsWith("pururin.com") && site == Site.PURURIN) {
+                return false;
+            } else if (u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) {
+                return false;
             }
             return super.shouldOverrideUrlLoading(view, url);
         }
