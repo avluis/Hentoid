@@ -63,6 +63,7 @@ public class UpdateCheck implements IUpdateCheck {
     private int progressBar;
     private long total;
     private long done;
+    private boolean showToast;
 
     private UpdateCheck() {
     }
@@ -75,7 +76,7 @@ public class UpdateCheck implements IUpdateCheck {
     }
 
     @Override
-    public void checkForUpdate(Context context, final String updateURL, final boolean onlyWifi, final UpdateCheckCallback updateCheckResult) {
+    public void checkForUpdate(Context context, final String updateURL, final boolean onlyWifi, final boolean showToast, final UpdateCheckCallback updateCheckResult) {
         if (context == null || updateURL == null) {
             throw new NullPointerException("context or UpdateURL is null");
         }
@@ -98,6 +99,8 @@ public class UpdateCheck implements IUpdateCheck {
         } else {
             Log.e("networkInfo", "Network is not connected!");
         }
+
+        this.showToast = showToast;
     }
 
     private void runAsyncTask(String updateURL) {
@@ -311,24 +314,28 @@ public class UpdateCheck implements IUpdateCheck {
                     if (getAppVersionCode(context) < updateVersionCode) {
                         if (updateCheckResult != null) {
                             updateCheckResult.onUpdateAvailable();
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(context, "Update Check: An update is available!", Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                            if (showToast) {
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(context, "Update Check: An update is available!", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
                         }
                         downloadURL = jsonObject.getString(KEY_UPDATED_URL);
                         updateAvailableNotification(downloadURL);
                     } else {
                         if (updateCheckResult != null) {
                             updateCheckResult.noUpdateAvailable();
-                            mHandler.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(context, "Update Check: No new updates.", Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                            if (showToast) {
+                                mHandler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(context, "Update Check: No new updates.", Toast.LENGTH_LONG).show();
+                                    }
+                                });
+                            }
                         }
                         Log.i(DEBUG_TAG, "NO_UPDATE_FOUND_ON_SERVER");
                     }

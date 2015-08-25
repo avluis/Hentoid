@@ -81,7 +81,7 @@ public class HentoidApplication extends Application {
 
     private void UpdateCheck(boolean onlyWifi) {
         if (onlyWifi) {
-            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, new UpdateCheck.UpdateCheckCallback() {
+            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, false, new UpdateCheck.UpdateCheckCallback() {
                 @Override
                 public void noUpdateAvailable() {
                     System.out.println("No update available.");
@@ -93,7 +93,7 @@ public class HentoidApplication extends Application {
                 }
             });
         } else {
-            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, false, new UpdateCheck.UpdateCheckCallback() {
+            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, false, false, new UpdateCheck.UpdateCheckCallback() {
                 @Override
                 public void noUpdateAvailable() {
                     System.out.println("No update available.");

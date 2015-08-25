@@ -259,7 +259,8 @@ public class PreferencesActivity extends PreferenceActivity {
             mUpdateCheck.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    UpdateCheck.getInstance().checkForUpdate(getActivity().getApplicationContext(), updateURL, false, new UpdateCheck.UpdateCheckCallback() {
+                    Toast.makeText(getActivity().getApplicationContext(), "Checking for updates...", Toast.LENGTH_SHORT).show();
+                    UpdateCheck.getInstance().checkForUpdate(getActivity().getApplicationContext(), updateURL, false, true, new UpdateCheck.UpdateCheckCallback() {
                         @Override
                         public void noUpdateAvailable() {
                             System.out.println("Manual update check: No update available.");
