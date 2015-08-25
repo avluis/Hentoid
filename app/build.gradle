@@ -7,7 +7,7 @@ android {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 22
+        versionCode 23
         versionName '1.1.2'
     }
     buildTypes {
