@@ -44,8 +44,10 @@
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="@dimen/about_ic_icons_layout_marginTop"
+                    android:gravity="center_vertical"
                     android:text="@string/about_github"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textSize="@dimen/about_ic_icons_textSize" />
 
                 <ImageView
                     android:id="@+id/google_plus"
@@ -61,8 +63,10 @@
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="@dimen/about_ic_icons_layout_marginTop"
+                    android:gravity="center_vertical"
                     android:text="@string/about_community"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textSize="@dimen/about_ic_icons_textSize" />
 
                 <ImageView
                     android:id="@+id/blog"
@@ -78,8 +82,10 @@
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
                     android:layout_marginTop="@dimen/about_ic_icons_layout_marginTop"
+                    android:gravity="center_vertical"
                     android:text="@string/about_blog"
-                    android:textAppearance="?android:attr/textAppearanceLarge" />
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textSize="@dimen/about_ic_icons_textSize" />
             </GridLayout>
         </LinearLayout>
 

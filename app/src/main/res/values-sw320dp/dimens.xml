@@ -6,10 +6,10 @@
     <dimen name="about_ic_icons_group_layout_margin_left">-5dp</dimen>
     <dimen name="about_ic_icons_group_layout_margin_start">-5dp</dimen>
     <dimen name="about_ic_icons_group_layout_margin_top">15dp</dimen>
-    <dimen name="about_ic_icons_width">35dp</dimen>
-    <dimen name="about_ic_icons_height">35dp</dimen>
-    <dimen name="about_ic_icons_textSize">10sp</dimen>
-    <dimen name="about_ic_icons_layout_marginTop">5dp</dimen>
+    <dimen name="about_ic_icons_width">30dp</dimen>
+    <dimen name="about_ic_icons_height">30dp</dimen>
+    <dimen name="about_ic_icons_textSize">12sp</dimen>
+    <dimen name="about_ic_icons_layout_marginTop">10dp</dimen>
     <dimen name="about_ic_icons_layout_spacing">5dp</dimen>
-    <dimen name="about_textSize">15sp</dimen>
+    <dimen name="about_textSize">12sp</dimen>
 </resources>
