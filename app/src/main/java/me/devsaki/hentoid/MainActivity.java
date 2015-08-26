@@ -1,7 +1,9 @@
 package me.devsaki.hentoid;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -51,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fabRead, fabDownload;
     private SwipeRefreshLayout swipeLayout;
 
+    @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,9 +84,14 @@ public class MainActivity extends AppCompatActivity {
         webview.getSettings().setBuiltInZoomControls(true);
         webview.getSettings().setDisplayZoomControls(false);
         webview.getSettings().setUserAgentString(Constants.USER_AGENT);
-        webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
+        }
+
         String intentVar = getIntent().getStringExtra(INTENT_URL);
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
+
         if (site != null) {
             webview.loadUrl(intentVar == null ? site.getUrl() : intentVar);
         }

@@ -10,11 +10,13 @@
 
     <application
         android:name=".HentoidApplication"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:configChanges="orientation|screenSize"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/HentoidTheme">
+        android:supportsRtl="false"
+        android:theme="@style/HentoidTheme"
+        tools:ignore="UnusedAttribute">
         <activity
             android:name=".DownloadsActivity"
             android:label="@string/app_name"
