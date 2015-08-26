@@ -9,230 +9,236 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class DownloadRequestQueue {
+class DownloadRequestQueue {
 
-	/** Specifies default number of download dispatcher threads. */
-	private static final int DEFAULT_DOWNLOAD_THREAD_POOL_SIZE = 1;
+    /**
+     * Specifies default number of download dispatcher threads.
+     */
+    private static final int DEFAULT_DOWNLOAD_THREAD_POOL_SIZE = 1;
 
-	/**
-	 * The set of all requests currently being processed by this RequestQueue. A Request will be in this set if it is waiting in any queue or currently being processed by any dispatcher.
-	 */
-	private Set<DownloadRequest> mCurrentRequests = new HashSet<DownloadRequest>();
+    /**
+     * The set of all requests currently being processed by this RequestQueue. A Request will be in this set if it is waiting in any queue or currently being processed by any dispatcher.
+     */
+    private final Set<DownloadRequest> mCurrentRequests = new HashSet<DownloadRequest>();
+    /**
+     * Used for generating monotonically-increasing sequence numbers for requests.
+     */
+    private final AtomicInteger mSequenceGenerator = new AtomicInteger();
+    private final CallBackDelivery mDelivery;
+    /**
+     * The queue of requests that are actually going out to the network.
+     */
+    private PriorityBlockingQueue<DownloadRequest> mDownloadQueue = new PriorityBlockingQueue<DownloadRequest>();
+    /**
+     * The download dispatchers
+     */
+    private DownloadDispatcher[] mDownloadDispatchers;
 
-	/** The queue of requests that are actually going out to the network. */
-	private PriorityBlockingQueue<DownloadRequest> mDownloadQueue = new PriorityBlockingQueue<DownloadRequest>();
+    /**
+     * Default constructor.
+     */
+    public DownloadRequestQueue() {
+        mDownloadDispatchers = new DownloadDispatcher[DEFAULT_DOWNLOAD_THREAD_POOL_SIZE];
+        mDelivery = new CallBackDelivery(new Handler(Looper.getMainLooper()));
+    }
 
-	/** The download dispatchers */
-	private DownloadDispatcher[] mDownloadDispatchers;
+    /**
+     * Creates the download dispatchers workers pool.
+     */
+    public DownloadRequestQueue(int threadPoolSize) {
+        mDelivery = new CallBackDelivery(new Handler(Looper.getMainLooper()));
+        if (threadPoolSize > 0 && threadPoolSize <= 4) {
+            mDownloadDispatchers = new DownloadDispatcher[threadPoolSize];
+        } else {
+            mDownloadDispatchers = new DownloadDispatcher[DEFAULT_DOWNLOAD_THREAD_POOL_SIZE];
+        }
+    }
 
-	/** Used for generating monotonically-increasing sequence numbers for requests. */
-	private AtomicInteger mSequenceGenerator = new AtomicInteger();
+    public void start() {
+        stop(); // Make sure any currently running dispatchers are stopped.
 
-	private CallBackDelivery mDelivery;
+        // Create download dispatchers (and corresponding threads) up to the pool size.
+        for (int i = 0; i < mDownloadDispatchers.length; i++) {
+            DownloadDispatcher downloadDispatcher = new DownloadDispatcher(mDownloadQueue, mDelivery);
+            mDownloadDispatchers[i] = downloadDispatcher;
+            downloadDispatcher.start();
+        }
+    }
 
-	/**
-	 * Delivery class to delivery the call back to call back registrar in main thread.
-	 */
-	class CallBackDelivery {
+    /**
+     * Generates a download id for the request and adds the download request to the download request queue for the dispatchers pool to act on immediately.
+     *
+     * @param request
+     * @return downloadId
+     */
+    int add(DownloadRequest request) {
+        int downloadId = getDownloadId();
+        // Tag the request as belonging to this queue and add it to the set of current requests.
+        request.setDownloadRequestQueue(this);
 
-		/** Used for posting responses, typically to the main thread. */
-		private final Executor mCallBackExecutor;
+        synchronized (mCurrentRequests) {
+            mCurrentRequests.add(request);
+        }
 
-		/**
-		 * Constructor taking a handler to main thread.
-		 */
-		public CallBackDelivery(final Handler handler) {
-			// Make an Executor that just wraps the handler.
-			mCallBackExecutor = new Executor() {
-				@Override
-				public void execute(Runnable command) {
-					handler.post(command);
-				}
-			};
-		}
+        // Process requests in the order they are added.
+        request.setDownloadId(downloadId);
+        mDownloadQueue.add(request);
 
-		public void postDownloadComplete(final DownloadRequest request) {
-			mCallBackExecutor.execute(new Runnable() {
-				public void run() {
-					request.getDownloadListener().onDownloadComplete(request.getDownloadId());
-				}
-			});
-		}
+        return downloadId;
+    }
 
-		public void postDownloadFailed(final DownloadRequest request, final int errorCode, final String errorMsg) {
-			mCallBackExecutor.execute(new Runnable() {
-				public void run() {
-					request.getDownloadListener().onDownloadFailed(request.getDownloadId(), errorCode, errorMsg);
-				}
-			});
-		}
+    // Package-Private methods.
 
-		public void postProgressUpdate(final DownloadRequest request, final long totalBytes, final long downloadedBytes, final int progress) {
-			mCallBackExecutor.execute(new Runnable() {
-				public void run() {
-					request.getDownloadListener().onProgress(request.getDownloadId(), totalBytes, downloadedBytes, progress);
-				}
-			});
-		}
-	}
+    /**
+     * Returns the current download state for a download request.
+     *
+     * @param downloadId
+     * @return
+     */
+    int query(int downloadId) {
+        synchronized (mCurrentRequests) {
+            for (DownloadRequest request : mCurrentRequests) {
+                if (request.getDownloadId() == downloadId) {
+                    return request.getDownloadState();
+                }
+            }
+        }
+        return DownloadManager.STATUS_NOT_FOUND;
+    }
 
-	/**
-	 * Default constructor.
-	 */
-	public DownloadRequestQueue() {
-		mDownloadDispatchers = new DownloadDispatcher[DEFAULT_DOWNLOAD_THREAD_POOL_SIZE];
-		mDelivery = new CallBackDelivery(new Handler(Looper.getMainLooper()));
-	}
+    /**
+     * Cancel all the dispatchers in work and also stops the dispatchers.
+     */
+    void cancelAll() {
 
-	/**
-	 * Creates the download dispatchers workers pool.
-	 */
-	public DownloadRequestQueue(int threadPoolSize) {
-		mDelivery = new CallBackDelivery(new Handler(Looper.getMainLooper()));
-		if (threadPoolSize > 0 && threadPoolSize <= 4) {
-			mDownloadDispatchers = new DownloadDispatcher[threadPoolSize];
-		} else {
-			mDownloadDispatchers = new DownloadDispatcher[DEFAULT_DOWNLOAD_THREAD_POOL_SIZE];
-		}
-	}
+        synchronized (mCurrentRequests) {
+            for (DownloadRequest request : mCurrentRequests) {
+                request.cancel();
+            }
 
-	public void start() {
-		stop(); // Make sure any currently running dispatchers are stopped.
+            // Remove all the requests from the queue.
+            mCurrentRequests.clear();
+        }
+    }
 
-		// Create download dispatchers (and corresponding threads) up to the pool size.
-		for (int i = 0; i < mDownloadDispatchers.length; i++) {
-			DownloadDispatcher downloadDispatcher = new DownloadDispatcher(mDownloadQueue, mDelivery);
-			mDownloadDispatchers[i] = downloadDispatcher;
-			downloadDispatcher.start();
-		}
-	}
+    /**
+     * Cancel a particular download in progress. Returns 1 if the download Id is found else returns 0.
+     *
+     * @param downloadId
+     * @return int
+     */
+    int cancel(int downloadId) {
+        synchronized (mCurrentRequests) {
+            for (DownloadRequest request : mCurrentRequests) {
+                if (request.getDownloadId() == downloadId) {
+                    request.cancel();
+                    return 1;
+                }
+            }
+        }
 
-	// Package-Private methods.
-	/**
-	 * Generates a download id for the request and adds the download request to the download request queue for the dispatchers pool to act on immediately.
-	 * 
-	 * @param request
-	 * @return downloadId
-	 */
-	int add(DownloadRequest request) {
-		int downloadId = getDownloadId();
-		// Tag the request as belonging to this queue and add it to the set of current requests.
-		request.setDownloadRequestQueue(this);
+        return 0;
+    }
 
-		synchronized (mCurrentRequests) {
-			mCurrentRequests.add(request);
-		}
+    void finish(DownloadRequest request) {
+        if (mCurrentRequests != null) {//if finish and release are called together it throws NPE
+            // Remove from the queue.
+            synchronized (mCurrentRequests) {
+                mCurrentRequests.remove(request);
+            }
+        }
+    }
 
-		// Process requests in the order they are added.
-		request.setDownloadId(downloadId);
-		mDownloadQueue.add(request);
+    /**
+     * Cancels all the pending & running requests and releases all the dispatchers.
+     */
+    void release() {
+        if (mCurrentRequests != null) {
+            synchronized (mCurrentRequests) {
+                mCurrentRequests.clear();
+            }
+        }
 
-		return downloadId;
-	}
+        if (mDownloadQueue != null) {
+            mDownloadQueue = null;
+        }
 
-	/**
-	 * Returns the current download state for a download request.
-	 * 
-	 * @param downloadId
-	 * @return
-	 */
-	int query(int downloadId) {
-		synchronized (mCurrentRequests) {
-			for (DownloadRequest request : mCurrentRequests) {
-				if (request.getDownloadId() == downloadId) {
-					return request.getDownloadState();
-				}
-			}
-		}
-		return DownloadManager.STATUS_NOT_FOUND;
-	}
+        if (mDownloadDispatchers != null) {
+            stop();
 
-	/**
-	 * Cancel all the dispatchers in work and also stops the dispatchers.
-	 */
-	void cancelAll() {
+            for (int i = 0; i < mDownloadDispatchers.length; i++) {
+                mDownloadDispatchers[i] = null;
+            }
+            mDownloadDispatchers = null;
+        }
 
-		synchronized (mCurrentRequests) {
-			for (DownloadRequest request : mCurrentRequests) {
-				request.cancel();
-			}
+    }
 
-			// Remove all the requests from the queue.
-			mCurrentRequests.clear();
-		}
-	}
+    /**
+     * Stops download dispatchers.
+     */
+    private void stop() {
+        for (DownloadDispatcher mDownloadDispatcher : mDownloadDispatchers) {
+            if (mDownloadDispatcher != null) {
+                mDownloadDispatcher.quit();
+            }
+        }
+    }
 
-	/**
-	 * Cancel a particular download in progress. Returns 1 if the download Id is found else returns 0.
-	 * 
-	 * @param downloadId
-	 * @return int
-	 */
-	int cancel(int downloadId) {
-		synchronized (mCurrentRequests) {
-			for (DownloadRequest request : mCurrentRequests) {
-				if (request.getDownloadId() == downloadId) {
-					request.cancel();
-					return 1;
-				}
-			}
-		}
+    // Private methods.
 
-		return 0;
-	}
+    /**
+     * Gets a sequence number.
+     */
+    private int getDownloadId() {
+        return mSequenceGenerator.incrementAndGet();
+    }
 
-	void finish(DownloadRequest request) {
-		if (mCurrentRequests != null) {//if finish and release are called together it throws NPE
-			// Remove from the queue.
-			synchronized (mCurrentRequests) {
-				mCurrentRequests.remove(request);
-			}
-		}
-	}
+    /**
+     * Delivery class to delivery the call back to call back registrar in main thread.
+     */
+    class CallBackDelivery {
 
-	/**
-	 * Cancels all the pending & running requests and releases all the dispatchers.
-	 */
-	void release() {
-		if (mCurrentRequests != null) {
-			synchronized (mCurrentRequests) {
-				mCurrentRequests.clear();
-				mCurrentRequests = null;
-			}
-		}
+        /**
+         * Used for posting responses, typically to the main thread.
+         */
+        private final Executor mCallBackExecutor;
 
-		if (mDownloadQueue != null) {
-			mDownloadQueue = null;
-		}
+        /**
+         * Constructor taking a handler to main thread.
+         */
+        public CallBackDelivery(final Handler handler) {
+            // Make an Executor that just wraps the handler.
+            mCallBackExecutor = new Executor() {
+                @Override
+                public void execute(Runnable command) {
+                    handler.post(command);
+                }
+            };
+        }
 
-		if (mDownloadDispatchers != null) {
-			stop();
-			
-			for (int i = 0; i < mDownloadDispatchers.length; i++) {
-				mDownloadDispatchers[i] = null;
-			}
-			mDownloadDispatchers = null;
-		}
+        public void postDownloadComplete(final DownloadRequest request) {
+            mCallBackExecutor.execute(new Runnable() {
+                public void run() {
+                    request.getDownloadListener().onDownloadComplete(request.getDownloadId());
+                }
+            });
+        }
 
-	}
+        public void postDownloadFailed(final DownloadRequest request, final int errorCode, final String errorMsg) {
+            mCallBackExecutor.execute(new Runnable() {
+                public void run() {
+                    request.getDownloadListener().onDownloadFailed(request.getDownloadId(), errorCode, errorMsg);
+                }
+            });
+        }
 
-	// Private methods.
-
-	/**
-	 * Stops download dispatchers.
-	 */
-	private void stop() {
-		for (int i = 0; i < mDownloadDispatchers.length; i++) {
-			if (mDownloadDispatchers[i] != null) {
-				mDownloadDispatchers[i].quit();
-			}
-		}
-	}
-
-	/**
-	 * Gets a sequence number.
-	 */
-	private int getDownloadId() {
-		return mSequenceGenerator.incrementAndGet();
-	}
+        public void postProgressUpdate(final DownloadRequest request, final long totalBytes, final long downloadedBytes, final int progress) {
+            mCallBackExecutor.execute(new Runnable() {
+                public void run() {
+                    request.getDownloadListener().onProgress(request.getDownloadId(), totalBytes, downloadedBytes, progress);
+                }
+            });
+        }
+    }
 }
