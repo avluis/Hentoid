@@ -321,11 +321,11 @@ public class MainActivity extends AppCompatActivity {
             if (content == null) {
                 return;
             }
-            Content contentbd = db.selectContentById(content.getUrl().hashCode());
-            if (contentbd != null) {
-                content.setStatus(contentbd.getStatus());
-                content.setImageFiles(contentbd.getImageFiles());
-                content.setDownloadDate(contentbd.getDownloadDate());
+            Content contentDB = db.selectContentById(content.getUrl().hashCode());
+            if (contentDB != null) {
+                content.setStatus(contentDB.getStatus());
+                content.setImageFiles(contentDB.getImageFiles());
+                content.setDownloadDate(contentDB.getDownloadDate());
             }
             db.insertContent(content);
 

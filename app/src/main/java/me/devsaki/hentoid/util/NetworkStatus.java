@@ -44,7 +44,8 @@ public class NetworkStatus {
             connMgr = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
             wifiInfo = connMgr.getActiveNetworkInfo();
-            wifi = wifiInfo != null && wifiInfo.isConnected() && wifiInfo.getType() == ConnectivityManager.TYPE_WIFI;
+            wifi = wifiInfo != null && wifiInfo.isConnected() && wifiInfo.getType() ==
+                    ConnectivityManager.TYPE_WIFI;
             return wifi;
         } catch (Exception e) {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());
@@ -58,7 +59,8 @@ public class NetworkStatus {
             connMgr = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
             mobileInfo = connMgr.getActiveNetworkInfo();
-            mobile = mobileInfo != null && mobileInfo.isConnected() && mobileInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+            mobile = mobileInfo != null && mobileInfo.isConnected() && mobileInfo.getType() ==
+                    ConnectivityManager.TYPE_MOBILE;
             return mobile;
         } catch (Exception e) {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());

@@ -5,8 +5,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -34,22 +32,27 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Created by avluis on 8/21/15.
  */
 public class UpdateCheck implements IUpdateCheck {
-    public static final String DEBUG_TAG = "Hentoid-UpdateManager";
-    public static final String ACTION_DOWNLOAD_CANCELLED = "me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED";
-    public static final String ACTION_NOTIFICATION_REMOVED = "me.devsaki.hentoid.updater.NOTIFICATION_REMOVED";
-    public static final String ACTION_DOWNLOAD_UPDATE = "me.devsaki.hentoid.updater.INSTALL_UPDATE";
-    public static final String ACTION_UPDATE_DOWNLOADED = "me.devsaki.hentoid.updater.UPDATE_DOWNLOADED";
-
+    public static final String DEBUG_TAG = "Hentoid-UpdateCheck";
+    public static final String ACTION_DOWNLOAD_CANCELLED =
+            "me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED";
+    public static final String ACTION_NOTIFICATION_REMOVED =
+            "me.devsaki.hentoid.updater.NOTIFICATION_REMOVED";
+    public static final String ACTION_DOWNLOAD_UPDATE =
+            "me.devsaki.hentoid.updater.INSTALL_UPDATE";
+    public static final String ACTION_UPDATE_DOWNLOADED =
+            "me.devsaki.hentoid.updater.UPDATE_DOWNLOADED";
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
     private static volatile UpdateCheck instance;
     private final int NOTIFICATION_ID = 1;
-    private final UpdateNotificationRunnable updateNotificationRunnable = new UpdateNotificationRunnable();
+    private final UpdateNotificationRunnable updateNotificationRunnable =
+            new UpdateNotificationRunnable();
     private NotificationCompat.Builder builder;
     private NotificationManager notificationManager;
     private RemoteViews notificationView;
@@ -64,6 +67,7 @@ public class UpdateCheck implements IUpdateCheck {
     private long total;
     private long done;
     private boolean showToast;
+    private boolean connected;
 
     private UpdateCheck() {
     }
@@ -76,7 +80,11 @@ public class UpdateCheck implements IUpdateCheck {
     }
 
     @Override
-    public void checkForUpdate(Context context, final String updateURL, final boolean onlyWifi, final boolean showToast, final UpdateCheckCallback updateCheckResult) {
+    public void checkForUpdate(Context context,
+                               final String updateURL,
+                               final boolean onlyWifi,
+                               final boolean showToast,
+                               final UpdateCheckCallback updateCheckResult) {
         if (context == null || updateURL == null) {
             throw new NullPointerException("context or UpdateURL is null");
         }
@@ -85,19 +93,15 @@ public class UpdateCheck implements IUpdateCheck {
         this.updateCheckResult = updateCheckResult;
         mHandler = new Handler(context.getMainLooper());
 
-        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo;
-
-        if (onlyWifi) {
-            networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-        } else {
-            networkInfo = connectivityManager.getActiveNetworkInfo();
-        }
-
-        if (networkInfo != null && networkInfo.isConnected()) {
-            runAsyncTask(updateURL);
+        if ((onlyWifi && NetworkStatus.getInstance(context).isWifi()) ||
+                (!onlyWifi && NetworkStatus.getInstance(context).isOnline())) {
+            connected = true;
         } else {
             Log.e("networkInfo", "Network is not connected!");
+        }
+
+        if (connected) {
+            runAsyncTask(updateURL);
         }
 
         this.showToast = showToast;
@@ -114,7 +118,8 @@ public class UpdateCheck implements IUpdateCheck {
     @Override
     public int getAppVersionCode(Context context) throws PackageManager.NameNotFoundException {
         if (context != null) {
-            return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
+            return context.getPackageManager().getPackageInfo(
+                    context.getPackageName(), 0).versionCode;
         } else {
             throw new NullPointerException("context is null");
         }

@@ -70,8 +70,8 @@ public class AndroidHelper {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
         String extension = android.webkit.MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
-        String mimetype = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-        myIntent.setDataAndType(Uri.fromFile(file), mimetype);
+        String mimeType = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        myIntent.setDataAndType(Uri.fromFile(file), mimeType);
 
         context.startActivity(myIntent);
     }

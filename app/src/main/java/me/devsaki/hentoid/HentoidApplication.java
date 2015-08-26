@@ -33,10 +33,12 @@ import me.devsaki.hentoid.util.ImageQuality;
         formUriBasicAuthPassword = "\\~hRcq#o?UVtT!7G",
         mode = ReportingInteractionMode.TOAST,
         resToastText = R.string.crash_app)
+
 public class HentoidApplication extends Application {
 
     private static final String TAG = HentoidApplication.class.getName();
-    private static final String updateURL = "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
+    private static final String updateURL =
+            "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
     private LruCache<String, Bitmap> mMemoryCache;
     private SharedPreferences sharedPreferences;
 
@@ -80,31 +82,18 @@ public class HentoidApplication extends Application {
     }
 
     private void UpdateCheck(boolean onlyWifi) {
-        if (onlyWifi) {
-            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, true, false, new UpdateCheck.UpdateCheckCallback() {
-                @Override
-                public void noUpdateAvailable() {
-                    System.out.println("No update available.");
-                }
+        UpdateCheck.getInstance().checkForUpdate(getApplicationContext(),
+                updateURL, onlyWifi, false, new UpdateCheck.UpdateCheckCallback() {
+                    @Override
+                    public void noUpdateAvailable() {
+                        System.out.println("Auto update check: No update available.");
+                    }
 
-                @Override
-                public void onUpdateAvailable() {
-                    System.out.println("Update available!");
-                }
-            });
-        } else {
-            UpdateCheck.getInstance().checkForUpdate(getApplicationContext(), updateURL, false, false, new UpdateCheck.UpdateCheckCallback() {
-                @Override
-                public void noUpdateAvailable() {
-                    System.out.println("No update available.");
-                }
-
-                @Override
-                public void onUpdateAvailable() {
-                    System.out.println("Update available!");
-                }
-            });
-        }
+                    @Override
+                    public void onUpdateAvailable() {
+                        System.out.println("Auto update check: Update available!");
+                    }
+                });
     }
 
 
@@ -145,7 +134,9 @@ public class HentoidApplication extends Application {
         @Override
         protected Bitmap doInBackground(File... params) {
             if (params[0].exists()) {
-                String imageQualityPref = sharedPreferences.getString(ConstantsPreferences.PREF_QUALITY_IMAGE_LISTS, ConstantsPreferences.PREF_QUALITY_IMAGE_DEFAULT);
+                String imageQualityPref = sharedPreferences.getString(
+                        ConstantsPreferences.PREF_QUALITY_IMAGE_LISTS,
+                        ConstantsPreferences.PREF_QUALITY_IMAGE_DEFAULT);
                 ImageQuality imageQuality = ImageQuality.LOW;
                 switch (imageQualityPref) {
                     case "Medium":
