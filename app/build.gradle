@@ -34,5 +34,5 @@ dependencies {
     compile 'com.github.lzyzsd:circleprogress:1.1.0@aar'
     compile 'commons-io:commons-io:2.4'
     compile 'ch.acra:acra:4.6.2'
-    compile project(':ThinDownloadManager')
+    compile 'com.github.smanikandan14:ThinDownloadManager:617bd6fb22'
 }
