@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_list">
@@ -39,13 +40,14 @@
             android:background="@drawable/image_button"
             android:padding="3dp"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_previous_item" />
+            android:src="@drawable/ic_action_previous_item"
+            tools:ignore="ContentDescription" />
 
         <Button
             android:id="@+id/btnPage"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
-            android:text="1" />
+            tools:text="1" />
 
         <ImageButton
             android:id="@+id/btnNext"
@@ -55,7 +57,8 @@
             android:background="@drawable/image_button"
             android:padding="3dp"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_next_item" />
+            android:src="@drawable/ic_action_next_item"
+            tools:ignore="ContentDescription" />
 
         <ImageButton
             android:id="@+id/btnRefresh"
@@ -65,8 +68,7 @@
             android:background="@drawable/image_button"
             android:padding="3dp"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_refresh" />
-
-
+            android:src="@drawable/ic_action_refresh"
+            tools:ignore="ContentDescription" />
     </LinearLayout>
 </RelativeLayout>

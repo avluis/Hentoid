@@ -18,7 +18,9 @@ import java.io.File;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
+import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
 import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageQuality;
@@ -37,8 +39,6 @@ import me.devsaki.hentoid.util.ImageQuality;
 public class HentoidApplication extends Application {
 
     private static final String TAG = HentoidApplication.class.getName();
-    private static final String updateURL =
-            "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
     private LruCache<String, Bitmap> mMemoryCache;
     private SharedPreferences sharedPreferences;
 
@@ -83,7 +83,7 @@ public class HentoidApplication extends Application {
 
     private void UpdateCheck(boolean onlyWifi) {
         UpdateCheck.getInstance().checkForUpdate(getApplicationContext(),
-                updateURL, onlyWifi, false, new UpdateCheck.UpdateCheckCallback() {
+                Constants.UPDATE_URL, onlyWifi, false, new UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {
                         System.out.println("Auto update check: No update available.");

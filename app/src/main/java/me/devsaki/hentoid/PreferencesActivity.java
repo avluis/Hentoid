@@ -52,7 +52,8 @@ public class PreferencesActivity extends PreferenceActivity {
         getDelegate().installViewFactory();
         getDelegate().onCreate(savedInstanceState);
         super.onCreate(savedInstanceState);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new MyPreferenceFragment()).commit();
+        getFragmentManager().beginTransaction().replace(android.R.id.content,
+                new MyPreferenceFragment()).commit();
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             getDelegate().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -187,8 +188,6 @@ public class PreferencesActivity extends PreferenceActivity {
     }
 
     public static class MyPreferenceFragment extends PreferenceFragment {
-        private static final String updateURL = "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
-
 
         @Override
         public void onCreate(final Bundle savedInstanceState) {
@@ -208,10 +207,12 @@ public class PreferencesActivity extends PreferenceActivity {
                         try {
                             nomedia.createNewFile();
                         } catch (IOException e) {
-                            Toast.makeText(getActivity(), R.string.error_creating_nomedia_file, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(), R.string.error_creating_nomedia_file,
+                                    Toast.LENGTH_SHORT).show();
                             return true;
                         }
-                    Toast.makeText(getActivity(), R.string.nomedia_file_created, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), R.string.nomedia_file_created,
+                            Toast.LENGTH_SHORT).show();
                     return true;
                 }
             });
@@ -237,9 +238,11 @@ public class PreferencesActivity extends PreferenceActivity {
                             editor.putString(ConstantsPreferences.PREF_APP_LOCK, lock);
                             editor.apply();
                             if (lock.isEmpty())
-                                Toast.makeText(getActivity(), R.string.app_lock_disable, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), R.string.app_lock_disable,
+                                        Toast.LENGTH_SHORT).show();
                             else
-                                Toast.makeText(getActivity(), R.string.app_lock_enable, Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getActivity(), R.string.app_lock_enable,
+                                        Toast.LENGTH_SHORT).show();
                             dialog.cancel();
                         }
                     });
@@ -259,18 +262,21 @@ public class PreferencesActivity extends PreferenceActivity {
             mUpdateCheck.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Toast.makeText(getActivity().getApplicationContext(), "Checking for updates...", Toast.LENGTH_SHORT).show();
-                    UpdateCheck.getInstance().checkForUpdate(getActivity().getApplicationContext(), updateURL, false, true, new UpdateCheck.UpdateCheckCallback() {
-                        @Override
-                        public void noUpdateAvailable() {
-                            System.out.println("Manual update check: No update available.");
-                        }
+                    Toast.makeText(getActivity().getApplicationContext(), "Checking for updates...",
+                            Toast.LENGTH_SHORT).show();
+                    UpdateCheck.getInstance().checkForUpdate(getActivity().getApplicationContext(),
+                            Constants.UPDATE_URL, false, true,
+                            new UpdateCheck.UpdateCheckCallback() {
+                                @Override
+                                public void noUpdateAvailable() {
+                                    System.out.println("Manual update check: No update available.");
+                                }
 
-                        @Override
-                        public void onUpdateAvailable() {
-                            System.out.println("Manual update check: Update available!");
-                        }
-                    });
+                                @Override
+                                public void onUpdateAvailable() {
+                                    System.out.println("Manual update check: Update available!");
+                                }
+                            });
                     return true;
                 }
             });
