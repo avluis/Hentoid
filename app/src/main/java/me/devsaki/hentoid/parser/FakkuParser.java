@@ -105,7 +105,9 @@ public class FakkuParser {
             }
 
             //Description
-            result.setHtmlDescription(rows.get(rowIndex++).select(".right").html());
+            if (rows.get(rowIndex).select("div.left").html().equals("Description")) {
+                result.setHtmlDescription(rows.get(rowIndex++).select(".right").html());
+            }
             //Tags
             result.getAttributes().put(AttributeType.TAG, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.TAG));
             result.setStatus(StatusContent.SAVED);
