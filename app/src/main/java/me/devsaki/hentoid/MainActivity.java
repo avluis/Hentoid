@@ -3,7 +3,6 @@ package me.devsaki.hentoid;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -85,9 +84,8 @@ public class MainActivity extends AppCompatActivity {
         webview.getSettings().setDisplayZoomControls(false);
         webview.getSettings().setUserAgentString(Constants.USER_AGENT);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
-        }
+
+        webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
 
         String intentVar = getIntent().getStringExtra(INTENT_URL);
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
@@ -199,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    class CustomWebViewClient extends WebViewClient {
+    private class CustomWebViewClient extends WebViewClient {
 
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             URL u = null;
@@ -242,18 +240,20 @@ public class MainActivity extends AppCompatActivity {
                     cookieManager = new java.net.CookieManager();
                 cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
                 CookieHandler.setDefault(cookieManager);
-                String[] cookiesArray = cookies.split(";");
-                for (String cookie : cookiesArray) {
-                    String key = cookie.split("=")[0].trim();
-                    if (key.equals("cf_clearance") || site != Site.PURURIN) {
-                        String value = cookie.split("=")[1].trim();
-                        HttpCookie httpCookie = new HttpCookie(key, value);
-                        if (uri != null) {
-                            httpCookie.setDomain(uri.getHost());
+                if (cookies != null) {
+                    String[] cookiesArray = cookies.split(";");
+                    for (String cookie : cookiesArray) {
+                        String key = cookie.split("=")[0].trim();
+                        if (key.equals("cf_clearance") || site != Site.PURURIN) {
+                            String value = cookie.split("=")[1].trim();
+                            HttpCookie httpCookie = new HttpCookie(key, value);
+                            if (uri != null) {
+                                httpCookie.setDomain(uri.getHost());
+                            }
+                            httpCookie.setPath("/");
+                            httpCookie.setVersion(0);
+                            cookieManager.getCookieStore().add(uri, httpCookie);
                         }
-                        httpCookie.setPath("/");
-                        httpCookie.setVersion(0);
-                        cookieManager.getCookieStore().add(uri, httpCookie);
                     }
                 }
             } catch (Exception ex) {
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class FakkuLoadListener {
+    private class FakkuLoadListener {
 
         @JavascriptInterface
         public void processHTML(String html) {

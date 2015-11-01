@@ -112,6 +112,12 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             currentPage = 1;
         }
 
+        @Override
+        public void onResume() {
+            super.onResume();
+            searchContent();
+        }
+
         @SuppressLint("ShowToast")
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
