@@ -83,8 +83,6 @@ public class MainActivity extends AppCompatActivity {
         webview.getSettings().setBuiltInZoomControls(true);
         webview.getSettings().setDisplayZoomControls(false);
         webview.getSettings().setUserAgentString(Constants.USER_AGENT);
-
-
         webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
 
         String intentVar = getIntent().getStringExtra(INTENT_URL);
@@ -200,19 +198,16 @@ public class MainActivity extends AppCompatActivity {
     private class CustomWebViewClient extends WebViewClient {
 
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            URL u = null;
             try {
-                u = new URL(url);
+                URL u = new URL(url);
+                if (u.getHost().endsWith("fakku.net") && site == Site.FAKKU) {
+                    return false;
+                } else if (u.getHost().endsWith("pururin.com") && site == Site.PURURIN) {
+                    return false;
+                } else if (u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) {
+                    return false;
+                }
             } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
-            assert u != null;
-            if (u.getHost().endsWith("fakku.net") && site == Site.FAKKU) {
-                return false;
-            } else if (u.getHost().endsWith("pururin.com") && site == Site.PURURIN) {
-                return false;
-            } else if (u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) {
-                return false;
             }
             return super.shouldOverrideUrlLoading(view, url);
         }
