@@ -1,4 +1,4 @@
-##Hentoid#
+##Testers needed: [follow me](https://github.com/csaki/Hentoid/issues/46)#
 ![Hentoid App Icon](https://github.com/avluis/Hentoid-Resources/raw/master/wiki/assets/img/ic_launcher-web.png)
 
 #####`Hentoid` is a Hentai Manga reader & archiving app designed to work with:#
