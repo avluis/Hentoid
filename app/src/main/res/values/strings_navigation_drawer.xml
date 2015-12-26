@@ -6,13 +6,8 @@
     <string name="navigation_drawer_fakku_wb">Fakku</string>
     <string name="navigation_drawer_pururin_wb">Pururin</string>
     <string name="navigation_drawer_hitomi_wb">Hitomi</string>
-    <string name="navigation_drawer_home">Home</string>
-    <string name="navigation_drawer_manga">Manga</string>
-    <string name="navigation_drawer_doujinshi">Doujinshi</string>
     <string name="navigation_drawer_downloads">Downloads</string>
     <string name="navigation_drawer_download_manager">Download Manager</string>
-    <string name="navigation_drawer_check_updates">Check for updates</string>
     <string name="navigation_drawer_preferences">Preferences</string>
-    <string name="navigation_drawer_browser">Browser</string>
     <string name="navigation_drawer_about">About</string>
 </resources>

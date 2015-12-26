@@ -2,12 +2,8 @@
 <resources>
     <dimen name="about_ic_hentoid_width">260dp</dimen>
     <dimen name="about_ic_hentoid_height">260dp</dimen>
-    <dimen name="about_ic_icons_group_layout_margin_left">5dp</dimen>
-    <dimen name="about_ic_icons_group_layout_margin_start">5dp</dimen>
-    <dimen name="about_ic_icons_group_layout_margin_top">45dp</dimen>
     <dimen name="about_ic_icons_width">55dp</dimen>
     <dimen name="about_ic_icons_height">55dp</dimen>
     <dimen name="about_ic_icons_textSize">28sp</dimen>
-    <dimen name="about_ic_icons_layout_spacing">15dp</dimen>
     <dimen name="about_textSize">28sp</dimen>
 </resources>
