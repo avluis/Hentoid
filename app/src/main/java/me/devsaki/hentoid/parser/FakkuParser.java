@@ -48,10 +48,10 @@ public class FakkuParser {
         if (content.size() > 0) {
             result = new Content();
             //Cover image
-            result.setCoverImageUrl("http:" + doc.select("img.cover").attr("src"));
+            String coverImageUrl = "http:" + doc.select("img.cover").attr("src");
+            result.setCoverImageUrl(coverImageUrl.substring(0,coverImageUrl.lastIndexOf('?')));
             //Page url
             String thisUrl = doc.select("div.images").select("a").attr("href").replace("/read/page/1", "");
-            Log.d(TAG,thisUrl)
             result.setUrl(thisUrl);
             //Manga title
             result.setTitle(doc.select(".content-name").text());
