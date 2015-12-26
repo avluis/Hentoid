@@ -52,7 +52,6 @@
     <string name="downloads_library_empty">Your downloads library is empty.</string>
     <string name="no_data">No data.</string>
     <string name="crash_app">Crash report log was sent.</string>
-    <string name="close">Close</string>
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>
