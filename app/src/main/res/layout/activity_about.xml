@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/scroll"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+<ScrollView android:id="@+id/scroll"
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,7 +19,7 @@
                 android:id="@+id/iv_about"
                 android:layout_width="@dimen/about_ic_hentoid_width"
                 android:layout_height="@dimen/about_ic_hentoid_height"
-                android:src="@drawable/ic_launcher_web" />
+                android:src="@drawable/ic_launcher_web"/>
 
             <GridLayout
                 android:layout_width="match_parent"
@@ -32,54 +32,54 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_github_mark" />
+                    android:src="@drawable/ic_github_mark"/>
 
                 <TextView
                     android:id="@+id/tv_github"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
-                    android:layout_gravity="center_vertical"
                     android:text="@string/about_github"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="@dimen/about_ic_icons_textSize" />
+                    android:textSize="@dimen/about_ic_icons_textSize"/>
 
                 <ImageView
                     android:id="@+id/google_plus"
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_google_plus" />
+                    android:src="@drawable/ic_google_plus"/>
 
                 <TextView
                     android:id="@+id/tv_community"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
-                    android:layout_gravity="center_vertical"
                     android:text="@string/about_community"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="@dimen/about_ic_icons_textSize" />
+                    android:textSize="@dimen/about_ic_icons_textSize"/>
 
                 <ImageView
                     android:id="@+id/blog"
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_fakku" />
+                    android:src="@drawable/ic_fakku"/>
 
                 <TextView
                     android:id="@+id/tv_blog"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
-                    android:layout_gravity="center_vertical"
                     android:text="@string/about_blog"
                     android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="@dimen/about_ic_icons_textSize" />
+                    android:textSize="@dimen/about_ic_icons_textSize"/>
             </GridLayout>
         </LinearLayout>
 
@@ -94,6 +94,31 @@
             android:layout_marginTop="15dp"
             android:text="@string/about"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="@dimen/about_textSize" />
+            android:textSize="@dimen/about_textSize"/>
+
+        <TextView
+            android:id="@+id/tv_version_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/about_textSize"/>
+
+        <TextView
+            android:id="@+id/tv_about_notes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="15dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="15dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:text="@string/about_notes"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="@dimen/about_textSize"/>
     </LinearLayout>
 </ScrollView>
