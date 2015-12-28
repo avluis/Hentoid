@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -65,10 +64,13 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
     public static class DownloadManagerFragment extends HentoidFragment {
 
         private List<Content> contents;
+        private Context mContext;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_download_manager, container, false);
+
+            mContext = getActivity().getApplicationContext();
 
             ImageButton btnStart = (ImageButton) rootView.findViewById(R.id.btnStart);
             btnStart.setOnClickListener(new View.OnClickListener() {
@@ -93,7 +95,7 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
         }
 
         public void resume(Content content) {
-            if(NetworkStatus.getInstance(this.getContext()).isOnline()) {
+            if(NetworkStatus.getInstance(mContext).isOnline()) {
                 content.setStatus(StatusContent.DOWNLOADING);
                 getDB().updateContentStatus(content);
                 update();
