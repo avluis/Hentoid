@@ -83,14 +83,10 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_order_alphabetic) {
-            SharedPreferences.Editor editor = getSharedPreferences().edit();
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC).apply();
             getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
             getFragment().searchContent();
             return true;
         } else if (id == R.id.action_order_by_date) {
-            SharedPreferences.Editor editor = getSharedPreferences().edit();
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE).apply();
             getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
             getFragment().searchContent();
             return true;
@@ -196,8 +192,16 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             return rootView;
         }
 
+        @Override
+        public void onPause () {
+            super.onPause();
+            SharedPreferences.Editor editor = getSharedPreferences().edit();
+            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+        }
+
         private boolean searchContent() {
             if (qtyPages < 0) {
+
                 qtyPages = ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT;
             }
 
