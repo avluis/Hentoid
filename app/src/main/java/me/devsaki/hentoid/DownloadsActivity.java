@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MenuItemCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -83,14 +84,10 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_order_alphabetic) {
-            SharedPreferences.Editor editor = getSharedPreferences().edit();
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC).apply();
             getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
             getFragment().searchContent();
             return true;
         } else if (id == R.id.action_order_by_date) {
-            SharedPreferences.Editor editor = getSharedPreferences().edit();
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE).apply();
             getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
             getFragment().searchContent();
             return true;
@@ -196,11 +193,14 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             return rootView;
         }
 
-        private boolean searchContent() {
-            if (qtyPages < 0) {
-                qtyPages = ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT;
-            }
+        @Override
+        public void onPause () {
+            SharedPreferences.Editor editor = getSharedPreferences().edit();
+            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+            super.onPause();
+        }
 
+        private boolean searchContent() {
             List<Content> result = getDB()
                     .selectContentByQuery(query, currentPage, qtyPages,
                             order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
