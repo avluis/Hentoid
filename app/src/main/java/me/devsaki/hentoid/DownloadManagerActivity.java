@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +20,6 @@ import me.devsaki.hentoid.components.HentoidFragment;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.service.DownloadManagerService;
-import me.devsaki.hentoid.util.NetworkStatus;
 
 
 public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActivity.DownloadManagerFragment> {
@@ -93,14 +91,12 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
         }
 
         public void resume(Content content) {
-            if(NetworkStatus.getInstance(this.getContext()).isOnline()) {
-                content.setStatus(StatusContent.DOWNLOADING);
-                getDB().updateContentStatus(content);
-                update();
-                if (content.getId() == contents.get(0).getId()) {
-                    Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(), DownloadManagerService.class);
-                    getActivity().startService(intent);
-                }
+            content.setStatus(StatusContent.DOWNLOADING);
+            getDB().updateContentStatus(content);
+            update();
+            if (content.getId() == contents.get(0).getId()) {
+                Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(), DownloadManagerService.class);
+                getActivity().startService(intent);
             }
         }
 
