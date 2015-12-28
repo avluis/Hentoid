@@ -200,11 +200,6 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         }
 
         private boolean searchContent() {
-            if (qtyPages < 0) {
-
-                qtyPages = ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT;
-            }
-
             List<Content> result = getDB()
                     .selectContentByQuery(query, currentPage, qtyPages,
                             order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
