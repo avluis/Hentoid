@@ -9,5 +9,3 @@ ___
 #####Visit our [Google+ Community](https://plus.google.com/communities/110496467189870321840) for Announcements, and Updates.#
 ######Help us shape Hentoid into the best H-Manga App for you.#
 ___
-######Additional Resources:#
-[Acralyzer Bug Tracker](http://acra.devsaki.me/acralyzer/_design/acralyzer/index.html#/dashboard/hentoid)

@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         webview.getSettings().setBuiltInZoomControls(true);
         webview.getSettings().setDisplayZoomControls(false);
         webview.getSettings().setUserAgentString(Constants.USER_AGENT);
-        webview.addJavascriptInterface(new FakkuLoadListener(), "HTMLOUT");
+        webview.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
 
         String intentVar = getIntent().getStringExtra(INTENT_URL);
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
@@ -295,7 +295,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class FakkuLoadListener {
+    private class PageLoadListener {
 
         @JavascriptInterface
         public void processHTML(String html) {

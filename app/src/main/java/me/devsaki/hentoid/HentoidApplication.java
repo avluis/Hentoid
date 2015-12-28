@@ -8,11 +8,6 @@ import android.preference.PreferenceManager;
 import android.util.LruCache;
 import android.widget.ImageView;
 
-import org.acra.ACRA;
-import org.acra.ReportingInteractionMode;
-import org.acra.annotation.ReportsCrashes;
-import org.acra.sender.HttpSender;
-
 import java.io.File;
 
 import me.devsaki.hentoid.database.HentoidDB;
@@ -28,13 +23,6 @@ import me.devsaki.hentoid.util.ImageQuality;
 /**
  * Created by DevSaki on 20/05/2015.
  */
-@ReportsCrashes(formUri = "http://acra.devsaki.me/acra-hentoid/_design/acra-storage/_update/report",
-        httpMethod = HttpSender.Method.PUT,
-        reportType = HttpSender.Type.JSON,
-        formUriBasicAuthLogin = "reportuser",
-        formUriBasicAuthPassword = "\\~hRcq#o?UVtT!7G",
-        mode = ReportingInteractionMode.TOAST,
-        resToastText = R.string.crash_app)
 
 public class HentoidApplication extends Application {
 
@@ -45,8 +33,6 @@ public class HentoidApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-
-        ACRA.init(this);
 
         AndroidHelper.ignoreSslErrors();
 
@@ -71,6 +57,7 @@ public class HentoidApplication extends Application {
         };
 
         this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
         if (sharedPreferences.getString(
                 ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
                 ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT + "").equals(
@@ -95,7 +82,6 @@ public class HentoidApplication extends Application {
                     }
                 });
     }
-
 
     public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
         if (key != null && bitmap != null) {

@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="me.devsaki.hentoid">
+<manifest package="me.devsaki.hentoid"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
-    <uses-permission android:name="android.permission.VIBRATE" android:maxSdkVersion="18"/>
+    <uses-permission
+        android:name="android.permission.VIBRATE"
+        android:maxSdkVersion="18"/>
 
     <application
         android:name=".HentoidApplication"
@@ -25,43 +27,43 @@
             android:launchMode="singleTask">
             <meta-data
                 android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
+                android:resource="@xml/searchable"/>
         </activity>
         <activity
             android:name=".MainActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
             android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name=".ContentListActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/app_name"
-            android:launchMode="standard" />
+            android:launchMode="standard"/>
 
         <service
             android:name=".service.DownloadManagerService"
             android:configChanges="orientation|screenSize"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="false"/>
 
         <activity
             android:name=".DownloadManagerActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_download_manager"
-            android:launchMode="singleTask" />
+            android:launchMode="singleTask"/>
         <activity
             android:name=".SelectFolderActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
-            android:name="net.rdrei.android.dirchooser.DirectoryChooserActivity" />
+            android:name="net.rdrei.android.dirchooser.DirectoryChooserActivity"/>
         <activity
             android:name=".ImporterActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
             android:name=".PreferencesActivity"
             android:configChanges="orientation|screenSize"
@@ -71,7 +73,7 @@
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="me.devsaki.hentoid.MainActivity" />
+                android:value="me.devsaki.hentoid.MainActivity"/>
         </activity>
         <activity
             android:name=".AppLockActivity"
@@ -79,9 +81,9 @@
             android:launchMode="singleTask"
             android:windowSoftInputMode="stateAlwaysVisible">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
@@ -93,7 +95,7 @@
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="me.devsaki.hentoid.MainActivity" />
+                android:value="me.devsaki.hentoid.MainActivity"/>
         </activity>
 
         <receiver
@@ -101,10 +103,10 @@
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED" />
-                <action android:name="me.devsaki.hentoid.updater.NOTIFICATION_REMOVED" />
-                <action android:name="me.devsaki.hentoid.updater.INSTALL_UPDATE" />
-                <action android:name="me.devsaki.hentoid.updater.UPDATE_DOWNLOADED" />
+                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED"/>
+                <action android:name="me.devsaki.hentoid.updater.NOTIFICATION_REMOVED"/>
+                <action android:name="me.devsaki.hentoid.updater.INSTALL_UPDATE"/>
+                <action android:name="me.devsaki.hentoid.updater.UPDATE_DOWNLOADED"/>
             </intent-filter>
         </receiver>
     </application>
