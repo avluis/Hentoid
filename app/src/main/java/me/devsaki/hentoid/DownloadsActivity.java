@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MenuItemCompat;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -72,6 +71,15 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                 return true;
             }
         });
+
+        if (getFragment().order == 0) {
+            menu.getItem(1).setVisible(false);
+            menu.getItem(2).setVisible(true);
+        } else {
+            menu.getItem(1).setVisible(true);
+            menu.getItem(2).setVisible(false);
+        }
+
         return true;
     }
 
@@ -86,10 +94,12 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         if (id == R.id.action_order_alphabetic) {
             getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
             getFragment().searchContent();
+            invalidateOptionsMenu();
             return true;
         } else if (id == R.id.action_order_by_date) {
             getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
             getFragment().searchContent();
+            invalidateOptionsMenu();
             return true;
         }
 
@@ -122,7 +132,6 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
-
 
             qtyPages = Integer.parseInt(getSharedPreferences()
                     .getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
