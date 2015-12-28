@@ -73,11 +73,12 @@
     <string name="title_activity_app_lock">App Lock</string>
     <string name="button_ok">OK</string>
     <!-- About Activity -->
-    <string name="about"><![CDATA[<p><b>Hentoid</b> is a Hentai Manga reader & archiving app designed to work with <b>Fakku</>, <b>Pururin</b> and <b>Hitomi</b>.<br />Hentoid was originally created by <b>Cesar Arasaki</b> (known as csaki to many).<br />Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.</p><p>Hentoid was previously known as FakkuDroid, before support was added for Pururin and Hitomi.</p>]]></string>
+    <string name="about"><![CDATA[<p><b>Hentoid</b> is a Hentai Manga reader & archiving app designed to work with <b>Fakku</>, <b>Pururin</b> and <b>Hitomi</b>.<br />Hentoid was originally created by <b>Cesar Arasaki</b> (known as csaki to many).<br />Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.</p><p>Hentoid was previously known as FakkuDroid, before support was added for Pururin and Hitomi.</p><p>Note: Pururin has fallen, so support has been pulled - tsumino support is being considered, but a captcha workaround will need to be implemented.</p><p>In addition, Fakku is starting to drop support for free releases, and while support for Fakku Books or Subscription is not currently planned, this may change in the future.</p>]]></string>
     <string name="about_blog"><![CDATA[<u>FakkuDroid</u>]]></string>
     <string name="about_blog_url">http://fakkudroid.blogspot.com/</string>
     <string name="about_community"><![CDATA[<u>Google+</u>]]></string>
     <string name="about_community_url">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github"><![CDATA[<u>GitHub</u>]]></string>
     <string name="about_github_url">https://github.com/csaki/Hentoid</string>
+    <string name="about_notes"><![CDATA[<p>Experimental patch: Kill Hitomi redirect ads (along with pop-up ads).</p>]]></string>
 </resources>

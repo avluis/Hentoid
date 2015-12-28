@@ -2,6 +2,8 @@ package me.devsaki.hentoid;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Build;
@@ -33,6 +35,7 @@ import android.widget.TextView;
  */
 public class AboutActivity extends AppCompatActivity {
     private AppCompatDelegate mDelegate;
+    private String verName = "Hentoid ver: ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +90,31 @@ public class AboutActivity extends AppCompatActivity {
         Spanned spAbout = Html.fromHtml(getString(R.string.about));
         TextView tvAbout = (TextView) findViewById(R.id.tv_about);
         tvAbout.setText(spAbout);
+
+        getVersionInfo();
+
+        TextView tvVersionName = (TextView) findViewById(R.id.tv_version_name);
+        tvVersionName.setText(verName);
+
+        Spanned spAboutNotes = Html.fromHtml(getString(R.string.about_notes));
+        TextView tvAboutNotes = (TextView) findViewById(R.id.tv_about_notes);
+        tvAboutNotes.setText(spAboutNotes);
+    }
+
+    private String getVersionInfo() {
+        PackageInfo packageInfo;
+
+        try {
+            packageInfo = getApplicationContext()
+                    .getPackageManager()
+                    .getPackageInfo(
+                            getApplicationContext().getPackageName(), 0);
+            verName += packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            verName += "Unknown";
+        }
+
+        return verName;
     }
 
     @Override

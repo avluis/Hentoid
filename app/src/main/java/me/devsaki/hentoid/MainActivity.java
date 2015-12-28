@@ -200,13 +200,9 @@ public class MainActivity extends AppCompatActivity {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
                 URL u = new URL(url);
-                if (u.getHost().endsWith("fakku.net") && site == Site.FAKKU) {
-                    return false;
-                } else if (u.getHost().endsWith("pururin.com") && site == Site.PURURIN) {
-                    return false;
-                } else if (u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) {
-                    return false;
-                }
+                return !(u.getHost().endsWith("fakku.net") && site == Site.FAKKU) &&
+                        !(u.getHost().endsWith("pururin.com") && site == Site.PURURIN) &&
+                        !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI);
             } catch (MalformedURLException e) {
             }
             return super.shouldOverrideUrlLoading(view, url);
