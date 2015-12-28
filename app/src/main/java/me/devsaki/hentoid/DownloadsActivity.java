@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MenuItemCompat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -194,9 +195,9 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
         @Override
         public void onPause () {
-            super.onPause();
             SharedPreferences.Editor editor = getSharedPreferences().edit();
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+            super.onPause();
         }
 
         private boolean searchContent() {
