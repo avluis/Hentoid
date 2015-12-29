@@ -4,19 +4,19 @@
     tools:context="me.devsaki.hentoid.DownloadsActivity">
     <item
         android:id="@+id/action_search"
-        android:icon="@android:drawable/ic_menu_search"
+        android:icon="@drawable/ic_menu_search"
         android:title="@string/menu_search"
         app:actionViewClass="android.widget.SearchView"
         app:showAsAction="always"
         tools:ignore="AlwaysShowAction" />
     <item
         android:id="@+id/action_order_alphabetic"
-        android:orderInCategory="98"
+        android:icon="@drawable/ic_menu_sort_alphabetical"
         android:title="@string/menu_order_alphabetically"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_order_by_date"
-        android:orderInCategory="99"
+        android:icon="@drawable/ic_menu_sort_bydate"
         android:title="@string/menu_order_date"
-        app:showAsAction="never" />
+        app:showAsAction="ifRoom" />
 </menu>
