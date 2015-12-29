@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -16,7 +17,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.SearchView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -32,6 +32,7 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
 public class DownloadsActivity extends HentoidActivity<DownloadsActivity.DownloadsFragment> {
 
     private static final String TAG = DownloadsActivity.class.getName();
+    private SearchView searchView;
 
     @Override
     protected DownloadsFragment buildFragment() {
@@ -44,8 +45,8 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        final SearchView searchView = (SearchView) MenuItemCompat
-                .getActionView(menu.findItem(R.id.action_search));
+
+        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(true);
 
@@ -74,7 +75,6 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             menu.getItem(1).setVisible(true);
             menu.getItem(2).setVisible(false);
         }
-
         return true;
     }
 
@@ -97,13 +97,12 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             invalidateOptionsMenu();
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     public static class DownloadsFragment extends HentoidFragment {
         private static String query = "";
-        Toast mToast;
+        private Toast mToast;
         private int currentPage = 1;
         private int prevPage = 0;
         private int qtyPages;
