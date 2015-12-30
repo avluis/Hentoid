@@ -1,22 +1,22 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:context="me.devsaki.hentoid.DownloadsActivity">
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context="me.devsaki.hentoid.DownloadsActivity">
     <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_menu_search"
         android:title="@string/menu_search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="ifRoom|collapseActionView"
-        tools:ignore="AlwaysShowAction" />
+        tools:ignore="AlwaysShowAction"/>
     <item
         android:id="@+id/action_order_alphabetic"
         android:icon="@drawable/ic_menu_sort_alphabetical"
         android:title="@string/menu_order_alphabetically"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_order_by_date"
         android:icon="@drawable/ic_menu_sort_bydate"
         android:title="@string/menu_order_date"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"/>
 </menu>
