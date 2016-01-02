@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
     private static final String TAG = DownloadsActivity.class.getName();
     private SearchView searchView;
+
 
     @Override
     protected DownloadsFragment buildFragment() {
@@ -109,6 +111,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         private int order;
         private Button btnPage;
         private List<Content> contents;
+        private int index = -1;
 
         public void setQuery(String query) {
             DownloadsFragment.query = query;
@@ -118,7 +121,11 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         @Override
         public void onResume() {
             super.onResume();
+            int tempIndex = index;
             searchContent();
+            ListView list = getListView();
+            if (tempIndex > -1)
+                list.setSelectionFromTop(tempIndex, 0);
         }
 
         @SuppressLint("ShowToast")
@@ -200,10 +207,13 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         public void onPause() {
             SharedPreferences.Editor editor = getSharedPreferences().edit();
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+            ListView list = getListView();
+            index = list.getFirstVisiblePosition();
             super.onPause();
         }
 
         private boolean searchContent() {
+            index = -1;
             List<Content> result = getDB()
                     .selectContentByQuery(query, currentPage, qtyPages,
                             order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
