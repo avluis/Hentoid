@@ -42,6 +42,10 @@ public class Content extends ContentTable {
     @Expose
     private Site site;
 
+    public Content() {
+        //Default Constructor
+    }
+
     public Content(String title,
                    String url,
                    String coverImageUrl,
