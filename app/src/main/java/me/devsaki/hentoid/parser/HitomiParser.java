@@ -58,7 +58,7 @@ public class HitomiParser {
 
             int pages = doc.select(".thumbnail-container").size();
 
-            result.setAttributes(new HashMap<AttributeType, List<Attribute>>());
+            result.setAttributes(attributes);
             result.setQtyPages(pages);
             result.setHtmlDescription(null);
             result.setStatus(StatusContent.SAVED);
