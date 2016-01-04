@@ -113,6 +113,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         }
     }
 
+    @SuppressWarnings({"UnusedParameters", "unused"})
     public void ndFakkuWb(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);
@@ -121,6 +122,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         startActivity(intent);
     }
 
+    @SuppressWarnings({"UnusedParameters", "unused"})
     public void ndPururinWb(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);
@@ -129,6 +131,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         startActivity(intent);
     }
 
+    @SuppressWarnings({"UnusedParameters", "unused"})
     public void ndHitomiWb(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);
@@ -137,24 +140,28 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         startActivity(intent);
     }
 
+    @SuppressWarnings({"UnusedParameters", "unused"})
     public void ndPreferences(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, PreferencesActivity.class);
         startActivity(intent);
     }
 
+    @SuppressWarnings({"UnusedParameters", "unused"})
     public void ndDownloads(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, DownloadsActivity.class);
         startActivity(intent);
     }
 
+    @SuppressWarnings({"UnusedParameters", "unused"})
     public void ndDownloadManager(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, DownloadManagerActivity.class);
         startActivity(intent);
     }
 
+    @SuppressWarnings({"UnusedParameters", "unused"})
     public void ndAbout(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, AboutActivity.class);
