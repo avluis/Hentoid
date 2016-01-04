@@ -27,8 +27,6 @@ public class Content extends ContentTable {
     private String coverImageUrl;
     @Expose
     private Integer qtyPages;
-    @Expose(serialize = false, deserialize = false)
-    private Integer qtyFavorites;
     @Expose
     private long uploadDate;
     @Expose
@@ -43,6 +41,22 @@ public class Content extends ContentTable {
     private double percent;
     @Expose
     private Site site;
+
+    public Content(String title,
+                   String url,
+                   String coverImageUrl,
+                   HashMap<AttributeType, List<Attribute>> attributes,
+                   Integer qtyPages,
+                   boolean downloadable,
+                   Site site) {
+        this.title = title;
+        this.url = url;
+        this.coverImageUrl = coverImageUrl;
+        this.attributes = attributes;
+        this.qtyPages = qtyPages;
+        this.downloadable = downloadable;
+        status = StatusContent.SAVED;
+    }
 
     public HashMap<AttributeType, List<Attribute>> getAttributes() {
         return attributes;
@@ -118,14 +132,6 @@ public class Content extends ContentTable {
 
     public void setQtyPages(Integer qtyPages) {
         this.qtyPages = qtyPages;
-    }
-
-    public Integer getQtyFavorites() {
-        return qtyFavorites;
-    }
-
-    public void setQtyFavorites(Integer qtyFavorites) {
-        this.qtyFavorites = qtyFavorites;
     }
 
     public long getUploadDate() {

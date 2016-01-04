@@ -73,11 +73,9 @@ public class PururinParser {
                     result.setQtyPages(pages);
                 }
             }
-            //Description
-            result.setHtmlDescription(info.select(".gallery-description").html());
 
+            result.setHtmlDescription(info.select(".gallery-description").html());
             result.setStatus(StatusContent.SAVED);
-            //IsDownloadable
             result.setDownloadable(true);
             result.setSite(Site.PURURIN);
         }
