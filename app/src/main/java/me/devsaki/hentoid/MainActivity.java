@@ -83,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
         webview.getSettings().setBuiltInZoomControls(true);
         webview.getSettings().setDisplayZoomControls(false);
         webview.getSettings().setUserAgentString(Constants.USER_AGENT);
+        webview.getSettings().setUseWideViewPort(true);
+        webview.setInitialScale(50);
         webview.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
 
         String intentVar = getIntent().getStringExtra(INTENT_URL);

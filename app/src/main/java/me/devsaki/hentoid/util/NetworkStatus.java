@@ -11,12 +11,11 @@ import android.util.Log;
 public class NetworkStatus {
 
     private static final NetworkStatus instance = new NetworkStatus();
-    static Context context;
-    ConnectivityManager connMgr;
-    NetworkInfo wifiInfo, mobileInfo;
-    boolean connected = false;
-    boolean wifi = false;
-    boolean mobile = false;
+    private static Context context;
+    private ConnectivityManager connMgr;
+    private boolean connected = false;
+    private boolean wifi = false;
+    private boolean mobile = false;
 
     public static NetworkStatus getInstance(Context ctx) {
         context = ctx.getApplicationContext();
@@ -43,7 +42,7 @@ public class NetworkStatus {
         try {
             connMgr = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
-            wifiInfo = connMgr.getActiveNetworkInfo();
+            NetworkInfo wifiInfo = connMgr.getActiveNetworkInfo();
             wifi = wifiInfo != null && wifiInfo.isConnected() && wifiInfo.getType() ==
                     ConnectivityManager.TYPE_WIFI;
             return wifi;
@@ -58,7 +57,7 @@ public class NetworkStatus {
         try {
             connMgr = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
-            mobileInfo = connMgr.getActiveNetworkInfo();
+            NetworkInfo mobileInfo = connMgr.getActiveNetworkInfo();
             mobile = mobileInfo != null && mobileInfo.isConnected() && mobileInfo.getType() ==
                     ConnectivityManager.TYPE_MOBILE;
             return mobile;

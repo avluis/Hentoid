@@ -137,7 +137,7 @@ public class Helper {
         return file;
     }
 
-    public static String escapeURL(String link) {
+    private static String escapeURL(String link) {
         try {
             String path = link;
             path = java.net.URLEncoder.encode(path, "utf8");
@@ -197,9 +197,8 @@ public class Helper {
             if (!file.exists()) {
                 final int BUFFER_SIZE = 23 * 1024;
 
-                URI uri = null;
                 URL url = new URL(imageUrl);
-                uri = new URI(url.toString());
+                URI uri = new URI(url.toString());
                 CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
 
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();

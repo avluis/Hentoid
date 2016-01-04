@@ -59,9 +59,7 @@ public class ContentListActivity extends HentoidActivity<ContentListActivity.Con
     }
 
     public static class ContentListFragment extends HentoidFragment {
-        private static String url;
         private int currentPage = 1;
-        private List<Content> contents;
         private Button btnPage;
 
         @Override

@@ -38,7 +38,7 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * Created by avluis on 8/21/15.
  */
 public class UpdateCheck implements IUpdateCheck {
-    public static final String DEBUG_TAG = "Hentoid-UpdateCheck";
+    private static final String TAG = UpdateCheck.class.getName();
     public static final String ACTION_DOWNLOAD_CANCELLED =
             "me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED";
     public static final String ACTION_NOTIFICATION_REMOVED =
@@ -125,7 +125,7 @@ public class UpdateCheck implements IUpdateCheck {
         }
     }
 
-    public void updateAvailableNotification(String updateURL) {
+    private void updateAvailableNotification(String updateURL) {
         if (downloadManager != null) {
             downloadingUpdateNotification();
             try {
@@ -349,7 +349,7 @@ public class UpdateCheck implements IUpdateCheck {
                                 });
                             }
                         }
-                        Log.i(DEBUG_TAG, "NO_UPDATE_FOUND_ON_SERVER");
+                        Log.i(TAG, "NO_UPDATE_FOUND_ON_SERVER");
                     }
                 }
             } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
@@ -373,7 +373,7 @@ public class UpdateCheck implements IUpdateCheck {
                 connection.connect();
                 int response = connection.getResponseCode();
 
-                Log.d(DEBUG_TAG, "The response is: " + response);
+                Log.d(TAG, "The response is: " + response);
 
                 inputStream = connection.getInputStream();
                 String contentString = readInputStream(inputStream);
@@ -404,7 +404,7 @@ public class UpdateCheck implements IUpdateCheck {
         }
     }
 
-    class UpdateNotificationRunnable implements Runnable {
+    private class UpdateNotificationRunnable implements Runnable {
         @Override
         public void run() {
             notificationView.setProgressBar(R.id.pb_notification, 100, progressBar, false);

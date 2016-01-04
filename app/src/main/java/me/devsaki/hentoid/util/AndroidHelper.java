@@ -66,7 +66,7 @@ public class AndroidHelper {
 
     }
 
-    public static void openFile(File aFile, Context context) {
+    private static void openFile(File aFile, Context context) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
         String extension = android.webkit.MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
@@ -76,7 +76,7 @@ public class AndroidHelper {
         context.startActivity(myIntent);
     }
 
-    public static void openPerfectViewer(File firstImage, Context context) {
+    private static void openPerfectViewer(File firstImage, Context context) {
         try {
             Intent intent = context
                     .getPackageManager()
