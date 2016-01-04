@@ -80,6 +80,14 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         return true;
     }
 
+    // Clear search query onBackPressed
+    @Override
+    public void onBackPressed() {
+        getFragment().setQuery("");
+        getFragment().searchContent();
+        super.onBackPressed();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
