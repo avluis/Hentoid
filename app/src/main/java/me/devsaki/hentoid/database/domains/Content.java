@@ -51,6 +51,7 @@ public class Content extends ContentTable {
                    String coverImageUrl,
                    HashMap<AttributeType, List<Attribute>> attributes,
                    Integer qtyPages,
+                   String htmlDescription,
                    boolean downloadable,
                    Site site) {
         this.title = title;
@@ -58,6 +59,7 @@ public class Content extends ContentTable {
         this.coverImageUrl = coverImageUrl;
         this.attributes = attributes;
         this.qtyPages = qtyPages;
+        this.htmlDescription = htmlDescription;
         this.downloadable = downloadable;
         status = StatusContent.SAVED;
     }

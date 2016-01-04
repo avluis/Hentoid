@@ -27,12 +27,11 @@ public class HitomiParser {
         Document doc = Jsoup.parse(html);
         Elements content = doc.select(".content");
         if (content.size() > 0) {
-            result = new Content();
-            result.setCoverImageUrl("https:" + content.select(".cover").select("img").attr("src"));
+            String TEMPcoverImgUrl = "https:" + content.select(".cover").select("img").attr("src");
             Element info = content.select(".gallery").first();
             Element title = info.select("h1").first();
-            result.setUrl(title.select("a").first().attr("href").replace("/reader", ""));
-            result.setTitle(title.text());
+            String TEMPurl = title.select("a").first().attr("href").replace("/reader", "");
+            String TEMPtitle = title.text();
 
             HashMap<AttributeType, List<Attribute>> attributes = new HashMap<AttributeType, List<Attribute>>();
             attributes.put(AttributeType.ARTIST, parseAttributes(info.select("h2").select("a"), AttributeType.ARTIST));
@@ -58,12 +57,15 @@ public class HitomiParser {
 
             int pages = doc.select(".thumbnail-container").size();
 
-            result.setAttributes(new HashMap<AttributeType, List<Attribute>>());
-            result.setQtyPages(pages);
-            result.setHtmlDescription(null);
-            result.setStatus(StatusContent.SAVED);
-            result.setDownloadable(true);
-            result.setSite(Site.HITOMI);
+            result = new Content(
+                    TEMPtitle,
+                    TEMPurl,
+                    TEMPcoverImgUrl,
+                    attributes,
+                    pages,
+                    null,
+                    true,
+                    Site.HITOMI);
         }
         return result;
     }
