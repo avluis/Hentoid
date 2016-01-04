@@ -41,6 +41,7 @@ public class AppLockActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void checkPin(View view) {
         String pin = ((EditText) findViewById(R.id.etPin)).getText().toString();
         String appLock = PreferenceManager.getDefaultSharedPreferences(this).getString(ConstantsPreferences.PREF_APP_LOCK, "");

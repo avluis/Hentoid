@@ -150,7 +150,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             btnDownloadAgain.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    downloadAgain(content, dir, (ListView) parent);
+                    downloadAgain(content, (ListView) parent);
                 }
             });
             btnDownloadAgain.setVisibility(View.VISIBLE);
@@ -167,7 +167,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         return rowView;
     }
 
-    private void downloadAgain(final Content content, final File dir, final ListView listView) {
+    private void downloadAgain(final Content content, final ListView listView) {
         int numberImages;
         int numberImagesError = 0;
         numberImages = content.getImageFiles().size();

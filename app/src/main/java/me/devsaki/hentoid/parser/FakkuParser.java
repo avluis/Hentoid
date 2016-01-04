@@ -81,10 +81,6 @@ public class FakkuParser {
             result.getAttributes().put(AttributeType.LANGUAGE, parseAttributes(rows.get(rowIndex++).select("a"), AttributeType.LANGUAGE));
             //Pages
             result.setQtyPages(Integer.parseInt(rows.get(rowIndex++).select(".right").html().replace(" pages", "")));
-            //Favorites
-            if (rows.get(rowIndex).select("div.left").html().equals("Favorites")) {
-                result.setQtyFavorites(Integer.parseInt(rows.get(rowIndex++).select(".right").html().replace(" favorites", "").replace(",", "")));
-            }
             //Uploader
             Element uploader = rows.get(rowIndex++).select(".right").first();
 

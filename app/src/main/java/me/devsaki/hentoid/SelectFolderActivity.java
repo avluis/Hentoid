@@ -53,15 +53,18 @@ public class SelectFolderActivity extends Activity implements
         }
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void explore(View view) {
         mDialog.show(getFragmentManager(), null);
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void selectDefault(View view) {
         EditText editText = (EditText) findViewById(R.id.etFolder);
         editText.setText(Helper.getDefaultDir("", this).getAbsolutePath());
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void save(View view) {
         EditText editText = (EditText) findViewById(R.id.etFolder);
         String hentoidFolder = editText.getText().toString();
