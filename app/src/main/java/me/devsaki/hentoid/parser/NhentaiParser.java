@@ -29,13 +29,14 @@ public class NhentaiParser {
         if (elements.size() > 0)
         {
             String titleTEMP = elements.select("div#info").select("h1").text();
-            String urlTEMP = elements.select("div#cover").select("a").attr("href").replace("1/","");
+            String urlTEMP = elements.select("div#cover").select("a").attr("href").replace("1/", "");
             String mangaUrlTEMP = Site.NHENTAI.getUrl() + urlTEMP;
             String coverImageUrlTEMP = elements.select("div#cover").select("img").attr("src");
             HashMap<AttributeType, List<Attribute>> attributesTEMP = new HashMap<AttributeType, List<Attribute>>();
             Integer qtyPagesTEMP = doc.select("a.gallerythumb").size();
 
-            
+            Elements artistsElements = elements.select("div#info").select("div.field-name:containsOwn(Artists:)").select("a.tag");
+            attributesTEMP.put(AttributeType.ARTIST, parseAttributes(artistsElements, AttributeType.ARTIST));
 
             result = new Content(
                     titleTEMP,

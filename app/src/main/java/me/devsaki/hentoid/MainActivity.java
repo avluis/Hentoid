@@ -35,6 +35,7 @@ import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.FakkuParser;
 import me.devsaki.hentoid.parser.HitomiParser;
+import me.devsaki.hentoid.parser.NhentaiParser;
 import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
@@ -293,6 +294,16 @@ public class MainActivity extends AppCompatActivity {
                             Log.e(TAG, "Error executing javascript in webview", ex);
                         }
                     }
+                } else if (site == Site.NHENTAI) {
+                    Log.d(TAG, "REACHED!");
+                    if (paths.length > 1 && paths[1].startsWith("g")) {
+                        Log.d(TAG, "REACHED!!");
+                        try {
+                            view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Error executing javascript in webview", ex);
+                        }
+                    }
                 }
             }
         }
@@ -312,7 +323,8 @@ public class MainActivity extends AppCompatActivity {
             } else if (site == Site.HITOMI) {
                 content = HitomiParser.parseContent(html);
             } else if (site == Site.NHENTAI) {
-                //Insert parser here
+                Log.d(TAG, "REACHED!!!");
+                content = NhentaiParser.parseContent(html);
             }
             if (content == null) {
                 return;
