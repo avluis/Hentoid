@@ -13,7 +13,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.util.Constants;
 
 /**
  * Created by neko on 08/07/2015.
@@ -31,6 +31,7 @@ public class HitomiParser {
             Element info = content.select(".gallery").first();
             Element title = info.select("h1").first();
             String urlTEMP = title.select("a").first().attr("href").replace("/reader", "");
+            String mangaUrlTEMP = Site.HITOMI.getUrl() + Constants.HITOMI_GALLERY + urlTEMP;
             String titleTEMP = title.text();
 
             HashMap<AttributeType, List<Attribute>> attributes = new HashMap<AttributeType, List<Attribute>>();
@@ -60,6 +61,7 @@ public class HitomiParser {
             result = new Content(
                     titleTEMP,
                     urlTEMP,
+                    mangaUrlTEMP,
                     coverImageUrlTEMP,
                     attributes,
                     pages,

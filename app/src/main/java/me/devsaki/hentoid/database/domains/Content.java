@@ -18,6 +18,8 @@ public class Content extends ContentTable {
     @Expose
     private String url;
     @Expose
+    private String mangaUrl;
+    @Expose
     private String title;
     @Expose
     private String htmlDescription;
@@ -48,6 +50,7 @@ public class Content extends ContentTable {
 
     public Content(String title,
                    String url,
+                   String mangaUrl,
                    String coverImageUrl,
                    HashMap<AttributeType, List<Attribute>> attributes,
                    Integer qtyPages,
@@ -56,6 +59,7 @@ public class Content extends ContentTable {
                    Site site) {
         this.title = title;
         this.url = url;
+        this.mangaUrl = mangaUrl;
         this.coverImageUrl = coverImageUrl;
         this.attributes = attributes;
         this.qtyPages = qtyPages;
@@ -107,6 +111,10 @@ public class Content extends ContentTable {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public String getMangaUrl() {
+        return mangaUrl;
     }
 
     public String getTitle() {

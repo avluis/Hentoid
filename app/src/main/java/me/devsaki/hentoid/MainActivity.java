@@ -204,7 +204,8 @@ public class MainActivity extends AppCompatActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("fakku.net") && site == Site.FAKKU) &&
                         !(u.getHost().endsWith("pururin.com") && site == Site.PURURIN) &&
-                        !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI);
+                        !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) &&
+                        !(u.getHost().endsWith("nhentai.net") && site == Site.NHENTAI);
             } catch (MalformedURLException e) {
             }
             return super.shouldOverrideUrlLoading(view, url);
@@ -310,6 +311,8 @@ public class MainActivity extends AppCompatActivity {
                 content = PururinParser.parseContent(html);
             } else if (site == Site.HITOMI) {
                 content = HitomiParser.parseContent(html);
+            } else if (site == Site.NHENTAI) {
+                //Insert parser here
             }
             if (content == null) {
                 return;

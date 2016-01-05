@@ -3,6 +3,7 @@
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
 
+    <string name="navigation_drawer_nhentai_wb">nhentai</string>
     <string name="navigation_drawer_fakku_wb">Fakku</string>
     <string name="navigation_drawer_pururin_wb">Pururin</string>
     <string name="navigation_drawer_hitomi_wb">Hitomi</string>

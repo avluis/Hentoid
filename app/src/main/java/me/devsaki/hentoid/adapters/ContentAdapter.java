@@ -235,12 +235,16 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private void viewContent(Content content) {
         Intent intent = new Intent(getContext(), MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         if (content.getSite() == Site.FAKKU)
             intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + content.getUrl());
         else if (content.getSite() == Site.PURURIN)
             intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + Constants.PURURIN_GALLERY + content.getUrl());
         else if (content.getSite() == Site.HITOMI)
             intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + Constants.HITOMI_GALLERY + content.getUrl());
+        else
+            intent.putExtra(MainActivity.INTENT_URL, content.getMangaUrl());
+
         intent.putExtra(MainActivity.INTENT_SITE, content.getSite().getCode());
         getContext().startActivity(intent);
     }
