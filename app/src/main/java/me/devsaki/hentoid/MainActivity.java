@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
         webview.getSettings().setBuiltInZoomControls(true);
         webview.getSettings().setDisplayZoomControls(false);
         webview.getSettings().setUserAgentString(Constants.USER_AGENT);
+        webview.getSettings().setDomStorageEnabled(true);
         webview.getSettings().setUseWideViewPort(true);
         webview.setInitialScale(50);
         webview.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
@@ -295,9 +296,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 } else if (site == Site.NHENTAI) {
-                    Log.d(TAG, "REACHED!");
                     if (paths.length > 1 && paths[1].startsWith("g")) {
-                        Log.d(TAG, "REACHED!!");
                         try {
                             view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
                         } catch (Exception ex) {
@@ -323,7 +322,6 @@ public class MainActivity extends AppCompatActivity {
             } else if (site == Site.HITOMI) {
                 content = HitomiParser.parseContent(html);
             } else if (site == Site.NHENTAI) {
-                Log.d(TAG, "REACHED!!!");
                 content = NhentaiParser.parseContent(html);
             }
             if (content == null) {
