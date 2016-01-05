@@ -25,13 +25,11 @@ import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 
-
 public class SelectFolderActivity extends Activity implements
         DirectoryChooserFragment.OnFragmentInteractionListener {
 
     private DirectoryChooserFragment mDialog;
     private SharedPreferences.Editor editor;
-
 
     @SuppressLint("CommitPrefEdits")
     @Override

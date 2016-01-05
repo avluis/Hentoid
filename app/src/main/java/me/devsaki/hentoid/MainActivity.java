@@ -52,14 +52,13 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fabRead, fabDownload;
     private SwipeRefreshLayout swipeLayout;
 
-    @SuppressLint({"AddJavascriptInterface", "SetJavaScriptEnabled"})
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         final WebView webview = (WebView) findViewById(R.id.wbMain);
-        webview.getSettings().setJavaScriptEnabled(true);
 
         webview.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -84,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
         webview.getSettings().setDisplayZoomControls(false);
         webview.getSettings().setUserAgentString(Constants.USER_AGENT);
         webview.getSettings().setUseWideViewPort(true);
+        webview.getSettings().setJavaScriptEnabled(true);
         webview.setInitialScale(50);
         webview.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
 
@@ -206,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                         !(u.getHost().endsWith("pururin.com") && site == Site.PURURIN) &&
                         !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI);
             } catch (MalformedURLException e) {
+                Log.d(TAG, "Malformed URL");
             }
             return super.shouldOverrideUrlLoading(view, url);
         }

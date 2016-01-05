@@ -14,12 +14,8 @@ import android.widget.ImageButton;
 import android.widget.SearchView;
 import android.widget.Toast;
 
-import java.util.List;
-
 import me.devsaki.hentoid.components.HentoidActivity;
 import me.devsaki.hentoid.components.HentoidFragment;
-import me.devsaki.hentoid.database.domains.Content;
-
 
 public class ContentListActivity extends HentoidActivity<ContentListActivity.ContentListFragment> {
 

@@ -13,7 +13,6 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
 
 /**
  * Created by neko on 08/07/2015.
@@ -33,7 +32,7 @@ public class HitomiParser {
             String urlTEMP = title.select("a").first().attr("href").replace("/reader", "");
             String titleTEMP = title.text();
 
-            HashMap<AttributeType, List<Attribute>> attributes = new HashMap<AttributeType, List<Attribute>>();
+            HashMap<AttributeType, List<Attribute>> attributes = new HashMap<>();
             attributes.put(AttributeType.ARTIST, parseAttributes(info.select("h2").select("a"), AttributeType.ARTIST));
 
             Elements rows = info.select("tr");

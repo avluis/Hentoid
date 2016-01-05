@@ -167,7 +167,7 @@ public class Helper {
         writer.close();
     }
 
-    public static String readTextFile(File f) throws IOException {
+    public static String readJsonFile(File f) throws IOException {
         BufferedReader br = null;
         String json = "";
         try {

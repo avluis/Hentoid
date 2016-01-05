@@ -58,8 +58,6 @@
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
         <activity
-            android:name="net.rdrei.android.dirchooser.DirectoryChooserActivity"/>
-        <activity
             android:name=".ImporterActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
