@@ -18,8 +18,6 @@ public class Content extends ContentTable {
     @Expose
     private String url;
     @Expose
-    private String mangaUrl;
-    @Expose
     private String title;
     @Expose
     private String htmlDescription;
@@ -50,22 +48,18 @@ public class Content extends ContentTable {
 
     public Content(String title,
                    String url,
-                   String mangaUrl,
                    String coverImageUrl,
                    HashMap<AttributeType, List<Attribute>> attributes,
                    Integer qtyPages,
-                   String htmlDescription,
-                   boolean downloadable,
                    Site site) {
         this.title = title;
         this.url = url;
-        this.mangaUrl = mangaUrl;
         this.coverImageUrl = coverImageUrl;
         this.attributes = attributes;
         this.qtyPages = qtyPages;
-        this.htmlDescription = htmlDescription;
-        this.downloadable = downloadable;
         this.site = site;
+        htmlDescription = null;
+        downloadable = true;
         status = StatusContent.SAVED;
     }
 
@@ -82,14 +76,16 @@ public class Content extends ContentTable {
     }
 
     public String getUniqueSiteId() {
-        if (getSite() == Site.FAKKU)
+        if (getSite() == Site.FAKKU) {
             return url.substring(url.lastIndexOf("/") + 1);
-        else if (getSite() == Site.PURURIN) {
+        } else if (getSite() == Site.PURURIN) {
             String[] paths = url.split("/");
             return paths[2].replace(".html", "") + "-" + paths[1];
         } else if (getSite() == Site.HITOMI) {
             String[] paths = url.split("/");
             return paths[1].replace(".html", "") + "-" + title.replaceAll("[^a-zA-Z0-9.-]", "_");
+        } else if (getSite() == Site.NHENTAI) {
+            return url.replace("/", "") + "-" + Site.NHENTAI.getDescription();
         }
         return null;
     }
@@ -113,8 +109,22 @@ public class Content extends ContentTable {
         this.url = url;
     }
 
-    public String getMangaUrl() {
-        return mangaUrl;
+    public String getGalleryUrl() {
+        if (site == Site.HITOMI) {
+            return site.getUrl() + "/galleries" + url;
+        } else if (site == Site.NHENTAI) {
+            return site.getUrl() + "/g" + url;
+        }
+        return null;
+    }
+
+    public String getReaderUrl() {
+        if (site == Site.HITOMI) {
+            return site.getUrl() + "/reader" + url;
+        } else if (site == Site.NHENTAI) {
+            return getGalleryUrl() + "1/";
+        }
+        return null;
     }
 
     public String getTitle() {

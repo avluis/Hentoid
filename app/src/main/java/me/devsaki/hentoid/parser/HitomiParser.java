@@ -33,7 +33,6 @@ public class HitomiParser {
             Element info = content.select(".gallery").first();
             Element title = info.select("h1").first();
             String urlTEMP = title.select("a").first().attr("href").replace("/reader", "");
-            String mangaUrlTEMP = Site.HITOMI.getUrl() + Constants.HITOMI_GALLERY + urlTEMP;
             String titleTEMP = title.text();
 
             HashMap<AttributeType, List<Attribute>> attributes = new HashMap<AttributeType, List<Attribute>>();
@@ -63,12 +62,9 @@ public class HitomiParser {
             result = new Content(
                     titleTEMP,
                     urlTEMP,
-                    mangaUrlTEMP,
                     coverImageUrlTEMP,
                     attributes,
                     pages,
-                    null,
-                    true,
                     Site.HITOMI
             );
         }
@@ -92,7 +88,7 @@ public class HitomiParser {
         Elements imgs = doc.select(".img-url");
         List<String> imagesUrl = new ArrayList<>(imgs.size());
         for (Element element : imgs) {
-            imagesUrl.add(element.text());
+            imagesUrl.add("https:" + element.text());
         }
         return imagesUrl;
     }

@@ -32,26 +32,20 @@ public class NhentaiParser {
         {
             String titleTEMP = elements.select("div#info").select("h1").text();
             String urlTEMP = elements.select("div#cover").select("a").attr("href").replace("1/", "").replace("/g", "");
-            String mangaUrlTEMP = Site.NHENTAI.getUrl() + urlTEMP;
             String coverImageUrlTEMP = elements.select("div#cover").select("img").attr("src");
             Integer qtyPagesTEMP = doc.select("a.gallerythumb").size();
 
             HashMap<AttributeType, List<Attribute>> attributesTEMP = new HashMap<AttributeType, List<Attribute>>();
 
             Elements baseElements = elements.select("div#info");
-            Log.d(TAG, "ARTISTS");
             Elements artistsElements = baseElements.select("div.field-name:containsOwn(Artists:)").select("a.tag");
             attributesTEMP.put(AttributeType.ARTIST, parseAttributes(artistsElements, AttributeType.ARTIST));
-            Log.d(TAG, "LANGUAGE");
             Elements languageElements = baseElements.select("div.field-name:containsOwn(Language:)").select("a.tag");
             attributesTEMP.put(AttributeType.LANGUAGE, parseAttributes(languageElements, AttributeType.LANGUAGE));
-            Log.d(TAG, "TAGS");
             Elements tagElements = baseElements.select("div.field-name:containsOwn(Tags:)").select("a.tag");
             attributesTEMP.put(AttributeType.TAG, parseAttributes(tagElements, AttributeType.TAG));
-            Log.d(TAG, "CIRCLE");
             Elements circleElements = baseElements.select("div.field-name:containsOwn(Groups:)").select("a.tag");
             attributesTEMP.put(AttributeType.CIRCLE, parseAttributes(circleElements, AttributeType.CIRCLE));
-            Log.d(TAG, "CATEGORY");
             Elements categoryElements = baseElements.select("div.field-name:containsOwn(Category:)").select("a.tag");
             attributesTEMP.put(AttributeType.CATEGORY, parseAttributes(categoryElements, AttributeType.CATEGORY));
 
@@ -59,12 +53,9 @@ public class NhentaiParser {
             result = new Content(
                     titleTEMP,
                     urlTEMP,
-                    mangaUrlTEMP,
                     coverImageUrlTEMP,
                     attributesTEMP,
                     qtyPagesTEMP,
-                    null,
-                    true,
                     Site.NHENTAI
             );
         }
@@ -80,16 +71,20 @@ public class NhentaiParser {
             attribute.setUrl(element.attr("href"));
             attribute.setName(element.ownText());
             attributes.add(attribute);
-            Log.d(TAG, "url: " + element.attr("href"));
-            Log.d(TAG, "name: " + element.ownText());
         }
         return attributes;
     }
 
     //Incomplete
-    public static List<String> parseImageList(String html) {
+    public static List<String> parseImageList(String html, int qtyPages) {
         Document doc = Jsoup.parse(html);
         List<String> imagesUrl = new ArrayList<>();
+        String imageUrlTemplate = "http:" + doc.select("section#image-container").select("img").attr("src").replace("1.jpg", "");
+
+        for(Integer i = 1; i != qtyPages; i++)
+        {
+            imagesUrl.add(imageUrlTemplate + i.toString() + ".jpg");
+        }
         return imagesUrl;
     }
 }

@@ -240,10 +240,8 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + content.getUrl());
         else if (content.getSite() == Site.PURURIN)
             intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + Constants.PURURIN_GALLERY + content.getUrl());
-        else if (content.getSite() == Site.HITOMI)
-            intent.putExtra(MainActivity.INTENT_URL, content.getSite().getUrl() + Constants.HITOMI_GALLERY + content.getUrl());
         else
-            intent.putExtra(MainActivity.INTENT_URL, content.getMangaUrl());
+            intent.putExtra(MainActivity.INTENT_URL, content.getGalleryUrl());
 
         intent.putExtra(MainActivity.INTENT_SITE, content.getSite().getCode());
         getContext().startActivity(intent);
