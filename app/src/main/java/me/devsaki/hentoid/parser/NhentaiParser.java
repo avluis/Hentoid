@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parser;
 
+import android.util.Log;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -28,7 +30,8 @@ public class NhentaiParser {
 
         if (elements.size() > 0) {
             String titleTEMP = elements.select("div#info").select("h1").text();
-            String urlTEMP = elements.select("div#cover").select("a").attr("href").replace("1/", "").replace("/g", "");
+            String urlTEMP = elements.select("div#cover").select("a").attr("href");
+            urlTEMP = urlTEMP.substring(2, urlTEMP.lastIndexOf("1/"));
             String coverImageUrlTEMP = elements.select("div#cover").select("img").attr("src");
             Integer qtyPagesTEMP = doc.select("a.gallerythumb").size();
 
