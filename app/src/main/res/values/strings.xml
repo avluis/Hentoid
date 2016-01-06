@@ -5,7 +5,6 @@
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_download_manager">Download Manager</string>
     <string name="title_activity_preferences">Preferences</string>
-    <string name="title_activity_message_support">MessageSupportActivity</string>
     <string name="title_activity_about">About</string>
     <!-- Menu -->
     <string name="menu_search">Search</string>
@@ -46,12 +45,10 @@
     <string name="not_limit_per_page">Not limit per page.</string>
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
-    <string name="error_page_out">Error: Number Page.</string>
 
     <string name="downloads_manager_empty">Download queue is empty.</string>
     <string name="downloads_library_empty">Your downloads library is empty.</string>
     <string name="no_data">No data.</string>
-    <string name="crash_app">Crash report log was sent.</string>
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>

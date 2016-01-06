@@ -83,7 +83,7 @@ public class HentoidApplication extends Application {
                 });
     }
 
-    public void addBitmapToMemoryCache(String key, Bitmap bitmap) {
+    private void addBitmapToMemoryCache(String key, Bitmap bitmap) {
         if (key != null && bitmap != null) {
             if (getBitmapFromMemCache(key) == null) {
                 mMemoryCache.put(key, bitmap);
@@ -91,7 +91,7 @@ public class HentoidApplication extends Application {
         }
     }
 
-    public Bitmap getBitmapFromMemCache(String key) {
+    private Bitmap getBitmapFromMemCache(String key) {
         return mMemoryCache.get(key);
     }
 

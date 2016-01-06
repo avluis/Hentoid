@@ -95,7 +95,6 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_order_alphabetic) {
             getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
             getFragment().searchContent();

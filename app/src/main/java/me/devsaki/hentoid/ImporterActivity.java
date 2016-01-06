@@ -112,7 +112,7 @@ public class ImporterActivity extends AppCompatActivity {
                                 try {
                                     ContentV1 content = new Gson().fromJson(Helper.readJsonFile(json), ContentV1.class);
                                     if (content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.ERROR)
-                                        content.setStatus(StatusContent.MIGRATED);
+                                        content.setMigratedStatus();
                                     Content contentV2 = content.toContent();
                                     try {
                                         Helper.saveJson(contentV2, file);
@@ -152,7 +152,7 @@ public class ImporterActivity extends AppCompatActivity {
                                         content.setTags(from(doujinBean.getLstTags(), AttributeType.TAG));
                                         content.setLanguage(from(doujinBean.getLanguage(), AttributeType.LANGUAGE));
 
-                                        content.setStatus(StatusContent.MIGRATED);
+                                        content.setMigratedStatus();
                                         content.setDownloadDate(importedDate.getTime());
                                         Content contentV2 = content.toContent();
                                         try {

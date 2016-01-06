@@ -200,8 +200,8 @@ public class ContentV1 extends ContentTable {
         return status;
     }
 
-    public void setStatus(StatusContent status) {
-        this.status = status;
+    public void setMigratedStatus() {
+        this.status = StatusContent.MIGRATED;
     }
 
     public List<ImageFile> getImageFiles() {

@@ -32,7 +32,7 @@ public class NhentaiParser {
             String coverImageUrlTEMP = elements.select("div#cover").select("img").attr("src");
             Integer qtyPagesTEMP = doc.select("a.gallerythumb").size();
 
-            HashMap<AttributeType, List<Attribute>> attributesTEMP = new HashMap<AttributeType, List<Attribute>>();
+            HashMap<AttributeType, List<Attribute>> attributesTEMP = new HashMap<>();
 
             Elements baseElements = elements.select("div#info");
             Elements artistsElements = baseElements.select("div.field-name:containsOwn(Artists:)").select("a.tag");

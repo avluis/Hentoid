@@ -39,22 +39,11 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(
-                this,                  /* host Activity */
-                mDrawerLayout,         /* DrawerLayout object */
-                R.string.drawer_open,  /* "open drawer" description */
-                R.string.drawer_close  /* "close drawer" description */
-        ) {
-
-            /** Called when a drawer has settled in a completely closed state. */
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-            }
-
-            /** Called when a drawer has settled in a completely open state. */
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-            }
-        };
+                this,
+                mDrawerLayout,
+                R.string.drawer_open,
+                R.string.drawer_close
+        );
 
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -113,7 +102,6 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         }
     }
 
-    @SuppressWarnings({"unused"})
     public void ndOpenWebView(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);

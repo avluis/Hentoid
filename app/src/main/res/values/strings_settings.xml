@@ -19,7 +19,6 @@
     <string name="pref_add_no_media_file_summary">This will prevent downloaded images from showing up in the Gallery App.</string>
     <!-- .nomedia -->
     <string name="nomedia_file_created">.nomedia file created.</string>
-    <string name="nomedia_file_error">Error creating .nomedia file.</string>
     <!-- App Lock -->
     <string name="pref_applock_category">App Lock</string>
     <string name="pref_app_lock_title">Application Lock</string>
