@@ -10,6 +10,8 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.apache.commons.io.FileUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.File;
 import java.io.IOException;
@@ -233,30 +235,38 @@ public class DownloadManagerService extends IntentService {
 
     private void parseImageFiles(Content content) throws Exception {
         content.setImageFiles(new ArrayList<ImageFile>());
+        List<String> aUrls = new ArrayList<>();
         try {
-            URL url = new URL(content.getReaderUrl());
-            String html = HttpClientHelper.call(url);
-
-            List<String> aUrls = null;
-
-            if (content.getSite() == Site.HITOMI)
+            if (content.getSite() == Site.HITOMI) {
+                URL url = new URL(content.getReaderUrl());
+                String html = HttpClientHelper.call(url);
                 aUrls = HitomiParser.parseImageList(html);
-            else if (content.getSite() == Site.NHENTAI)
-                aUrls = NhentaiParser.parseImageList(html, content.getQtyPages());
+            } else if (content.getSite() == Site.NHENTAI) {
+                String gelleryUrl = content.getGalleryUrl();
+                aUrls = new ArrayList<>();
 
-            int i = 1;
-            for (String str : aUrls) {
-                String name = String.format("%03d", i) + ".jpg";
-                ImageFile imageFile = new ImageFile();
-                imageFile.setUrl(str);
-                imageFile.setOrder(i++);
-                imageFile.setStatus(StatusContent.SAVED);
-                imageFile.setName(name);
-                content.getImageFiles().add(imageFile);
+                String readerUrl;
+                for (Integer i = 1; i != content.getQtyPages(); i++) {
+                    readerUrl = gelleryUrl + i.toString() + '/';
+                    URL url = new URL(readerUrl);
+                    String html = HttpClientHelper.call(url);
+                    aUrls.add(NhentaiParser.parseImage(html));
+                }
             }
         } catch (Exception e) {
             Log.e(TAG, "Error getting image urls", e);
             throw e;
+        }
+
+        int i = 1;
+        for (String str : aUrls) {
+            String name = String.format("%03d", i) + ".jpg";
+            ImageFile imageFile = new ImageFile();
+            imageFile.setUrl(str);
+            imageFile.setOrder(i++);
+            imageFile.setStatus(StatusContent.SAVED);
+            imageFile.setName(name);
+            content.getImageFiles().add(imageFile);
         }
         db.insertImageFiles(content);
     }

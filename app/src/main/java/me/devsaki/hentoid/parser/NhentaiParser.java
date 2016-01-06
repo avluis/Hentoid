@@ -73,14 +73,8 @@ public class NhentaiParser {
         return attributes;
     }
 
-    public static List<String> parseImageList(String html, int qtyPages) {
+    public static String parseImage(String html) {
         Document doc = Jsoup.parse(html);
-        List<String> imagesUrl = new ArrayList<>();
-        String imageUrlTemplate = "http:" + doc.select("section#image-container").select("img").attr("src").replace("1.jpg", "");
-
-        for (Integer i = 1; i != qtyPages; i++) {
-            imagesUrl.add(imageUrlTemplate + i.toString() + ".jpg");
-        }
-        return imagesUrl;
+        return "http:" + doc.select("section#image-container").select("img").attr("src");
     }
 }
