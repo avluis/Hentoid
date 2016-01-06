@@ -9,7 +9,8 @@ public enum Site {
 
     FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_fakku, "/Downloads"),
     PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_pururin, "/Pururin"),
-    HITOMI(2, "Hitomi", "https://hitomi.la", R.drawable.ic_hitomi, "/Hitomi");
+    HITOMI(2, "Hitomi", "https://hitomi.la", R.drawable.ic_hitomi, "/Hitomi"),
+    NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_nhentai, "/nhentai");
 
     private final int code;
     private final String description;

@@ -62,8 +62,6 @@ public class HitomiParser {
                     coverImageUrlTEMP,
                     attributes,
                     pages,
-                    null,
-                    true,
                     Site.HITOMI
             );
         }
@@ -87,7 +85,7 @@ public class HitomiParser {
         Elements imgs = doc.select(".img-url");
         List<String> imagesUrl = new ArrayList<>(imgs.size());
         for (Element element : imgs) {
-            imagesUrl.add(element.text());
+            imagesUrl.add("https:" + element.text());
         }
         return imagesUrl;
     }

@@ -28,6 +28,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.HitomiParser;
+import me.devsaki.hentoid.parser.NhentaiParser;
 import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.pururin.ImageDto;
 import me.devsaki.hentoid.pururin.PururinDto;
@@ -308,14 +309,32 @@ public class DownloadManagerService extends IntentService {
             }
         } else if (content.getSite() == Site.HITOMI) {
             try {
-                URL url = new URL(content.getSite().getUrl() + Constants.HITOMI_READER + content.getUrl());
+                URL url = new URL(content.getReaderUrl());
                 String html = HttpClientHelper.call(url);
                 List<String> aUrls = HitomiParser.parseImageList(html);
                 int i = 1;
                 for (String str : aUrls) {
                     String name = String.format("%03d", i) + ".jpg";
                     ImageFile imageFile = new ImageFile();
-                    str = "https:" + str;
+                    imageFile.setUrl(str);
+                    imageFile.setOrder(i++);
+                    imageFile.setStatus(StatusContent.SAVED);
+                    imageFile.setName(name);
+                    content.getImageFiles().add(imageFile);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Error getting image urls", e);
+                throw e;
+            }
+        } else if (content.getSite() == Site.NHENTAI) {
+            try {
+                URL url = new URL(content.getReaderUrl());
+                String html = HttpClientHelper.call(url);
+                List<String> aUrls = NhentaiParser.parseImageList(html, content.getQtyPages());
+                int i = 1;
+                for (String str : aUrls) {
+                    String name = String.format("%03d", i) + ".jpg";
+                    ImageFile imageFile = new ImageFile();
                     imageFile.setUrl(str);
                     imageFile.setOrder(i++);
                     imageFile.setStatus(StatusContent.SAVED);

@@ -35,11 +35,11 @@ import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.FakkuParser;
 import me.devsaki.hentoid.parser.HitomiParser;
+import me.devsaki.hentoid.parser.NhentaiParser;
 import me.devsaki.hentoid.parser.PururinParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
-
 
 public class MainActivity extends AppCompatActivity {
 
@@ -82,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
         webview.getSettings().setBuiltInZoomControls(true);
         webview.getSettings().setDisplayZoomControls(false);
         webview.getSettings().setUserAgentString(Constants.USER_AGENT);
+        webview.getSettings().setDomStorageEnabled(true);
         webview.getSettings().setUseWideViewPort(true);
         webview.getSettings().setJavaScriptEnabled(true);
         webview.setInitialScale(50);
@@ -204,7 +205,8 @@ public class MainActivity extends AppCompatActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("fakku.net") && site == Site.FAKKU) &&
                         !(u.getHost().endsWith("pururin.com") && site == Site.PURURIN) &&
-                        !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI);
+                        !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) &&
+                        !(u.getHost().endsWith("nhentai.net") && site == Site.NHENTAI);
             } catch (MalformedURLException e) {
                 Log.d(TAG, "Malformed URL");
             }
@@ -293,6 +295,14 @@ public class MainActivity extends AppCompatActivity {
                             Log.e(TAG, "Error executing javascript in webview", ex);
                         }
                     }
+                } else if (site == Site.NHENTAI) {
+                    if (paths.length > 1 && paths[1].startsWith("g")) {
+                        try {
+                            view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Error executing javascript in webview", ex);
+                        }
+                    }
                 }
             }
         }
@@ -311,6 +321,8 @@ public class MainActivity extends AppCompatActivity {
                 content = PururinParser.parseContent(html);
             } else if (site == Site.HITOMI) {
                 content = HitomiParser.parseContent(html);
+            } else if (site == Site.NHENTAI) {
+                content = NhentaiParser.parseContent(html);
             }
             if (content == null) {
                 return;

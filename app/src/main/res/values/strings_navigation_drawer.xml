@@ -6,6 +6,7 @@
     <string name="navigation_drawer_fakku_wb">Fakku</string>
     <string name="navigation_drawer_pururin_wb">Pururin</string>
     <string name="navigation_drawer_hitomi_wb">Hitomi</string>
+    <string name="navigation_drawer_nhentai_wb">nhentai</string>
     <string name="navigation_drawer_downloads">Downloads</string>
     <string name="navigation_drawer_download_manager">Download Manager</string>
     <string name="navigation_drawer_preferences">Preferences</string>

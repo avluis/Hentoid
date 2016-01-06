@@ -20,14 +20,14 @@
         android:dividerPadding="10dp"
         android:orientation="vertical">
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/image_button"
-            android:onClick="ndFakkuWb"
-            android:padding="10dp"
-            android:text="@string/navigation_drawer_fakku_wb"
-            android:textColor="@android:color/white" />
+        <!--<Button-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@drawable/image_button"-->
+            <!--android:onClick="ndFakkuWb"-->
+            <!--android:padding="10dp"-->
+            <!--android:text="@string/navigation_drawer_fakku_wb"-->
+            <!--android:textColor="@android:color/white" />-->
 
         <!--<Button-->
             <!--android:layout_width="match_parent"-->
@@ -45,6 +45,15 @@
             android:onClick="ndHitomiWb"
             android:padding="10dp"
             android:text="@string/navigation_drawer_hitomi_wb"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/image_button"
+            android:onClick="ndNhentaiWb"
+            android:padding="10dp"
+            android:text="@string/navigation_drawer_nhentai_wb"
             android:textColor="@android:color/white" />
 
         <Button
