@@ -64,15 +64,6 @@ public class ContentV1 extends ContentTable {
         return url.hashCode();
     }
 
-    public String getUniqueSiteId() {
-        if (getSite() == Site.FAKKU)
-            return url.substring(url.lastIndexOf("/") + 1);
-        else if (getSite() == Site.PURURIN) {
-            return url.substring(url.lastIndexOf("/") + 1).replace(".html", "");
-        }
-        return null;
-    }
-
     public String getCategory() {
         return url.substring(1, url.lastIndexOf("/"));
     }

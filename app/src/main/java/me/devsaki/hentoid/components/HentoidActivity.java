@@ -113,38 +113,16 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         }
     }
 
-    @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndFakkuWb(View view) {
+    @SuppressWarnings({"unused"})
+    public void ndOpenWebView(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(MainActivity.INTENT_SITE, Site.FAKKU.getCode());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-    }
 
-    @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndPururinWb(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(MainActivity.INTENT_SITE, Site.PURURIN.getCode());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-    }
+        if(view.getId() == R.id.ndHitomiWbButton)
+            intent.putExtra(MainActivity.INTENT_SITE, Site.HITOMI.getCode());
+        else if(view.getId() == R.id.ndNhentaiWbButton)
+            intent.putExtra(MainActivity.INTENT_SITE, Site.NHENTAI.getCode());
 
-    @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndHitomiWb(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(MainActivity.INTENT_SITE, Site.HITOMI.getCode());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
-    }
-
-    @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndNhentaiWb(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra(MainActivity.INTENT_SITE, Site.NHENTAI.getCode());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }

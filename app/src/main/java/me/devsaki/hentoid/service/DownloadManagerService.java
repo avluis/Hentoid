@@ -237,114 +237,30 @@ public class DownloadManagerService extends IntentService {
 
     private void parseImageFiles(Content content) throws Exception {
         content.setImageFiles(new ArrayList<ImageFile>());
-        if (content.getSite() == Site.FAKKU) {
-            try {
-                URL url = new URL(content.getSite().getUrl() + content.getUrl() + Constants.FAKKU_READ);
-                String site;
-                String extention;
-                String html = HttpClientHelper.call(url);
-                String find = "imgpath(x)";
+        try {
+            URL url = new URL(content.getReaderUrl());
+            String html = HttpClientHelper.call(url);
 
-                assert html != null;
-                int indexImgpath = html.indexOf(find) + find.length();
-                if (indexImgpath == find.length() - 1) {
-                    throw new RuntimeException("Not find image url.");
-                }
-                find = "return '";
-                int indexReturn = html.indexOf(find, indexImgpath) + find.length();
-                find = "'";
-                int indexFinishSite = html.indexOf(find, indexReturn);
-                site = html.substring(indexReturn, indexFinishSite);
-                if (site.startsWith("//")) {
-                    site = "https:" + site;
-                }
-                int indexStartExtension = html.indexOf(find, indexFinishSite + find.length()) + find.length();
-                int indexFinishExtension = html.indexOf(find, indexStartExtension);
-                extention = html.substring(indexStartExtension, indexFinishExtension);
-                for (int i = 1; i <= content.getQtyPages(); i++) {
-                    String name = String.format("%03d", i) + extention;
-                    ImageFile imageFile = new ImageFile();
-                    imageFile.setUrl(site + name);
-                    imageFile.setOrder(i);
-                    imageFile.setStatus(StatusContent.SAVED);
-                    imageFile.setName(name);
-                    content.getImageFiles().add(imageFile);
-                }
+            List<String> aUrls = null;
 
-            } catch (Exception e) {
-                Log.e(TAG, "Guessing extension");
-                String urlCdn = content.getCoverImageUrl().substring(2, content.getCoverImageUrl().lastIndexOf("/thumbs/")) + "/images/";
-                for (int i = 1; i <= content.getQtyPages(); i++) {
-                    String name = String.format("%03d", i) + ".jpg";
-                    ImageFile imageFile = new ImageFile();
-                    imageFile.setUrl(urlCdn + name);
-                    imageFile.setOrder(i);
-                    imageFile.setStatus(StatusContent.SAVED);
-                    imageFile.setName(name);
-                    content.getImageFiles().add(imageFile);
-                }
+            if (content.getSite() == Site.HITOMI)
+                aUrls = HitomiParser.parseImageList(html);
+            else if (content.getSite() == Site.NHENTAI)
+                aUrls = NhentaiParser.parseImageList(html, content.getQtyPages());
+
+            int i = 1;
+            for (String str : aUrls) {
+                String name = String.format("%03d", i) + ".jpg";
+                ImageFile imageFile = new ImageFile();
+                imageFile.setUrl(str);
+                imageFile.setOrder(i++);
+                imageFile.setStatus(StatusContent.SAVED);
+                imageFile.setName(name);
+                content.getImageFiles().add(imageFile);
             }
-        } else if (content.getSite() == Site.PURURIN) {
-            try {
-                URL url = new URL(content.getSite().getUrl() + Constants.PURURIN_THUMBS + content.getUrl());
-                String html = HttpClientHelper.call(url);
-                List<String> aUrls = PururinParser.parseImageList(html);
-                int i = 1;
-                String a = aUrls.get(0);
-                URL aUrl = new URL(content.getSite().getUrl() + a);
-                String aHtml = HttpClientHelper.call(aUrl);
-                PururinDto pururinDto = PururinParser.catchPururinDto(aHtml);
-                for (ImageDto imageDto : pururinDto.getImages()) {
-                    String name = String.format("%03d", i) + ".jpg";
-                    ImageFile imageFile = new ImageFile();
-                    imageFile.setUrl(content.getSite().getUrl() + "/f/" + imageDto.getF().replace(".jpg", "/a.jpg"));
-                    imageFile.setOrder(i++);
-                    imageFile.setStatus(StatusContent.SAVED);
-                    imageFile.setName(name);
-                    content.getImageFiles().add(imageFile);
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting image urls", e);
-                throw e;
-            }
-        } else if (content.getSite() == Site.HITOMI) {
-            try {
-                URL url = new URL(content.getReaderUrl());
-                String html = HttpClientHelper.call(url);
-                List<String> aUrls = HitomiParser.parseImageList(html);
-                int i = 1;
-                for (String str : aUrls) {
-                    String name = String.format("%03d", i) + ".jpg";
-                    ImageFile imageFile = new ImageFile();
-                    imageFile.setUrl(str);
-                    imageFile.setOrder(i++);
-                    imageFile.setStatus(StatusContent.SAVED);
-                    imageFile.setName(name);
-                    content.getImageFiles().add(imageFile);
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting image urls", e);
-                throw e;
-            }
-        } else if (content.getSite() == Site.NHENTAI) {
-            try {
-                URL url = new URL(content.getReaderUrl());
-                String html = HttpClientHelper.call(url);
-                List<String> aUrls = NhentaiParser.parseImageList(html, content.getQtyPages());
-                int i = 1;
-                for (String str : aUrls) {
-                    String name = String.format("%03d", i) + ".jpg";
-                    ImageFile imageFile = new ImageFile();
-                    imageFile.setUrl(str);
-                    imageFile.setOrder(i++);
-                    imageFile.setStatus(StatusContent.SAVED);
-                    imageFile.setName(name);
-                    content.getImageFiles().add(imageFile);
-                }
-            } catch (Exception e) {
-                Log.e(TAG, "Error getting image urls", e);
-                throw e;
-            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error getting image urls", e);
+            throw e;
         }
         db.insertImageFiles(content);
     }

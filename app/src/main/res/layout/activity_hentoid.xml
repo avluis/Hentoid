@@ -20,38 +20,22 @@
         android:dividerPadding="10dp"
         android:orientation="vertical">
 
-        <!--<Button-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="@drawable/image_button"-->
-            <!--android:onClick="ndFakkuWb"-->
-            <!--android:padding="10dp"-->
-            <!--android:text="@string/navigation_drawer_fakku_wb"-->
-            <!--android:textColor="@android:color/white" />-->
-
-        <!--<Button-->
-            <!--android:layout_width="match_parent"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:background="@drawable/image_button"-->
-            <!--android:onClick="ndPururinWb"-->
-            <!--android:padding="10dp"-->
-            <!--android:text="@string/navigation_drawer_pururin_wb"-->
-            <!--android:textColor="@android:color/white" />-->
-
         <Button
+            android:id="@+id/ndHitomiWbButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/image_button"
-            android:onClick="ndHitomiWb"
+            android:onClick="ndOpenWebView"
             android:padding="10dp"
             android:text="@string/navigation_drawer_hitomi_wb"
             android:textColor="@android:color/white" />
 
         <Button
+            android:id="@+id/ndNhentaiWbButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/image_button"
-            android:onClick="ndNhentaiWb"
+            android:onClick="ndOpenWebView"
             android:padding="10dp"
             android:text="@string/navigation_drawer_nhentai_wb"
             android:textColor="@android:color/white" />

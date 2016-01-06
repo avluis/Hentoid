@@ -10,7 +10,6 @@ public abstract class Constants {
 
     public static final String FAKKU_READ = "/read";
     public static final String PURURIN_THUMBS = "/thumbs";
-    public static final String PURURIN_GALLERY = "/gallery";
 
     public static final String JSON_FILE_NAME = "content.json";
     public static final String JSON_FILE_NAME_V2 = "contentV2.json";

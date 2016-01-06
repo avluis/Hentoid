@@ -203,9 +203,7 @@ public class MainActivity extends AppCompatActivity {
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
                 URL u = new URL(url);
-                return !(u.getHost().endsWith("fakku.net") && site == Site.FAKKU) &&
-                        !(u.getHost().endsWith("pururin.com") && site == Site.PURURIN) &&
-                        !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) &&
+                return !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) &&
                         !(u.getHost().endsWith("nhentai.net") && site == Site.NHENTAI);
             } catch (MalformedURLException e) {
                 Log.d(TAG, "Malformed URL");
@@ -258,50 +256,19 @@ public class MainActivity extends AppCompatActivity {
 
             if (uri != null && uri.getPath() != null) {
                 String[] paths = uri.getPath().split("/");
-                if (site == Site.FAKKU) {
-                    if (paths.length >= 3) {
-                        if (paths[1].equals("doujinshi") || paths[1].equals("manga")) {
-                            if (paths.length == 3 || !paths[3].equals("read")) {
-                                try {
-                                    view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
-                                } catch (Exception ex) {
-                                    Log.e(TAG, "Error executing javascript in webview", ex);
-                                }
-                            }
-                        }
-                    } else if (paths.length == 2) {
-                        String category = paths[1];
-                        if (paths[1].equals("doujinshi") || paths[1].equals("manga"))
-                            try {
-                                String javascript = getString(R.string.hack_add_tags).replace("@category", category);
-                                view.loadUrl(javascript);
-                            } catch (Exception ex) {
-                                Log.e(TAG, "Error executing javascript in webview", ex);
-                            }
+                if ((site == Site.HITOMI) &&
+                        paths.length > 1 && paths[1].startsWith("galleries")) {
+                    try {
+                        view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error executing javascript in webview", ex);
                     }
-                } else if (site == Site.PURURIN) {
-                    if (paths.length > 1 && paths[1].startsWith("gallery")) {
-                        try {
-                            view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
-                        } catch (Exception ex) {
-                            Log.e(TAG, "Error executing javascript in webview", ex);
-                        }
-                    }
-                } else if (site == Site.HITOMI) {
-                    if (paths.length > 1 && paths[1].startsWith("galleries")) {
-                        try {
-                            view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
-                        } catch (Exception ex) {
-                            Log.e(TAG, "Error executing javascript in webview", ex);
-                        }
-                    }
-                } else if (site == Site.NHENTAI) {
-                    if (paths.length > 1 && paths[1].startsWith("g")) {
-                        try {
-                            view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
-                        } catch (Exception ex) {
-                            Log.e(TAG, "Error executing javascript in webview", ex);
-                        }
+                } else if ((site == Site.NHENTAI) &&
+                        paths.length > 1 && paths[1].startsWith("g")) {
+                    try {
+                        view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Error executing javascript in webview", ex);
                     }
                 }
             }
@@ -314,16 +281,13 @@ public class MainActivity extends AppCompatActivity {
         public void processHTML(String html) {
             if (html == null)
                 return;
+
             Content content = null;
-            if (site == Site.FAKKU) {
-                content = FakkuParser.parseContent(html);
-            } else if (site == Site.PURURIN) {
-                content = PururinParser.parseContent(html);
-            } else if (site == Site.HITOMI) {
+            if (site == Site.HITOMI)
                 content = HitomiParser.parseContent(html);
-            } else if (site == Site.NHENTAI) {
+            else if (site == Site.NHENTAI)
                 content = NhentaiParser.parseContent(html);
-            }
+
             if (content == null) {
                 return;
             }
