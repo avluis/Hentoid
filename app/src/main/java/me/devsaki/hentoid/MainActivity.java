@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
                     String[] cookiesArray = cookies.split(";");
                     for (String cookie : cookiesArray) {
                         String key = cookie.split("=")[0].trim();
-                        if (key.equals("cf_clearance") || site != Site.PURURIN) {
+                        if (key.equals("cf_clearance")) {
                             String value = cookie.split("=")[1].trim();
                             HttpCookie httpCookie = new HttpCookie(key, value);
                             if (uri != null) {
