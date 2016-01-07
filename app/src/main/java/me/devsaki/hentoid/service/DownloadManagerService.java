@@ -245,10 +245,8 @@ public class DownloadManagerService extends IntentService {
                 String gelleryUrl = content.getGalleryUrl();
                 aUrls = new ArrayList<>();
 
-                String readerUrl;
-                for (Integer i = 1; i != content.getQtyPages(); i++) {
-                    readerUrl = gelleryUrl + i.toString() + '/';
-                    URL url = new URL(readerUrl);
+                for (int i = 1, qty = content.getQtyPages(); i <= qty; i++) {
+                    URL url = new URL(gelleryUrl + i + '/');
                     String html = HttpClientHelper.call(url);
                     aUrls.add(NhentaiParser.parseImage(html));
                 }
