@@ -40,6 +40,10 @@ public class NhentaiParser {
             Elements baseElements = elements.select("div#info");
             Elements artistsElements = baseElements.select("div.field-name:containsOwn(Artists:)").select("a.tag");
             attributesTEMP.put(AttributeType.ARTIST, parseAttributes(artistsElements, AttributeType.ARTIST));
+            Elements characterElements = baseElements.select("div.field-name:containsOwn(Characters:)").select("a.tag");
+            attributesTEMP.put(AttributeType.CHARACTER, parseAttributes(characterElements, AttributeType.CHARACTER));
+            Elements serieElements = baseElements.select("div.field-name:containsOwn(Parodies:)").select("a.tag");
+            attributesTEMP.put(AttributeType.SERIE, parseAttributes(serieElements, AttributeType.SERIE));
             Elements languageElements = baseElements.select("div.field-name:containsOwn(Language:)").select("a.tag");
             attributesTEMP.put(AttributeType.LANGUAGE, parseAttributes(languageElements, AttributeType.LANGUAGE));
             Elements tagElements = baseElements.select("div.field-name:containsOwn(Tags:)").select("a.tag");
