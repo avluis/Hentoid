@@ -2,13 +2,10 @@ package me.devsaki.hentoid.util;
 
 import android.text.TextUtils;
 
-import com.google.gson.Gson;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.CookieHandler;
 import java.net.CookieManager;
 import java.net.HttpURLConnection;
@@ -16,8 +13,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import me.devsaki.hentoid.dto.UserRequest;
-import me.devsaki.hentoid.dto.VersionDto;
 import me.devsaki.hentoid.exceptions.HttpClientException;
 
 /**
@@ -67,49 +62,5 @@ public class HttpClientHelper {
         }
 
         return result;
-    }
-
-    public static VersionDto checkLastVersion(UserRequest userRequest) throws HttpClientException, IOException {
-        URL url = new URL("http://api.devsaki.me/hentoid/versions/last");
-
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        urlConnection.setRequestMethod("POST");
-        urlConnection.setConnectTimeout(10000);
-
-        urlConnection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-        OutputStreamWriter os = new OutputStreamWriter(urlConnection.getOutputStream());
-        os.write(new Gson().toJson(userRequest));
-        os.flush();
-        os.close();
-        urlConnection.connect();
-
-        int code = urlConnection.getResponseCode();
-
-        // Read the input stream into a String
-        InputStream inputStream = urlConnection.getInputStream();
-        StringBuilder builder = new StringBuilder();
-        if (inputStream == null) {
-            // Nothing to do.
-            return null;
-        }
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            builder.append(line);
-        }
-
-        if (builder.length() == 0) {
-            // Stream was empty.  No point in parsing.
-            return null;
-        }
-
-        String result = builder.toString();
-
-        if (code != 200) {
-            throw new HttpClientException(result, code);
-        }
-
-        return new Gson().fromJson(result, VersionDto.class);
     }
 }

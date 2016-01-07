@@ -142,8 +142,10 @@ public class UpdateCheck implements IUpdateCheck {
         installUpdate.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent updateIntent = PendingIntent.getBroadcast(context, 0, installUpdate, 0);
 
-        notificationView = new RemoteViews(context.getPackageName(), R.layout.update_notification_available);
-        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationView = new RemoteViews(context.getPackageName(),
+                R.layout.update_notification_available);
+        notificationManager = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
                 .Builder(context)
@@ -153,7 +155,8 @@ public class UpdateCheck implements IUpdateCheck {
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setTicker(context.getString(R.string.update_available))
                 .setContent(notificationView);
-        notificationView.setTextViewText(R.id.tv_2, context.getString(R.string.download_update));
+        notificationView.setTextViewText(R.id.tv_2,
+                context.getString(R.string.download_update));
         notificationView.setOnClickPendingIntent(R.id.rl_notify_root, updateIntent);
 
         notificationManager.notify(NOTIFICATION_ID, builder.build());
@@ -168,8 +171,10 @@ public class UpdateCheck implements IUpdateCheck {
         clearIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent removeIntent = PendingIntent.getBroadcast(context, 0, clearIntent, 0);
 
-        notificationView = new RemoteViews(context.getPackageName(), R.layout.update_notification);
-        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationView = new RemoteViews(context.getPackageName(),
+                R.layout.update_notification);
+        notificationManager = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
                 .Builder(context)
@@ -190,8 +195,10 @@ public class UpdateCheck implements IUpdateCheck {
         installUpdate.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent installIntent = PendingIntent.getBroadcast(context, 0, installUpdate, 0);
 
-        notificationView = new RemoteViews(context.getPackageName(), R.layout.update_notification_available);
-        notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationView = new RemoteViews(context.getPackageName(),
+                R.layout.update_notification_available);
+        notificationManager = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
                 .Builder(context)
@@ -212,6 +219,7 @@ public class UpdateCheck implements IUpdateCheck {
 
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
+            //noinspection deprecation
             intent.putExtra(Intent.EXTRA_ALLOW_REPLACE, true);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
@@ -219,7 +227,8 @@ public class UpdateCheck implements IUpdateCheck {
             intent = new Intent(Intent.ACTION_VIEW);
         }
 
-        intent.setDataAndType(Uri.parse("file://" + updateDownloadPath), "application/vnd.android.package-archive");
+        intent.setDataAndType(Uri.parse("file://" + updateDownloadPath),
+                "application/vnd.android.package-archive");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         context.startActivity(intent);
@@ -231,7 +240,8 @@ public class UpdateCheck implements IUpdateCheck {
 
             Uri downloadUri = Uri.parse(downloadURL);
             assert context.getExternalCacheDir() != null;
-            Uri destinationUri = Uri.parse(updateDownloadPath = context.getExternalCacheDir().toString() + "/hentoid_update.apk");
+            Uri destinationUri = Uri.parse(updateDownloadPath =
+                    context.getExternalCacheDir().toString() + "/hentoid_update.apk");
 
             DownloadRequest downloadRequest = new DownloadRequest(downloadUri)
                     .setDestinationURI(destinationUri)
@@ -250,9 +260,12 @@ public class UpdateCheck implements IUpdateCheck {
                             cancelNotificationAndUpdateRunnable();
                             if (errorCode != DownloadManager.ERROR_DOWNLOAD_CANCELLED) {
                                 try {
-                                    notificationView.setProgressBar(R.id.pb_notification, 100, 0, true);
-                                    notificationView.setTextViewText(R.id.tv_1, context.getString(R.string.error_network));
-                                    notificationView.setTextViewText(R.id.tv_2, context.getString(R.string.error));
+                                    notificationView.setProgressBar(R.id.pb_notification, 100, 0,
+                                            true);
+                                    notificationView.setTextViewText(R.id.tv_1,
+                                            context.getString(R.string.error_network));
+                                    notificationView.setTextViewText(R.id.tv_2,
+                                            context.getString(R.string.error));
                                     notificationManager.notify(NOTIFICATION_ID, builder.build());
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -262,7 +275,8 @@ public class UpdateCheck implements IUpdateCheck {
                         }
 
                         @Override
-                        public void onProgress(int id, long totalBytes, long downloadedBytes, int progress) {
+                        public void onProgress(int id, long totalBytes, long downloadedBytes,
+                                               int progress) {
                             progressBar = progress;
                             total = totalBytes;
                             done = downloadedBytes;
@@ -277,7 +291,8 @@ public class UpdateCheck implements IUpdateCheck {
             downloadManager = new ThinDownloadManager();
             downloadID = downloadManager.add(downloadRequest);
         } else {
-            Toast.makeText(context.getApplicationContext(), R.string.update_failed, Toast.LENGTH_LONG).show();
+            Toast.makeText(context.getApplicationContext(), R.string.update_failed,
+                    Toast.LENGTH_LONG).show();
             instance.cancelNotification();
         }
     }
@@ -330,7 +345,9 @@ public class UpdateCheck implements IUpdateCheck {
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(context, "Update Check: An update is available!", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(context,
+                                                "Update Check: An update is available!",
+                                                Toast.LENGTH_LONG).show();
                                     }
                                 });
                             }
@@ -344,12 +361,13 @@ public class UpdateCheck implements IUpdateCheck {
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(context, "Update Check: No new updates.", Toast.LENGTH_LONG).show();
+                                        Toast.makeText(context,
+                                                "Update Check: No new updates.",
+                                                Toast.LENGTH_LONG).show();
                                     }
                                 });
                             }
                         }
-                        Log.i(TAG, "NO_UPDATE_FOUND_ON_SERVER");
                     }
                 }
             } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
@@ -393,7 +411,8 @@ public class UpdateCheck implements IUpdateCheck {
 
         private String readInputStream(InputStream inputStream) throws IOException {
             StringBuilder stringBuilder = new StringBuilder(inputStream.available());
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream,
+                    Charset.forName("UTF-8")));
             String line = reader.readLine();
 
             while (line != null) {
@@ -409,11 +428,12 @@ public class UpdateCheck implements IUpdateCheck {
         public void run() {
             notificationView.setProgressBar(R.id.pb_notification, 100, progressBar, false);
             notificationView.setTextViewText(R.id.tv_2,
-                    "(" + Formatter.formatShortFileSize(context, done) + "/" + Formatter.formatShortFileSize(context, total) + ") " + String.valueOf(progressBar)
+                    "(" + Formatter.formatShortFileSize(context, done) + "/"
+                            + Formatter.formatShortFileSize(context, total) + ") "
+                            + String.valueOf(progressBar)
                             + "%");
             notificationManager.notify(NOTIFICATION_ID, builder.build());
             mHandler.postDelayed(this, 1000 * 2);
         }
     }
-
 }

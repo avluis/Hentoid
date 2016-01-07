@@ -10,8 +10,6 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.apache.commons.io.FileUtils;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 
 import java.io.File;
 import java.io.IOException;

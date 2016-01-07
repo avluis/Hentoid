@@ -101,7 +101,7 @@ public class AboutActivity extends AppCompatActivity {
         tvAboutNotes.setText(spAboutNotes);
     }
 
-    private String getVersionInfo() {
+    private void getVersionInfo() {
         PackageInfo packageInfo;
 
         try {
@@ -113,8 +113,6 @@ public class AboutActivity extends AppCompatActivity {
         } catch (PackageManager.NameNotFoundException e) {
             verName += "Unknown";
         }
-
-        return verName;
     }
 
     @Override

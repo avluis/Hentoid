@@ -23,7 +23,8 @@
         android:layout_marginLeft="3dp"
         android:layout_marginRight="3dp"
         android:background="@drawable/btn_exchange_selector"
-        android:text="@string/cancel" />
+        android:text="@string/cancel"
+        tools:ignore="ButtonOrder"/>
 
     <TextView
         android:id="@+id/tv_1"

@@ -91,6 +91,7 @@ public class TestHentoidDB extends AndroidTestCase {
                     locker4 = true;
                 }
             }).start();
+            //noinspection StatementWithEmptyBody
             while (!(locker1 && locker2 && locker3 && locker4)) ;
             Log.i("Test DB lock", "Success");
         } catch (Exception ex) {

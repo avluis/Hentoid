@@ -59,7 +59,8 @@ public class ZipManager {
                 if (zipEntry.isDirectory()) {
                     dirChecker(zipEntry.getName());
                 } else {
-                    FileOutputStream fileOut = new FileOutputStream(targetLocation + zipEntry.getName());
+                    FileOutputStream fileOut =
+                            new FileOutputStream(targetLocation + zipEntry.getName());
                     for (int c = zipInput.read(); c != -1; c = zipInput.read()) {
                         fileOut.write(c);
                     }

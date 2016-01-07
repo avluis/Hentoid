@@ -200,7 +200,7 @@ public class Content extends ContentTable {
         return downloadable;
     }
 
-    public void setDownloadable(boolean downloadable) {
+    public void setDownloadable(@SuppressWarnings("SameParameterValue") boolean downloadable) {
         this.downloadable = downloadable;
     }
 

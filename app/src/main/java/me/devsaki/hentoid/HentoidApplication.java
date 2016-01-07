@@ -23,7 +23,6 @@ import me.devsaki.hentoid.util.ImageQuality;
 /**
  * Created by DevSaki on 20/05/2015.
  */
-
 public class HentoidApplication extends Application {
 
     private static final String TAG = HentoidApplication.class.getName();

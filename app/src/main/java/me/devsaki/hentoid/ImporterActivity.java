@@ -30,7 +30,6 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.v2.bean.DoujinBean;
 import me.devsaki.hentoid.v2.bean.URLBean;
 
-
 public class ImporterActivity extends AppCompatActivity {
 
     private static final String TAG = ImporterActivity.class.getName();
@@ -99,8 +98,10 @@ public class ImporterActivity extends AppCompatActivity {
                         File json = new File(file, Constants.JSON_FILE_NAME_V2);
                         if (json.exists()) {
                             try {
-                                Content content = new Gson().fromJson(Helper.readJsonFile(json), Content.class);
-                                if (content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.ERROR)
+                                Content content = new Gson().fromJson(Helper.readJsonFile(json),
+                                        Content.class);
+                                if (content.getStatus() != StatusContent.DOWNLOADED
+                                        && content.getStatus() != StatusContent.ERROR)
                                     content.setStatus(StatusContent.MIGRATED);
                                 contents.add(content);
                             } catch (Exception e) {
@@ -110,8 +111,11 @@ public class ImporterActivity extends AppCompatActivity {
                             json = new File(file, Constants.JSON_FILE_NAME);
                             if (json.exists()) {
                                 try {
-                                    ContentV1 content = new Gson().fromJson(Helper.readJsonFile(json), ContentV1.class);
-                                    if (content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.ERROR)
+                                    ContentV1 content =
+                                            new Gson().fromJson(Helper.readJsonFile(json),
+                                                    ContentV1.class);
+                                    if (content.getStatus() != StatusContent.DOWNLOADED
+                                            && content.getStatus() != StatusContent.ERROR)
                                         content.setMigratedStatus();
                                     Content contentV2 = content.toContent();
                                     try {
@@ -127,13 +131,17 @@ public class ImporterActivity extends AppCompatActivity {
                                 json = new File(file, Constants.OLD_JSON_FILE_NAME);
                                 if (json.exists()) {
                                     try {
-                                        DoujinBean doujinBean = new Gson().fromJson(Helper.readJsonFile(json), DoujinBean.class);
+                                        DoujinBean doujinBean =
+                                                new Gson().fromJson(Helper.readJsonFile(json),
+                                                        DoujinBean.class);
                                         ContentV1 content = new ContentV1();
                                         content.setUrl(doujinBean.getId());
                                         content.setHtmlDescription(doujinBean.getDescription());
                                         content.setTitle(doujinBean.getTitle());
-                                        content.setSerie(from(doujinBean.getSerie(), AttributeType.SERIE));
-                                        Attribute artist = from(doujinBean.getArtist(), AttributeType.ARTIST);
+                                        content.setSerie(from(doujinBean.getSerie(),
+                                                AttributeType.SERIE));
+                                        Attribute artist = from(doujinBean.getArtist(),
+                                                AttributeType.ARTIST);
                                         List<Attribute> artists = null;
                                         if (artist != null) {
                                             artists = new ArrayList<>(1);
@@ -142,15 +150,18 @@ public class ImporterActivity extends AppCompatActivity {
                                         content.setArtists(artists);
                                         content.setCoverImageUrl(doujinBean.getUrlImageTitle());
                                         content.setQtyPages(doujinBean.getQtyPages());
-                                        Attribute translator = from(doujinBean.getTranslator(), AttributeType.TRANSLATOR);
+                                        Attribute translator = from(doujinBean.getTranslator(),
+                                                AttributeType.TRANSLATOR);
                                         List<Attribute> translators = null;
                                         if (translator != null) {
                                             translators = new ArrayList<>(1);
                                             translators.add(translator);
                                         }
                                         content.setTranslators(translators);
-                                        content.setTags(from(doujinBean.getLstTags(), AttributeType.TAG));
-                                        content.setLanguage(from(doujinBean.getLanguage(), AttributeType.LANGUAGE));
+                                        content.setTags(from(doujinBean.getLstTags(),
+                                                AttributeType.TAG));
+                                        content.setLanguage(from(doujinBean.getLanguage(),
+                                                AttributeType.LANGUAGE));
 
                                         content.setMigratedStatus();
                                         content.setDownloadDate(importedDate.getTime());
@@ -173,7 +184,8 @@ public class ImporterActivity extends AppCompatActivity {
             return contents;
         }
 
-        private List<Attribute> from(List<URLBean> urlBeans, AttributeType type) {
+        private List<Attribute> from(List<URLBean> urlBeans,
+                                     @SuppressWarnings("SameParameterValue") AttributeType type) {
             List<Attribute> attributes = null;
             if (urlBeans == null)
                 return null;

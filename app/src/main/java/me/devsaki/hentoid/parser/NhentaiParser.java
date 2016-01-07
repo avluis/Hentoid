@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parser;
 
-import android.util.Log;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;

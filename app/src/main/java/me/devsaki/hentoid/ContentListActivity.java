@@ -1,5 +1,6 @@
 package me.devsaki.hentoid;
 
+import android.annotation.SuppressLint;
 import android.app.SearchManager;
 import android.content.Context;
 import android.os.Bundle;
@@ -87,13 +88,15 @@ public class ContentListActivity extends HentoidActivity<ContentListActivity.Con
                         currentPage--;
                         loadContent();
                     } else {
-                        Toast.makeText(getActivity(), R.string.not_previous_page, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), R.string.not_previous_page,
+                                Toast.LENGTH_SHORT).show();
                     }
                 }
             });
             return rootView;
         }
 
+        @SuppressLint("SetTextI18n")
         private void loadContent() {
             btnPage.setText("" + currentPage);
         }

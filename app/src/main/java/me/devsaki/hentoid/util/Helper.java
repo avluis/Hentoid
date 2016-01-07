@@ -31,6 +31,7 @@ import me.devsaki.hentoid.database.enums.Site;
 /**
  * Created by DevSaki on 10/05/2015.
  */
+@SuppressWarnings("ResultOfMethodCallIgnored")
 public class Helper {
 
     public static File getDownloadDir(Content content, Context context) {
@@ -39,12 +40,16 @@ public class Helper {
                 .getDefaultSharedPreferences(context);
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         if (settingDir.isEmpty()) {
-            return getDefaultDir(content.getSite().getFolder() + "/" + content.getUniqueSiteId(), context);
+            return getDefaultDir(content.getSite().getFolder() + "/" +
+                            content.getUniqueSiteId(),
+                    context);
         }
-        file = new File(settingDir, content.getSite().getFolder() + "/" + content.getUniqueSiteId());
+        file = new File(settingDir, content.getSite().getFolder() + "/" +
+                content.getUniqueSiteId());
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                file = new File(settingDir + content.getSite().getFolder() + "/" + content.getUniqueSiteId());
+                file = new File(settingDir + content.getSite().getFolder() + "/" +
+                        content.getUniqueSiteId());
                 if (!file.exists()) {
                     file.mkdirs();
                 }
@@ -205,7 +210,8 @@ public class Helper {
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setConnectTimeout(10000);
                 urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
-                if (cookieManager != null && cookieManager.getCookieStore().getCookies().size() > 0) {
+                if (cookieManager != null
+                        && cookieManager.getCookieStore().getCookies().size() > 0) {
                     urlConnection.setRequestProperty("Cookie",
                             TextUtils.join("; ", cookieManager.getCookieStore().get(uri)));
                 }

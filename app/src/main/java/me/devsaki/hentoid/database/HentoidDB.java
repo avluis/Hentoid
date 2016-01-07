@@ -120,7 +120,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.endTransaction();
 
             } finally {
-                Log.i(TAG, "insertContents - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG, "insertContents - trying to close the db connection. Condition : "
+                        + (db != null && db.isOpen()));
                 if (statement != null)
                     statement.close();
                 if (db != null && db.isOpen())
@@ -157,7 +158,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.endTransaction();
 
             } finally {
-                Log.i(TAG, "insertImageFiles - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG, "insertImageFiles - trying to close the db connection. Condition : "
+                        + (db != null && db.isOpen()));
                 if (statement != null)
                     statement.close();
                 if (statementImages != null)
@@ -226,7 +228,8 @@ public class HentoidDB extends SQLiteOpenHelper {
             try {
 
                 db = this.getReadableDatabase();
-                cursorContents = db.rawQuery(ContentTable.SELECT_BY_CONTENT_ID, new String[]{id + ""});
+                cursorContents = db.rawQuery(ContentTable.SELECT_BY_CONTENT_ID,
+                        new String[]{id + ""});
 
                 // looping through all rows and adding to list
                 if (cursorContents.moveToFirst()) {
@@ -236,7 +239,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContents != null) {
                     cursorContents.close();
                 }
-                Log.i(TAG, "selectContentById - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG, "selectContentById - trying to close the db connection. Condition : "
+                        + (db != null && db.isOpen()));
                 if (db != null && db.isOpen())
                     db.close(); // Closing database connection
             }
@@ -255,7 +259,8 @@ public class HentoidDB extends SQLiteOpenHelper {
             try {
 
                 db = this.getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_BY_STATUS, new String[]{statusContent.getCode() + ""});
+                cursorContent = db.rawQuery(ContentTable.SELECT_BY_STATUS,
+                        new String[]{statusContent.getCode() + ""});
 
                 if (cursorContent.moveToFirst()) {
                     result = populateContent(cursorContent, db);
@@ -264,7 +269,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                Log.i(TAG, "selectContentByStatus - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG, "selectContentByStatus - trying to close the db connection. Condition : "
+                        + (db != null && db.isOpen()));
                 if (db != null && db.isOpen())
                     db.close(); // Closing database connection
             }
@@ -283,7 +289,9 @@ public class HentoidDB extends SQLiteOpenHelper {
             try {
 
                 db = this.getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_IN_DOWNLOAD_MANAGER, new String[]{StatusContent.DOWNLOADING.getCode() + "", StatusContent.PAUSED.getCode() + ""});
+                cursorContent = db.rawQuery(ContentTable.SELECT_IN_DOWNLOAD_MANAGER,
+                        new String[]{StatusContent.DOWNLOADING.getCode() + "",
+                                StatusContent.PAUSED.getCode() + ""});
 
                 if (cursorContent.moveToFirst()) {
                     result = new ArrayList<>();
@@ -295,7 +303,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                Log.i(TAG, "selectContentInDownloadManager - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG,
+                        "selectContentInDownloadManager - trying to close the db connection. Condition : "
+                                + (db != null && db.isOpen()));
                 if (db != null && db.isOpen())
                     db.close(); // Closing database connection
             }
@@ -323,9 +333,21 @@ public class HentoidDB extends SQLiteOpenHelper {
                     sql += ContentTable.ORDER_BY_DATE;
                 }
                 if (qty < 0) {
-                    cursorContent = db.rawQuery(sql, new String[]{StatusContent.DOWNLOADED.getCode() + "", StatusContent.ERROR.getCode() + "", StatusContent.MIGRATED.getCode() + "", query, query, AttributeType.ARTIST.getCode() + "", AttributeType.TAG.getCode() + "", AttributeType.SERIE.getCode() + ""});
+                    cursorContent = db.rawQuery(sql,
+                            new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                                    StatusContent.ERROR.getCode() + "",
+                                    StatusContent.MIGRATED.getCode() + "", query, query,
+                                    AttributeType.ARTIST.getCode() + "",
+                                    AttributeType.TAG.getCode() + "",
+                                    AttributeType.SERIE.getCode() + ""});
                 } else {
-                    cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE, new String[]{StatusContent.DOWNLOADED.getCode() + "", StatusContent.ERROR.getCode() + "", StatusContent.MIGRATED.getCode() + "", query, query, AttributeType.ARTIST.getCode() + "", AttributeType.TAG.getCode() + "", AttributeType.SERIE.getCode() + "", start + "", qty + ""});
+                    cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE,
+                            new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                                    StatusContent.ERROR.getCode() + "",
+                                    StatusContent.MIGRATED.getCode() + "", query, query,
+                                    AttributeType.ARTIST.getCode() + "",
+                                    AttributeType.TAG.getCode() + "",
+                                    AttributeType.SERIE.getCode() + "", start + "", qty + ""});
                 }
 
 
@@ -339,7 +361,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                Log.i(TAG, "selectContentByQuery - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG,
+                        "selectContentByQuery - trying to close the db connection. Condition : "
+                                + (db != null && db.isOpen()));
                 if (db != null && db.isOpen())
                     db.close(); // Closing database connection
             }
@@ -377,7 +401,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         List<ImageFile> result = null;
         Cursor cursorImageFiles = null;
         try {
-            cursorImageFiles = db.rawQuery(ImageFileTable.SELECT_BY_CONTENT_ID, new String[]{id + ""});
+            cursorImageFiles = db.rawQuery(ImageFileTable.SELECT_BY_CONTENT_ID,
+                    new String[]{id + ""});
 
             // looping through all rows and adding to list
             if (cursorImageFiles.moveToFirst()) {
@@ -404,7 +429,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         List<Attribute> result = null;
         Cursor cursorAttributes = null;
         try {
-            cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_CONTENT_ID, new String[]{id + ""});
+            cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_CONTENT_ID,
+                    new String[]{id + ""});
 
             // looping through all rows and adding to list
             if (cursorAttributes.moveToFirst()) {
@@ -442,7 +468,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG, "updateImageFileStatus - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG,
+                        "updateImageFileStatus - trying to close the db connection. Condition : "
+                                + (db != null && db.isOpen()));
                 if (statement != null)
                     statement.close();
                 if (db != null && db.isOpen())
@@ -503,7 +531,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG, "deleteContent - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG, "deleteContent - trying to close the db connection. Condition : "
+                        + (db != null && db.isOpen()));
                 if (statement != null)
                     statement.close();
                 if (statementImages != null)
@@ -523,7 +552,8 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteStatement statement = null;
             try {
                 db = this.getWritableDatabase();
-                statement = db.compileStatement(ContentTable.UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT);
+                statement = db.compileStatement(ContentTable
+                        .UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT);
                 db.beginTransaction();
                 statement.clearBindings();
                 statement.bindLong(1, row.getDownloadDate());
@@ -533,7 +563,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG, "updateContentStatus - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG,
+                        "updateContentStatus - trying to close the db connection. Condition : "
+                                + (db != null && db.isOpen()));
                 if (statement != null)
                     statement.close();
                 if (db != null && db.isOpen())
@@ -558,7 +590,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG, "updateContentStatus2 - trying to close the db connection. Condition : " + (db != null && db.isOpen()));
+                Log.i(TAG,
+                        "updateContentStatus2 - trying to close the db connection. Condition : "
+                                + (db != null && db.isOpen()));
                 if (statement != null)
                     statement.close();
                 if (db != null && db.isOpen())

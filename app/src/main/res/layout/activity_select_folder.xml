@@ -17,7 +17,8 @@
         android:layout_margin="20dp"
         android:adjustViewBounds="true"
         android:scaleType="fitStart"
-        android:src="@drawable/logofakku" />
+        android:src="@drawable/logofakku"
+        tools:ignore="ContentDescription"/>
 
     <TextView
         android:id="@+id/tvTutorial"

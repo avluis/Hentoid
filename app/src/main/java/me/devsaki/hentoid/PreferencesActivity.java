@@ -194,7 +194,8 @@ public class PreferencesActivity extends PreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.preferences);
 
-            Preference addNoMediaFile = getPreferenceScreen().findPreference("pref_add_no_media_file");
+            Preference addNoMediaFile = getPreferenceScreen()
+                    .findPreference("pref_add_no_media_file");
             addNoMediaFile.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
                 @Override
@@ -205,6 +206,7 @@ public class PreferencesActivity extends PreferenceActivity {
                     File nomedia = new File(settingDir, ".nomedia");
                     if (!nomedia.exists())
                         try {
+                            //noinspection ResultOfMethodCallIgnored
                             nomedia.createNewFile();
                         } catch (IOException e) {
                             Toast.makeText(getActivity(), R.string.error_creating_nomedia_file,
@@ -258,7 +260,8 @@ public class PreferencesActivity extends PreferenceActivity {
                 }
             });
 
-            Preference mUpdateCheck = getPreferenceScreen().findPreference("pref_check_updates_manual");
+            Preference mUpdateCheck = getPreferenceScreen()
+                    .findPreference("pref_check_updates_manual");
             mUpdateCheck.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {

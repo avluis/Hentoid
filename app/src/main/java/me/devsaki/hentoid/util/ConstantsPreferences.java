@@ -14,7 +14,6 @@ public abstract class ConstantsPreferences {
     public static final int PREF_READ_CONTENT_ASK = 0;
     public static final int PREF_READ_CONTENT_PERFECT_VIEWER = 1;
     public static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
-    public static final int PREF_ORDER_CONTENT_DEFAULT = 0;
     public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
     public static final int PREF_ORDER_CONTENT_BY_DATE = 1;
     public static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";

@@ -35,7 +35,6 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
     private static final String TAG = DownloadsActivity.class.getName();
     private SearchView searchView;
 
-
     @Override
     protected DownloadsFragment buildFragment() {
         return new DownloadsFragment();
@@ -55,7 +54,8 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager)
+                        getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
                 getFragment().setQuery(s.trim());
                 getFragment().searchContent();
@@ -167,6 +167,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             });
 
             btnNext.setOnClickListener(new View.OnClickListener() {
+                @SuppressLint("SetTextI18n")
                 @Override
                 public void onClick(View v) {
                     if (qtyPages <= 0) {
@@ -219,6 +220,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             super.onPause();
         }
 
+        @SuppressLint("SetTextI18n")
         private boolean searchContent() {
             index = -1;
             List<Content> result = getDB()

@@ -22,8 +22,8 @@ import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.NetworkStatus;
 
-
-public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActivity.DownloadManagerFragment> {
+public class DownloadManagerActivity extends
+        HentoidActivity<DownloadManagerActivity.DownloadManagerFragment> {
 
     private static final String TAG = DownloadManagerActivity.class.getName();
 
@@ -67,7 +67,8 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
         private Context mContext;
 
         @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                                 Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_download_manager, container, false);
 
             mContext = getActivity().getApplicationContext();
@@ -78,7 +79,8 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
                 public void onClick(View v) {
                     getDB().updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                     update();
-                    Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(), DownloadManagerService.class);
+                    Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(),
+                            DownloadManagerService.class);
                     getActivity().startService(intent);
                 }
             });
@@ -95,12 +97,13 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
         }
 
         public void resume(Content content) {
-            if(NetworkStatus.getInstance(mContext).isOnline()) {
+            if (NetworkStatus.getInstance(mContext).isOnline()) {
                 content.setStatus(StatusContent.DOWNLOADING);
                 getDB().updateContentStatus(content);
                 update();
                 if (content.getId() == contents.get(0).getId()) {
-                    Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(), DownloadManagerService.class);
+                    Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(),
+                            DownloadManagerService.class);
                     getActivity().startService(intent);
                 }
             }
@@ -137,7 +140,8 @@ public class DownloadManagerActivity extends HentoidActivity<DownloadManagerActi
             if (contents == null) {
                 contents = new ArrayList<>();
             }
-            ContentDownloadManagerAdapter adapter = new ContentDownloadManagerAdapter(getActivity(), contents);
+            ContentDownloadManagerAdapter adapter =
+                    new ContentDownloadManagerAdapter(getActivity(), contents);
             setListAdapter(adapter);
         }
     }

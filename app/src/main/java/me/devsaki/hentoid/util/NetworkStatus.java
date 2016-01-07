@@ -58,8 +58,8 @@ public class NetworkStatus {
             connMgr = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo mobileInfo = connMgr.getActiveNetworkInfo();
-            mobile = mobileInfo != null && mobileInfo.isConnected() && mobileInfo.getType() ==
-                    ConnectivityManager.TYPE_MOBILE;
+            mobile = mobileInfo != null && mobileInfo.isConnected()
+                    && mobileInfo.getType() == ConnectivityManager.TYPE_MOBILE;
             return mobile;
         } catch (Exception e) {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());

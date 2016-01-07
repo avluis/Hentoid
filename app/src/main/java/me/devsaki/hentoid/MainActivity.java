@@ -153,7 +153,8 @@ public class MainActivity extends AppCompatActivity {
     private void readContent() {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
-            if (StatusContent.DOWNLOADED == currentContent.getStatus() || StatusContent.ERROR == currentContent.getStatus()) {
+            if (StatusContent.DOWNLOADED == currentContent.getStatus()
+                    || StatusContent.ERROR == currentContent.getStatus()) {
                 AndroidHelper.openContent(currentContent, this);
             } else {
                 fabRead.setVisibility(View.INVISIBLE);
@@ -227,7 +228,8 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 String cookies = CookieManager.getInstance().getCookie(url);
-                java.net.CookieManager cookieManager = (java.net.CookieManager) CookieHandler.getDefault();
+                java.net.CookieManager cookieManager = (java.net.CookieManager)
+                        CookieHandler.getDefault();
                 if (cookieManager == null)
                     cookieManager = new java.net.CookieManager();
                 cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
@@ -257,14 +259,16 @@ public class MainActivity extends AppCompatActivity {
                 if ((site == Site.HITOMI) &&
                         paths.length > 1 && paths[1].startsWith("galleries")) {
                     try {
-                        view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                        view.loadUrl(
+                                "javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
                     } catch (Exception ex) {
                         Log.e(TAG, "Error executing javascript in webview", ex);
                     }
                 } else if ((site == Site.NHENTAI) &&
                         paths.length > 1 && paths[1].startsWith("g")) {
                     try {
-                        view.loadUrl("javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
+                        view.loadUrl(
+                                "javascript:window.HTMLOUT.processHTML('<html>'+document.getElementsByTagName('html')[0].innerHTML+'</html>');");
                     } catch (Exception ex) {
                         Log.e(TAG, "Error executing javascript in webview", ex);
                     }
@@ -297,7 +301,8 @@ public class MainActivity extends AppCompatActivity {
             }
             db.insertContent(content);
 
-            if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED && content.getStatus() != StatusContent.DOWNLOADING) {
+            if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED
+                    && content.getStatus() != StatusContent.DOWNLOADING) {
                 currentContent = content;
                 runOnUiThread(new Runnable() {
                     @Override
@@ -313,7 +318,8 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
-            if (content.getStatus() == StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR) {
+            if (content.getStatus() == StatusContent.DOWNLOADED
+                    || content.getStatus() == StatusContent.ERROR) {
                 currentContent = content;
                 runOnUiThread(new Runnable() {
                     @Override

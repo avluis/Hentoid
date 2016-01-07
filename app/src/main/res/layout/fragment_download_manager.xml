@@ -41,7 +41,8 @@
             android:background="@drawable/image_button"
             android:padding="3dp"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_pause" />
+            android:src="@drawable/ic_action_pause"
+            tools:ignore="ContentDescription"/>
 
         <ImageButton
             android:id="@+id/btnStart"
@@ -51,7 +52,8 @@
             android:background="@drawable/image_button"
             android:padding="3dp"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_play" />
+            android:src="@drawable/ic_action_play"
+            tools:ignore="ContentDescription"/>
 
     </LinearLayout>
 

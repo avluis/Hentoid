@@ -79,6 +79,7 @@ public class SelectFolderActivity extends Activity implements
         boolean hasPermission;
         try {
             if (nomedia.exists()) {
+                //noinspection ResultOfMethodCallIgnored
                 nomedia.delete();
             }
             hasPermission = nomedia.createNewFile();
@@ -86,7 +87,8 @@ public class SelectFolderActivity extends Activity implements
             hasPermission = false;
         }
         if (!hasPermission) {
-            Toast.makeText(this, R.string.error_write_permission, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, R.string.error_write_permission,
+                    Toast.LENGTH_SHORT).show();
             return;
         }
         editor.putString(Constants.SETTINGS_FOLDER, hentoidFolder);
@@ -114,7 +116,8 @@ public class SelectFolderActivity extends Activity implements
 
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            Intent intent = new Intent(SelectFolderActivity.this, ImporterActivity.class);
+                            Intent intent = new Intent(SelectFolderActivity.this,
+                                    ImporterActivity.class);
                             startActivity(intent);
                             finish();
                         }
