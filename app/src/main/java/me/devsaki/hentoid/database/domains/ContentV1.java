@@ -60,18 +60,6 @@ public class ContentV1 extends ContentTable {
     @Expose
     private Site site;
 
-    public int getId() {
-        return url.hashCode();
-    }
-
-    public String getCategory() {
-        return url.substring(1, url.lastIndexOf("/"));
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
     public void setUrl(String url) {
         this.url = url;
     }
@@ -82,10 +70,6 @@ public class ContentV1 extends ContentTable {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getHtmlDescription() {
-        return htmlDescription;
     }
 
     public void setHtmlDescription(String htmlDescription) {
@@ -112,10 +96,6 @@ public class ContentV1 extends ContentTable {
         return publishers;
     }
 
-    public void setPublishers(List<Attribute> publishers) {
-        this.publishers = publishers;
-    }
-
     public Attribute getLanguage() {
         return language;
     }
@@ -140,56 +120,16 @@ public class ContentV1 extends ContentTable {
         this.translators = translators;
     }
 
-    public String getCoverImageUrl() {
-        return coverImageUrl;
-    }
-
     public void setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
-    }
-
-    public String getSampleImageUrl() {
-        return sampleImageUrl;
-    }
-
-    public void setSampleImageUrl(String sampleImageUrl) {
-        this.sampleImageUrl = sampleImageUrl;
-    }
-
-    public Integer getQtyPages() {
-        return qtyPages;
     }
 
     public void setQtyPages(Integer qtyPages) {
         this.qtyPages = qtyPages;
     }
 
-    public Integer getQtyFavorites() {
-        return qtyFavorites;
-    }
-
-    public void setQtyFavorites(Integer qtyFavorites) {
-        this.qtyFavorites = qtyFavorites;
-    }
-
     public Attribute getUser() {
         return user;
-    }
-
-    public void setUser(Attribute user) {
-        this.user = user;
-    }
-
-    public long getUploadDate() {
-        return uploadDate;
-    }
-
-    public void setUploadDate(long uploadDate) {
-        this.uploadDate = uploadDate;
-    }
-
-    public long getDownloadDate() {
-        return downloadDate;
     }
 
     public void setDownloadDate(long downloadDate) {
@@ -202,30 +142,6 @@ public class ContentV1 extends ContentTable {
 
     public void setMigratedStatus() {
         this.status = StatusContent.MIGRATED;
-    }
-
-    public List<ImageFile> getImageFiles() {
-        return imageFiles;
-    }
-
-    public void setImageFiles(List<ImageFile> imageFiles) {
-        this.imageFiles = imageFiles;
-    }
-
-    public boolean isDownloadable() {
-        return downloadable;
-    }
-
-    public void setDownloadable(boolean downloadable) {
-        this.downloadable = downloadable;
-    }
-
-    public double getPercent() {
-        return percent;
-    }
-
-    public void setPercent(double percent) {
-        this.percent = percent;
     }
 
     public Site getSite() {
@@ -269,22 +185,5 @@ public class ContentV1 extends ContentTable {
         content.setDownloadDate(this.downloadDate);
         content.setStatus(this.status);
         return content;
-    }
-
-    @Override
-    public String toString() {
-        return "Content{" +
-                "url='" + url + '\'' +
-                ", title='" + title + '\'' +
-                ", htmlDescription='" + htmlDescription + '\'' +
-                ", serie=" + serie +
-                ", artists=" + artists +
-                ", publishers=" + publishers +
-                ", language=" + language +
-                ", tags=" + tags +
-                ", translators=" + translators +
-                ", coverImageUrl='" + coverImageUrl + '\'' +
-                ", sampleImageUrl='" + sampleImageUrl + '\'' +
-                '}';
     }
 }
