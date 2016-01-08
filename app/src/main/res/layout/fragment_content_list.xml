@@ -8,6 +8,7 @@
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@id/ll"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:divider="@android:color/transparent"
@@ -17,11 +18,13 @@
         android:id="@android:id/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@id/ll"
         android:gravity="center"
         android:text="@string/no_data"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout
+        android:id="@+id/ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
