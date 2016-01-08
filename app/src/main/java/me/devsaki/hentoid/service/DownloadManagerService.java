@@ -256,16 +256,12 @@ public class DownloadManagerService extends IntentService {
                 for(int i = 0; i < images.length(); i++){
                     JSONObject image = images.getJSONObject(i);
                     String extension = image.getString("t");
-                    switch (extension) {
-                        case "j":
-                            extension = ".jpg";
-                            break;
-                        case "p":
-                            extension = ".png";
-                            break;
-                        default:
-                            extension = ".gif";
-                            break;
+                    if(extension.equals("j")){
+                        extension = ".jpg";
+                    }else if(extension.equals("p")){
+                        extension = ".png";
+                    }else{
+                        extension = ".gif";
                     }
 
                     String urlImage = serverUrl + (i+1) + extension;

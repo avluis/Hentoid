@@ -76,7 +76,7 @@ public class ContentV1 extends ContentTable {
         this.htmlDescription = htmlDescription;
     }
 
-    private Attribute getSerie() {
+    public Attribute getSerie() {
         return serie;
     }
 
@@ -84,7 +84,7 @@ public class ContentV1 extends ContentTable {
         this.serie = serie;
     }
 
-    private List<Attribute> getArtists() {
+    public List<Attribute> getArtists() {
         return artists;
     }
 
@@ -92,11 +92,11 @@ public class ContentV1 extends ContentTable {
         this.artists = artists;
     }
 
-    private List<Attribute> getPublishers() {
+    public List<Attribute> getPublishers() {
         return publishers;
     }
 
-    private Attribute getLanguage() {
+    public Attribute getLanguage() {
         return language;
     }
 
@@ -104,7 +104,7 @@ public class ContentV1 extends ContentTable {
         this.language = language;
     }
 
-    private List<Attribute> getTags() {
+    public List<Attribute> getTags() {
         return tags;
     }
 
@@ -112,7 +112,7 @@ public class ContentV1 extends ContentTable {
         this.tags = tags;
     }
 
-    private List<Attribute> getTranslators() {
+    public List<Attribute> getTranslators() {
         return translators;
     }
 
@@ -128,7 +128,7 @@ public class ContentV1 extends ContentTable {
         this.qtyPages = qtyPages;
     }
 
-    private Attribute getUser() {
+    public Attribute getUser() {
         return user;
     }
 
@@ -144,7 +144,7 @@ public class ContentV1 extends ContentTable {
         status = StatusContent.MIGRATED;
     }
 
-    private Site getSite() {
+    public Site getSite() {
         //to keep compatibility, if null return Fakku
         if (site == null)
             return Site.FAKKU;

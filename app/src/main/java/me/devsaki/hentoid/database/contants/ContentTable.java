@@ -7,18 +7,18 @@ public abstract class ContentTable {
 
     public static final String TABLE_NAME = "content";
 
-    private static final String ID_COLUMN = "id";
-    private static final String UNIQUE_SITE_ID_COLUMN = "unique_site_id";
-    private static final String CATEGORY_COLUMN = "category";
-    private static final String URL_COLUMN = "url";
-    private static final String TITLE_COLUMN = "title";
-    private static final String HTML_DESCRIPTION_COLUMN = "html_description";
-    private static final String QTY_PAGES_COLUMN = "qty_pages";
-    private static final String UPLOAD_DATE_COLUMN = "upload_date";
-    private static final String DOWNLOAD_DATE_COLUMN = "download_date";
-    private static final String STATUS_COLUMN = "status";
-    private static final String COVER_IMAGE_URL_COLUMN = "cover_image_url";
-    private static final String SITE_COLUMN = "site";
+    public static final String ID_COLUMN = "id";
+    public static final String UNIQUE_SITE_ID_COLUMN = "unique_site_id";
+    public static final String CATEGORY_COLUMN = "category";
+    public static final String URL_COLUMN = "url";
+    public static final String TITLE_COLUMN = "title";
+    public static final String HTML_DESCRIPTION_COLUMN = "html_description";
+    public static final String QTY_PAGES_COLUMN = "qty_pages";
+    public static final String UPLOAD_DATE_COLUMN = "upload_date";
+    public static final String DOWNLOAD_DATE_COLUMN = "download_date";
+    public static final String STATUS_COLUMN = "status";
+    public static final String COVER_IMAGE_URL_COLUMN = "cover_image_url";
+    public static final String SITE_COLUMN = "site";
 
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
             + ID_COLUMN + " INTEGER PRIMARY KEY," + UNIQUE_SITE_ID_COLUMN + " TEXT," + CATEGORY_COLUMN + " TEXT,"

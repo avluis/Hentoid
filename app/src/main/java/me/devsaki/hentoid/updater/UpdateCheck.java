@@ -32,7 +32,6 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
@@ -82,10 +81,11 @@ public class UpdateCheck implements IUpdateCheck {
 
     @Override
     public void checkForUpdate(Context context,
+                               final String updateURL,
                                final boolean onlyWifi,
                                final boolean showToast,
                                final UpdateCheckCallback updateCheckResult) {
-        if (context == null) {
+        if (context == null || updateURL == null) {
             throw new NullPointerException("context or UpdateURL is null");
         }
 
@@ -101,14 +101,13 @@ public class UpdateCheck implements IUpdateCheck {
         }
 
         if (connected) {
-            runAsyncTask();
+            runAsyncTask(updateURL);
         }
 
         this.showToast = showToast;
     }
 
-    private void runAsyncTask() {
-        String updateURL = Constants.UPDATE_URL;
+    private void runAsyncTask(String updateURL) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
