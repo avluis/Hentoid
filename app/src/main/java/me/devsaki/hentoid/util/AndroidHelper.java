@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import java.io.File;
@@ -69,8 +70,8 @@ public class AndroidHelper {
     private static void openFile(File aFile, Context context) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
-        String extension = android.webkit.MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
-        String mimeType = android.webkit.MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         myIntent.setDataAndType(Uri.fromFile(file), mimeType);
 
         context.startActivity(myIntent);

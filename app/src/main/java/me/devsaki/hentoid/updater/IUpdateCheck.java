@@ -8,7 +8,6 @@ import android.content.pm.PackageManager;
  */
 public interface IUpdateCheck {
     void checkForUpdate(final Context context,
-                        @SuppressWarnings("SameParameterValue") final String updateURL,
                         final boolean onlyWifi, final boolean showToast,
                         final UpdateCheck.UpdateCheckCallback updateCheckResult);
 

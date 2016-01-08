@@ -43,7 +43,7 @@ import me.devsaki.hentoid.util.Helper;
  */
 public class ContentAdapter extends ArrayAdapter<Content> {
 
-    private final static String TAG = ContentAdapter.class.getName();
+    private static final String TAG = ContentAdapter.class.getName();
     private final Context context;
     private final List<Content> contents;
     private final SimpleDateFormat sdf;
@@ -174,7 +174,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             }
         }
         String message = context.getString(R.string.download_again_dialog).replace("@error", numberImagesError + "").replace("@total", numberImages + "");
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setMessage(message)
                 .setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
@@ -199,7 +199,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void deleteContent(final Content content, final File dir, final ListView listView) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {

@@ -60,18 +60,6 @@ public class ContentV1 extends ContentTable {
     @Expose
     private Site site;
 
-    public int getId() {
-        return url.hashCode();
-    }
-
-    public String getCategory() {
-        return url.substring(1, url.lastIndexOf("/"));
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
     public void setUrl(String url) {
         this.url = url;
     }
@@ -84,15 +72,11 @@ public class ContentV1 extends ContentTable {
         this.title = title;
     }
 
-    public String getHtmlDescription() {
-        return htmlDescription;
-    }
-
     public void setHtmlDescription(String htmlDescription) {
         this.htmlDescription = htmlDescription;
     }
 
-    public Attribute getSerie() {
+    private Attribute getSerie() {
         return serie;
     }
 
@@ -100,7 +84,7 @@ public class ContentV1 extends ContentTable {
         this.serie = serie;
     }
 
-    public List<Attribute> getArtists() {
+    private List<Attribute> getArtists() {
         return artists;
     }
 
@@ -108,15 +92,11 @@ public class ContentV1 extends ContentTable {
         this.artists = artists;
     }
 
-    public List<Attribute> getPublishers() {
+    private List<Attribute> getPublishers() {
         return publishers;
     }
 
-    public void setPublishers(List<Attribute> publishers) {
-        this.publishers = publishers;
-    }
-
-    public Attribute getLanguage() {
+    private Attribute getLanguage() {
         return language;
     }
 
@@ -124,7 +104,7 @@ public class ContentV1 extends ContentTable {
         this.language = language;
     }
 
-    public List<Attribute> getTags() {
+    private List<Attribute> getTags() {
         return tags;
     }
 
@@ -132,7 +112,7 @@ public class ContentV1 extends ContentTable {
         this.tags = tags;
     }
 
-    public List<Attribute> getTranslators() {
+    private List<Attribute> getTranslators() {
         return translators;
     }
 
@@ -140,56 +120,16 @@ public class ContentV1 extends ContentTable {
         this.translators = translators;
     }
 
-    public String getCoverImageUrl() {
-        return coverImageUrl;
-    }
-
     public void setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
-    }
-
-    public String getSampleImageUrl() {
-        return sampleImageUrl;
-    }
-
-    public void setSampleImageUrl(String sampleImageUrl) {
-        this.sampleImageUrl = sampleImageUrl;
-    }
-
-    public Integer getQtyPages() {
-        return qtyPages;
     }
 
     public void setQtyPages(Integer qtyPages) {
         this.qtyPages = qtyPages;
     }
 
-    public Integer getQtyFavorites() {
-        return qtyFavorites;
-    }
-
-    public void setQtyFavorites(Integer qtyFavorites) {
-        this.qtyFavorites = qtyFavorites;
-    }
-
-    public Attribute getUser() {
+    private Attribute getUser() {
         return user;
-    }
-
-    public void setUser(Attribute user) {
-        this.user = user;
-    }
-
-    public long getUploadDate() {
-        return uploadDate;
-    }
-
-    public void setUploadDate(long uploadDate) {
-        this.uploadDate = uploadDate;
-    }
-
-    public long getDownloadDate() {
-        return downloadDate;
     }
 
     public void setDownloadDate(long downloadDate) {
@@ -201,34 +141,10 @@ public class ContentV1 extends ContentTable {
     }
 
     public void setMigratedStatus() {
-        this.status = StatusContent.MIGRATED;
+        status = StatusContent.MIGRATED;
     }
 
-    public List<ImageFile> getImageFiles() {
-        return imageFiles;
-    }
-
-    public void setImageFiles(List<ImageFile> imageFiles) {
-        this.imageFiles = imageFiles;
-    }
-
-    public boolean isDownloadable() {
-        return downloadable;
-    }
-
-    public void setDownloadable(boolean downloadable) {
-        this.downloadable = downloadable;
-    }
-
-    public double getPercent() {
-        return percent;
-    }
-
-    public void setPercent(double percent) {
-        this.percent = percent;
-    }
-
-    public Site getSite() {
+    private Site getSite() {
         //to keep compatibility, if null return Fakku
         if (site == null)
             return Site.FAKKU;
@@ -241,9 +157,9 @@ public class ContentV1 extends ContentTable {
 
     public Content toContent() {
         Content content = new Content();
-        content.setSite(this.getSite());
-        content.setUrl(this.url);
-        content.setUploadDate(this.uploadDate);
+        content.setSite(getSite());
+        content.setUrl(url);
+        content.setUploadDate(uploadDate);
         content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
         content.getAttributes().put(AttributeType.ARTIST, getArtists());
         List<Attribute> aux = new ArrayList<>();
@@ -261,30 +177,13 @@ public class ContentV1 extends ContentTable {
         if (getUser() != null)
             aux.add(getUser());
         content.getAttributes().put(AttributeType.UPLOADER, aux);
-        content.setImageFiles(this.imageFiles);
-        content.setCoverImageUrl(this.coverImageUrl);
-        content.setHtmlDescription(this.htmlDescription);
-        content.setTitle(this.title);
-        content.setQtyPages(this.qtyPages);
-        content.setDownloadDate(this.downloadDate);
-        content.setStatus(this.status);
+        content.setImageFiles(imageFiles);
+        content.setCoverImageUrl(coverImageUrl);
+        content.setHtmlDescription(htmlDescription);
+        content.setTitle(title);
+        content.setQtyPages(qtyPages);
+        content.setDownloadDate(downloadDate);
+        content.setStatus(status);
         return content;
-    }
-
-    @Override
-    public String toString() {
-        return "Content{" +
-                "url='" + url + '\'' +
-                ", title='" + title + '\'' +
-                ", htmlDescription='" + htmlDescription + '\'' +
-                ", serie=" + serie +
-                ", artists=" + artists +
-                ", publishers=" + publishers +
-                ", language=" + language +
-                ", tags=" + tags +
-                ", translators=" + translators +
-                ", coverImageUrl='" + coverImageUrl + '\'' +
-                ", sampleImageUrl='" + sampleImageUrl + '\'' +
-                '}';
     }
 }

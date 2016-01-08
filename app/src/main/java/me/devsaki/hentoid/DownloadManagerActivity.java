@@ -97,7 +97,7 @@ public class DownloadManagerActivity extends
         }
 
         public void resume(Content content) {
-            if (NetworkStatus.getInstance(mContext).isOnline()) {
+            if (NetworkStatus.isOnline(mContext)) {
                 content.setStatus(StatusContent.DOWNLOADING);
                 getDB().updateContentStatus(content);
                 update();

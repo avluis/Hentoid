@@ -15,7 +15,6 @@ import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ImageQuality;
@@ -55,7 +54,7 @@ public class HentoidApplication extends Application {
             }
         };
 
-        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (sharedPreferences.getString(
                 ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
@@ -69,7 +68,7 @@ public class HentoidApplication extends Application {
 
     private void UpdateCheck(boolean onlyWifi) {
         UpdateCheck.getInstance().checkForUpdate(getApplicationContext(),
-                Constants.UPDATE_URL, onlyWifi, false, new UpdateCheckCallback() {
+                onlyWifi, false, new UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {
                         System.out.println("Auto update check: No update available.");

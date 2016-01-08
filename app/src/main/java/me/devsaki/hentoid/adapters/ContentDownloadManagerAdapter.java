@@ -28,7 +28,7 @@ import me.devsaki.hentoid.util.Helper;
  */
 public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
 
-    private final static String TAG = ContentDownloadManagerAdapter.class.getName();
+    private static final String TAG = ContentDownloadManagerAdapter.class.getName();
     private final Context context;
     private final List<Content> contents;
 

@@ -1,5 +1,10 @@
 package me.devsaki.hentoid.parser;
 
+import android.util.Log;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,7 +25,7 @@ import me.devsaki.hentoid.database.enums.Site;
  */
 public class NhentaiParser {
 
-    private final static String TAG = NhentaiParser.class.getName();
+    private static final String TAG = NhentaiParser.class.getName();
 
     public static Content parseContent(String html) {
         Content result = null;
@@ -67,15 +72,37 @@ public class NhentaiParser {
         return result;
     }
 
-    public static String extractJsonGallery(String html){
-        String result = null;
-        int auxIndex = html.indexOf("nhentai.reader");
-        int startIndex = html.indexOf("gallery", auxIndex);
-        startIndex = html.indexOf("{", startIndex);
-        int endIndex = html.indexOf(";", startIndex);
-        html = html.substring(startIndex, endIndex);
-        html = html.substring(0, html.lastIndexOf("}"));
-        return html.substring(0, html.lastIndexOf("}")+1);
+    public static List<String> parseImageList(String json) {
+        List<String> imagesUrl = new ArrayList<>();
+
+        try {
+            JSONObject gallery = new JSONObject(json);
+            String mediaId = gallery.getString("media_id");
+            JSONArray images = gallery.getJSONObject("images").getJSONArray("pages");
+            String serverUrl = "http://i.nhentai.net/galleries/" + mediaId + "/";
+
+            for (int i = 0; i < images.length(); i++) {
+                JSONObject image = images.getJSONObject(i);
+                String extension = image.getString("t");
+                switch (extension) {
+                    case "j":
+                        extension = ".jpg";
+                        break;
+                    case "p":
+                        extension = ".png";
+                        break;
+                    default:
+                        extension = ".gif";
+                        break;
+                }
+                String urlImage = serverUrl + (i + 1) + extension;
+                imagesUrl.add(urlImage);
+            }
+        } catch (JSONException e) {
+            Log.e(TAG, "Error parsing content", e);
+        }
+
+        return imagesUrl;
     }
 
     private static List<Attribute> parseAttributes(Elements elements, AttributeType attributeType) {

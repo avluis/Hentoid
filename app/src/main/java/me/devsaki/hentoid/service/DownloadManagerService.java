@@ -99,7 +99,7 @@ public class DownloadManagerService extends IntentService {
 
         boolean error = false;
         //Directory
-        File dir = Helper.getDownloadDir(content, DownloadManagerService.this);
+        File dir = Helper.getDownloadDir(content, this);
         try {
             //Download Cover Image
             Helper.saveInStorage(new File(dir, "thumb.jpg"), content.getCoverImageUrl());
@@ -127,7 +127,7 @@ public class DownloadManagerService extends IntentService {
             boolean imageFileErrorDownload = false;
             try {
                 if (imageFile.getStatus() != StatusContent.IGNORED) {
-                    if (!NetworkStatus.getInstance(this).isOnline())
+                    if (!NetworkStatus.isOnline(this))
                         throw new Exception("Not connection");
                     Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
                     Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / " + content.getTitle());
@@ -181,25 +181,25 @@ public class DownloadManagerService extends IntentService {
 
     private void showNotification(double percent, Content content) {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-                DownloadManagerService.this).setSmallIcon(
+                this).setSmallIcon(
                 content.getSite().getIco()).setContentTitle(content.getTitle());
 
         Intent resultIntent = null;
         if (content.getStatus() == StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR || content.getStatus() == StatusContent.UNHANDLED_ERROR) {
-            resultIntent = new Intent(DownloadManagerService.this,
+            resultIntent = new Intent(this,
                     DownloadsActivity.class);
         } else if (content.getStatus() == StatusContent.DOWNLOADING || content.getStatus() == StatusContent.PAUSED) {
-            resultIntent = new Intent(DownloadManagerService.this,
+            resultIntent = new Intent(this,
                     DownloadManagerActivity.class);
         } else if (content.getStatus() == StatusContent.SAVED) {
-            resultIntent = new Intent(DownloadManagerService.this,
+            resultIntent = new Intent(this,
                     MainActivity.class);
             resultIntent.putExtra("url", content.getUrl());
         }
 
         // Adds the Intent to the top of the stack
         // Gets a PendingIntent containing the entire back stack
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(DownloadManagerService.this,
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(this,
                 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
 
 
@@ -238,35 +238,11 @@ public class DownloadManagerService extends IntentService {
         List<String> aUrls = new ArrayList<>();
         try {
             if (content.getSite() == Site.HITOMI) {
-                URL url = new URL(content.getReaderUrl());
-                String html = HttpClientHelper.call(url);
+                String html = HttpClientHelper.call(content.getReaderUrl());
                 aUrls = HitomiParser.parseImageList(html);
             } else if (content.getSite() == Site.NHENTAI) {
-
-
-                String gelleryUrl = content.getGalleryUrl();
-                aUrls = new ArrayList<>();
-                URL url = new URL(gelleryUrl + 1 + '/');
-                String html = HttpClientHelper.call(url);
-                String jsonGallery = NhentaiParser.extractJsonGallery(html);
-                JSONObject gallery = new JSONObject(jsonGallery);
-                String mediaId = gallery.getString("media_id");
-                JSONArray images = gallery.getJSONObject("images").getJSONArray("pages");
-                String serverUrl = "http://i.nhentai.net/galleries/" + mediaId + "/";
-                for(int i = 0; i < images.length(); i++){
-                    JSONObject image = images.getJSONObject(i);
-                    String extension = image.getString("t");
-                    if(extension.equals("j")){
-                        extension = ".jpg";
-                    }else if(extension.equals("p")){
-                        extension = ".png";
-                    }else{
-                        extension = ".gif";
-                    }
-
-                    String urlImage = serverUrl + (i+1) + extension;
-                    aUrls.add(urlImage);
-                }
+                String json = HttpClientHelper.call(content.getGalleryUrl() + "json");
+                aUrls = NhentaiParser.parseImageList(json);
             }
         } catch (Exception e) {
             Log.e(TAG, "Error getting image urls", e);

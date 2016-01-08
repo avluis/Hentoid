@@ -24,6 +24,7 @@ import java.net.CookieManager;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
@@ -145,7 +146,7 @@ public class Helper {
     private static String escapeURL(String link) {
         try {
             String path = link;
-            path = java.net.URLEncoder.encode(path, "utf8");
+            path = URLEncoder.encode(path, "utf8");
             path = path.replace("%3A", ":");
             path = path.replace("%2F", "/");
             path = path.replace("+", "%20");

@@ -32,6 +32,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
@@ -61,8 +62,8 @@ public class UpdateCheck implements IUpdateCheck {
     private String updateDownloadPath;
     private Context context;
     private UpdateCheckCallback updateCheckResult;
-    private Handler mHandler = null;
-    private String downloadURL = null;
+    private Handler mHandler;
+    private String downloadURL;
     private int progressBar;
     private long total;
     private long done;
@@ -81,11 +82,10 @@ public class UpdateCheck implements IUpdateCheck {
 
     @Override
     public void checkForUpdate(Context context,
-                               final String updateURL,
                                final boolean onlyWifi,
                                final boolean showToast,
                                final UpdateCheckCallback updateCheckResult) {
-        if (context == null || updateURL == null) {
+        if (context == null) {
             throw new NullPointerException("context or UpdateURL is null");
         }
 
@@ -93,21 +93,22 @@ public class UpdateCheck implements IUpdateCheck {
         this.updateCheckResult = updateCheckResult;
         mHandler = new Handler(context.getMainLooper());
 
-        if ((onlyWifi && NetworkStatus.getInstance(context).isWifi()) ||
-                (!onlyWifi && NetworkStatus.getInstance(context).isOnline())) {
+        if ((onlyWifi && NetworkStatus.isWifi(context)) ||
+                (!onlyWifi && NetworkStatus.isOnline(context))) {
             connected = true;
         } else {
             Log.e("networkInfo", "Network is not connected!");
         }
 
         if (connected) {
-            runAsyncTask(updateURL);
+            runAsyncTask();
         }
 
         this.showToast = showToast;
     }
 
-    private void runAsyncTask(String updateURL) {
+    private void runAsyncTask() {
+        String updateURL = Constants.UPDATE_URL;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
@@ -136,7 +137,7 @@ public class UpdateCheck implements IUpdateCheck {
             }
         }
 
-        this.downloadURL = updateURL;
+        downloadURL = updateURL;
 
         Intent installUpdate = new Intent(ACTION_DOWNLOAD_UPDATE);
         installUpdate.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -241,13 +242,13 @@ public class UpdateCheck implements IUpdateCheck {
             Uri downloadUri = Uri.parse(downloadURL);
             assert context.getExternalCacheDir() != null;
             Uri destinationUri = Uri.parse(updateDownloadPath =
-                    context.getExternalCacheDir().toString() + "/hentoid_update.apk");
+                    context.getExternalCacheDir() + "/hentoid_update.apk");
 
             DownloadRequest downloadRequest = new DownloadRequest(downloadUri)
                     .setDestinationURI(destinationUri)
                     .setPriority(DownloadRequest.Priority.HIGH)
                     .setDownloadListener(new DownloadStatusListener() {
-                        private boolean posted = false;
+                        private boolean posted;
 
                         @Override
                         public void onDownloadComplete(int id) {
@@ -430,7 +431,7 @@ public class UpdateCheck implements IUpdateCheck {
             notificationView.setTextViewText(R.id.tv_2,
                     "(" + Formatter.formatShortFileSize(context, done) + "/"
                             + Formatter.formatShortFileSize(context, total) + ") "
-                            + String.valueOf(progressBar)
+                            + progressBar
                             + "%");
             notificationManager.notify(NOTIFICATION_ID, builder.build());
             mHandler.postDelayed(this, 1000 * 2);
