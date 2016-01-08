@@ -10,6 +10,8 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.apache.commons.io.FileUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -240,13 +242,30 @@ public class DownloadManagerService extends IntentService {
                 String html = HttpClientHelper.call(url);
                 aUrls = HitomiParser.parseImageList(html);
             } else if (content.getSite() == Site.NHENTAI) {
+
+
                 String gelleryUrl = content.getGalleryUrl();
                 aUrls = new ArrayList<>();
+                URL url = new URL(gelleryUrl + 1 + '/');
+                String html = HttpClientHelper.call(url);
+                String jsonGallery = NhentaiParser.extractJsonGallery(html);
+                JSONObject gallery = new JSONObject(jsonGallery);
+                String mediaId = gallery.getString("media_id");
+                JSONArray images = gallery.getJSONObject("images").getJSONArray("pages");
+                String serverUrl = "http://i.nhentai.net/galleries/" + mediaId + "/";
+                for(int i = 0; i < images.length(); i++){
+                    JSONObject image = images.getJSONObject(i);
+                    String extension = image.getString("t");
+                    if(extension.equals("j")){
+                        extension = ".jpg";
+                    }else if(extension.equals("p")){
+                        extension = ".png";
+                    }else{
+                        extension = ".gif";
+                    }
 
-                for (int i = 1, qty = content.getQtyPages(); i <= qty; i++) {
-                    URL url = new URL(gelleryUrl + i + '/');
-                    String html = HttpClientHelper.call(url);
-                    aUrls.add(NhentaiParser.parseImage(html));
+                    String urlImage = serverUrl + (i+1) + extension;
+                    aUrls.add(urlImage);
                 }
             }
         } catch (Exception e) {

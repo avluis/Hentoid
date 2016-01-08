@@ -11,6 +11,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 
@@ -59,8 +60,22 @@ public class NhentaiParser {
                     qtyPagesTEMP,
                     Site.NHENTAI
             );
+
+            result.setImageFiles(new ArrayList<ImageFile>(qtyPagesTEMP));
+
         }
         return result;
+    }
+
+    public static String extractJsonGallery(String html){
+        String result = null;
+        int auxIndex = html.indexOf("nhentai.reader");
+        int startIndex = html.indexOf("gallery", auxIndex);
+        startIndex = html.indexOf("{", startIndex);
+        int endIndex = html.indexOf(";", startIndex);
+        html = html.substring(startIndex, endIndex);
+        html = html.substring(0, html.lastIndexOf("}"));
+        return html.substring(0, html.lastIndexOf("}")+1);
     }
 
     private static List<Attribute> parseAttributes(Elements elements, AttributeType attributeType) {
@@ -73,10 +88,5 @@ public class NhentaiParser {
             attributes.add(attribute);
         }
         return attributes;
-    }
-
-    public static String parseImage(String html) {
-        Document doc = Jsoup.parse(html);
-        return "http:" + doc.select("section#image-container").select("img").attr("src");
     }
 }
