@@ -99,7 +99,7 @@ public class DownloadManagerService extends IntentService {
 
         boolean error = false;
         //Directory
-        File dir = Helper.getDownloadDir(content, DownloadManagerService.this);
+        File dir = Helper.getDownloadDir(content, this);
         try {
             //Download Cover Image
             Helper.saveInStorage(new File(dir, "thumb.jpg"), content.getCoverImageUrl());
@@ -181,25 +181,25 @@ public class DownloadManagerService extends IntentService {
 
     private void showNotification(double percent, Content content) {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-                DownloadManagerService.this).setSmallIcon(
+                this).setSmallIcon(
                 content.getSite().getIco()).setContentTitle(content.getTitle());
 
         Intent resultIntent = null;
         if (content.getStatus() == StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR || content.getStatus() == StatusContent.UNHANDLED_ERROR) {
-            resultIntent = new Intent(DownloadManagerService.this,
+            resultIntent = new Intent(this,
                     DownloadsActivity.class);
         } else if (content.getStatus() == StatusContent.DOWNLOADING || content.getStatus() == StatusContent.PAUSED) {
-            resultIntent = new Intent(DownloadManagerService.this,
+            resultIntent = new Intent(this,
                     DownloadManagerActivity.class);
         } else if (content.getStatus() == StatusContent.SAVED) {
-            resultIntent = new Intent(DownloadManagerService.this,
+            resultIntent = new Intent(this,
                     MainActivity.class);
             resultIntent.putExtra("url", content.getUrl());
         }
 
         // Adds the Intent to the top of the stack
         // Gets a PendingIntent containing the entire back stack
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(DownloadManagerService.this,
+        PendingIntent resultPendingIntent = PendingIntent.getActivity(this,
                 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
 
 

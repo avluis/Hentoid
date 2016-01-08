@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
         });
         fabDownload.setVisibility(View.INVISIBLE);
 
-        db = new HentoidDB(MainActivity.this);
+        db = new HentoidDB(this);
 
         FloatingActionButton fabDownloads = (FloatingActionButton) findViewById(R.id.fabDownloads);
         fabDownloads.setOnClickListener(new View.OnClickListener() {

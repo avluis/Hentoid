@@ -99,7 +99,7 @@ public class SelectFolderActivity extends Activity implements
         }
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(Helper.getDownloadDir(s, SelectFolderActivity.this));
+            downloadDirs.add(Helper.getDownloadDir(s, this));
         }
         List<File> files = new ArrayList<>();
         for (File downloadDir : downloadDirs) {

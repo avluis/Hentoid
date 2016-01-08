@@ -141,7 +141,7 @@ public class ContentV1 extends ContentTable {
     }
 
     public void setMigratedStatus() {
-        this.status = StatusContent.MIGRATED;
+        status = StatusContent.MIGRATED;
     }
 
     public Site getSite() {
@@ -157,9 +157,9 @@ public class ContentV1 extends ContentTable {
 
     public Content toContent() {
         Content content = new Content();
-        content.setSite(this.getSite());
-        content.setUrl(this.url);
-        content.setUploadDate(this.uploadDate);
+        content.setSite(getSite());
+        content.setUrl(url);
+        content.setUploadDate(uploadDate);
         content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
         content.getAttributes().put(AttributeType.ARTIST, getArtists());
         List<Attribute> aux = new ArrayList<>();
@@ -177,13 +177,13 @@ public class ContentV1 extends ContentTable {
         if (getUser() != null)
             aux.add(getUser());
         content.getAttributes().put(AttributeType.UPLOADER, aux);
-        content.setImageFiles(this.imageFiles);
-        content.setCoverImageUrl(this.coverImageUrl);
-        content.setHtmlDescription(this.htmlDescription);
-        content.setTitle(this.title);
-        content.setQtyPages(this.qtyPages);
-        content.setDownloadDate(this.downloadDate);
-        content.setStatus(this.status);
+        content.setImageFiles(imageFiles);
+        content.setCoverImageUrl(coverImageUrl);
+        content.setHtmlDescription(htmlDescription);
+        content.setTitle(title);
+        content.setQtyPages(qtyPages);
+        content.setDownloadDate(downloadDate);
+        content.setStatus(status);
         return content;
     }
 }

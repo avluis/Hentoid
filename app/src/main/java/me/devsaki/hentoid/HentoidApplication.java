@@ -55,7 +55,7 @@ public class HentoidApplication extends Application {
             }
         };
 
-        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (sharedPreferences.getString(
                 ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,

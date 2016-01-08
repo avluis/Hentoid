@@ -113,7 +113,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         private static String query = "";
         private Toast mToast;
         private int currentPage = 1;
-        private int prevPage = 0;
+        private int prevPage;
         private int qtyPages;
         private int order;
         private Button btnPage;

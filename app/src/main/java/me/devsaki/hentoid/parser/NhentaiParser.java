@@ -20,7 +20,7 @@ import me.devsaki.hentoid.database.enums.Site;
  */
 public class NhentaiParser {
 
-    private final static String TAG = NhentaiParser.class.getName();
+    private static final String TAG = NhentaiParser.class.getName();
 
     public static Content parseContent(String html) {
         Content result = null;

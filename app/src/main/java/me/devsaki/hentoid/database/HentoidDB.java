@@ -70,7 +70,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             try {
-                db = this.getWritableDatabase();
+                db = getWritableDatabase();
                 statement = db.compileStatement(Content.INSERT_STATEMENT);
                 db.beginTransaction();
                 for (Content row : rows) {
@@ -137,7 +137,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteStatement statement = null;
             SQLiteStatement statementImages = null;
             try {
-                db = this.getWritableDatabase();
+                db = getWritableDatabase();
                 db.beginTransaction();
                 statement = db.compileStatement(ImageFileTable.INSERT_STATEMENT);
                 statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
@@ -227,7 +227,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             Cursor cursorContents = null;
             try {
 
-                db = this.getReadableDatabase();
+                db = getReadableDatabase();
                 cursorContents = db.rawQuery(ContentTable.SELECT_BY_CONTENT_ID,
                         new String[]{id + ""});
 
@@ -258,7 +258,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             Cursor cursorContent = null;
             try {
 
-                db = this.getReadableDatabase();
+                db = getReadableDatabase();
                 cursorContent = db.rawQuery(ContentTable.SELECT_BY_STATUS,
                         new String[]{statusContent.getCode() + ""});
 
@@ -288,7 +288,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             Cursor cursorContent = null;
             try {
 
-                db = this.getReadableDatabase();
+                db = getReadableDatabase();
                 cursorContent = db.rawQuery(ContentTable.SELECT_IN_DOWNLOAD_MANAGER,
                         new String[]{StatusContent.DOWNLOADING.getCode() + "",
                                 StatusContent.PAUSED.getCode() + ""});
@@ -325,7 +325,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             int start = (page - 1) * qty;
             try {
                 query = "%" + query + "%";
-                db = this.getReadableDatabase();
+                db = getReadableDatabase();
                 String sql = ContentTable.SELECT_DOWNLOADS;
                 if (orderAlphabetic) {
                     sql += ContentTable.ORDER_ALPHABETIC;
@@ -458,7 +458,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             try {
-                db = this.getWritableDatabase();
+                db = getWritableDatabase();
                 statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_STATEMENT);
                 db.beginTransaction();
                 statement.clearBindings();
@@ -514,7 +514,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteStatement statementImages = null;
             SQLiteStatement statementAttributes = null;
             try {
-                db = this.getWritableDatabase();
+                db = getWritableDatabase();
                 statement = db.compileStatement(ContentTable.DELETE_STATEMENT);
                 statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
                 statementAttributes = db.compileStatement(ContentAttributeTable.DELETE_STATEMENT);
@@ -551,7 +551,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             try {
-                db = this.getWritableDatabase();
+                db = getWritableDatabase();
                 statement = db.compileStatement(ContentTable
                         .UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT);
                 db.beginTransaction();
@@ -580,7 +580,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             try {
-                db = this.getWritableDatabase();
+                db = getWritableDatabase();
                 statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STATUS_STATEMENT);
                 db.beginTransaction();
                 statement.clearBindings();

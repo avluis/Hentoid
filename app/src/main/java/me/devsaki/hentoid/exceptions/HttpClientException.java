@@ -9,7 +9,6 @@ public class HttpClientException extends Exception {
     private int code;
 
     public HttpClientException(String result, int code) {
-        super();
         this.result = result;
         this.code = code;
     }

@@ -19,7 +19,7 @@ import me.devsaki.hentoid.database.enums.Site;
  */
 public class HitomiParser {
 
-    private final static String TAG = HitomiParser.class.getName();
+    private static final String TAG = HitomiParser.class.getName();
 
     public static Content parseContent(String html) {
         Content result = null;
