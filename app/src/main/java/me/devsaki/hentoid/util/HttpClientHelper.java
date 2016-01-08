@@ -20,8 +20,9 @@ import me.devsaki.hentoid.exceptions.HttpClientException;
  */
 public class HttpClientHelper {
 
-    public static String call(URL url) throws HttpClientException, IOException, URISyntaxException {
-        URI uri = new URI(url.toString());
+    public static String call(String address) throws HttpClientException, IOException, URISyntaxException {
+        URL url = new URL(address);
+        URI uri = new URI(address);
         CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
 
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();

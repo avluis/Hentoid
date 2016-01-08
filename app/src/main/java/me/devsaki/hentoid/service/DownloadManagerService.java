@@ -238,12 +238,10 @@ public class DownloadManagerService extends IntentService {
         List<String> aUrls = new ArrayList<>();
         try {
             if (content.getSite() == Site.HITOMI) {
-                URL url = new URL(content.getReaderUrl());
-                String html = HttpClientHelper.call(url);
+                String html = HttpClientHelper.call(content.getReaderUrl());
                 aUrls = HitomiParser.parseImageList(html);
             } else if (content.getSite() == Site.NHENTAI) {
-                URL url = new URL(content.getGalleryUrl() + "json");
-                String json = HttpClientHelper.call(url);
+                String json = HttpClientHelper.call(content.getGalleryUrl() + "json");
                 aUrls = NhentaiParser.parseImageList(json);
             }
         } catch (Exception e) {
