@@ -47,8 +47,7 @@
         <Button
             android:id="@+id/btnPage"
             android:layout_width="?android:attr/actionBarSize"
-            android:layout_height="?android:attr/actionBarSize"
-            android:text="1" />
+            android:layout_height="?android:attr/actionBarSize" />
 
         <ImageButton
             android:id="@+id/btnNext"
