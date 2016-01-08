@@ -93,8 +93,8 @@ public class UpdateCheck implements IUpdateCheck {
         this.updateCheckResult = updateCheckResult;
         mHandler = new Handler(context.getMainLooper());
 
-        if ((onlyWifi && NetworkStatus.getInstance(context).isWifi()) ||
-                (!onlyWifi && NetworkStatus.getInstance(context).isOnline())) {
+        if ((onlyWifi && NetworkStatus.isWifi(context)) ||
+                (!onlyWifi && NetworkStatus.isOnline(context))) {
             connected = true;
         } else {
             Log.e("networkInfo", "Network is not connected!");

@@ -8,26 +8,19 @@ import android.util.Log;
 /**
  * Created by avluis on 7/6/15.
  */
-public class NetworkStatus {
+public final class NetworkStatus {
 
-    private static final NetworkStatus instance = new NetworkStatus();
-    private static Context context;
-    private ConnectivityManager connMgr;
-    private boolean connected = false;
-    private boolean wifi = false;
-    private boolean mobile = false;
-
-    public static NetworkStatus getInstance(Context ctx) {
-        context = ctx.getApplicationContext();
-        return instance;
+    private static NetworkInfo initialize(Context ctx) {
+        Context context = ctx.getApplicationContext();
+        ConnectivityManager connMgr = (ConnectivityManager) context
+                .getSystemService(Context.CONNECTIVITY_SERVICE);
+        return connMgr.getActiveNetworkInfo();
     }
 
-    public boolean isOnline() {
+    public static boolean isOnline(Context context) {
+        boolean connected = false;
         try {
-            connMgr = (ConnectivityManager) context
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            NetworkInfo netInfo = connMgr.getActiveNetworkInfo();
+            NetworkInfo netInfo = initialize(context);
             connected = netInfo != null && netInfo.isAvailable() &&
                     netInfo.isConnected();
             return connected;
@@ -38,12 +31,11 @@ public class NetworkStatus {
         return connected;
     }
 
-    public boolean isWifi() {
+    public static boolean isWifi(Context context) {
+        boolean wifi = false;
         try {
-            connMgr = (ConnectivityManager) context
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo wifiInfo = connMgr.getActiveNetworkInfo();
-            wifi = wifiInfo != null && wifiInfo.isConnected() && wifiInfo.getType() ==
+            NetworkInfo netInfo = initialize(context);
+            wifi = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
                     ConnectivityManager.TYPE_WIFI;
             return wifi;
         } catch (Exception e) {
@@ -53,13 +45,12 @@ public class NetworkStatus {
         return wifi;
     }
 
-    public boolean isMobile() {
+    public boolean isMobile(Context context) {
+        boolean mobile = false;
         try {
-            connMgr = (ConnectivityManager) context
-                    .getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo mobileInfo = connMgr.getActiveNetworkInfo();
-            mobile = mobileInfo != null && mobileInfo.isConnected()
-                    && mobileInfo.getType() == ConnectivityManager.TYPE_MOBILE;
+            NetworkInfo netInfo = initialize(context);
+            mobile = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
+                    ConnectivityManager.TYPE_MOBILE;
             return mobile;
         } catch (Exception e) {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());

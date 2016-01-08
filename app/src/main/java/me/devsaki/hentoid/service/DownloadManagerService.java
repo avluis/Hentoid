@@ -127,7 +127,7 @@ public class DownloadManagerService extends IntentService {
             boolean imageFileErrorDownload = false;
             try {
                 if (imageFile.getStatus() != StatusContent.IGNORED) {
-                    if (!NetworkStatus.getInstance(this).isOnline())
+                    if (!NetworkStatus.isOnline(this))
                         throw new Exception("Not connection");
                     Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
                     Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / " + content.getTitle());
