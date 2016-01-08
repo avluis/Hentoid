@@ -268,7 +268,7 @@ public class PreferencesActivity extends PreferenceActivity {
                     Toast.makeText(getActivity().getApplicationContext(), "Checking for updates...",
                             Toast.LENGTH_SHORT).show();
                     UpdateCheck.getInstance().checkForUpdate(getActivity().getApplicationContext(),
-                            Constants.UPDATE_URL, false, true,
+                            false, true,
                             new UpdateCheck.UpdateCheckCallback() {
                                 @Override
                                 public void noUpdateAvailable() {
