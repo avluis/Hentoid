@@ -110,15 +110,16 @@ public class Content extends ContentTable {
     }
 
     public String getGalleryUrl() {
-        String galleryConst = "";
-        if (site == Site.FAKKU) {
-            galleryConst = "";
-        } else if (site == Site.PURURIN) {
+        String galleryConst;
+        if (site == Site.PURURIN) {
             galleryConst = "/gallery";
         } else if (site == Site.HITOMI) {
             galleryConst = "/galleries";
         } else if (site == Site.NHENTAI) {
             galleryConst = "/g";
+        } else {
+            //Includes Fakku
+            galleryConst = "";
         }
         return site.getUrl() + galleryConst + url;
     }

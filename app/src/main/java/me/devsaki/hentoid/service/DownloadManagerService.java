@@ -242,17 +242,14 @@ public class DownloadManagerService extends IntentService {
                 String html = HttpClientHelper.call(url);
                 aUrls = HitomiParser.parseImageList(html);
             } else if (content.getSite() == Site.NHENTAI) {
-
-
-                String gelleryUrl = content.getGalleryUrl();
-                aUrls = new ArrayList<>();
-                URL url = new URL(gelleryUrl + 1 + '/');
-                String html = HttpClientHelper.call(url);
-                String jsonGallery = NhentaiParser.extractJsonGallery(html);
+                
+                URL url = new URL(content.getGalleryUrl() + "json");
+                String jsonGallery = HttpClientHelper.call(url);
                 JSONObject gallery = new JSONObject(jsonGallery);
                 String mediaId = gallery.getString("media_id");
                 JSONArray images = gallery.getJSONObject("images").getJSONArray("pages");
                 String serverUrl = "http://i.nhentai.net/galleries/" + mediaId + "/";
+
                 for(int i = 0; i < images.length(); i++){
                     JSONObject image = images.getJSONObject(i);
                     String extension = image.getString("t");
@@ -267,7 +264,6 @@ public class DownloadManagerService extends IntentService {
                             extension = ".gif";
                             break;
                     }
-
                     String urlImage = serverUrl + (i+1) + extension;
                     aUrls.add(urlImage);
                 }
