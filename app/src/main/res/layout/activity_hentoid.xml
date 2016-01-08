@@ -9,7 +9,6 @@
         android:layout_height="match_parent" />
     <!-- The navigation drawer -->
     <LinearLayout
-        android:id="@+id/left_drawer"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
