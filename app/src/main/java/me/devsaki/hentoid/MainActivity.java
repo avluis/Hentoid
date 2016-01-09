@@ -56,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
         db = new HentoidDB(this);
         webView = (WebView) findViewById(R.id.wbMain);
         fabRead =  (android.support.design.widget.FloatingActionButton) findViewById(R.id.fabRead);
@@ -63,7 +65,17 @@ public class MainActivity extends AppCompatActivity {
 
         fabRead.hide();
         fabDownload.hide();
+        initWebView();
+        initSwipeLayout();
 
+        String intentVar = getIntent().getStringExtra(INTENT_URL);
+
+        if (site != null) {
+            webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
+        }
+    }
+
+    private void initWebView() {
         webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -92,15 +104,9 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webView.setInitialScale(50);
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
+    }
 
-        String intentVar = getIntent().getStringExtra(INTENT_URL);
-        site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
-
-        if (site != null) {
-            webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
-        }
-
-        // Swipe down to refresh webView.
+    private void initSwipeLayout() {
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
