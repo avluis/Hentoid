@@ -1,9 +1,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background_list"
-    tools:context="me.devsaki.hentoid.DownloadsActivity">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background_list"
+                tools:context="me.devsaki.hentoid.DownloadsActivity">
 
     <ListView
         android:id="@android:id/list"
@@ -12,7 +12,7 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:divider="@android:color/transparent"
-        android:dividerHeight="10dp" />
+        android:dividerHeight="10dp"/>
 
     <TextView
         android:id="@android:id/empty"
@@ -20,7 +20,7 @@
         android:layout_height="match_parent"
         android:gravity="center"
         android:text="@string/downloads_manager_empty"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -51,7 +51,6 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fabRead, fabDownload;
     private SwipeRefreshLayout swipeLayout;
 
-    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,11 +59,12 @@ public class MainActivity extends AppCompatActivity {
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, -1));
         db = new HentoidDB(this);
         webView = (WebView) findViewById(R.id.wbMain);
-        fabRead =  (android.support.design.widget.FloatingActionButton) findViewById(R.id.fabRead);
-        fabDownload = (android.support.design.widget.FloatingActionButton) findViewById(R.id.fabDownload);
+        fabRead =  (FloatingActionButton) findViewById(R.id.fabRead);
+        fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
 
         fabRead.hide();
         fabDownload.hide();
+
         initWebView();
         initSwipeLayout();
 
@@ -74,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private void initWebView() {
         webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -100,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
+
         webView.setInitialScale(50);
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }

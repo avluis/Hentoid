@@ -1,17 +1,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:fab="http://schemas.android.com/apk/res-auto"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                tools:context=".MainActivity">
 
     <ProgressBar
         android:id="@+id/pbMain"
         style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"/>
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
@@ -22,62 +21,63 @@
         <WebView
             android:id="@+id/wbMain"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="match_parent"/>
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabRead"
-        android:layout_above="@+id/fabDownload"
-        android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/fabDownload"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_margin="5dp"
+        android:onClick="readContent"
         android:src="@drawable/ic_action_play"
         app:backgroundTint="@color/primary"
-        app:rippleColor="@color/ripple"
-        app:elevation="8dp" />
+        app:elevation="8dp"
+        app:rippleColor="@color/ripple"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabDownload"
-        android:onClick="downloadContent"
-        android:layout_above="@+id/fabRefresh"
-        android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/fabRefresh"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_margin="5dp"
+        android:onClick="downloadContent"
         android:src="@drawable/ic_action_download"
         app:backgroundTint="@color/primary"
-        app:rippleColor="@color/ripple"
-        app:elevation="8dp" />
+        app:elevation="8dp"
+        app:rippleColor="@color/ripple"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabRefresh"
-        android:onClick="refreshWebView"
-        android:layout_above="@+id/fabDownloads"
-        android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/fabDownloads"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_margin="5dp"
+        android:onClick="refreshWebView"
         android:src="@drawable/ic_action_refresh"
         app:backgroundTint="@color/primary"
-        app:rippleColor="@color/ripple"
-        app:elevation="8dp" />
+        app:elevation="8dp"
+        app:rippleColor="@color/ripple"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabDownloads"
-        android:onClick="closeActivity"
-        android:layout_height="wrap_content"
         android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_margin="5dp"
+        android:onClick="closeActivity"
         android:src="@drawable/ic_action_sd_storage"
         app:backgroundTint="@color/primary"
-        app:rippleColor="@color/ripple"
-        app:elevation="8dp" />
+        app:elevation="8dp"
+        app:rippleColor="@color/ripple"/>
 
 </RelativeLayout>
