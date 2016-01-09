@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
+        site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, -1));
         db = new HentoidDB(this);
         webView = (WebView) findViewById(R.id.wbMain);
         fabRead =  (android.support.design.widget.FloatingActionButton) findViewById(R.id.fabRead);
@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
         initSwipeLayout();
 
         String intentVar = getIntent().getStringExtra(INTENT_URL);
-
         if (site != null) {
             webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
         }
@@ -84,7 +83,6 @@ public class MainActivity extends AppCompatActivity {
         });
         webView.setLongClickable(false);
         webView.setHapticFeedbackEnabled(false);
-
         webView.setWebViewClient(new CustomWebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
             @Override

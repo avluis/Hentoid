@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.enums;
 
+import android.util.Log;
+
 import me.devsaki.hentoid.R;
 
 /**
@@ -12,6 +14,7 @@ public enum Site {
     HITOMI(2, "Hitomi", "https://hitomi.la", R.drawable.ic_hitomi, "/Hitomi"),
     NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_nhentai, "/nhentai");
 
+    private static final String TAG = Site.class.getName();
     private final int code;
     private final String description;
     private final String url;
@@ -27,6 +30,9 @@ public enum Site {
     }
 
     public static Site searchByCode(int code) {
+
+        if(code == -1)
+            Log.e(TAG, "Invalid site code");
 
         for (Site s : Site.values()) {
             if (s.getCode() == code)
