@@ -17,7 +17,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.net.CookieHandler;
@@ -59,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, -1));
         db = new HentoidDB(this);
         webView = (WebView) findViewById(R.id.wbMain);
-        fabRead =  (FloatingActionButton) findViewById(R.id.fabRead);
+        fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
 
         fabRead.hide();
@@ -89,9 +88,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
-                ProgressBar pb = (ProgressBar) findViewById(R.id.pbMain);
-                pb.setProgress(newProgress);
-                pb.setVisibility(View.VISIBLE);
+
+                if (newProgress == 100) {
+                    swipeLayout.setRefreshing(false);
+                } else {
+                    swipeLayout.setRefreshing(true);
+                }
             }
         });
         WebSettings webSettings = webView.getSettings();
@@ -101,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setLoadWithOverviewMode(true);
 
         webView.setInitialScale(50);
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");

@@ -16,7 +16,7 @@
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_order_by_date"
-        android:icon="@drawable/ic_menu_sort_bydate"
+        android:icon="@drawable/ic_menu_sort_by_date"
         android:title="@string/menu_order_date"
         app:showAsAction="ifRoom"/>
 </menu>
