@@ -17,16 +17,9 @@ public class AppLockActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_app_lock);
         setTitle(R.string.title_activity_app_lock);
-        final String appLock = PreferenceManager
-                .getDefaultSharedPreferences(this)
-                .getString(ConstantsPreferences.PREF_APP_LOCK, "");
-        if (appLock.isEmpty()) {
-            finish();
-            Intent intent = new Intent(this, DownloadsActivity.class);
-            startActivity(intent);
-        }
 
         final EditText etPin = (EditText) findViewById(R.id.etPin);
         etPin.setGravity(Gravity.CENTER);
@@ -50,9 +43,9 @@ public class AppLockActivity extends AppCompatActivity {
                 .getDefaultSharedPreferences(this)
                 .getString(ConstantsPreferences.PREF_APP_LOCK, "");
         if (appLock.equals(pin)) {
-            finish();
             Intent intent = new Intent(this, DownloadsActivity.class);
             startActivity(intent);
+            finish();
         } else {
             Toast.makeText(this, R.string.pin_invalid, Toast.LENGTH_SHORT).show();
         }
