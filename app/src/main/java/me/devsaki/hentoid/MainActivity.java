@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -13,12 +14,11 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-
-import com.melnykov.fab.FloatingActionButton;
 
 import java.net.CookieHandler;
 import java.net.CookiePolicy;
@@ -47,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
     private HentoidDB db;
     private Content currentContent;
     private Site site;
+    private WebView webView;
     private FloatingActionButton fabRead, fabDownload;
     private SwipeRefreshLayout swipeLayout;
 
@@ -55,20 +56,25 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        db = new HentoidDB(this);
+        webView = (WebView) findViewById(R.id.wbMain);
+        fabRead =  (android.support.design.widget.FloatingActionButton) findViewById(R.id.fabRead);
+        fabDownload = (android.support.design.widget.FloatingActionButton) findViewById(R.id.fabDownload);
 
-        final WebView webview = (WebView) findViewById(R.id.wbMain);
+        fabRead.hide();
+        fabDownload.hide();
 
-        webview.setOnLongClickListener(new View.OnLongClickListener() {
+        webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 return true;
             }
         });
+        webView.setLongClickable(false);
+        webView.setHapticFeedbackEnabled(false);
 
-        webview.setLongClickable(false);
-        webview.setHapticFeedbackEnabled(false);
-        webview.setWebViewClient(new CustomWebViewClient());
-        webview.setWebChromeClient(new WebChromeClient() {
+        webView.setWebViewClient(new CustomWebViewClient());
+        webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
@@ -77,57 +83,22 @@ public class MainActivity extends AppCompatActivity {
                 pb.setVisibility(View.VISIBLE);
             }
         });
-        webview.getSettings().setBuiltInZoomControls(true);
-        webview.getSettings().setDisplayZoomControls(false);
-        webview.getSettings().setUserAgentString(Constants.USER_AGENT);
-        webview.getSettings().setDomStorageEnabled(true);
-        webview.getSettings().setUseWideViewPort(true);
-        webview.getSettings().setJavaScriptEnabled(true);
-        webview.setInitialScale(50);
-        webview.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setBuiltInZoomControls(true);
+        webSettings.setDisplayZoomControls(false);
+        webSettings.setUserAgentString(Constants.USER_AGENT);
+        webSettings.setDomStorageEnabled(true);
+        webSettings.setUseWideViewPort(true);
+        webSettings.setJavaScriptEnabled(true);
+        webView.setInitialScale(50);
+        webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
 
         String intentVar = getIntent().getStringExtra(INTENT_URL);
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, Site.FAKKU.getCode()));
 
         if (site != null) {
-            webview.loadUrl(intentVar == null ? site.getUrl() : intentVar);
+            webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
         }
-
-        fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
-        fabRead.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                readContent();
-            }
-        });
-        fabRead.setVisibility(View.INVISIBLE);
-
-        fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
-        fabDownload.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                downloadContent();
-            }
-        });
-        fabDownload.setVisibility(View.INVISIBLE);
-
-        db = new HentoidDB(this);
-
-        FloatingActionButton fabDownloads = (FloatingActionButton) findViewById(R.id.fabDownloads);
-        fabDownloads.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent mainActivity = new Intent(MainActivity.this, DownloadsActivity.class);
-                startActivity(mainActivity);
-            }
-        });
-        FloatingActionButton fabRefresh = (FloatingActionButton) findViewById(R.id.fabRefresh);
-        fabRefresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                webview.reload();
-            }
-        });
 
         // Swipe down to refresh webView.
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
@@ -140,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                         swipeLayout.setRefreshing(false);
                     }
                 }, 5000);
-                webview.reload();
+                webView.reload();
             }
         });
         swipeLayout.setColorSchemeResources(
@@ -150,7 +121,16 @@ public class MainActivity extends AppCompatActivity {
                 android.R.color.holo_red_light);
     }
 
-    private void readContent() {
+    public void refreshWebView(View view) {
+        webView.reload();
+    }
+
+    public void closeActivity(View view) {
+        Intent mainActivity = new Intent(MainActivity.this, DownloadsActivity.class);
+        startActivity(mainActivity);
+    }
+
+    public void readContent(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
             if (StatusContent.DOWNLOADED == currentContent.getStatus()
@@ -162,11 +142,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void downloadContent() {
+    public void downloadContent(View view) {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
-            fabDownload.setVisibility(View.INVISIBLE);
+            fabDownload.hide();
             return;
         }
         Toast.makeText(this, R.string.in_queue, Toast.LENGTH_SHORT).show();
@@ -176,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         db.updateContentStatus(currentContent);
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
         startService(intent);
-        fabDownload.setVisibility(View.INVISIBLE);
+        fabDownload.hide();
     }
 
     @Override
@@ -184,9 +164,8 @@ public class MainActivity extends AppCompatActivity {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             switch (keyCode) {
                 case KeyEvent.KEYCODE_BACK:
-                    WebView webview = (WebView) findViewById(R.id.wbMain);
-                    if (webview.canGoBack()) {
-                        webview.goBack();
+                    if (webView.canGoBack()) {
+                        webView.goBack();
                     } else {
                         finish();
                     }
@@ -212,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            fabDownload.setVisibility(View.INVISIBLE);
+            fabDownload.hide();
             fabRead.setVisibility(View.INVISIBLE);
         }
 
@@ -305,14 +284,14 @@ public class MainActivity extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        fabDownload.setVisibility(View.VISIBLE);
+                        fabDownload.show();
                     }
                 });
             } else {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        fabDownload.setVisibility(View.INVISIBLE);
+                        fabDownload.hide();
                     }
                 });
             }
