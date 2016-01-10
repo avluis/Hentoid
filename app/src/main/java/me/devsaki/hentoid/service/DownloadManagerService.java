@@ -181,6 +181,8 @@ public class DownloadManagerService extends IntentService {
                 this).setSmallIcon(
                 content.getSite().getIco()).setContentTitle(content.getTitle());
 
+        mBuilder.setLocalOnly(true);
+
         Intent resultIntent = null;
         if (content.getStatus() == StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR || content.getStatus() == StatusContent.UNHANDLED_ERROR) {
             resultIntent = new Intent(this,
