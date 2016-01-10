@@ -23,6 +23,7 @@
 
             removeJSOrCSSFromHTML("hitomi.js", "js");
             removeJSOrCSSFromHTML("hitomi2.js", "js");
+            removeJSOrCSSFromHTML("moveimage.js", "js");
         ]]>
     </string>
     <string name="restore_hitomi_js">
