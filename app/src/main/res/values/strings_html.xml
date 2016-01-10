@@ -8,22 +8,19 @@
     <string name="remove_js_css" tools:ignore="TypographyDashes">
         <![CDATA[
             javascript:
-            function removeJSOrCSSFromHTML(fileName, fileType) {
-            var targetElement = (fileType == "js") ? "script" : (fileType == "css") ? "link" : "none";
-            var targetAttr = (fileType == "js") ? "src" : (fileType == "css") ? "href" : "none";
-            var removeList = document.getElementsByTagName(targetElement);
-            var i;
-
-            for (i = removeList.length; i >= 0; i--) {
-                if (removeList[i] && removeList[i].getAttribute(targetAttr) != null && removeList[i].getAttribute(targetAttr).indexOf(fileName) != -1) {
-                    removeList[i].parentNode.removeChild(removeList[i]);
+            function removejscssfile(filename, filetype){
+                var targetelement=(filetype=="js")? "script" : (filetype=="css")? "link" : "none" //determine element type to create nodelist from
+                var targetattr=(filetype=="js")? "src" : (filetype=="css")? "href" : "none" //determine corresponding attribute to test for
+                var allsuspects=document.getElementsByTagName(targetelement)
+                    for (var i=allsuspects.length; i>=0; i--){ //search backwards within nodelist for matching elements to remove
+                        if (allsuspects[i] && allsuspects[i].getAttribute(targetattr)!=null && allsuspects[i].getAttribute(targetattr).indexOf(filename)!=-1)
+                            allsuspects[i].parentNode.removeChild(allsuspects[i]) //remove element by calling parentNode.removeChild()
                     }
-                }
             }
 
-            removeJSOrCSSFromHTML("hitomi.js", "js");
-            removeJSOrCSSFromHTML("hitomi2.js", "js");
-            removeJSOrCSSFromHTML("moveimage.js", "js");
+            removejscssfile("hitomi.js", "js");
+            removejscssfile("hitomi2.js", "js");
+            removejscssfile("moveimage.js", "js");
         ]]>
     </string>
     <string name="restore_hitomi_js">
