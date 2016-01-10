@@ -46,10 +46,20 @@ public class NhentaiParser {
 
         JSONArray allTags = jsonContent.getJSONArray("tags");
         for(int i = 0; i < allTags.length(); i++) {
-            String testSTR = allTags.getJSONArray(i).getString(1);
-            Log.d("SHIRO", "TEST: " + testSTR);
-            if(testSTR == "tag") {
 
+            String tagTypeStr = allTags.getJSONArray(i).getString(1);
+            String nameStr = allTags.getJSONArray(i).getString(2);
+
+            if(tagTypeStr == "tag") {
+
+                if(!attributesTEMP.containsKey(AttributeType.TAG))
+                    attributesTEMP.put(AttributeType.TAG, new ArrayList<Attribute>());
+
+                Attribute attribute = new Attribute();
+                attribute.setType(AttributeType.TAG);
+                attribute.setUrl(null);
+                attribute.setName(nameStr);
+                attributesTEMP.get(AttributeType.TAG).add(attribute);
             }
         }
     }
