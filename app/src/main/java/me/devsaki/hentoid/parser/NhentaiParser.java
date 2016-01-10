@@ -27,6 +27,33 @@ public class NhentaiParser {
 
     private static final String TAG = NhentaiParser.class.getName();
 
+    public static void testParseContent(String json) throws JSONException {
+        JSONObject jsonContent = new JSONObject(json);
+        String titleTEMP = jsonContent.getJSONObject("title").getString("english");
+        String urlTEMP = "/" + jsonContent.getInt("id");
+        int qtyPagesTEMP = jsonContent.getInt("num_pages");
+
+        String mediaId = jsonContent.getString("media_id");
+        String extension = jsonContent.getJSONObject("images").getJSONObject("cover").getString("t");
+        switch (extension) {
+            case "j": extension = "jpg"; break;
+            case "p": extension = "png"; break;
+            default: extension = "gif"; break;
+        }
+        String coverImageUrl = "http://t.nhentai.net/galleries/" + mediaId + "/cover." + extension;
+
+        HashMap<AttributeType, List<Attribute>> attributesTEMP = new HashMap<>();
+
+        JSONArray allTags = jsonContent.getJSONArray("tags");
+        for(int i = 0; i < allTags.length(); i++) {
+            String testSTR = allTags.getJSONArray(i).getString(1);
+            Log.d("SHIRO", "TEST: " + testSTR);
+            if(testSTR == "tag") {
+
+            }
+        }
+    }
+
     public static Content parseContent(String html) {
         Content result = null;
         Document doc = Jsoup.parse(html);
@@ -37,7 +64,7 @@ public class NhentaiParser {
             String urlTEMP = elements.select("div#cover").select("a").attr("href");
             urlTEMP = urlTEMP.substring(2, urlTEMP.lastIndexOf("1/"));
             String coverImageUrlTEMP = elements.select("div#cover").select("img").attr("src");
-            Integer qtyPagesTEMP = doc.select("a.gallerythumb").size();
+            int qtyPagesTEMP = doc.select("a.gallerythumb").size();
 
             HashMap<AttributeType, List<Attribute>> attributesTEMP = new HashMap<>();
 
@@ -85,15 +112,9 @@ public class NhentaiParser {
                 JSONObject image = images.getJSONObject(i);
                 String extension = image.getString("t");
                 switch (extension) {
-                    case "j":
-                        extension = ".jpg";
-                        break;
-                    case "p":
-                        extension = ".png";
-                        break;
-                    default:
-                        extension = ".gif";
-                        break;
+                    case "j": extension = ".jpg"; break;
+                    case "p": extension = ".png"; break;
+                    default: extension = ".gif"; break;
                 }
                 String urlImage = serverUrl + (i + 1) + extension;
                 imagesUrl.add(urlImage);

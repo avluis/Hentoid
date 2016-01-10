@@ -3,6 +3,7 @@ package me.devsaki.hentoid;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -19,6 +20,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
@@ -32,11 +34,13 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.exceptions.HttpClientException;
 import me.devsaki.hentoid.parser.HitomiParser;
 import me.devsaki.hentoid.parser.NhentaiParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.HttpClientHelper;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -256,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
                 } else if ((site == Site.NHENTAI) &&
                         paths.length > 1 && paths[1].startsWith("g")) {
                     try {
+                        AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
                         view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
                     } catch (Exception ex) {
                         Log.e(TAG, "Error executing javascript in webview", ex);
@@ -323,6 +328,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
             }
+        }
+    }
+
+    private class LoaderJson extends AsyncTask<String, Integer, Content> {
+        @Override
+        protected Content doInBackground(String... params) {
+            String url = params[0];
+            try {
+                NhentaiParser.testParseContent(HttpClientHelper.call(url));
+            } catch (Exception e) {
+                Log.e(TAG, "Error parsing nhentai json: " + url, e);
+            }
+            return null;
         }
     }
 }
