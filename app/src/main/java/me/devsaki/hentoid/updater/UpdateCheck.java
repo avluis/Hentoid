@@ -39,7 +39,6 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * Created by avluis on 8/21/15.
  */
 public class UpdateCheck implements IUpdateCheck {
-    private static final String TAG = UpdateCheck.class.getName();
     public static final String ACTION_DOWNLOAD_CANCELLED =
             "me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED";
     public static final String ACTION_NOTIFICATION_REMOVED =
@@ -48,6 +47,7 @@ public class UpdateCheck implements IUpdateCheck {
             "me.devsaki.hentoid.updater.INSTALL_UPDATE";
     public static final String ACTION_UPDATE_DOWNLOADED =
             "me.devsaki.hentoid.updater.UPDATE_DOWNLOADED";
+    private static final String TAG = UpdateCheck.class.getName();
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
     private static volatile UpdateCheck instance;

@@ -2,10 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:tools="http://schemas.android.com/tools"
               android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/white"
-    android:orientation="vertical"
-    android:padding="10dp">
+              android:layout_height="match_parent"
+              android:background="@android:color/white"
+              android:orientation="vertical"
+              android:padding="10dp">
 
     <ProgressBar
         android:id="@+id/pbDownload"
@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:indeterminate="true" />
+        android:indeterminate="true"/>
 
     <TextView
         android:id="@+id/tvTitle"
@@ -26,13 +26,13 @@
         android:singleLine="false"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/holo_red_dark"
-        android:textStyle="bold" />
+        android:textStyle="bold"/>
 
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:layout_margin="10dp"
-        android:background="@android:color/holo_red_light" />
+        android:background="@android:color/holo_red_light"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -59,7 +59,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:singleLine="false"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
 
             <TextView
                 android:id="@+id/tvArtist"
@@ -67,7 +67,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:singleLine="false"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
 
             <TextView
                 android:id="@+id/tvTags"
@@ -75,7 +75,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:singleLine="false"
-                android:textAppearance="?android:attr/textAppearanceSmall" />
+                android:textAppearance="?android:attr/textAppearanceSmall"/>
         </LinearLayout>
     </LinearLayout>
 
@@ -83,7 +83,7 @@
         android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:layout_margin="10dp"
-        android:background="@android:color/holo_red_light" />
+        android:background="@android:color/holo_red_light"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -104,14 +104,14 @@
             android:paddingRight="10dp"
             android:singleLine="false"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"/>
     </LinearLayout>
 
     <View
         android:layout_width="fill_parent"
         android:layout_height="1dp"
         android:layout_margin="10dp"
-        android:background="@android:color/holo_red_light" />
+        android:background="@android:color/holo_red_light"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -126,7 +126,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="3"
             android:text="@string/pause"
-            android:textStyle="bold" />
+            android:textStyle="bold"/>
 
         <Button
             android:id="@+id/btnCancel"

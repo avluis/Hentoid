@@ -31,7 +31,7 @@ public enum Site {
 
     public static Site searchByCode(int code) {
 
-        if(code == -1)
+        if (code == -1)
             Log.e(TAG, "Invalid site code");
 
         for (Site s : Site.values()) {

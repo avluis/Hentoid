@@ -1,8 +1,8 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/background_list">
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/background_list">
 
     <ListView
         android:id="@android:id/list"
@@ -12,7 +12,7 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:divider="@android:color/transparent"
-        android:dividerHeight="10dp" />
+        android:dividerHeight="10dp"/>
 
     <TextView
         android:id="@android:id/empty"
@@ -21,7 +21,7 @@
         android:layout_above="@+id/ll"
         android:gravity="center"
         android:text="@string/downloads_library_empty"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:textAppearance="?android:attr/textAppearanceLarge"/>
 
     <LinearLayout
         android:id="@+id/ll"
@@ -41,13 +41,13 @@
             android:padding="3dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_action_previous_item"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"/>
 
         <Button
             android:id="@+id/btnPage"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
-            tools:text="1" />
+            tools:text="1"/>
 
         <ImageButton
             android:id="@+id/btnNext"
@@ -58,7 +58,7 @@
             android:padding="3dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_action_next_item"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"/>
 
         <ImageButton
             android:id="@+id/btnRefresh"
@@ -69,6 +69,6 @@
             android:padding="3dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_action_refresh"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"/>
     </LinearLayout>
 </RelativeLayout>

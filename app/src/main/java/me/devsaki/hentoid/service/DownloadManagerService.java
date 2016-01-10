@@ -10,12 +10,9 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.apache.commons.io.FileUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -183,6 +180,8 @@ public class DownloadManagerService extends IntentService {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
                 this).setSmallIcon(
                 content.getSite().getIco()).setContentTitle(content.getTitle());
+
+        mBuilder.setLocalOnly(true);
 
         Intent resultIntent = null;
         if (content.getStatus() == StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR || content.getStatus() == StatusContent.UNHANDLED_ERROR) {

@@ -17,7 +17,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.net.CookieHandler;
@@ -51,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fabRead, fabDownload;
     private SwipeRefreshLayout swipeLayout;
 
-    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,11 +58,12 @@ public class MainActivity extends AppCompatActivity {
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, -1));
         db = new HentoidDB(this);
         webView = (WebView) findViewById(R.id.wbMain);
-        fabRead =  (android.support.design.widget.FloatingActionButton) findViewById(R.id.fabRead);
-        fabDownload = (android.support.design.widget.FloatingActionButton) findViewById(R.id.fabDownload);
+        fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
+        fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
 
         fabRead.hide();
         fabDownload.hide();
+
         initWebView();
         initSwipeLayout();
 
@@ -74,6 +73,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private void initWebView() {
         webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
@@ -88,9 +88,12 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
-                ProgressBar pb = (ProgressBar) findViewById(R.id.pbMain);
-                pb.setProgress(newProgress);
-                pb.setVisibility(View.VISIBLE);
+
+                if (newProgress == 100) {
+                    swipeLayout.setRefreshing(false);
+                } else {
+                    swipeLayout.setRefreshing(true);
+                }
             }
         });
         WebSettings webSettings = webView.getSettings();
@@ -100,6 +103,8 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
+        webSettings.setLoadWithOverviewMode(true);
+
         webView.setInitialScale(50);
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }
@@ -242,6 +247,8 @@ public class MainActivity extends AppCompatActivity {
                 if ((site == Site.HITOMI) &&
                         paths.length > 1 && paths[1].startsWith("galleries")) {
                     try {
+                        webView.loadUrl(getResources().getString(R.string.remove_js_css));
+                        webView.loadUrl(getResources().getString(R.string.restore_hitomi_js));
                         view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
                     } catch (Exception ex) {
                         Log.e(TAG, "Error executing javascript in webview", ex);
