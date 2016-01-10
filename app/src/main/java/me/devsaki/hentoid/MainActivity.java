@@ -70,7 +70,6 @@ public class MainActivity extends AppCompatActivity {
         String intentVar = getIntent().getStringExtra(INTENT_URL);
         if (site != null) {
             webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
-            webView.loadUrl(getResources().getString(R.string.remove_js_css));
         }
     }
 
@@ -248,6 +247,8 @@ public class MainActivity extends AppCompatActivity {
                 if ((site == Site.HITOMI) &&
                         paths.length > 1 && paths[1].startsWith("galleries")) {
                     try {
+                        webView.loadUrl(getResources().getString(R.string.remove_js_css));
+                        webView.loadUrl(getResources().getString(R.string.restore_hitomi_js));
                         view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
                     } catch (Exception ex) {
                         Log.e(TAG, "Error executing javascript in webview", ex);
