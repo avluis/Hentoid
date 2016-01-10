@@ -22,6 +22,7 @@
             }
 
             removeJSOrCSSFromHTML("pop.js", "js");
+            removeJSOrCSSFromHTML("pub.js", "js");
         ]]>
     </string>
 </resources>
