@@ -1,8 +1,27 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="grab_html_from_webview">
         <![CDATA[
             javascript:
             window.HTMLOUT.processHTML(\'<html>\'+document.getElementsByTagName(\'html\')[0].innerHTML+\'</html>\');
+        ]]>
+    </string>
+    <string name="remove_js_css" tools:ignore="TypographyDashes">
+        <![CDATA[
+            javascript:
+            function removeJSOrCSSFromHTML(fileName, fileType) {
+            var targetElement = (fileType == "js") ? "script" : (fileType == "css") ? "link" : "none";
+            var targetAttr = (fileType == "js") ? "src" : (fileType == "css") ? "href" : "none";
+            var removeList = document.getElementsByTagName(targetElement);
+            var i;
+
+            for (i = removeList.length; i >= 0; i--) {
+                if (removeList[i] && removeList[i].getAttribute(targetAttr) != null && removeList[i].getAttribute(targetAttr).indexOf(fileName) != -1) {
+                    removeList[i].parentNode.removeChild(removeList[i]);
+                    }
+                }
+            }
+
+            removeJSOrCSSFromHTML("pop.js", "js");
         ]]>
     </string>
 </resources>
