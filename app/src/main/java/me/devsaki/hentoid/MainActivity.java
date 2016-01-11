@@ -258,8 +258,7 @@ public class MainActivity extends AppCompatActivity {
                     } catch (Exception ex) {
                         Log.e(TAG, "Error executing javascript in webview", ex);
                     }
-                } else if ((site == Site.NHENTAI) &&
-                        paths.length > 1 && paths[1].startsWith("g")) {
+                } else if ((site == Site.NHENTAI) && paths.length > 1 && paths[1].startsWith("g")) {
                     AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
                 }
             }
@@ -269,8 +268,9 @@ public class MainActivity extends AppCompatActivity {
     private class PageLoadListener {
         @JavascriptInterface
         public void processHTML(String html) {
-            if (html == null)
+            if (html == null) {
                 return;
+            }
 
             processContent(HitomiParser.parseContent(html));
         }

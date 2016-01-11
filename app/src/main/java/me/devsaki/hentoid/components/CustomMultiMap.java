@@ -1,6 +1,4 @@
-package me.devsaki.hentoid;
-
-import android.util.Log;
+package me.devsaki.hentoid.components;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,7 +16,7 @@ public class CustomMultiMap extends HashMap<AttributeType, List<Attribute>> {
 
         List<Attribute> list;
 
-        if(containsKey(type)) {
+        if (containsKey(type)) {
             list = get(type);
         } else {
             list = new ArrayList<>();
