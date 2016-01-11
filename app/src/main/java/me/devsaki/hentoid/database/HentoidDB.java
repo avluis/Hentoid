@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Log;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import me.devsaki.hentoid.database.contants.AttributeTable;
@@ -20,7 +21,6 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 10/05/2015.
@@ -384,7 +384,16 @@ public class HentoidDB extends SQLiteOpenHelper {
         content.setCoverImageUrl(cursorContent.getString(10));
         content.setSite(Site.searchByCode(cursorContent.getInt(11)));
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()));
-        content.setAttributes(selectAttributesByContentId(db, content.getId()));
+        content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
+        //populate attributes
+        List<Attribute> attributes = selectAttributesByContentId(db, content.getId());
+        if (attributes != null)
+            for (Attribute attribute : attributes) {
+                if (content.getAttributes().get(attribute.getType()) == null) {
+                    content.getAttributes().put(attribute.getType(), new ArrayList<Attribute>());
+                }
+                content.getAttributes().get(attribute.getType()).add(attribute);
+            }
         return content;
     }
 
@@ -416,8 +425,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    private AttributeMap selectAttributesByContentId(SQLiteDatabase db, int id) {
-        AttributeMap result = null;
+    private List<Attribute> selectAttributesByContentId(SQLiteDatabase db, int id) {
+        List<Attribute> result = null;
         Cursor cursorAttributes = null;
         try {
             cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_CONTENT_ID,
@@ -425,7 +434,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             // looping through all rows and adding to list
             if (cursorAttributes.moveToFirst()) {
-                result = new AttributeMap();
+                result = new ArrayList<>();
                 do {
                     Attribute item = new Attribute();
                     item.setUrl(cursorAttributes.getString(1));

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid;
 
 import android.util.Log;
 
@@ -12,12 +12,11 @@ import me.devsaki.hentoid.database.enums.AttributeType;
 /**
  * Created by Shiro on 1/11/2016.
  */
-public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
+public class CustomMultiMap extends HashMap<AttributeType, List<Attribute>> {
 
-    public void add(Attribute attributeItem) {
+    public void add(AttributeType type, Attribute x) {
 
         List<Attribute> list;
-        AttributeType type = attributeItem.getType();
 
         if(containsKey(type)) {
             list = get(type);
@@ -26,6 +25,6 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
             put(type, list);
         }
 
-        list.add(attributeItem);
+        list.add(x);
     }
 }

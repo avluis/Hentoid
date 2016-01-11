@@ -5,11 +5,17 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.jar.Attributes;
 
-import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.CustomMultiMap;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -39,7 +45,7 @@ public class NhentaiParser {
         String coverImageUrl = "http://t.nhentai.net/galleries/" + mediaId + "/cover." + extension;
 
         JSONArray allTags = jsonContent.getJSONArray("tags");
-        AttributeMap attributes = new AttributeMap();
+        CustomMultiMap attributes = new CustomMultiMap();
         for(int i = 0; i < allTags.length(); i++) {
 
             JSONArray singleTag = allTags.getJSONArray(i);
@@ -63,7 +69,7 @@ public class NhentaiParser {
             attribute.setType(attrType);
             attribute.setName(nameStr);
             attribute.setUrl(urlIdStr);
-            attributes.add(attribute);
+            attributes.add(attrType, attribute);
         }
 
         Content result = new Content(
