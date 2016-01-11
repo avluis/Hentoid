@@ -8,7 +8,7 @@ import org.jsoup.select.Elements;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.CustomMultiMap;
+import me.devsaki.hentoid.components.CustomMultiMap;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;

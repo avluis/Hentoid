@@ -127,14 +127,16 @@ public class DownloadManagerService extends IntentService {
                     if (!NetworkStatus.isOnline(this))
                         throw new Exception("Not connection");
                     Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
-                    Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / " + content.getTitle());
+                    Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / "
+                            + content.getTitle());
                 }
                 count++;
                 double percent = count * 100.0 / content.getImageFiles().size();
                 showNotification(percent, content);
                 updateActivity(percent);
             } catch (Exception ex) {
-                Log.e(TAG, "Error Saving Image File (" + imageFile.getName() + ") " + content.getTitle(), ex);
+                Log.e(TAG, "Error Saving Image File (" + imageFile.getName() + ") "
+                        + content.getTitle(), ex);
                 error = true;
                 imageFileErrorDownload = true;
             }
@@ -164,7 +166,8 @@ public class DownloadManagerService extends IntentService {
         updateActivity(-1);
         content = db.selectContentByStatus(StatusContent.DOWNLOADING);
         if (content != null) {
-            Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
+            Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
+                    DownloadManagerService.class);
             intentService.putExtra("content_id", content.getId());
             startService(intentService);
         }
@@ -184,10 +187,13 @@ public class DownloadManagerService extends IntentService {
         mBuilder.setLocalOnly(true);
 
         Intent resultIntent = null;
-        if (content.getStatus() == StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR || content.getStatus() == StatusContent.UNHANDLED_ERROR) {
+        if (content.getStatus() ==
+                StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR
+                || content.getStatus() == StatusContent.UNHANDLED_ERROR) {
             resultIntent = new Intent(this,
                     DownloadsActivity.class);
-        } else if (content.getStatus() == StatusContent.DOWNLOADING || content.getStatus() == StatusContent.PAUSED) {
+        } else if (content.getStatus() == StatusContent.DOWNLOADING
+                || content.getStatus() == StatusContent.PAUSED) {
             resultIntent = new Intent(this,
                     DownloadManagerActivity.class);
         } else if (content.getStatus() == StatusContent.SAVED) {

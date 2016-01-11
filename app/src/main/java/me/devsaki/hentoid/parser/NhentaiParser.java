@@ -5,17 +5,11 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.jar.Attributes;
 
-import me.devsaki.hentoid.CustomMultiMap;
+import me.devsaki.hentoid.components.CustomMultiMap;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -38,15 +32,21 @@ public class NhentaiParser {
         String mediaId = jsonContent.getString("media_id");
         String extension = jsonContent.getJSONObject("images").getJSONObject("cover").getString("t");
         switch (extension) {
-            case "j": extension = "jpg"; break;
-            case "p": extension = "png"; break;
-            default: extension = "gif"; break;
+            case "j":
+                extension = "jpg";
+                break;
+            case "p":
+                extension = "png";
+                break;
+            default:
+                extension = "gif";
+                break;
         }
         String coverImageUrl = "http://t.nhentai.net/galleries/" + mediaId + "/cover." + extension;
 
         JSONArray allTags = jsonContent.getJSONArray("tags");
         CustomMultiMap attributes = new CustomMultiMap();
-        for(int i = 0; i < allTags.length(); i++) {
+        for (int i = 0; i < allTags.length(); i++) {
 
             JSONArray singleTag = allTags.getJSONArray(i);
             String urlIdStr = singleTag.getString(0);
@@ -55,14 +55,30 @@ public class NhentaiParser {
 
             AttributeType attrType;
             switch (tagTypeStr) {
-                case "artist": attrType = AttributeType.ARTIST; break;
-                case "character": attrType = AttributeType.CHARACTER; break;
-                case "parody": attrType = AttributeType.SERIE; break;
-                case "language": attrType = AttributeType.LANGUAGE; break;
-                case "tag": attrType = AttributeType.TAG; break;
-                case "group": attrType = AttributeType.CIRCLE; break;
-                case "category": attrType = AttributeType.CATEGORY; break;
-                default: attrType = null; break;
+                case "artist":
+                    attrType = AttributeType.ARTIST;
+                    break;
+                case "character":
+                    attrType = AttributeType.CHARACTER;
+                    break;
+                case "parody":
+                    attrType = AttributeType.SERIE;
+                    break;
+                case "language":
+                    attrType = AttributeType.LANGUAGE;
+                    break;
+                case "tag":
+                    attrType = AttributeType.TAG;
+                    break;
+                case "group":
+                    attrType = AttributeType.CIRCLE;
+                    break;
+                case "category":
+                    attrType = AttributeType.CATEGORY;
+                    break;
+                default:
+                    attrType = null;
+                    break;
             }
 
             Attribute attribute = new Attribute();
@@ -97,9 +113,15 @@ public class NhentaiParser {
                 JSONObject image = images.getJSONObject(i);
                 String extension = image.getString("t");
                 switch (extension) {
-                    case "j": extension = ".jpg"; break;
-                    case "p": extension = ".png"; break;
-                    default: extension = ".gif"; break;
+                    case "j":
+                        extension = ".jpg";
+                        break;
+                    case "p":
+                        extension = ".png";
+                        break;
+                    default:
+                        extension = ".gif";
+                        break;
                 }
                 String urlImage = serverUrl + (i + 1) + extension;
                 imagesUrl.add(urlImage);
