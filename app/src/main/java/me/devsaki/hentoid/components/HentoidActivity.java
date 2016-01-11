@@ -111,7 +111,6 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         else if (view.getId() == R.id.ndNhentaiWbButton)
             intent.putExtra(MainActivity.INTENT_SITE, Site.NHENTAI.getCode());
 
-        intent.putExtra(MainActivity.INTENT_URL, "http://nhentai.net/g/153358/");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
     }
