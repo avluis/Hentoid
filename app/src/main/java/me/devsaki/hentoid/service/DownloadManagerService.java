@@ -240,7 +240,7 @@ public class DownloadManagerService extends IntentService {
                 String html = HttpClientHelper.call(content.getReaderUrl());
                 aUrls = HitomiParser.parseImageList(html);
             } else if (content.getSite() == Site.NHENTAI) {
-                String json = HttpClientHelper.call(content.getGalleryUrl() + "json");
+                String json = HttpClientHelper.call(content.getGalleryUrl() + "/json");
                 aUrls = NhentaiParser.parseImageList(json);
             }
         } catch (Exception e) {

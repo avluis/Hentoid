@@ -15,14 +15,11 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
-import android.webkit.WebResourceError;
-import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.net.CookieHandler;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
@@ -36,7 +33,6 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.exceptions.HttpClientException;
 import me.devsaki.hentoid.parser.HitomiParser;
 import me.devsaki.hentoid.parser.NhentaiParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
@@ -264,75 +260,19 @@ public class MainActivity extends AppCompatActivity {
                     }
                 } else if ((site == Site.NHENTAI) &&
                         paths.length > 1 && paths[1].startsWith("g")) {
-                    try {
-                        AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
-                        view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error executing javascript in webview", ex);
-                    }
+                    AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
                 }
             }
         }
     }
 
     private class PageLoadListener {
-
         @JavascriptInterface
         public void processHTML(String html) {
             if (html == null)
                 return;
 
-            Content content = null;
-            if (site == Site.HITOMI)
-                content = HitomiParser.parseContent(html);
-            else if (site == Site.NHENTAI)
-                content = NhentaiParser.parseContent(html);
-
-            if (content == null) {
-                return;
-            }
-            Content contentDB = db.selectContentById(content.getUrl().hashCode());
-            if (contentDB != null) {
-                content.setStatus(contentDB.getStatus());
-                content.setImageFiles(contentDB.getImageFiles());
-                content.setDownloadDate(contentDB.getDownloadDate());
-            }
-            db.insertContent(content);
-
-            if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED
-                    && content.getStatus() != StatusContent.DOWNLOADING) {
-                currentContent = content;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fabDownload.show();
-                    }
-                });
-            } else {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fabDownload.hide();
-                    }
-                });
-            }
-            if (content.getStatus() == StatusContent.DOWNLOADED
-                    || content.getStatus() == StatusContent.ERROR) {
-                currentContent = content;
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fabRead.setVisibility(View.VISIBLE);
-                    }
-                });
-            } else {
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        fabRead.setVisibility(View.INVISIBLE);
-                    }
-                });
-            }
+            processContent(HitomiParser.parseContent(html));
         }
     }
 
@@ -341,11 +281,59 @@ public class MainActivity extends AppCompatActivity {
         protected Content doInBackground(String... params) {
             String url = params[0];
             try {
-                NhentaiParser.testParseContent(HttpClientHelper.call(url));
+                processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
             } catch (Exception e) {
                 Log.e(TAG, "Error parsing nhentai json: " + url, e);
             }
             return null;
+        }
+    }
+
+    private void processContent(Content content) {
+        if (content == null)
+            return;
+
+        Content contentDB = db.selectContentById(content.getUrl().hashCode());
+        if (contentDB != null) {
+            content.setStatus(contentDB.getStatus());
+            content.setImageFiles(contentDB.getImageFiles());
+            content.setDownloadDate(contentDB.getDownloadDate());
+        }
+        db.insertContent(content);
+
+        if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED
+                && content.getStatus() != StatusContent.DOWNLOADING) {
+            currentContent = content;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fabDownload.show();
+                }
+            });
+        } else {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fabDownload.hide();
+                }
+            });
+        }
+        if (content.getStatus() == StatusContent.DOWNLOADED
+                || content.getStatus() == StatusContent.ERROR) {
+            currentContent = content;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fabRead.setVisibility(View.VISIBLE);
+                }
+            });
+        } else {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fabRead.setVisibility(View.INVISIBLE);
+                }
+            });
         }
     }
 }

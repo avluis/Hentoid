@@ -6,9 +6,9 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
+import me.devsaki.hentoid.CustomMultiMap;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
@@ -18,8 +18,6 @@ import me.devsaki.hentoid.database.enums.Site;
  * Created by neko on 08/07/2015.
  */
 public class HitomiParser {
-
-    private static final String TAG = HitomiParser.class.getName();
 
     public static Content parseContent(String html) {
         Content result = null;
@@ -32,25 +30,25 @@ public class HitomiParser {
             String urlTEMP = title.select("a").first().attr("href").replace("/reader", "");
             String titleTEMP = title.text();
 
-            HashMap<AttributeType, List<Attribute>> attributes = new HashMap<>();
-            attributes.put(AttributeType.ARTIST, parseAttributes(info.select("h2").select("a"), AttributeType.ARTIST));
+            CustomMultiMap attributes = new CustomMultiMap();
+            parseAttributes(attributes, AttributeType.ARTIST, info.select("h2").select("a"));
 
             Elements rows = info.select("tr");
 
             for (Element element : rows) {
                 Element td = element.select("td").first();
                 if (td.html().startsWith("Group")) {
-                    attributes.put(AttributeType.CIRCLE, parseAttributes(element.select("a"), AttributeType.CIRCLE));
+                    parseAttributes(attributes, AttributeType.CIRCLE, element.select("a"));
                 } else if (td.html().startsWith("Serie")) {
-                    attributes.put(AttributeType.SERIE, parseAttributes(element.select("a"), AttributeType.SERIE));
+                    parseAttributes(attributes, AttributeType.SERIE, element.select("a"));
                 } else if (td.html().startsWith("Character")) {
-                    attributes.put(AttributeType.CHARACTER, parseAttributes(element.select("a"), AttributeType.CHARACTER));
+                    parseAttributes(attributes, AttributeType.CHARACTER, element.select("a"));
                 } else if (td.html().startsWith("Tags")) {
-                    attributes.put(AttributeType.TAG, parseAttributes(element.select("a"), AttributeType.TAG));
+                    parseAttributes(attributes, AttributeType.TAG, element.select("a"));
                 } else if (td.html().startsWith("Language")) {
-                    attributes.put(AttributeType.LANGUAGE, parseAttributes(element.select("a"), AttributeType.LANGUAGE));
+                    parseAttributes(attributes, AttributeType.LANGUAGE, element.select("a"));
                 } else if (td.html().startsWith("Type")) {
-                    attributes.put(AttributeType.CATEGORY, parseAttributes(element.select("a"), AttributeType.CATEGORY));
+                    parseAttributes(attributes, AttributeType.CATEGORY, element.select("a"));
                 }
             }
 
@@ -68,16 +66,14 @@ public class HitomiParser {
         return result;
     }
 
-    private static List<Attribute> parseAttributes(Elements elements, AttributeType attributeType) {
-        List<Attribute> attributes = new ArrayList<>(elements.size());
+    private static void parseAttributes(CustomMultiMap map, AttributeType type, Elements elements) {
         for (Element a : elements) {
             Attribute attribute = new Attribute();
-            attribute.setType(attributeType);
+            attribute.setType(type);
             attribute.setUrl(a.attr("href"));
             attribute.setName(a.text());
-            attributes.add(attribute);
+            map.add(type, attribute);
         }
-        return attributes;
     }
 
     public static List<String> parseImageList(String html) {
