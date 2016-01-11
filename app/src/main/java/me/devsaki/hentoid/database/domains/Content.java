@@ -2,13 +2,13 @@ package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
 
-import java.util.HashMap;
 import java.util.List;
 
 import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -22,7 +22,7 @@ public class Content extends ContentTable {
     @Expose
     private String htmlDescription;
     @Expose
-    private HashMap<AttributeType, List<Attribute>> attributes;
+    private AttributeMap attributes;
     @Expose
     private String coverImageUrl;
     @Expose
@@ -49,7 +49,7 @@ public class Content extends ContentTable {
     public Content(String title,
                    String url,
                    String coverImageUrl,
-                   HashMap<AttributeType, List<Attribute>> attributes,
+                   AttributeMap attributes,
                    Integer qtyPages,
                    Site site) {
         this.title = title;
@@ -63,11 +63,11 @@ public class Content extends ContentTable {
         status = StatusContent.SAVED;
     }
 
-    public HashMap<AttributeType, List<Attribute>> getAttributes() {
+    public AttributeMap getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(HashMap<AttributeType, List<Attribute>> attributes) {
+    public void setAttributes(AttributeMap attributes) {
         this.attributes = attributes;
     }
 

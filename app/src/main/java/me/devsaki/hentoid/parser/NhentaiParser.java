@@ -9,11 +9,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-<<<<<<< HEAD
-import me.devsaki.hentoid.components.CustomMultiMap;
-=======
 import me.devsaki.hentoid.util.AttributeMap;
->>>>>>> parent of 3f46b56... Revert "Replaced HashMap usages with new AttributeMap class"
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -49,13 +45,8 @@ public class NhentaiParser {
         String coverImageUrl = "http://t.nhentai.net/galleries/" + mediaId + "/cover." + extension;
 
         JSONArray allTags = jsonContent.getJSONArray("tags");
-<<<<<<< HEAD
-        CustomMultiMap attributes = new CustomMultiMap();
-        for (int i = 0; i < allTags.length(); i++) {
-=======
         AttributeMap attributes = new AttributeMap();
         for(int i = 0; i < allTags.length(); i++) {
->>>>>>> parent of 3f46b56... Revert "Replaced HashMap usages with new AttributeMap class"
 
             JSONArray singleTag = allTags.getJSONArray(i);
             String urlIdStr = singleTag.getString(0);

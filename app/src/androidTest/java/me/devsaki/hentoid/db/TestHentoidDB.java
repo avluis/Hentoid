@@ -5,7 +5,6 @@ import android.test.RenamingDelegatingContext;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -14,6 +13,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by neko on 15/06/2015.
@@ -105,7 +105,7 @@ public class TestHentoidDB extends AndroidTestCase {
         for (int i = 0; i < 10; i++) {
             int k = randomGenerator.nextInt();
             Content content = new Content();
-            content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
+            content.setAttributes(new AttributeMap());
             for (AttributeType type : AttributeType.values()) {
                 List<Attribute> attributes = new ArrayList<>();
                 for (int j = 0; j < 10; j++) {

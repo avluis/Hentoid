@@ -8,11 +8,7 @@ import org.jsoup.select.Elements;
 import java.util.ArrayList;
 import java.util.List;
 
-<<<<<<< HEAD
-import me.devsaki.hentoid.components.CustomMultiMap;
-=======
 import me.devsaki.hentoid.util.AttributeMap;
->>>>>>> parent of 3f46b56... Revert "Replaced HashMap usages with new AttributeMap class"
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;

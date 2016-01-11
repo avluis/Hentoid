@@ -3,13 +3,13 @@ package me.devsaki.hentoid.database.domains;
 import com.google.gson.annotations.Expose;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -160,23 +160,27 @@ public class ContentV1 extends ContentTable {
         content.setSite(getSite());
         content.setUrl(url);
         content.setUploadDate(uploadDate);
-        content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
-        content.getAttributes().put(AttributeType.ARTIST, getArtists());
+
+        //Process and add attributes
+        AttributeMap attributes = new AttributeMap();
+        attributes.put(AttributeType.ARTIST, getArtists());
         List<Attribute> aux = new ArrayList<>();
         if (getSerie() != null)
             aux.add(getSerie());
-        content.getAttributes().put(AttributeType.SERIE, aux);
+        attributes.put(AttributeType.SERIE, aux);
         aux = new ArrayList<>();
         if (getLanguage() != null)
             aux.add(getLanguage());
-        content.getAttributes().put(AttributeType.LANGUAGE, aux);
-        content.getAttributes().put(AttributeType.PUBLISHER, getPublishers());
-        content.getAttributes().put(AttributeType.TAG, getTags());
-        content.getAttributes().put(AttributeType.TRANSLATOR, getTranslators());
+        attributes.put(AttributeType.LANGUAGE, aux);
+        attributes.put(AttributeType.PUBLISHER, getPublishers());
+        attributes.put(AttributeType.TAG, getTags());
+        attributes.put(AttributeType.TRANSLATOR, getTranslators());
         aux = new ArrayList<>();
         if (getUser() != null)
             aux.add(getUser());
-        content.getAttributes().put(AttributeType.UPLOADER, aux);
+        attributes.put(AttributeType.UPLOADER, aux);
+        content.setAttributes(attributes);
+
         content.setImageFiles(imageFiles);
         content.setCoverImageUrl(coverImageUrl);
         content.setHtmlDescription(htmlDescription);
