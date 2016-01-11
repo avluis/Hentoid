@@ -15,6 +15,8 @@ import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -218,6 +220,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Error reading current url form webview", e);
             }
 
+            if (site == Site.HITOMI) {
+                webView.loadUrl(getResources().getString(R.string.remove_js_css));
+                webView.loadUrl(getResources().getString(R.string.restore_hitomi_js));
+            }
+
             try {
                 String cookies = CookieManager.getInstance().getCookie(url);
                 java.net.CookieManager cookieManager = (java.net.CookieManager)
@@ -251,8 +258,6 @@ public class MainActivity extends AppCompatActivity {
                 if ((site == Site.HITOMI) &&
                         paths.length > 1 && paths[1].startsWith("galleries")) {
                     try {
-                        webView.loadUrl(getResources().getString(R.string.remove_js_css));
-                        webView.loadUrl(getResources().getString(R.string.restore_hitomi_js));
                         view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
                     } catch (Exception ex) {
                         Log.e(TAG, "Error executing javascript in webview", ex);
