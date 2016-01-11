@@ -8,7 +8,11 @@ import org.jsoup.select.Elements;
 import java.util.ArrayList;
 import java.util.List;
 
+<<<<<<< HEAD
 import me.devsaki.hentoid.components.CustomMultiMap;
+=======
+import me.devsaki.hentoid.util.AttributeMap;
+>>>>>>> parent of 3f46b56... Revert "Replaced HashMap usages with new AttributeMap class"
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
@@ -30,7 +34,7 @@ public class HitomiParser {
             String urlTEMP = title.select("a").first().attr("href").replace("/reader", "");
             String titleTEMP = title.text();
 
-            CustomMultiMap attributes = new CustomMultiMap();
+            AttributeMap attributes = new AttributeMap();
             parseAttributes(attributes, AttributeType.ARTIST, info.select("h2").select("a"));
 
             Elements rows = info.select("tr");
@@ -66,13 +70,13 @@ public class HitomiParser {
         return result;
     }
 
-    private static void parseAttributes(CustomMultiMap map, AttributeType type, Elements elements) {
+    private static void parseAttributes(AttributeMap map, AttributeType type, Elements elements) {
         for (Element a : elements) {
             Attribute attribute = new Attribute();
             attribute.setType(type);
             attribute.setUrl(a.attr("href"));
             attribute.setName(a.text());
-            map.add(type, attribute);
+            map.add(attribute);
         }
     }
 
