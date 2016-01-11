@@ -104,7 +104,7 @@
                 android:singleLine="false"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@android:color/white"
-                tools:text="Fakku"/>
+                tools:text="Site"/>
 
             <TextView
                 android:id="@+id/tvStatus"
