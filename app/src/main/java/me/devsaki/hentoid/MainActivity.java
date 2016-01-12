@@ -107,7 +107,7 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
 
-        webView.setInitialScale(50);
+        webView.setInitialScale(20);
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }
 
@@ -148,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
                     || StatusContent.ERROR == currentContent.getStatus()) {
                 AndroidHelper.openContent(currentContent, this);
             } else {
-                fabRead.setVisibility(View.INVISIBLE);
+                fabRead.hide();
             }
         }
     }
@@ -202,8 +202,13 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
+
             fabDownload.hide();
-            fabRead.setVisibility(View.INVISIBLE);
+            fabRead.hide();
+
+            if ((site == Site.NHENTAI) && url.contains("//nhentai.net/g/")) {
+                AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
+            }
         }
 
         @Override
@@ -213,7 +218,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 uri = new URI(url);
             } catch (URISyntaxException e) {
-                Log.e(TAG, "Error reading current url form webview", e);
+                Log.e(TAG, "Error reading current url from webview", e);
             }
 
             if (site == Site.HITOMI) {
@@ -246,22 +251,13 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             } catch (Exception ex) {
-                Log.e(TAG, "trying to get the cookies", ex);
+                Log.e(TAG, "Error trying to get the cookies", ex);
             }
 
-            if (uri != null && uri.getPath() != null) {
-                String[] paths = uri.getPath().split("/");
-                if ((site == Site.HITOMI) &&
-                        paths.length > 1 && paths[1].startsWith("galleries")) {
-                    try {
-                        view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
-                    } catch (Exception ex) {
-                        Log.e(TAG, "Error executing javascript in webview", ex);
-                    }
-                } else if ((site == Site.NHENTAI) && paths.length > 1 && paths[1].startsWith("g")) {
-                    AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
-                }
+            if ((site == Site.HITOMI) && url.contains("//hitomi.la/galleries/")) {
+                view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
             }
+
         }
     }
 
@@ -271,7 +267,6 @@ public class MainActivity extends AppCompatActivity {
             if (html == null) {
                 return;
             }
-
             processContent(HitomiParser.parseContent(html));
         }
     }
@@ -324,14 +319,14 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabRead.setVisibility(View.VISIBLE);
+                    fabRead.show();
                 }
             });
         } else {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabRead.setVisibility(View.INVISIBLE);
+                    fabRead.hide();
                 }
             });
         }
