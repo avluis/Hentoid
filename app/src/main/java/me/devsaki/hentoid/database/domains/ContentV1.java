@@ -2,14 +2,13 @@ package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -37,12 +36,8 @@ public class ContentV1 extends ContentTable {
     private List<Attribute> translators;
     @Expose
     private String coverImageUrl;
-    @Expose(serialize = false, deserialize = false)
-    private String sampleImageUrl;
     @Expose
     private Integer qtyPages;
-    @Expose(serialize = false, deserialize = false)
-    private Integer qtyFavorites;
     @Expose
     private long uploadDate;
     @Expose
@@ -76,44 +71,20 @@ public class ContentV1 extends ContentTable {
         this.htmlDescription = htmlDescription;
     }
 
-    private Attribute getSerie() {
-        return serie;
-    }
-
     public void setSerie(Attribute serie) {
         this.serie = serie;
-    }
-
-    private List<Attribute> getArtists() {
-        return artists;
     }
 
     public void setArtists(List<Attribute> artists) {
         this.artists = artists;
     }
 
-    private List<Attribute> getPublishers() {
-        return publishers;
-    }
-
-    private Attribute getLanguage() {
-        return language;
-    }
-
     public void setLanguage(Attribute language) {
         this.language = language;
     }
 
-    private List<Attribute> getTags() {
-        return tags;
-    }
-
     public void setTags(List<Attribute> tags) {
         this.tags = tags;
-    }
-
-    private List<Attribute> getTranslators() {
-        return translators;
     }
 
     public void setTranslators(List<Attribute> translators) {
@@ -126,10 +97,6 @@ public class ContentV1 extends ContentTable {
 
     public void setQtyPages(Integer qtyPages) {
         this.qtyPages = qtyPages;
-    }
-
-    private Attribute getUser() {
-        return user;
     }
 
     public void setDownloadDate(long downloadDate) {
@@ -160,23 +127,18 @@ public class ContentV1 extends ContentTable {
         content.setSite(getSite());
         content.setUrl(url);
         content.setUploadDate(uploadDate);
-        content.setAttributes(new HashMap<AttributeType, List<Attribute>>());
-        content.getAttributes().put(AttributeType.ARTIST, getArtists());
-        List<Attribute> aux = new ArrayList<>();
-        if (getSerie() != null)
-            aux.add(getSerie());
-        content.getAttributes().put(AttributeType.SERIE, aux);
-        aux = new ArrayList<>();
-        if (getLanguage() != null)
-            aux.add(getLanguage());
-        content.getAttributes().put(AttributeType.LANGUAGE, aux);
-        content.getAttributes().put(AttributeType.PUBLISHER, getPublishers());
-        content.getAttributes().put(AttributeType.TAG, getTags());
-        content.getAttributes().put(AttributeType.TRANSLATOR, getTranslators());
-        aux = new ArrayList<>();
-        if (getUser() != null)
-            aux.add(getUser());
-        content.getAttributes().put(AttributeType.UPLOADER, aux);
+
+        //Process and add attributes
+        AttributeMap attributes = new AttributeMap();
+        attributes.put(AttributeType.ARTIST, artists);
+        attributes.put(AttributeType.PUBLISHER, publishers);
+        attributes.put(AttributeType.TRANSLATOR, translators);
+        attributes.put(AttributeType.TAG, tags);
+        if (serie != null) attributes.add(serie);
+        if (language != null) attributes.add(language);
+        if (user != null) attributes.add(user);
+        content.setAttributes(attributes);
+
         content.setImageFiles(imageFiles);
         content.setCoverImageUrl(coverImageUrl);
         content.setHtmlDescription(htmlDescription);
