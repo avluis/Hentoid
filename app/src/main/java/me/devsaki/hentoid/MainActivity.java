@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
+import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -172,19 +173,22 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            switch (keyCode) {
-                case KeyEvent.KEYCODE_BACK:
-                    if (webView.canGoBack()) {
-                        webView.goBack();
-                    } else {
-                        finish();
-                    }
-                    return true;
-            }
+        if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
+            WebBackForwardList wbfl = webView.copyBackForwardList();
+            int i = wbfl.getCurrentIndex();
+            do {
+                i--;
+            } while (i >= 0 &&
+                    webView.getOriginalUrl().equals(wbfl.getItemAtIndex(i).getOriginalUrl()));
 
+            if (webView.canGoBackOrForward(i - wbfl.getCurrentIndex()))
+                webView.goBackOrForward(i - wbfl.getCurrentIndex());
+            else
+                finish();
+
+            return true;
         }
-        return super.onKeyDown(keyCode, event);
+        return false;
     }
 
     private class CustomWebViewClient extends WebViewClient {
