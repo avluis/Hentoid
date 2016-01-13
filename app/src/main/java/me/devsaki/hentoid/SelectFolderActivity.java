@@ -37,7 +37,7 @@ public class SelectFolderActivity extends Activity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_folder);
 
-        mDialog = DirectoryChooserFragment.newInstance("DialogSample", null);
+        mDialog = DirectoryChooserFragment.newInstance(Constants.DEFAULT_LOCAL_DIRECTORY, null);
 
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(this);

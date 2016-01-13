@@ -125,16 +125,16 @@ public class Helper {
         File file;
         try {
             file = new File(Environment.getExternalStorageDirectory()
-                    + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+                    + "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
         } catch (Exception e) {
             file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
-            file = new File(file, Constants.DEFAULT_LOCAL_DIRECTORY);
+            file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY);
         }
 
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
-                file = new File(file, Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+                file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
                 if (!file.exists()) {
                     file.mkdirs();
                 }

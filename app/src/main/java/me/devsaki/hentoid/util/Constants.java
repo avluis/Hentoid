@@ -6,7 +6,7 @@ package me.devsaki.hentoid.util;
 public abstract class Constants {
 
     public static final String SETTINGS_FOLDER = "folder";
-    public static final String DEFAULT_LOCAL_DIRECTORY = "/Hentoid";
+    public static final String DEFAULT_LOCAL_DIRECTORY = "Hentoid";
 
     public static final String JSON_FILE_NAME = "content.json";
     public static final String JSON_FILE_NAME_V2 = "contentV2.json";
