@@ -33,7 +33,7 @@ import me.devsaki.hentoid.database.enums.Site;
  * Created by DevSaki on 10/05/2015.
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
-public class Helper {
+public final class Helper {
 
     public static File getDownloadDir(Content content, Context context) {
         File file;

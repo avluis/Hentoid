@@ -13,10 +13,10 @@
         android:id="@+id/action_order_alphabetic"
         android:icon="@drawable/ic_menu_sort_alphabetical"
         android:title="@string/menu_order_alphabetically"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
     <item
         android:id="@+id/action_order_by_date"
         android:icon="@drawable/ic_menu_sort_by_date"
         android:title="@string/menu_order_date"
-        app:showAsAction="ifRoom"/>
+        app:showAsAction="always"/>
 </menu>

@@ -9,7 +9,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.components.CustomMultiMap;
+import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -45,8 +45,8 @@ public class NhentaiParser {
         String coverImageUrl = "http://t.nhentai.net/galleries/" + mediaId + "/cover." + extension;
 
         JSONArray allTags = jsonContent.getJSONArray("tags");
-        CustomMultiMap attributes = new CustomMultiMap();
-        for (int i = 0; i < allTags.length(); i++) {
+        AttributeMap attributes = new AttributeMap();
+        for(int i = 0; i < allTags.length(); i++) {
 
             JSONArray singleTag = allTags.getJSONArray(i);
             String urlIdStr = singleTag.getString(0);
@@ -85,7 +85,7 @@ public class NhentaiParser {
             attribute.setType(attrType);
             attribute.setName(nameStr);
             attribute.setUrl(urlIdStr);
-            attributes.add(attrType, attribute);
+            attributes.add(attribute);
         }
 
         Content result = new Content(
