@@ -12,12 +12,12 @@
         android:id="@+id/imageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_centerInParent="true"
         android:layout_margin="20dp"
         android:adjustViewBounds="true"
         android:scaleType="fitStart"
-        android:src="@drawable/logofakku"
+        android:src="@drawable/logo_hentoid_02"
         tools:ignore="ContentDescription"/>
 
     <TextView
