@@ -71,7 +71,7 @@
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="me.devsaki.hentoid.MainActivity" />
+                android:value="me.devsaki.hentoid.DownloadsActivity" />
         </activity>
         <activity
             android:name=".AppLockActivity"
@@ -87,7 +87,7 @@
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="me.devsaki.hentoid.MainActivity" />
+                android:value="me.devsaki.hentoid.DownloadsActivity" />
         </activity>
         <activity
             android:name=".SplashActivity"
