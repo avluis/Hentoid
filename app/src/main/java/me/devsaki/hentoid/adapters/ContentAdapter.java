@@ -173,7 +173,8 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 numberImagesError++;
             }
         }
-        String message = context.getString(R.string.download_again_dialog).replace("@error", numberImagesError + "").replace("@total", numberImages + "");
+        String message = context.getString(R.string.download_again_dialog).replace("@error",
+                numberImagesError + "").replace("@total", numberImages + "");
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setMessage(message)
                 .setPositiveButton(android.R.string.yes,
@@ -183,7 +184,8 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                 content.setStatus(StatusContent.DOWNLOADING);
                                 content.setDownloadDate(new Date().getTime());
                                 db.updateContentStatus(content);
-                                Intent intent = new Intent(Intent.ACTION_SYNC, null, context, DownloadManagerService.class);
+                                Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
+                                        DownloadManagerService.class);
                                 context.startService(intent);
 
                                 Toast.makeText(context, R.string.in_queue, Toast.LENGTH_SHORT).show();

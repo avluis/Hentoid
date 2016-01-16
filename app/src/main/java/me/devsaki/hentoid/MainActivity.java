@@ -191,6 +191,54 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
+    private void processContent(Content content) {
+        if (content == null)
+            return;
+
+        Content contentDB = db.selectContentById(content.getUrl().hashCode());
+        if (contentDB != null) {
+            content.setStatus(contentDB.getStatus());
+            content.setImageFiles(contentDB.getImageFiles());
+            content.setDownloadDate(contentDB.getDownloadDate());
+        }
+        db.insertContent(content);
+
+        if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED
+                && content.getStatus() != StatusContent.DOWNLOADING) {
+            currentContent = content;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fabDownload.show();
+                }
+            });
+        } else {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fabDownload.hide();
+                }
+            });
+        }
+        if (content.getStatus() == StatusContent.DOWNLOADED
+                || content.getStatus() == StatusContent.ERROR) {
+            currentContent = content;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fabRead.show();
+                }
+            });
+        } else {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    fabRead.hide();
+                }
+            });
+        }
+    }
+
     private class CustomWebViewClient extends WebViewClient {
 
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -285,54 +333,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Error parsing nhentai json: " + url, e);
             }
             return null;
-        }
-    }
-
-    private void processContent(Content content) {
-        if (content == null)
-            return;
-
-        Content contentDB = db.selectContentById(content.getUrl().hashCode());
-        if (contentDB != null) {
-            content.setStatus(contentDB.getStatus());
-            content.setImageFiles(contentDB.getImageFiles());
-            content.setDownloadDate(contentDB.getDownloadDate());
-        }
-        db.insertContent(content);
-
-        if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED
-                && content.getStatus() != StatusContent.DOWNLOADING) {
-            currentContent = content;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    fabDownload.show();
-                }
-            });
-        } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    fabDownload.hide();
-                }
-            });
-        }
-        if (content.getStatus() == StatusContent.DOWNLOADED
-                || content.getStatus() == StatusContent.ERROR) {
-            currentContent = content;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    fabRead.show();
-                }
-            });
-        } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    fabRead.hide();
-                }
-            });
         }
     }
 }

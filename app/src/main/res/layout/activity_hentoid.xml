@@ -1,20 +1,20 @@
-<android.support.v4.widget.DrawerLayout android:id="@+id/drawer_layout"
-                                        xmlns:android="http://schemas.android.com/apk/res/android"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="match_parent">
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawer_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent" />
     <!-- The navigation drawer -->
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/primary"
-        android:clickable="true"
         android:choiceMode="singleChoice"
+        android:clickable="true"
         android:divider="@android:color/transparent"
         android:dividerHeight="0dp"
         android:dividerPadding="10dp"
@@ -28,7 +28,7 @@
             android:onClick="ndOpenWebView"
             android:padding="10dp"
             android:text="@string/navigation_drawer_hitomi_wb"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
 
         <Button
             android:id="@+id/ndNhentaiWbButton"
@@ -38,7 +38,7 @@
             android:onClick="ndOpenWebView"
             android:padding="10dp"
             android:text="@string/navigation_drawer_nhentai_wb"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
 
         <Button
             android:layout_width="match_parent"
@@ -47,7 +47,7 @@
             android:onClick="ndDownloads"
             android:padding="10dp"
             android:text="@string/navigation_drawer_downloads"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
 
         <Button
             android:layout_width="match_parent"
@@ -56,7 +56,7 @@
             android:onClick="ndDownloadManager"
             android:padding="10dp"
             android:text="@string/navigation_drawer_download_manager"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
 
         <Button
             android:layout_width="match_parent"
@@ -65,7 +65,7 @@
             android:onClick="ndPreferences"
             android:padding="10dp"
             android:text="@string/navigation_drawer_preferences"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
 
         <Button
             android:layout_width="match_parent"
@@ -74,7 +74,7 @@
             android:onClick="ndAbout"
             android:padding="10dp"
             android:text="@string/navigation_drawer_about"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white" />
     </LinearLayout>
 
 </android.support.v4.widget.DrawerLayout>

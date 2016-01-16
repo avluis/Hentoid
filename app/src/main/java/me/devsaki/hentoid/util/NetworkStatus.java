@@ -18,7 +18,7 @@ public final class NetworkStatus {
     }
 
     public static boolean isOnline(Context context) {
-        boolean connected = false;
+        boolean connected;
         try {
             NetworkInfo netInfo = initialize(context);
             connected = netInfo != null && netInfo.isAvailable() &&
@@ -28,11 +28,11 @@ public final class NetworkStatus {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());
             Log.v("connectivity", e.toString());
         }
-        return connected;
+        return false;
     }
 
     public static boolean isWifi(Context context) {
-        boolean wifi = false;
+        boolean wifi;
         try {
             NetworkInfo netInfo = initialize(context);
             wifi = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
@@ -42,11 +42,11 @@ public final class NetworkStatus {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());
             Log.v("connectivity", e.toString());
         }
-        return wifi;
+        return false;
     }
 
     public boolean isMobile(Context context) {
-        boolean mobile = false;
+        boolean mobile;
         try {
             NetworkInfo netInfo = initialize(context);
             mobile = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
@@ -56,6 +56,6 @@ public final class NetworkStatus {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());
             Log.v("connectivity", e.toString());
         }
-        return mobile;
+        return false;
     }
 }

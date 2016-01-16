@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android"
-          android:exitFadeDuration="@android:integer/config_shortAnimTime">
+<selector xmlns:android="http://schemas.android.com/apk/res/android" android:exitFadeDuration="@android:integer/config_shortAnimTime">
 
-    <item android:drawable="@drawable/exchange_1" android:state_pressed="true"/>
-    <item android:drawable="@drawable/exchange"/>
+    <item android:drawable="@drawable/exchange_1" android:state_pressed="true" />
+    <item android:drawable="@drawable/exchange" />
 
 </selector>

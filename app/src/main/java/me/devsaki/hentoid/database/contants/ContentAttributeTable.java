@@ -13,6 +13,8 @@ public abstract class ContentAttributeTable {
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
             + CONTENT_ID_COLUMN + " INTEGER," + ATTRIBUTE_ID_COLUMN + " INTEGER" + ")";
 
-    public static final String INSERT_STATEMENT = "INSERT OR IGNORE INTO " + TABLE_NAME + " VALUES (?,?);";
-    public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE " + CONTENT_ID_COLUMN + " = ?";
+    public static final String INSERT_STATEMENT = "INSERT OR IGNORE INTO " + TABLE_NAME
+            + " VALUES (?,?);";
+    public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE "
+            + CONTENT_ID_COLUMN + " = ?";
 }

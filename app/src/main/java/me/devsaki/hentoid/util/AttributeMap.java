@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.util.Log;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +17,7 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
         List<Attribute> list;
         AttributeType type = attributeItem.getType();
 
-        if(containsKey(type)) {
+        if (containsKey(type)) {
             list = get(type);
         } else {
             list = new ArrayList<>();

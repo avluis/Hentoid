@@ -8,11 +8,11 @@ import org.jsoup.select.Elements;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by neko on 08/07/2015.

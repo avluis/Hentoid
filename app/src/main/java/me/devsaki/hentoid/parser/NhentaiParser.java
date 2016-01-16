@@ -9,12 +9,12 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by Shiro on 1/5/2016.
@@ -46,7 +46,7 @@ public class NhentaiParser {
 
         JSONArray allTags = jsonContent.getJSONArray("tags");
         AttributeMap attributes = new AttributeMap();
-        for(int i = 0; i < allTags.length(); i++) {
+        for (int i = 0; i < allTags.length(); i++) {
 
             JSONArray singleTag = allTags.getJSONArray(i);
             String urlIdStr = singleTag.getString(0);

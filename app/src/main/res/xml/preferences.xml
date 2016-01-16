@@ -10,7 +10,7 @@
             android:icon="@null"
             android:key="pref_image_quality_lists"
             android:summary="@string/pref_image_quality_summary"
-            android:title="@string/pref_image_quality_title"/>
+            android:title="@string/pref_image_quality_title" />
 
         <ListPreference
             android:defaultValue="@string/pref_quantity_per_page_default"
@@ -19,7 +19,7 @@
             android:icon="@null"
             android:key="pref_quantity_per_page_lists"
             android:summary="@string/pref_quantity_per_page_summary"
-            android:title="@string/pref_quantity_per_page_title"/>
+            android:title="@string/pref_quantity_per_page_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_library_settings"
@@ -32,7 +32,7 @@
             android:icon="@null"
             android:key="pref_read_content_lists"
             android:summary="@string/pref_read_content_summary"
-            android:title="@string/pref_read_content_title"/>
+            android:title="@string/pref_read_content_title" />
         <Preference
             android:icon="@null"
             android:summary="@string/pref_select_folder_summary"
@@ -40,13 +40,13 @@
             <intent
                 android:action="android.intent.action.VIEW"
                 android:targetClass="me.devsaki.hentoid.SelectFolderActivity"
-                android:targetPackage="me.devsaki.hentoid"/>
+                android:targetPackage="me.devsaki.hentoid" />
         </Preference>
         <Preference
             android:icon="@null"
             android:key="pref_add_no_media_file"
             android:summary="@string/pref_add_no_media_file_summary"
-            android:title="@string/pref_add_no_media_file_title"/>
+            android:title="@string/pref_add_no_media_file_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_applock_settings"
@@ -55,7 +55,7 @@
             android:icon="@null"
             android:key="pref_app_lock"
             android:summary="@string/pref_app_lock_summary"
-            android:title="@string/pref_app_lock_title"/>
+            android:title="@string/pref_app_lock_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_update_settings"
@@ -65,7 +65,7 @@
             android:icon="@null"
             android:key="pref_check_updates_manual"
             android:summary="@string/pref_check_updates_manual_summary"
-            android:title="@string/pref_check_updates_manual_title"/>
+            android:title="@string/pref_check_updates_manual_title" />
         <ListPreference
             android:defaultValue="@string/pref_check_updates_default"
             android:entries="@array/pref_check_updates_entries"
@@ -73,6 +73,6 @@
             android:icon="@null"
             android:key="pref_check_updates_lists"
             android:summary="@string/pref_check_updates_summary"
-            android:title="@string/pref_check_updates_title"/>
+            android:title="@string/pref_check_updates_title" />
     </PreferenceCategory>
 </PreferenceScreen>

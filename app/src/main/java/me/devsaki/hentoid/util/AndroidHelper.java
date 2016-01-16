@@ -24,7 +24,8 @@ import me.devsaki.hentoid.database.domains.Content;
 public class AndroidHelper {
 
     public static void openContent(Content content, final Context context) {
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences sharedPreferences = PreferenceManager
+                .getDefaultSharedPreferences(context);
         File dir = Helper.getDownloadDir(content, context);
 
         File imageFile = null;
@@ -59,7 +60,8 @@ public class AndroidHelper {
                                         openPerfectViewer(file, context);
                                     }
                                 }).create().show();
-            } else if (readContentPreference == ConstantsPreferences.PREF_READ_CONTENT_PERFECT_VIEWER) {
+            } else if (readContentPreference == ConstantsPreferences
+                    .PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(imageFile, context);
             }
         }
@@ -92,8 +94,7 @@ public class AndroidHelper {
     }
 
     @SafeVarargs
-    public static <T> void executeAsyncTask(AsyncTask<T, ?, ?> task,
-                                            T... params) {
+    public static <T> void executeAsyncTask(AsyncTask<T, ?, ?> task, T... params) {
         task.execute(params);
     }
 

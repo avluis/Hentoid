@@ -1,9 +1,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:app="http://schemas.android.com/apk/res-auto"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                tools:context=".MainActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
@@ -13,7 +13,7 @@
         <WebView
             android:id="@+id/wbMain"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent" />
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <android.support.design.widget.FloatingActionButton
@@ -28,7 +28,7 @@
         android:src="@drawable/ic_action_play"
         app:backgroundTint="@color/primary"
         app:elevation="8dp"
-        app:rippleColor="@color/ripple"/>
+        app:rippleColor="@color/ripple" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabDownload"
@@ -42,7 +42,7 @@
         android:src="@drawable/ic_action_download"
         app:backgroundTint="@color/primary"
         app:elevation="8dp"
-        app:rippleColor="@color/ripple"/>
+        app:rippleColor="@color/ripple" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabRefresh"
@@ -56,7 +56,7 @@
         android:src="@drawable/ic_action_refresh"
         app:backgroundTint="@color/primary"
         app:elevation="8dp"
-        app:rippleColor="@color/ripple"/>
+        app:rippleColor="@color/ripple" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabDownloads"
@@ -70,6 +70,6 @@
         android:src="@drawable/ic_action_sd_storage"
         app:backgroundTint="@color/primary"
         app:elevation="8dp"
-        app:rippleColor="@color/ripple"/>
+        app:rippleColor="@color/ripple" />
 
 </RelativeLayout>

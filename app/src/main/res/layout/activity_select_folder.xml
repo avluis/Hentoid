@@ -1,12 +1,12 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:paddingBottom="@dimen/activity_vertical_margin"
-                android:paddingLeft="@dimen/activity_horizontal_margin"
-                android:paddingRight="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/activity_vertical_margin"
-                tools:context="me.devsaki.hentoid.SelectFolderActivity">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="me.devsaki.hentoid.SelectFolderActivity">
 
     <ImageView
         android:id="@+id/imageView"
@@ -18,7 +18,7 @@
         android:adjustViewBounds="true"
         android:scaleType="fitStart"
         android:src="@drawable/logo_hentoid_02"
-        tools:ignore="ContentDescription"/>
+        tools:ignore="ContentDescription" />
 
     <TextView
         android:id="@+id/tvTutorial"
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/imageView"
         android:singleLine="false"
-        android:text="@string/tutorial_select_folder"/>
+        android:text="@string/tutorial_select_folder" />
 
     <EditText
         android:id="@+id/etFolder"
@@ -35,7 +35,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_below="@+id/tvTutorial"
-        android:inputType="textVisiblePassword"/>
+        android:inputType="textVisiblePassword" />
 
     <LinearLayout
         android:layout_width="fill_parent"
@@ -51,7 +51,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="5"
             android:onClick="explore"
-            android:text="@string/explore"/>
+            android:text="@string/explore" />
 
         <Button
             style="?android:attr/buttonStyle"
@@ -59,7 +59,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="5"
             android:onClick="selectDefault"
-            android:text="@string/default_folder"/>
+            android:text="@string/default_folder" />
 
     </LinearLayout>
 
@@ -70,5 +70,5 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:onClick="save"
-        android:text="@string/save"/>
+        android:text="@string/save" />
 </RelativeLayout>
