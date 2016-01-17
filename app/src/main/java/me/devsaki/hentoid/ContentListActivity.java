@@ -30,7 +30,7 @@ public class ContentListActivity extends HentoidActivity<ContentListActivity.Con
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_content_list, menu);
+        inflater.inflate(R.menu.content_list, menu);
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager =
