@@ -6,4 +6,9 @@
         android:icon="@drawable/ic_action_refresh"
         android:title="Refresh"
         app:showAsAction="always" />
+    <item
+        android:id="@+id/action_stopButton"
+        android:icon="@drawable/ic_action_stop"
+        android:title="Stop"
+        app:showAsAction="always" />
 </menu>

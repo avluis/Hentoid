@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private Site site;
     private WebView webView;
     private FloatingActionButton fabRead, fabDownload;
-    private boolean fabReadEnabled, fabDownloadEnabled;
+    private boolean fabReadEnabled, fabDownloadEnabled, wbIsLoading;
     private SwipeRefreshLayout swipeLayout;
     private NestedScrollView nestedScrollView;
 
@@ -104,12 +104,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.webview_activity, menu);
+
+        menu.findItem(R.id.action_refreshButton).setVisible(!wbIsLoading);
+        menu.findItem(R.id.action_stopButton).setVisible(wbIsLoading);
+
         return true;
     }
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refreshButton: webView.reload(); break;
+            case R.id.action_stopButton: webView.stopLoading(); break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -295,6 +300,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            wbIsLoading = true;
+            invalidateOptionsMenu();
             hideFab(fabDownload);
             hideFab(fabRead);
 
@@ -308,6 +315,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            wbIsLoading = false;
+            invalidateOptionsMenu();
             URI uri = null;
             try {
                 uri = new URI(url);
