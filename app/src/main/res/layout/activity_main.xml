@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <me.devsaki.hentoid.ObservableWebView
+        <me.devsaki.hentoid.views.ObservableWebView
             android:id="@+id/wbMain"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -27,7 +27,8 @@
         android:onClick="readContent"
         android:src="@drawable/ic_action_play"
         app:backgroundTint="@color/primary"
-        app:rippleColor="@color/ripple" />
+        app:rippleColor="@color/ripple"
+        tools:ignore="RelativeOverlap" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabDownload"
@@ -40,20 +41,23 @@
         android:onClick="downloadContent"
         android:src="@drawable/ic_action_download"
         app:backgroundTint="@color/primary"
-        app:rippleColor="@color/ripple" />
+        app:rippleColor="@color/ripple"
+        tools:ignore="RelativeOverlap" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabRefreshOrStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/fabDownloads"
-        android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="10dp"
         android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
         android:onClick="refreshOrStopWebView"
         android:src="@drawable/ic_action_refresh"
-        app:fabSize="mini"
         app:backgroundTint="@color/primary"
+        app:fabSize="mini"
         app:rippleColor="@color/ripple" />
 
     <android.support.design.widget.FloatingActionButton
@@ -61,14 +65,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart="true"
         android:layout_alignParentLeft="true"
-        android:layout_marginLeft="5dp"
+        android:layout_alignParentStart="true"
         android:layout_marginBottom="5dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginStart="5dp"
         android:onClick="closeActivity"
         android:src="@drawable/ic_action_sd_storage"
-        app:fabSize="mini"
         app:backgroundTint="@color/primary"
+        app:fabSize="mini"
         app:rippleColor="@color/ripple" />
 
 </RelativeLayout>

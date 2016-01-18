@@ -7,7 +7,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -41,6 +40,8 @@ import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.views.ObservableWebView;
+import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -104,14 +105,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        webView.setOnScrollChangedCallback(new ObservableWebView.OnScrollChangedCallback() {
+        webView.setOnScrollChangedCallback(new OnScrollChangedCallback() {
             @Override
             public void onScroll(int l, int t) {
                 if (webView.canScrollVertically(1)) {
                     fabRefreshOrStop.show();
                     fabDownloads.show();
-                    if (fabReadEnabled) fabRead.show();
-                    else if (fabDownloadEnabled) fabDownload.show();
+                    if (fabReadEnabled) {
+                        fabRead.show();
+                    } else if (fabDownloadEnabled) {
+                        fabDownload.show();
+                    }
                 } else {
                     fabRefreshOrStop.hide();
                     fabDownloads.hide();
@@ -155,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void refreshOrStopWebView(View view) {
-        if(webViewIsLoading) webView.stopLoading();
+        if (webViewIsLoading) webView.stopLoading();
         else webView.reload();
     }
 
@@ -198,6 +202,7 @@ public class MainActivity extends AppCompatActivity {
         if (fab == fabDownload) fabDownloadEnabled = false;
         else if (fab == fabRead) fabReadEnabled = false;
     }
+
     private void showFab(FloatingActionButton fab) {
         fab.show();
         if (fab == fabDownload) fabDownloadEnabled = true;
