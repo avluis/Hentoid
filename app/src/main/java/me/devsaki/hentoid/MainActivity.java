@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -49,8 +50,10 @@ public class MainActivity extends AppCompatActivity {
     private HentoidDB db;
     private Content currentContent;
     private Site site;
-    private WebView webView;
-    private FloatingActionButton fabRead, fabDownload;
+    private ObservableWebView webView;
+    private boolean webViewIsLoading;
+    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
+    private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
 
     @Override
@@ -60,12 +63,14 @@ public class MainActivity extends AppCompatActivity {
 
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, -1));
         db = new HentoidDB(this);
-        webView = (WebView) findViewById(R.id.wbMain);
+        webView = (ObservableWebView) findViewById(R.id.wbMain);
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
+        fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshOrStop);
+        fabDownloads = (FloatingActionButton) findViewById(R.id.fabDownloads);
 
-        fabRead.hide();
-        fabDownload.hide();
+        hideFab(fabRead);
+        hideFab(fabDownload);
 
         initWebView();
         initSwipeLayout();
@@ -96,6 +101,22 @@ public class MainActivity extends AppCompatActivity {
                     swipeLayout.setRefreshing(false);
                 } else {
                     swipeLayout.setRefreshing(true);
+                }
+            }
+        });
+        webView.setOnScrollChangedCallback(new ObservableWebView.OnScrollChangedCallback() {
+            @Override
+            public void onScroll(int l, int t) {
+                if (webView.canScrollVertically(1)) {
+                    fabRefreshOrStop.show();
+                    fabDownloads.show();
+                    if (fabReadEnabled) fabRead.show();
+                    else if (fabDownloadEnabled) fabDownload.show();
+                } else {
+                    fabRefreshOrStop.hide();
+                    fabDownloads.hide();
+                    fabRead.hide();
+                    fabDownload.hide();
                 }
             }
         });
@@ -133,8 +154,9 @@ public class MainActivity extends AppCompatActivity {
                 android.R.color.holo_red_light);
     }
 
-    public void refreshWebView(View view) {
-        webView.reload();
+    public void refreshOrStopWebView(View view) {
+        if(webViewIsLoading) webView.stopLoading();
+        else webView.reload();
     }
 
     public void closeActivity(View view) {
@@ -149,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
                     || StatusContent.ERROR == currentContent.getStatus()) {
                 AndroidHelper.openContent(currentContent, this);
             } else {
-                fabRead.hide();
+                hideFab(fabRead);
             }
         }
     }
@@ -158,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
-            fabDownload.hide();
+            hideFab(fabDownload);
             return;
         }
         Toast.makeText(this, R.string.in_queue, Toast.LENGTH_SHORT).show();
@@ -168,7 +190,18 @@ public class MainActivity extends AppCompatActivity {
         db.updateContentStatus(currentContent);
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
         startService(intent);
-        fabDownload.hide();
+        hideFab(fabDownload);
+    }
+
+    private void hideFab(FloatingActionButton fab) {
+        fab.hide();
+        if (fab == fabDownload) fabDownloadEnabled = false;
+        else if (fab == fabRead) fabReadEnabled = false;
+    }
+    private void showFab(FloatingActionButton fab) {
+        fab.show();
+        if (fab == fabDownload) fabDownloadEnabled = true;
+        else if (fab == fabRead) fabReadEnabled = true;
     }
 
     @Override
@@ -209,14 +242,14 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabDownload.show();
+                    showFab(fabDownload);
                 }
             });
         } else {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabDownload.hide();
+                    hideFab(fabDownload);
                 }
             });
         }
@@ -226,14 +259,14 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabRead.show();
+                    showFab(fabRead);
                 }
             });
         } else {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabRead.hide();
+                    hideFab(fabRead);
                 }
             });
         }
@@ -254,9 +287,11 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            webViewIsLoading = true;
+            fabRefreshOrStop.setImageResource(R.drawable.ic_action_stop_loading);
 
-            fabDownload.hide();
-            fabRead.hide();
+            hideFab(fabDownload);
+            hideFab(fabRead);
 
             if ((site == Site.NHENTAI) && url.contains("//nhentai.net/g/")) {
                 AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
@@ -265,6 +300,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            webViewIsLoading = false;
+            fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
 
             URI uri = null;
             try {
