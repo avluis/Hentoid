@@ -13,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
@@ -53,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private Site site;
     private WebView webView;
     private FloatingActionButton fabRead, fabDownload;
+    private boolean fabReadEnabled, fabDownloadEnabled, wbIsLoading;
     private SwipeRefreshLayout swipeLayout;
     private NestedScrollView nestedScrollView;
 
@@ -63,20 +66,31 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        nestedScrollView = (NestedScrollView) findViewById(R.id.nestedScrollView);
 
         site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, -1));
         db = new HentoidDB(this);
+        nestedScrollView = (NestedScrollView) findViewById(R.id.nestedScrollView);
         webView = (WebView) findViewById(R.id.wbMain);
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
 
-        fabRead.hide();
-        fabDownload.hide();
+        nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                if (v.canScrollVertically(1)) {
+                    if (fabReadEnabled) fabRead.show();
+                    else if (fabDownloadEnabled) fabDownload.show();
+                } else {
+                    fabRead.hide();
+                    fabDownload.hide();
+                }
+            }
+        });
+
+        hideFab(fabRead);
+        hideFab(fabDownload);
 
         initWebView();
         initSwipeLayout();
@@ -85,6 +99,24 @@ public class MainActivity extends AppCompatActivity {
         if (site != null) {
             webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.webview_activity, menu);
+
+        menu.findItem(R.id.action_refreshButton).setVisible(!wbIsLoading);
+        menu.findItem(R.id.action_stopButton).setVisible(wbIsLoading);
+
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_refreshButton: webView.reload(); break;
+            case R.id.action_stopButton: webView.stopLoading(); break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -144,6 +176,18 @@ public class MainActivity extends AppCompatActivity {
                 android.R.color.holo_red_light);
     }
 
+    private void hideFab(FloatingActionButton fab) {
+        fab.hide();
+        if (fab == fabDownload) fabDownloadEnabled = false;
+        else if (fab == fabRead) fabReadEnabled = false;
+    }
+
+    private void showFab(FloatingActionButton fab) {
+        fab.show();
+        if (fab == fabDownload) fabDownloadEnabled = true;
+        else if (fab == fabRead) fabReadEnabled = true;
+    }
+
     public void readContent(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
@@ -151,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
                     || StatusContent.ERROR == currentContent.getStatus()) {
                 AndroidHelper.openContent(currentContent, this);
             } else {
-                fabRead.hide();
+                hideFab(fabRead);
             }
         }
     }
@@ -160,7 +204,7 @@ public class MainActivity extends AppCompatActivity {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
-            fabDownload.hide();
+            hideFab(fabDownload);
             return;
         }
         Toast.makeText(this, R.string.in_queue, Toast.LENGTH_SHORT).show();
@@ -170,7 +214,7 @@ public class MainActivity extends AppCompatActivity {
         db.updateContentStatus(currentContent);
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
         startService(intent);
-        fabDownload.hide();
+        hideFab(fabDownload);
     }
 
     @Override
@@ -211,14 +255,14 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabDownload.show();
+                    showFab(fabDownload);
                 }
             });
         } else {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabDownload.hide();
+                    hideFab(fabDownload);
                 }
             });
         }
@@ -228,14 +272,14 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabRead.show();
+                    showFab(fabRead);
                 }
             });
         } else {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    fabRead.hide();
+                    hideFab(fabRead);
                 }
             });
         }
@@ -256,8 +300,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            fabDownload.hide();
-            fabRead.hide();
+            wbIsLoading = true;
+            invalidateOptionsMenu();
+            hideFab(fabDownload);
+            hideFab(fabRead);
 
             // Reset scroll position
             nestedScrollView.scrollTo(0, 0);
@@ -269,6 +315,8 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            wbIsLoading = false;
+            invalidateOptionsMenu();
             URI uri = null;
             try {
                 uri = new URI(url);

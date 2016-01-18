@@ -13,6 +13,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:elevation="4dp"
             android:background="@color/primary"
             android:theme="@style/ThemeOverlay.AppCompat.Dark"
             app:layout_scrollFlags="scroll|enterAlways" />
@@ -44,11 +45,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_fab_margin"
+        android:layout_gravity="bottom|right"
         android:onClick="readContent"
         android:src="@drawable/ic_action_play"
         app:backgroundTint="@color/primary"
-        app:layout_anchor="@id/toolbar"
-        app:layout_anchorGravity="bottom|right|end"
         app:rippleColor="@color/ripple" />
 
     <android.support.design.widget.FloatingActionButton
@@ -57,11 +57,10 @@
         android:layout_height="wrap_content"
         android:layout_above="@+id/fabRefresh"
         android:layout_margin="@dimen/activity_fab_margin"
+        android:layout_gravity="bottom|right"
         android:onClick="downloadContent"
         android:src="@drawable/ic_action_download"
         app:backgroundTint="@color/primary"
-        app:layout_anchor="@id/toolbar"
-        app:layout_anchorGravity="bottom|right|end"
         app:rippleColor="@color/ripple" />
 
 </android.support.design.widget.CoordinatorLayout>

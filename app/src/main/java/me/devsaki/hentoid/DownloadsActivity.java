@@ -42,7 +42,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_content_list, menu);
+        getMenuInflater().inflate(R.menu.content_list, menu);
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
