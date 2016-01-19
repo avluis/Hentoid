@@ -108,19 +108,21 @@ public class MainActivity extends AppCompatActivity {
         webView.setOnScrollChangedCallback(new OnScrollChangedCallback() {
             @Override
             public void onScroll(int l, int t) {
-                if (webView.canScrollVertically(1)) {
-                    fabRefreshOrStop.show();
-                    fabDownloads.show();
-                    if (fabReadEnabled) {
-                        fabRead.show();
-                    } else if (fabDownloadEnabled) {
-                        fabDownload.show();
+                if (!webViewIsLoading) {
+                    if (webView.canScrollVertically(1) || t == 0) {
+                        fabRefreshOrStop.show();
+                        fabDownloads.show();
+                        if (fabReadEnabled) {
+                            fabRead.show();
+                        } else if (fabDownloadEnabled) {
+                            fabDownload.show();
+                        }
+                    } else {
+                        fabRefreshOrStop.hide();
+                        fabDownloads.hide();
+                        fabRead.hide();
+                        fabDownload.hide();
                     }
-                } else {
-                    fabRefreshOrStop.hide();
-                    fabDownloads.hide();
-                    fabRead.hide();
-                    fabDownload.hide();
                 }
             }
         });
@@ -294,7 +296,8 @@ public class MainActivity extends AppCompatActivity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             webViewIsLoading = true;
             fabRefreshOrStop.setImageResource(R.drawable.ic_action_stop_loading);
-
+            fabRefreshOrStop.show();
+            fabDownloads.show();
             hideFab(fabDownload);
             hideFab(fabRead);
 
