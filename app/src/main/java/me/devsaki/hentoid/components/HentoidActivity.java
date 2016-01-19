@@ -106,10 +106,13 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, MainActivity.class);
 
-        if (view.getId() == R.id.ndHitomiWbButton) {
-            intent.putExtra(MainActivity.INTENT_SITE, Site.HITOMI.getCode());
-        } else if (view.getId() == R.id.ndNhentaiWbButton) {
-            intent.putExtra(MainActivity.INTENT_SITE, Site.NHENTAI.getCode());
+        switch (view.getId()){
+            case R.id.ndHitomiWbButton:
+                intent.putExtra(MainActivity.INTENT_SITE, Site.HITOMI.getCode());
+                break;
+            case R.id.ndNhentaiWbButton:
+                intent.putExtra(MainActivity.INTENT_SITE, Site.NHENTAI.getCode());
+                break;
         }
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
