@@ -161,8 +161,11 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void refreshOrStopWebView(View view) {
-        if (webViewIsLoading) webView.stopLoading();
-        else webView.reload();
+        if (webViewIsLoading) {
+            webView.stopLoading();
+        } else {
+            webView.reload();
+        }
     }
 
     public void closeActivity(View view) {
@@ -201,14 +204,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void hideFab(FloatingActionButton fab) {
         fab.hide();
-        if (fab == fabDownload) fabDownloadEnabled = false;
-        else if (fab == fabRead) fabReadEnabled = false;
+        if (fab == fabDownload) {
+            fabDownloadEnabled = false;
+        } else if (fab == fabRead) {
+            fabReadEnabled = false;
+        }
     }
 
     private void showFab(FloatingActionButton fab) {
         fab.show();
-        if (fab == fabDownload) fabDownloadEnabled = true;
-        else if (fab == fabRead) fabReadEnabled = true;
+        if (fab == fabDownload) {
+            fabDownloadEnabled = true;
+        } else if (fab == fabRead) {
+            fabReadEnabled = true;
+        }
     }
 
     @Override
@@ -221,10 +230,11 @@ public class MainActivity extends AppCompatActivity {
             } while (i >= 0 &&
                     webView.getOriginalUrl().equals(wbfl.getItemAtIndex(i).getOriginalUrl()));
 
-            if (webView.canGoBackOrForward(i - wbfl.getCurrentIndex()))
+            if (webView.canGoBackOrForward(i - wbfl.getCurrentIndex())) {
                 webView.goBackOrForward(i - wbfl.getCurrentIndex());
-            else
+            } else {
                 finish();
+            }
 
             return true;
         }
@@ -232,8 +242,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void processContent(Content content) {
-        if (content == null)
+        if (content == null) {
             return;
+        }
 
         Content contentDB = db.selectContentById(content.getUrl().hashCode());
         if (contentDB != null) {
@@ -260,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
+
         if (content.getStatus() == StatusContent.DOWNLOADED
                 || content.getStatus() == StatusContent.ERROR) {
             currentContent = content;
@@ -327,8 +339,9 @@ public class MainActivity extends AppCompatActivity {
                 String cookies = CookieManager.getInstance().getCookie(url);
                 java.net.CookieManager cookieManager = (java.net.CookieManager)
                         CookieHandler.getDefault();
-                if (cookieManager == null)
+                if (cookieManager == null) {
                     cookieManager = new java.net.CookieManager();
+                }
                 cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
                 CookieHandler.setDefault(cookieManager);
                 if (cookies != null) {
