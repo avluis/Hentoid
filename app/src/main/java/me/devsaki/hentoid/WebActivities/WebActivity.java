@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.WebActivities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -30,6 +30,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 
+import me.devsaki.hentoid.DownloadsActivity;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
@@ -43,15 +45,13 @@ import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
-public class MainActivity extends AppCompatActivity {
+public class WebActivity extends AppCompatActivity {
 
-    public static final String INTENT_URL = "url";
-    public static final String INTENT_SITE = "site";
-    private static final String TAG = MainActivity.class.getName();
+    private static final String TAG = WebActivity.class.getName();
     private HentoidDB db;
     private Content currentContent;
-    private Site site;
-    private ObservableWebView webView;
+    protected Site site;
+    protected ObservableWebView webView;
     private boolean webViewIsLoading;
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
     private boolean fabReadEnabled, fabDownloadEnabled;
@@ -62,9 +62,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        site = Site.searchByCode(getIntent().getIntExtra(INTENT_SITE, -1));
         db = new HentoidDB(this);
-        webView = (ObservableWebView) findViewById(R.id.wbMain);
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
         fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshOrStop);
@@ -76,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         initWebView();
         initSwipeLayout();
 
-        String intentVar = getIntent().getStringExtra(INTENT_URL);
+        String intentVar = getIntent().getStringExtra(Constants.INTENT_URL);
         if (site != null) {
             webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
         }
@@ -84,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private void initWebView() {
+        webView = (ObservableWebView) findViewById(R.id.wbMain);
         webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -92,7 +91,6 @@ public class MainActivity extends AppCompatActivity {
         });
         webView.setLongClickable(false);
         webView.setHapticFeedbackEnabled(false);
-        webView.setWebViewClient(new CustomWebViewClient());
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
@@ -134,9 +132,6 @@ public class MainActivity extends AppCompatActivity {
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
         webSettings.setLoadWithOverviewMode(true);
-
-        webView.setInitialScale(20);
-        webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }
 
     private void initSwipeLayout() {
@@ -169,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void closeActivity(View view) {
-        Intent mainActivity = new Intent(MainActivity.this, DownloadsActivity.class);
+        Intent mainActivity = new Intent(WebActivity.this, DownloadsActivity.class);
         startActivity(mainActivity);
     }
 
@@ -241,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
         return false;
     }
 
-    private void processContent(Content content) {
+    protected void processContent(Content content) {
         if (content == null) {
             return;
         }
@@ -291,18 +286,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private class CustomWebViewClient extends WebViewClient {
-
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            try {
-                URL u = new URL(url);
-                return !(u.getHost().endsWith("hitomi.la") && site == Site.HITOMI) &&
-                        !(u.getHost().endsWith("nhentai.net") && site == Site.NHENTAI);
-            } catch (MalformedURLException e) {
-                Log.d(TAG, "Malformed URL");
-            }
-            return super.shouldOverrideUrlLoading(view, url);
-        }
+    protected class CustomWebViewClient extends WebViewClient {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -312,10 +296,6 @@ public class MainActivity extends AppCompatActivity {
             fabDownloads.show();
             hideFab(fabDownload);
             hideFab(fabRead);
-
-            if ((site == Site.NHENTAI) && url.contains("//nhentai.net/g/")) {
-                AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
-            }
         }
 
         @Override
@@ -328,11 +308,6 @@ public class MainActivity extends AppCompatActivity {
                 uri = new URI(url);
             } catch (URISyntaxException e) {
                 Log.e(TAG, "Error reading current url from webview", e);
-            }
-
-            if (site == Site.HITOMI) {
-                webView.loadUrl(getResources().getString(R.string.remove_js_css));
-                webView.loadUrl(getResources().getString(R.string.restore_hitomi_js));
             }
 
             try {
@@ -363,34 +338,6 @@ public class MainActivity extends AppCompatActivity {
             } catch (Exception ex) {
                 Log.e(TAG, "Error trying to get the cookies", ex);
             }
-
-            if ((site == Site.HITOMI) && url.contains("//hitomi.la/galleries/")) {
-                view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
-            }
-
-        }
-    }
-
-    private class PageLoadListener {
-        @JavascriptInterface
-        public void processHTML(String html) {
-            if (html == null) {
-                return;
-            }
-            processContent(HitomiParser.parseContent(html));
-        }
-    }
-
-    private class LoaderJson extends AsyncTask<String, Integer, Content> {
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-            try {
-                processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
-            } catch (Exception e) {
-                Log.e(TAG, "Error parsing nhentai json: " + url, e);
-            }
-            return null;
         }
     }
 }

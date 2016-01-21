@@ -4,6 +4,9 @@ import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
+import me.devsaki.hentoid.WebActivities.HitomiActivity;
+import me.devsaki.hentoid.WebActivities.NhentaiActivity;
+import me.devsaki.hentoid.WebActivities.WebActivity;
 import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
@@ -88,6 +91,15 @@ public class Content extends ContentTable {
             return url.replace("/", "") + "-" + Site.NHENTAI.getDescription();
         }
         return null;
+    }
+
+    public Class<?> getWebActivityClass() {
+        if (site == Site.HITOMI)
+            return HitomiActivity.class;
+        else if (site == Site.NHENTAI)
+            return NhentaiActivity.class;
+        else
+            return WebActivity.class;
     }
 
     public String getCategory() {

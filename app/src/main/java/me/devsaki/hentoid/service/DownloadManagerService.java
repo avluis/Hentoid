@@ -19,7 +19,6 @@ import java.util.List;
 
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
-import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -180,26 +179,26 @@ public class DownloadManagerService extends IntentService {
     }
 
     private void showNotification(double percent, Content content) {
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
-                this).setSmallIcon(
-                content.getSite().getIco()).setContentTitle(content.getTitle());
-
-        mBuilder.setLocalOnly(true);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(content.getSite().getIco())
+                .setContentTitle(content.getTitle())
+                .setLocalOnly(true);
 
         Intent resultIntent = null;
-        if (content.getStatus() ==
-                StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR
-                || content.getStatus() == StatusContent.UNHANDLED_ERROR) {
-            resultIntent = new Intent(this,
-                    DownloadsActivity.class);
-        } else if (content.getStatus() == StatusContent.DOWNLOADING
-                || content.getStatus() == StatusContent.PAUSED) {
-            resultIntent = new Intent(this,
-                    DownloadManagerActivity.class);
-        } else if (content.getStatus() == StatusContent.SAVED) {
-            resultIntent = new Intent(this,
-                    MainActivity.class);
-            resultIntent.putExtra("url", content.getUrl());
+        StatusContent status = content.getStatus();
+
+        switch (status) {
+            case DOWNLOADED:
+            case ERROR:
+            case UNHANDLED_ERROR:
+                resultIntent = new Intent(this, DownloadsActivity.class); break;
+            case DOWNLOADING:
+            case PAUSED:
+                resultIntent = new Intent(this, DownloadManagerActivity.class); break;
+            case SAVED:
+                resultIntent = new Intent(this, content.getWebActivityClass());
+                resultIntent.putExtra("url", content.getUrl());
+                break;
         }
 
         // Adds the Intent to the top of the stack
@@ -208,22 +207,23 @@ public class DownloadManagerService extends IntentService {
                 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
 
 
-        if (content.getStatus() == StatusContent.DOWNLOADING) {
-            mBuilder.setContentText(getResources().getString(R.string.downloading)
-                    + String.format("%.2f", percent) + "%");
+        if (status == StatusContent.DOWNLOADING) {
+            mBuilder.setContentText(getResources().getString(R.string.downloading) + String.format("%.2f", percent) + "%");
             mBuilder.setProgress(100, (int) percent, percent == 0);
         } else {
             int resource = 0;
-            if (content.getStatus() == StatusContent.DOWNLOADED) {
-                resource = R.string.download_completed;
-            } else if (content.getStatus() == StatusContent.PAUSED) {
-                resource = R.string.download_paused;
-            } else if (content.getStatus() == StatusContent.SAVED) {
-                resource = R.string.download_cancelled;
-            } else if (content.getStatus() == StatusContent.ERROR) {
-                resource = R.string.download_error;
-            } else if (content.getStatus() == StatusContent.UNHANDLED_ERROR) {
-                resource = R.string.unhandled_download_error;
+
+            switch (status) {
+                case DOWNLOADED:
+                    resource = R.string.download_completed; break;
+                case PAUSED:
+                    resource = R.string.download_paused; break;
+                case SAVED:
+                    resource = R.string.download_cancelled; break;
+                case ERROR:
+                    resource = R.string.download_error; break;
+                case UNHANDLED_ERROR:
+                    resource = R.string.unhandled_download_error; break;
             }
             mBuilder.setContentText(getResources().getString(resource));
             mBuilder.setProgress(0, 0, false);

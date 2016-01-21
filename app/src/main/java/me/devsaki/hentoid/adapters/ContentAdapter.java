@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
-import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -36,6 +35,7 @@ import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
 
 /**
@@ -232,10 +232,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void viewContent(Content content) {
-        Intent intent = new Intent(getContext(), MainActivity.class);
+        Intent intent = new Intent(getContext(), content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(MainActivity.INTENT_URL, content.getGalleryUrl());
-        intent.putExtra(MainActivity.INTENT_SITE, content.getSite().getCode());
+        intent.putExtra(Constants.INTENT_URL, content.getGalleryUrl());
         getContext().startActivity(intent);
     }
 }
