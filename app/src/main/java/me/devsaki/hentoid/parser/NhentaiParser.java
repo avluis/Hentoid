@@ -26,7 +26,7 @@ public class NhentaiParser {
     public static Content parseContent(String json) throws JSONException {
         JSONObject jsonContent = new JSONObject(json);
         String titleTEMP = jsonContent.getJSONObject("title").getString("english");
-        String urlTEMP = "/" + jsonContent.getInt("id");
+        String urlTEMP = "/" + jsonContent.getInt("id") + '/';
         int qtyPagesTEMP = jsonContent.getInt("num_pages");
 
         String mediaId = jsonContent.getString("media_id");
