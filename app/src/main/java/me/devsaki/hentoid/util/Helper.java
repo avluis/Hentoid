@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.CookieHandler;
 import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -34,6 +35,17 @@ import me.devsaki.hentoid.database.enums.Site;
  */
 @SuppressWarnings("ResultOfMethodCallIgnored")
 public final class Helper {
+
+    public static CookieManager getCookieManager() {
+        java.net.CookieManager cookieManager =
+                (java.net.CookieManager) CookieHandler.getDefault();
+        if (cookieManager == null) {
+            cookieManager = new java.net.CookieManager();
+            cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
+            CookieHandler.setDefault(cookieManager);
+        }
+        return cookieManager;
+    }
 
     public static File getDownloadDir(Content content, Context context) {
         File file;
@@ -205,14 +217,13 @@ public final class Helper {
 
                 URL url = new URL(imageUrl);
                 URI uri = new URI(url.toString());
-                CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
+                CookieManager cookieManager = Helper.getCookieManager();
 
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setConnectTimeout(10000);
                 urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
-                if (cookieManager != null
-                        && cookieManager.getCookieStore().getCookies().size() > 0) {
+                if (cookieManager.getCookieStore().getCookies().size() > 0) {
                     urlConnection.setRequestProperty("Cookie",
                             TextUtils.join("; ", cookieManager.getCookieStore().get(uri)));
                 }

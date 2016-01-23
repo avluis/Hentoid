@@ -72,6 +72,7 @@ public class TsuminoActivity  extends WebActivity {
                 } while (!historyUrl.contains("//www.tsumino.com/Book/Info/"));
 
                 webView.goBackOrForward(i - history.getCurrentIndex());
+                processDownload();
             }
         }
     }

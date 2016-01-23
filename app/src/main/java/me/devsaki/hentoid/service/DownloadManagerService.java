@@ -243,14 +243,18 @@ public class DownloadManagerService extends IntentService {
         content.setImageFiles(new ArrayList<ImageFile>());
         List<String> aUrls = new ArrayList<>();
         try {
-            if (content.getSite() == Site.HITOMI) {
-                String html = HttpClientHelper.call(content.getReaderUrl());
-                aUrls = HitomiParser.parseImageList(html);
-            } else if (content.getSite() == Site.NHENTAI) {
-                String json = HttpClientHelper.call(content.getGalleryUrl() + "/json");
-                aUrls = NhentaiParser.parseImageList(json);
-            } else if (content.getSite() == Site.TSUMINO) {
-                aUrls = TsuminoParser.parseImageList(content);
+            switch (content.getSite()) {
+                case HITOMI:
+                    String html = HttpClientHelper.call(content.getReaderUrl());
+                    aUrls = HitomiParser.parseImageList(html);
+                    break;
+                case NHENTAI:
+                    String json = HttpClientHelper.call(content.getGalleryUrl() + "/json");
+                    aUrls = NhentaiParser.parseImageList(json);
+                    break;
+                case TSUMINO:
+                    aUrls = TsuminoParser.parseImageList(content);
+                    break;
             }
         } catch (Exception e) {
             Log.e(TAG, "Error getting image urls", e);

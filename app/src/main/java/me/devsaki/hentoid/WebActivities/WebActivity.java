@@ -35,6 +35,7 @@ import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
@@ -174,6 +175,10 @@ public class WebActivity extends AppCompatActivity {
     }
 
     public void onDownloadFabClick(View view) {
+        processDownload();
+    }
+
+    protected void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
@@ -305,28 +310,22 @@ public class WebActivity extends AppCompatActivity {
             }
 
             try {
+                java.net.CookieManager cookieManager = Helper.getCookieManager();
                 String cookies = CookieManager.getInstance().getCookie(url);
-                java.net.CookieManager cookieManager = (java.net.CookieManager)
-                        CookieHandler.getDefault();
-                if (cookieManager == null) {
-                    cookieManager = new java.net.CookieManager();
-                }
-                cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-                CookieHandler.setDefault(cookieManager);
+
                 if (cookies != null) {
                     String[] cookiesArray = cookies.split(";");
                     for (String cookie : cookiesArray) {
                         String key = cookie.split("=")[0].trim();
-                        if (key.equals("cf_clearance")) {
-                            String value = cookie.split("=")[1].trim();
-                            HttpCookie httpCookie = new HttpCookie(key, value);
-                            if (uri != null) {
-                                httpCookie.setDomain(uri.getHost());
-                            }
-                            httpCookie.setPath("/");
-                            httpCookie.setVersion(0);
-                            cookieManager.getCookieStore().add(uri, httpCookie);
+                        String value = cookie.split("=")[1].trim();
+                        HttpCookie httpCookie = new HttpCookie(key, value);
+                        if (uri != null) {
+                            httpCookie.setDomain(uri.getHost());
                         }
+                        httpCookie.setPath("/");
+                        httpCookie.setVersion(0);
+                        cookieManager.getCookieStore().add(uri, httpCookie);
+
                     }
                 }
             } catch (Exception ex) {
