@@ -34,6 +34,12 @@
 
         <Button
             style="@style/NavDrawerButtonStyle"
+            android:id="@+id/ndTsuminoWbButton"
+            android:onClick="ndOpenWebView"
+            android:text="@string/navigation_drawer_tsumino_wb" />
+
+        <Button
+            style="@style/NavDrawerButtonStyle"
             android:onClick="ndDownloads"
             android:text="@string/navigation_drawer_downloads" />
 

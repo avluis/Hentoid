@@ -56,29 +56,21 @@ public class NhentaiParser {
             AttributeType attrType;
             switch (tagTypeStr) {
                 case "artist":
-                    attrType = AttributeType.ARTIST;
-                    break;
+                    attrType = AttributeType.ARTIST; break;
                 case "character":
-                    attrType = AttributeType.CHARACTER;
-                    break;
+                    attrType = AttributeType.CHARACTER; break;
                 case "parody":
-                    attrType = AttributeType.SERIE;
-                    break;
+                    attrType = AttributeType.SERIE; break;
                 case "language":
-                    attrType = AttributeType.LANGUAGE;
-                    break;
+                    attrType = AttributeType.LANGUAGE; break;
                 case "tag":
-                    attrType = AttributeType.TAG;
-                    break;
+                    attrType = AttributeType.TAG; break;
                 case "group":
-                    attrType = AttributeType.CIRCLE;
-                    break;
+                    attrType = AttributeType.CIRCLE; break;
                 case "category":
-                    attrType = AttributeType.CATEGORY;
-                    break;
+                    attrType = AttributeType.CATEGORY; break;
                 default:
-                    attrType = null;
-                    break;
+                    attrType = null; break;
             }
 
             Attribute attribute = new Attribute();

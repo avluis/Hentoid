@@ -6,6 +6,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.WebActivities.HitomiActivity;
 import me.devsaki.hentoid.WebActivities.NhentaiActivity;
+import me.devsaki.hentoid.WebActivities.TsuminoActivity;
 import me.devsaki.hentoid.WebActivities.WebActivity;
 import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
@@ -79,36 +80,40 @@ public class Content extends ContentTable {
     }
 
     public String getUniqueSiteId() {
-        if (getSite() == Site.FAKKU) {
-            return url.substring(url.lastIndexOf("/") + 1);
-        } else if (getSite() == Site.PURURIN) {
-            String[] paths = url.split("/");
-            return paths[2].replace(".html", "") + "-" + paths[1];
-        } else if (getSite() == Site.HITOMI) {
-            String[] paths = url.split("/");
-            return paths[1].replace(".html", "") + "-" + title.replaceAll("[^a-zA-Z0-9.-]", "_");
-        } else if (getSite() == Site.NHENTAI) {
-            return url.replace("/", "") + "-" + Site.NHENTAI.getDescription();
+        String[] paths;
+        switch (site) {
+            case FAKKU:
+                return url.substring(url.lastIndexOf("/") + 1);
+            case PURURIN:
+                paths = url.split("/");
+                return paths[2].replace(".html", "") + "-" + paths[1];
+            case HITOMI:
+                paths = url.split("/");
+                return paths[1].replace(".html", "") + "-" + title.replaceAll("[^a-zA-Z0-9.-]", "_");
+            case NHENTAI:
+            case TSUMINO:
+                return url.replace("/", "") + "-" + site.getDescription();
+            default:
+                return null;
         }
-        return null;
     }
 
     public Class<?> getWebActivityClass() {
-        if (site == Site.HITOMI)
-            return HitomiActivity.class;
-        else if (site == Site.NHENTAI)
-            return NhentaiActivity.class;
-        else
-            return WebActivity.class;
+        switch (site) {
+            case HITOMI: return HitomiActivity.class;
+            case NHENTAI: return NhentaiActivity.class;
+            case TSUMINO: return TsuminoActivity.class;
+            default: return WebActivity.class; //Fallback for Pururin and Fakku
+        }
     }
 
     public String getCategory() {
         if (getSite() == Site.FAKKU)
             return url.substring(1, url.lastIndexOf("/"));
         else {
-            List<Attribute> attributes = getAttributes().get(AttributeType.CATEGORY);
-            if (attributes != null && attributes.size() > 0)
-                return attributes.get(0).getName();
+            List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);
+            if (attributesList != null && attributesList.size() > 0)
+                return attributesList.get(0).getName();
         }
         return null;
     }
@@ -123,26 +128,23 @@ public class Content extends ContentTable {
 
     public String getGalleryUrl() {
         String galleryConst;
-        if (site == Site.PURURIN) {
-            galleryConst = "/gallery";
-        } else if (site == Site.HITOMI) {
-            galleryConst = "/galleries";
-        } else if (site == Site.NHENTAI) {
-            galleryConst = "/g";
-        } else {
-            //Includes Fakku
-            galleryConst = "";
+        switch (site) {
+            case PURURIN: galleryConst = "/gallery"; break;
+            case HITOMI: galleryConst = "/galleries"; break;
+            case NHENTAI: galleryConst = "/g"; break;
+            case TSUMINO: galleryConst = "/Book/Info"; break;
+            default: galleryConst = ""; break; //Includes Fakku
         }
         return site.getUrl() + galleryConst + url;
     }
 
     public String getReaderUrl() {
-        if (site == Site.HITOMI) {
-            return site.getUrl() + "/reader" + url;
-        } else if (site == Site.NHENTAI) {
-            return getGalleryUrl() + "1/";
+        switch (site) {
+            case HITOMI: return site.getUrl() + "/reader" + url;
+            case NHENTAI: return getGalleryUrl() + "1/";
+            case TSUMINO: return site.getUrl() + "/Read/View" + url;
+            default: return null;
         }
-        return null;
     }
 
     public String getTitle() {

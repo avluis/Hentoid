@@ -27,6 +27,7 @@ import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.HitomiParser;
 import me.devsaki.hentoid.parser.NhentaiParser;
+import me.devsaki.hentoid.parser.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -248,6 +249,8 @@ public class DownloadManagerService extends IntentService {
             } else if (content.getSite() == Site.NHENTAI) {
                 String json = HttpClientHelper.call(content.getGalleryUrl() + "/json");
                 aUrls = NhentaiParser.parseImageList(json);
+            } else if (content.getSite() == Site.TSUMINO) {
+                aUrls = TsuminoParser.parseImageList(content);
             }
         } catch (Exception e) {
             Log.e(TAG, "Error getting image urls", e);

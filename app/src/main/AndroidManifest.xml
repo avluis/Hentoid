@@ -39,6 +39,11 @@
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
+            android:name=".WebActivities.TsuminoActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="standard"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
             android:name=".ContentListActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard" />

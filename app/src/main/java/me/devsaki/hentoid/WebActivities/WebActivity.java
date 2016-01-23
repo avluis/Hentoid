@@ -3,7 +3,6 @@ package me.devsaki.hentoid.WebActivities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -13,7 +12,6 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.CookieManager;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -24,10 +22,8 @@ import android.widget.Toast;
 import java.net.CookieHandler;
 import java.net.CookiePolicy;
 import java.net.HttpCookie;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Date;
 
 import me.devsaki.hentoid.DownloadsActivity;
@@ -36,12 +32,9 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.parser.HitomiParser;
-import me.devsaki.hentoid.parser.NhentaiParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
@@ -65,7 +58,7 @@ public class WebActivity extends AppCompatActivity {
         db = new HentoidDB(this);
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
-        fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshOrStop);
+        fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshStop);
         fabDownloads = (FloatingActionButton) findViewById(R.id.fabDownloads);
 
         hideFab(fabRead);
@@ -155,7 +148,7 @@ public class WebActivity extends AppCompatActivity {
                 android.R.color.holo_red_light);
     }
 
-    public void refreshOrStopWebView(View view) {
+    public void onRefreshStopFabClick(View view) {
         if (webViewIsLoading) {
             webView.stopLoading();
         } else {
@@ -163,12 +156,12 @@ public class WebActivity extends AppCompatActivity {
         }
     }
 
-    public void closeActivity(View view) {
+    public void onHomeFabClick(View view) {
         Intent mainActivity = new Intent(WebActivity.this, DownloadsActivity.class);
         startActivity(mainActivity);
     }
 
-    public void readContent(View view) {
+    public void onReadFabClick(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
             if (StatusContent.DOWNLOADED == currentContent.getStatus()
@@ -180,7 +173,7 @@ public class WebActivity extends AppCompatActivity {
         }
     }
 
-    public void downloadContent(View view) {
+    public void onDownloadFabClick(View view) {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
@@ -249,8 +242,9 @@ public class WebActivity extends AppCompatActivity {
         }
         db.insertContent(content);
 
-        if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED
-                && content.getStatus() != StatusContent.DOWNLOADING) {
+        StatusContent contentStatus = content.getStatus();
+        if (content.isDownloadable() && contentStatus != StatusContent.DOWNLOADED
+                && contentStatus != StatusContent.DOWNLOADING) {
             currentContent = content;
             runOnUiThread(new Runnable() {
                 @Override
@@ -267,8 +261,8 @@ public class WebActivity extends AppCompatActivity {
             });
         }
 
-        if (content.getStatus() == StatusContent.DOWNLOADED
-                || content.getStatus() == StatusContent.ERROR) {
+        if (contentStatus == StatusContent.DOWNLOADED
+                || contentStatus == StatusContent.ERROR) {
             currentContent = content;
             runOnUiThread(new Runnable() {
                 @Override
