@@ -19,7 +19,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="false"
-        android:theme="@style/HentoidTheme"
+        android:theme="@style/AppTheme"
         tools:ignore="UnusedAttribute">
         <activity
             android:name=".DownloadsActivity"

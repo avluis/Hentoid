@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:background="@color/primary"
+    android:choiceMode="singleChoice"
+    android:clickable="true"
+    android:divider="@android:color/transparent"
+    android:dividerHeight="0dp"
+    android:dividerPadding="10dp"
+    android:orientation="vertical">
+
+    <Button
+        android:id="@+id/ndHitomiWbButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/image_button"
+        android:onClick="ndOpenWebView"
+        android:padding="10dp"
+        android:text="@string/navigation_drawer_hitomi_wb"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/ndNhentaiWbButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/image_button"
+        android:onClick="ndOpenWebView"
+        android:padding="10dp"
+        android:text="@string/navigation_drawer_nhentai_wb"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/image_button"
+        android:onClick="ndDownloads"
+        android:padding="10dp"
+        android:text="@string/navigation_drawer_downloads"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/image_button"
+        android:onClick="ndDownloadManager"
+        android:padding="10dp"
+        android:text="@string/navigation_drawer_download_manager"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/image_button"
+        android:onClick="ndPreferences"
+        android:padding="10dp"
+        android:text="@string/navigation_drawer_preferences"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/image_button"
+        android:onClick="ndAbout"
+        android:padding="10dp"
+        android:text="@string/navigation_drawer_about"
+        android:textColor="@android:color/white" />
+</LinearLayout>

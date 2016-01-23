@@ -3,7 +3,7 @@
     <color name="primary">#9D0A0A</color>
     <color name="primary_dark">#6d0707</color>
     <color name="ripple">#F06292</color>
-    <color name="accent">#E91E63</color>
+    <color name="accent">@color/button_action_bar</color>
     <color name="accent_pressed">#C2185B</color>
     <color name="button_action_bar">@android:color/holo_red_dark</color>
     <color name="background_list">#E6E6E6</color>
