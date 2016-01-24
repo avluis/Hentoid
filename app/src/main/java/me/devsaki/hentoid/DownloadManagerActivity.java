@@ -22,6 +22,9 @@ import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.NetworkStatus;
 
+/**
+ * Presents the list of works currently downloading to the user.
+ */
 public class DownloadManagerActivity extends
         HentoidActivity<DownloadManagerActivity.DownloadManagerFragment> {
 

@@ -12,6 +12,9 @@ import android.widget.Toast;
 
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
+/**
+ * If set, this will allow us to 'lock' the app behind a password/code.
+ */
 public class AppLockActivity extends AppCompatActivity {
 
     @Override

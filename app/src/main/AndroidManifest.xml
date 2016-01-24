@@ -35,11 +35,6 @@
             android:label="@string/app_name"
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity
-            android:name=".ContentListActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
-            android:launchMode="standard" />
 
         <service
             android:name=".service.DownloadManagerService"

@@ -30,6 +30,9 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
+/**
+ * Presents the list of downloaded works to the user.
+ */
 public class DownloadsActivity extends HentoidActivity<DownloadsActivity.DownloadsFragment> {
 
     private static final String TAG = DownloadsActivity.class.getName();

@@ -32,6 +32,7 @@ import android.widget.TextView;
 
 /**
  * Created by avluis on 8/22/15.
+ * Presents an About Screen for the user to inquire more about the app.
  */
 public class AboutActivity extends AppCompatActivity {
     private AppCompatDelegate mDelegate;

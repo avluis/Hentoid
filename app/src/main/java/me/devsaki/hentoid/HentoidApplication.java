@@ -21,6 +21,8 @@ import me.devsaki.hentoid.util.ImageQuality;
 
 /**
  * Created by DevSaki on 20/05/2015.
+ * Initializes required components, such as:
+ * Database, Bitmap Cache, Update checks, etc.
  */
 public class HentoidApplication extends Application {
 

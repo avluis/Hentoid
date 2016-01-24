@@ -5,7 +5,8 @@ import android.util.AttributeSet;
 import android.webkit.WebView;
 
 /**
- * source from http://stackoverflow.com/questions/14752523/how-to-make-a-scroll-listener-for-webview-in-android
+ * WebView implementation with scroll listener
+ * http://stackoverflow.com/questions/14752523/how-to-make-a-scroll-listener-for-webview-in-android
  */
 public class ObservableWebView extends WebView {
     private OnScrollChangedCallback mOnScrollChangedCallback;
@@ -37,8 +38,8 @@ public class ObservableWebView extends WebView {
     }
 
     /**
-     * Implement in the activity/fragment/view that you want to listen to the webview
-     */
+     * Implement in the activity/fragment/view that you want to listen to the WebView
+    */
     public interface OnScrollChangedCallback {
         void onScroll(int l, int t);
     }

@@ -30,6 +30,11 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.v2.bean.DoujinBean;
 import me.devsaki.hentoid.v2.bean.URLBean;
 
+/**
+ * Provided a directory, takes care of importing existing libraries
+ * onto our database.
+ * TODO: Implement as a fragment.
+ */
 public class ImporterActivity extends AppCompatActivity {
 
     private static final String TAG = ImporterActivity.class.getName();

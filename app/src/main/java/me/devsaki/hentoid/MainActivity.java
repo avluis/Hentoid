@@ -43,6 +43,11 @@ import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
+/**
+ * Main Browser activity which allows the user to navigate a supported source.
+ * TODO: No particular source should be filtered/defined here.
+ * TODO: The source itself should contain every method it needs to function.
+ */
 public class MainActivity extends AppCompatActivity {
 
     public static final String INTENT_URL = "url";
