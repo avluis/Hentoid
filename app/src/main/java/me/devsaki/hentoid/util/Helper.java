@@ -32,7 +32,6 @@ import me.devsaki.hentoid.database.enums.Site;
 /**
  * Created by DevSaki on 10/05/2015.
  */
-@SuppressWarnings("ResultOfMethodCallIgnored")
 public final class Helper {
 
     public static File getDownloadDir(Content content, Context context) {
@@ -52,6 +51,7 @@ public final class Helper {
                 file = new File(settingDir + content.getSite().getFolder() + "/" +
                         content.getUniqueSiteId());
                 if (!file.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
                     file.mkdirs();
                 }
             }
@@ -72,6 +72,7 @@ public final class Helper {
             if (!file.mkdirs()) {
                 file = new File(settingDir + site.getFolder() + "/");
                 if (!file.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
                     file.mkdirs();
                 }
             }
@@ -136,6 +137,7 @@ public final class Helper {
                 file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
                 file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
                 if (!file.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
                     file.mkdirs();
                 }
             }
@@ -232,6 +234,7 @@ public final class Helper {
             }
         } catch (Exception e) {
             if (file.exists()) {
+                //noinspection ResultOfMethodCallIgnored
                 file.delete();
             }
             throw e;
