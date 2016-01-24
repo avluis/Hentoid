@@ -28,7 +28,9 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -56,6 +58,11 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
+    /**
+     * Used to keep track for notification purposes
+     */
+    private static ArrayList<String> hChaptersDownloaded = new ArrayList<String>();
+    private static int notificationID  = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,6 +91,10 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private void initWebView() {
+        /* reset the stacking notification */
+        notificationID = -1;
+        hChaptersDownloaded.clear();
+
         webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -198,6 +209,14 @@ public class MainActivity extends AppCompatActivity {
 
         db.updateContentStatus(currentContent);
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
+        hChaptersDownloaded.add(currentContent.getTitle());
+        if(notificationID == -1) {
+            notificationID = currentContent.getId();
+        }
+        intent.putStringArrayListExtra("names",  hChaptersDownloaded);
+        intent.putExtra("ID", notificationID);
+
+
         startService(intent);
         hideFab(fabDownload);
     }
@@ -292,6 +311,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private class CustomWebViewClient extends WebViewClient {
+
 
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
