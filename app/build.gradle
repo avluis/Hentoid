@@ -20,6 +20,7 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+    }
 }
 
 dependencies {
@@ -35,4 +36,4 @@ dependencies {
     compile 'com.github.lzyzsd:circleprogress:1.1.0'
     compile 'net.rdrei.android.dirchooser:library:2.1@aar'
     compile 'com.mani:ThinDownloadManager:1.2.0'
-}}
+}
