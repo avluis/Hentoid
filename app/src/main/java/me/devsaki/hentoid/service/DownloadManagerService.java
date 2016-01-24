@@ -37,9 +37,14 @@ public class DownloadManagerService extends IntentService {
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
     public static final String NOTIFICATION = "me.devsaki.hentoid.service";
     private static final String TAG = DownloadManagerService.class.getName();
+    private static int notificationID  = -1;
     public static boolean paused;
     private NotificationManager notificationManager;
     private HentoidDB db;
+    /**
+     * Used to keep track for notification purposes
+     */
+    private static ArrayList<String> hChaptersDownloaded = new ArrayList<String>();
 
     public DownloadManagerService() {
         super(DownloadManagerService.class.getName());
@@ -63,6 +68,8 @@ public class DownloadManagerService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Content content = db.selectContentByStatus(StatusContent.DOWNLOADING);
+        hChaptersDownloaded = intent.getStringArrayListExtra("names");
+        notificationID = intent.getIntExtra("ID", 0);
         if (content == null || content.getStatus() == StatusContent.DOWNLOADED)
             return;
 
@@ -183,7 +190,7 @@ public class DownloadManagerService extends IntentService {
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
                 this).setSmallIcon(
                 content.getSite().getIco()).setContentTitle(content.getTitle());
-
+        int resource = 0;
         mBuilder.setLocalOnly(true);
 
         Intent resultIntent = null;
@@ -207,13 +214,30 @@ public class DownloadManagerService extends IntentService {
         PendingIntent resultPendingIntent = PendingIntent.getActivity(this,
                 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
 
+        if (content.getStatus() ==  StatusContent.DOWNLOADED && hChaptersDownloaded.size()>1 ){
+                            mBuilder.setContentTitle(hChaptersDownloaded.size() + " Chapters downloaded");
+                String text = null;
+
+                for(int i = 0; i < hChaptersDownloaded.size(); i++)
+                {
+                    if (i == 0) {
+                        text = hChaptersDownloaded.get(i);
+                    }else{
+                        text += ", " + hChaptersDownloaded.get(i);
+                    }
+                }
+                mBuilder.setContentText(text);
+                notify(mBuilder, notificationID, percent, resultPendingIntent );
+                return;
+        }
+
 
         if (content.getStatus() == StatusContent.DOWNLOADING) {
             mBuilder.setContentText(getResources().getString(R.string.downloading)
                     + String.format("%.2f", percent) + "%");
             mBuilder.setProgress(100, (int) percent, percent == 0);
         } else {
-            int resource = 0;
+
             if (content.getStatus() == StatusContent.DOWNLOADED) {
                 resource = R.string.download_completed;
             } else if (content.getStatus() == StatusContent.PAUSED) {
@@ -228,16 +252,24 @@ public class DownloadManagerService extends IntentService {
             mBuilder.setContentText(getResources().getString(resource));
             mBuilder.setProgress(0, 0, false);
         }
+        notify(mBuilder, notificationID, percent, resultPendingIntent );
+    }
+    private void notify(NotificationCompat.Builder mBuilder, int ID, double percent, PendingIntent resultPendingIntent)
+    {
         Notification notif = mBuilder.build();
         notif.contentIntent = resultPendingIntent;
-        if (percent > 0)
-            notif.flags = Notification.FLAG_ONGOING_EVENT;
-        else
-            notif.flags = notif.flags | Notification.DEFAULT_LIGHTS
-                    | Notification.FLAG_AUTO_CANCEL;
-        notificationManager.notify(content.getId(), notif);
-    }
+        if (percent > 0){
 
+            notif.flags = Notification.FLAG_ONGOING_EVENT;}
+
+        else{
+
+            notif.flags = notif.flags | Notification.DEFAULT_LIGHTS
+                    | Notification.FLAG_AUTO_CANCEL;}
+        notificationManager.notify(notificationID, notif);
+
+
+    }
     private void parseImageFiles(Content content) throws Exception {
         content.setImageFiles(new ArrayList<ImageFile>());
         List<String> aUrls = new ArrayList<>();
