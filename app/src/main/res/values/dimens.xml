@@ -2,7 +2,16 @@
     <!-- Default screen margins, per the Android Design guidelines. -->
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
+
     <dimen name="download_fab_margin">16dp</dimen>
     <dimen name="downloads_fab_margin">6dp</dimen>
     <dimen name="refresh_fab_margin">6dp</dimen>
+
+    <dimen name="about_ic_group_layout_margin_top">5dp</dimen>
+    <dimen name="about_ic_hentoid_width">120dp</dimen>
+    <dimen name="about_ic_hentoid_height">120dp</dimen>
+    <dimen name="about_ic_icons_width">30dp</dimen>
+    <dimen name="about_ic_icons_height">30dp</dimen>
+    <dimen name="about_ic_icons_textSize">12sp</dimen>
+    <dimen name="about_textSize">12sp</dimen>
 </resources>
