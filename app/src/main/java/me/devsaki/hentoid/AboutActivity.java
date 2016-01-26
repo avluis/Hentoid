@@ -14,7 +14,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.app.AppCompatDelegate;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatCheckedTextView;
 import android.support.v7.widget.AppCompatEditText;
@@ -34,7 +33,6 @@ import android.widget.TextView;
  * Created by avluis on 8/22/15.
  */
 public class AboutActivity extends AppCompatActivity {
-    private AppCompatDelegate mDelegate;
     private String verName = "Hentoid ver: ";
 
     @Override
@@ -204,14 +202,6 @@ public class AboutActivity extends AppCompatActivity {
 
     public void invalidateOptionsMenu() {
         getDelegate().invalidateOptionsMenu();
-    }
-
-    public AppCompatDelegate getDelegate() {
-        if (mDelegate == null) {
-            mDelegate = AppCompatDelegate.create(this, null);
-        }
-
-        return mDelegate;
     }
 
     @Override
