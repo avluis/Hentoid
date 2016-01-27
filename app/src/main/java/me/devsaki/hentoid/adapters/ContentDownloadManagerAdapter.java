@@ -46,13 +46,13 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
 
         final Content content = contents.get(position);
 
-        String templateTvSerie = context.getResources().getString(R.string.tvSeries);
+        String templateTvSeries = context.getResources().getString(R.string.tvSeries);
         String templateTvArtist = context.getResources().getString(R.string.tvArtists);
         String templateTvTags = context.getResources().getString(R.string.tvTags);
 
         TextView tvTitle = (TextView) rowView.findViewById(R.id.tvTitle);
         ImageView ivCover = (ImageView) rowView.findViewById(R.id.ivCover);
-        TextView tvSerie = (TextView) rowView.findViewById(R.id.tvSeries);
+        TextView tvSeries = (TextView) rowView.findViewById(R.id.tvSeries);
         TextView tvArtist = (TextView) rowView.findViewById(R.id.tvArtist);
         TextView tvTags = (TextView) rowView.findViewById(R.id.tvTags);
         TextView tvSite = (TextView) rowView.findViewById(R.id.tvSite);
@@ -62,7 +62,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         tvTitle.setText(content.getTitle());
         String series = "";
         List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
-        if (seriesAttributes != null)
+        if (seriesAttributes != null) {
             for (int i = 0; i < seriesAttributes.size(); i++) {
                 Attribute attribute = seriesAttributes.get(i);
                 series += attribute.getName();
@@ -70,11 +70,12 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
                     series += ", ";
                 }
             }
-        tvSerie.setText(Html.fromHtml(templateTvSerie.replace("@serie@", series)));
+        }
+        tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@serie@", series)));
 
         String artists = "";
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (artistAttributes != null)
+        if (artistAttributes != null) {
             for (int i = 0; i < artistAttributes.size(); i++) {
                 Attribute attribute = artistAttributes.get(i);
                 artists += attribute.getName();
@@ -82,11 +83,12 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
                     artists += ", ";
                 }
             }
+        }
         tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
 
         String tags = "";
         List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
-        if (tagsAttributes != null)
+        if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
                 if (attribute.getName() != null) {
@@ -96,6 +98,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
                     }
                 }
             }
+        }
         tvTags.setText(Html.fromHtml(tags));
 
         final File dir = Helper.getDownloadDir(content, getContext());

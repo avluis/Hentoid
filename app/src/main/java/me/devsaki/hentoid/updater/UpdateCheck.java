@@ -37,6 +37,7 @@ import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Created by avluis on 8/21/15.
+ * Takes care of notifying and download of app updates.
  */
 public class UpdateCheck implements IUpdateCheck {
     public static final String ACTION_DOWNLOAD_CANCELLED =

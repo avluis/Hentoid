@@ -6,6 +6,7 @@ import android.content.Intent;
 
 /**
  * Created by avluis on 8/21/15.
+ * Broadcast Receiver for updater.
  */
 public class UpdateNotificationReceiver extends BroadcastReceiver {
     private UpdateCheck instance;

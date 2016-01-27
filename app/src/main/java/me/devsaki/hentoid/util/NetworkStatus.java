@@ -7,6 +7,7 @@ import android.util.Log;
 
 /**
  * Created by avluis on 7/6/15.
+ * General wrapper for network status query.
  */
 public final class NetworkStatus {
 

@@ -19,7 +19,4 @@ public abstract class HentoidFragment extends ListFragment {
         return ((HentoidActivity) getActivity()).getDB();
     }
 
-    protected HentoidActivity getHentoidActivity() {
-        return (HentoidActivity) getActivity();
-    }
 }

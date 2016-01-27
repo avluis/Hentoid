@@ -33,6 +33,10 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
+/**
+ * Download Manager implemented as a service
+ * TODO: Reset notification when a download is paused (when there are multiple downloads).
+ */
 public class DownloadManagerService extends IntentService {
 
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
@@ -73,113 +77,112 @@ public class DownloadManagerService extends IntentService {
 
         downloadCount++;
 
-        if (content == null || content.getStatus() == StatusContent.DOWNLOADED) {
-            return;
-        }
+        if (content != null && content.getStatus() != StatusContent.DOWNLOADED) {
 
-        showNotification(0, content);
-
-        if (paused) {
-            paused = false;
-            content = db.selectContentById(content.getId());
             showNotification(0, content);
-            return;
-        }
-        try {
-            parseImageFiles(content);
-        } catch (Exception e) {
-            content.setStatus(StatusContent.UNHANDLED_ERROR);
-            showNotification(0, content);
-            content.setStatus(StatusContent.PAUSED);
-            db.updateContentStatus(content);
-            updateActivity(-1);
-            return;
-        }
 
-        if (paused) {
-            paused = false;
-            content = db.selectContentById(content.getId());
-            showNotification(0, content);
-            return;
-        }
-
-        Log.i(TAG, "Start Download Content : " + content.getTitle());
-
-        boolean error = false;
-        //Directory
-        File dir = Helper.getDownloadDir(content, this);
-        try {
-            //Download Cover Image
-            Helper.saveInStorage(new File(dir, "thumb.jpg"), content.getCoverImageUrl());
-        } catch (Exception e) {
-            Log.e(TAG, "Error Saving cover image " + content.getTitle(), e);
-            error = true;
-        }
-
-        int count = 0;
-        for (ImageFile imageFile : content.getImageFiles()) {
             if (paused) {
                 paused = false;
                 content = db.selectContentById(content.getId());
                 showNotification(0, content);
-                if (content.getStatus() == StatusContent.SAVED) {
-                    try {
-                        FileUtils.deleteDirectory(dir);
-                    } catch (IOException e) {
-                        Log.e(TAG, "error deleting content directory", e);
-                    }
-                }
                 return;
             }
-            boolean imageFileErrorDownload = false;
             try {
-                if (imageFile.getStatus() != StatusContent.IGNORED) {
-                    if (!NetworkStatus.isOnline(this))
-                        throw new Exception("Not connection");
-                    Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
-                    Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / "
-                            + content.getTitle());
-                }
-                count++;
-                double percent = count * 100.0 / content.getImageFiles().size();
-                showNotification(percent, content);
-                updateActivity(percent);
-            } catch (Exception ex) {
-                Log.e(TAG, "Error Saving Image File (" + imageFile.getName() + ") "
-                        + content.getTitle(), ex);
+                parseImageFiles(content);
+            } catch (Exception e) {
+                content.setStatus(StatusContent.UNHANDLED_ERROR);
+                showNotification(0, content);
+                content.setStatus(StatusContent.PAUSED);
+                db.updateContentStatus(content);
+                updateActivity(-1);
+                return;
+            }
+
+            if (paused) {
+                paused = false;
+                content = db.selectContentById(content.getId());
+                showNotification(0, content);
+                return;
+            }
+
+            Log.i(TAG, "Start Download Content : " + content.getTitle());
+
+            boolean error = false;
+            //Directory
+            File dir = Helper.getDownloadDir(content, this);
+            try {
+                //Download Cover Image
+                Helper.saveInStorage(new File(dir, "thumb.jpg"), content.getCoverImageUrl());
+            } catch (Exception e) {
+                Log.e(TAG, "Error Saving cover image " + content.getTitle(), e);
                 error = true;
-                imageFileErrorDownload = true;
             }
-            if (imageFileErrorDownload) {
-                imageFile.setStatus(StatusContent.ERROR);
+
+            int count = 0;
+            for (ImageFile imageFile : content.getImageFiles()) {
+                if (paused) {
+                    paused = false;
+                    content = db.selectContentById(content.getId());
+                    showNotification(0, content);
+                    if (content.getStatus() == StatusContent.SAVED) {
+                        try {
+                            FileUtils.deleteDirectory(dir);
+                        } catch (IOException e) {
+                            Log.e(TAG, "error deleting content directory", e);
+                        }
+                    }
+                    return;
+                }
+                boolean imageFileErrorDownload = false;
+                try {
+                    if (imageFile.getStatus() != StatusContent.IGNORED) {
+                        if (!NetworkStatus.isOnline(this))
+                            throw new Exception("Not connection");
+                        Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
+                        Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / "
+                                + content.getTitle());
+                    }
+                    count++;
+                    double percent = count * 100.0 / content.getImageFiles().size();
+                    showNotification(percent, content);
+                    updateActivity(percent);
+                } catch (Exception ex) {
+                    Log.e(TAG, "Error Saving Image File (" + imageFile.getName() + ") "
+                            + content.getTitle(), ex);
+                    error = true;
+                    imageFileErrorDownload = true;
+                }
+                if (imageFileErrorDownload) {
+                    imageFile.setStatus(StatusContent.ERROR);
+                } else {
+                    imageFile.setStatus(StatusContent.DOWNLOADED);
+                }
+                db.updateImageFileStatus(imageFile);
+            }
+            db.updateContentStatus(content);
+            content.setDownloadDate(new Date().getTime());
+            if (error) {
+                content.setStatus(StatusContent.ERROR);
             } else {
-                imageFile.setStatus(StatusContent.DOWNLOADED);
+                content.setStatus(StatusContent.DOWNLOADED);
             }
-            db.updateImageFileStatus(imageFile);
-        }
-        db.updateContentStatus(content);
-        content.setDownloadDate(new Date().getTime());
-        if (error) {
-            content.setStatus(StatusContent.ERROR);
-        } else {
-            content.setStatus(StatusContent.DOWNLOADED);
-        }
-        //Save JSON file
-        try {
-            Helper.saveJson(content, dir);
-        } catch (IOException e) {
-            Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
-        }
-        db.updateContentStatus(content);
-        Log.i(TAG, "Finish Download Content : " + content.getTitle());
-        showNotification(0, content);
-        updateActivity(-1);
-        content = db.selectContentByStatus(StatusContent.DOWNLOADING);
-        if (content != null) {
-            Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
-                    DownloadManagerService.class);
-            intentService.putExtra("content_id", content.getId());
-            startService(intentService);
+            //Save JSON file
+            try {
+                Helper.saveJson(content, dir);
+            } catch (IOException e) {
+                Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
+            }
+            db.updateContentStatus(content);
+            Log.i(TAG, "Finish Download Content : " + content.getTitle());
+            showNotification(0, content);
+            updateActivity(-1);
+            content = db.selectContentByStatus(StatusContent.DOWNLOADING);
+            if (content != null) {
+                Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
+                        DownloadManagerService.class);
+                intentService.putExtra("content_id", content.getId());
+                startService(intentService);
+            }
         }
     }
 
@@ -198,19 +201,20 @@ public class DownloadManagerService extends IntentService {
         mBuilder.setLocalOnly(true);
 
         Intent resultIntent = null;
-        if (content.getStatus() ==
-                StatusContent.DOWNLOADED || content.getStatus() == StatusContent.ERROR
-                || content.getStatus() == StatusContent.UNHANDLED_ERROR) {
-            resultIntent = new Intent(this,
-                    DownloadsActivity.class);
-        } else if (content.getStatus() == StatusContent.DOWNLOADING
-                || content.getStatus() == StatusContent.PAUSED) {
-            resultIntent = new Intent(this,
-                    DownloadManagerActivity.class);
-        } else if (content.getStatus() == StatusContent.SAVED) {
-            resultIntent = new Intent(this,
-                    MainActivity.class);
-            resultIntent.putExtra("url", content.getUrl());
+        switch (content.getStatus()) {
+            case DOWNLOADED:
+            case ERROR:
+            case UNHANDLED_ERROR:
+                resultIntent = new Intent(this, DownloadsActivity.class);
+                break;
+            case DOWNLOADING:
+            case PAUSED:
+                resultIntent = new Intent(this, DownloadManagerActivity.class);
+                break;
+            case SAVED:
+                resultIntent = new Intent(this, MainActivity.class);
+                resultIntent.putExtra("url", content.getUrl());
+                break;
         }
 
         // Adds the Intent to the top of the stack
@@ -227,24 +231,32 @@ public class DownloadManagerService extends IntentService {
             return;
         }
 
-        if (content.getStatus() == StatusContent.DOWNLOADING) {
-            mBuilder.setContentText(getResources().getString(R.string.downloading)
-                    + String.format(Locale.US, "%.2f", percent) + "%");
-            mBuilder.setProgress(100, (int) percent, percent == 0);
-        } else {
-            if (content.getStatus() == StatusContent.DOWNLOADED) {
-                resource = R.string.download_completed;
-            } else if (content.getStatus() == StatusContent.PAUSED) {
-                resource = R.string.download_paused;
-            } else if (content.getStatus() == StatusContent.SAVED) {
-                resource = R.string.download_cancelled;
-            } else if (content.getStatus() == StatusContent.ERROR) {
-                resource = R.string.download_error;
-            } else if (content.getStatus() == StatusContent.UNHANDLED_ERROR) {
-                resource = R.string.unhandled_download_error;
+        if (content.getStatus() != StatusContent.DOWNLOADING) {
+            switch (content.getStatus()) {
+                case DOWNLOADED:
+                    resource = R.string.download_completed;
+                    break;
+                case PAUSED:
+                    resource = R.string.download_paused;
+                    break;
+                case SAVED:
+                    resource = R.string.download_cancelled;
+                    break;
+                case ERROR:
+                    resource = R.string.download_error;
+                    break;
+                case UNHANDLED_ERROR:
+                    resource = R.string.unhandled_download_error;
+                    break;
             }
             mBuilder.setContentText(getResources().getString(resource));
             mBuilder.setProgress(0, 0, false);
+
+        } else {
+            mBuilder.setContentText(getResources().getString(R.string.downloading)
+                    + String.format(Locale.US, "%.2f", percent) + "%");
+            mBuilder.setProgress(100, (int) percent, percent == 0);
+
         }
         notify(mBuilder, notificationID, percent, resultPendingIntent);
     }

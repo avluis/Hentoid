@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util;
 
 /**
  * Created by DevSaki on 19/05/2015.
+ * Common app preference constants.
  */
 public abstract class ConstantsPreferences {
 

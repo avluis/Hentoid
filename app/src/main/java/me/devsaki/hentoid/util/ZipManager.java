@@ -13,6 +13,7 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * Created by avluis on 8/25/15.
+ * General Zip/Un-Zip utility.
  */
 public class ZipManager {
     private static final int BUFFER = 20480;
