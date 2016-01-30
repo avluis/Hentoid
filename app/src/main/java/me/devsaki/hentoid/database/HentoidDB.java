@@ -399,11 +399,11 @@ public class HentoidDB extends SQLiteOpenHelper {
             if (cursorImageFiles.moveToFirst()) {
                 result = new ArrayList<>();
                 do {
-                    ImageFile item = new ImageFile();
-                    item.setOrder(cursorImageFiles.getInt(2));
-                    item.setStatus(StatusContent.searchByCode(cursorImageFiles.getInt(3)));
-                    item.setUrl(cursorImageFiles.getString(4));
-                    item.setName(cursorImageFiles.getString(5));
+                    ImageFile item = new ImageFile()
+                            .setOrder(cursorImageFiles.getInt(2))
+                            .setStatus(StatusContent.searchByCode(cursorImageFiles.getInt(3)))
+                            .setUrl(cursorImageFiles.getString(4))
+                            .setName(cursorImageFiles.getString(5));
                     result.add(item);
                 } while (cursorImageFiles.moveToNext());
             }

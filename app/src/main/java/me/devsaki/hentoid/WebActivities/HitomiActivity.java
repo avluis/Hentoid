@@ -22,7 +22,7 @@ public class HitomiActivity extends WebActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        site = Site.HITOMI;
+        setSite(Site.HITOMI);
         super.onCreate(savedInstanceState);
 
         webView.setWebViewClient(new HitomiWebViewClient());
@@ -33,14 +33,14 @@ public class HitomiActivity extends WebActivity {
     private class HitomiWebViewClient extends CustomWebViewClient {
 
         @Override
-        public boolean shouldOverrideUrlLoading (WebView view, String url) {
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("hitomi.la"));
             } catch (MalformedURLException e) {
                 Log.d(TAG, "Malformed URL");
             }
-            return super.shouldOverrideUrlLoading(view, url);
+            return false;
         }
 
         @Override

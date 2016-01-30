@@ -1,6 +1,7 @@
 package me.devsaki.hentoid;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -25,12 +26,18 @@ import me.devsaki.hentoid.util.ImageQuality;
 public class HentoidApplication extends Application {
 
     private static final String TAG = HentoidApplication.class.getName();
+    private static HentoidApplication instance;
     private LruCache<String, Bitmap> mMemoryCache;
     private SharedPreferences sharedPreferences;
+
+    public static Context getInstance() {
+        return instance;
+    }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        instance = this;
 
         AndroidHelper.ignoreSslErrors();
 

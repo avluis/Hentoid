@@ -25,7 +25,7 @@ public class NhentaiActivity extends WebActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        site = Site.NHENTAI;
+        setSite(Site.NHENTAI);
         super.onCreate(savedInstanceState);
 
         webView.setWebViewClient(new NhentaiWebViewClient());
@@ -34,14 +34,14 @@ public class NhentaiActivity extends WebActivity {
     private class NhentaiWebViewClient extends CustomWebViewClient {
 
         @Override
-        public boolean shouldOverrideUrlLoading (WebView view, String url) {
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("nhentai.net"));
             } catch (MalformedURLException e) {
                 Log.d(TAG, "Malformed URL");
             }
-            return super.shouldOverrideUrlLoading(view, url);
+            return false;
         }
 
         @Override

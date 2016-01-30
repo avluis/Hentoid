@@ -3,7 +3,6 @@ package me.devsaki.hentoid.WebActivities;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
@@ -12,8 +11,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.webkit.CookieManager;
-import android.webkit.JavascriptInterface;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -21,13 +18,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
-import java.net.CookieHandler;
-import java.net.CookiePolicy;
-import java.net.HttpCookie;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Date;
 
 import me.devsaki.hentoid.DownloadsActivity;
@@ -36,12 +26,9 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.parser.HitomiParser;
-import me.devsaki.hentoid.parser.NhentaiParser;
 import me.devsaki.hentoid.service.DownloadManagerService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
@@ -50,22 +37,27 @@ public class WebActivity extends AppCompatActivity {
     private static final String TAG = WebActivity.class.getName();
     private HentoidDB db;
     private Content currentContent;
-    protected Site site;
+    private Site site;
     protected ObservableWebView webView;
     private boolean webViewIsLoading;
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
 
+    protected void setSite(Site site) {
+        this.site = site;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        if (site == null) Log.w(TAG, "WebView site is null");
 
         db = new HentoidDB(this);
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
-        fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshOrStop);
+        fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshStop);
         fabDownloads = (FloatingActionButton) findViewById(R.id.fabDownloads);
 
         hideFab(fabRead);
@@ -75,9 +67,7 @@ public class WebActivity extends AppCompatActivity {
         initSwipeLayout();
 
         String intentVar = getIntent().getStringExtra(Constants.INTENT_URL);
-        if (site != null) {
-            webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
-        }
+        webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
     }
 
     @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
@@ -155,7 +145,7 @@ public class WebActivity extends AppCompatActivity {
                 android.R.color.holo_red_light);
     }
 
-    public void refreshOrStopWebView(View view) {
+    public void onRefreshStopFabClick(View view) {
         if (webViewIsLoading) {
             webView.stopLoading();
         } else {
@@ -163,12 +153,12 @@ public class WebActivity extends AppCompatActivity {
         }
     }
 
-    public void closeActivity(View view) {
-        Intent mainActivity = new Intent(WebActivity.this, DownloadsActivity.class);
+    public void onHomeFabClick(View view) {
+        Intent mainActivity = new Intent(this, DownloadsActivity.class);
         startActivity(mainActivity);
     }
 
-    public void readContent(View view) {
+    public void onReadFabClick(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
             if (StatusContent.DOWNLOADED == currentContent.getStatus()
@@ -180,7 +170,11 @@ public class WebActivity extends AppCompatActivity {
         }
     }
 
-    public void downloadContent(View view) {
+    public void onDownloadFabClick(View view) {
+        processDownload();
+    }
+
+    protected void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
@@ -249,8 +243,9 @@ public class WebActivity extends AppCompatActivity {
         }
         db.insertContent(content);
 
-        if (content.isDownloadable() && content.getStatus() != StatusContent.DOWNLOADED
-                && content.getStatus() != StatusContent.DOWNLOADING) {
+        StatusContent contentStatus = content.getStatus();
+        if (content.isDownloadable() && contentStatus != StatusContent.DOWNLOADED
+                && contentStatus != StatusContent.DOWNLOADING) {
             currentContent = content;
             runOnUiThread(new Runnable() {
                 @Override
@@ -267,8 +262,8 @@ public class WebActivity extends AppCompatActivity {
             });
         }
 
-        if (content.getStatus() == StatusContent.DOWNLOADED
-                || content.getStatus() == StatusContent.ERROR) {
+        if (contentStatus == StatusContent.DOWNLOADED
+                || contentStatus == StatusContent.ERROR) {
             currentContent = content;
             runOnUiThread(new Runnable() {
                 @Override
@@ -302,42 +297,6 @@ public class WebActivity extends AppCompatActivity {
         public void onPageFinished(WebView view, String url) {
             webViewIsLoading = false;
             fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
-
-            URI uri = null;
-            try {
-                uri = new URI(url);
-            } catch (URISyntaxException e) {
-                Log.e(TAG, "Error reading current url from webview", e);
-            }
-
-            try {
-                String cookies = CookieManager.getInstance().getCookie(url);
-                java.net.CookieManager cookieManager = (java.net.CookieManager)
-                        CookieHandler.getDefault();
-                if (cookieManager == null) {
-                    cookieManager = new java.net.CookieManager();
-                }
-                cookieManager.setCookiePolicy(CookiePolicy.ACCEPT_ALL);
-                CookieHandler.setDefault(cookieManager);
-                if (cookies != null) {
-                    String[] cookiesArray = cookies.split(";");
-                    for (String cookie : cookiesArray) {
-                        String key = cookie.split("=")[0].trim();
-                        if (key.equals("cf_clearance")) {
-                            String value = cookie.split("=")[1].trim();
-                            HttpCookie httpCookie = new HttpCookie(key, value);
-                            if (uri != null) {
-                                httpCookie.setDomain(uri.getHost());
-                            }
-                            httpCookie.setPath("/");
-                            httpCookie.setVersion(0);
-                            cookieManager.getCookieStore().add(uri, httpCookie);
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "Error trying to get the cookies", ex);
-            }
         }
     }
 }

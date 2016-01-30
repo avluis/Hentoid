@@ -1,16 +1,9 @@
 package me.devsaki.hentoid.util;
 
-import android.text.TextUtils;
-
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.CookieHandler;
-import java.net.CookieManager;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import me.devsaki.hentoid.exceptions.HttpClientException;
@@ -20,19 +13,16 @@ import me.devsaki.hentoid.exceptions.HttpClientException;
  */
 public class HttpClientHelper {
 
-    public static String call(String address) throws HttpClientException, IOException,
-            URISyntaxException {
-        URL url = new URL(address);
-        URI uri = new URI(address);
-        CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
+    public static String call(String address) throws Exception {
+        String sessionCookie = Helper.getSessionCookie();
 
+        URL url = new URL(address);
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
         urlConnection.setRequestMethod("GET");
         urlConnection.setConnectTimeout(10000);
         urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
-        if (cookieManager != null && cookieManager.getCookieStore().getCookies().size() > 0) {
-            urlConnection.setRequestProperty("Cookie",
-                    TextUtils.join("; ", cookieManager.getCookieStore().get(uri)));
+        if(!sessionCookie.isEmpty()) {
+            urlConnection.setRequestProperty("Cookie", sessionCookie);
         }
         urlConnection.connect();
 
@@ -40,12 +30,12 @@ public class HttpClientHelper {
 
         // Read the input stream into a String
         InputStream inputStream = urlConnection.getInputStream();
-        StringBuilder builder = new StringBuilder();
         if (inputStream == null) {
             // Nothing to do.
             return null;
         }
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder builder = new StringBuilder();
 
         String line;
         while ((line = reader.readLine()) != null) {

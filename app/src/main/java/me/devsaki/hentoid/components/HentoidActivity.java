@@ -16,10 +16,11 @@ import android.view.View;
 import me.devsaki.hentoid.AboutActivity;
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
-import me.devsaki.hentoid.WebActivities.HitomiActivity;
-import me.devsaki.hentoid.WebActivities.NhentaiActivity;
 import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.WebActivities.HitomiActivity;
+import me.devsaki.hentoid.WebActivities.NhentaiActivity;
+import me.devsaki.hentoid.WebActivities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 
 /**
@@ -112,6 +113,9 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
                 break;
             case R.id.ndNhentaiWbButton:
                 intent = new Intent(this, NhentaiActivity.class);
+                break;
+            case R.id.ndTsuminoWbButton:
+                intent = new Intent(this, TsuminoActivity.class);
                 break;
         }
 
