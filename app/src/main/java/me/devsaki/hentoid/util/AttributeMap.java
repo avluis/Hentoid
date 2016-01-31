@@ -26,4 +26,10 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
 
         list.add(attributeItem);
     }
+
+    public void add(List<Attribute> attributeList) {
+        for (Attribute item : attributeList) {
+            add(item);
+        }
+    }
 }

@@ -49,42 +49,34 @@ public class NhentaiParser {
         for (int i = 0; i < allTags.length(); i++) {
 
             JSONArray singleTag = allTags.getJSONArray(i);
-            String urlIdStr = singleTag.getString(0);
-            String tagTypeStr = singleTag.getString(1);
-            String nameStr = singleTag.getString(2);
+            Attribute attribute = new Attribute()
+                    .setUrl(singleTag.getString(0))
+                    .setName(singleTag.getString(2));
 
-            AttributeType attrType;
-            switch (tagTypeStr) {
+            switch (singleTag.getString(1)) {
                 case "artist":
-                    attrType = AttributeType.ARTIST;
+                    attribute.setType(AttributeType.ARTIST);
                     break;
                 case "character":
-                    attrType = AttributeType.CHARACTER;
+                    attribute.setType(AttributeType.CHARACTER);
                     break;
                 case "parody":
-                    attrType = AttributeType.SERIE;
+                    attribute.setType(AttributeType.SERIE);
                     break;
                 case "language":
-                    attrType = AttributeType.LANGUAGE;
+                    attribute.setType(AttributeType.LANGUAGE);
                     break;
                 case "tag":
-                    attrType = AttributeType.TAG;
+                    attribute.setType(AttributeType.TAG);
                     break;
                 case "group":
-                    attrType = AttributeType.CIRCLE;
+                    attribute.setType(AttributeType.CIRCLE);
                     break;
                 case "category":
-                    attrType = AttributeType.CATEGORY;
-                    break;
-                default:
-                    attrType = null;
+                    attribute.setType(AttributeType.CATEGORY);
                     break;
             }
-
-            attributes.add(new Attribute()
-                    .setType(attrType)
-                    .setName(nameStr)
-                    .setUrl(urlIdStr));
+            attributes.add(attribute);
         }
 
         Content result = new Content(
