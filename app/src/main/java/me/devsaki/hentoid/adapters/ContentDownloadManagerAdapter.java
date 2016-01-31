@@ -101,7 +101,9 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         final File dir = Helper.getDownloadDir(content, getContext());
         File coverFile = new File(dir, "thumb.jpg");
 
-        ((HentoidApplication) getContext().getApplicationContext()).loadBitmap(coverFile, ivCover);
+        String image = coverFile.exists()?coverFile.getAbsolutePath():content.getCoverImageUrl();
+
+        ((HentoidApplication) getContext().getApplicationContext()).loadBitmap(image, ivCover);
 
         Button btnCancel = (Button) rowView.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(new View.OnClickListener() {
