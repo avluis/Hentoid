@@ -193,7 +193,7 @@ public final class Helper {
         writer.close();
     }
 
-    public static String readJsonFile(File f) throws IOException {
+    public static <T> T jsonToObject(File f, Class<T> type) throws IOException {
         BufferedReader br = null;
         String json = "";
         try {
@@ -208,7 +208,7 @@ public final class Helper {
         } finally {
             if (br != null) br.close();
         }
-        return json;
+        return new Gson().fromJson(json, type);
     }
 
     public static void saveInStorage(File file, String imageUrl)
