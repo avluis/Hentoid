@@ -34,6 +34,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
+ * TODO: Re-implement as Activity ->> Fragment.
  * TODO: No particular source should be filtered/defined here.
  * TODO: The source itself should contain every method it needs to function.
  */

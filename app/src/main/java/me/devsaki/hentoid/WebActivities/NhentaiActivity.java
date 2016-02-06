@@ -17,7 +17,7 @@ import me.devsaki.hentoid.util.HttpClientHelper;
 
 /**
  * Created by Shiro on 1/20/2016.
- * subclassed contents from MainActivity written by csaki
+ * TODO: Re-implement as Activity ->> Fragment.
  */
 public class NhentaiActivity extends WebActivity {
 

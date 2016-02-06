@@ -19,6 +19,7 @@ import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by Shiro on 1/22/2016.
+ * TODO: Re-implement as Activity ->> Fragment.
  */
 public class TsuminoActivity extends WebActivity {
 

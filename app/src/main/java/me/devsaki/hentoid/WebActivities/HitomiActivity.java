@@ -14,7 +14,7 @@ import me.devsaki.hentoid.parser.HitomiParser;
 
 /**
  * Created by Shiro on 1/20/2016.
- * subclassed contents from MainActivity written by csaki
+ * TODO: Re-implement as Activity ->> Fragment.
  */
 public class HitomiActivity extends WebActivity {
 
