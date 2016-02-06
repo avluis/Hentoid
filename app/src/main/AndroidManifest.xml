@@ -23,18 +23,35 @@
         tools:ignore="UnusedAttribute">
         <activity
             android:name=".DownloadsActivity"
-            android:label="@string/app_name"
             android:launchMode="singleTask">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
         </activity>
         <activity
-            android:name=".MainActivity"
+            android:name=".WebActivities.WebActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/app_name"
             android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".WebActivities.HitomiActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="standard"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".WebActivities.NhentaiActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="standard"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            tools:ignore="InnerclassSeparator" />
+        <activity
+            android:name=".WebActivities.TsuminoActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="standard"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+            tools:ignore="InnerclassSeparator" />
 
         <service
             android:name=".service.DownloadManagerService"
@@ -62,7 +79,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:launchMode="singleTask"
-            android:parentActivityName="me.devsaki.hentoid.MainActivity"
+            android:parentActivityName=".DownloadsActivity"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -70,7 +87,6 @@
         </activity>
         <activity
             android:name=".AppLockActivity"
-            android:label="@string/app_name"
             android:launchMode="singleTask"
             android:windowSoftInputMode="stateAlwaysVisible" />
         <activity
@@ -78,7 +94,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_about"
             android:launchMode="singleTask"
-            android:parentActivityName="me.devsaki.hentoid.MainActivity"
+            android:parentActivityName=".DownloadsActivity"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

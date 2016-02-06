@@ -20,15 +20,14 @@ import java.util.Locale;
 
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
-import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.HitomiParser;
 import me.devsaki.hentoid.parser.NhentaiParser;
+import me.devsaki.hentoid.parser.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -212,7 +211,7 @@ public class DownloadManagerService extends IntentService {
                 resultIntent = new Intent(this, DownloadManagerActivity.class);
                 break;
             case SAVED:
-                resultIntent = new Intent(this, MainActivity.class);
+                resultIntent = new Intent(this, content.getWebActivityClass());
                 resultIntent.putExtra("url", content.getUrl());
                 break;
         }
@@ -230,7 +229,6 @@ public class DownloadManagerService extends IntentService {
             notify(mBuilder, notificationID, percent, resultPendingIntent);
             return;
         }
-
         if (content.getStatus() != StatusContent.DOWNLOADING) {
             switch (content.getStatus()) {
                 case DOWNLOADED:
@@ -278,12 +276,18 @@ public class DownloadManagerService extends IntentService {
         content.setImageFiles(new ArrayList<ImageFile>());
         List<String> aUrls = new ArrayList<>();
         try {
-            if (content.getSite() == Site.HITOMI) {
-                String html = HttpClientHelper.call(content.getReaderUrl());
-                aUrls = HitomiParser.parseImageList(html);
-            } else if (content.getSite() == Site.NHENTAI) {
-                String json = HttpClientHelper.call(content.getGalleryUrl() + "/json");
-                aUrls = NhentaiParser.parseImageList(json);
+            switch (content.getSite()) {
+                case HITOMI:
+                    String html = HttpClientHelper.call(content.getReaderUrl());
+                    aUrls = HitomiParser.parseImageList(html);
+                    break;
+                case NHENTAI:
+                    String json = HttpClientHelper.call(content.getGalleryUrl() + "/json");
+                    aUrls = NhentaiParser.parseImageList(json);
+                    break;
+                case TSUMINO:
+                    aUrls = TsuminoParser.parseImageList(content);
+                    break;
             }
         } catch (Exception e) {
             Log.e(TAG, "Error getting image urls", e);

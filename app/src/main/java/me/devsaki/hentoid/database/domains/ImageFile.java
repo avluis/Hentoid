@@ -27,31 +27,35 @@ public class ImageFile extends ImageFileTable {
         return order;
     }
 
-    public void setOrder(Integer order) {
+    public ImageFile setOrder(Integer order) {
         this.order = order;
+        return this;
     }
 
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
+    public ImageFile setUrl(String url) {
         this.url = url;
+        return this;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public ImageFile setName(String name) {
         this.name = name;
+        return this;
     }
 
     public StatusContent getStatus() {
         return status;
     }
 
-    public void setStatus(StatusContent status) {
+    public ImageFile setStatus(StatusContent status) {
         this.status = status;
+        return this;
     }
 }

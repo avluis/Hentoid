@@ -32,7 +32,7 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_github_mark"
+                    android:src="@drawable/ic_favicon_github"
                     tools:ignore="ContentDescription" />
 
                 <TextView
@@ -50,7 +50,7 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_google_plus"
+                    android:src="@drawable/ic_favicon_googleplus"
                     tools:ignore="ContentDescription" />
 
                 <TextView
@@ -68,7 +68,7 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_fakku"
+                    android:src="@drawable/ic_favicon_fakku"
                     tools:ignore="ContentDescription" />
 
                 <TextView

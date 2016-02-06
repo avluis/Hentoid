@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".WebActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
@@ -24,7 +24,7 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_margin="@dimen/download_fab_margin"
-        android:onClick="readContent"
+        android:onClick="onReadFabClick"
         android:src="@drawable/ic_action_play"
         app:backgroundTint="@color/primary"
         app:rippleColor="@color/ripple"
@@ -38,21 +38,21 @@
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_margin="@dimen/download_fab_margin"
-        android:onClick="downloadContent"
+        android:onClick="onDownloadFabClick"
         android:src="@drawable/ic_action_download"
         app:backgroundTint="@color/primary"
         app:rippleColor="@color/ripple"
         tools:ignore="RelativeOverlap" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fabRefreshOrStop"
+        android:id="@+id/fabRefreshStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_above="@+id/fabDownloads"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_margin="@dimen/refresh_fab_margin"
-        android:onClick="refreshOrStopWebView"
+        android:onClick="onRefreshStopFabClick"
         android:src="@drawable/ic_action_refresh"
         app:backgroundTint="@color/primary"
         app:fabSize="mini"
@@ -66,7 +66,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_margin="@dimen/downloads_fab_margin"
-        android:onClick="closeActivity"
+        android:onClick="onHomeFabClick"
         android:src="@drawable/ic_action_sd_storage"
         app:backgroundTint="@color/primary"
         app:fabSize="mini"

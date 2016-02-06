@@ -9,10 +9,11 @@ import me.devsaki.hentoid.R;
  */
 public enum Site {
 
-    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_fakku, "/Downloads"),
-    PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_pururin, "/Pururin"),
-    HITOMI(2, "Hitomi", "https://hitomi.la", R.drawable.ic_hitomi, "/Hitomi"),
-    NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_nhentai, "/nhentai");
+    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_favicon_fakku, "/Downloads"),
+    PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_favicon_pururin, "/Pururin"),
+    HITOMI(2, "Hitomi", "https://hitomi.la", R.drawable.ic_favicon_hitomi, "/Hitomi"),
+    NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_favicon_nhentai, "/nhentai"),
+    TSUMINO(4, "Tsumino", "http://www.tsumino.com", R.drawable.ic_favicon_tsumino, "/Tsumino");
 
     private static final String TAG = Site.class.getName();
     private final int code;

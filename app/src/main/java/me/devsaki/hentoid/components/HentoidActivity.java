@@ -16,11 +16,12 @@ import android.view.View;
 import me.devsaki.hentoid.AboutActivity;
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
-import me.devsaki.hentoid.MainActivity;
 import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.WebActivities.HitomiActivity;
+import me.devsaki.hentoid.WebActivities.NhentaiActivity;
+import me.devsaki.hentoid.WebActivities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.database.enums.Site;
 
 /**
  * Created by DevSaki on 04/06/2015.
@@ -101,12 +102,18 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
 
     public void ndOpenWebView(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = null;
 
-        if (view.getId() == R.id.ndHitomiWbButton) {
-            intent.putExtra(MainActivity.INTENT_SITE, Site.HITOMI.getCode());
-        } else if (view.getId() == R.id.ndNhentaiWbButton) {
-            intent.putExtra(MainActivity.INTENT_SITE, Site.NHENTAI.getCode());
+        switch (view.getId()) {
+            case R.id.ndHitomiWbButton:
+                intent = new Intent(this, HitomiActivity.class);
+                break;
+            case R.id.ndNhentaiWbButton:
+                intent = new Intent(this, NhentaiActivity.class);
+                break;
+            case R.id.ndTsuminoWbButton:
+                intent = new Intent(this, TsuminoActivity.class);
+                break;
         }
 
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

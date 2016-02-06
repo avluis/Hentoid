@@ -39,7 +39,7 @@ public class ObservableWebView extends WebView {
 
     /**
      * Implement in the activity/fragment/view that you want to listen to the WebView
-    */
+     */
     public interface OnScrollChangedCallback {
         void onScroll(int l, int t);
     }

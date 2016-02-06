@@ -104,7 +104,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         final File dir = Helper.getDownloadDir(content, getContext());
         File coverFile = new File(dir, "thumb.jpg");
 
-        String image = coverFile.exists()?coverFile.getAbsolutePath():content.getCoverImageUrl();
+        String image = coverFile.exists() ? coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
         ((HentoidApplication) getContext().getApplicationContext()).loadBitmap(image, ivCover);
 

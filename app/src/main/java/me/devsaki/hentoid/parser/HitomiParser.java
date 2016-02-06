@@ -20,11 +20,10 @@ import me.devsaki.hentoid.util.AttributeMap;
 public class HitomiParser {
 
     public static Content parseContent(String html) {
-        Content result = null;
         Document doc = Jsoup.parse(html);
         Elements content = doc.select(".content");
         if (content.size() > 0) {
-            String coverImageUrlTEMP = "https:" + content.select(".cover").select("img").attr("src");
+            String coverImageUrlTEMP = "https:" + content.select(".cover img").attr("src");
             Element info = content.select(".gallery").first();
             Element title = info.select("h1").first();
             String urlTEMP = title.select("a").first().attr("href").replace("/reader", "");
@@ -54,7 +53,7 @@ public class HitomiParser {
 
             int pages = doc.select(".thumbnail-container").size();
 
-            result = new Content(
+            return new Content(
                     titleTEMP,
                     urlTEMP,
                     coverImageUrlTEMP,
@@ -63,7 +62,7 @@ public class HitomiParser {
                     Site.HITOMI
             );
         }
-        return result;
+        return null;
     }
 
     private static void parseAttributes(AttributeMap map, AttributeType type, Elements elements) {
