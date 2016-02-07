@@ -93,23 +93,20 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        if (id == R.id.action_order_alphabetic) {
-            getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
-            getFragment().searchContent();
-            invalidateOptionsMenu();
-            return true;
-        } else if (id == R.id.action_order_by_date) {
-            getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
-            getFragment().searchContent();
-            invalidateOptionsMenu();
-            return true;
+        switch (item.getItemId()) {
+            case R.id.action_order_alphabetic:
+                getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
+                getFragment().searchContent();
+                invalidateOptionsMenu();
+                return true;
+            case R.id.action_order_by_date:
+                getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
+                getFragment().searchContent();
+                invalidateOptionsMenu();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-        return super.onOptionsItemSelected(item);
     }
 
     public static class DownloadsFragment extends HentoidFragment {

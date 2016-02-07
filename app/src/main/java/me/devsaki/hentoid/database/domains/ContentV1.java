@@ -5,7 +5,6 @@ import com.google.gson.annotations.Expose;
 import java.util.List;
 
 import me.devsaki.hentoid.database.contants.ContentTable;
-import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
@@ -130,10 +129,10 @@ public class ContentV1 extends ContentTable {
 
         //Process and add attributes
         AttributeMap attributes = new AttributeMap();
-        attributes.put(AttributeType.ARTIST, artists);
-        attributes.put(AttributeType.PUBLISHER, publishers);
-        attributes.put(AttributeType.TRANSLATOR, translators);
-        attributes.put(AttributeType.TAG, tags);
+        attributes.add(artists);
+        attributes.add(publishers);
+        attributes.add(translators);
+        attributes.add(tags);
         if (serie != null) attributes.add(serie);
         if (language != null) attributes.add(language);
         if (user != null) attributes.add(user);
@@ -141,7 +140,6 @@ public class ContentV1 extends ContentTable {
 
         content.setImageFiles(imageFiles);
         content.setCoverImageUrl(coverImageUrl);
-        content.setHtmlDescription(htmlDescription);
         content.setTitle(title);
         content.setQtyPages(qtyPages);
         content.setDownloadDate(downloadDate);

@@ -24,8 +24,6 @@ public class Content extends ContentTable {
     @Expose
     private String title;
     @Expose
-    private String htmlDescription;
-    @Expose
     private AttributeMap attributes;
     @Expose
     private String coverImageUrl;
@@ -39,8 +37,6 @@ public class Content extends ContentTable {
     private StatusContent status;
     @Expose
     private List<ImageFile> imageFiles;
-    @Expose(serialize = false, deserialize = false)
-    private boolean downloadable;
     @Expose(serialize = false, deserialize = false)
     private double percent;
     @Expose
@@ -62,8 +58,6 @@ public class Content extends ContentTable {
         this.attributes = attributes;
         this.qtyPages = qtyPages;
         this.site = site;
-        htmlDescription = null;
-        downloadable = true;
         status = StatusContent.SAVED;
     }
 
@@ -173,14 +167,6 @@ public class Content extends ContentTable {
         this.title = title;
     }
 
-    public String getHtmlDescription() {
-        return htmlDescription;
-    }
-
-    public void setHtmlDescription(String htmlDescription) {
-        this.htmlDescription = htmlDescription;
-    }
-
     public String getCoverImageUrl() {
         return coverImageUrl;
     }
@@ -227,14 +213,6 @@ public class Content extends ContentTable {
 
     public void setImageFiles(List<ImageFile> imageFiles) {
         this.imageFiles = imageFiles;
-    }
-
-    public boolean isDownloadable() {
-        return downloadable;
-    }
-
-    public void setDownloadable(@SuppressWarnings("SameParameterValue") boolean downloadable) {
-        this.downloadable = downloadable;
     }
 
     public double getPercent() {

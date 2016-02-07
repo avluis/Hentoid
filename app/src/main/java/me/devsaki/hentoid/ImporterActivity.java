@@ -103,8 +103,7 @@ public class ImporterActivity extends AppCompatActivity {
                         File json = new File(file, Constants.JSON_FILE_NAME_V2);
                         if (json.exists()) {
                             try {
-                                Content content = new Gson().fromJson(Helper.readJsonFile(json),
-                                        Content.class);
+                                Content content = Helper.jsonToObject(json, Content.class);
                                 if (content.getStatus() != StatusContent.DOWNLOADED
                                         && content.getStatus() != StatusContent.ERROR)
                                     content.setStatus(StatusContent.MIGRATED);
@@ -117,8 +116,7 @@ public class ImporterActivity extends AppCompatActivity {
                             if (json.exists()) {
                                 try {
                                     ContentV1 content =
-                                            new Gson().fromJson(Helper.readJsonFile(json),
-                                                    ContentV1.class);
+                                            Helper.jsonToObject(json, ContentV1.class);
                                     if (content.getStatus() != StatusContent.DOWNLOADED
                                             && content.getStatus() != StatusContent.ERROR)
                                         content.setMigratedStatus();
@@ -137,8 +135,7 @@ public class ImporterActivity extends AppCompatActivity {
                                 if (json.exists()) {
                                     try {
                                         DoujinBean doujinBean =
-                                                new Gson().fromJson(Helper.readJsonFile(json),
-                                                        DoujinBean.class);
+                                                Helper.jsonToObject(json, DoujinBean.class);
                                         ContentV1 content = new ContentV1();
                                         content.setUrl(doujinBean.getId());
                                         content.setHtmlDescription(doujinBean.getDescription());
@@ -213,11 +210,10 @@ public class ImporterActivity extends AppCompatActivity {
                 if (urlBean.getDescription() == null) {
                     throw new RuntimeException("Problems loading attribute v2.");
                 }
-                Attribute attribute = new Attribute();
-                attribute.setName(urlBean.getDescription());
-                attribute.setUrl(urlBean.getId());
-                attribute.setType(type);
-                return attribute;
+                return new Attribute()
+                        .setName(urlBean.getDescription())
+                        .setUrl(urlBean.getId())
+                        .setType(type);
             } catch (Exception ex) {
                 Log.e(TAG, "Parsing urlBean to attribute", ex);
                 return null;

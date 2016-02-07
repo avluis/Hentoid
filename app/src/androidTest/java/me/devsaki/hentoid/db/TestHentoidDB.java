@@ -105,24 +105,20 @@ public class TestHentoidDB extends AndroidTestCase {
         for (int i = 0; i < 10; i++) {
             int k = randomGenerator.nextInt();
             Content content = new Content();
-            content.setAttributes(new AttributeMap());
+            AttributeMap attributeMap = new AttributeMap();
             for (AttributeType type : AttributeType.values()) {
-                List<Attribute> attributes = new ArrayList<>();
                 for (int j = 0; j < 10; j++) {
                     int l = randomGenerator.nextInt();
-                    Attribute attribute = new Attribute();
-                    attribute.setUrl("" + l);
-                    attribute.setName("n" + l);
-                    attribute.setType(type);
-                    attributes.add(attribute);
+                    attributeMap.add(new Attribute()
+                            .setUrl("" + l)
+                            .setName("n" + l)
+                            .setType(type));
                 }
-                content.getAttributes().put(type, attributes);
             }
+            content.setAttributes(attributeMap);
             content.setUrl("/doujinshi/u" + k);
             content.setCoverImageUrl("c" + k);
-            content.setDownloadable(false);
             content.setDownloadDate(1000 * k);
-            content.setHtmlDescription("html " + k);
             content.setPercent(10.0 * k);
             content.setQtyPages(k * 12);
             content.setTitle("t " + k);
