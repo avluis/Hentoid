@@ -25,6 +25,7 @@ public class TsuminoActivity extends WebActivity {
 
     private static final String TAG = TsuminoActivity.class.getName();
     private boolean downloadFabPressed = false;
+    private int historyIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,7 @@ public class TsuminoActivity extends WebActivity {
     @Override
     public void onDownloadFabClick(View view) {
         downloadFabPressed = true;
+        historyIndex = webView.copyBackForwardList().getCurrentIndex();
 
         String newUrl = webView.getUrl().replace("Book/Info", "Read/View");
         final int index = Helper.ordinalIndexOf(newUrl, '/', 5);
@@ -95,14 +97,8 @@ public class TsuminoActivity extends WebActivity {
                     && downloadFabPressed) {
                 downloadFabPressed = false;
 
-                WebBackForwardList history = webView.copyBackForwardList();
-                int i = history.getCurrentIndex();
-                String historyUrl;
-                do {
-                    historyUrl = history.getItemAtIndex(--i).getUrl();
-                } while (!historyUrl.contains("//www.tsumino.com/Book/Info/"));
-
-                webView.goBackOrForward(i - history.getCurrentIndex());
+                int currentIndex = webView.copyBackForwardList().getCurrentIndex();
+                webView.goBackOrForward(historyIndex - currentIndex);
                 processDownload();
             }
         }
