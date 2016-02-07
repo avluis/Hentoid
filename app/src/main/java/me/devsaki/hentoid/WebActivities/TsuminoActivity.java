@@ -63,8 +63,9 @@ public class TsuminoActivity extends WebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (downloadFabPressed
-                    && (!url.contains("//www.tsumino.com/Read/View/")
-                    || url.contains("//www.tsumino.com/Read/Auth/"))) {
+                    && !(url.contains("//www.tsumino.com/Read/View/")
+                    || url.contains("//www.tsumino.com/Read/Auth/")
+                    || url.contains("//www.tsumino.com/Read/AuthProcess"))) {
                 downloadFabPressed = false;
             }
         }
