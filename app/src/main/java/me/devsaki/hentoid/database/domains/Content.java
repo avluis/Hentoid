@@ -24,8 +24,6 @@ public class Content extends ContentTable {
     @Expose
     private String title;
     @Expose
-    private String htmlDescription;
-    @Expose
     private AttributeMap attributes;
     @Expose
     private String coverImageUrl;
@@ -62,7 +60,6 @@ public class Content extends ContentTable {
         this.attributes = attributes;
         this.qtyPages = qtyPages;
         this.site = site;
-        htmlDescription = null;
         downloadable = true;
         status = StatusContent.SAVED;
     }
@@ -171,14 +168,6 @@ public class Content extends ContentTable {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public String getHtmlDescription() {
-        return htmlDescription;
-    }
-
-    public void setHtmlDescription(String htmlDescription) {
-        this.htmlDescription = htmlDescription;
     }
 
     public String getCoverImageUrl() {

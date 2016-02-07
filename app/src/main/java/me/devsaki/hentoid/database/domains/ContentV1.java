@@ -140,7 +140,6 @@ public class ContentV1 extends ContentTable {
 
         content.setImageFiles(imageFiles);
         content.setCoverImageUrl(coverImageUrl);
-        content.setHtmlDescription(htmlDescription);
         content.setTitle(title);
         content.setQtyPages(qtyPages);
         content.setDownloadDate(downloadDate);

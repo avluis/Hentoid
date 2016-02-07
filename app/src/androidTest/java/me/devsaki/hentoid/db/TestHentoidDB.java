@@ -120,7 +120,6 @@ public class TestHentoidDB extends AndroidTestCase {
             content.setCoverImageUrl("c" + k);
             content.setDownloadable(false);
             content.setDownloadDate(1000 * k);
-            content.setHtmlDescription("html " + k);
             content.setPercent(10.0 * k);
             content.setQtyPages(k * 12);
             content.setTitle("t " + k);

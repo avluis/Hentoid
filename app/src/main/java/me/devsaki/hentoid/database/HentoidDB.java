@@ -86,10 +86,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     else
                         statement.bindString(3, category);
                     statement.bindString(4, row.getUrl());
-                    if (row.getHtmlDescription() == null)
-                        statement.bindNull(5);
-                    else
-                        statement.bindString(5, row.getHtmlDescription());
+                    statement.bindNull(5);
                     if (row.getTitle() == null)
                         statement.bindNull(6);
                     else
@@ -376,7 +373,6 @@ public class HentoidDB extends SQLiteOpenHelper {
         Content content = new Content();
         content.setUrl(cursorContent.getString(3));
         content.setTitle(cursorContent.getString(4));
-        content.setHtmlDescription(cursorContent.getString(5));
         content.setQtyPages(cursorContent.getInt(6));
         content.setUploadDate(cursorContent.getLong(7));
         content.setDownloadDate(cursorContent.getLong(8));
