@@ -250,7 +250,7 @@ public class WebActivity extends AppCompatActivity {
         db.insertContent(content);
 
         StatusContent contentStatus = content.getStatus();
-        if (content.isDownloadable() && contentStatus != StatusContent.DOWNLOADED
+        if (contentStatus != StatusContent.DOWNLOADED
                 && contentStatus != StatusContent.DOWNLOADING) {
             currentContent = content;
             runOnUiThread(new Runnable() {

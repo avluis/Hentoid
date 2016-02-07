@@ -38,8 +38,6 @@ public class Content extends ContentTable {
     @Expose
     private List<ImageFile> imageFiles;
     @Expose(serialize = false, deserialize = false)
-    private boolean downloadable;
-    @Expose(serialize = false, deserialize = false)
     private double percent;
     @Expose
     private Site site;
@@ -60,7 +58,6 @@ public class Content extends ContentTable {
         this.attributes = attributes;
         this.qtyPages = qtyPages;
         this.site = site;
-        downloadable = true;
         status = StatusContent.SAVED;
     }
 
@@ -216,14 +213,6 @@ public class Content extends ContentTable {
 
     public void setImageFiles(List<ImageFile> imageFiles) {
         this.imageFiles = imageFiles;
-    }
-
-    public boolean isDownloadable() {
-        return downloadable;
-    }
-
-    public void setDownloadable(@SuppressWarnings("SameParameterValue") boolean downloadable) {
-        this.downloadable = downloadable;
     }
 
     public double getPercent() {

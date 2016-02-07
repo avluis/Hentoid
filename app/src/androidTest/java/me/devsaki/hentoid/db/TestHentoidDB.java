@@ -118,7 +118,6 @@ public class TestHentoidDB extends AndroidTestCase {
             content.setAttributes(attributeMap);
             content.setUrl("/doujinshi/u" + k);
             content.setCoverImageUrl("c" + k);
-            content.setDownloadable(false);
             content.setDownloadDate(1000 * k);
             content.setPercent(10.0 * k);
             content.setQtyPages(k * 12);
