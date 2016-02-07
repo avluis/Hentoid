@@ -210,11 +210,10 @@ public class ImporterActivity extends AppCompatActivity {
                 if (urlBean.getDescription() == null) {
                     throw new RuntimeException("Problems loading attribute v2.");
                 }
-                Attribute attribute = new Attribute();
-                attribute.setName(urlBean.getDescription());
-                attribute.setUrl(urlBean.getId());
-                attribute.setType(type);
-                return attribute;
+                return new Attribute()
+                        .setName(urlBean.getDescription())
+                        .setUrl(urlBean.getId())
+                        .setType(type);
             } catch (Exception ex) {
                 Log.e(TAG, "Parsing urlBean to attribute", ex);
                 return null;

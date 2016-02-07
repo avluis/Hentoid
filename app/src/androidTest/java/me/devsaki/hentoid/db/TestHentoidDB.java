@@ -110,11 +110,10 @@ public class TestHentoidDB extends AndroidTestCase {
                 List<Attribute> attributes = new ArrayList<>();
                 for (int j = 0; j < 10; j++) {
                     int l = randomGenerator.nextInt();
-                    Attribute attribute = new Attribute();
-                    attribute.setUrl("" + l);
-                    attribute.setName("n" + l);
-                    attribute.setType(type);
-                    attributes.add(attribute);
+                    attributes.add(new Attribute()
+                            .setUrl("" + l)
+                            .setName("n" + l)
+                            .setType(type));
                 }
                 content.getAttributes().put(type, attributes);
             }

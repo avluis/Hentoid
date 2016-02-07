@@ -67,11 +67,10 @@ public class HitomiParser {
 
     private static void parseAttributes(AttributeMap map, AttributeType type, Elements elements) {
         for (Element a : elements) {
-            Attribute attribute = new Attribute();
-            attribute.setType(type);
-            attribute.setUrl(a.attr("href"));
-            attribute.setName(a.text());
-            map.add(attribute);
+            map.add(new Attribute()
+                    .setType(type)
+                    .setUrl(a.attr("href"))
+                    .setName(a.text()));
         }
     }
 

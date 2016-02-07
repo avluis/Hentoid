@@ -81,11 +81,10 @@ public class NhentaiParser {
                     break;
             }
 
-            Attribute attribute = new Attribute();
-            attribute.setType(attrType);
-            attribute.setName(nameStr);
-            attribute.setUrl(urlIdStr);
-            attributes.add(attribute);
+            attributes.add(new Attribute()
+                    .setType(attrType)
+                    .setName(nameStr)
+                    .setUrl(urlIdStr));
         }
 
         Content result = new Content(
