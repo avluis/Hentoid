@@ -111,7 +111,7 @@ public class DownloadManagerService extends IntentService {
             File dir = Helper.getDownloadDir(content, this);
             try {
                 //Download Cover Image
-                Helper.saveInStorage(new File(dir, "thumb.jpg"), content.getCoverImageUrl());
+                Helper.saveInStorage(dir, "thumb", content.getCoverImageUrl());
             } catch (Exception e) {
                 Log.e(TAG, "Error Saving cover image " + content.getTitle(), e);
                 error = true;
@@ -137,7 +137,7 @@ public class DownloadManagerService extends IntentService {
                     if (imageFile.getStatus() != StatusContent.IGNORED) {
                         if (!NetworkStatus.isOnline(this))
                             throw new Exception("Not connection");
-                        Helper.saveInStorage(new File(dir, imageFile.getName()), imageFile.getUrl());
+                        Helper.saveInStorage(dir, imageFile.getName(), imageFile.getUrl());
                         Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / "
                                 + content.getTitle());
                     }
@@ -273,7 +273,6 @@ public class DownloadManagerService extends IntentService {
     }
 
     private void parseImageFiles(Content content) throws Exception {
-        content.setImageFiles(new ArrayList<ImageFile>());
         List<String> aUrls = new ArrayList<>();
         try {
             switch (content.getSite()) {
@@ -295,15 +294,16 @@ public class DownloadManagerService extends IntentService {
         }
 
         int i = 1;
+        List<ImageFile> imageFileList = new ArrayList<>();
         for (String str : aUrls) {
-            String name = String.format(Locale.US, "%03d", i) + ".jpg";
-            ImageFile imageFile = new ImageFile();
-            imageFile.setUrl(str);
-            imageFile.setOrder(i++);
-            imageFile.setStatus(StatusContent.SAVED);
-            imageFile.setName(name);
-            content.getImageFiles().add(imageFile);
+            String name = String.format(Locale.US, "%03d", i);
+            imageFileList.add(new ImageFile()
+                    .setUrl(str)
+                    .setOrder(i++)
+                    .setStatus(StatusContent.SAVED)
+                    .setName(name));
         }
+        content.setImageFiles(imageFileList);
         db.insertImageFiles(content);
     }
 }

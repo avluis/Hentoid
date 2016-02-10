@@ -395,12 +395,11 @@ public class HentoidDB extends SQLiteOpenHelper {
             if (cursorImageFiles.moveToFirst()) {
                 result = new ArrayList<>();
                 do {
-                    ImageFile item = new ImageFile()
+                    result.add(new ImageFile()
                             .setOrder(cursorImageFiles.getInt(2))
                             .setStatus(StatusContent.searchByCode(cursorImageFiles.getInt(3)))
                             .setUrl(cursorImageFiles.getString(4))
-                            .setName(cursorImageFiles.getString(5));
-                    result.add(item);
+                            .setName(cursorImageFiles.getString(5)));
                 } while (cursorImageFiles.moveToNext());
             }
         } finally {

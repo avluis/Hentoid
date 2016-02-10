@@ -211,43 +211,56 @@ public final class Helper {
         return new Gson().fromJson(json, type);
     }
 
-    public static void saveInStorage(File file, String imageUrl)
+    public static void saveInStorage(File dir, String filename, String imageUrl)
             throws Exception {
 
-//        imageUrl = Helper.escapeURL(imageUrl);
-
+        final int BUFFER_SIZE = 23 * 1024;
         OutputStream output = null;
         InputStream input = null;
+        File file = null;
 
         try {
-            if (!file.exists()) {
-                final int BUFFER_SIZE = 23 * 1024;
-
-                URL url = new URL(imageUrl);
-                String sessionCookie = Helper.getSessionCookie();
-
-                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.setConnectTimeout(10000);
-                urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
-                if (!sessionCookie.isEmpty()) {
-                    urlConnection.setRequestProperty("Cookie", sessionCookie);
-                }
-                urlConnection.connect();
-
-                input = urlConnection.getInputStream();
-
-                output = new FileOutputStream(file);
-
-                byte data[] = new byte[BUFFER_SIZE];
-                int count;
-                while ((count = input.read(data, 0, BUFFER_SIZE)) != -1) {
-                    output.write(data, 0, count);
-                }
-                output.flush();
+            URL url = new URL(imageUrl);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestMethod("GET");
+            urlConnection.setConnectTimeout(10000);
+            urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
+            String sessionCookie = Helper.getSessionCookie();
+            if (!sessionCookie.isEmpty()) {
+                urlConnection.setRequestProperty("Cookie", sessionCookie);
             }
-        } catch (Exception e) {
+
+            switch (urlConnection.getHeaderField("Content-Type")) {
+                case "image/png":
+                    file = new File(dir, filename + ".png");
+                    break;
+                case "image/gif":
+                    file = new File(dir, filename + ".gif");
+                    break;
+                default:
+                    file = new File(dir, filename + ".jpg");
+                    break;
+            }
+
             if (file.exists()) {
+                urlConnection.disconnect();
+                return;
+            }
+
+            input = urlConnection.getInputStream();
+
+            output = new FileOutputStream(file);
+
+            byte data[] = new byte[BUFFER_SIZE];
+            int count;
+            while ((count = input.read(data, 0, BUFFER_SIZE)) != -1) {
+                output.write(data, 0, count);
+            }
+            output.flush();
+            urlConnection.disconnect();
+
+        } catch (Exception e) {
+            if (file != null) {
                 //noinspection ResultOfMethodCallIgnored
                 file.delete();
             }
