@@ -273,7 +273,6 @@ public class DownloadManagerService extends IntentService {
     }
 
     private void parseImageFiles(Content content) throws Exception {
-        content.setImageFiles(new ArrayList<ImageFile>());
         List<String> aUrls = new ArrayList<>();
         try {
             switch (content.getSite()) {
@@ -295,15 +294,16 @@ public class DownloadManagerService extends IntentService {
         }
 
         int i = 1;
+        List<ImageFile> imageFileList = new ArrayList<>();
         for (String str : aUrls) {
             String name = String.format(Locale.US, "%03d", i) + ".jpg";
-            ImageFile imageFile = new ImageFile();
-            imageFile.setUrl(str);
-            imageFile.setOrder(i++);
-            imageFile.setStatus(StatusContent.SAVED);
-            imageFile.setName(name);
-            content.getImageFiles().add(imageFile);
+            imageFileList.add(new ImageFile()
+                    .setUrl(str)
+                    .setOrder(i++)
+                    .setStatus(StatusContent.SAVED)
+                    .setName(name));
         }
+        content.setImageFiles(imageFileList);
         db.insertImageFiles(content);
     }
 }
