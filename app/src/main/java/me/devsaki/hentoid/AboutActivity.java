@@ -37,7 +37,9 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
         setTitle(R.string.title_activity_about);
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         final Intent intent = new Intent(Intent.ACTION_VIEW);
 
