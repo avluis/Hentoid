@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.WebActivities;
+package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.parser.HitomiParser;
 
@@ -16,7 +17,7 @@ import me.devsaki.hentoid.parser.HitomiParser;
  * Created by Shiro on 1/20/2016.
  * TODO: Re-implement as Activity ->> Fragment.
  */
-public class HitomiActivity extends WebActivity {
+public class HitomiActivity extends BaseWebActivity {
 
     private static final String TAG = HitomiActivity.class.getName();
 

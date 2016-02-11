@@ -18,9 +18,9 @@ import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.WebActivities.HitomiActivity;
-import me.devsaki.hentoid.WebActivities.NhentaiActivity;
-import me.devsaki.hentoid.WebActivities.TsuminoActivity;
+import me.devsaki.hentoid.activities.HitomiActivity;
+import me.devsaki.hentoid.activities.NhentaiActivity;
+import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 
 /**

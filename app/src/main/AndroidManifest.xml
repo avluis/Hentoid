@@ -29,25 +29,25 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity
-            android:name=".WebActivities.WebActivity"
+            android:name=".abstracts.BaseWebActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name=".WebActivities.HitomiActivity"
+            android:name=".activities.HitomiActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name=".WebActivities.NhentaiActivity"
+            android:name=".activities.NhentaiActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             tools:ignore="InnerclassSeparator" />
         <activity
-            android:name=".WebActivities.TsuminoActivity"
+            android:name=".activities.TsuminoActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"

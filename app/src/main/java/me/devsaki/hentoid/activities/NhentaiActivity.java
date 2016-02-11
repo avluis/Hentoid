@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.WebActivities;
+package me.devsaki.hentoid.activities;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -9,6 +9,7 @@ import android.webkit.WebView;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.parser.NhentaiParser;
@@ -19,7 +20,7 @@ import me.devsaki.hentoid.util.HttpClientHelper;
  * Created by Shiro on 1/20/2016.
  * TODO: Re-implement as Activity ->> Fragment.
  */
-public class NhentaiActivity extends WebActivity {
+public class NhentaiActivity extends BaseWebActivity {
 
     private static final String TAG = NhentaiActivity.class.getName();
 

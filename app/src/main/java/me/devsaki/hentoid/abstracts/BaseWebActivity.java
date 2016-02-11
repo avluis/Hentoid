@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.WebActivities;
+package me.devsaki.hentoid.abstracts;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -38,8 +38,8 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
  * TODO: No particular source should be filtered/defined here.
  * TODO: The source itself should contain every method it needs to function.
  */
-public class WebActivity extends AppCompatActivity {
-    private static final String TAG = WebActivity.class.getName();
+public class BaseWebActivity extends AppCompatActivity {
+    private static final String TAG = BaseWebActivity.class.getName();
     protected ObservableWebView webView;
     private HentoidDB db;
     private Content currentContent;

@@ -28,22 +28,22 @@ public class Attribute extends AttributeTable {
         return url;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public AttributeType getType() {
-        return type;
-    }
-
     public Attribute setUrl(String url) {
         this.url = url;
         return this;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public Attribute setName(String name) {
         this.name = name;
         return this;
+    }
+
+    public AttributeType getType() {
+        return type;
     }
 
     public Attribute setType(AttributeType type) {

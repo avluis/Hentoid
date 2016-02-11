@@ -27,21 +27,13 @@ public class ImageFile extends ImageFileTable {
         return order;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public StatusContent getStatus() {
-        return status;
-    }
-
     public ImageFile setOrder(Integer order) {
         this.order = order;
         return this;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public ImageFile setUrl(String url) {
@@ -49,9 +41,17 @@ public class ImageFile extends ImageFileTable {
         return this;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public ImageFile setName(String name) {
         this.name = name;
         return this;
+    }
+
+    public StatusContent getStatus() {
+        return status;
     }
 
     public ImageFile setStatus(StatusContent status) {

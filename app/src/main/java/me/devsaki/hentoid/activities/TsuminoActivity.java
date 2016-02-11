@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.WebActivities;
+package me.devsaki.hentoid.activities;
 
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -6,13 +6,13 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebBackForwardList;
 import android.webkit.WebView;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.parser.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
@@ -21,7 +21,7 @@ import me.devsaki.hentoid.util.Helper;
  * Created by Shiro on 1/22/2016.
  * TODO: Re-implement as Activity ->> Fragment.
  */
-public class TsuminoActivity extends WebActivity {
+public class TsuminoActivity extends BaseWebActivity {
 
     private static final String TAG = TsuminoActivity.class.getName();
     private boolean downloadFabPressed = false;

@@ -8,7 +8,6 @@ import android.util.Log;
 import android.widget.TextView;
 
 import com.github.lzyzsd.circleprogress.DonutProgress;
-import com.google.gson.Gson;
 
 import java.io.File;
 import java.io.IOException;

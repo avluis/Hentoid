@@ -4,10 +4,10 @@ import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
-import me.devsaki.hentoid.WebActivities.HitomiActivity;
-import me.devsaki.hentoid.WebActivities.NhentaiActivity;
-import me.devsaki.hentoid.WebActivities.TsuminoActivity;
-import me.devsaki.hentoid.WebActivities.WebActivity;
+import me.devsaki.hentoid.activities.HitomiActivity;
+import me.devsaki.hentoid.activities.NhentaiActivity;
+import me.devsaki.hentoid.activities.TsuminoActivity;
+import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
@@ -101,7 +101,7 @@ public class Content extends ContentTable {
             case TSUMINO:
                 return TsuminoActivity.class;
             default:
-                return WebActivity.class; //Fallback for Pururin and Fakku
+                return BaseWebActivity.class; //Fallback for Pururin and Fakku
         }
     }
 
