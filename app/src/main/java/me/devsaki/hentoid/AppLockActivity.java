@@ -2,7 +2,6 @@ package me.devsaki.hentoid;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -42,8 +41,7 @@ public class AppLockActivity extends AppCompatActivity {
     @SuppressWarnings("UnusedParameters")
     public void checkPin(View view) {
         String pin = ((EditText) findViewById(R.id.etPin)).getText().toString();
-        String appLock = PreferenceManager
-                .getDefaultSharedPreferences(this)
+        String appLock = HentoidApplication.getAppPreferences()
                 .getString(ConstantsPreferences.PREF_APP_LOCK, "");
         if (appLock.equals(pin)) {
             Intent intent = new Intent(this, DownloadsActivity.class);

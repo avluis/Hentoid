@@ -106,7 +106,7 @@ public class Content extends ContentTable {
     }
 
     public String getCategory() {
-        if (getSite() == Site.FAKKU)
+        if (site == Site.FAKKU)
             return url.substring(1, url.lastIndexOf("/"));
         else {
             List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);

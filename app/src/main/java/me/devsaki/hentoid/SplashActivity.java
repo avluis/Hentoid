@@ -2,7 +2,6 @@ package me.devsaki.hentoid;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
 import me.devsaki.hentoid.util.ConstantsPreferences;
@@ -19,8 +18,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final String appLock = PreferenceManager
-                .getDefaultSharedPreferences(this)
+        final String appLock = HentoidApplication.getAppPreferences()
                 .getString(ConstantsPreferences.PREF_APP_LOCK, "");
 
         if (appLock.isEmpty()) {

@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
@@ -189,8 +188,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    SharedPreferences prefs = PreferenceManager
-                            .getDefaultSharedPreferences(getActivity());
+                    SharedPreferences prefs = HentoidApplication.getAppPreferences();
                     String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
                     File nomedia = new File(settingDir, ".nomedia");
                     if (!nomedia.exists())
@@ -224,9 +222,8 @@ public class PreferencesActivity extends PreferenceActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     String lock = input.getText().toString();
-                                    SharedPreferences prefs = PreferenceManager
-                                            .getDefaultSharedPreferences(getActivity());
-                                    SharedPreferences.Editor editor = prefs.edit();
+                                    SharedPreferences.Editor editor = HentoidApplication
+                                            .getAppPreferences().edit();
                                     editor.putString(ConstantsPreferences.PREF_APP_LOCK, lock);
                                     editor.apply();
                                     if (lock.isEmpty())

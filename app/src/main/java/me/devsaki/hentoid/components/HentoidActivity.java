@@ -2,10 +2,8 @@ package me.devsaki.hentoid.components;
 
 import android.app.FragmentManager;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -30,7 +28,6 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private HentoidDB db;
-    private SharedPreferences sharedPreferences;
     private T fragment;
 
     @Override
@@ -50,7 +47,6 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
             getSupportActionBar().setHomeButtonEnabled(true);
         }
 
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         db = new HentoidDB(this);
 
         fragment = buildFragment();
@@ -150,9 +146,5 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
 
     public HentoidDB getDB() {
         return db;
-    }
-
-    public SharedPreferences getSharedPreferences() {
-        return sharedPreferences;
     }
 }

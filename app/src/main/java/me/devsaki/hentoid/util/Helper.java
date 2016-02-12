@@ -5,7 +5,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
-import android.preference.PreferenceManager;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,14 +38,12 @@ public final class Helper {
     }
 
     public static String getSessionCookie() {
-        return PreferenceManager
-                .getDefaultSharedPreferences(HentoidApplication.getInstance())
+        return HentoidApplication.getAppPreferences()
                 .getString(ConstantsPreferences.WEB_SESSION_COOKIE, "");
     }
 
     public static void setSessionCookie(String sessionCookie) {
-        PreferenceManager
-                .getDefaultSharedPreferences(HentoidApplication.getInstance())
+        HentoidApplication.getAppPreferences()
                 .edit()
                 .putString(ConstantsPreferences.WEB_SESSION_COOKIE, sessionCookie)
                 .apply();
@@ -54,8 +51,7 @@ public final class Helper {
 
     public static File getDownloadDir(Content content, Context context) {
         File file;
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(context);
+        SharedPreferences prefs = HentoidApplication.getAppPreferences();
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
         if (settingDir.isEmpty()) {
@@ -76,8 +72,7 @@ public final class Helper {
 
     public static File getDownloadDir(Site site, Context context) {
         File file;
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(context);
+        SharedPreferences prefs = HentoidApplication.getAppPreferences();
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
