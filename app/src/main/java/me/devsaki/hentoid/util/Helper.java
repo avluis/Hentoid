@@ -57,17 +57,14 @@ public final class Helper {
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(context);
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+        String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(content.getSite().getFolder() + "/" +
-                            content.getUniqueSiteId(),
-                    context);
+            return getDefaultDir(folderDir, context);
         }
-        file = new File(settingDir, content.getSite().getFolder() + "/" +
-                content.getUniqueSiteId());
+        file = new File(settingDir, folderDir);
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                file = new File(settingDir + content.getSite().getFolder() + "/" +
-                        content.getUniqueSiteId());
+                file = new File(settingDir + folderDir);
                 if (!file.exists()) {
                     //noinspection ResultOfMethodCallIgnored
                     file.mkdirs();
@@ -82,13 +79,14 @@ public final class Helper {
         SharedPreferences prefs = PreferenceManager
                 .getDefaultSharedPreferences(context);
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+        String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(site.getFolder() + "/", context);
+            return getDefaultDir(folderDir, context);
         }
-        file = new File(settingDir, site.getFolder() + "/");
+        file = new File(settingDir, folderDir);
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                file = new File(settingDir + site.getFolder() + "/");
+                file = new File(settingDir + folderDir);
                 if (!file.exists()) {
                     //noinspection ResultOfMethodCallIgnored
                     file.mkdirs();
