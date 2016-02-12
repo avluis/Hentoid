@@ -133,7 +133,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
         String image = coverFile.exists() ? coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
-        ((HentoidApplication) getContext().getApplicationContext()).loadBitmap(image, ivCover);
+        HentoidApplication.getInstance().loadBitmap(image, ivCover);
 
         Button btnRead = (Button) rowView.findViewById(R.id.btnRead);
         btnRead.setOnClickListener(new View.OnClickListener() {
@@ -188,8 +188,8 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 HentoidDB db = new HentoidDB(getContext());
-                                content.setStatus(StatusContent.DOWNLOADING);
-                                content.setDownloadDate(new Date().getTime());
+                                content.setStatus(StatusContent.DOWNLOADING)
+                                        .setDownloadDate(new Date().getTime());
                                 db.updateContentStatus(content);
                                 Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
                                         DownloadManagerService.class);

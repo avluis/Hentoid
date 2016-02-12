@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.components;
 
 import android.app.ListFragment;
-import android.content.SharedPreferences;
 
 import me.devsaki.hentoid.database.HentoidDB;
 
@@ -10,10 +9,6 @@ import me.devsaki.hentoid.database.HentoidDB;
  */
 
 public abstract class HentoidFragment extends ListFragment {
-
-    protected SharedPreferences getSharedPreferences() {
-        return ((HentoidActivity) getActivity()).getSharedPreferences();
-    }
 
     protected HentoidDB getDB() {
         return ((HentoidActivity) getActivity()).getDB();

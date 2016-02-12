@@ -11,9 +11,9 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 /**
@@ -79,16 +79,14 @@ public class NhentaiParser {
             attributes.add(attribute);
         }
 
-        Content result = new Content(
-                titleTEMP,
-                urlTEMP,
-                coverImageUrl,
-                attributes,
-                qtyPagesTEMP,
-                Site.NHENTAI
-        );
-        result.setImageFiles(new ArrayList<ImageFile>(qtyPagesTEMP));
-        return result;
+        return new Content()
+                .setTitle(titleTEMP)
+                .setUrl(urlTEMP)
+                .setCoverImageUrl(coverImageUrl)
+                .setAttributes(attributes)
+                .setQtyPages(qtyPagesTEMP)
+                .setStatus(StatusContent.SAVED)
+                .setSite(Site.NHENTAI);
     }
 
     public static List<String> parseImageList(String json) {

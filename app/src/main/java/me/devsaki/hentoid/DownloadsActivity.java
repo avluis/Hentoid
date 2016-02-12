@@ -131,8 +131,9 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
             int tempIndex = index;
             searchContent();
             ListView list = getListView();
-            if (tempIndex > -1)
+            if (tempIndex > -1) {
                 list.setSelectionFromTop(tempIndex, 0);
+            }
         }
 
         @SuppressLint("ShowToast")
@@ -141,11 +142,13 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
-            qtyPages = Integer.parseInt(getSharedPreferences()
+            SharedPreferences preferences = HentoidApplication.getAppPreferences();
+
+            qtyPages = Integer.parseInt(preferences
                     .getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
                             ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
 
-            order = getSharedPreferences()
+            order = preferences
                     .getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
                             ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
 
@@ -200,20 +203,22 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
                 }
             });
 
-            String settingDir = getSharedPreferences().getString(Constants.SETTINGS_FOLDER, "");
+            String settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
 
             if (settingDir.isEmpty()) {
                 Intent intent = new Intent(getActivity(), SelectFolderActivity.class);
                 startActivity(intent);
                 getActivity().finish();
-            } else searchContent();
+            } else {
+                searchContent();
+            }
 
             return rootView;
         }
 
         @Override
         public void onPause() {
-            SharedPreferences.Editor editor = getSharedPreferences().edit();
+            SharedPreferences.Editor editor = HentoidApplication.getAppPreferences().edit();
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
             ListView list = getListView();
             index = list.getFirstVisiblePosition();

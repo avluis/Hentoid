@@ -5,16 +5,14 @@ package me.devsaki.hentoid.database.enums;
  */
 public enum AttributeType {
 
-    ARTIST(0, "Artist"), PUBLISHER(1, "Publisher"), LANGUAGE(2, "Language"), TAG(3, "Tag"),
-    TRANSLATOR(4, "Translator"), SERIE(5, "Serie"), UPLOADER(6, "Uploader"), CIRCLE(7, "Circle"),
-    CHARACTER(8, "Character"), CATEGORY(9, "Category");
+    ARTIST(0), PUBLISHER(1), LANGUAGE(2), TAG(3),
+    TRANSLATOR(4), SERIE(5), UPLOADER(6), CIRCLE(7),
+    CHARACTER(8), CATEGORY(9);
 
     private final int code;
-    private final String description;
 
-    AttributeType(int code, String description) {
+    AttributeType(int code) {
         this.code = code;
-        this.description = description;
     }
 
     public static AttributeType searchByCode(int code) {
@@ -29,9 +27,5 @@ public enum AttributeType {
 
     public int getCode() {
         return code;
-    }
-
-    public String getDescription() {
-        return description;
     }
 }

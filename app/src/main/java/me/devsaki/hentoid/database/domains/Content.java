@@ -42,31 +42,13 @@ public class Content extends ContentTable {
     @Expose
     private Site site;
 
-    public Content() {
-        //Default Constructor
-    }
-
-    public Content(String title,
-                   String url,
-                   String coverImageUrl,
-                   AttributeMap attributes,
-                   Integer qtyPages,
-                   Site site) {
-        this.title = title;
-        this.url = url;
-        this.coverImageUrl = coverImageUrl;
-        this.attributes = attributes;
-        this.qtyPages = qtyPages;
-        this.site = site;
-        status = StatusContent.SAVED;
-    }
-
     public AttributeMap getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(AttributeMap attributes) {
+    public Content setAttributes(AttributeMap attributes) {
         this.attributes = attributes;
+        return this;
     }
 
     public int getId() {
@@ -106,12 +88,14 @@ public class Content extends ContentTable {
     }
 
     public String getCategory() {
-        if (getSite() == Site.FAKKU)
+        if (site == Site.FAKKU) {
             return url.substring(1, url.lastIndexOf("/"));
+        }
         else {
             List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);
-            if (attributesList != null && attributesList.size() > 0)
+            if (attributesList != null && attributesList.size() > 0) {
                 return attributesList.get(0).getName();
+            }
         }
         return null;
     }
@@ -120,8 +104,9 @@ public class Content extends ContentTable {
         return url;
     }
 
-    public void setUrl(String url) {
+    public Content setUrl(String url) {
         this.url = url;
+        return this;
     }
 
     public String getGalleryUrl() {
@@ -163,72 +148,80 @@ public class Content extends ContentTable {
         return title;
     }
 
-    public void setTitle(String title) {
+    public Content setTitle(String title) {
         this.title = title;
+        return this;
     }
 
     public String getCoverImageUrl() {
         return coverImageUrl;
     }
 
-    public void setCoverImageUrl(String coverImageUrl) {
+    public Content setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
+        return this;
     }
 
     public Integer getQtyPages() {
         return qtyPages;
     }
 
-    public void setQtyPages(Integer qtyPages) {
+    public Content setQtyPages(Integer qtyPages) {
         this.qtyPages = qtyPages;
+        return this;
     }
 
     public long getUploadDate() {
         return uploadDate;
     }
 
-    public void setUploadDate(long uploadDate) {
+    public Content setUploadDate(long uploadDate) {
         this.uploadDate = uploadDate;
+        return this;
     }
 
     public long getDownloadDate() {
         return downloadDate;
     }
 
-    public void setDownloadDate(long downloadDate) {
+    public Content setDownloadDate(long downloadDate) {
         this.downloadDate = downloadDate;
+        return this;
     }
 
     public StatusContent getStatus() {
         return status;
     }
 
-    public void setStatus(StatusContent status) {
+    public Content setStatus(StatusContent status) {
         this.status = status;
+        return this;
     }
 
     public List<ImageFile> getImageFiles() {
         return imageFiles;
     }
 
-    public void setImageFiles(List<ImageFile> imageFiles) {
+    public Content setImageFiles(List<ImageFile> imageFiles) {
         this.imageFiles = imageFiles;
+        return this;
     }
 
     public double getPercent() {
         return percent;
     }
 
-    public void setPercent(double percent) {
+    public Content setPercent(double percent) {
         this.percent = percent;
+        return this;
     }
 
     public Site getSite() {
         return site;
     }
 
-    public void setSite(Site site) {
+    public Content setSite(Site site) {
         this.site = site;
+        return this;
     }
-
 }

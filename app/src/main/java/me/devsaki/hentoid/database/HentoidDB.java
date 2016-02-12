@@ -370,17 +370,17 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     private Content populateContent(Cursor cursorContent, SQLiteDatabase db) {
-        Content content = new Content();
-        content.setUrl(cursorContent.getString(3));
-        content.setTitle(cursorContent.getString(4));
-        content.setQtyPages(cursorContent.getInt(6));
-        content.setUploadDate(cursorContent.getLong(7));
-        content.setDownloadDate(cursorContent.getLong(8));
-        content.setStatus(StatusContent.searchByCode(cursorContent.getInt(9)));
-        content.setCoverImageUrl(cursorContent.getString(10));
-        content.setSite(Site.searchByCode(cursorContent.getInt(11)));
-        content.setImageFiles(selectImageFilesByContentId(db, content.getId()));
-        content.setAttributes(selectAttributesByContentId(db, content.getId()));
+        Content content = new Content()
+                .setUrl(cursorContent.getString(3))
+                .setTitle(cursorContent.getString(4))
+                .setQtyPages(cursorContent.getInt(6))
+                .setUploadDate(cursorContent.getLong(7))
+                .setDownloadDate(cursorContent.getLong(8))
+                .setStatus(StatusContent.searchByCode(cursorContent.getInt(9)))
+                .setCoverImageUrl(cursorContent.getString(10))
+                .setSite(Site.searchByCode(cursorContent.getInt(11)));
+        content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
+                .setAttributes(selectAttributesByContentId(db, content.getId()));
         return content;
     }
 

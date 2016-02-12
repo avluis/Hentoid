@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -45,8 +44,7 @@ public class SelectFolderActivity extends AppCompatActivity implements
 
         mDialog = DirectoryChooserFragment.newInstance(Constants.DEFAULT_LOCAL_DIRECTORY, null);
 
-        SharedPreferences prefs = PreferenceManager
-                .getDefaultSharedPreferences(this);
+        SharedPreferences prefs = HentoidApplication.getAppPreferences();
         editor = prefs.edit();
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         if (!settingDir.isEmpty()) {

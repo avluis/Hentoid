@@ -1,7 +1,6 @@
 package me.devsaki.hentoid;
 
 import android.app.Application;
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.widget.ImageView;
@@ -25,23 +24,26 @@ public class HentoidApplication extends Application {
 
     private static final String TAG = HentoidApplication.class.getName();
     private static HentoidApplication instance;
-    private SharedPreferences sharedPreferences;
+    private static SharedPreferences sharedPreferences;
 
-    public static Context getInstance() {
+    public static HentoidApplication getInstance() {
         return instance;
+    }
+
+    public static SharedPreferences getAppPreferences() {
+        return sharedPreferences;
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         instance = this;
+        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         AndroidHelper.ignoreSslErrors();
 
         HentoidDB db = new HentoidDB(this);
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
-
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (sharedPreferences.getString(
                 ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,

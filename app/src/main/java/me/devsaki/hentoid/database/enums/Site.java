@@ -9,25 +9,23 @@ import me.devsaki.hentoid.R;
  */
 public enum Site {
 
-    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_favicon_fakku, "/Downloads"),
-    PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_favicon_pururin, "/Pururin"),
-    HITOMI(2, "Hitomi", "https://hitomi.la", R.drawable.ic_favicon_hitomi, "/Hitomi"),
-    NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_favicon_nhentai, "/nhentai"),
-    TSUMINO(4, "Tsumino", "http://www.tsumino.com", R.drawable.ic_favicon_tsumino, "/Tsumino");
+    FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_favicon_fakku),
+    PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_favicon_pururin),
+    HITOMI(2, "Hitomi", "https://hitomi.la", R.drawable.ic_favicon_hitomi),
+    NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_favicon_nhentai),
+    TSUMINO(4, "Tsumino", "http://www.tsumino.com", R.drawable.ic_favicon_tsumino);
 
     private static final String TAG = Site.class.getName();
     private final int code;
     private final String description;
     private final String url;
-    private final String folder;
     private final int ico;
 
-    Site(int code, String description, String url, int ico, String folder) {
+    Site(int code, String description, String url, int ico) {
         this.code = code;
         this.description = description;
         this.url = url;
         this.ico = ico;
-        this.folder = folder;
     }
 
     public static Site searchByCode(int code) {
@@ -60,6 +58,10 @@ public enum Site {
     }
 
     public String getFolder() {
-        return folder;
+        if (this == FAKKU) {
+            return "/Downloads/";
+        } else {
+            return '/' + description + '/';
+        }
     }
 }

@@ -8,13 +8,13 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.StrictMode;
-import android.preference.PreferenceManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import java.io.File;
 import java.util.Arrays;
 
+import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 
@@ -24,8 +24,7 @@ import me.devsaki.hentoid.database.domains.Content;
 public class AndroidHelper {
 
     public static void openContent(Content content, final Context context) {
-        SharedPreferences sharedPreferences = PreferenceManager
-                .getDefaultSharedPreferences(context);
+        SharedPreferences sharedPreferences = HentoidApplication.getAppPreferences();
         File dir = Helper.getDownloadDir(content, context);
 
         File imageFile = null;
