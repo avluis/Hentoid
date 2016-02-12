@@ -7,6 +7,10 @@ import android.preference.PreferenceManager;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.StandardExceptionParser;
+import com.google.android.gms.analytics.Tracker;
 
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.StatusContent;
@@ -24,17 +28,75 @@ import me.devsaki.hentoid.util.ImageQuality;
 public class HentoidApplication extends Application {
 
     private static final String TAG = HentoidApplication.class.getName();
-    private static HentoidApplication instance;
+    private static HentoidApplication mInstance;
     private SharedPreferences sharedPreferences;
 
-    public static Context getInstance() {
-        return instance;
+    public static synchronized Context getInstance() {
+        return mInstance;
+    }
+
+    public synchronized Tracker getGoogleAnalyticsTracker() {
+        AnalyticsTrackers trackers = AnalyticsTrackers.getInstance();
+        return trackers.get(AnalyticsTrackers.Target.APP);
+    }
+
+    /***
+     * Tracking screen view
+     *
+     * @param screenName screen name to be displayed on GA dashboard
+     */
+    public void trackScreenView(String screenName) {
+        Tracker tracker = getGoogleAnalyticsTracker();
+
+        // Set screen name.
+        tracker.setScreenName(screenName);
+
+        // Send a screen view.
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
+
+        GoogleAnalytics.getInstance(this).dispatchLocalHits();
+    }
+
+    /***
+     * Tracking exception
+     *
+     * @param e exception to be tracked
+     */
+    public void trackException(Exception e) {
+        if (e != null) {
+            Tracker tracker = getGoogleAnalyticsTracker();
+
+            tracker.send(new HitBuilders.ExceptionBuilder()
+                    .setDescription(new StandardExceptionParser(this, null)
+                            .getDescription(Thread.currentThread().getName(), e))
+                    .setFatal(false)
+                    .build()
+            );
+        }
+    }
+
+    /***
+     * Tracking event
+     *
+     * @param category event category
+     * @param action   action of the event
+     * @param label    label
+     */
+    public void trackEvent(String category, String action, String label) {
+        Tracker tracker = getGoogleAnalyticsTracker();
+
+        // Build and send an Event.
+        tracker.send(new HitBuilders.EventBuilder().setCategory(category).setAction(action)
+                .setLabel(label).build());
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
-        instance = this;
+        mInstance = this;
+
+        AnalyticsTrackers.initialize(this);
+        AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
 
         AndroidHelper.ignoreSslErrors();
 
@@ -86,6 +148,7 @@ public class HentoidApplication extends Application {
                 break;
         }
 
-        Glide.with(this).load(image).override(imageQuality.getWidth(), imageQuality.getHeight()).into(mImageView);
+        Glide.with(this).load(image).override(imageQuality.getWidth(),
+                imageQuality.getHeight()).into(mImageView);
     }
 }
