@@ -12,6 +12,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 /**
@@ -53,14 +54,14 @@ public class HitomiParser {
 
             int pages = doc.select(".thumbnail-container").size();
 
-            return new Content(
-                    titleTEMP,
-                    urlTEMP,
-                    coverImageUrlTEMP,
-                    attributes,
-                    pages,
-                    Site.HITOMI
-            );
+            return new Content()
+                    .setTitle(titleTEMP)
+                    .setUrl(urlTEMP)
+                    .setCoverImageUrl(coverImageUrlTEMP)
+                    .setAttributes(attributes)
+                    .setQtyPages(pages)
+                    .setStatus(StatusContent.SAVED)
+                    .setSite(Site.HITOMI);
         }
         return null;
     }

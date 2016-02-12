@@ -12,6 +12,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 /**
@@ -39,9 +40,9 @@ public class TsuminoParser {
 
             int qtyPages =
                     Integer.parseInt(content
-                            .select(":has(div.book-info:containsOwn(Pages))")
-                            .select("div.book-data")
-                            .text()
+                                    .select(":has(div.book-info:containsOwn(Pages))")
+                                    .select("div.book-data")
+                                    .text()
                     );
 
             AttributeMap attributes = new AttributeMap();
@@ -66,15 +67,14 @@ public class TsuminoParser {
                     .select("a.book-tag");
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
 
-
-            return new Content(
-                    title,
-                    url,
-                    coverUrl,
-                    attributes,
-                    qtyPages,
-                    Site.TSUMINO
-            );
+            return new Content()
+                    .setTitle(title)
+                    .setUrl(url)
+                    .setCoverImageUrl(coverUrl)
+                    .setAttributes(attributes)
+                    .setQtyPages(qtyPages)
+                    .setStatus(StatusContent.SAVED)
+                    .setSite(Site.TSUMINO);
         }
         return null;
     }

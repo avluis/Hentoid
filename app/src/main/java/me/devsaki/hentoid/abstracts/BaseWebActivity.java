@@ -187,8 +187,8 @@ public class BaseWebActivity extends AppCompatActivity {
             return;
         }
         Toast.makeText(this, R.string.in_queue, Toast.LENGTH_SHORT).show();
-        currentContent.setDownloadDate(new Date().getTime());
-        currentContent.setStatus(StatusContent.DOWNLOADING);
+        currentContent.setDownloadDate(new Date().getTime())
+                .setStatus(StatusContent.DOWNLOADING);
 
         db.updateContentStatus(currentContent);
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
@@ -243,9 +243,9 @@ public class BaseWebActivity extends AppCompatActivity {
 
         Content contentDB = db.selectContentById(content.getUrl().hashCode());
         if (contentDB != null) {
-            content.setStatus(contentDB.getStatus());
-            content.setImageFiles(contentDB.getImageFiles());
-            content.setDownloadDate(contentDB.getDownloadDate());
+            content.setStatus(contentDB.getStatus())
+                    .setImageFiles(contentDB.getImageFiles())
+                    .setDownloadDate(contentDB.getDownloadDate());
         }
         db.insertContent(content);
 

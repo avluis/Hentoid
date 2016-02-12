@@ -122,12 +122,6 @@ public class ContentV1 extends ContentTable {
     }
 
     public Content toContent() {
-        Content content = new Content();
-        content.setSite(getSite());
-        content.setUrl(url);
-        content.setUploadDate(uploadDate);
-
-        //Process and add attributes
         AttributeMap attributes = new AttributeMap();
         attributes.add(artists);
         attributes.add(publishers);
@@ -136,14 +130,17 @@ public class ContentV1 extends ContentTable {
         if (serie != null) attributes.add(serie);
         if (language != null) attributes.add(language);
         if (user != null) attributes.add(user);
-        content.setAttributes(attributes);
 
-        content.setImageFiles(imageFiles);
-        content.setCoverImageUrl(coverImageUrl);
-        content.setTitle(title);
-        content.setQtyPages(qtyPages);
-        content.setDownloadDate(downloadDate);
-        content.setStatus(status);
-        return content;
+        return new Content()
+                .setSite(getSite())
+                .setUrl(url)
+                .setUploadDate(uploadDate)
+                .setAttributes(attributes)
+                .setImageFiles(imageFiles)
+                .setCoverImageUrl(coverImageUrl)
+                .setTitle(title)
+                .setQtyPages(qtyPages)
+                .setDownloadDate(downloadDate)
+                .setStatus(status);
     }
 }
