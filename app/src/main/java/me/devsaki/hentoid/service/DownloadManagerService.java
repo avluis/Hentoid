@@ -141,7 +141,7 @@ public class DownloadManagerService extends IntentService {
                 try {
                     if (imageFile.getStatus() != StatusContent.IGNORED) {
                         if (!NetworkStatus.isOnline(this))
-                            throw new Exception("Not connection");
+                            throw new Exception("No connection!");
                         Helper.saveInStorage(dir, imageFile.getName(), imageFile.getUrl());
                         Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / "
                                 + content.getTitle());
@@ -247,6 +247,9 @@ public class DownloadManagerService extends IntentService {
                     break;
                 case SAVED:
                     resource = R.string.download_cancelled;
+                    // Tracking Event (Download Cancelled)
+                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                            "Download Content: Cancelled.");
                     break;
                 case ERROR:
                     resource = R.string.download_error;
@@ -266,9 +269,8 @@ public class DownloadManagerService extends IntentService {
 
         } else {
             mBuilder.setContentText(getResources().getString(R.string.downloading)
-                    + String.format(Locale.US, "%.2f", percent) + "%");
+                    + String.format(Locale.US, " %.2f", percent) + "%");
             mBuilder.setProgress(100, (int) percent, percent == 0);
-
         }
         notify(mBuilder, notificationID, percent, resultPendingIntent);
     }
