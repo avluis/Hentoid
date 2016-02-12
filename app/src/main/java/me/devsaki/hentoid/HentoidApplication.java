@@ -16,6 +16,7 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
+import me.devsaki.hentoid.util.AnalyticsTrackers;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.ImageQuality;

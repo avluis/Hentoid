@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.util;
 
 import android.content.Context;
 
@@ -7,6 +7,8 @@ import com.google.android.gms.analytics.Tracker;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import me.devsaki.hentoid.R;
 
 /**
  * Created by avluis on 2/11/16.

@@ -12,7 +12,18 @@
     <!-- Additional metrics -->
     <string name="ga_sampleFrequency">100.0</string>
 
+    <!-- Track app crashes -->
     <bool name="ga_reportUncaughtExceptions">true</bool>
+
+    <!-- Manually defined screen names -->
+    <screenName name="me.devsaki.hentoid.activities.HitomiActivity">Hitomi</screenName>
+    <screenName name="me.devsaki.hentoid.activities.NhentaiActivity">NHentai</screenName>
+    <screenName name="me.devsaki.hentoid.activities.TsuminoActivity">Tsumino</screenName>
+    <screenName name="me.devsaki.hentoid.abstracts.BaseWebActivity">Legacy WebView</screenName>
+    <screenName name="me.devsaki.hentoid.DownloadsActivity">Downloads</screenName>
+    <screenName name="me.devsaki.hentoid.AboutActivity">About</screenName>
+    <screenName name="me.devsaki.hentoid.ImporterActivity">Import</screenName>
+    <screenName name="me.devsaki.hentoid.PreferencesActivity">Preferences</screenName>
 
     <!-- See Project Structure -> Analytics -> Google Analytics -> Learn More
       to learn more about configuring this file. -->
