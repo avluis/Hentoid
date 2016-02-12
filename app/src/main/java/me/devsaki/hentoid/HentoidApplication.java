@@ -32,7 +32,7 @@ public class HentoidApplication extends Application {
     private static HentoidApplication mInstance;
     private SharedPreferences sharedPreferences;
 
-    public static synchronized Context getInstance() {
+    public static synchronized HentoidApplication getInstance() {
         return mInstance;
     }
 

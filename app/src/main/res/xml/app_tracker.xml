@@ -21,6 +21,7 @@
     <screenName name="me.devsaki.hentoid.activities.TsuminoActivity">Tsumino</screenName>
     <screenName name="me.devsaki.hentoid.abstracts.BaseWebActivity">Legacy WebView</screenName>
     <screenName name="me.devsaki.hentoid.DownloadsActivity">Downloads</screenName>
+    <screenName name="me.devsaki.hentoid.DownloadManagerActivity">Download Manager</screenName>
     <screenName name="me.devsaki.hentoid.AboutActivity">About</screenName>
     <screenName name="me.devsaki.hentoid.ImporterActivity">Import</screenName>
     <screenName name="me.devsaki.hentoid.PreferencesActivity">Preferences</screenName>

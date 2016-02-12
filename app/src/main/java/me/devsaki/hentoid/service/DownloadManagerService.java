@@ -20,6 +20,7 @@ import java.util.Locale;
 
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
+import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -105,6 +106,10 @@ public class DownloadManagerService extends IntentService {
             }
 
             Log.i(TAG, "Start Download Content : " + content.getTitle());
+
+            // Tracking Event (Download Added)
+            HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                    "Download Content: Start.");
 
             boolean error = false;
             //Directory
@@ -233,6 +238,9 @@ public class DownloadManagerService extends IntentService {
             switch (content.getStatus()) {
                 case DOWNLOADED:
                     resource = R.string.download_completed;
+                    // Tracking Event (Download Completed)
+                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                            "Download Content: Success.");
                     break;
                 case PAUSED:
                     resource = R.string.download_paused;
@@ -242,9 +250,15 @@ public class DownloadManagerService extends IntentService {
                     break;
                 case ERROR:
                     resource = R.string.download_error;
+                    // Tracking Event (Download Error)
+                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                            "Download Content: Error.");
                     break;
                 case UNHANDLED_ERROR:
                     resource = R.string.unhandled_download_error;
+                    // Tracking Event (Download Unhandled Error)
+                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                            "Download Content: Unhandled Error.");
                     break;
             }
             mBuilder.setContentText(getResources().getString(resource));
