@@ -20,6 +20,7 @@ import java.util.Locale;
 
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
+import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -106,6 +107,10 @@ public class DownloadManagerService extends IntentService {
 
             Log.i(TAG, "Start Download Content : " + content.getTitle());
 
+            // Tracking Event (Download Added)
+            HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                    "Download Content: Start.");
+
             boolean error = false;
             //Directory
             File dir = Helper.getDownloadDir(content, this);
@@ -136,7 +141,7 @@ public class DownloadManagerService extends IntentService {
                 try {
                     if (imageFile.getStatus() != StatusContent.IGNORED) {
                         if (!NetworkStatus.isOnline(this))
-                            throw new Exception("Not connection");
+                            throw new Exception("No connection!");
                         Helper.saveInStorage(dir, imageFile.getName(), imageFile.getUrl());
                         Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / "
                                 + content.getTitle());
@@ -233,18 +238,30 @@ public class DownloadManagerService extends IntentService {
             switch (content.getStatus()) {
                 case DOWNLOADED:
                     resource = R.string.download_completed;
+                    // Tracking Event (Download Completed)
+                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                            "Download Content: Success.");
                     break;
                 case PAUSED:
                     resource = R.string.download_paused;
                     break;
                 case SAVED:
                     resource = R.string.download_cancelled;
+                    // Tracking Event (Download Cancelled)
+                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                            "Download Content: Cancelled.");
                     break;
                 case ERROR:
                     resource = R.string.download_error;
+                    // Tracking Event (Download Error)
+                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                            "Download Content: Error.");
                     break;
                 case UNHANDLED_ERROR:
                     resource = R.string.unhandled_download_error;
+                    // Tracking Event (Download Unhandled Error)
+                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+                            "Download Content: Unhandled Error.");
                     break;
             }
             mBuilder.setContentText(getResources().getString(resource));
@@ -252,9 +269,8 @@ public class DownloadManagerService extends IntentService {
 
         } else {
             mBuilder.setContentText(getResources().getString(R.string.downloading)
-                    + String.format(Locale.US, "%.2f", percent) + "%");
+                    + String.format(Locale.US, " %.2f", percent) + "%");
             mBuilder.setProgress(100, (int) percent, percent == 0);
-
         }
         notify(mBuilder, notificationID, percent, resultPendingIntent);
     }
