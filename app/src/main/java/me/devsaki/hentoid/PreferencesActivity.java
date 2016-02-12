@@ -4,16 +4,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
-import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
-import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
-import android.support.v7.app.AppCompatDelegate;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatCheckedTextView;
 import android.support.v7.widget.AppCompatEditText;
@@ -22,10 +19,8 @@ import android.support.v7.widget.AppCompatSpinner;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -40,9 +35,7 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  * Created by DevSaki on 20/05/2015.
  * Gather and present the 'Preference Screen' to the user.
  */
-public class PreferencesActivity extends PreferenceActivity {
-
-    private AppCompatDelegate mDelegate;
+public class PreferencesActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +45,9 @@ public class PreferencesActivity extends PreferenceActivity {
         getFragmentManager().beginTransaction().replace(android.R.id.content,
                 new MyPreferenceFragment()).commit();
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            getDelegate().getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
         }
     }
 
@@ -67,85 +61,6 @@ public class PreferencesActivity extends PreferenceActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    protected void onPostCreate(Bundle savedInstanceState) {
-        super.onPostCreate(savedInstanceState);
-
-        getDelegate().onPostCreate(savedInstanceState);
-    }
-
-    @NonNull
-    @Override
-    public MenuInflater getMenuInflater() {
-        return getDelegate().getMenuInflater();
-    }
-
-    @Override
-    public void setContentView(@LayoutRes int layoutResID) {
-        getDelegate().setContentView(layoutResID);
-    }
-
-    @Override
-    public void setContentView(View view) {
-        getDelegate().setContentView(view);
-    }
-
-    @Override
-    public void setContentView(View view, ViewGroup.LayoutParams params) {
-        getDelegate().setContentView(view, params);
-    }
-
-    @Override
-    public void addContentView(View view, ViewGroup.LayoutParams params) {
-        getDelegate().addContentView(view, params);
-    }
-
-    @Override
-    protected void onPostResume() {
-        super.onPostResume();
-
-        getDelegate().onPostResume();
-    }
-
-    @Override
-    protected void onTitleChanged(CharSequence title, int color) {
-        super.onTitleChanged(title, color);
-
-        getDelegate().setTitle(title);
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-
-        getDelegate().onConfigurationChanged(newConfig);
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-        getDelegate().onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-
-        getDelegate().onDestroy();
-    }
-
-    public void invalidateOptionsMenu() {
-        getDelegate().invalidateOptionsMenu();
-    }
-
-    private AppCompatDelegate getDelegate() {
-        if (mDelegate == null) {
-            mDelegate = AppCompatDelegate.create(this, null);
-        }
-        return mDelegate;
     }
 
     @Override
@@ -191,7 +106,7 @@ public class PreferencesActivity extends PreferenceActivity {
                     SharedPreferences prefs = HentoidApplication.getAppPreferences();
                     String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
                     File nomedia = new File(settingDir, ".nomedia");
-                    if (!nomedia.exists())
+                    if (!nomedia.exists()) {
                         try {
                             //noinspection ResultOfMethodCallIgnored
                             nomedia.createNewFile();
@@ -200,6 +115,7 @@ public class PreferencesActivity extends PreferenceActivity {
                                     Toast.LENGTH_SHORT).show();
                             return true;
                         }
+                    }
                     Toast.makeText(getActivity(), R.string.nomedia_file_created,
                             Toast.LENGTH_SHORT).show();
                     return true;
@@ -226,12 +142,13 @@ public class PreferencesActivity extends PreferenceActivity {
                                             .getAppPreferences().edit();
                                     editor.putString(ConstantsPreferences.PREF_APP_LOCK, lock);
                                     editor.apply();
-                                    if (lock.isEmpty())
+                                    if (lock.isEmpty()) {
                                         Toast.makeText(getActivity(), R.string.app_lock_disable,
                                                 Toast.LENGTH_SHORT).show();
-                                    else
+                                    } else {
                                         Toast.makeText(getActivity(), R.string.app_lock_enable,
                                                 Toast.LENGTH_SHORT).show();
+                                    }
                                     dialog.cancel();
                                 }
                             });
