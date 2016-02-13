@@ -7,7 +7,7 @@
 ######[tsumino](http://www.tsumino.com/) support is in as well, after many requests from the community.
 #####Check out the [Getting Started with Hentoid](https://github.com/csaki/Hentoid/wiki/Getting-Started-with-Hentoid) guide if you need assistance installing `Hentoid` on your device.#
 #####For the latest release, [go here](https://github.com/csaki/Hentoid/releases/latest).#
-[![Circle CI](https://circleci.com/gh/avluis/Hentoid.svg?style=svg)](https://circleci.com/gh/avluis/Hentoid)
+[![Circle CI](https://circleci.com/gh/avluis/Hentoid.svg?style=shield&circle-token=bb41b75f5b24c8d08258a88fe3dd04a88be7c8cb)](https://circleci.com/gh/avluis/Hentoid)
 ___
 #####Visit our [Google+ Community](https://plus.google.com/communities/110496467189870321840) for Announcements, and Updates.#
 ######Help us shape Hentoid into the best H-Manga App for you.#
