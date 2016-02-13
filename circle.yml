@@ -1,7 +1,7 @@
 machine:
-   environment:
-     ANDROID_HOME: /usr/local/android-sdk-linux
-	 GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
+  environment:
+    ANDROID_HOME: /usr/local/android-sdk-linux
+    GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
 
 dependencies:
   pre:
@@ -10,5 +10,5 @@ dependencies:
 
 test:
   override:
-	- ./gradlew assembleRelease
-	- cp -r ~/Android-app/app/build/outputs $CIRCLE_ARTIFACT
+    - ./gradlew assembleRelease
+    - cp -r ~/Android-app/app/build/outputs $CIRCLE_ARTIFACT
