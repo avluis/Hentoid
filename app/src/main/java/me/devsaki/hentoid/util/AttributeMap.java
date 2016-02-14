@@ -1,8 +1,7 @@
 package me.devsaki.hentoid.util;
 
-import android.util.SparseArray;
-
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -11,17 +10,20 @@ import me.devsaki.hentoid.database.enums.AttributeType;
 /**
  * Created by Shiro on 1/11/2016.
  */
-public class AttributeMap extends SparseArray<List<Attribute>> {
+public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
 
     public void add(Attribute attributeItem) {
 
-        int key = attributeItem.getType().getCode();
+        List<Attribute> list;
+        AttributeType type = attributeItem.getType();
 
-        List<Attribute> list = get(key);
-        if (list == null) {
+        if (containsKey(type)) {
+            list = get(type);
+        } else {
             list = new ArrayList<>();
-            put(key, list);
+            put(type, list);
         }
+
         list.add(attributeItem);
     }
 
@@ -29,9 +31,5 @@ public class AttributeMap extends SparseArray<List<Attribute>> {
         for (Attribute item : attributeList) {
             add(item);
         }
-    }
-
-    public List<Attribute> get(AttributeType type) {
-        return get(type.getCode());
     }
 }
