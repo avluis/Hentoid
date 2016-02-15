@@ -76,20 +76,6 @@ public class TsuminoActivity extends BaseWebActivity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
 
-            try {
-                String cookies = CookieManager.getInstance().getCookie(url);
-                if (cookies != null) {
-                    String[] cookiesArray = cookies.split(";");
-                    for (String cookie : cookiesArray) {
-                        if (cookie.contains("Tsumino_Web")) {
-                            Helper.setSessionCookie(cookie);
-                        }
-                    }
-                }
-            } catch (Exception ex) {
-                Log.e(TAG, "Error trying to get the cookies", ex);
-            }
-
             if (url.contains("//www.tsumino.com/Book/Info/")) {
                 // following line calls PageLoadListener.processHTML(*)
                 view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
