@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
+import android.util.Log;
+import android.webkit.CookieManager;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -29,6 +31,8 @@ import me.devsaki.hentoid.database.enums.Site;
  * Created by DevSaki on 10/05/2015.
  */
 public final class Helper {
+
+    private static final String TAG = Helper.class.getName();
 
     public static int ordinalIndexOf(String str, char delimiter, int n) {
         int pos = str.indexOf(delimiter, 0);
@@ -218,9 +222,20 @@ public final class Helper {
             urlConnection.setRequestMethod("GET");
             urlConnection.setConnectTimeout(10000);
             urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
-            String sessionCookie = Helper.getSessionCookie();
-            if (!sessionCookie.isEmpty()) {
-                urlConnection.setRequestProperty("Cookie", sessionCookie);
+            String cookies = CookieManager.getInstance().getCookie(imageUrl);
+            if (!cookies.isEmpty()) {
+                Helper.setSessionCookie(cookies);
+                urlConnection.setRequestProperty("Cookie", cookies);
+            } else {
+                urlConnection.setRequestProperty("Cookie", Helper.getSessionCookie());
+            }
+
+            final int responseCode = urlConnection.getResponseCode();
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                //May be a non-fatal error
+                Log.e(TAG, "Error in http response: "
+                        + responseCode + " - "
+                        + urlConnection.getResponseMessage());
             }
 
             switch (urlConnection.getHeaderField("Content-Type")) {
