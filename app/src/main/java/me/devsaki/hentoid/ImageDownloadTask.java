@@ -18,6 +18,7 @@ import me.devsaki.hentoid.util.Helper;
 /**
  * Created by Shiro on 2/5/2016.
  * Callable for downloading images asynchronously
+ * TODO: Handle errors internally for encapsulation instead of throwing Exceptions
  */
 public class ImageDownloadTask implements Callable<Void> {
 
@@ -26,6 +27,7 @@ public class ImageDownloadTask implements Callable<Void> {
     private File dir;
     private String filename;
     private String imageUrl;
+    private ImageDownloadBatch.Observer observer = null;
 
     public ImageDownloadTask(File dir, String filename, String imageUrl) {
         this.dir = dir;
@@ -33,8 +35,14 @@ public class ImageDownloadTask implements Callable<Void> {
         this.imageUrl = imageUrl;
     }
 
+    public ImageDownloadTask registerObserver(ImageDownloadBatch.Observer observer) {
+        this.observer = observer;
+        return this;
+    }
+
     @Override
     public Void call() throws IOException {
+        if (observer != null) observer.taskStarted();
         Log.i(TAG, "Starting download " + imageUrl);
 
         OutputStream output = null;
@@ -107,6 +115,7 @@ public class ImageDownloadTask implements Callable<Void> {
             }
         }
         Log.i(TAG, "Done downloading " + imageUrl);
+        if (observer != null) observer.taskFinished();
 
         return null;
     }

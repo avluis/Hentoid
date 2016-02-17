@@ -17,12 +17,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.ImageDownloadBatch;
 import me.devsaki.hentoid.ImageDownloadTask;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -49,7 +50,7 @@ public class DownloadManagerService extends IntentService {
     private static int downloadCount = 0;
     private NotificationManager notificationManager;
     private HentoidDB db;
-    private ExecutorCompletionService taskRunner;
+    private ExecutorService executorService;
 
     public DownloadManagerService() {
         super(DownloadManagerService.class.getName());
@@ -62,7 +63,7 @@ public class DownloadManagerService extends IntentService {
 
         db = new HentoidDB(this);
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        taskRunner = new ExecutorCompletionService(Executors.newFixedThreadPool(2));
+        executorService = Executors.newFixedThreadPool(2);
 
         if (notificationManager != null) {
             notificationManager.cancelAll();
@@ -72,6 +73,7 @@ public class DownloadManagerService extends IntentService {
     @Override
     public void onDestroy() {
         downloadCount = 0;
+        executorService.shutdown();
         super.onDestroy();
         Log.i(TAG, "onDestroy");
     }
@@ -122,7 +124,7 @@ public class DownloadManagerService extends IntentService {
             File dir = Helper.getDownloadDir(content, this);
             try {
                 //Download Cover Image
-                taskRunner.submit(new ImageDownloadTask(
+                executorService.submit(new ImageDownloadTask(
                         dir, "thumb.jpg", content.getCoverImageUrl()
                 )).get();
             } catch (Exception e) {
@@ -144,11 +146,10 @@ public class DownloadManagerService extends IntentService {
             }
 
             List<ImageFile> imageFiles = content.getImageFiles();
+            ImageDownloadBatch downloadBatch = new ImageDownloadBatch(executorService);
             for (ImageFile imageFile : imageFiles) {
                 if (imageFile.getStatus() != StatusContent.IGNORED) {
-                    taskRunner.submit(new ImageDownloadTask(
-                            dir, imageFile.getName(), imageFile.getUrl()
-                    ));
+                    downloadBatch.addTask(dir, imageFile.getName(), imageFile.getUrl());
                 }
             }
 
@@ -156,6 +157,7 @@ public class DownloadManagerService extends IntentService {
             for (ImageFile imageFile : imageFiles) {
                 if (paused) {
                     interruptDownload(content);
+                    downloadBatch.cancel();
                     if (content.getStatus() == StatusContent.SAVED) {
                         try {
                             FileUtils.deleteDirectory(dir);
@@ -167,11 +169,12 @@ public class DownloadManagerService extends IntentService {
                 }
                 if (!NetworkStatus.isOnline(this)) {
                     Log.e(TAG, "No connection");
+                    downloadBatch.cancel();
                     return;
                 }
                 boolean imageFileErrorDownload = false;
                 try {
-                    taskRunner.take().get();
+                    downloadBatch.waitForCompletedTask();
                 } catch (Exception e) {
                     Log.e(TAG, "Error downloading image file");
                     error = true;
