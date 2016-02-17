@@ -45,7 +45,6 @@ public class ImageDownloadBatch {
         }
 
         synchronized (lock) {
-            Log.d("SHIRO", "WAIT");
             while (inProgress != 0) {
                 try {
                     lock.wait();
@@ -54,20 +53,17 @@ public class ImageDownloadBatch {
                 }
             }
         }
-        Log.d("SHIRO", "RELEASED");
     }
 
     class Observer {
         void taskStarted() {
             synchronized (lock) {
-                Log.d("SHIRO", "START");
                 inProgress++;
             }
         }
 
         void taskFinished() {
             synchronized (lock) {
-                Log.d("SHIRO", "FINISH");
                 inProgress--;
                 lock.notifyAll();
             }
