@@ -3,7 +3,7 @@
     <!-- Activities -->
     <string name="title_activity_search">Search : @search</string>
     <string name="title_activity_downloads">Downloads</string>
-    <string name="title_activity_download_manager">Download Manager</string>
+    <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
     <!-- Menu -->
@@ -46,7 +46,7 @@
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
 
-    <string name="downloads_manager_empty">Download queue is empty.</string>
+    <string name="queue_empty">Download queue is empty.</string>
     <string name="downloads_library_empty">Your downloads library is empty.</string>
     <string name="no_data">No data.</string>
     <!-- Updates -->

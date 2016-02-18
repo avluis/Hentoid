@@ -35,6 +35,10 @@ public class HentoidApplication extends Application {
         return mInstance;
     }
 
+    public static SharedPreferences getAppPreferences() {
+        return sharedPreferences;
+    }
+
     public synchronized Tracker getGoogleAnalyticsTracker() {
         AnalyticsTrackers trackers = AnalyticsTrackers.getInstance();
         return trackers.get(AnalyticsTrackers.Target.APP);
@@ -88,10 +92,6 @@ public class HentoidApplication extends Application {
         // Build and send an Event.
         tracker.send(new HitBuilders.EventBuilder().setCategory(category).setAction(action)
                 .setLabel(label).build());
-    }
-
-    public static SharedPreferences getAppPreferences() {
-        return sharedPreferences;
     }
 
     @Override

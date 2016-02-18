@@ -20,12 +20,12 @@ import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import me.devsaki.hentoid.DownloadManagerActivity;
-import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.HentoidApplication;
-import me.devsaki.hentoid.ImageDownloadBatch;
-import me.devsaki.hentoid.ImageDownloadTask;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.components.ImageDownloadBatch;
+import me.devsaki.hentoid.components.ImageDownloadTask;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -41,19 +41,19 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * Download Manager implemented as a service
  * TODO: Reset notification when a download is paused (when there are multiple downloads).
  */
-public class DownloadManagerService extends IntentService {
+public class DownloadService extends IntentService {
 
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
     public static final String NOTIFICATION = "me.devsaki.hentoid.service";
-    private static final String TAG = DownloadManagerService.class.getName();
+    private static final String TAG = DownloadService.class.getName();
     public static boolean paused;
     private static int downloadCount = 0;
     private NotificationManager notificationManager;
     private HentoidDB db;
     private ExecutorService executorService;
 
-    public DownloadManagerService() {
-        super(DownloadManagerService.class.getName());
+    public DownloadService() {
+        super(DownloadService.class.getName());
     }
 
     @Override
@@ -213,7 +213,7 @@ public class DownloadManagerService extends IntentService {
             content = db.selectContentByStatus(StatusContent.DOWNLOADING);
             if (content != null) {
                 Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
-                        DownloadManagerService.class);
+                        DownloadService.class);
                 intentService.putExtra("content_id", content.getId());
                 startService(intentService);
             }
@@ -249,7 +249,7 @@ public class DownloadManagerService extends IntentService {
                 break;
             case DOWNLOADING:
             case PAUSED:
-                resultIntent = new Intent(this, DownloadManagerActivity.class);
+                resultIntent = new Intent(this, QueueActivity.class);
                 break;
             case SAVED:
                 resultIntent = new Intent(this, content.getWebActivityClass());

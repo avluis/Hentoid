@@ -1,6 +1,4 @@
-package me.devsaki.hentoid;
-
-import android.util.Log;
+package me.devsaki.hentoid.components;
 
 import java.io.File;
 import java.util.ArrayList;

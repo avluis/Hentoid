@@ -33,7 +33,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.service.DownloadManagerService;
+import me.devsaki.hentoid.service.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
@@ -50,7 +50,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
     @SuppressLint("SimpleDateFormat")
     public ContentAdapter(Context context, List<Content> contents) {
-        super(context, R.layout.row_download, contents);
+        super(context, R.layout.row_downloads, contents);
         this.context = context;
         this.contents = contents;
         sdf = new SimpleDateFormat("MM/dd/yy HH:mm");
@@ -60,7 +60,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     public View getView(int position, View convertView, final ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.row_download, parent, false);
+        View rowView = inflater.inflate(R.layout.row_downloads, parent, false);
 
         final Content content = contents.get(position);
 
@@ -192,7 +192,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                         .setDownloadDate(new Date().getTime());
                                 db.updateContentStatus(content);
                                 Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
-                                        DownloadManagerService.class);
+                                        DownloadService.class);
                                 context.startService(intent);
 
                                 Toast.makeText(context, R.string.in_queue, Toast.LENGTH_SHORT)

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.activities;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,21 +14,22 @@ import android.widget.ImageButton;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.adapters.ContentDownloadManagerAdapter;
+import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.adapters.ContentQueueAdapter;
 import me.devsaki.hentoid.components.HentoidActivity;
 import me.devsaki.hentoid.components.HentoidFragment;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.service.DownloadManagerService;
+import me.devsaki.hentoid.service.DownloadService;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Presents the list of works currently downloading to the user.
  */
-public class DownloadManagerActivity extends
-        HentoidActivity<DownloadManagerActivity.DownloadManagerFragment> {
+public class QueueActivity extends
+        HentoidActivity<QueueActivity.QueueManagerFragment> {
 
-    private static final String TAG = DownloadManagerActivity.class.getName();
+    private static final String TAG = QueueActivity.class.getName();
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
 
@@ -36,7 +37,7 @@ public class DownloadManagerActivity extends
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                double percent = bundle.getDouble(DownloadManagerService.INTENT_PERCENT_BROADCAST);
+                double percent = bundle.getDouble(DownloadService.INTENT_PERCENT_BROADCAST);
                 if (percent >= 0) {
                     getFragment().updatePercent(percent);
                 } else {
@@ -47,15 +48,15 @@ public class DownloadManagerActivity extends
     };
 
     @Override
-    protected DownloadManagerFragment buildFragment() {
-        return new DownloadManagerFragment();
+    protected QueueManagerFragment buildFragment() {
+        return new QueueManagerFragment();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         getFragment().update();
-        registerReceiver(receiver, new IntentFilter(DownloadManagerService.NOTIFICATION));
+        registerReceiver(receiver, new IntentFilter(DownloadService.NOTIFICATION));
     }
 
     @Override
@@ -64,7 +65,7 @@ public class DownloadManagerActivity extends
         unregisterReceiver(receiver);
     }
 
-    public static class DownloadManagerFragment extends HentoidFragment {
+    public static class QueueManagerFragment extends HentoidFragment {
 
         private List<Content> contents;
         private Context mContext;
@@ -72,7 +73,7 @@ public class DownloadManagerActivity extends
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_download_manager, container, false);
+            View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
             mContext = getActivity().getApplicationContext();
 
@@ -83,7 +84,7 @@ public class DownloadManagerActivity extends
                     getDB().updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                     update();
                     Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(),
-                            DownloadManagerService.class);
+                            DownloadService.class);
                     getActivity().startService(intent);
                 }
             });
@@ -92,7 +93,7 @@ public class DownloadManagerActivity extends
                 @Override
                 public void onClick(View v) {
                     getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
-                    DownloadManagerService.paused = true;
+                    DownloadService.paused = true;
                     update();
                 }
             });
@@ -106,7 +107,7 @@ public class DownloadManagerActivity extends
                 update();
                 if (content.getId() == contents.get(0).getId()) {
                     Intent intent = new Intent(Intent.ACTION_SYNC, null, getActivity(),
-                            DownloadManagerService.class);
+                            DownloadService.class);
                     getActivity().startService(intent);
                 }
             }
@@ -117,7 +118,7 @@ public class DownloadManagerActivity extends
             getDB().updateContentStatus(content);
             update();
             if (content.getId() == contents.get(0).getId()) {
-                DownloadManagerService.paused = true;
+                DownloadService.paused = true;
             }
         }
 
@@ -125,7 +126,7 @@ public class DownloadManagerActivity extends
             content.setStatus(StatusContent.SAVED);
             getDB().updateContentStatus(content);
             if (content.getId() == contents.get(0).getId()) {
-                DownloadManagerService.paused = true;
+                DownloadService.paused = true;
             }
             contents.remove(content);
         }
@@ -139,12 +140,12 @@ public class DownloadManagerActivity extends
         }
 
         public void update() {
-            contents = getDB().selectContentInDownloadManager();
+            contents = getDB().selectContentInQueue();
             if (contents == null) {
                 contents = new ArrayList<>();
             }
-            ContentDownloadManagerAdapter adapter =
-                    new ContentDownloadManagerAdapter(getActivity(), contents);
+            ContentQueueAdapter adapter =
+                    new ContentQueueAdapter(getActivity(), contents);
             setListAdapter(adapter);
         }
     }

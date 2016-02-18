@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.components;
 
 import android.util.Log;
 import android.webkit.CookieManager;

@@ -1,9 +1,10 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**

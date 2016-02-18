@@ -65,7 +65,8 @@ public class Content extends ContentTable {
                 return paths[2].replace(".html", "") + "-" + paths[1];
             case HITOMI:
                 paths = url.split("/");
-                return paths[1].replace(".html", "") + "-" + title.replaceAll("[^a-zA-Z0-9.-]", "_");
+                return paths[1].replace(".html", "") + "-" +
+                        title.replaceAll("[^a-zA-Z0-9.-]", "_");
             case NHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
@@ -90,8 +91,7 @@ public class Content extends ContentTable {
     public String getCategory() {
         if (site == Site.FAKKU) {
             return url.substring(1, url.lastIndexOf("/"));
-        }
-        else {
+        } else {
             List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);
             if (attributesList != null && attributesList.size() > 0) {
                 return attributesList.get(0).getName();

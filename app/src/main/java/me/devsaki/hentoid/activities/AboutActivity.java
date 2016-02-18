@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +21,8 @@ import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
+
+import me.devsaki.hentoid.R;
 
 /**
  * Created by avluis on 8/22/15.

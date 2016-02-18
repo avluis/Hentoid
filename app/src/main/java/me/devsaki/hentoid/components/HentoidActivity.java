@@ -11,13 +11,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
 
-import me.devsaki.hentoid.AboutActivity;
-import me.devsaki.hentoid.DownloadManagerActivity;
-import me.devsaki.hentoid.DownloadsActivity;
-import me.devsaki.hentoid.PreferencesActivity;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.AboutActivity;
+import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
+import me.devsaki.hentoid.activities.PreferencesActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 
@@ -112,7 +112,9 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
                 break;
         }
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (intent != null) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
         startActivity(intent);
     }
 
@@ -131,9 +133,9 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     }
 
     @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndDownloadManager(View view) {
+    public void ndQueue(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, DownloadManagerActivity.class);
+        Intent intent = new Intent(this, QueueActivity.class);
         startActivity(intent);
     }
 

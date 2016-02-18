@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**

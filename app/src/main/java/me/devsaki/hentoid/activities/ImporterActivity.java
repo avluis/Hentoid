@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;

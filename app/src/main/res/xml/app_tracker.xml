@@ -16,15 +16,20 @@
     <bool name="ga_reportUncaughtExceptions">true</bool>
 
     <!-- Manually defined screen names -->
+    <screenName name="me.devsaki.hentoid.abstracts.BaseWebActivity">Legacy WebView</screenName>
+
     <screenName name="me.devsaki.hentoid.activities.HitomiActivity">Hitomi</screenName>
     <screenName name="me.devsaki.hentoid.activities.NhentaiActivity">NHentai</screenName>
     <screenName name="me.devsaki.hentoid.activities.TsuminoActivity">Tsumino</screenName>
-    <screenName name="me.devsaki.hentoid.abstracts.BaseWebActivity">Legacy WebView</screenName>
-    <screenName name="me.devsaki.hentoid.DownloadsActivity">Downloads</screenName>
-    <screenName name="me.devsaki.hentoid.DownloadManagerActivity">Download Manager</screenName>
-    <screenName name="me.devsaki.hentoid.AboutActivity">About</screenName>
-    <screenName name="me.devsaki.hentoid.ImporterActivity">Import</screenName>
-    <screenName name="me.devsaki.hentoid.PreferencesActivity">Preferences</screenName>
+
+    <screenName name="me.devsaki.hentoid.activities.AboutActivity">About</screenName>
+    <screenName name="me.devsaki.hentoid.activities.AppLockActivity">App Lock</screenName>
+    <screenName name="me.devsaki.hentoid.activities.DownloadsActivity">Downloads</screenName>
+    <screenName name="me.devsaki.hentoid.activities.QueueActivity">Queue</screenName>
+    <screenName name="me.devsaki.hentoid.activities.SelectFolderActivity">Folder Select</screenName>
+    <screenName name="me.devsaki.hentoid.activities.SplashActivity">Splash</screenName>
+    <screenName name="me.devsaki.hentoid.activities.ImporterActivity">Import</screenName>
+    <screenName name="me.devsaki.hentoid.activities.PreferencesActivity">Preferences</screenName>
 
     <!-- See Project Structure -> Analytics -> Google Analytics -> Learn More
       to learn more about configuring this file. -->

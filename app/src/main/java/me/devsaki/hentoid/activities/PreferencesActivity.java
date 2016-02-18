@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.activities;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -27,6 +27,8 @@ import android.widget.Toast;
 import java.io.File;
 import java.io.IOException;
 
+import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
