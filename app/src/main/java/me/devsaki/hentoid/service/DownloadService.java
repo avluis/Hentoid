@@ -124,9 +124,11 @@ public class DownloadService extends IntentService {
             File dir = Helper.getDownloadDir(content, this);
             try {
                 //Download Cover Image
-                executorService.submit(new ImageDownloadTask(
-                        dir, "thumb", content.getCoverImageUrl()
-                )).get();
+                executorService.submit(
+                        new ImageDownloadTask(
+                                dir, "thumb", content.getCoverImageUrl()
+                        )
+                ).get();
             } catch (Exception e) {
                 Log.e(TAG, "Error Saving cover image " + content.getTitle(), e);
                 error = true;
@@ -149,7 +151,11 @@ public class DownloadService extends IntentService {
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch(executorService);
             for (ImageFile imageFile : imageFiles) {
                 if (imageFile.getStatus() != StatusContent.IGNORED) {
-                    downloadBatch.addTask(dir, imageFile.getName(), imageFile.getUrl());
+                    downloadBatch.addTask(
+                            new ImageDownloadTask(
+                                    dir, imageFile.getName(), imageFile.getUrl()
+                            )
+                    );
                 }
             }
 
