@@ -103,10 +103,9 @@ public class ContentQueueAdapter extends ArrayAdapter<Content> {
         }
         tvTags.setText(Html.fromHtml(tags));
 
-        final File dir = Helper.getDownloadDir(content, getContext());
-        File coverFile = new File(dir, "thumb.jpg");
-
-        String image = coverFile.exists() ? coverFile.getAbsolutePath() : content.getCoverImageUrl();
+        File coverFile = Helper.getThumb(content, getContext());
+        String image = coverFile != null ?
+                coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
         HentoidApplication.getInstance().loadBitmap(image, ivCover);
 

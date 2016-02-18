@@ -24,11 +24,10 @@ public class ImageDownloadBatch {
         lock = this;
     }
 
-    public void addTask(File dir, String filename, String imageUrl) {
+    public void addTask(ImageDownloadTask task) {
         futures.add(
                 completionService.submit(
-                        new ImageDownloadTask(dir, filename, imageUrl)
-                                .registerObserver(new Observer())
+                        task.registerObserver(new Observer())
                 )
         );
     }

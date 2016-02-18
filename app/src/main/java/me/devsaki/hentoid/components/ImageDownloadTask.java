@@ -24,9 +24,9 @@ public class ImageDownloadTask implements Callable<Void> {
 
     private static final String TAG = ImageDownloadTask.class.getName();
     private static final int BUFFER_SIZE = 10 * 1024;
-    private File dir;
-    private String filename;
-    private String imageUrl;
+    private final File dir;
+    private final String filename;
+    private final String imageUrl;
     private ImageDownloadBatch.Observer observer = null;
 
     public ImageDownloadTask(File dir, String filename, String imageUrl) {
