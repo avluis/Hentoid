@@ -10,11 +10,12 @@ import me.devsaki.hentoid.exceptions.HttpClientException;
 
 /**
  * Created by DevSaki on 14/05/2015.
+ * Http related utility class
  */
 public class HttpClientHelper {
 
     public static String call(String address) throws Exception {
-        String sessionCookie = Helper.getSessionCookie();
+        String sessionCookie = AndroidHelper.getSessionCookie();
 
         URL url = new URL(address);
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();

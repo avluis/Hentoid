@@ -13,11 +13,11 @@ import android.view.View;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
-import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
 import me.devsaki.hentoid.activities.PreferencesActivity;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 

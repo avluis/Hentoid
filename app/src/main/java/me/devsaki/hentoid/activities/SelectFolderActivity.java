@@ -23,8 +23,8 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.Helper;
 
 /**
  * Allows the user to select where their library will be saved.
@@ -65,7 +65,7 @@ public class SelectFolderActivity extends AppCompatActivity implements
     @SuppressWarnings("UnusedParameters")
     public void selectDefault(View view) {
         EditText editText = (EditText) findViewById(R.id.etFolder);
-        editText.setText(Helper.getDefaultDir("", this).getAbsolutePath());
+        editText.setText(AndroidHelper.getDefaultDir("", this).getAbsolutePath());
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -105,7 +105,7 @@ public class SelectFolderActivity extends AppCompatActivity implements
         }
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(Helper.getDownloadDir(s, this));
+            downloadDirs.add(AndroidHelper.getDownloadDir(s, this));
         }
         List<File> files = new ArrayList<>();
         for (File downloadDir : downloadDirs) {

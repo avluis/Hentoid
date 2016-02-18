@@ -36,7 +36,6 @@ import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.service.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by neko on 11/05/2015.
@@ -128,9 +127,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         }
         tvTags.setText(Html.fromHtml(tags));
 
-        final File dir = Helper.getDownloadDir(content, getContext());
+        final File dir = AndroidHelper.getDownloadDir(content, getContext());
 
-        File coverFile = Helper.getThumb(content, getContext());
+        File coverFile = AndroidHelper.getThumb(content, getContext());
         String image = coverFile != null ?
                 coverFile.getAbsolutePath() : content.getCoverImageUrl();
 

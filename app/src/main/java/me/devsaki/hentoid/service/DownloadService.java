@@ -22,8 +22,8 @@ import java.util.concurrent.Executors;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.components.ImageDownloadBatch;
 import me.devsaki.hentoid.components.ImageDownloadTask;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -33,6 +33,7 @@ import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.parser.HitomiParser;
 import me.devsaki.hentoid.parser.NhentaiParser;
 import me.devsaki.hentoid.parser.TsuminoParser;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -121,7 +122,7 @@ public class DownloadService extends IntentService {
 
             boolean error = false;
             //Directory
-            File dir = Helper.getDownloadDir(content, this);
+            File dir = AndroidHelper.getDownloadDir(content, this);
             try {
                 //Download Cover Image
                 executorService.submit(
