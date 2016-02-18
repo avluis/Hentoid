@@ -31,7 +31,10 @@ public class AndroidHelper {
         File[] files = dir.listFiles();
         Arrays.sort(files);
         for (File file : files) {
-            if (file.getName().endsWith(".jpg")) {
+            String filename = file.getName();
+            if (filename.endsWith(".jpg") ||
+                    filename.endsWith(".png") ||
+                    filename.endsWith(".gif")) {
                 imageFile = file;
                 break;
             }
