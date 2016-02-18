@@ -138,7 +138,7 @@ public class HentoidApplication extends Application {
                 ConstantsPreferences.PREF_QUALITY_IMAGE_LISTS,
                 ConstantsPreferences.PREF_QUALITY_IMAGE_DEFAULT);
 
-        ImageQuality imageQuality = ImageQuality.LOW;
+        ImageQuality imageQuality;
         switch (imageQualityPref) {
             case "Medium":
                 imageQuality = ImageQuality.MEDIUM;
@@ -147,11 +147,14 @@ public class HentoidApplication extends Application {
                 imageQuality = ImageQuality.HIGH;
                 break;
             case "Low":
+            default:
                 imageQuality = ImageQuality.LOW;
                 break;
         }
 
-        Glide.with(this).load(image).override(imageQuality.getWidth(),
-                imageQuality.getHeight()).into(mImageView);
+        Glide.with(this)
+                .load(image)
+                .override(imageQuality.getWidth(), imageQuality.getHeight())
+                .into(mImageView);
     }
 }

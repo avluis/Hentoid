@@ -89,7 +89,7 @@ public class TsuminoParser {
         }
     }
 
-    public static List<String> parseImageList(Content content) throws Exception {
+    public static List<String> parseImageList(Content content) {
         List<String> imageUrlList = new ArrayList<>();
         String baseUrl = Site.TSUMINO.getUrl() + "/Image/Image" + content.getUrl() + '/';
 
