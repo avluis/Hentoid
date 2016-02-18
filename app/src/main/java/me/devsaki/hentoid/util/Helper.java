@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -44,6 +45,21 @@ public final class Helper {
                 .edit()
                 .putString(ConstantsPreferences.WEB_SESSION_COOKIE, sessionCookie)
                 .apply();
+    }
+
+    public static File getThumb(Content content, Context context) {
+        File dir = Helper.getDownloadDir(content, context);
+
+        File[] fileList = dir.listFiles(
+                new FileFilter() {
+                    @Override
+                    public boolean accept(File pathname) {
+                        return pathname.getName().contains("thumb");
+                    }
+                }
+        );
+
+        return fileList.length > 0 ? fileList[0] : null;
     }
 
     public static File getDownloadDir(Content content, Context context) {
