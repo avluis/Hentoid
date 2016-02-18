@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.activities;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;

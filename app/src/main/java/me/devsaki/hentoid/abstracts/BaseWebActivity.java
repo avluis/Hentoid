@@ -20,13 +20,13 @@ import android.widget.Toast;
 
 import java.util.Date;
 
-import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.service.DownloadManagerService;
+import me.devsaki.hentoid.service.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -56,7 +56,7 @@ public class BaseWebActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_base_web);
         if (site == null) Log.w(TAG, "WebView site is null");
 
         db = new HentoidDB(this);
@@ -191,7 +191,7 @@ public class BaseWebActivity extends AppCompatActivity {
                 .setStatus(StatusContent.DOWNLOADING);
 
         db.updateContentStatus(currentContent);
-        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadManagerService.class);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
 
         startService(intent);
         hideFab(fabDownload);

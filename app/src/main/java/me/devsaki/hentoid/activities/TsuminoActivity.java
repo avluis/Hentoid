@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.activities;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.webkit.CookieManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 
@@ -27,6 +27,7 @@ public class TsuminoActivity extends BaseWebActivity {
     private boolean downloadFabPressed = false;
     private int historyIndex;
 
+    @SuppressLint("AddJavascriptInterface")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setSite(Site.TSUMINO);
@@ -79,8 +80,7 @@ public class TsuminoActivity extends BaseWebActivity {
             if (url.contains("//www.tsumino.com/Book/Info/")) {
                 // following line calls PageLoadListener.processHTML(*)
                 view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
-            } else if (url.contains("//www.tsumino.com/Read/View/")
-                    && downloadFabPressed) {
+            } else if (url.contains("//www.tsumino.com/Read/View/") && downloadFabPressed) {
                 downloadFabPressed = false;
 
                 int currentIndex = webView.copyBackForwardList().getCurrentIndex();

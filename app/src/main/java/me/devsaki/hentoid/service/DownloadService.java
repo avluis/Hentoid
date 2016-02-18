@@ -17,11 +17,15 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import me.devsaki.hentoid.DownloadManagerActivity;
-import me.devsaki.hentoid.DownloadsActivity;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.components.ImageDownloadBatch;
+import me.devsaki.hentoid.components.ImageDownloadTask;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -37,18 +41,19 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * Download Manager implemented as a service
  * TODO: Reset notification when a download is paused (when there are multiple downloads).
  */
-public class DownloadManagerService extends IntentService {
+public class DownloadService extends IntentService {
 
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
     public static final String NOTIFICATION = "me.devsaki.hentoid.service";
-    private static final String TAG = DownloadManagerService.class.getName();
+    private static final String TAG = DownloadService.class.getName();
     public static boolean paused;
     private static int downloadCount = 0;
     private NotificationManager notificationManager;
     private HentoidDB db;
+    private ExecutorService executorService;
 
-    public DownloadManagerService() {
-        super(DownloadManagerService.class.getName());
+    public DownloadService() {
+        super(DownloadService.class.getName());
     }
 
     @Override
@@ -58,6 +63,7 @@ public class DownloadManagerService extends IntentService {
 
         db = new HentoidDB(this);
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        executorService = Executors.newFixedThreadPool(2);
 
         if (notificationManager != null) {
             notificationManager.cancelAll();
@@ -67,12 +73,18 @@ public class DownloadManagerService extends IntentService {
     @Override
     public void onDestroy() {
         downloadCount = 0;
+        executorService.shutdown();
         super.onDestroy();
         Log.i(TAG, "onDestroy");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
+        if (!NetworkStatus.isOnline(this)) {
+            Log.e(TAG, "No connection");
+            return;
+        }
+
         Content content = db.selectContentByStatus(StatusContent.DOWNLOADING);
 
         downloadCount++;
@@ -82,9 +94,7 @@ public class DownloadManagerService extends IntentService {
             showNotification(0, content);
 
             if (paused) {
-                paused = false;
-                content = db.selectContentById(content.getId());
-                showNotification(0, content);
+                interruptDownload(content);
                 return;
             }
             try {
@@ -99,9 +109,7 @@ public class DownloadManagerService extends IntentService {
             }
 
             if (paused) {
-                paused = false;
-                content = db.selectContentById(content.getId());
-                showNotification(0, content);
+                interruptDownload(content);
                 return;
             }
 
@@ -116,18 +124,40 @@ public class DownloadManagerService extends IntentService {
             File dir = Helper.getDownloadDir(content, this);
             try {
                 //Download Cover Image
-                Helper.saveInStorage(dir, "thumb", content.getCoverImageUrl());
+                executorService.submit(new ImageDownloadTask(
+                        dir, "thumb", content.getCoverImageUrl()
+                )).get();
             } catch (Exception e) {
                 Log.e(TAG, "Error Saving cover image " + content.getTitle(), e);
                 error = true;
             }
 
-            int count = 0;
-            for (ImageFile imageFile : content.getImageFiles()) {
+
+            if (paused) {
+                interruptDownload(content);
+                if (content.getStatus() == StatusContent.SAVED) {
+                    try {
+                        FileUtils.deleteDirectory(dir);
+                    } catch (IOException e) {
+                        Log.e(TAG, "error deleting content directory", e);
+                    }
+                }
+                return;
+            }
+
+            List<ImageFile> imageFiles = content.getImageFiles();
+            ImageDownloadBatch downloadBatch = new ImageDownloadBatch(executorService);
+            for (ImageFile imageFile : imageFiles) {
+                if (imageFile.getStatus() != StatusContent.IGNORED) {
+                    downloadBatch.addTask(dir, imageFile.getName(), imageFile.getUrl());
+                }
+            }
+
+            int i = 0;
+            for (ImageFile imageFile : imageFiles) {
                 if (paused) {
-                    paused = false;
-                    content = db.selectContentById(content.getId());
-                    showNotification(0, content);
+                    interruptDownload(content);
+                    downloadBatch.cancel();
                     if (content.getStatus() == StatusContent.SAVED) {
                         try {
                             FileUtils.deleteDirectory(dir);
@@ -137,25 +167,24 @@ public class DownloadManagerService extends IntentService {
                     }
                     return;
                 }
+                if (!NetworkStatus.isOnline(this)) {
+                    Log.e(TAG, "No connection");
+                    downloadBatch.cancel();
+                    return;
+                }
                 boolean imageFileErrorDownload = false;
                 try {
-                    if (imageFile.getStatus() != StatusContent.IGNORED) {
-                        if (!NetworkStatus.isOnline(this))
-                            throw new Exception("No connection!");
-                        Helper.saveInStorage(dir, imageFile.getName(), imageFile.getUrl());
-                        Log.i(TAG, "Download Image File (" + imageFile.getName() + ") / "
-                                + content.getTitle());
-                    }
-                    count++;
-                    double percent = count * 100.0 / content.getImageFiles().size();
-                    showNotification(percent, content);
-                    updateActivity(percent);
-                } catch (Exception ex) {
-                    Log.e(TAG, "Error Saving Image File (" + imageFile.getName() + ") "
-                            + content.getTitle(), ex);
+                    downloadBatch.waitForCompletedTask();
+                } catch (Exception e) {
+                    Log.e(TAG, "Error downloading image file");
                     error = true;
                     imageFileErrorDownload = true;
                 }
+                i++;
+                double percent = i * 100.0 / imageFiles.size();
+                showNotification(percent, content);
+                updateActivity(percent);
+
                 if (imageFileErrorDownload) {
                     imageFile.setStatus(StatusContent.ERROR);
                 } else {
@@ -163,6 +192,7 @@ public class DownloadManagerService extends IntentService {
                 }
                 db.updateImageFileStatus(imageFile);
             }
+
             db.updateContentStatus(content);
             content.setDownloadDate(new Date().getTime());
             if (error) {
@@ -183,11 +213,17 @@ public class DownloadManagerService extends IntentService {
             content = db.selectContentByStatus(StatusContent.DOWNLOADING);
             if (content != null) {
                 Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
-                        DownloadManagerService.class);
+                        DownloadService.class);
                 intentService.putExtra("content_id", content.getId());
                 startService(intentService);
             }
         }
+    }
+
+    private void interruptDownload(Content content) {
+        paused = false;
+        content = db.selectContentById(content.getId());
+        showNotification(0, content);
     }
 
     private void updateActivity(double percent) {
@@ -213,7 +249,7 @@ public class DownloadManagerService extends IntentService {
                 break;
             case DOWNLOADING:
             case PAUSED:
-                resultIntent = new Intent(this, DownloadManagerActivity.class);
+                resultIntent = new Intent(this, QueueActivity.class);
                 break;
             case SAVED:
                 resultIntent = new Intent(this, content.getWebActivityClass());

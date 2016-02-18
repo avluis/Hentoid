@@ -14,9 +14,9 @@ import android.widget.TextView;
 import java.io.File;
 import java.util.List;
 
-import me.devsaki.hentoid.DownloadManagerActivity;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
@@ -25,15 +25,17 @@ import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by neko on 11/05/2015.
+ * Disclaimer: Image cover art is assumed to have .jpg extension by default
+ * TODO: Add logic to determine file type and load/save appropriate file to db
  */
-public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
+public class ContentQueueAdapter extends ArrayAdapter<Content> {
 
-    private static final String TAG = ContentDownloadManagerAdapter.class.getName();
+    private static final String TAG = ContentQueueAdapter.class.getName();
     private final Context context;
     private final List<Content> contents;
 
-    public ContentDownloadManagerAdapter(Context context, List<Content> contents) {
-        super(context, R.layout.row_download, contents);
+    public ContentQueueAdapter(Context context, List<Content> contents) {
+        super(context, R.layout.row_downloads, contents);
         this.context = context;
         this.contents = contents;
     }
@@ -42,7 +44,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
     public View getView(int position, View convertView, ViewGroup parent) {
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.row_download_manager, parent, false);
+        View rowView = inflater.inflate(R.layout.row_queue, parent, false);
 
         final Content content = contents.get(position);
 
@@ -112,7 +114,7 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
         btnCancel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((DownloadManagerActivity) getContext()).getFragment().cancel(content);
+                ((QueueActivity) getContext()).getFragment().cancel(content);
                 notifyDataSetChanged();
             }
         });
@@ -121,9 +123,9 @@ public class ContentDownloadManagerAdapter extends ArrayAdapter<Content> {
             @Override
             public void onClick(View v) {
                 if (content.getStatus() != StatusContent.DOWNLOADING) {
-                    ((DownloadManagerActivity) getContext()).getFragment().resume(content);
+                    ((QueueActivity) getContext()).getFragment().resume(content);
                 } else {
-                    ((DownloadManagerActivity) getContext()).getFragment().pause(content);
+                    ((QueueActivity) getContext()).getFragment().pause(content);
                     notifyDataSetChanged();
                 }
             }

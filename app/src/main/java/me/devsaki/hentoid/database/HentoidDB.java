@@ -34,7 +34,6 @@ public class HentoidDB extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     // Database Name
     private static final String DATABASE_NAME = "hentoid.db";
-    private static HentoidDB instance;
 
     public HentoidDB(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -50,7 +49,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop older table if existed
+        // Drop older table if it exists
         db.execSQL("DROP TABLE IF EXISTS " + ContentAttributeTable.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + AttributeTable.TABLE_NAME);
         db.execSQL("DROP TABLE IF EXISTS " + ContentTable.TABLE_NAME);
@@ -277,10 +276,10 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Content> selectContentInDownloadManager() {
+    public List<Content> selectContentInQueue() {
         List<Content> result = null;
         synchronized (locker) {
-            Log.i(TAG, "selectContentInDownloadManager");
+            Log.i(TAG, "selectContentInQueue");
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
             try {
@@ -300,9 +299,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                Log.i(TAG,
-                        "selectContentInDownloadManager - trying to close the db connection. Condition : "
-                                + (db != null && db.isOpen()));
+                Log.i(TAG, "selectContentInQueue - trying to close the db connection. Condition : "
+                        + (db != null && db.isOpen()));
                 if (db != null && db.isOpen())
                     db.close(); // Closing database connection
             }
@@ -311,7 +309,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Content> selectContentByQuery(String query, int page, int qty, boolean orderAlphabetic) {
+    public List<Content> selectContentByQuery(String query, int page, int qty,
+                                              boolean orderAlphabetic) {
         List<Content> result = null;
 
         synchronized (locker) {
@@ -358,9 +357,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                Log.i(TAG,
-                        "selectContentByQuery - trying to close the db connection. Condition : "
-                                + (db != null && db.isOpen()));
+                Log.i(TAG, "selectContentByQuery - trying to close the db connection. Condition : "
+                        + (db != null && db.isOpen()));
                 if (db != null && db.isOpen())
                     db.close(); // Closing database connection
             }

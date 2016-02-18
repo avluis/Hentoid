@@ -5,22 +5,15 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
-import android.util.Log;
-import android.webkit.CookieManager;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.net.URLEncoder;
 
 import me.devsaki.hentoid.HentoidApplication;
@@ -206,80 +199,5 @@ public final class Helper {
             if (br != null) br.close();
         }
         return new Gson().fromJson(json, type);
-    }
-
-    public static void saveInStorage(File dir, String filename, String imageUrl)
-            throws Exception {
-
-        final int BUFFER_SIZE = 23 * 1024;
-        OutputStream output = null;
-        InputStream input = null;
-        File file = null;
-
-        try {
-            URL url = new URL(imageUrl);
-            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setConnectTimeout(10000);
-            urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
-            String cookies = CookieManager.getInstance().getCookie(imageUrl);
-            if (!cookies.isEmpty()) {
-                Helper.setSessionCookie(cookies);
-                urlConnection.setRequestProperty("Cookie", cookies);
-            } else {
-                urlConnection.setRequestProperty("Cookie", Helper.getSessionCookie());
-            }
-
-            final int responseCode = urlConnection.getResponseCode();
-            if (responseCode != HttpURLConnection.HTTP_OK) {
-                //May be a non-fatal error
-                Log.e(TAG, "Error in http response: "
-                        + responseCode + " - "
-                        + urlConnection.getResponseMessage());
-            }
-
-            switch (urlConnection.getHeaderField("Content-Type")) {
-                case "image/png":
-                    file = new File(dir, filename + ".png");
-                    break;
-                case "image/gif":
-                    file = new File(dir, filename + ".gif");
-                    break;
-                default:
-                    file = new File(dir, filename + ".jpg");
-                    break;
-            }
-
-            if (file.exists()) {
-                urlConnection.disconnect();
-                return;
-            }
-
-            input = urlConnection.getInputStream();
-
-            output = new FileOutputStream(file);
-
-            byte data[] = new byte[BUFFER_SIZE];
-            int count;
-            while ((count = input.read(data, 0, BUFFER_SIZE)) != -1) {
-                output.write(data, 0, count);
-            }
-            output.flush();
-            urlConnection.disconnect();
-
-        } catch (Exception e) {
-            if (file != null) {
-                //noinspection ResultOfMethodCallIgnored
-                file.delete();
-            }
-            throw e;
-        } finally {
-            if (output != null) {
-                output.close();
-            }
-            if (input != null) {
-                input.close();
-            }
-        }
     }
 }

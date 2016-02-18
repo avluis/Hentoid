@@ -145,7 +145,7 @@ public class UpdateCheck implements IUpdateCheck {
         PendingIntent updateIntent = PendingIntent.getBroadcast(context, 0, installUpdate, 0);
 
         notificationView = new RemoteViews(context.getPackageName(),
-                R.layout.update_notification_available);
+                R.layout.notification_update_available);
         notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -174,7 +174,7 @@ public class UpdateCheck implements IUpdateCheck {
         PendingIntent removeIntent = PendingIntent.getBroadcast(context, 0, clearIntent, 0);
 
         notificationView = new RemoteViews(context.getPackageName(),
-                R.layout.update_notification);
+                R.layout.notification_update);
         notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -198,7 +198,7 @@ public class UpdateCheck implements IUpdateCheck {
         PendingIntent installIntent = PendingIntent.getBroadcast(context, 0, installUpdate, 0);
 
         notificationView = new RemoteViews(context.getPackageName(),
-                R.layout.update_notification_available);
+                R.layout.notification_update_available);
         notificationManager = (NotificationManager)
                 context.getSystemService(Context.NOTIFICATION_SERVICE);
 

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid;
+package me.devsaki.hentoid.activities;
 
 import android.annotation.SuppressLint;
 import android.app.SearchManager;
@@ -23,6 +23,8 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.components.HentoidActivity;
 import me.devsaki.hentoid.components.HentoidFragment;

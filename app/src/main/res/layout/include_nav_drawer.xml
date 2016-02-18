@@ -36,8 +36,8 @@
 
     <Button
         style="@style/NavDrawerButtonStyle"
-        android:onClick="ndDownloadManager"
-        android:text="@string/navigation_drawer_download_manager" />
+        android:onClick="ndQueue"
+        android:text="@string/navigation_drawer_queue" />
 
     <Button
         style="@style/NavDrawerButtonStyle"

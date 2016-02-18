@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="me.devsaki.hentoid" >
+    package="me.devsaki.hentoid">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -22,10 +22,10 @@
         android:label="@string/app_name"
         android:supportsRtl="false"
         android:theme="@style/AppTheme"
-        tools:ignore="UnusedAttribute" >
+        tools:ignore="UnusedAttribute">
         <activity
-            android:name=".DownloadsActivity"
-            android:launchMode="singleTask" >
+            android:name=".activities.DownloadsActivity"
+            android:launchMode="singleTask">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -56,55 +56,55 @@
             tools:ignore="InnerclassSeparator" />
 
         <service
-            android:name=".service.DownloadManagerService"
+            android:name=".service.DownloadService"
             android:configChanges="orientation|screenSize"
             android:enabled="true"
             android:exported="false" />
 
         <activity
-            android:name=".DownloadManagerActivity"
+            android:name=".activities.QueueActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_download_manager"
+            android:label="@string/title_activity_queue"
             android:launchMode="singleTask" />
         <activity
-            android:name=".SelectFolderActivity"
+            android:name=".activities.SelectFolderActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".ImporterActivity"
+            android:name=".activities.ImporterActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".PreferencesActivity"
+            android:name=".activities.PreferencesActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:launchMode="singleTask"
-            android:parentActivityName=".DownloadsActivity"
-            tools:ignore="UnusedAttribute" >
+            android:parentActivityName=".activities.DownloadsActivity"
+            tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="me.devsaki.hentoid.DownloadsActivity" />
+                android:value=".activities.DownloadsActivity" />
         </activity>
         <activity
-            android:name=".AppLockActivity"
+            android:name=".activities.AppLockActivity"
             android:launchMode="singleTask"
             android:windowSoftInputMode="stateAlwaysVisible" />
         <activity
-            android:name=".AboutActivity"
+            android:name=".activities.AboutActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_about"
             android:launchMode="singleTask"
-            android:parentActivityName=".DownloadsActivity"
-            tools:ignore="UnusedAttribute" >
+            android:parentActivityName=".activities.DownloadsActivity"
+            tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="me.devsaki.hentoid.DownloadsActivity" />
+                android:value=".activities.DownloadsActivity" />
         </activity>
         <activity
-            android:name=".SplashActivity"
-            android:theme="@style/SplashTheme" >
+            android:name=".activities.SplashActivity"
+            android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -115,7 +115,7 @@
         <receiver
             android:name=".updater.UpdateNotificationReceiver"
             android:enabled="true"
-            android:exported="false" >
+            android:exported="false">
             <intent-filter>
                 <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED" />
                 <action android:name="me.devsaki.hentoid.updater.NOTIFICATION_REMOVED" />
@@ -134,7 +134,8 @@
         -->
         <receiver
             android:name="com.google.android.gms.analytics.AnalyticsReceiver"
-            android:enabled="true" >
+            android:enabled="true"
+            tools:ignore="ExportedReceiver">
             <intent-filter>
                 <action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH" />
             </intent-filter>
@@ -151,7 +152,8 @@
         -->
         <receiver
             android:name="com.google.android.gms.analytics.CampaignTrackingReceiver"
-            android:exported="true" >
+            android:exported="true"
+            tools:ignore="ExportedReceiver">
             <intent-filter>
                 <action android:name="com.android.vending.INSTALL_REFERRER" />
             </intent-filter>
