@@ -9,7 +9,11 @@
     android:divider="@android:color/transparent"
     android:dividerHeight="0dp"
     android:dividerPadding="10dp"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:paddingEnd="@dimen/nav_menu_padding"
+    android:paddingLeft="@dimen/nav_menu_padding"
+    android:paddingRight="@dimen/nav_menu_padding"
+    android:paddingStart="@dimen/nav_menu_padding">
 
     <Button
         android:id="@+id/ndHitomiWbButton"

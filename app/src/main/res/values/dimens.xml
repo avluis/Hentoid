@@ -3,6 +3,8 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
+    <dimen name="nav_menu_padding">10dp</dimen>
+
     <dimen name="download_fab_margin">16dp</dimen>
     <dimen name="downloads_fab_margin">6dp</dimen>
     <dimen name="refresh_fab_margin">6dp</dimen>
