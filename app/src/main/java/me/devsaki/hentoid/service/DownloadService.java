@@ -125,7 +125,7 @@ public class DownloadService extends IntentService {
             try {
                 //Download Cover Image
                 executorService.submit(new ImageDownloadTask(
-                        dir, "thumb.jpg", content.getCoverImageUrl()
+                        dir, "thumb", content.getCoverImageUrl()
                 )).get();
             } catch (Exception e) {
                 Log.e(TAG, "Error Saving cover image " + content.getTitle(), e);

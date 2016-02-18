@@ -25,6 +25,8 @@ import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by neko on 11/05/2015.
+ * Disclaimer: Image cover art is assumed to have .jpg extension by default
+ * TODO: Add logic to determine file type and load/save appropriate file to db
  */
 public class ContentQueueAdapter extends ArrayAdapter<Content> {
 
