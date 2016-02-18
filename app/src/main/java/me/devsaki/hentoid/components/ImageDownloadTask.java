@@ -12,8 +12,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.concurrent.Callable;
 
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by Shiro on 2/5/2016.
@@ -57,10 +57,10 @@ public class ImageDownloadTask implements Callable<Void> {
             urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
             String cookies = CookieManager.getInstance().getCookie(imageUrl);
             if (!cookies.isEmpty()) {
-                Helper.setSessionCookie(cookies);
+                AndroidHelper.setSessionCookie(cookies);
                 urlConnection.setRequestProperty("Cookie", cookies);
             } else {
-                urlConnection.setRequestProperty("Cookie", Helper.getSessionCookie());
+                urlConnection.setRequestProperty("Cookie", AndroidHelper.getSessionCookie());
             }
 
             final int responseCode = urlConnection.getResponseCode();

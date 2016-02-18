@@ -7,25 +7,29 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.StrictMode;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.util.Arrays;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.enums.Site;
 
 /**
  * Created by DevSaki on 20/05/2015.
+ * Android focused utility class
  */
 public class AndroidHelper {
 
     public static void openContent(Content content, final Context context) {
         SharedPreferences sharedPreferences = HentoidApplication.getAppPreferences();
-        File dir = Helper.getDownloadDir(content, context);
+        File dir = AndroidHelper.getDownloadDir(content, context);
 
         File imageFile = null;
         File[] files = dir.listFiles();
@@ -69,6 +73,98 @@ public class AndroidHelper {
         }
 
 
+    }
+
+    public static File getThumb(Content content, Context context) {
+        File dir = AndroidHelper.getDownloadDir(content, context);
+
+        File[] fileList = dir.listFiles(
+                new FileFilter() {
+                    @Override
+                    public boolean accept(File pathname) {
+                        return pathname.getName().contains("thumb");
+                    }
+                }
+        );
+
+        return fileList.length > 0 ? fileList[0] : null;
+    }
+
+    public static File getDownloadDir(Content content, Context context) {
+        File file;
+        SharedPreferences prefs = HentoidApplication.getAppPreferences();
+        String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+        String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
+        if (settingDir.isEmpty()) {
+            return getDefaultDir(folderDir, context);
+        }
+        file = new File(settingDir, folderDir);
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                file = new File(settingDir + folderDir);
+                if (!file.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    file.mkdirs();
+                }
+            }
+        }
+        return file;
+    }
+
+    public static File getDownloadDir(Site site, Context context) {
+        File file;
+        SharedPreferences prefs = HentoidApplication.getAppPreferences();
+        String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+        String folderDir = site.getFolder();
+        if (settingDir.isEmpty()) {
+            return getDefaultDir(folderDir, context);
+        }
+        file = new File(settingDir, folderDir);
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                file = new File(settingDir + folderDir);
+                if (!file.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    file.mkdirs();
+                }
+            }
+        }
+        return file;
+    }
+
+    public static File getDefaultDir(String dir, Context context) {
+        File file;
+        try {
+            file = new File(Environment.getExternalStorageDirectory()
+                    + "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+        } catch (Exception e) {
+            file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
+            file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY);
+        }
+
+        if (!file.exists()) {
+            if (!file.mkdirs()) {
+                file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
+                file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+                if (!file.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    file.mkdirs();
+                }
+            }
+        }
+        return file;
+    }
+
+    public static String getSessionCookie() {
+        return HentoidApplication.getAppPreferences()
+                .getString(ConstantsPreferences.WEB_SESSION_COOKIE, "");
+    }
+
+    public static void setSessionCookie(String sessionCookie) {
+        HentoidApplication.getAppPreferences()
+                .edit()
+                .putString(ConstantsPreferences.WEB_SESSION_COOKIE, sessionCookie)
+                .apply();
     }
 
     private static void openFile(File aFile, Context context) {

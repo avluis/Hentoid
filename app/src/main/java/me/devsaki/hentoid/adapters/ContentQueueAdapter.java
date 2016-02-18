@@ -21,7 +21,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.AndroidHelper;
 
 /**
  * Created by neko on 11/05/2015.
@@ -103,7 +103,7 @@ public class ContentQueueAdapter extends ArrayAdapter<Content> {
         }
         tvTags.setText(Html.fromHtml(tags));
 
-        File coverFile = Helper.getThumb(content, getContext());
+        File coverFile = AndroidHelper.getThumb(content, getContext());
         String image = coverFile != null ?
                 coverFile.getAbsolutePath() : content.getCoverImageUrl();
 

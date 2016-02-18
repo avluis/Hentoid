@@ -61,7 +61,7 @@ public class ImporterActivity extends AppCompatActivity {
             downloadDirs = new ArrayList<>();
 
             for (Site s : Site.values()) {
-                downloadDirs.add(Helper.getDownloadDir(s, ImporterActivity.this));
+                downloadDirs.add(AndroidHelper.getDownloadDir(s, ImporterActivity.this));
             }
 
             donutProgress = (DonutProgress) findViewById(R.id.donut_progress);
