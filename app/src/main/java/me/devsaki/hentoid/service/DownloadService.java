@@ -1,12 +1,7 @@
 package me.devsaki.hentoid.service;
 
 import android.app.IntentService;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import org.apache.commons.io.FileUtils;
@@ -21,9 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import me.devsaki.hentoid.HentoidApplication;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.DownloadsActivity;
-import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.components.ImageDownloadBatch;
 import me.devsaki.hentoid.components.ImageDownloadTask;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -40,7 +32,6 @@ import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Download Manager implemented as a service
- * TODO: Reset notification when a download is paused (when there are multiple downloads).
  */
 public class DownloadService extends IntentService {
 
@@ -48,8 +39,7 @@ public class DownloadService extends IntentService {
     public static final String NOTIFICATION = "me.devsaki.hentoid.service";
     private static final String TAG = DownloadService.class.getName();
     public static boolean paused;
-    private static int downloadCount = 0;
-    private NotificationManager notificationManager;
+    private NotificationPresenter notificationPresenter;
     private HentoidDB db;
     private ExecutorService executorService;
 
@@ -60,23 +50,18 @@ public class DownloadService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.i(TAG, "onCreate");
+        Log.i(TAG, "Download service created");
 
+        notificationPresenter = new NotificationPresenter();
         db = new HentoidDB(this);
-        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         executorService = Executors.newFixedThreadPool(2);
-
-        if (notificationManager != null) {
-            notificationManager.cancelAll();
-        }
     }
 
     @Override
     public void onDestroy() {
-        downloadCount = 0;
         executorService.shutdown();
         super.onDestroy();
-        Log.i(TAG, "onDestroy");
+        Log.i(TAG, "Download service destroyed");
     }
 
     @Override
@@ -87,22 +72,18 @@ public class DownloadService extends IntentService {
         }
 
         Content content = db.selectContentByStatus(StatusContent.DOWNLOADING);
-
-        downloadCount++;
-
         if (content != null && content.getStatus() != StatusContent.DOWNLOADED) {
 
-            showNotification(0, content);
-
+            notificationPresenter.downloadStarted(content);
             if (paused) {
-                interruptDownload(content);
+                interruptDownload();
                 return;
             }
             try {
                 parseImageFiles(content);
             } catch (Exception e) {
                 content.setStatus(StatusContent.UNHANDLED_ERROR);
-                showNotification(0, content);
+                notificationPresenter.updateNotification(0);
                 content.setStatus(StatusContent.PAUSED);
                 db.updateContentStatus(content);
                 updateActivity(-1);
@@ -110,7 +91,7 @@ public class DownloadService extends IntentService {
             }
 
             if (paused) {
-                interruptDownload(content);
+                interruptDownload();
                 return;
             }
 
@@ -137,7 +118,7 @@ public class DownloadService extends IntentService {
 
 
             if (paused) {
-                interruptDownload(content);
+                interruptDownload();
                 if (content.getStatus() == StatusContent.SAVED) {
                     try {
                         FileUtils.deleteDirectory(dir);
@@ -163,7 +144,7 @@ public class DownloadService extends IntentService {
             int i = 0;
             for (ImageFile imageFile : imageFiles) {
                 if (paused) {
-                    interruptDownload(content);
+                    interruptDownload();
                     downloadBatch.cancel();
                     if (content.getStatus() == StatusContent.SAVED) {
                         try {
@@ -189,7 +170,7 @@ public class DownloadService extends IntentService {
                 }
                 i++;
                 double percent = i * 100.0 / imageFiles.size();
-                showNotification(percent, content);
+                notificationPresenter.updateNotification(percent);
                 updateActivity(percent);
 
                 if (imageFileErrorDownload) {
@@ -215,7 +196,7 @@ public class DownloadService extends IntentService {
             }
             db.updateContentStatus(content);
             Log.i(TAG, "Finish Download Content : " + content.getTitle());
-            showNotification(0, content);
+            notificationPresenter.updateNotification(0);
             updateActivity(-1);
             content = db.selectContentByStatus(StatusContent.DOWNLOADING);
             if (content != null) {
@@ -227,108 +208,15 @@ public class DownloadService extends IntentService {
         }
     }
 
-    private void interruptDownload(Content content) {
+    private void interruptDownload() {
         paused = false;
-        content = db.selectContentById(content.getId());
-        showNotification(0, content);
+        notificationPresenter.updateNotification(0);
     }
 
     private void updateActivity(double percent) {
         Intent intent = new Intent(NOTIFICATION);
         intent.putExtra(INTENT_PERCENT_BROADCAST, percent);
         sendBroadcast(intent);
-    }
-
-    private void showNotification(double percent, Content content) {
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(content.getSite().getIco())
-                .setContentTitle(content.getTitle());
-
-        int resource = 0;
-        mBuilder.setLocalOnly(true);
-
-        Intent resultIntent = null;
-        switch (content.getStatus()) {
-            case DOWNLOADED:
-            case ERROR:
-            case UNHANDLED_ERROR:
-                resultIntent = new Intent(this, DownloadsActivity.class);
-                break;
-            case DOWNLOADING:
-            case PAUSED:
-                resultIntent = new Intent(this, QueueActivity.class);
-                break;
-            case SAVED:
-                resultIntent = new Intent(this, content.getWebActivityClass());
-                resultIntent.putExtra("url", content.getUrl());
-                break;
-        }
-
-        // Adds the Intent to the top of the stack
-        // Gets a PendingIntent containing the entire back stack
-        PendingIntent resultPendingIntent = PendingIntent.getActivity(this,
-                0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
-
-        int notificationID = 0;
-        if (content.getStatus() == StatusContent.DOWNLOADED && downloadCount > 1) {
-            mBuilder.setContentTitle(getApplicationContext().getString(R.string.app_name));
-            String text = (downloadCount + " chapters downloaded.");
-            mBuilder.setContentText(text);
-            notify(mBuilder, notificationID, percent, resultPendingIntent);
-            return;
-        }
-        if (content.getStatus() != StatusContent.DOWNLOADING) {
-            switch (content.getStatus()) {
-                case DOWNLOADED:
-                    resource = R.string.download_completed;
-                    // Tracking Event (Download Completed)
-                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
-                            "Download Content: Success.");
-                    break;
-                case PAUSED:
-                    resource = R.string.download_paused;
-                    break;
-                case SAVED:
-                    resource = R.string.download_cancelled;
-                    // Tracking Event (Download Cancelled)
-                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
-                            "Download Content: Cancelled.");
-                    break;
-                case ERROR:
-                    resource = R.string.download_error;
-                    // Tracking Event (Download Error)
-                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
-                            "Download Content: Error.");
-                    break;
-                case UNHANDLED_ERROR:
-                    resource = R.string.unhandled_download_error;
-                    // Tracking Event (Download Unhandled Error)
-                    HentoidApplication.getInstance().trackEvent("Download Service", "Download",
-                            "Download Content: Unhandled Error.");
-                    break;
-            }
-            mBuilder.setContentText(getResources().getString(resource));
-            mBuilder.setProgress(0, 0, false);
-
-        } else {
-            mBuilder.setContentText(getResources().getString(R.string.downloading)
-                    + String.format(Locale.US, " %.2f", percent) + "%");
-            mBuilder.setProgress(100, (int) percent, percent == 0);
-        }
-        notify(mBuilder, notificationID, percent, resultPendingIntent);
-    }
-
-    private void notify(NotificationCompat.Builder mBuilder, int notificationID, double percent,
-                        PendingIntent resultPendingIntent) {
-        Notification notification = mBuilder.build();
-        notification.contentIntent = resultPendingIntent;
-        if (percent > 0) {
-            notification.flags = Notification.FLAG_ONGOING_EVENT;
-        } else {
-            notification.flags = notification.flags | Notification.DEFAULT_LIGHTS
-                    | Notification.FLAG_AUTO_CANCEL;
-        }
-        notificationManager.notify(notificationID, notification);
     }
 
     private void parseImageFiles(Content content) throws Exception {

@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="download_completed">Download completed.</string>
-    <string name="download_cancelled">Download cancelled.</string>
-    <string name="download_paused">Download paused.</string>
-    <string name="download_error">Download completed, but had an error.</string>
-    <string name="unhandled_download_error">Unhandled error trying to read images urls.</string>
-    <string name="downloading">Downloading:</string>
-    <string name="in_queue">In queue.</string>
-    <string name="already_downloaded">Already downloaded.</string>
+    <string name="download_completed">Download completed</string>
+    <string name="download_completed_multiple">%d downloads completed</string>
+    <string name="download_cancelled">Download cancelled</string>
+    <string name="download_paused">Download paused</string>
+    <string name="download_error">Download completed, but had an error</string>
+    <string name="unhandled_download_error">Unhandled error trying to read images urls</string>
+    <string name="downloading">Downloading</string>
+    <string name="in_queue">In queue</string>
+    <string name="already_downloaded">Already downloaded</string>
 </resources>
