@@ -42,6 +42,7 @@ public class DownloadService extends IntentService {
     private NotificationPresenter notificationPresenter;
     private HentoidDB db;
     private ExecutorService executorService;
+    private Content currentContent;
 
     public DownloadService() {
         super(DownloadService.class.getName());
@@ -71,21 +72,21 @@ public class DownloadService extends IntentService {
             return;
         }
 
-        Content content = db.selectContentByStatus(StatusContent.DOWNLOADING);
-        if (content != null && content.getStatus() != StatusContent.DOWNLOADED) {
+        currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
+        if (currentContent != null && currentContent.getStatus() != StatusContent.DOWNLOADED) {
 
-            notificationPresenter.downloadStarted(content);
+            notificationPresenter.downloadStarted(currentContent);
             if (paused) {
                 interruptDownload();
                 return;
             }
             try {
-                parseImageFiles(content);
+                parseImageFiles();
             } catch (Exception e) {
-                content.setStatus(StatusContent.UNHANDLED_ERROR);
+                currentContent.setStatus(StatusContent.UNHANDLED_ERROR);
                 notificationPresenter.updateNotification(0);
-                content.setStatus(StatusContent.PAUSED);
-                db.updateContentStatus(content);
+                currentContent.setStatus(StatusContent.PAUSED);
+                db.updateContentStatus(currentContent);
                 updateActivity(-1);
                 return;
             }
@@ -95,7 +96,7 @@ public class DownloadService extends IntentService {
                 return;
             }
 
-            Log.i(TAG, "Start Download Content : " + content.getTitle());
+            Log.i(TAG, "Start Download Content : " + currentContent.getTitle());
 
             // Tracking Event (Download Added)
             HentoidApplication.getInstance().trackEvent("Download Service", "Download",
@@ -103,23 +104,23 @@ public class DownloadService extends IntentService {
 
             boolean error = false;
             //Directory
-            File dir = AndroidHelper.getDownloadDir(content, this);
+            File dir = AndroidHelper.getDownloadDir(currentContent, this);
             try {
                 //Download Cover Image
                 executorService.submit(
                         new ImageDownloadTask(
-                                dir, "thumb", content.getCoverImageUrl()
+                                dir, "thumb", currentContent.getCoverImageUrl()
                         )
                 ).get();
             } catch (Exception e) {
-                Log.e(TAG, "Error Saving cover image " + content.getTitle(), e);
+                Log.e(TAG, "Error Saving cover image " + currentContent.getTitle(), e);
                 error = true;
             }
 
 
             if (paused) {
                 interruptDownload();
-                if (content.getStatus() == StatusContent.SAVED) {
+                if (currentContent.getStatus() == StatusContent.SAVED) {
                     try {
                         FileUtils.deleteDirectory(dir);
                     } catch (IOException e) {
@@ -129,7 +130,7 @@ public class DownloadService extends IntentService {
                 return;
             }
 
-            List<ImageFile> imageFiles = content.getImageFiles();
+            List<ImageFile> imageFiles = currentContent.getImageFiles();
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch(executorService);
             for (ImageFile imageFile : imageFiles) {
                 if (imageFile.getStatus() != StatusContent.IGNORED) {
@@ -146,7 +147,7 @@ public class DownloadService extends IntentService {
                 if (paused) {
                     interruptDownload();
                     downloadBatch.cancel();
-                    if (content.getStatus() == StatusContent.SAVED) {
+                    if (currentContent.getStatus() == StatusContent.SAVED) {
                         try {
                             FileUtils.deleteDirectory(dir);
                         } catch (IOException e) {
@@ -181,28 +182,28 @@ public class DownloadService extends IntentService {
                 db.updateImageFileStatus(imageFile);
             }
 
-            db.updateContentStatus(content);
-            content.setDownloadDate(new Date().getTime());
+            db.updateContentStatus(currentContent);
+            currentContent.setDownloadDate(new Date().getTime());
             if (error) {
-                content.setStatus(StatusContent.ERROR);
+                currentContent.setStatus(StatusContent.ERROR);
             } else {
-                content.setStatus(StatusContent.DOWNLOADED);
+                currentContent.setStatus(StatusContent.DOWNLOADED);
             }
             //Save JSON file
             try {
-                Helper.saveJson(content, dir);
+                Helper.saveJson(currentContent, dir);
             } catch (IOException e) {
-                Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                Log.e(TAG, "Error Save JSON " + currentContent.getTitle(), e);
             }
-            db.updateContentStatus(content);
-            Log.i(TAG, "Finish Download Content : " + content.getTitle());
+            db.updateContentStatus(currentContent);
+            Log.i(TAG, "Finish Download Content : " + currentContent.getTitle());
             notificationPresenter.updateNotification(0);
             updateActivity(-1);
-            content = db.selectContentByStatus(StatusContent.DOWNLOADING);
-            if (content != null) {
+            currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
+            if (currentContent != null) {
                 Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
                         DownloadService.class);
-                intentService.putExtra("content_id", content.getId());
+                intentService.putExtra("content_id", currentContent.getId());
                 startService(intentService);
             }
         }
@@ -210,7 +211,8 @@ public class DownloadService extends IntentService {
 
     private void interruptDownload() {
         paused = false;
-        notificationPresenter.updateNotification(0);
+        currentContent = db.selectContentById(currentContent.getId());
+        notificationPresenter.downloadInterrupted(currentContent);
     }
 
     private void updateActivity(double percent) {
@@ -219,20 +221,20 @@ public class DownloadService extends IntentService {
         sendBroadcast(intent);
     }
 
-    private void parseImageFiles(Content content) throws Exception {
+    private void parseImageFiles() throws Exception {
         List<String> aUrls = new ArrayList<>();
         try {
-            switch (content.getSite()) {
+            switch (currentContent.getSite()) {
                 case HITOMI:
-                    String html = HttpClientHelper.call(content.getReaderUrl());
+                    String html = HttpClientHelper.call(currentContent.getReaderUrl());
                     aUrls = HitomiParser.parseImageList(html);
                     break;
                 case NHENTAI:
-                    String json = HttpClientHelper.call(content.getGalleryUrl() + "/json");
+                    String json = HttpClientHelper.call(currentContent.getGalleryUrl() + "/json");
                     aUrls = NhentaiParser.parseImageList(json);
                     break;
                 case TSUMINO:
-                    aUrls = TsuminoParser.parseImageList(content);
+                    aUrls = TsuminoParser.parseImageList(currentContent);
                     break;
             }
         } catch (Exception e) {
@@ -250,7 +252,7 @@ public class DownloadService extends IntentService {
                     .setStatus(StatusContent.SAVED)
                     .setName(name));
         }
-        content.setImageFiles(imageFileList);
-        db.insertImageFiles(content);
+        currentContent.setImageFiles(imageFileList);
+        db.insertImageFiles(currentContent);
     }
 }

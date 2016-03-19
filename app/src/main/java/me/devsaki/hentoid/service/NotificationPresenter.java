@@ -53,6 +53,11 @@ final class NotificationPresenter {
         updateNotification(0);
     }
 
+    void downloadInterrupted(final Content content) {
+        currentContent = content;
+        updateNotification(0);
+    }
+
     void updateNotification(double percent) {
         currentBuilder.setContentIntent(getIntent());
 
