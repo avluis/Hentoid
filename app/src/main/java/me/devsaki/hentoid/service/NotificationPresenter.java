@@ -78,9 +78,8 @@ final class NotificationPresenter {
         if (contentStatus == StatusContent.DOWNLOADED && downloadCount > 1) {
             currentBuilder
                     .setContentText("")
-                    .setContentTitle(
-                            resources.getString(R.string.download_completed_multiple)
-                                    .replace("%d", String.valueOf(downloadCount))
+                    .setContentTitle(resources.getString(R.string.download_completed_multiple)
+                            .replace("%d", String.valueOf(downloadCount))
                     );
             notificationManager.notify(notificationId, currentBuilder.build());
             return;
@@ -111,7 +110,8 @@ final class NotificationPresenter {
                         "Download Content: Error.");
                 break;
             case UNHANDLED_ERROR:
-                currentBuilder.setContentTitle(resources.getString(R.string.unhandled_download_error));
+                currentBuilder.setContentTitle(resources
+                        .getString(R.string.unhandled_download_error));
                 // Tracking Event (Download Unhandled Error)
                 appInstance.trackEvent("Download Service", "Download",
                         "Download Content: Unhandled Error.");
