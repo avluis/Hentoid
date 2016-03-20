@@ -111,6 +111,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".activities.IntroSlideActivity"
+            android:label="@string/app_intro" />
 
         <receiver
             android:name=".updater.UpdateNotificationReceiver"

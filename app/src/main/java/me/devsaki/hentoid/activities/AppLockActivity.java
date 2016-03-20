@@ -26,18 +26,20 @@ public class AppLockActivity extends AppCompatActivity {
         setTitle(R.string.title_activity_app_lock);
 
         final EditText etPin = (EditText) findViewById(R.id.etPin);
-        etPin.setGravity(Gravity.CENTER);
-        etPin.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN)
-                        && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    checkPin(etPin);
-                    return true;
+        if (etPin != null) {
+            etPin.setGravity(Gravity.CENTER);
+            etPin.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN)
+                            && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        checkPin(etPin);
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+        }
     }
 
     @SuppressWarnings("UnusedParameters")

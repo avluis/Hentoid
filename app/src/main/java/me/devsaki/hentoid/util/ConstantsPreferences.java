@@ -21,6 +21,7 @@ public abstract class ConstantsPreferences {
     public static final int PREF_CHECK_UPDATES_DEFAULT = 1;
     public static final int PREF_CHECK_UPDATES_ENABLE = 1;
     public static final String PREF_APP_LOCK = "pref_app_lock";
+    public static final String PREF_FIRST_RUN = "pref_first_run";
 
     public static final String WEB_SESSION_COOKIE = "web_session_cookie";
 }

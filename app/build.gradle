@@ -11,7 +11,7 @@ android {
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
-        targetSdkVersion 22
+        targetSdkVersion 23
         versionCode 36
         versionName '1.1.6r1'
     }
@@ -38,6 +38,7 @@ dependencies {
     compile 'com.android.support:support-v4:23.2.1'
     compile 'com.github.bumptech.glide:glide:3.6.1'
     compile 'com.github.lzyzsd:circleprogress:1.1.0'
+    compile 'com.github.paolorotolo:appintro:3.4.0'
     compile 'com.google.android.gms:play-services-analytics:8.4.0'
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.mani:ThinDownloadManager:1.2.0'

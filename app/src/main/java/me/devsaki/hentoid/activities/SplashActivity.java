@@ -19,10 +19,17 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        final String firstRun = HentoidApplication.getAppPreferences()
+                .getString(ConstantsPreferences.PREF_FIRST_RUN, "");
+
         final String appLock = HentoidApplication.getAppPreferences()
                 .getString(ConstantsPreferences.PREF_APP_LOCK, "");
 
-        if (appLock.isEmpty()) {
+        if (firstRun.isEmpty()) {
+            Intent intent = new Intent(this, IntroSlideActivity.class);
+            startActivity(intent);
+            finish();
+        } else if (appLock.isEmpty()) {
             Intent intent = new Intent(this, DownloadsActivity.class);
             startActivity(intent);
             finish();
