@@ -4,7 +4,6 @@ import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
-import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
@@ -13,7 +12,7 @@ import me.devsaki.hentoid.util.AttributeMap;
  * Created by DevSaki on 09/05/2015.
  */
 @Deprecated
-public class ContentV1 extends ContentTable {
+public class ContentV1 {
 
     @Expose
     private String url;
