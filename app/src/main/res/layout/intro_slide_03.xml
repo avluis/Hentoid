@@ -12,11 +12,10 @@
         android:layout_height="0dp"
         android:layout_gravity="center"
         android:layout_weight="2"
-        android:fontFamily="sans-serif-thin"
         android:gravity="center"
         android:paddingLeft="32dp"
         android:paddingRight="32dp"
-        android:text="Storage Folder"
+        android:text="@string/slide_03_header"
         android:textColor="#ffffff"
         android:textSize="28sp" />
 
@@ -28,7 +27,7 @@
         android:gravity="center"
         android:paddingLeft="64dp"
         android:paddingRight="64dp"
-        android:text="We also need to set a folder for download storage"
+        android:text="@string/slide_03_text"
         android:textColor="#ffffff"
         android:textSize="16sp" />
 

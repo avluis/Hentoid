@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Slide 01 -->
+    <string name="slide_01_header">Welcome to Hentoid!</string>
+    <string name="slide_01_text">Hentoid is a Hentai Manga reader &amp; archiving app</string>
+    <!-- Slide 02 -->
+    <string name="slide_02_header">Permissions</string>
+    <string name="slide_02_text">Starting with Android 6.0, we need to ask you for permission to device storage</string>
+    <!-- Slide 03 -->
+    <string name="slide_03_header">Storage Folder</string>
+    <string name="slide_03_text">We also need to set a folder for download storage</string>
+    <!-- Slide 04 -->
+    <string name="slide_04_header">Importing</string>
+    <string name="slide_04_text">If you have prior downloads, make sure to set that as your storage folder</string>
+    <!-- Slide 05 -->
+    <string name="slide_05_header">All done!</string>
+    <string name="slide_05_text">With that out of the way, enjoy the app!</string>
+</resources>

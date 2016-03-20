@@ -12,11 +12,10 @@
         android:layout_height="0dp"
         android:layout_gravity="center"
         android:layout_weight="2"
-        android:fontFamily="sans-serif-thin"
         android:gravity="center"
         android:paddingLeft="32dp"
         android:paddingRight="32dp"
-        android:text="Importing"
+        android:text="@string/slide_04_header"
         android:textColor="#ffffff"
         android:textSize="28sp" />
 
@@ -28,7 +27,7 @@
         android:gravity="center"
         android:paddingLeft="64dp"
         android:paddingRight="64dp"
-        android:text="If you have prior downloads, make sure to set that as your storage folder"
+        android:text="@string/slide_04_text"
         android:textColor="#ffffff"
         android:textSize="16sp" />
 
