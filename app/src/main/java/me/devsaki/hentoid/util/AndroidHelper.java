@@ -75,6 +75,7 @@ public class AndroidHelper {
 
     }
 
+    // TODO: Add storage permission request
     public static File getThumb(Content content, Context context) {
         File dir = AndroidHelper.getDownloadDir(content, context);
 

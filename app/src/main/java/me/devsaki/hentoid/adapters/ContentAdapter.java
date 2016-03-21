@@ -39,6 +39,7 @@ import me.devsaki.hentoid.util.Constants;
 
 /**
  * Created by neko on 11/05/2015.
+ * TODO: Add storage permission request
  */
 public class ContentAdapter extends ArrayAdapter<Content> {
 
