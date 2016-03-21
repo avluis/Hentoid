@@ -6,9 +6,12 @@
     <!-- Slide 02 -->
     <string name="slide_02_header">Permissions</string>
     <string name="slide_02_text">Starting with Android 6.0, we need to ask you for permission to device storage</string>
+    <!-- Slide 02 Alt -->
+    <string name="slide_02_alt_header">Did you know?</string>
+    <string name="slide_02_alt_text">Hentoid currently supports nhentai, hitomi and tsumino</string>
     <!-- Slide 03 -->
     <string name="slide_03_header">Storage Folder</string>
-    <string name="slide_03_text">We also need to set a folder for download storage</string>
+    <string name="slide_03_text">Hentoid requires a dedicated folder for storing your media</string>
     <!-- Slide 04 -->
     <string name="slide_04_header">Importing</string>
     <string name="slide_04_text">If you have prior downloads, make sure to set that as your storage folder</string>

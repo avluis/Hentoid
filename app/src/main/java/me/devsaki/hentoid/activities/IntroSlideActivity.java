@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
@@ -22,13 +23,16 @@ public class IntroSlideActivity extends AppIntro2 {
     @Override
     public void init(@Nullable Bundle savedInstanceState) {
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_01));
-        addSlide(BaseSlide.newInstance(R.layout.intro_slide_02));
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            addSlide(BaseSlide.newInstance(R.layout.intro_slide_02));
+            // Ask Storage permission in the second slide
+            askForPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
+        } else {
+            addSlide(BaseSlide.newInstance(R.layout.intro_slide_02_alt));
+        }
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_03));
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_04));
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_05));
-
-        // Ask Storage permission in the third slide
-        askForPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
     }
 
     @Override
