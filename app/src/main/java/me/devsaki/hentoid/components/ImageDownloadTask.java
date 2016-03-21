@@ -19,6 +19,7 @@ import me.devsaki.hentoid.util.Constants;
  * Created by Shiro on 2/5/2016.
  * Callable for downloading images asynchronously
  * TODO: Handle errors internally for encapsulation instead of throwing Exceptions
+ * TODO: Add storage permission request
  */
 public class ImageDownloadTask implements Callable<Void> {
 

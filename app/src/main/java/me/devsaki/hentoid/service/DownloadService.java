@@ -107,6 +107,7 @@ public class DownloadService extends IntentService {
             File dir = AndroidHelper.getDownloadDir(currentContent, this);
             try {
                 //Download Cover Image
+                // TODO: This call (on Android M+) requires write storage permission grant
                 executorService.submit(
                         new ImageDownloadTask(
                                 dir, "thumb", currentContent.getCoverImageUrl()
@@ -191,6 +192,7 @@ public class DownloadService extends IntentService {
             }
             //Save JSON file
             try {
+                // TODO: This call (on Android M+) requires write storage permission grant
                 Helper.saveJson(currentContent, dir);
             } catch (IOException e) {
                 Log.e(TAG, "Error Save JSON " + currentContent.getTitle(), e);

@@ -24,6 +24,7 @@ public final class Helper {
         return pos;
     }
 
+    // TODO: Add storage permission request
     public static <K> void saveJson(K object, File dir)
             throws IOException {
         File file = new File(dir, Constants.JSON_FILE_NAME_V2);
