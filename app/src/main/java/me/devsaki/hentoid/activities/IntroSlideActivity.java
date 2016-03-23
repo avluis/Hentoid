@@ -1,18 +1,15 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
 import com.github.paolorotolo.appintro.AppIntro2;
 
-import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.BaseSlide;
-import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.AndroidHelper;
 
 /**
  * Created by avluis on 03/20/2016.
@@ -42,26 +39,9 @@ public class IntroSlideActivity extends AppIntro2 {
 
     @Override
     public void onDonePressed() {
-
-        String firstRun = "done";
-
-        SharedPreferences.Editor editor = HentoidApplication
-                .getAppPreferences().edit();
-        editor.putString(ConstantsPreferences.PREF_FIRST_RUN, firstRun);
-        editor.apply();
-
-        final String appLock = HentoidApplication.getAppPreferences()
-                .getString(ConstantsPreferences.PREF_APP_LOCK, "");
-
-        if (appLock.isEmpty()) {
-            Intent intent = new Intent(this, DownloadsActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
-            Intent intent = new Intent(this, AppLockActivity.class);
-            startActivity(intent);
-            finish();
-        }
+        AndroidHelper.commitFirstRun(true);
+        AndroidHelper.launchMainActivity(this);
+        finish();
     }
 
     @Override

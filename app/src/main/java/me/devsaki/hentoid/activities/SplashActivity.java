@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
@@ -19,23 +20,15 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final String firstRun = HentoidApplication.getAppPreferences()
-                .getString(ConstantsPreferences.PREF_FIRST_RUN, "");
+        final Boolean firstRun = HentoidApplication.getAppPreferences()
+                .getBoolean(ConstantsPreferences.PREF_FIRST_RUN, false);
 
-        final String appLock = HentoidApplication.getAppPreferences()
-                .getString(ConstantsPreferences.PREF_APP_LOCK, "");
-
-        if (firstRun.isEmpty()) {
+        if (!firstRun) {
             Intent intent = new Intent(this, IntroSlideActivity.class);
             startActivity(intent);
             finish();
-        } else if (appLock.isEmpty()) {
-            Intent intent = new Intent(this, DownloadsActivity.class);
-            startActivity(intent);
-            finish();
         } else {
-            Intent intent = new Intent(this, AppLockActivity.class);
-            startActivity(intent);
+            AndroidHelper.launchMainActivity(this);
             finish();
         }
     }

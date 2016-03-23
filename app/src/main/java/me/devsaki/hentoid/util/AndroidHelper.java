@@ -18,6 +18,8 @@ import java.util.Arrays;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.AppLockActivity;
+import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.enums.Site;
 
@@ -71,8 +73,6 @@ public class AndroidHelper {
                 openPerfectViewer(imageFile, context);
             }
         }
-
-
     }
 
     // TODO: Add storage permission request
@@ -200,5 +200,26 @@ public class AndroidHelper {
     public static void ignoreSslErrors() {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
+    }
+
+    public static void launchMainActivity(Context ctx) {
+
+        final String appLock = HentoidApplication.getAppPreferences()
+                .getString(ConstantsPreferences.PREF_APP_LOCK, "");
+
+        if (appLock.isEmpty()) {
+            Intent intent = new Intent(ctx, DownloadsActivity.class);
+            ctx.startActivity(intent);
+        } else {
+            Intent intent = new Intent(ctx, AppLockActivity.class);
+            ctx.startActivity(intent);
+        }
+    }
+
+    public static void commitFirstRun(boolean commit) {
+        SharedPreferences.Editor editor = HentoidApplication
+                .getAppPreferences().edit();
+        editor.putBoolean(ConstantsPreferences.PREF_FIRST_RUN, commit);
+        editor.apply();
     }
 }
