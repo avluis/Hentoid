@@ -45,7 +45,7 @@
             android:layout_gravity="center"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:src="@drawable/ic_launcher_web" />
+            android:src="@drawable/ic_android_marshmallow" />
     </LinearLayout>
 
     <TextView
