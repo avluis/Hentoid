@@ -16,6 +16,9 @@
     <string name="slide_04_header">Importing</string>
     <string name="slide_04_text">If you have prior downloads, make sure to set that as your storage folder</string>
     <!-- Slide 05 -->
-    <string name="slide_05_header">All done!</string>
-    <string name="slide_05_text">With that out of the way, enjoy the app!</string>
+    <string name="slide_05_header">Library</string>
+    <string name="slide_05_text">Initializing Library</string>
+    <!-- Slide 06 -->
+    <string name="slide_06_header">All done!</string>
+    <string name="slide_06_text">With that out of the way, enjoy the app!</string>
 </resources>

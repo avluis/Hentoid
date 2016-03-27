@@ -72,6 +72,9 @@
             android:launchMode="singleTask"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
+            android:name=".activities.SelectFolderActivity2"
+            android:theme="@style/Theme.Dialog" />
+        <activity
             android:name=".activities.ImporterActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask"

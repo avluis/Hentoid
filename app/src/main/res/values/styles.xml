@@ -20,4 +20,10 @@
         <item name="android:background">@drawable/image_button</item>
     </style>
 
+    <style name="Theme.Dialog" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:backgroundDimEnabled">true</item>
+    </style>
+
 </resources>
