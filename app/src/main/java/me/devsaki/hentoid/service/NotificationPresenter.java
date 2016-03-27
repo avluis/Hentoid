@@ -77,6 +77,7 @@ final class NotificationPresenter {
 
         if (contentStatus == StatusContent.DOWNLOADED && downloadCount > 1) {
             currentBuilder
+                    .setSmallIcon(R.drawable.ic_hentoid)
                     .setContentText("")
                     .setContentTitle(resources.getString(R.string.download_completed_multiple)
                             .replace("%d", String.valueOf(downloadCount))
