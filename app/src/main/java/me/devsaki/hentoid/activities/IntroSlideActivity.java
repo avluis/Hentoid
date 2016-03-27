@@ -22,9 +22,12 @@ public class IntroSlideActivity extends AppIntro2 {
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_01));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(BaseSlide.newInstance(R.layout.intro_slide_02));
-            // Ask Storage permission in the second slide
+            // Ask Storage permission in the second slide,
+            // but only for Android M+ users.
             askForPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2);
         } else {
+            // In order to keep the number of slides the same,
+            // we show this info slide for non-M users.
             addSlide(BaseSlide.newInstance(R.layout.intro_slide_02_alt));
         }
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_03));
@@ -46,6 +49,10 @@ public class IntroSlideActivity extends AppIntro2 {
 
     @Override
     public void onSlideChanged() {
-        // Do something when the slide changes.
+        // Show the import dialog just prior to the last slide
+        int importSlide = 4;
+        if (pager.getCurrentItem() == importSlide) {
+            System.out.println("Is this the right slide?");
+        }
     }
 }
