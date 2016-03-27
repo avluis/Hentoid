@@ -292,7 +292,7 @@ public class BaseWebActivity extends AppCompatActivity {
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             webViewIsLoading = true;
-            fabRefreshOrStop.setImageResource(R.drawable.ic_action_stop_loading);
+            fabRefreshOrStop.setImageResource(R.drawable.ic_action_stop);
             fabRefreshOrStop.show();
             fabDownloads.show();
             hideFab(fabDownload);
