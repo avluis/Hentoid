@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.preference.PreferenceManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -167,17 +168,17 @@ public class AndroidHelper {
                 .apply();
     }
 
-    private static void clearSharedPreferences(String prefsName, Context ctx) {
-        SharedPreferences sharedPrefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+    private static void clearSharedPreferences(Context ctx) {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.clear();
         editor.apply();
     }
 
-    private static void clearSharedPreferences(String prefsKey, String prefsName, Context ctx) {
+    private static void clearSharedPreferences(String prefsName, Context ctx) {
         SharedPreferences sharedPrefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.remove(prefsKey);
+        editor.clear();
         editor.apply();
     }
 
@@ -200,13 +201,8 @@ public class AndroidHelper {
         if (prefsVersion != ConstantsPreferences.PREFS_VERSION) {
             System.out.println("Shared Prefs Key Mismatch! Clearing Prefs!");
 
-            // Clear Pref version key
-            clearSharedPreferences(ConstantsPreferences.PREFS_VERSION_KEY,
-                    ctx.getApplicationContext());
-
-            // Make sure to add any additional Pref keys to clear here
-            // clearSharedPreferences(ConstantsPreferences.PREF_APP_LOCK,
-            //         ctx.getApplicationContext());
+            // Clear All
+            clearSharedPreferences(ctx.getApplicationContext());
 
             // Save current Pref version key
             saveSharedPrefsKey(ConstantsPreferences.PREFS_VERSION,
