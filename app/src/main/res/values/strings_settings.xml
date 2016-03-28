@@ -20,11 +20,11 @@
     <!-- Browser -->
     <string name="pref_webview_category">Browser</string>
     <string name="pref_webview_override_overview_title">Disable Page Overview</string>
-    <string name="pref_webview_override_overview_summary">Use the checkbox to disable page overview and to set your preferred initial zoom level below.</string>
+    <string name="pref_webview_override_overview_summary">Use the checkbox to disable page overview and to set your preferred initial zoom level below.\nThis setting only applies to Hitomi.</string>
     <string name="pref_webview_override_overview_default">false</string>
     <string name="pref_webview_initial_zoom_title">Initial Zoom Level</string>
-    <string name="pref_webview_initial_zoom_summary">Zoom level of browser page on initial load.</string>
-    <string name="pref_webview_initial_zoom_default">50</string>
+    <string name="pref_webview_initial_zoom_summary">Zoom level of browser page on initial load.\nThis setting only applies to Hitomi.</string>
+    <string name="pref_webview_initial_zoom_default">20</string>
     <!-- .nomedia -->
     <string name="nomedia_file_created">.nomedia file created.</string>
     <!-- App Lock -->

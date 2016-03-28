@@ -126,16 +126,7 @@ public class BaseWebActivity extends AppCompatActivity {
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);
-
-        boolean bWebViewOverview = AndroidHelper.getWebViewOverviewPrefs();
-        int mWebViewInitialZoom = AndroidHelper.getWebViewInitialZoomPrefs();
-
-        if (bWebViewOverview) {
-            System.out.println("Override WebView Overview");
-            System.out.println(mWebViewInitialZoom);
-        } else {
-            webSettings.setLoadWithOverviewMode(true);
-        }
+        webSettings.setLoadWithOverviewMode(true);
     }
 
     private void initSwipeLayout() {
