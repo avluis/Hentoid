@@ -20,8 +20,6 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        AndroidHelper.queryPrefsKey(getApplicationContext());
-
         final String appLock = HentoidApplication.getAppPreferences()
                 .getString(ConstantsPreferences.PREF_APP_LOCK, "");
 

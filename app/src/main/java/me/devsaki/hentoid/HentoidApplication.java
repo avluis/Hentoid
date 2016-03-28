@@ -103,6 +103,7 @@ public class HentoidApplication extends Application {
         AnalyticsTrackers.initialize(this);
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
 
+        AndroidHelper.queryPrefsKey(getApplicationContext());
         AndroidHelper.ignoreSslErrors();
 
         HentoidDB db = new HentoidDB(this);
