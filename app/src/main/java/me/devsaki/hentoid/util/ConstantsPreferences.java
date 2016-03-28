@@ -6,6 +6,9 @@ package me.devsaki.hentoid.util;
  */
 public abstract class ConstantsPreferences {
 
+    public static final String PREFS_VERSION_KEY = "prefs_version";
+    public static final int PREFS_VERSION = 1;
+
     public static final String PREF_QUALITY_IMAGE_LISTS = "pref_image_quality_lists";
     public static final String PREF_QUALITY_IMAGE_DEFAULT = "Low";
     public static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
