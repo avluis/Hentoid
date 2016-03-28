@@ -109,7 +109,10 @@ public class HentoidApplication extends Application {
         HentoidDB db = new HentoidDB(this);
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
-        if (AndroidHelper.getMobileUpdatePrefs()) {
+        if (sharedPreferences.getString(
+                ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
+                ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT + "").equals(
+                ConstantsPreferences.PREF_CHECK_UPDATES_ENABLE + "")) {
             System.out.println("Updates over Mobile Data: Enabled");
             UpdateCheck(false);
         } else {

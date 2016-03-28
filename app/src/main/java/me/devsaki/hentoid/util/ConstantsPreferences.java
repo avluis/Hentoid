@@ -7,7 +7,7 @@ package me.devsaki.hentoid.util;
 public abstract class ConstantsPreferences {
 
     public static final String PREFS_VERSION_KEY = "prefs_version";
-    public static final int PREFS_VERSION = 1;
+    public static final int PREFS_VERSION = 2;
 
     public static final String PREF_QUALITY_IMAGE_LISTS = "pref_image_quality_lists";
     public static final String PREF_QUALITY_IMAGE_DEFAULT = "Low";
@@ -24,8 +24,9 @@ public abstract class ConstantsPreferences {
     public static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "prefs_webview_override_overview_lists";
     public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
     public static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
-    public static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
     public static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
+    public static final int PREF_CHECK_UPDATES_DEFAULT = 1;
+    public static final int PREF_CHECK_UPDATES_ENABLE = 1;
     public static final String PREF_APP_LOCK = "pref_app_lock";
 
     public static final String WEB_SESSION_COOKIE = "web_session_cookie";
