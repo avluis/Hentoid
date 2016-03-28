@@ -37,9 +37,10 @@
             android:icon="@null"
             android:summary="@string/pref_select_folder_summary"
             android:title="@string/pref_select_folder_title">
+
             <intent
                 android:action="android.intent.action.VIEW"
-                android:targetClass="me.devsaki.hentoid.SelectFolderActivity"
+                android:targetClass="me.devsaki.hentoid.activities.SelectFolderActivity"
                 android:targetPackage="me.devsaki.hentoid" />
         </Preference>
         <Preference
