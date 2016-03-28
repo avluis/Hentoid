@@ -167,10 +167,17 @@ public class AndroidHelper {
                 .apply();
     }
 
-    private static void clearSharedPreferences(String prefsKey, Context ctx) {
-        SharedPreferences sharedPrefs = ctx.getSharedPreferences(prefsKey, Context.MODE_PRIVATE);
+    private static void clearSharedPreferences(String prefsName, Context ctx) {
+        SharedPreferences sharedPrefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.clear();
+        editor.apply();
+    }
+
+    private static void clearSharedPreferences(String prefsKey, String prefsName, Context ctx) {
+        SharedPreferences sharedPrefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.remove(prefsKey);
         editor.apply();
     }
 
