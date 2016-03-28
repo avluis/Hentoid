@@ -51,12 +51,4 @@
         <item>80</item>
         <item>100</item>
     </string-array>
-    <string-array name="pref_check_updates_entries">
-        <item>Enable</item>
-        <item>Disable</item>
-    </string-array>
-    <string-array name="pref_check_updates_entry_values">
-        <item>1</item>
-        <item>0</item>
-    </string-array>
 </resources>

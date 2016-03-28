@@ -235,6 +235,12 @@ public class AndroidHelper {
                         ConstantsPreferences.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT + ""));
     }
 
+    public static boolean getMobileUpdatePrefs() {
+        return HentoidApplication.getAppPreferences().getBoolean(
+                ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
+                ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT);
+    }
+
     private static void openPerfectViewer(File firstImage, Context context) {
         try {
             Intent intent = context
