@@ -167,6 +167,48 @@ public class AndroidHelper {
                 .apply();
     }
 
+    private static void clearSharedPreferences(String prefsKey, Context ctx) {
+        SharedPreferences sharedPrefs = ctx.getSharedPreferences(prefsKey, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.clear();
+        editor.apply();
+    }
+
+    private static void saveSharedPrefsKey(int prefsVersion, Context ctx) {
+        SharedPreferences sharedPrefs = ctx.getSharedPreferences(
+                ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putInt(ConstantsPreferences.PREFS_VERSION_KEY, prefsVersion);
+        editor.apply();
+    }
+
+    public static void queryPrefsKey(Context ctx) {
+        final int prefsVersion = ctx.getSharedPreferences(
+                ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
+                ConstantsPreferences.PREFS_VERSION_KEY, 0);
+
+        System.out.println("Current Prefs Key value: " + prefsVersion);
+
+        // Use this whenever any incompatible changes are made to Prefs.
+        if (prefsVersion != ConstantsPreferences.PREFS_VERSION) {
+            System.out.println("Shared Prefs Key Mismatch! Clearing Prefs!");
+
+            // Clear Pref version key
+            clearSharedPreferences(ConstantsPreferences.PREFS_VERSION_KEY,
+                    ctx.getApplicationContext());
+
+            // Make sure to add any additional Pref keys to clear here
+            // clearSharedPreferences(ConstantsPreferences.PREF_APP_LOCK,
+            //         ctx.getApplicationContext());
+
+            // Save current Pref version key
+            saveSharedPrefsKey(ConstantsPreferences.PREFS_VERSION,
+                    ctx.getApplicationContext());
+        } else {
+            System.out.println("Prefs Key Match. Carry on.");
+        }
+    }
+
     private static void openFile(File aFile, Context context) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
