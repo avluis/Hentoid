@@ -3,6 +3,7 @@
     <PreferenceCategory
         android:key="pref_key_performance_settings"
         android:title="@string/pref_performance_category">
+
         <ListPreference
             android:defaultValue="@string/pref_image_quality_default"
             android:entries="@array/pref_image_quality_entries"
@@ -52,6 +53,7 @@
     <PreferenceCategory
         android:key="pref_key_applock_settings"
         android:title="@string/pref_applock_category">
+
         <Preference
             android:icon="@null"
             android:key="pref_app_lock"
@@ -67,10 +69,8 @@
             android:key="pref_check_updates_manual"
             android:summary="@string/pref_check_updates_manual_summary"
             android:title="@string/pref_check_updates_manual_title" />
-        <ListPreference
+        <CheckBoxPreference
             android:defaultValue="@string/pref_check_updates_default"
-            android:entries="@array/pref_check_updates_entries"
-            android:entryValues="@array/pref_check_updates_entry_values"
             android:icon="@null"
             android:key="pref_check_updates_lists"
             android:summary="@string/pref_check_updates_summary"

@@ -177,6 +177,12 @@ public class AndroidHelper {
         context.startActivity(myIntent);
     }
 
+    public static boolean getMobileUpdatePrefs() {
+        return HentoidApplication.getAppPreferences().getBoolean(
+                ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
+                ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT);
+    }
+
     private static void openPerfectViewer(File firstImage, Context context) {
         try {
             Intent intent = context

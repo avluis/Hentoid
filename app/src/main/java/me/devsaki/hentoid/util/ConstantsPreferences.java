@@ -17,9 +17,8 @@ public abstract class ConstantsPreferences {
     public static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
     public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
     public static final int PREF_ORDER_CONTENT_BY_DATE = 1;
+    public static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
     public static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
-    public static final int PREF_CHECK_UPDATES_DEFAULT = 1;
-    public static final int PREF_CHECK_UPDATES_ENABLE = 1;
     public static final String PREF_APP_LOCK = "pref_app_lock";
 
     public static final String WEB_SESSION_COOKIE = "web_session_cookie";
