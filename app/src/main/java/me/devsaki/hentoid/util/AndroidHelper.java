@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StrictMode;
+import android.preference.PreferenceManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -166,6 +167,50 @@ public class AndroidHelper {
                 .edit()
                 .putString(ConstantsPreferences.WEB_SESSION_COOKIE, sessionCookie)
                 .apply();
+    }
+
+    private static void clearSharedPreferences(Context ctx) {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.clear();
+        editor.apply();
+    }
+
+    private static void clearSharedPreferences(String prefsName, Context ctx) {
+        SharedPreferences sharedPrefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.clear();
+        editor.apply();
+    }
+
+    private static void saveSharedPrefsKey(int prefsVersion, Context ctx) {
+        SharedPreferences sharedPrefs = ctx.getSharedPreferences(
+                ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putInt(ConstantsPreferences.PREFS_VERSION_KEY, prefsVersion);
+        editor.apply();
+    }
+
+    public static void queryPrefsKey(Context ctx) {
+        final int prefsVersion = ctx.getSharedPreferences(
+                ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
+                ConstantsPreferences.PREFS_VERSION_KEY, 0);
+
+        System.out.println("Current Prefs Key value: " + prefsVersion);
+
+        // Use this whenever any incompatible changes are made to Prefs.
+        if (prefsVersion != ConstantsPreferences.PREFS_VERSION) {
+            System.out.println("Shared Prefs Key Mismatch! Clearing Prefs!");
+
+            // Clear All
+            clearSharedPreferences(ctx.getApplicationContext());
+
+            // Save current Pref version key
+            saveSharedPrefsKey(ConstantsPreferences.PREFS_VERSION,
+                    ctx.getApplicationContext());
+        } else {
+            System.out.println("Prefs Key Match. Carry on.");
+        }
     }
 
     private static void openFile(File aFile, Context context) {
