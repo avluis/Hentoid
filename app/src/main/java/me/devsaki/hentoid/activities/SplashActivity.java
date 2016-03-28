@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
