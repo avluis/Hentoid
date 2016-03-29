@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.activities;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
 import java.net.MalformedURLException;
@@ -15,7 +17,7 @@ import me.devsaki.hentoid.parser.HitomiParser;
 
 /**
  * Created by Shiro on 1/20/2016.
- * TODO: Re-implement as Activity ->> Fragment.
+ * Implements Hitomi.la source
  */
 public class HitomiActivity extends BaseWebActivity {
 
@@ -48,11 +50,21 @@ public class HitomiActivity extends BaseWebActivity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
 
-            webView.loadUrl(getResources().getString(R.string.remove_js_css));
-            webView.loadUrl(getResources().getString(R.string.restore_hitomi_js));
+            String js = getResources().getString(R.string.grab_html_from_webview);
+
             if (url.contains("//hitomi.la/galleries/")) {
-                // following line calls PageLoadListener.processHTML(*)
-                view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
+                // following calls PageLoadListener.processHTML(*)
+                // Conditional fixes issue with loadUrl("javascript:") on Android 4.4+
+                if (Build.VERSION.SDK_INT >= 19) {
+                    view.evaluateJavascript(js, new ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String s) {
+                            // Ignored - our js returns null
+                        }
+                    });
+                } else {
+                    view.loadUrl(js);
+                }
             }
         }
     }
