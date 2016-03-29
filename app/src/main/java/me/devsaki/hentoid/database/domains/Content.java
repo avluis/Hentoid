@@ -2,13 +2,13 @@ package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
 
+import java.io.Serializable;
 import java.util.List;
 
 import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
-import me.devsaki.hentoid.database.contants.ContentTable;
 import me.devsaki.hentoid.database.enums.AttributeType;
 import me.devsaki.hentoid.database.enums.Site;
 import me.devsaki.hentoid.database.enums.StatusContent;
@@ -17,7 +17,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 /**
  * Created by DevSaki on 09/05/2015.
  */
-public class Content extends ContentTable {
+public class Content implements Serializable {
 
     @Expose
     private String url;
