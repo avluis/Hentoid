@@ -9,9 +9,9 @@ import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
-import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 /**

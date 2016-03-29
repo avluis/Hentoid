@@ -25,17 +25,17 @@ import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
-import me.devsaki.hentoid.components.HentoidActivity;
-import me.devsaki.hentoid.components.HentoidFragment;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.fragments.BaseFragment;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
  * Presents the list of downloaded works to the user.
  */
-public class DownloadsActivity extends HentoidActivity<DownloadsActivity.DownloadsFragment> {
+public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
 
     private static final String TAG = DownloadsActivity.class.getName();
     private SearchView searchView;
@@ -43,6 +43,15 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
     @Override
     protected DownloadsFragment buildFragment() {
         return new DownloadsFragment();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     @Override
@@ -111,7 +120,7 @@ public class DownloadsActivity extends HentoidActivity<DownloadsActivity.Downloa
         }
     }
 
-    public static class DownloadsFragment extends HentoidFragment {
+    public static class DownloadsFragment extends BaseFragment {
         private static String query = "";
         private Toast mToast;
         private int currentPage = 1;

@@ -11,8 +11,8 @@ import java.util.Random;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 /**

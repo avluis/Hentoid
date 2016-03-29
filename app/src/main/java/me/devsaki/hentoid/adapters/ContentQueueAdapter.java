@@ -19,14 +19,14 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
 
 /**
  * Created by neko on 11/05/2015.
- * Disclaimer: Image cover art is assumed to have .jpg extension by default
- * TODO: Add logic to determine file type and load/save appropriate file to db
+ * Builds and assigns content from db into adapter
+ * for display in queue
  */
 public class ContentQueueAdapter extends ArrayAdapter<Content> {
 

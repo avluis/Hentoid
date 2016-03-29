@@ -31,14 +31,16 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.service.DownloadService;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 
 /**
  * Created by neko on 11/05/2015.
+ * Builds and assigns content from db into adapter
+ * for display in downloads
  */
 public class ContentAdapter extends ArrayAdapter<Content> {
 

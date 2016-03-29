@@ -20,6 +20,7 @@
         android:configChanges="orientation|screenSize"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:logo="@drawable/ic_hentoid"
         android:supportsRtl="false"
         android:theme="@style/AppTheme"
         tools:ignore="UnusedAttribute">
@@ -56,7 +57,7 @@
             tools:ignore="InnerclassSeparator" />
 
         <service
-            android:name=".service.DownloadService"
+            android:name=".services.DownloadService"
             android:configChanges="orientation|screenSize"
             android:enabled="true"
             android:exported="false" />
@@ -80,7 +81,7 @@
             android:name=".activities.PreferencesActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
-            android:launchMode="singleTask"
+            android:launchMode="standard"
             android:parentActivityName=".activities.DownloadsActivity"
             tools:ignore="UnusedAttribute">
             <meta-data
@@ -95,7 +96,7 @@
             android:name=".activities.AboutActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_about"
-            android:launchMode="singleTask"
+            android:launchMode="standard"
             android:parentActivityName=".activities.DownloadsActivity"
             tools:ignore="UnusedAttribute">
             <meta-data

@@ -20,7 +20,7 @@ import java.util.Arrays;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.enums.Site;
 
 /**
  * Created by DevSaki on 20/05/2015.

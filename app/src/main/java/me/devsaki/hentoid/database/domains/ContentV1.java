@@ -4,8 +4,8 @@ import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 /**

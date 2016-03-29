@@ -2,6 +2,9 @@ package me.devsaki.hentoid.v2.bean;
 
 import java.util.List;
 
+/**
+ * General builder for works.
+ */
 public class DoujinBean {
 
     private String title;

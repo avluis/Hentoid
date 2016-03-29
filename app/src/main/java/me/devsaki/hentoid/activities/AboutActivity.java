@@ -48,51 +48,63 @@ public class AboutActivity extends AppCompatActivity {
         Spanned spGitHub = Html.fromHtml(getString(R.string.about_github));
         TextView tvGitHub = (TextView) findViewById(R.id.tv_github);
         final String urlGitHub = getString(R.string.about_github_url);
-        tvGitHub.setText(spGitHub);
-        tvGitHub.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                intent.setData(Uri.parse(urlGitHub));
-                startActivity(intent);
-            }
-        });
+        if (tvGitHub != null) {
+            tvGitHub.setText(spGitHub);
+            tvGitHub.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    intent.setData(Uri.parse(urlGitHub));
+                    startActivity(intent);
+                }
+            });
+        }
 
         Spanned spCommunity = Html.fromHtml(getString(R.string.about_community));
         TextView tvCommunity = (TextView) findViewById(R.id.tv_community);
         final String urlCommunity = getString(R.string.about_community_url);
-        tvCommunity.setText(spCommunity);
-        tvCommunity.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                intent.setData(Uri.parse(urlCommunity));
-                startActivity(intent);
-            }
-        });
+        if (tvCommunity != null) {
+            tvCommunity.setText(spCommunity);
+            tvCommunity.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    intent.setData(Uri.parse(urlCommunity));
+                    startActivity(intent);
+                }
+            });
+        }
 
         Spanned spBlog = Html.fromHtml(getString(R.string.about_blog));
         TextView tvBlog = (TextView) findViewById(R.id.tv_blog);
         final String urlBlog = getString(R.string.about_blog_url);
-        tvBlog.setText(spBlog);
-        tvBlog.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                intent.setData(Uri.parse(urlBlog));
-                startActivity(intent);
-            }
-        });
+        if (tvBlog != null) {
+            tvBlog.setText(spBlog);
+            tvBlog.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    intent.setData(Uri.parse(urlBlog));
+                    startActivity(intent);
+                }
+            });
+        }
 
         Spanned spAbout = Html.fromHtml(getString(R.string.about));
         TextView tvAbout = (TextView) findViewById(R.id.tv_about);
-        tvAbout.setText(spAbout);
+        if (tvAbout != null) {
+            tvAbout.setText(spAbout);
+        }
 
         getVersionInfo();
 
         TextView tvVersionName = (TextView) findViewById(R.id.tv_version_name);
-        tvVersionName.setText(verName);
+        if (tvVersionName != null) {
+            tvVersionName.setText(verName);
+        }
 
         Spanned spAboutNotes = Html.fromHtml(getString(R.string.about_notes));
         TextView tvAboutNotes = (TextView) findViewById(R.id.tv_about_notes);
-        tvAboutNotes.setText(spAboutNotes);
+        if (tvAboutNotes != null) {
+            tvAboutNotes.setText(spAboutNotes);
+        }
     }
 
     private void getVersionInfo() {
