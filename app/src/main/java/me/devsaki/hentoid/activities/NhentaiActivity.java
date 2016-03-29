@@ -18,7 +18,7 @@ import me.devsaki.hentoid.util.HttpClientHelper;
 
 /**
  * Created by Shiro on 1/20/2016.
- * TODO: Re-implement as Activity ->> Fragment.
+ * Implements nhentai source
  */
 public class NhentaiActivity extends BaseWebActivity {
 

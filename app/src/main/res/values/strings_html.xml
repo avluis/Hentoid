@@ -5,41 +5,4 @@
             window.HTMLOUT.processHTML(\'<html>\'+document.getElementsByTagName(\'html\')[0].innerHTML+\'</html>\');
         ]]>
     </string>
-    <string name="remove_js_css" tools:ignore="TypographyDashes">
-        <![CDATA[
-            javascript:
-            function removejscssfile(filename, filetype){
-                var targetelement=(filetype=="js")? "script" : (filetype=="css")? "link" : "none" //determine element type to create nodelist from
-                var targetattr=(filetype=="js")? "src" : (filetype=="css")? "href" : "none" //determine corresponding attribute to test for
-                var allsuspects=document.getElementsByTagName(targetelement)
-                    for (var i=allsuspects.length; i>=0; i--){ //search backwards within nodelist for matching elements to remove
-                        if (allsuspects[i] && allsuspects[i].getAttribute(targetattr)!=null && allsuspects[i].getAttribute(targetattr).indexOf(filename)!=-1)
-                            allsuspects[i].parentNode.removeChild(allsuspects[i]) //remove element by calling parentNode.removeChild()
-                    }
-            }
-
-            removejscssfile("hitomi.js", "js");
-            removejscssfile("hitomi2.js", "js");
-            removejscssfile("moveimage.js", "js");
-        ]]>
-    </string>
-    <string name="restore_hitomi_js">
-        <![CDATA[
-            javascript:
-            if(!Object.keys){Object.keys=(function(){\'use strict\';var hasOwnProperty=Object.prototype.hasOwnProperty,hasDontEnumBug=!({toString:null}).propertyIsEnumerable(\'toString\'),dontEnums=[\'toString\',\'toLocaleString\',\'valueOf\',\'hasOwnProperty\',\'isPrototypeOf\',\'propertyIsEnumerable\',\'constructor\'],dontEnumsLength=dontEnums.length;return function(obj){if(typeof obj!==\'object\'&&(typeof obj!==\'function\'||obj===null)){throw new TypeError(\'Object.keys called on non-object\');}
-
-            var result=[],prop,i;for(prop in obj){if(hasOwnProperty.call(obj,prop)){result.push(prop);}}
-
-            if(hasDontEnumBug){for(i=0;i<dontEnumsLength;i++){if(hasOwnProperty.call(obj,dontEnums[i])){result.push(dontEnums[i]);}}}
-                return result;};}());}
-
-            function is_english(){var userLang=navigator.language||navigator.userLanguage;userLang=userLang.toLowerCase();return/^en/.test(userLang);}
-            function is_asian(){var userLang=navigator.language||navigator.userLanguage;userLang=userLang.toLowerCase();return/^(?:ko|ja)/.test(userLang);}
-            function random_index(arr){return Math.floor(Math.random()*arr.length);}
-            function random_property(obj){var result;var count=0;for(var prop in obj)
-
-            if(Math.random()<1/++count)
-            result=prop;return result;}
-        ]]>
-    </string>
 </resources>
