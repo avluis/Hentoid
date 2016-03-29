@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
+import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -98,9 +99,21 @@ public class HitomiActivity extends BaseWebActivity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
 
+            String js = getResources().getString(R.string.grab_html_from_webview);
+
             if (url.contains("//hitomi.la/galleries/")) {
-                // following line calls PageLoadListener.processHTML(*)
-                view.loadUrl(getResources().getString(R.string.grab_html_from_webview));
+                // following calls PageLoadListener.processHTML(*)
+                // Conditional fixes issue with loadUrl("javascript:") on Android 4.4+
+                if (Build.VERSION.SDK_INT >= 19) {
+                    view.evaluateJavascript(js, new ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String s) {
+                            // Ignored - our js returns null
+                        }
+                    });
+                } else {
+                    view.loadUrl(js);
+                }
             }
         }
     }
