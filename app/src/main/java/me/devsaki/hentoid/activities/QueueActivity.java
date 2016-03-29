@@ -48,6 +48,15 @@ public class QueueActivity extends
     };
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+    }
+
+    @Override
     protected QueueManagerFragment buildFragment() {
         return new QueueManagerFragment();
     }
