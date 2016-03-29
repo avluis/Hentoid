@@ -17,32 +17,33 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  * If set, this will allow us to 'lock' the app behind a password/code.
  */
 public class AppLockActivity extends AppCompatActivity {
+    private EditText etPin;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_app_lock);
-        setTitle(R.string.title_activity_app_lock);
 
-        final EditText etPin = (EditText) findViewById(R.id.etPin);
-        etPin.setGravity(Gravity.CENTER);
-        etPin.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN)
-                        && (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    checkPin(etPin);
-                    return true;
+        etPin = (EditText) findViewById(R.id.etPin);
+        if (etPin != null) {
+            etPin.setGravity(Gravity.CENTER);
+            etPin.setOnKeyListener(new View.OnKeyListener() {
+                @Override
+                public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN)
+                            && (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        checkPin(etPin);
+                        return true;
+                    }
+                    return false;
                 }
-                return false;
-            }
-        });
+            });
+        }
     }
 
     @SuppressWarnings("UnusedParameters")
     public void checkPin(View view) {
-        String pin = ((EditText) findViewById(R.id.etPin)).getText().toString();
+        String pin = etPin.getText().toString();
         String appLock = HentoidApplication.getAppPreferences()
                 .getString(ConstantsPreferences.PREF_APP_LOCK, "");
         if (appLock.equals(pin)) {

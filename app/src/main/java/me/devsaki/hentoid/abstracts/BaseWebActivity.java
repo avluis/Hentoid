@@ -24,9 +24,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.service.DownloadService;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -34,9 +34,8 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
- * TODO: Re-implement as Activity ->> Fragment.
- * TODO: No particular source should be filtered/defined here.
- * TODO: The source itself should contain every method it needs to function.
+ * No particular source should be filtered/defined here.
+ * The source itself should contain every method it needs to function.
  */
 public class BaseWebActivity extends AppCompatActivity {
     private static final String TAG = BaseWebActivity.class.getName();
@@ -75,7 +74,7 @@ public class BaseWebActivity extends AppCompatActivity {
         webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
     }
 
-    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
+    @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
         webView = (ObservableWebView) findViewById(R.id.wbMain);
         webView.setOnLongClickListener(new View.OnLongClickListener() {
@@ -150,6 +149,7 @@ public class BaseWebActivity extends AppCompatActivity {
                 android.R.color.holo_red_light);
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void onRefreshStopFabClick(View view) {
         if (webViewIsLoading) {
             webView.stopLoading();
@@ -158,11 +158,13 @@ public class BaseWebActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void onHomeFabClick(View view) {
         Intent mainActivity = new Intent(this, DownloadsActivity.class);
         startActivity(mainActivity);
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void onReadFabClick(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
@@ -175,6 +177,7 @@ public class BaseWebActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("UnusedParameters")
     public void onDownloadFabClick(View view) {
         processDownload();
     }

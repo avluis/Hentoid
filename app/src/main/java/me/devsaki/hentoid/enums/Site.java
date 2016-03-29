@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.database.enums;
+package me.devsaki.hentoid.enums;
 
 import android.util.Log;
 
@@ -6,6 +6,7 @@ import me.devsaki.hentoid.R;
 
 /**
  * Created by neko on 20/06/2015.
+ * Pre-defined sites for supported sources.
  */
 public enum Site {
 

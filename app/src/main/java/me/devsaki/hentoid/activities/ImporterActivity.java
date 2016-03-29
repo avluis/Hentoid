@@ -21,9 +21,9 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ContentV1;
-import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
@@ -33,7 +33,6 @@ import me.devsaki.hentoid.v2.bean.URLBean;
 /**
  * Provided a directory, takes care of importing existing libraries
  * onto our database.
- * TODO: Implement as a fragment.
  */
 public class ImporterActivity extends AppCompatActivity {
 

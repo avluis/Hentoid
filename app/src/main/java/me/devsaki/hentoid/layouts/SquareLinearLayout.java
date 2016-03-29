@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.components;
+package me.devsaki.hentoid.layouts;
 
 import android.content.Context;
 import android.util.AttributeSet;
@@ -6,6 +6,7 @@ import android.widget.LinearLayout;
 
 /**
  * Created by neko on 14/05/2015.
+ * Transforms a LinearLayout to fit into a square layout
  */
 public class SquareLinearLayout extends LinearLayout {
     public SquareLinearLayout(Context context) {

@@ -10,20 +10,21 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.database.contants.AttributeTable;
-import me.devsaki.hentoid.database.contants.ContentAttributeTable;
-import me.devsaki.hentoid.database.contants.ContentTable;
-import me.devsaki.hentoid.database.contants.ImageFileTable;
+import me.devsaki.hentoid.database.constants.AttributeTable;
+import me.devsaki.hentoid.database.constants.ContentAttributeTable;
+import me.devsaki.hentoid.database.constants.ContentTable;
+import me.devsaki.hentoid.database.constants.ImageFileTable;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.database.enums.AttributeType;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 10/05/2015.
+ * db maintenance class
  */
 public class HentoidDB extends SQLiteOpenHelper {
 

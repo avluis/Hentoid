@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.components;
+package me.devsaki.hentoid.abstracts;
 
 import android.app.FragmentManager;
 import android.content.Intent;
@@ -20,11 +20,13 @@ import me.devsaki.hentoid.activities.PreferencesActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.fragments.BaseFragment;
 
 /**
  * Created by DevSaki on 04/06/2015.
+ * Abstract activity to extend from - Implements DrawerLayout
  */
-public abstract class HentoidActivity<T extends HentoidFragment> extends AppCompatActivity {
+public abstract class BaseActivity<T extends BaseFragment> extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
     private HentoidDB db;
@@ -40,12 +42,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
                 R.string.drawer_open, R.string.drawer_close);
 
         // Set the drawer toggle as the DrawerListener
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setHomeButtonEnabled(true);
-        }
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         db = new HentoidDB(this);
 
@@ -79,12 +76,7 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        // Handle your other action bar items...
-
-        return super.onOptionsItemSelected(item);
+        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -119,13 +111,6 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     }
 
     @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndPreferences(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, PreferencesActivity.class);
-        startActivity(intent);
-    }
-
-    @SuppressWarnings({"UnusedParameters", "unused"})
     public void ndDownloads(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, DownloadsActivity.class);
@@ -136,6 +121,13 @@ public abstract class HentoidActivity<T extends HentoidFragment> extends AppComp
     public void ndQueue(View view) {
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, QueueActivity.class);
+        startActivity(intent);
+    }
+
+    @SuppressWarnings({"UnusedParameters", "unused"})
+    public void ndPreferences(View view) {
+        mDrawerLayout.closeDrawer(GravityCompat.START);
+        Intent intent = new Intent(this, PreferencesActivity.class);
         startActivity(intent);
     }
 

@@ -1,7 +1,8 @@
-package me.devsaki.hentoid.database.enums;
+package me.devsaki.hentoid.enums;
 
 /**
  * Created by DevSaki on 10/05/2015.
+ * Pre-defined content types for supported works.
  */
 public enum AttributeType {
 

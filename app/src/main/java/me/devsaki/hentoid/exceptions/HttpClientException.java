@@ -2,6 +2,7 @@ package me.devsaki.hentoid.exceptions;
 
 /**
  * Created by DevSaki on 15/05/2015.
+ * HttpClientException handler
  */
 public class HttpClientException extends Exception {
 

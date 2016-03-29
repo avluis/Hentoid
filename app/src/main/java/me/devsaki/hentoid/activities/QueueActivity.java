@@ -15,19 +15,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.adapters.ContentQueueAdapter;
-import me.devsaki.hentoid.components.HentoidActivity;
-import me.devsaki.hentoid.components.HentoidFragment;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.service.DownloadService;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.fragments.BaseFragment;
+import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Presents the list of works currently downloading to the user.
  */
 public class QueueActivity extends
-        HentoidActivity<QueueActivity.QueueManagerFragment> {
+        BaseActivity<QueueActivity.QueueManagerFragment> {
 
     private static final String TAG = QueueActivity.class.getName();
 
@@ -65,7 +65,7 @@ public class QueueActivity extends
         unregisterReceiver(receiver);
     }
 
-    public static class QueueManagerFragment extends HentoidFragment {
+    public static class QueueManagerFragment extends BaseFragment {
 
         private List<Content> contents;
         private Context mContext;
