@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.content.ContextCompat;
 
 import java.util.Locale;
 
@@ -48,6 +49,8 @@ final class NotificationPresenter {
         currentBuilder = new NotificationCompat.Builder(appInstance)
                 .setContentText(currentContent.getTitle())
                 .setSmallIcon(currentContent.getSite().getIco())
+                .setColor(ContextCompat.getColor(appInstance.getApplicationContext(),
+                        R.color.accent))
                 .setLocalOnly(true);
 
         updateNotification(0);
@@ -77,6 +80,9 @@ final class NotificationPresenter {
 
         if (contentStatus == StatusContent.DOWNLOADED && downloadCount > 1) {
             currentBuilder
+                    .setSmallIcon(R.drawable.ic_stat_hentoid)
+                    .setColor(ContextCompat.getColor(appInstance.getApplicationContext(),
+                            R.color.accent))
                     .setContentText("")
                     .setContentTitle(resources.getString(R.string.download_completed_multiple)
                             .replace("%d", String.valueOf(downloadCount))
