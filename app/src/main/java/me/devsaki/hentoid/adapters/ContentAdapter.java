@@ -59,9 +59,28 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
     @Override
     public View getView(int position, View convertView, final ViewGroup parent) {
-        LayoutInflater inflater = (LayoutInflater) context
-                .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        View rowView = inflater.inflate(R.layout.row_downloads, parent, false);
+        ViewHolder viewHolder;
+
+        if (convertView == null) {
+            LayoutInflater inflater = (LayoutInflater) context
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            convertView = inflater.inflate(R.layout.row_downloads, parent, false);
+
+            viewHolder = new ViewHolder();
+
+            viewHolder.tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
+            viewHolder.ivCover = (ImageView) convertView.findViewById(R.id.ivCover);
+            viewHolder.tvSeries = (TextView) convertView.findViewById(R.id.tvSeries);
+            viewHolder.tvArtist = (TextView) convertView.findViewById(R.id.tvArtist);
+            viewHolder.tvTags = (TextView) convertView.findViewById(R.id.tvTags);
+            viewHolder.tvSite = (TextView) convertView.findViewById(R.id.tvSite);
+            viewHolder.tvStatus = (TextView) convertView.findViewById(R.id.tvStatus);
+            viewHolder.tvSavedDate = (TextView) convertView.findViewById(R.id.tvSavedDate);
+
+            convertView.setTag(viewHolder);
+        } else {
+            viewHolder = (ViewHolder) convertView.getTag();
+        }
 
         final Content content = contents.get(position);
 
@@ -69,108 +88,102 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         String templateTvArtist = context.getResources().getString(R.string.tvArtists);
         String templateTvTags = context.getResources().getString(R.string.tvTags);
 
-        TextView tvTitle = (TextView) rowView.findViewById(R.id.tvTitle);
-        ImageView ivCover = (ImageView) rowView.findViewById(R.id.ivCover);
-        TextView tvSeries = (TextView) rowView.findViewById(R.id.tvSeries);
-        TextView tvArtist = (TextView) rowView.findViewById(R.id.tvArtist);
-        TextView tvTags = (TextView) rowView.findViewById(R.id.tvTags);
-        TextView tvSite = (TextView) rowView.findViewById(R.id.tvSite);
-        TextView tvStatus = (TextView) rowView.findViewById(R.id.tvStatus);
-        TextView tvSavedDate = (TextView) rowView.findViewById(R.id.tvSavedDate);
+        if (content != null) {
+            viewHolder.tvSite.setText(content.getSite().getDescription());
+            viewHolder.tvStatus.setText(content.getStatus().getDescription());
+            viewHolder.tvSavedDate.setText(sdf.format(new Date(content.getDownloadDate())));
 
-        tvSite.setText(content.getSite().getDescription());
-        tvStatus.setText(content.getStatus().getDescription());
-        tvSavedDate.setText(sdf.format(new Date(content.getDownloadDate())));
-
-        if (content.getTitle() == null) {
-            tvTitle.setText(R.string.tvTitleEmpty);
-        } else {
-            tvTitle.setText(content.getTitle());
-        }
-
-        String series = "";
-        List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
-        if (seriesAttributes != null) {
-            for (int i = 0; i < seriesAttributes.size(); i++) {
-                Attribute attribute = seriesAttributes.get(i);
-                series += attribute.getName();
-                if (i != seriesAttributes.size() - 1) {
-                    series += ", ";
-                }
+            if (content.getTitle() == null) {
+                viewHolder.tvTitle.setText(R.string.tvTitleEmpty);
+            } else {
+                viewHolder.tvTitle.setText(content.getTitle());
             }
-        }
-        tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@serie@", series)));
 
-        String artists = "";
-        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (artistAttributes != null) {
-            for (int i = 0; i < artistAttributes.size(); i++) {
-                Attribute attribute = artistAttributes.get(i);
-                artists += attribute.getName();
-                if (i != artistAttributes.size() - 1) {
-                    artists += ", ";
-                }
-            }
-        }
-        tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
-
-        String tags = "";
-        List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
-        if (tagsAttributes != null) {
-            for (int i = 0; i < tagsAttributes.size(); i++) {
-                Attribute attribute = tagsAttributes.get(i);
-                if (attribute.getName() != null) {
-                    tags += templateTvTags.replace("@tag@", attribute.getName());
-                    if (i != tagsAttributes.size() - 1) {
-                        tags += ", ";
+            String series = "";
+            List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
+            if (seriesAttributes != null) {
+                for (int i = 0; i < seriesAttributes.size(); i++) {
+                    Attribute attribute = seriesAttributes.get(i);
+                    series += attribute.getName();
+                    if (i != seriesAttributes.size() - 1) {
+                        series += ", ";
                     }
                 }
             }
-        }
-        tvTags.setText(Html.fromHtml(tags));
+            viewHolder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@serie@", series)));
 
-        final File dir = AndroidHelper.getDownloadDir(content, getContext());
-
-        File coverFile = AndroidHelper.getThumb(content, getContext());
-        String image = coverFile != null ?
-                coverFile.getAbsolutePath() : content.getCoverImageUrl();
-
-        HentoidApplication.getInstance().loadBitmap(image, ivCover);
-
-        Button btnRead = (Button) rowView.findViewById(R.id.btnRead);
-        btnRead.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                AndroidHelper.openContent(content, getContext());
+            String artists = "";
+            List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
+            if (artistAttributes != null) {
+                for (int i = 0; i < artistAttributes.size(); i++) {
+                    Attribute attribute = artistAttributes.get(i);
+                    artists += attribute.getName();
+                    if (i != artistAttributes.size() - 1) {
+                        artists += ", ";
+                    }
+                }
             }
-        });
-        Button btnDelete = (Button) rowView.findViewById(R.id.btnDelete);
-        btnDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteContent(content, dir, (ListView) parent);
+            viewHolder.tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
+
+            String tags = "";
+            List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
+            if (tagsAttributes != null) {
+                for (int i = 0; i < tagsAttributes.size(); i++) {
+                    Attribute attribute = tagsAttributes.get(i);
+                    if (attribute.getName() != null) {
+                        tags += templateTvTags.replace("@tag@", attribute.getName());
+                        if (i != tagsAttributes.size() - 1) {
+                            tags += ", ";
+                        }
+                    }
+                }
             }
-        });
-        Button btnDownloadAgain = (Button) rowView.findViewById(R.id.btnDownloadAgain);
-        if (content.getStatus() == StatusContent.ERROR) {
-            btnDownloadAgain.setOnClickListener(new View.OnClickListener() {
+            viewHolder.tvTags.setText(Html.fromHtml(tags));
+
+            final File dir = AndroidHelper.getDownloadDir(content, getContext());
+
+            File coverFile = AndroidHelper.getThumb(content, getContext());
+            String image = coverFile != null ?
+                    coverFile.getAbsolutePath() : content.getCoverImageUrl();
+
+            HentoidApplication.getInstance().loadBitmap(image, viewHolder.ivCover);
+
+            Button btnRead = (Button) convertView.findViewById(R.id.btnRead);
+            btnRead.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    downloadAgain(content, (ListView) parent);
+                    AndroidHelper.openContent(content, getContext());
                 }
             });
-            btnDownloadAgain.setVisibility(View.VISIBLE);
-        } else {
-            btnDownloadAgain.setVisibility(View.GONE);
-        }
-        Button btnView = (Button) rowView.findViewById(R.id.btnViewBrowser);
-        btnView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                viewContent(content);
+            Button btnDelete = (Button) convertView.findViewById(R.id.btnDelete);
+            btnDelete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    deleteContent(content, dir, (ListView) parent);
+                }
+            });
+            Button btnDownloadAgain = (Button) convertView.findViewById(R.id.btnDownloadAgain);
+            if (content.getStatus() == StatusContent.ERROR) {
+                btnDownloadAgain.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        downloadAgain(content, (ListView) parent);
+                    }
+                });
+                btnDownloadAgain.setVisibility(View.VISIBLE);
+            } else {
+                btnDownloadAgain.setVisibility(View.GONE);
             }
-        });
-        return rowView;
+            Button btnView = (Button) convertView.findViewById(R.id.btnViewBrowser);
+            btnView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    viewContent(content);
+                }
+            });
+        }
+
+        return convertView;
     }
 
     private void downloadAgain(final Content content, final ListView listView) {
@@ -246,5 +259,16 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Constants.INTENT_URL, content.getGalleryUrl());
         getContext().startActivity(intent);
+    }
+
+    static class ViewHolder {
+        TextView tvTitle;
+        ImageView ivCover;
+        TextView tvSeries;
+        TextView tvArtist;
+        TextView tvTags;
+        TextView tvSite;
+        TextView tvStatus;
+        TextView tvSavedDate;
     }
 }
