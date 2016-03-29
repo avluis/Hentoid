@@ -11,8 +11,8 @@ import java.net.URL;
 
 import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.parser.NhentaiParser;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 

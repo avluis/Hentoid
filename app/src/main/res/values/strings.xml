@@ -64,19 +64,20 @@
     <string name="open_perfect_viewer">Perfect Viewer</string>
     <string name="not_image_file_found">File not found in @dir</string>
     <!-- App Lock -->
-    <string name="app_lock_pin">App Lock PIN</string>
+    <string name="app_lock_pin">Type PIN to unlock</string>
+    <string name="app_lock_pin_prefs">App Lock PIN</string>
     <string name="app_lock_enable">App Lock Enabled</string>
     <string name="app_lock_disable">App Lock Disabled</string>
     <string name="pin_invalid">PIN Invalid!</string>
     <string name="title_activity_app_lock">App Lock</string>
     <string name="button_ok">OK</string>
     <!-- About Activity -->
-    <string name="about"><![CDATA[<p><b>Hentoid</b> is a Hentai Manga reader & archiving app designed to work with <b>Fakku</b>, <b>Pururin</b> and <b>Hitomi</b>.<br /><b>nhentai</b> support has been recently added after Fakku going legit, and Pururin getting abandoned.<br />Hentoid was originally created by <b>Cesar Arasaki</b> (known as csaki to many).<br />Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.</p><p>Hentoid was previously known as FakkuDroid, before support was added for Pururin and Hitomi.</p><p>Note: tsumino support is in! You will need to solve the captcha for now, but we are experimenting with other methods as well.</p><p>In addition, Fakku has dropped support for free content, and while support for Fakku Books or Subscription is not currently planned, this may change in the future.</p>]]></string>
+    <string name="about"><![CDATA[<p><b>Hentoid</b> is a Hentai Manga reader & archiving app.<br />Hentoid was originally created by <b>Cesar Arasaki</b>.</p><p>Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.<br />Hentoid was previously known as FakkuDroid, before support was added for Pururin and Hitomi.</p><br /><p>While initially designed to work with <b>FAKKU</b>, <b>Pururin</b> and <b>Hitomi</b>, support for <b>nhentai</b> and <b>tsumino</b> has also been added after FAKKU going legit and Pururin getting abandoned.</p><p><b>Notes:</b><ul"><li>In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</li><li>FAKKU has dropped support for free content, and while support for FAKKU Books or Subscriptions is not currently planned, this may change in the future.</li></ul>]]></string>
     <string name="about_blog"><![CDATA[<u>FakkuDroid</u>]]></string>
     <string name="about_blog_url">http://fakkudroid.blogspot.com/</string>
     <string name="about_community"><![CDATA[<u>Google+</u>]]></string>
     <string name="about_community_url">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github"><![CDATA[<u>GitHub</u>]]></string>
     <string name="about_github_url">https://github.com/csaki/Hentoid</string>
-    <string name="about_notes"><![CDATA[<p>tsumino support is in!</p>]]></string>
+    <string name="about_notes"><![CDATA[<p>General stability fixes and UI tweaks.<br />Improved download experience/quicker downloads.<br />Less Hitomi Ads/Pop-Ups!</p>]]></string>
 </resources>

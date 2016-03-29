@@ -22,7 +22,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AppLockActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.Site;
+import me.devsaki.hentoid.enums.Site;
 
 /**
  * Created by DevSaki on 20/05/2015.

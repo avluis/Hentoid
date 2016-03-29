@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
@@ -18,17 +19,20 @@ import java.net.URL;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseWebActivity;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.parser.HitomiParser;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.parsers.HitomiParser;
 
 /**
  * Created by Shiro on 1/20/2016.
  * Implements Hitomi.la source
+ * TODO: Re-implement without use of JavaScript
+ * Ref: http://technoranch.blogspot.com/2014/08/how-to-get-html-content-from-android-webview.html#webview-java-no-js-get-content
  */
 public class HitomiActivity extends BaseWebActivity {
 
     private static final String TAG = HitomiActivity.class.getName();
 
+    @SuppressLint("AddJavascriptInterface")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setSite(Site.HITOMI);

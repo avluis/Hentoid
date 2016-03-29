@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.enums.AttributeType;
+import me.devsaki.hentoid.enums.AttributeType;
 
 /**
  * Created by Shiro on 1/11/2016.
+ * Builds AttributeMaps
  */
 public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
 

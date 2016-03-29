@@ -15,13 +15,15 @@ import java.net.URL;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseWebActivity;
-import me.devsaki.hentoid.database.enums.Site;
-import me.devsaki.hentoid.parser.TsuminoParser;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by Shiro on 1/22/2016.
  * Implements tsumino source
+ * TODO: Re-implement without use of JavaScript:
+ * Ref: http://technoranch.blogspot.com/2014/08/how-to-get-html-content-from-android-webview.html#webview-java-no-js-get-content
  */
 public class TsuminoActivity extends BaseWebActivity {
 
@@ -39,6 +41,7 @@ public class TsuminoActivity extends BaseWebActivity {
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }
 
+    @SuppressWarnings("UnusedParameters")
     @Override
     public void onDownloadFabClick(View view) {
         downloadFabPressed = true;

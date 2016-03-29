@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.service;
+package me.devsaki.hentoid.services;
 
 import android.app.IntentService;
 import android.content.Intent;
@@ -21,10 +21,10 @@ import me.devsaki.hentoid.components.ImageDownloadTask;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.database.enums.StatusContent;
-import me.devsaki.hentoid.parser.HitomiParser;
-import me.devsaki.hentoid.parser.NhentaiParser;
-import me.devsaki.hentoid.parser.TsuminoParser;
+import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.parsers.HitomiParser;
+import me.devsaki.hentoid.parsers.NhentaiParser;
+import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
@@ -36,7 +36,7 @@ import me.devsaki.hentoid.util.NetworkStatus;
 public class DownloadService extends IntentService {
 
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
-    public static final String NOTIFICATION = "me.devsaki.hentoid.service";
+    public static final String NOTIFICATION = "me.devsaki.hentoid.services";
     private static final String TAG = DownloadService.class.getName();
     public static boolean paused;
     private NotificationPresenter notificationPresenter;

@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.v2.bean;
 
+/**
+ * General builder for URLs
+ */
 public class URLBean {
 
     private String url;

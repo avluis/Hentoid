@@ -2,7 +2,7 @@ package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
 
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.enums.StatusContent;
 
 /**
  * Created by DevSaki on 10/05/2015.

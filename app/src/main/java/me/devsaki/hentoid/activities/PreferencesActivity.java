@@ -35,7 +35,7 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
  * Created by DevSaki on 20/05/2015.
- * Gather and present the 'Preference Screen' to the user.
+ * Present and set app preferences.
  */
 public class PreferencesActivity extends AppCompatActivity {
 
@@ -130,7 +130,7 @@ public class PreferencesActivity extends AppCompatActivity {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle(R.string.app_lock_pin);
+                    builder.setTitle(R.string.app_lock_pin_prefs);
                     final EditText input = new EditText(getActivity());
                     input.setGravity(Gravity.CENTER);
                     input.setInputType(InputType.TYPE_CLASS_NUMBER);

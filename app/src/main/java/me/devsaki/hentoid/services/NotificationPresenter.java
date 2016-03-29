@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.service;
+package me.devsaki.hentoid.services;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -16,7 +16,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.enums.StatusContent;
+import me.devsaki.hentoid.enums.StatusContent;
 
 /**
  * Created by Shiro on 3/18/2016.
