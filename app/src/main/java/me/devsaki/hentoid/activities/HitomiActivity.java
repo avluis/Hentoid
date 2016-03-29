@@ -1,12 +1,18 @@
 package me.devsaki.hentoid.activities;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -33,7 +39,49 @@ public class HitomiActivity extends BaseWebActivity {
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }
 
+    private WebResourceResponse getJSWebResourceResponseFromAsset(String file) {
+
+        String[] jsFiles = {"hitomi.js", "hitomi-horizontal.js", "hitomi-vertical.js"};
+
+        for (String jsFile : jsFiles) {
+            if (file.contains(jsFile)) {
+                try {
+                    return getUtf8EncodedJSWebResourceResponse(getAssets().open(jsFile));
+                } catch (IOException e) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    private WebResourceResponse getUtf8EncodedJSWebResourceResponse(InputStream open) {
+        return new WebResourceResponse("text/js", "UTF-8", open);
+    }
+
     private class HitomiWebViewClient extends CustomWebViewClient {
+
+        @SuppressWarnings("deprecation") // From API 21 we should use another overload
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull String url) {
+            if (url.contains(".js")) {
+                return getJSWebResourceResponseFromAsset(url);
+            } else {
+                return super.shouldInterceptRequest(view, url);
+            }
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull WebResourceRequest request) {
+            if (request.getUrl().toString().contains(".js")) {
+                return getJSWebResourceResponseFromAsset(request.getUrl().toString());
+            } else {
+                return super.shouldInterceptRequest(view, request);
+            }
+        }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
