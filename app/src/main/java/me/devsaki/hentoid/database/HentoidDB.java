@@ -70,7 +70,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteStatement statement = null;
             try {
                 db = getWritableDatabase();
-                statement = db.compileStatement(Content.INSERT_STATEMENT);
+                statement = db.compileStatement(ContentTable.INSERT_STATEMENT);
                 db.beginTransaction();
                 for (Content row : rows) {
 
@@ -170,7 +170,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         SQLiteStatement statement = null;
         SQLiteStatement statementContentAttribute = null;
         try {
-            statement = db.compileStatement(Attribute.INSERT_STATEMENT);
+            statement = db.compileStatement(AttributeTable.INSERT_STATEMENT);
             statementContentAttribute = db.compileStatement(ContentAttributeTable.INSERT_STATEMENT);
 
             for (Attribute row : rows) {

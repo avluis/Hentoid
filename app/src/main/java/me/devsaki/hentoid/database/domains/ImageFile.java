@@ -2,13 +2,12 @@ package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
 
-import me.devsaki.hentoid.database.contants.ImageFileTable;
 import me.devsaki.hentoid.database.enums.StatusContent;
 
 /**
  * Created by DevSaki on 10/05/2015.
  */
-public class ImageFile extends ImageFileTable {
+public class ImageFile {
 
     @Expose
     private Integer order;
