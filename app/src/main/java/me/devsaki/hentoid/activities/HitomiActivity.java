@@ -21,6 +21,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
+import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
  * Created by Shiro on 1/20/2016.
@@ -39,7 +41,19 @@ public class HitomiActivity extends BaseWebActivity {
         super.onCreate(savedInstanceState);
 
         webView.setWebViewClient(new HitomiWebViewClient());
-        webView.setInitialScale(20);
+
+        boolean bWebViewOverview = AndroidHelper.getWebViewOverviewPrefs();
+        int webViewInitialZoom = AndroidHelper.getWebViewInitialZoomPrefs();
+
+        if (bWebViewOverview) {
+            webView.getSettings().setLoadWithOverviewMode(false);
+            webView.setInitialScale(webViewInitialZoom);
+            System.out.println("WebView Initial Scale: " + webViewInitialZoom + "%");
+        } else {
+            webView.setInitialScale(ConstantsPreferences.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
+            webView.getSettings().setLoadWithOverviewMode(true);
+        }
+
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }
 

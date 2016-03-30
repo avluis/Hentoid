@@ -3,6 +3,7 @@
     <PreferenceCategory
         android:key="pref_key_performance_settings"
         android:title="@string/pref_performance_category">
+
         <ListPreference
             android:defaultValue="@string/pref_image_quality_default"
             android:entries="@array/pref_image_quality_entries"
@@ -37,6 +38,7 @@
             android:icon="@null"
             android:summary="@string/pref_select_folder_summary"
             android:title="@string/pref_select_folder_title">
+
             <intent
                 android:action="android.intent.action.VIEW"
                 android:targetClass="me.devsaki.hentoid.activities.SelectFolderActivity"
@@ -49,8 +51,30 @@
             android:title="@string/pref_add_no_media_file_title" />
     </PreferenceCategory>
     <PreferenceCategory
+        android:key="pref_key_webview_settings"
+        android:title="@string/pref_webview_category">
+
+        <CheckBoxPreference
+            android:defaultValue="@string/pref_webview_override_overview_default"
+            android:icon="@null"
+            android:key="prefs_webview_override_overview_lists"
+            android:summary="@string/pref_webview_override_overview_summary"
+            android:title="@string/pref_webview_override_overview_title" />
+
+        <ListPreference
+            android:defaultValue="@string/pref_webview_initial_zoom_default"
+            android:dependency="prefs_webview_override_overview_lists"
+            android:entries="@array/pref_webview_initial_zoom_entries"
+            android:entryValues="@array/pref_webview_initial_zoom_values"
+            android:icon="@null"
+            android:key="pref_webview_initial_zoom_lists"
+            android:summary="@string/pref_webview_initial_zoom_summary"
+            android:title="@string/pref_webview_initial_zoom_title" />
+    </PreferenceCategory>
+    <PreferenceCategory
         android:key="pref_key_applock_settings"
         android:title="@string/pref_applock_category">
+
         <Preference
             android:icon="@null"
             android:key="pref_app_lock"
@@ -66,10 +90,8 @@
             android:key="pref_check_updates_manual"
             android:summary="@string/pref_check_updates_manual_summary"
             android:title="@string/pref_check_updates_manual_title" />
-        <ListPreference
+        <CheckBoxPreference
             android:defaultValue="@string/pref_check_updates_default"
-            android:entries="@array/pref_check_updates_entries"
-            android:entryValues="@array/pref_check_updates_entry_values"
             android:icon="@null"
             android:key="pref_check_updates_lists"
             android:summary="@string/pref_check_updates_summary"
