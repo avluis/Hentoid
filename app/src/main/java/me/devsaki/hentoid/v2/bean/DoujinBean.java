@@ -35,7 +35,7 @@ public class DoujinBean {
         this.title = title;
     }
 
-    public URLBean getSerie() {
+    public URLBean getSeries() {
         return serie;
     }
 

@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.adapters;
 
-import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,6 +23,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
@@ -49,12 +49,11 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private final List<Content> contents;
     private final SimpleDateFormat sdf;
 
-    @SuppressLint("SimpleDateFormat")
     public ContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.row_downloads, contents);
         this.context = context;
         this.contents = contents;
-        sdf = new SimpleDateFormat("MM/dd/yy HH:mm");
+        sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
     }
 
     @Override
@@ -110,7 +109,12 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                     }
                 }
             }
-            viewHolder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@serie@", series)));
+            viewHolder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@series@", series)));
+
+            // If no series found, then hide tag from list item
+            if (seriesAttributes == null) {
+                viewHolder.tvSeries.setVisibility(View.GONE);
+            }
 
             String artists = "";
             List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
