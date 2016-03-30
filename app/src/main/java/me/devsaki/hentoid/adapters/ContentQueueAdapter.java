@@ -84,7 +84,12 @@ public class ContentQueueAdapter extends ArrayAdapter<Content> {
                     }
                 }
             }
-            viewHolder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@serie@", series)));
+            viewHolder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@series@", series)));
+
+            // If no series found, then hide tag from list item
+            if (seriesAttributes == null) {
+                viewHolder.tvSeries.setVisibility(View.GONE);
+            }
 
             String artists = "";
             List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);

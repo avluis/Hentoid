@@ -4,9 +4,9 @@
     <string name="pref_performance_category">Performance</string>
     <string name="pref_image_quality_title">Image Quality</string>
     <string name="pref_image_quality_summary">Tune cover image quality in the download list.</string>
-    <string name="pref_image_quality_default">Low</string>
+    <string name="pref_image_quality_default">Medium</string>
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
-    <string name="pref_quantity_per_page_summary">Quantity of downloaded items per page in the lists.</string>
+    <string name="pref_quantity_per_page_summary">Quantity of downloaded items per page in the lists.\nYou must restart the app for this to apply.</string>
     <string name="pref_quantity_per_page_default">20</string>
     <!-- Library -->
     <string name="pref_library_category">Library</string>
@@ -17,6 +17,14 @@
     <string name="pref_select_folder_summary">Select the folder where Hentoid will store your downloads.</string>
     <string name="pref_add_no_media_file_title">Hide Downloaded Images</string>
     <string name="pref_add_no_media_file_summary">This will prevent downloaded images from showing up in the Gallery App.</string>
+    <!-- Browser -->
+    <string name="pref_webview_category">Browser</string>
+    <string name="pref_webview_override_overview_title">Disable Page Overview</string>
+    <string name="pref_webview_override_overview_summary">Use the checkbox to disable page overview and to set your preferred initial zoom level below.\nThis setting only applies to Hitomi.</string>
+    <string name="pref_webview_override_overview_default">false</string>
+    <string name="pref_webview_initial_zoom_title">Initial Zoom Level</string>
+    <string name="pref_webview_initial_zoom_summary">Zoom level of browser page on initial load.\nThis setting only applies to Hitomi.</string>
+    <string name="pref_webview_initial_zoom_default">20</string>
     <!-- .nomedia -->
     <string name="nomedia_file_created">.nomedia file created.</string>
     <!-- App Lock -->
@@ -29,5 +37,5 @@
     <string name="pref_check_updates_manual_summary">Manually check for updates now.</string>
     <string name="pref_check_updates_title">Automatic Updates</string>
     <string name="pref_check_updates_summary">Enable automatic update checks over mobile data.</string>
-    <string name="pref_check_updates_default">1</string>
+    <string name="pref_check_updates_default">true</string>
 </resources>

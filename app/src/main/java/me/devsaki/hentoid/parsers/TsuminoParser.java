@@ -58,10 +58,10 @@ public class TsuminoParser {
                     .select("a.book-tag");
             parseAttributes(attributes, AttributeType.TAG, tagElements);
 
-            Elements serieElements = content
+            Elements seriesElements = content
                     .select(":has(div.book-info:containsOwn(Parody))")
                     .select("a.book-tag");
-            parseAttributes(attributes, AttributeType.SERIE, serieElements);
+            parseAttributes(attributes, AttributeType.SERIE, seriesElements);
 
             Elements characterElements = content
                     .select(":has(div.book-info:containsOwn(Characters))")
