@@ -139,7 +139,7 @@ public class ImporterActivity extends AppCompatActivity {
                                         content.setUrl(doujinBean.getId());
                                         content.setHtmlDescription(doujinBean.getDescription());
                                         content.setTitle(doujinBean.getTitle());
-                                        content.setSerie(from(doujinBean.getSerie(),
+                                        content.setSeries(from(doujinBean.getSeries(),
                                                 AttributeType.SERIE));
                                         Attribute artist = from(doujinBean.getArtist(),
                                                 AttributeType.ARTIST);

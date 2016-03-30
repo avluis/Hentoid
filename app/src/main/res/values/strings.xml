@@ -21,7 +21,7 @@
     <string name="resume">Resume</string>
     <!-- TextViews -->
     <string name="tvTitleEmpty">[No data]</string>
-    <string name="tvSeries"><![CDATA[<b>Series:</b> @serie@]]></string>
+    <string name="tvSeries"><![CDATA[<b>Series:</b> @series@]]></string>
     <string name="tvArtists"><![CDATA[<b>Artist:</b> @artist@]]></string>
     <string name="tvTags"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>
     <!-- Import Activity -->

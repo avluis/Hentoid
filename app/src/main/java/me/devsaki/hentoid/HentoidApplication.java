@@ -140,15 +140,15 @@ public class HentoidApplication extends Application {
 
         ImageQuality imageQuality;
         switch (imageQualityPref) {
-            case "Medium":
-                imageQuality = ImageQuality.MEDIUM;
+            case "Low":
+                imageQuality = ImageQuality.LOW;
                 break;
             case "High":
                 imageQuality = ImageQuality.HIGH;
                 break;
-            case "Low":
+            case "Medium":
             default:
-                imageQuality = ImageQuality.LOW;
+                imageQuality = ImageQuality.MEDIUM;
                 break;
         }
 
