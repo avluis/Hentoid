@@ -16,6 +16,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 09/05/2015.
+ * Content description builder
  */
 public class Content implements Serializable {
 

@@ -40,7 +40,7 @@ public class HitomiParser {
                 Element td = element.select("td").first();
                 if (td.html().startsWith("Group")) {
                     parseAttributes(attributes, AttributeType.CIRCLE, element.select("a"));
-                } else if (td.html().startsWith("Serie")) {
+                } else if (td.html().startsWith("Series")) {
                     parseAttributes(attributes, AttributeType.SERIE, element.select("a"));
                 } else if (td.html().startsWith("Character")) {
                     parseAttributes(attributes, AttributeType.CHARACTER, element.select("a"));
