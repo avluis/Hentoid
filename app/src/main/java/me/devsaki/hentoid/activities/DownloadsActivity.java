@@ -1,20 +1,21 @@
 package me.devsaki.hentoid.activities;
 
-import android.annotation.SuppressLint;
+import android.app.ListFragment;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
@@ -28,7 +29,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.fragments.BaseFragment;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
@@ -38,7 +39,41 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
 public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
 
     private static final String TAG = DownloadsActivity.class.getName();
-    private SearchView searchView;
+
+    private static Menu searchMenu;
+    private static SearchView searchView;
+    private final Handler searchHandler = new Handler();
+    private long backButtonPressed;
+
+    private static void clearQuery() {
+        searchView.setQuery("", false);
+        if (searchView.isShown()) {
+            searchView.setIconified(true);
+            searchMenu.findItem(R.id.action_search).collapseActionView();
+        }
+    }
+
+    private void clearSearchQuery() {
+        searchView.clearFocus();
+        getFragment().setQuery("");
+        getFragment().searchContent();
+    }
+
+    private void submitSearchQuery(String s) {
+        submitSearchQuery(s, 0);
+    }
+
+    private void submitSearchQuery(final String s, long delay) {
+        searchHandler.removeCallbacksAndMessages(null);
+
+        searchHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                getFragment().setQuery(s.trim());
+                getFragment().searchContent();
+            }
+        }, delay);
+    }
 
     @Override
     protected DownloadsFragment buildFragment() {
@@ -46,17 +81,10 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_content_list, menu);
+        searchMenu = menu;
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_content_list, menu);
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
@@ -64,27 +92,27 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(true);
-
+        searchView.setQueryHint(getString(R.string.search_hint));
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                InputMethodManager imm = (InputMethodManager)
-                        getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
-                getFragment().setQuery(s.trim());
-                getFragment().searchContent();
+                submitSearchQuery(s);
+                searchView.clearFocus();
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String s) {
-                getFragment().setQuery(s.trim());
-                getFragment().searchContent();
+                if (s.equals("")) {
+                    clearSearchQuery();
+                } else {
+                    submitSearchQuery(s, 1000);
+                }
                 return true;
             }
         });
 
-        if (getFragment().order == 0) {
+        if (DownloadsFragment.order == 0) {
             menu.getItem(1).setVisible(false);
             menu.getItem(2).setVisible(true);
         } else {
@@ -95,24 +123,30 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     }
 
     // Clear search query onBackPressed
+    // Press back twice to exit (if searchView is clear)
     @Override
     public void onBackPressed() {
-        getFragment().setQuery("");
-        getFragment().searchContent();
-        super.onBackPressed();
+        if (backButtonPressed + 2000 > System.currentTimeMillis()) {
+            super.onBackPressed();
+        } else {
+            AndroidHelper.singleToast(
+                    getApplicationContext(), getString(R.string.press_back_again),
+                    Toast.LENGTH_SHORT);
+        }
+        backButtonPressed = System.currentTimeMillis();
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_order_alphabetic:
-                getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
-                getFragment().searchContent();
+                clearQuery();
+                DownloadsFragment.order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
                 invalidateOptionsMenu();
                 return true;
             case R.id.action_order_by_date:
-                getFragment().order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
-                getFragment().searchContent();
+                clearQuery();
+                DownloadsFragment.order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
                 invalidateOptionsMenu();
                 return true;
             default:
@@ -120,16 +154,17 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         }
     }
 
-    public static class DownloadsFragment extends BaseFragment {
+    public static class DownloadsFragment extends ListFragment {
         private static String query = "";
-        private Toast mToast;
-        private int currentPage = 1;
+        private static int currentPage = 1;
+        private static int qtyPages;
+        private static int order;
+        private static int index = -1;
+        private static int top;
         private int prevPage;
-        private int qtyPages;
-        private int order;
         private Button btnPage;
+        private Context mContext;
         private List<Content> contents;
-        private int index = -1;
 
         public void setQuery(String query) {
             DownloadsFragment.query = query;
@@ -139,34 +174,60 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         @Override
         public void onResume() {
             super.onResume();
-            int tempIndex = index;
+
+            queryPrefs();
             searchContent();
+
+            // Retrieve list position
             ListView list = getListView();
-            if (tempIndex > -1) {
-                list.setSelectionFromTop(tempIndex, 0);
-            }
+            list.setSelectionFromTop(index, top);
         }
 
-        @SuppressLint("ShowToast")
+        @Override
+        public void onPause() {
+            // Save current sort order
+            SharedPreferences.Editor editor = HentoidApplication.getAppPreferences().edit();
+            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+
+            // Get & save current list position
+            ListView list = getListView();
+            index = list.getFirstVisiblePosition();
+            View view = list.getChildAt(0);
+            top = (view == null) ? 0 : (view.getTop() - list.getPaddingTop());
+
+            super.onPause();
+        }
+
+        private void queryPrefs() {
+            SharedPreferences preferences = HentoidApplication.getAppPreferences();
+            String settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
+
+            if (settingDir.isEmpty()) {
+                Intent intent = new Intent(getActivity(), SelectFolderActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            }
+
+            int newQtyPages = Integer.parseInt(preferences.getString(
+                    ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
+                    ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+
+            if (qtyPages != newQtyPages) {
+                setQuery("");
+                qtyPages = newQtyPages;
+            }
+
+            order = preferences.getInt(
+                    ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
+                    ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+        }
+
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
-            SharedPreferences preferences = HentoidApplication.getAppPreferences();
-
-            qtyPages = Integer.parseInt(preferences
-                    .getString(ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
-                            ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
-
-            order = preferences
-                    .getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
-                            ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
-
-            // Initialize toast if needed
-            if (mToast == null) {
-                mToast = Toast.makeText(getActivity(), "", Toast.LENGTH_SHORT);
-            }
+            mContext = getActivity().getApplicationContext();
 
             btnPage = (Button) rootView.findViewById(R.id.btnPage);
             ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
@@ -180,19 +241,36 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 }
             });
 
+            btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (currentPage != 1) {
+                        setQuery("");
+                        searchContent();
+                        AndroidHelper.singleToast(
+                                mContext, getString(R.string.on_first_page), Toast.LENGTH_SHORT);
+                        return true;
+                    } else {
+                        searchContent();
+                        return true;
+                    }
+                }
+            });
+
             btnNext.setOnClickListener(new View.OnClickListener() {
-                @SuppressLint("SetTextI18n")
                 @Override
                 public void onClick(View v) {
                     if (qtyPages <= 0) {
-                        mToast.setText(R.string.not_limit_per_page);
-                        mToast.show();
+                        AndroidHelper.singleToast(
+                                mContext, getString(R.string.not_limit_per_page),
+                                Toast.LENGTH_SHORT);
                     } else {
                         currentPage++;
                         if (!searchContent()) {
-                            btnPage.setText("" + --currentPage);
-                            mToast.setText(R.string.not_next_page);
-                            mToast.show();
+                            btnPage.setText(String.valueOf(--currentPage));
+                            AndroidHelper.singleToast(
+                                    mContext, getString(R.string.not_next_page),
+                                    Toast.LENGTH_SHORT);
                         }
                     }
                 }
@@ -205,48 +283,25 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                         currentPage--;
                         searchContent();
                     } else if (qtyPages > 0) {
-                        mToast.setText(R.string.not_previous_page);
-                        mToast.show();
+                        AndroidHelper.singleToast(
+                                mContext, getString(R.string.not_previous_page),
+                                Toast.LENGTH_SHORT);
                     } else {
-                        mToast.setText(R.string.not_limit_per_page);
-                        mToast.show();
+                        AndroidHelper.singleToast(
+                                mContext, getString(R.string.not_limit_per_page),
+                                Toast.LENGTH_SHORT);
                     }
                 }
             });
 
-            String settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
-
-            if (settingDir.isEmpty()) {
-                Intent intent = new Intent(getActivity(), SelectFolderActivity.class);
-                startActivity(intent);
-                getActivity().finish();
-            } else {
-                searchContent();
-            }
-
             return rootView;
         }
 
-        @Override
-        public void onPause() {
-            SharedPreferences.Editor editor = HentoidApplication.getAppPreferences().edit();
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
-            ListView list = getListView();
-            index = list.getFirstVisiblePosition();
-            super.onPause();
-        }
-
-        @SuppressLint("SetTextI18n")
+        // TODO: Rewrite with non-blocking code
         private boolean searchContent() {
-            index = -1;
-            List<Content> result = getDB()
-                    .selectContentByQuery(query, currentPage, qtyPages,
-                            order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
-
-            if (result != null && !result.isEmpty())
-                contents = result;
-            else if (contents == null)
-                contents = new ArrayList<>(0);
+            List<Content> result = getDB().selectContentByQuery(
+                    query, currentPage, qtyPages,
+                    order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
 
             if (query.isEmpty()) {
                 getActivity().setTitle(R.string.title_activity_downloads);
@@ -256,13 +311,19 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                         .replace("@search", query));
             }
 
+            if (result != null && !result.isEmpty()) {
+                contents = result;
+            } else if (contents == null) {
+                contents = new ArrayList<>(0);
+            }
+
             if (contents == result || contents.isEmpty()) {
                 ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
                 setListAdapter(adapter);
             }
 
             if (prevPage != currentPage) {
-                btnPage.setText("" + currentPage);
+                btnPage.setText(String.valueOf(currentPage));
             }
             prevPage = currentPage;
 

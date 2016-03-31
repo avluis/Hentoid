@@ -27,6 +27,7 @@ import me.devsaki.hentoid.enums.Site;
  * Android focused utility class
  */
 public class AndroidHelper {
+    private static Toast mToast;
 
     public static void openContent(Content content, final Context context) {
         SharedPreferences sharedPreferences = HentoidApplication.getAppPreferences();
@@ -253,6 +254,15 @@ public class AndroidHelper {
             Toast.makeText(context, R.string.error_open_perfect_viewer,
                     Toast.LENGTH_SHORT).show();
         }
+    }
+
+    public static void singleToast(Context ctx, String text, int duration) {
+        if (mToast != null) {
+            mToast.cancel();
+        }
+
+        mToast = Toast.makeText(ctx, text, duration);
+        mToast.show();
     }
 
     @SafeVarargs

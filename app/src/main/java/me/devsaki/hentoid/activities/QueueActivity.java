@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.app.ListFragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,15 +20,13 @@ import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.adapters.ContentQueueAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.fragments.BaseFragment;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Presents the list of works currently downloading to the user.
  */
-public class QueueActivity extends
-        BaseActivity<QueueActivity.QueueManagerFragment> {
+public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
 
     private static final String TAG = QueueActivity.class.getName();
 
@@ -48,17 +47,8 @@ public class QueueActivity extends
     };
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        }
-    }
-
-    @Override
-    protected QueueManagerFragment buildFragment() {
-        return new QueueManagerFragment();
+    protected QueueFragment buildFragment() {
+        return new QueueFragment();
     }
 
     @Override
@@ -74,7 +64,7 @@ public class QueueActivity extends
         unregisterReceiver(receiver);
     }
 
-    public static class QueueManagerFragment extends BaseFragment {
+    public static class QueueFragment extends ListFragment {
 
         private List<Content> contents;
         private Context mContext;
