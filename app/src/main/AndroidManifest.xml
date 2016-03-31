@@ -23,95 +23,7 @@
         android:logo="@drawable/ic_hentoid"
         android:supportsRtl="false"
         android:theme="@style/AppTheme"
-        tools:ignore="UnusedAttribute">
-        <activity
-            android:name=".activities.DownloadsActivity"
-            android:launchMode="singleTask">
-            <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
-        </activity>
-        <activity
-            android:name=".abstracts.BaseWebActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            tools:ignore="InnerclassSeparator" />
-        <activity
-            android:name=".activities.HitomiActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            tools:ignore="InnerclassSeparator" />
-        <activity
-            android:name=".activities.NhentaiActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            tools:ignore="InnerclassSeparator" />
-        <activity
-            android:name=".activities.TsuminoActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
-            tools:ignore="InnerclassSeparator" />
-
-        <service
-            android:name=".services.DownloadService"
-            android:configChanges="orientation|screenSize"
-            android:enabled="true"
-            android:exported="false" />
-
-        <activity
-            android:name=".activities.QueueActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_queue"
-            android:launchMode="singleTask"
-            android:parentActivityName=".activities.DownloadsActivity"
-            tools:ignore="UnusedAttribute">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
-        </activity>
-        <activity
-            android:name=".activities.SelectFolderActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity
-            android:name=".activities.SelectFolderActivity2"
-            android:theme="@style/Theme.Dialog" />
-        <activity
-            android:name=".activities.ImporterActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity
-            android:name=".activities.PreferencesActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_preferences"
-            android:launchMode="standard"
-            android:parentActivityName=".activities.DownloadsActivity"
-            tools:ignore="UnusedAttribute">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
-        </activity>
-        <activity
-            android:name=".activities.AppLockActivity"
-            android:launchMode="singleTask"
-            android:windowSoftInputMode="stateAlwaysVisible" />
-        <activity
-            android:name=".activities.AboutActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_about"
-            android:launchMode="standard"
-            android:parentActivityName=".activities.DownloadsActivity"
-            tools:ignore="UnusedAttribute">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
-        </activity>
+        tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".activities.SplashActivity"
             android:theme="@style/SplashTheme">
@@ -124,6 +36,86 @@
         <activity
             android:name=".activities.IntroSlideActivity"
             android:label="@string/app_intro" />
+        <activity
+            android:name=".activities.HitomiActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="standard"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activities.NhentaiActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="standard"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activities.TsuminoActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="standard"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".abstracts.BaseWebActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="standard"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activities.DownloadsActivity"
+            android:launchMode="standard">
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+        </activity>
+        <activity
+            android:name=".activities.QueueActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_queue"
+            android:launchMode="singleTask"
+            android:parentActivityName=".activities.DownloadsActivity"
+            tools:ignore="UnusedAttribute">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.DownloadsActivity" />
+        </activity>
+        <activity
+            android:name=".activities.PreferencesActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_preferences"
+            android:launchMode="standard"
+            android:parentActivityName=".activities.DownloadsActivity"
+            tools:ignore="UnusedAttribute">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.DownloadsActivity" />
+        </activity>
+        <activity
+            android:name=".activities.AboutActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_about"
+            android:launchMode="standard"
+            android:parentActivityName=".activities.DownloadsActivity"
+            tools:ignore="UnusedAttribute">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.DownloadsActivity" />
+        </activity>
+        <activity
+            android:name=".activities.SelectFolderActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activities.ImporterActivity"
+            android:configChanges="orientation|screenSize"
+            android:launchMode="singleTask"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+        <activity
+            android:name=".activities.AppLockActivity"
+            android:launchMode="singleTask"
+            android:windowSoftInputMode="stateAlwaysVisible" />
+
+        <service
+            android:name=".services.DownloadService"
+            android:configChanges="orientation|screenSize"
+            android:enabled="true"
+            android:exported="false" />
 
         <receiver
             android:name=".updater.UpdateNotificationReceiver"

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.abstracts;
 
 import android.app.FragmentManager;
+import android.app.ListFragment;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -20,17 +21,20 @@ import me.devsaki.hentoid.activities.PreferencesActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.fragments.BaseFragment;
 
 /**
  * Created by DevSaki on 04/06/2015.
  * Abstract activity to extend from - Implements DrawerLayout
  */
-public abstract class BaseActivity<T extends BaseFragment> extends AppCompatActivity {
+public abstract class BaseActivity<T extends ListFragment> extends AppCompatActivity {
+    private static HentoidDB db;
     private DrawerLayout mDrawerLayout;
     private ActionBarDrawerToggle mDrawerToggle;
-    private HentoidDB db;
     private T fragment;
+
+    public static HentoidDB getDB() {
+        return db;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,10 @@ public abstract class BaseActivity<T extends BaseFragment> extends AppCompatActi
         fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
         mDrawerLayout.closeDrawer(GravityCompat.START);
+
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
     }
 
     protected abstract T buildFragment();
@@ -136,9 +144,5 @@ public abstract class BaseActivity<T extends BaseFragment> extends AppCompatActi
         mDrawerLayout.closeDrawer(GravityCompat.START);
         Intent intent = new Intent(this, AboutActivity.class);
         startActivity(intent);
-    }
-
-    public HentoidDB getDB() {
-        return db;
     }
 }

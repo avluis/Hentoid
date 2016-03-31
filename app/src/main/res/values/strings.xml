@@ -46,6 +46,8 @@
     <string name="not_limit_per_page">Not limit per page.</string>
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
+    <string name="on_first_page">Moved to first page.</string>
+    <string name="press_back_again">Press back key once more to exit!</string>
 
     <string name="queue_empty">Download queue is empty.</string>
     <string name="downloads_library_empty">Your downloads library is empty.</string>
