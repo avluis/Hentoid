@@ -13,11 +13,12 @@ android {
         minSdkVersion 15
         targetSdkVersion 22
         versionCode 36
-        versionName '1.1.6r1'
+        versionName '1.1.6r2-alpha1'
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
