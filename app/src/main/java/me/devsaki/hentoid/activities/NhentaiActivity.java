@@ -1,11 +1,18 @@
 package me.devsaki.hentoid.activities;
 
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -31,7 +38,79 @@ public class NhentaiActivity extends BaseWebActivity {
         webView.setWebViewClient(new NhentaiWebViewClient());
     }
 
+    private WebResourceResponse getJSWebResourceResponseFromAsset() {
+        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String file = pathPrefix + "main_js.js";
+        try {
+            return getUtf8EncodedJSWebResourceResponse(getAssets().open(file));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private WebResourceResponse getDomainWebResourceResponseFromAsset() {
+        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String file = pathPrefix + "ads2";
+        try {
+            return getUtf8EncodedHtmlWebResourceResponse(getAssets().open(file));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private WebResourceResponse getCssWebResourceResponseFromAsset() {
+        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String file = pathPrefix + "main_style.css";
+        try {
+            return getUtf8EncodedCssWebResourceResponse(getAssets().open(file));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private WebResourceResponse getUtf8EncodedJSWebResourceResponse(InputStream open) {
+        return new WebResourceResponse("text/js", "UTF-8", open);
+    }
+
+    private WebResourceResponse getUtf8EncodedHtmlWebResourceResponse(InputStream open) {
+        return new WebResourceResponse("text/html", "UTF-8", open);
+    }
+
+    private WebResourceResponse getUtf8EncodedCssWebResourceResponse(InputStream open) {
+        return new WebResourceResponse("text/css", "UTF-8", open);
+    }
+
     private class NhentaiWebViewClient extends CustomWebViewClient {
+
+        @SuppressWarnings("deprecation") // From API 21 we should use another overload
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull String url) {
+            if (url.contains("main.82a43f8c3ce0.js")) {
+                return getJSWebResourceResponseFromAsset();
+            } else if (url.contains("ads.contentabc.com")) {
+                return getDomainWebResourceResponseFromAsset();
+            } else if (url.contains("//static.nhentai.net/css/")) {
+                return getCssWebResourceResponseFromAsset();
+            } else {
+                return super.shouldInterceptRequest(view, url);
+            }
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull WebResourceRequest request) {
+            if (request.getUrl().toString().contains("main_js.js")) {
+                return getJSWebResourceResponseFromAsset();
+            } else if (request.getUrl().toString().contains("ads2.contentabc.com")) {
+                return getDomainWebResourceResponseFromAsset();
+            } else if (request.getUrl().toString().contains("//static.nhentai.net/css/")) {
+                return getCssWebResourceResponseFromAsset();
+            } else {
+                return super.shouldInterceptRequest(view, request);
+            }
+        }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
