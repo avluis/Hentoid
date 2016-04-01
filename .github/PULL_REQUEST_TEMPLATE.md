@@ -1,1 +1,1 @@
-Whenever submitting a PR, please follow this template and replace anything that does not apply -- remove this text before submitting.Fixes issue # .<br />Changed proposed in this request:---Commit message:---<br />@avluis
+Whenever submitting a PR, please follow this template and replace anything that does not apply -- remove this text before submitting.**Fixes issue** #<issue_number><br />Changed proposed in this request:---Commit message:---<br />@avluis
