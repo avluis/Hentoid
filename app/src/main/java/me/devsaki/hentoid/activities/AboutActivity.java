@@ -35,6 +35,7 @@ public class AboutActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         getDelegate().installViewFactory();
         getDelegate().onCreate(savedInstanceState);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
         setTitle(R.string.title_activity_about);
@@ -109,7 +110,6 @@ public class AboutActivity extends AppCompatActivity {
 
     private void getVersionInfo() {
         PackageInfo packageInfo;
-
         try {
             packageInfo = getApplicationContext()
                     .getPackageManager()

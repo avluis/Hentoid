@@ -48,7 +48,9 @@ public class UpdateCheck implements IUpdateCheck {
             "me.devsaki.hentoid.updater.INSTALL_UPDATE";
     public static final String ACTION_UPDATE_DOWNLOADED =
             "me.devsaki.hentoid.updater.UPDATE_DOWNLOADED";
+
     private static final String TAG = UpdateCheck.class.getName();
+
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
     private static volatile UpdateCheck instance;
@@ -78,6 +80,7 @@ public class UpdateCheck implements IUpdateCheck {
         if (instance == null) {
             instance = new UpdateCheck();
         }
+
         return instance;
     }
 
@@ -100,11 +103,9 @@ public class UpdateCheck implements IUpdateCheck {
         } else {
             Log.e("networkInfo", "Network is not connected!");
         }
-
         if (connected) {
             runAsyncTask();
         }
-
         this.showToast = showToast;
     }
 
@@ -221,7 +222,7 @@ public class UpdateCheck implements IUpdateCheck {
 
         if (Build.VERSION.SDK_INT == Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-            //noinspection deprecation
+            // noinspection deprecation
             intent.putExtra(Intent.EXTRA_ALLOW_REPLACE, true);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
@@ -232,7 +233,6 @@ public class UpdateCheck implements IUpdateCheck {
         intent.setDataAndType(Uri.parse("file://" + updateDownloadPath),
                 "application/vnd.android.package-archive");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
         context.startActivity(intent);
     }
 
@@ -241,7 +241,7 @@ public class UpdateCheck implements IUpdateCheck {
             cancelDownload();
 
             Uri downloadUri = Uri.parse(downloadURL);
-            assert context.getExternalCacheDir() != null;
+            context.getExternalCacheDir();
             Uri destinationUri = Uri.parse(updateDownloadPath =
                     context.getExternalCacheDir() + "/hentoid_update.apk");
 
@@ -318,7 +318,6 @@ public class UpdateCheck implements IUpdateCheck {
 
     public void cancelDownload() {
         cancelNotificationAndUpdateRunnable();
-
         try {
             downloadManager.cancel(downloadID);
             downloadManager.release();
@@ -375,12 +374,12 @@ public class UpdateCheck implements IUpdateCheck {
             } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
                 e.printStackTrace();
             }
+
             return null;
         }
 
         private JSONObject downloadURL(String updateURL) throws IOException, JSONException {
             InputStream inputStream = null;
-
             try {
                 disableConnectionReuse();
                 URL url = new URL(updateURL);
@@ -397,6 +396,7 @@ public class UpdateCheck implements IUpdateCheck {
 
                 inputStream = connection.getInputStream();
                 String contentString = readInputStream(inputStream);
+
                 return new JSONObject(contentString);
             } finally {
                 if (inputStream != null) {
@@ -421,6 +421,7 @@ public class UpdateCheck implements IUpdateCheck {
                 stringBuilder.append(line);
                 line = reader.readLine();
             }
+
             return stringBuilder.toString();
         }
     }

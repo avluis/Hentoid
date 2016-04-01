@@ -36,7 +36,7 @@
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it by Google Play.</string>
 
-    <string name="detect_contents">The app detected that you have contents in your folder.\nDo you want to import them?</string>
+    <string name="contents_detected">The app detected that you have contents in your folder.\nDo you want to import them?</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
 
     <string name="download_again_dialog">Total images : @total\nImage Error: @error</string>
@@ -81,5 +81,5 @@
     <string name="about_community_url">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github"><![CDATA[<u>GitHub</u>]]></string>
     <string name="about_github_url">https://github.com/csaki/Hentoid</string>
-    <string name="about_notes"><![CDATA[<p>General stability fixes and UI tweaks.<br />Improved download experience/quicker downloads.<br />Less Hitomi Ads/Pop-Ups!</p>]]></string>
+    <string name="about_notes"><![CDATA[<p>General stability fixes and UI tweaks.<br />Improved download experience/quicker downloads.<br />Less Hitomi/nhentai Ads/Pop-Ups!</p>]]></string>
 </resources>

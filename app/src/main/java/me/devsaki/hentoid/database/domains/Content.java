@@ -16,7 +16,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 09/05/2015.
- * Content description builder
+ * Content builder
  */
 public class Content implements Serializable {
 
@@ -85,7 +85,7 @@ public class Content implements Serializable {
             case TSUMINO:
                 return TsuminoActivity.class;
             default:
-                return BaseWebActivity.class; //Fallback for Pururin and Fakku
+                return BaseWebActivity.class; // Fallback for Pururin and FAKKU
         }
     }
 
@@ -98,6 +98,7 @@ public class Content implements Serializable {
                 return attributesList.get(0).getName();
             }
         }
+
         return null;
     }
 
@@ -127,8 +128,9 @@ public class Content implements Serializable {
                 break;
             default:
                 galleryConst = "";
-                break; //Includes Fakku
+                break; // Includes FAKKU
         }
+
         return site.getUrl() + galleryConst + url;
     }
 

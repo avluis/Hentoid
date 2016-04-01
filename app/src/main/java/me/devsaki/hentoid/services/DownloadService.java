@@ -34,10 +34,11 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * Download Manager implemented as a service
  */
 public class DownloadService extends IntentService {
-
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
     public static final String NOTIFICATION = "me.devsaki.hentoid.services";
+
     private static final String TAG = DownloadService.class.getName();
+
     public static boolean paused;
     private NotificationPresenter notificationPresenter;
     private HentoidDB db;
@@ -51,10 +52,12 @@ public class DownloadService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        db = new HentoidDB(this);
+
         Log.i(TAG, "Download service created");
 
         notificationPresenter = new NotificationPresenter();
-        db = new HentoidDB(this);
         executorService = Executors.newFixedThreadPool(2);
     }
 
@@ -62,6 +65,7 @@ public class DownloadService extends IntentService {
     public void onDestroy() {
         executorService.shutdown();
         super.onDestroy();
+
         Log.i(TAG, "Download service destroyed");
     }
 
@@ -88,6 +92,7 @@ public class DownloadService extends IntentService {
                 currentContent.setStatus(StatusContent.PAUSED);
                 db.updateContentStatus(currentContent);
                 updateActivity(-1);
+
                 return;
             }
 
@@ -103,10 +108,10 @@ public class DownloadService extends IntentService {
                     "Download Content: Start.");
 
             boolean error = false;
-            //Directory
+            // Directory
             File dir = AndroidHelper.getDownloadDir(currentContent, this);
             try {
-                //Download Cover Image
+                // Download Cover Image
                 // TODO: This call (on Android M+) requires write storage permission grant
                 executorService.submit(
                         new ImageDownloadTask(
@@ -118,7 +123,6 @@ public class DownloadService extends IntentService {
                 error = true;
             }
 
-
             if (paused) {
                 interruptDownload();
                 if (currentContent.getStatus() == StatusContent.SAVED) {
@@ -128,6 +132,7 @@ public class DownloadService extends IntentService {
                         Log.e(TAG, "error deleting content directory", e);
                     }
                 }
+
                 return;
             }
 
@@ -155,11 +160,13 @@ public class DownloadService extends IntentService {
                             Log.e(TAG, "error deleting content directory", e);
                         }
                     }
+
                     return;
                 }
                 if (!NetworkStatus.isOnline(this)) {
                     Log.e(TAG, "No connection");
                     downloadBatch.cancel();
+
                     return;
                 }
                 boolean imageFileErrorDownload = false;
@@ -190,7 +197,8 @@ public class DownloadService extends IntentService {
             } else {
                 currentContent.setStatus(StatusContent.DOWNLOADED);
             }
-            //Save JSON file
+
+            // Save JSON file
             try {
                 // TODO: This call (on Android M+) requires write storage permission grant
                 Helper.saveJson(currentContent, dir);
@@ -198,7 +206,9 @@ public class DownloadService extends IntentService {
                 Log.e(TAG, "Error Save JSON " + currentContent.getTitle(), e);
             }
             db.updateContentStatus(currentContent);
+
             Log.i(TAG, "Finish Download Content : " + currentContent.getTitle());
+
             notificationPresenter.updateNotification(0);
             updateActivity(-1);
             currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);

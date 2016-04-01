@@ -6,7 +6,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 
 /**
  * Created by DevSaki on 09/05/2015.
- * Content attribute builder
+ * Attribute builder
  */
 public class Attribute {
 

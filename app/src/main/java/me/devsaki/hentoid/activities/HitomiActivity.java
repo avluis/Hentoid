@@ -27,11 +27,10 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
 /**
  * Created by Shiro on 1/20/2016.
  * Implements Hitomi.la source
- * TODO: Re-implement without use of JavaScript
- * Ref: http://technoranch.blogspot.com/2014/08/how-to-get-html-content-from-android-webview.html#webview-java-no-js-get-content
+ * TODO: Re-implement without use of JavaScript:
+ * Ref: http://goo.gl/UfIsZs
  */
 public class HitomiActivity extends BaseWebActivity {
-
     private static final String TAG = HitomiActivity.class.getName();
 
     @SuppressLint("AddJavascriptInterface")
@@ -41,6 +40,7 @@ public class HitomiActivity extends BaseWebActivity {
         super.onCreate(savedInstanceState);
 
         webView.setWebViewClient(new HitomiWebViewClient());
+        webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
 
         boolean bWebViewOverview = AndroidHelper.getWebViewOverviewPrefs();
         int webViewInitialZoom = AndroidHelper.getWebViewInitialZoomPrefs();
@@ -53,23 +53,23 @@ public class HitomiActivity extends BaseWebActivity {
             webView.setInitialScale(ConstantsPreferences.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);
         }
-
-        webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }
 
     private WebResourceResponse getJSWebResourceResponseFromAsset(String file) {
-
         String[] jsFiles = {"hitomi.js", "hitomi-horizontal.js", "hitomi-vertical.js"};
+        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
 
         for (String jsFile : jsFiles) {
             if (file.contains(jsFile)) {
+                String assetPath = pathPrefix + jsFile;
                 try {
-                    return getUtf8EncodedJSWebResourceResponse(getAssets().open(jsFile));
+                    return getUtf8EncodedJSWebResourceResponse(getAssets().open(assetPath));
                 } catch (IOException e) {
                     return null;
                 }
             }
         }
+
         return null;
     }
 
@@ -109,13 +109,13 @@ public class HitomiActivity extends BaseWebActivity {
             } catch (MalformedURLException e) {
                 Log.d(TAG, "Malformed URL");
             }
+
             return false;
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-
             String js = getResources().getString(R.string.grab_html_from_webview);
 
             if (url.contains("//hitomi.la/galleries/")) {

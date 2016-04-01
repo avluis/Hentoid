@@ -27,7 +27,6 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * Presents the list of works currently downloading to the user.
  */
 public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
-
     private static final String TAG = QueueActivity.class.getName();
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -54,6 +53,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
     @Override
     protected void onResume() {
         super.onResume();
+
         getFragment().update();
         registerReceiver(receiver, new IntentFilter(DownloadService.NOTIFICATION));
     }
@@ -61,6 +61,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
     @Override
     protected void onPause() {
         super.onPause();
+
         unregisterReceiver(receiver);
     }
 
@@ -96,6 +97,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
                     update();
                 }
             });
+
             return rootView;
         }
 
@@ -133,7 +135,6 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
         public void updatePercent(double percent) {
             if (contents != null && !contents.isEmpty()) {
                 contents.get(0).setPercent(percent);
-
                 ((ArrayAdapter) getListAdapter()).notifyDataSetChanged();
             }
         }

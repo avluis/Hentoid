@@ -37,7 +37,6 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  * Presents the list of downloaded works to the user.
  */
 public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
-
     private static final String TAG = DownloadsActivity.class.getName();
 
     private static Menu searchMenu;
@@ -46,17 +45,17 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     private long backButtonPressed;
 
     private static void clearQuery() {
-        searchView.setQuery("", false);
         if (searchView.isShown()) {
             searchView.setIconified(true);
             searchMenu.findItem(R.id.action_search).collapseActionView();
         }
+        searchView.setQuery("", false);
     }
 
     private void clearSearchQuery() {
-        searchView.clearFocus();
         getFragment().setQuery("");
         getFragment().searchContent();
+        searchView.clearFocus();
     }
 
     private void submitSearchQuery(String s) {
@@ -65,7 +64,6 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
     private void submitSearchQuery(final String s, long delay) {
         searchHandler.removeCallbacksAndMessages(null);
-
         searchHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -82,13 +80,13 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        searchMenu = menu;
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_content_list, menu);
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
+        searchMenu = menu;
         searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(true);
@@ -98,6 +96,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             public boolean onQueryTextSubmit(String s) {
                 submitSearchQuery(s);
                 searchView.clearFocus();
+
                 return true;
             }
 
@@ -108,6 +107,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 } else {
                     submitSearchQuery(s, 1000);
                 }
+
                 return true;
             }
         });
@@ -119,11 +119,12 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             menu.getItem(1).setVisible(true);
             menu.getItem(2).setVisible(false);
         }
+
         return true;
     }
 
     // Clear search query onBackPressed
-    // Press back twice to exit (if searchView is clear)
+    // Double-Back (press back twice) to exit (after clearing searchView)
     @Override
     public void onBackPressed() {
         if (backButtonPressed + 2000 > System.currentTimeMillis()) {
@@ -143,11 +144,13 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 clearQuery();
                 DownloadsFragment.order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
                 invalidateOptionsMenu();
+
                 return true;
             case R.id.action_order_by_date:
                 clearQuery();
                 DownloadsFragment.order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
                 invalidateOptionsMenu();
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -249,6 +252,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                         searchContent();
                         AndroidHelper.singleToast(
                                 mContext, getString(R.string.on_first_page), Toast.LENGTH_SHORT);
+
                         return true;
                     } else {
                         searchContent();
@@ -299,9 +303,9 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
         // TODO: Rewrite with non-blocking code
         private boolean searchContent() {
-            List<Content> result = getDB().selectContentByQuery(
-                    query, currentPage, qtyPages,
-                    order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+            List<Content> result = getDB()
+                    .selectContentByQuery(query, currentPage, qtyPages,
+                            order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
 
             if (query.isEmpty()) {
                 getActivity().setTitle(R.string.title_activity_downloads);
@@ -310,18 +314,15 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                         .getString(R.string.title_activity_search)
                         .replace("@search", query));
             }
-
             if (result != null && !result.isEmpty()) {
                 contents = result;
             } else if (contents == null) {
                 contents = new ArrayList<>(0);
             }
-
             if (contents == result || contents.isEmpty()) {
                 ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
                 setListAdapter(adapter);
             }
-
             if (prevPage != currentPage) {
                 btnPage.setText(String.valueOf(currentPage));
             }

@@ -26,8 +26,8 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  * Database, Bitmap Cache, Update checks, etc.
  */
 public class HentoidApplication extends Application {
-
     private static final String TAG = HentoidApplication.class.getName();
+
     private static HentoidApplication mInstance;
     private static SharedPreferences sharedPreferences;
 

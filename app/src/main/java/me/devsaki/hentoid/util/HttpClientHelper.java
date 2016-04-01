@@ -26,7 +26,6 @@ public class HttpClientHelper {
             urlConnection.setRequestProperty("Cookie", sessionCookie);
         }
         urlConnection.connect();
-
         int code = urlConnection.getResponseCode();
 
         // Read the input stream into a String
@@ -37,19 +36,15 @@ public class HttpClientHelper {
         }
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder builder = new StringBuilder();
-
         String line;
         while ((line = reader.readLine()) != null) {
             builder.append(line);
         }
-
         if (builder.length() == 0) {
             // Stream was empty.  No point in parsing.
             return null;
         }
-
         String result = builder.toString();
-
         if (code != 200) {
             throw new HttpClientException(result, code);
         }

@@ -22,8 +22,8 @@ import me.devsaki.hentoid.util.Constants;
  * TODO: Add storage permission request
  */
 public class ImageDownloadTask implements Callable<Void> {
-
     private static final String TAG = ImageDownloadTask.class.getName();
+
     private static final int BUFFER_SIZE = 10 * 1024;
     private final File dir;
     private final String filename;
@@ -83,7 +83,6 @@ public class ImageDownloadTask implements Callable<Void> {
                     file = new File(dir, filename + ".jpg");
                     break;
             }
-
             if (file.exists()) {
                 urlConnection.disconnect();
                 return null;
@@ -103,7 +102,7 @@ public class ImageDownloadTask implements Callable<Void> {
 
         } catch (Exception e) {
             if (file != null) {
-                //noinspection ResultOfMethodCallIgnored
+                // noinspection ResultOfMethodCallIgnored
                 file.delete();
             }
             throw e;
