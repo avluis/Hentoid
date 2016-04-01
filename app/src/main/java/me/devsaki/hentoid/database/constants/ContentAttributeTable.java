@@ -2,6 +2,7 @@ package me.devsaki.hentoid.database.constants;
 
 /**
  * Created by DevSaki on 10/05/2015.
+ * db Content Attribute Table
  */
 public abstract class ContentAttributeTable {
 

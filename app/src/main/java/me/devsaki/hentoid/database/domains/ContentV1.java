@@ -10,7 +10,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 09/05/2015.
- * Supports older library type content
+ * Content builder (legacy: kept to support older library)
  */
 @Deprecated
 public class ContentV1 {

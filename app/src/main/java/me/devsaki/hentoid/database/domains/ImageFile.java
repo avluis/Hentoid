@@ -6,6 +6,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 
 /**
  * Created by DevSaki on 10/05/2015.
+ * Image File builder
  */
 public class ImageFile {
 

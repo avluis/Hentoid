@@ -6,7 +6,7 @@ import me.devsaki.hentoid.R;
 
 /**
  * Created by neko on 20/06/2015.
- * Pre-defined sites for supported sources.
+ * Site enumerator
  */
 public enum Site {
 
@@ -31,8 +31,9 @@ public enum Site {
 
     public static Site searchByCode(int code) {
 
-        if (code == -1)
+        if (code == -1) {
             Log.e(TAG, "Invalid site code");
+        }
 
         for (Site s : Site.values()) {
             if (s.getCode() == code)

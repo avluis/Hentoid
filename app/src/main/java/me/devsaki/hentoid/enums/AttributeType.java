@@ -2,7 +2,7 @@ package me.devsaki.hentoid.enums;
 
 /**
  * Created by DevSaki on 10/05/2015.
- * Pre-defined content types for supported works.
+ * Attribute Type enumerator
  */
 public enum AttributeType {
 
@@ -19,14 +19,17 @@ public enum AttributeType {
     public static AttributeType searchByCode(int code) {
 
         for (AttributeType s : AttributeType.values()) {
-            if (s.getCode() == code)
+            if (s.getCode() == code) {
+
                 return s;
+            }
         }
 
         return null;
     }
 
     public int getCode() {
+
         return code;
     }
 }

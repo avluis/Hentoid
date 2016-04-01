@@ -2,7 +2,7 @@ package me.devsaki.hentoid.enums;
 
 /**
  * Created by DevSaki on 10/05/2015.
- * Pre-defined status types for content handling.
+ * Content Status enumerator
  */
 public enum StatusContent {
 
