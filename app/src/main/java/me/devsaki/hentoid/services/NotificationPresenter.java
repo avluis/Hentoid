@@ -85,7 +85,7 @@ final class NotificationPresenter {
                             R.color.accent))
                     .setContentText("")
                     .setContentTitle(resources.getString(R.string.download_completed_multiple)
-                            .replace("%d", String.valueOf(downloadCount))
+                                    .replace("%d", String.valueOf(downloadCount))
                     );
             notificationManager.notify(notificationId, currentBuilder.build());
 
@@ -134,6 +134,8 @@ final class NotificationPresenter {
             case ERROR:
             case UNHANDLED_ERROR:
                 resultIntent = new Intent(appInstance, DownloadsActivity.class);
+                resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 break;
             case DOWNLOADING:
             case PAUSED:
