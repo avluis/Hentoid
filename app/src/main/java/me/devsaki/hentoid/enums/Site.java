@@ -12,9 +12,9 @@ public enum Site {
 
     FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_favicon_fakku),
     PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_favicon_pururin),
-    HITOMI(2, "Hitomi", "https://hitomi.la", R.drawable.ic_stat_hitomi),
+    HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_stat_hitomi),
     NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_stat_nhentai),
-    TSUMINO(4, "Tsumino", "http://www.tsumino.com", R.drawable.ic_stat_tsumi);
+    TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_stat_tsumi);
 
     private static final String TAG = Site.class.getName();
     private final int code;
@@ -30,11 +30,9 @@ public enum Site {
     }
 
     public static Site searchByCode(int code) {
-
         if (code == -1) {
             Log.e(TAG, "Invalid site code");
         }
-
         for (Site s : Site.values()) {
             if (s.getCode() == code)
                 return s;

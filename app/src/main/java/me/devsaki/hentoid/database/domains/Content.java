@@ -91,12 +91,10 @@ public class Content implements Serializable {
 
     public String getCategory() {
         if (site == Site.FAKKU) {
-
             return url.substring(1, url.lastIndexOf("/"));
         } else {
             List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);
             if (attributesList != null && attributesList.size() > 0) {
-
                 return attributesList.get(0).getName();
             }
         }
@@ -105,13 +103,11 @@ public class Content implements Serializable {
     }
 
     public String getUrl() {
-
         return url;
     }
 
     public Content setUrl(String url) {
         this.url = url;
-
         return this;
     }
 

@@ -19,7 +19,6 @@ public enum StatusContent {
     }
 
     public static StatusContent searchByCode(int code) {
-
         for (StatusContent s : StatusContent.values()) {
             if (s.getCode() == code)
                 return s;

@@ -41,6 +41,7 @@ public class SelectFolderActivity extends AppCompatActivity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_select_folder);
 
         mDialog = DirectoryChooserFragment.newInstance(Constants.DEFAULT_LOCAL_DIRECTORY, null);
@@ -79,7 +80,7 @@ public class SelectFolderActivity extends AppCompatActivity implements
         if (editText != null) {
             hentoidFolder = editText.getText().toString();
 
-            //Validation folder
+            // Validate folder
             File file = new File(hentoidFolder);
             if (!file.exists() && !file.isDirectory()) {
                 if (!file.mkdirs()) {
@@ -91,7 +92,7 @@ public class SelectFolderActivity extends AppCompatActivity implements
             boolean hasPermission;
             try {
                 if (nomedia.exists()) {
-                    //noinspection ResultOfMethodCallIgnored
+                    // noinspection ResultOfMethodCallIgnored
                     nomedia.delete();
                 }
                 hasPermission = nomedia.createNewFile();
@@ -123,26 +124,28 @@ public class SelectFolderActivity extends AppCompatActivity implements
                 new AlertDialog.Builder(this)
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .setTitle(R.string.app_name)
-                        .setMessage(R.string.detect_contents)
-                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        .setMessage(R.string.contents_detected)
+                        .setPositiveButton(android.R.string.yes,
+                                new DialogInterface.OnClickListener() {
 
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                Intent intent = new Intent(SelectFolderActivity.this,
-                                        ImporterActivity.class);
-                                startActivity(intent);
-                                finish();
-                            }
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        Intent intent = new Intent(SelectFolderActivity.this,
+                                                ImporterActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    }
 
-                        })
-                        .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+                                })
+                        .setNegativeButton(android.R.string.no,
+                                new DialogInterface.OnClickListener() {
 
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish();
-                            }
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        finish();
+                                    }
 
-                        })
+                                })
                         .show();
             } else {
                 Intent intent = new Intent(this, DownloadsActivity.class);

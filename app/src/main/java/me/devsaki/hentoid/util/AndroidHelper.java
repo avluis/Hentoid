@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -105,11 +106,12 @@ public class AndroidHelper {
             if (!file.mkdirs()) {
                 file = new File(settingDir + folderDir);
                 if (!file.exists()) {
-                    //noinspection ResultOfMethodCallIgnored
+                    // noinspection ResultOfMethodCallIgnored
                     file.mkdirs();
                 }
             }
         }
+
         return file;
     }
 
@@ -126,14 +128,17 @@ public class AndroidHelper {
             if (!file.mkdirs()) {
                 file = new File(settingDir + folderDir);
                 if (!file.exists()) {
-                    //noinspection ResultOfMethodCallIgnored
+                    // noinspection ResultOfMethodCallIgnored
                     file.mkdirs();
                 }
             }
         }
+
         return file;
     }
 
+    @SuppressLint("WorldWriteableFiles")
+    // TODO: Find and update with non-deprecated methods
     public static File getDefaultDir(String dir, Context context) {
         File file;
         try {
@@ -149,11 +154,12 @@ public class AndroidHelper {
                 file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
                 file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
                 if (!file.exists()) {
-                    //noinspection ResultOfMethodCallIgnored
+                    // noinspection ResultOfMethodCallIgnored
                     file.mkdirs();
                 }
             }
         }
+
         return file;
     }
 
@@ -183,11 +189,11 @@ public class AndroidHelper {
         editor.apply();
     }
 
-    private static void saveSharedPrefsKey(int prefsVersion, Context ctx) {
+    private static void saveSharedPrefsKey(Context ctx) {
         SharedPreferences sharedPrefs = ctx.getSharedPreferences(
                 ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putInt(ConstantsPreferences.PREFS_VERSION_KEY, prefsVersion);
+        editor.putInt(ConstantsPreferences.PREFS_VERSION_KEY, ConstantsPreferences.PREFS_VERSION);
         editor.apply();
     }
 
@@ -206,8 +212,7 @@ public class AndroidHelper {
             clearSharedPreferences(ctx.getApplicationContext());
 
             // Save current Pref version key
-            saveSharedPrefsKey(ConstantsPreferences.PREFS_VERSION,
-                    ctx.getApplicationContext());
+            saveSharedPrefsKey(ctx.getApplicationContext());
         } else {
             System.out.println("Prefs Key Match. Carry on.");
         }
@@ -219,7 +224,6 @@ public class AndroidHelper {
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         myIntent.setDataAndType(Uri.fromFile(file), mimeType);
-
         context.startActivity(myIntent);
     }
 
@@ -256,11 +260,11 @@ public class AndroidHelper {
         }
     }
 
+    // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
     public static void singleToast(Context ctx, String text, int duration) {
         if (mToast != null) {
             mToast.cancel();
         }
-
         mToast = Toast.makeText(ctx, text, duration);
         mToast.show();
     }

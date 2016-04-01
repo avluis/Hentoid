@@ -21,7 +21,6 @@ import me.devsaki.hentoid.util.HttpClientHelper;
  * Implements nhentai source
  */
 public class NhentaiActivity extends BaseWebActivity {
-
     private static final String TAG = NhentaiActivity.class.getName();
 
     @Override
@@ -42,6 +41,7 @@ public class NhentaiActivity extends BaseWebActivity {
             } catch (MalformedURLException e) {
                 Log.d(TAG, "Malformed URL");
             }
+
             return false;
         }
 
@@ -64,6 +64,7 @@ public class NhentaiActivity extends BaseWebActivity {
             } catch (Exception e) {
                 Log.e(TAG, "Error parsing nhentai json: " + url, e);
             }
+
             return null;
         }
     }

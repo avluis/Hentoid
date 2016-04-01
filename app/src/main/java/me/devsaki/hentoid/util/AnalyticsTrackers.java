@@ -33,7 +33,6 @@ public final class AnalyticsTrackers {
         if (sInstance != null) {
             throw new IllegalStateException("Extra call to initialize analytics trackers");
         }
-
         sInstance = new AnalyticsTrackers(context);
     }
 

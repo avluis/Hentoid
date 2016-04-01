@@ -13,12 +13,12 @@ import java.util.zip.ZipOutputStream;
 
 /**
  * Created by avluis on 8/25/15.
- * General Zip/Un-Zip utility.
+ * General Compression/Extraction utility.
  */
 public class ZipManager {
     private static final int BUFFER = 20480;
 
-    public void zip(String[] files, String zipFileName) {
+    public void zipFiles(String[] files, String zipFileName) {
         try {
             BufferedInputStream input;
             FileOutputStream destination = new FileOutputStream(zipFileName);
@@ -27,27 +27,26 @@ public class ZipManager {
             byte data[] = new byte[BUFFER];
 
             for (String file : files) {
-                Log.v("Compress", "Adding: " + file);
+                Log.v("Compressing", "File: " + file);
+
                 FileInputStream inputStream = new FileInputStream(file);
                 input = new BufferedInputStream(inputStream, BUFFER);
 
                 ZipEntry zipEntry = new ZipEntry(file.substring(file.lastIndexOf("/") + 1));
                 zipOut.putNextEntry(zipEntry);
                 int count;
-
                 while ((count = input.read(data, 0, BUFFER)) != -1) {
                     zipOut.write(data, 0, count);
                 }
                 input.close();
             }
-
             zipOut.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void unzip(String zipFile, String targetLocation) {
+    public void unzipFile(String zipFile, String targetLocation) {
         dirChecker(targetLocation);
 
         try {
@@ -55,7 +54,7 @@ public class ZipManager {
             ZipInputStream zipInput = new ZipInputStream(fileInput);
             ZipEntry zipEntry;
             while ((zipEntry = zipInput.getNextEntry()) != null) {
-                Log.v("Decompress", "Unzipping " + zipEntry.getName());
+                Log.v("Extracting", "File: " + zipEntry.getName());
 
                 if (zipEntry.isDirectory()) {
                     dirChecker(zipEntry.getName());
@@ -65,15 +64,13 @@ public class ZipManager {
                     for (int c = zipInput.read(); c != -1; c = zipInput.read()) {
                         fileOut.write(c);
                     }
-
                     zipInput.closeEntry();
                     fileOut.close();
                 }
-
             }
             zipInput.close();
         } catch (Exception e) {
-            Log.e("Decompress", "unzip", e);
+            Log.e("Extraction", "failed: ", e);
         }
     }
 

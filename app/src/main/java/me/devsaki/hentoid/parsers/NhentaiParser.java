@@ -21,7 +21,6 @@ import me.devsaki.hentoid.util.AttributeMap;
  * Handles parsing of content from nhentai
  */
 public class NhentaiParser {
-
     private static final String TAG = NhentaiParser.class.getName();
 
     public static Content parseContent(String json) throws JSONException {

@@ -45,7 +45,7 @@ public class ImageDownloadBatch {
                 try {
                     lock.wait();
                 } catch (InterruptedException e) {
-                    //Do not interrupt this wait until condition is met
+                    // Do not interrupt this wait until condition is met
                 }
             }
         }

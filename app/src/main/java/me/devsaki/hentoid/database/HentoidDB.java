@@ -27,8 +27,8 @@ import me.devsaki.hentoid.util.AttributeMap;
  * db maintenance class
  */
 public class HentoidDB extends SQLiteOpenHelper {
-
     private static final String TAG = HentoidDB.class.getName();
+
     private static final Object locker = new Object();
 
     // Database Version

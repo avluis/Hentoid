@@ -112,8 +112,10 @@ public class ContentV1 {
 
     private Site getSite() {
         // to keep compatibility, if null return FAKKU
-        if (site == null)
+        if (site == null) {
             return Site.FAKKU;
+        }
+
         return site;
     }
 

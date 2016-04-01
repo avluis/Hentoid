@@ -15,6 +15,7 @@ public final class NetworkStatus {
         Context context = ctx.getApplicationContext();
         ConnectivityManager connMgr = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
+
         return connMgr.getActiveNetworkInfo();
     }
 
@@ -24,11 +25,13 @@ public final class NetworkStatus {
             NetworkInfo netInfo = initialize(context);
             connected = netInfo != null && netInfo.isAvailable() &&
                     netInfo.isConnected();
+
             return connected;
         } catch (Exception e) {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());
             Log.v("connectivity", e.toString());
         }
+
         return false;
     }
 
@@ -38,11 +41,13 @@ public final class NetworkStatus {
             NetworkInfo netInfo = initialize(context);
             wifi = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
                     ConnectivityManager.TYPE_WIFI;
+
             return wifi;
         } catch (Exception e) {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());
             Log.v("connectivity", e.toString());
         }
+
         return false;
     }
 
@@ -52,11 +57,13 @@ public final class NetworkStatus {
             NetworkInfo netInfo = initialize(context);
             mobile = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
                     ConnectivityManager.TYPE_MOBILE;
+
             return mobile;
         } catch (Exception e) {
             System.out.println("CheckConnectivity Exception: " + e.getMessage());
             Log.v("connectivity", e.toString());
         }
+
         return false;
     }
 }

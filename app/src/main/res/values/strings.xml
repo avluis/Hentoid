@@ -35,7 +35,7 @@
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it by Google Play.</string>
 
-    <string name="detect_contents">The app detected that you have contents in your folder.\nDo you want to import them?</string>
+    <string name="contents_detected">The app detected that you have contents in your folder.\nDo you want to import them?</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
 
     <string name="download_again_dialog">Total images : @total\nImage Error: @error</string>

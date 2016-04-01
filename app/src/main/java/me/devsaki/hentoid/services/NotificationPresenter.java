@@ -88,6 +88,7 @@ final class NotificationPresenter {
                             .replace("%d", String.valueOf(downloadCount))
                     );
             notificationManager.notify(notificationId, currentBuilder.build());
+
             return;
         }
         switch (contentStatus) {
@@ -123,7 +124,6 @@ final class NotificationPresenter {
                         "Download Content: Unhandled Error.");
                 break;
         }
-
         notificationManager.notify(notificationId, currentBuilder.build());
     }
 
@@ -144,6 +144,7 @@ final class NotificationPresenter {
                 resultIntent.putExtra("url", currentContent.getUrl());
                 break;
         }
+
         return PendingIntent.getActivity(appInstance,
                 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
     }

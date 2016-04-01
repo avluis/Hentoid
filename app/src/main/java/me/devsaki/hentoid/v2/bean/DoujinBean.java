@@ -20,10 +20,10 @@ public class DoujinBean {
 
     public String getId() {
         int idxStart = url.lastIndexOf("/");
-
         String id = url.substring(idxStart);
         String category = url.replace(id, "");
         category = category.substring(category.lastIndexOf("/"));
+
         return category + id;
     }
 

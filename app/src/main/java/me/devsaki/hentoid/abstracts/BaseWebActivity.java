@@ -39,6 +39,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
  */
 public class BaseWebActivity extends AppCompatActivity {
     private static final String TAG = BaseWebActivity.class.getName();
+
     protected ObservableWebView webView;
     private HentoidDB db;
     private Content currentContent;
@@ -48,6 +49,10 @@ public class BaseWebActivity extends AppCompatActivity {
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
 
+    protected Site getSite() {
+        return site;
+    }
+
     protected void setSite(Site site) {
         this.site = site;
     }
@@ -55,10 +60,15 @@ public class BaseWebActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_base_web);
-        if (site == null) Log.w(TAG, "WebView site is null");
 
         db = new HentoidDB(this);
+
+        setContentView(R.layout.activity_base_web);
+
+        if (site == null) {
+            Log.w(TAG, "WebView site is null");
+        }
+
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
         fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshStop);
@@ -89,7 +99,6 @@ public class BaseWebActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
-
                 if (newProgress == 100) {
                     swipeLayout.setRefreshing(false);
                 } else {
@@ -160,8 +169,13 @@ public class BaseWebActivity extends AppCompatActivity {
 
     @SuppressWarnings("UnusedParameters")
     public void onHomeFabClick(View view) {
-        Intent mainActivity = new Intent(this, DownloadsActivity.class);
-        startActivity(mainActivity);
+        Intent intent = new Intent(this, DownloadsActivity.class);
+
+        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
+        // it can interfere with Double-Back (press back twice) to exit
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        finish();
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -187,6 +201,7 @@ public class BaseWebActivity extends AppCompatActivity {
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
             hideFab(fabDownload);
+
             return;
         }
         Toast.makeText(this, R.string.in_queue, Toast.LENGTH_SHORT).show();
@@ -225,9 +240,9 @@ public class BaseWebActivity extends AppCompatActivity {
             int i = wbfl.getCurrentIndex();
             do {
                 i--;
-            } while (i >= 0 &&
-                    webView.getOriginalUrl().equals(wbfl.getItemAtIndex(i).getOriginalUrl()));
-
+            }
+            while (i >= 0 && webView.getOriginalUrl()
+                    .equals(wbfl.getItemAtIndex(i).getOriginalUrl()));
             if (webView.canGoBackOrForward(i - wbfl.getCurrentIndex())) {
                 webView.goBackOrForward(i - wbfl.getCurrentIndex());
             } else {
@@ -236,6 +251,7 @@ public class BaseWebActivity extends AppCompatActivity {
 
             return true;
         }
+
         return false;
     }
 
@@ -270,7 +286,6 @@ public class BaseWebActivity extends AppCompatActivity {
                 }
             });
         }
-
         if (contentStatus == StatusContent.DOWNLOADED
                 || contentStatus == StatusContent.ERROR) {
             currentContent = content;
