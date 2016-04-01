@@ -8,7 +8,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -39,11 +41,16 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
 public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
     private static final String TAG = DownloadsActivity.class.getName();
 
+    static SharedPreferences preferences;
+    static String settingDir;
+    private static int order;
     private static Menu searchMenu;
     private static SearchView searchView;
+    private static DrawerLayout mDrawerLayout;
     private final Handler searchHandler = new Handler();
     private long backButtonPressed;
 
+    // DO NOT use this in onCreateOptionsMenu
     private static void clearQuery() {
         if (searchView.isShown()) {
             searchView.setIconified(true);
@@ -79,6 +86,32 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     }
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        preferences = HentoidApplication.getAppPreferences();
+        settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
+
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            clearQuery();
+            menu.findItem(R.id.action_search).setVisible(false);
+
+            if (order == 0) {
+                menu.findItem(R.id.action_order_by_date).setVisible(false);
+            } else {
+                menu.findItem(R.id.action_order_alphabetic).setVisible(false);
+            }
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_content_list, menu);
@@ -102,32 +135,43 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if (s.equals("")) {
-                    clearSearchQuery();
-                } else {
+                if ((!mDrawerLayout.isDrawerOpen(GravityCompat.START)) && (!s.equals(""))) {
+                    // If Drawer is not open and string is not empty
                     submitSearchQuery(s, 1000);
+                } else {
+                    clearSearchQuery();
                 }
 
                 return true;
             }
         });
+        SharedPreferences.Editor editor = HentoidApplication.getAppPreferences().edit();
+        if (order == 0) {
+            menu.findItem(R.id.action_order_alphabetic).setVisible(false);
+            menu.findItem(R.id.action_order_by_date).setVisible(true);
 
-        if (DownloadsFragment.order == 0) {
-            menu.getItem(1).setVisible(false);
-            menu.getItem(2).setVisible(true);
+            // Save current sort order
+            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
         } else {
-            menu.getItem(1).setVisible(true);
-            menu.getItem(2).setVisible(false);
+            menu.findItem(R.id.action_order_alphabetic).setVisible(true);
+            menu.findItem(R.id.action_order_by_date).setVisible(false);
+
+            // Save current sort order
+            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
         }
 
         return true;
     }
 
-    // Clear search query onBackPressed
+    // Close nav drawer if open
+    // Clear search query onBackPressed (go back to first page if not already)
     // Double-Back (press back twice) to exit (after clearing searchView)
     @Override
     public void onBackPressed() {
-        if (backButtonPressed + 2000 > System.currentTimeMillis()) {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+            clearQuery();
+        } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
         } else {
             AndroidHelper.singleToast(
@@ -135,6 +179,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                     Toast.LENGTH_SHORT);
         }
         backButtonPressed = System.currentTimeMillis();
+        clearSearchQuery();
     }
 
     @Override
@@ -142,17 +187,18 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         switch (item.getItemId()) {
             case R.id.action_order_alphabetic:
                 clearQuery();
-                DownloadsFragment.order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
+                order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
                 invalidateOptionsMenu();
 
                 return true;
             case R.id.action_order_by_date:
                 clearQuery();
-                DownloadsFragment.order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
+                order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
                 invalidateOptionsMenu();
 
                 return true;
             default:
+
                 return super.onOptionsItemSelected(item);
         }
     }
@@ -161,7 +207,6 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         private static String query = "";
         private static int currentPage = 1;
         private static int qtyPages;
-        private static int order;
         private static int index = -1;
         private static int top;
         private int prevPage;
@@ -188,10 +233,6 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
         @Override
         public void onPause() {
-            // Save current sort order
-            SharedPreferences.Editor editor = HentoidApplication.getAppPreferences().edit();
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
-
             // Get & save current list position
             ListView list = getListView();
             index = list.getFirstVisiblePosition();
@@ -202,9 +243,6 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         }
 
         private void queryPrefs() {
-            SharedPreferences preferences = HentoidApplication.getAppPreferences();
-            String settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
-
             if (settingDir.isEmpty()) {
                 Intent intent = new Intent(getActivity(), SelectFolderActivity.class);
                 startActivity(intent);
@@ -218,11 +256,11 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             if (qtyPages != newQtyPages) {
                 setQuery("");
                 qtyPages = newQtyPages;
-            }
 
-            order = preferences.getInt(
-                    ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
-                    ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+                order = preferences.getInt(
+                        ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
+                        ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+            }
         }
 
         @Override
@@ -256,6 +294,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                         return true;
                     } else {
                         searchContent();
+
                         return true;
                     }
                 }
@@ -301,13 +340,13 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             return rootView;
         }
 
-        // TODO: Rewrite with non-blocking code
+        // TODO: Rewrite with non-blocking code - AsyncTask could be a good replacement
         private boolean searchContent() {
             List<Content> result = getDB()
                     .selectContentByQuery(query, currentPage, qtyPages,
                             order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
 
-            if (query.isEmpty()) {
+            if ((mDrawerLayout.isDrawerOpen(GravityCompat.START)) || (query.isEmpty())) {
                 getActivity().setTitle(R.string.title_activity_downloads);
             } else {
                 getActivity().setTitle(getResources()
@@ -316,7 +355,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             }
             if (result != null && !result.isEmpty()) {
                 contents = result;
-            } else if (contents == null) {
+            } else if (contents == null) { // TODO: Possible entry point for no content match?
                 contents = new ArrayList<>(0);
             }
             if (contents == result || contents.isEmpty()) {
