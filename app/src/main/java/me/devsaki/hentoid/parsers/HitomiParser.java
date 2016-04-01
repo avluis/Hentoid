@@ -52,7 +52,6 @@ public class HitomiParser {
                     parseAttributes(attributes, AttributeType.CATEGORY, element.select("a"));
                 }
             }
-
             int pages = doc.select(".thumbnail-container").size();
 
             return new Content()
@@ -64,6 +63,7 @@ public class HitomiParser {
                     .setStatus(StatusContent.SAVED)
                     .setSite(Site.HITOMI);
         }
+
         return null;
     }
 
@@ -83,6 +83,7 @@ public class HitomiParser {
         for (Element element : imgs) {
             imagesUrl.add("https:" + element.text());
         }
+
         return imagesUrl;
     }
 }

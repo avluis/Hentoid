@@ -35,7 +35,6 @@ import me.devsaki.hentoid.v2.bean.URLBean;
  * onto our database.
  */
 public class ImporterActivity extends AppCompatActivity {
-
     private static final String TAG = ImporterActivity.class.getName();
 
     @Override
@@ -57,21 +56,23 @@ public class ImporterActivity extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+
+            hentoidDB = new HentoidDB(ImporterActivity.this);
+
             downloadDirs = new ArrayList<>();
 
             for (Site s : Site.values()) {
                 downloadDirs.add(AndroidHelper.getDownloadDir(s, ImporterActivity.this));
             }
-
             donutProgress = (DonutProgress) findViewById(R.id.donut_progress);
             tvCurrentStatus = (TextView) findViewById(R.id.tvCurrentStatus);
-            hentoidDB = new HentoidDB(ImporterActivity.this);
         }
 
         @Override
         protected void onPostExecute(List<Content> contents) {
-            if (contents != null && contents.size() > 0)
+            if (contents != null && contents.size() > 0) {
                 hentoidDB.insertContents(contents.toArray(new Content[contents.size()]));
+            }
             Intent intent = new Intent(ImporterActivity.this, DownloadsActivity.class);
             startActivity(intent);
             finish();
@@ -104,8 +105,9 @@ public class ImporterActivity extends AppCompatActivity {
                             try {
                                 Content content = Helper.jsonToObject(json, Content.class);
                                 if (content.getStatus() != StatusContent.DOWNLOADED
-                                        && content.getStatus() != StatusContent.ERROR)
+                                        && content.getStatus() != StatusContent.ERROR) {
                                     content.setStatus(StatusContent.MIGRATED);
+                                }
                                 contents.add(content);
                             } catch (Exception e) {
                                 Log.e(TAG, "Reading json file", e);
@@ -114,11 +116,11 @@ public class ImporterActivity extends AppCompatActivity {
                             json = new File(file, Constants.JSON_FILE_NAME);
                             if (json.exists()) {
                                 try {
-                                    ContentV1 content =
-                                            Helper.jsonToObject(json, ContentV1.class);
+                                    ContentV1 content = Helper.jsonToObject(json, ContentV1.class);
                                     if (content.getStatus() != StatusContent.DOWNLOADED
-                                            && content.getStatus() != StatusContent.ERROR)
+                                            && content.getStatus() != StatusContent.ERROR) {
                                         content.setMigratedStatus();
+                                    }
                                     Content contentV2 = content.toContent();
                                     try {
                                         Helper.saveJson(contentV2, file);
@@ -182,22 +184,26 @@ public class ImporterActivity extends AppCompatActivity {
                     }
                 }
             }
+
             return contents;
         }
 
         private List<Attribute> from(List<URLBean> urlBeans,
                                      @SuppressWarnings("SameParameterValue") AttributeType type) {
             List<Attribute> attributes = null;
-            if (urlBeans == null)
+            if (urlBeans == null) {
                 return null;
+            }
             if (urlBeans.size() > 0) {
                 attributes = new ArrayList<>();
                 for (URLBean urlBean : urlBeans) {
                     Attribute attribute = from(urlBean, type);
-                    if (attribute != null)
+                    if (attribute != null) {
                         attributes.add(attribute);
+                    }
                 }
             }
+
             return attributes;
         }
 
@@ -209,6 +215,7 @@ public class ImporterActivity extends AppCompatActivity {
                 if (urlBean.getDescription() == null) {
                     throw new RuntimeException("Problems loading attribute v2.");
                 }
+
                 return new Attribute()
                         .setName(urlBean.getDescription())
                         .setUrl(urlBean.getId())

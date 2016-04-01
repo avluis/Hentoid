@@ -43,8 +43,8 @@ import me.devsaki.hentoid.util.Constants;
  * for display in downloads
  */
 public class ContentAdapter extends ArrayAdapter<Content> {
-
     private static final String TAG = ContentAdapter.class.getName();
+
     private final Context context;
     private final List<Content> contents;
     private final SimpleDateFormat sdf;
@@ -193,6 +193,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private void downloadAgain(final Content content, final ListView listView) {
         int numberImages;
         int numberImagesError = 0;
+
         numberImages = content.getImageFiles().size();
         for (ImageFile img : content.getImageFiles()) {
             if (img.getStatus() == StatusContent.ERROR) {

@@ -39,7 +39,6 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  * Presents the list of downloaded works to the user.
  */
 public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
-
     private static final String TAG = DownloadsActivity.class.getName();
     static SharedPreferences preferences;
     static String settingDir;
@@ -53,17 +52,17 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
     // DO NOT use this in onCreateOptionsMenu
     private static void clearQuery() {
-        searchView.setQuery("", false);
         if (searchView.isShown()) {
             searchView.setIconified(true);
             searchMenu.findItem(R.id.action_search).collapseActionView();
         }
+        searchView.setQuery("", false);
     }
 
     private void clearSearchQuery() {
-        searchView.clearFocus();
         getFragment().setQuery("");
         getFragment().searchContent();
+        searchView.clearFocus();
     }
 
     private void submitSearchQuery(String s) {
@@ -72,7 +71,6 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
     private void submitSearchQuery(final String s, long delay) {
         searchHandler.removeCallbacksAndMessages(null);
-
         searchHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -113,33 +111,15 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         return super.onPrepareOptionsMenu(menu);
     }
 
-    // Close nav drawer if open
-    // Clear search query onBackPressed
-    // Press back twice to exit (if searchView is clear)
-    @Override
-    public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-        } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
-            super.onBackPressed();
-        } else {
-            AndroidHelper.singleToast(
-                    getApplicationContext(), getString(R.string.press_back_again),
-                    Toast.LENGTH_SHORT);
-        }
-        backButtonPressed = System.currentTimeMillis();
-        clearSearchQuery();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        searchMenu = menu;
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_content_list, menu);
 
         // Associate searchable configuration with the SearchView
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
+        searchMenu = menu;
         searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(true);
@@ -185,6 +165,24 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         }
 
         return true;
+    }
+
+    // Close nav drawer if open
+    // Clear search query onBackPressed
+    // Double-Back (press back twice) to exit (after clearing searchView)
+    @Override
+    public void onBackPressed() {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
+            super.onBackPressed();
+        } else {
+            AndroidHelper.singleToast(
+                    getApplicationContext(), getString(R.string.press_back_again),
+                    Toast.LENGTH_SHORT);
+        }
+        backButtonPressed = System.currentTimeMillis();
+        clearSearchQuery();
     }
 
     @Override
@@ -347,9 +345,9 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
         // TODO: Rewrite with non-blocking code - AsyncTask could be a good replacement
         private boolean searchContent() {
-            List<Content> result = getDB().selectContentByQuery(
-                    query, currentPage, qtyPages,
-                    order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+            List<Content> result = getDB()
+                    .selectContentByQuery(query, currentPage, qtyPages,
+                            order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
 
             if ((mDrawerLayout.isDrawerOpen(GravityCompat.START)) || (query.isEmpty())) {
                 getActivity().setTitle(R.string.title_activity_downloads);
@@ -358,18 +356,15 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                         .getString(R.string.title_activity_search)
                         .replace("@search", query));
             }
-
             if (result != null && !result.isEmpty()) {
                 contents = result;
             } else if (contents == null) { // TODO: Possible entry point for no content match?
                 contents = new ArrayList<>(0);
             }
-
             if (contents == result || contents.isEmpty()) {
                 ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
                 setListAdapter(adapter);
             }
-
             if (prevPage != currentPage) {
                 btnPage.setText(String.valueOf(currentPage));
             }

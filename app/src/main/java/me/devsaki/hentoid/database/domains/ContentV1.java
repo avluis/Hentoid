@@ -10,7 +10,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 
 /**
  * Created by DevSaki on 09/05/2015.
- * Supports older library type content
+ * Content builder (legacy: kept to support older library)
  */
 @Deprecated
 public class ContentV1 {
@@ -112,8 +112,10 @@ public class ContentV1 {
 
     private Site getSite() {
         // to keep compatibility, if null return FAKKU
-        if (site == null)
+        if (site == null) {
             return Site.FAKKU;
+        }
+
         return site;
     }
 

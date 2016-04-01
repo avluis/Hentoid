@@ -29,8 +29,8 @@ import me.devsaki.hentoid.util.AndroidHelper;
  * for display in queue
  */
 public class ContentQueueAdapter extends ArrayAdapter<Content> {
-
     private static final String TAG = ContentQueueAdapter.class.getName();
+
     private final Context context;
     private final List<Content> contents;
 

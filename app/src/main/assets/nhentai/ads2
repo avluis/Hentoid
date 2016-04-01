@@ -1,0 +1,16 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8">
+<style>
+body {
+    background-color: lightblue;
+}
+
+h1 {
+    color: black;
+    text-align: center;
+}
+</style>
+<h1>Brought to you by Hentoid!</h1>
+</head>
+</html>

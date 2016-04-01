@@ -39,7 +39,10 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_hentoid);
+
+        db = new HentoidDB(this);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
@@ -58,8 +61,6 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
 
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.addDrawerListener(mDrawerToggle);
-
-        db = new HentoidDB(this);
 
         fragment = buildFragment();
         FragmentManager fragmentManager = getFragmentManager();
@@ -122,7 +123,6 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
                 intent = new Intent(this, TsuminoActivity.class);
                 break;
         }
-
         if (intent != null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }

@@ -44,6 +44,7 @@ public class PreferencesActivity extends AppCompatActivity {
         getDelegate().installViewFactory();
         getDelegate().onCreate(savedInstanceState);
         super.onCreate(savedInstanceState);
+
         getFragmentManager().beginTransaction().replace(android.R.id.content,
                 new MyPreferenceFragment()).commit();
 
@@ -72,7 +73,6 @@ public class PreferencesActivity extends AppCompatActivity {
         if (result != null) {
             return result;
         }
-
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             // If we're running pre-L, we need to 'inject' our tint aware Views in place of the
             // standard framework versions
@@ -89,6 +89,7 @@ public class PreferencesActivity extends AppCompatActivity {
                     return new AppCompatCheckedTextView(this, attrs);
             }
         }
+
         return null;
     }
 
@@ -97,6 +98,7 @@ public class PreferencesActivity extends AppCompatActivity {
         @Override
         public void onCreate(final Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+
             addPreferencesFromResource(R.xml.preferences);
 
             Preference addNoMediaFile = getPreferenceScreen()
@@ -110,7 +112,7 @@ public class PreferencesActivity extends AppCompatActivity {
                     File nomedia = new File(settingDir, ".nomedia");
                     if (!nomedia.exists()) {
                         try {
-                            //noinspection ResultOfMethodCallIgnored
+                            // noinspection ResultOfMethodCallIgnored
                             nomedia.createNewFile();
                         } catch (IOException e) {
                             Toast.makeText(getActivity(), R.string.error_creating_nomedia_file,
@@ -120,6 +122,7 @@ public class PreferencesActivity extends AppCompatActivity {
                     }
                     Toast.makeText(getActivity(), R.string.nomedia_file_created,
                             Toast.LENGTH_SHORT).show();
+
                     return true;
                 }
             });
@@ -161,8 +164,8 @@ public class PreferencesActivity extends AppCompatActivity {
                                     dialog.cancel();
                                 }
                             });
-
                     builder.show();
+
                     return true;
                 }
             });
@@ -187,6 +190,7 @@ public class PreferencesActivity extends AppCompatActivity {
                                     System.out.println("Manual update check: Update available!");
                                 }
                             });
+
                     return true;
                 }
             });

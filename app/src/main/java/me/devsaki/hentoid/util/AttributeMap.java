@@ -14,7 +14,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
 
     public void add(Attribute attributeItem) {
-
         List<Attribute> list;
         AttributeType type = attributeItem.getType();
 
@@ -24,7 +23,6 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
             list = new ArrayList<>();
             put(type, list);
         }
-
         list.add(attributeItem);
     }
 

@@ -23,11 +23,11 @@ import me.devsaki.hentoid.util.Helper;
  * Created by Shiro on 1/22/2016.
  * Implements tsumino source
  * TODO: Re-implement without use of JavaScript:
- * Ref: http://technoranch.blogspot.com/2014/08/how-to-get-html-content-from-android-webview.html#webview-java-no-js-get-content
+ * Ref: http://goo.gl/UfIsZs
  */
 public class TsuminoActivity extends BaseWebActivity {
-
     private static final String TAG = TsuminoActivity.class.getName();
+
     private boolean downloadFabPressed = false;
     private int historyIndex;
 
@@ -63,6 +63,7 @@ public class TsuminoActivity extends BaseWebActivity {
             } catch (MalformedURLException e) {
                 Log.d(TAG, "Malformed URL");
             }
+
             return false;
         }
 
@@ -70,10 +71,10 @@ public class TsuminoActivity extends BaseWebActivity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
-            if (downloadFabPressed
-                    && !(url.contains("//www.tsumino.com/Read/View/")
-                    || url.contains("//www.tsumino.com/Read/Auth/")
-                    || url.contains("//www.tsumino.com/Read/AuthProcess"))) {
+            if (downloadFabPressed &&
+                    !(url.contains("//www.tsumino.com/Read/View/") ||
+                            url.contains("//www.tsumino.com/Read/Auth/") ||
+                            url.contains("//www.tsumino.com/Read/AuthProcess"))) {
                 downloadFabPressed = false;
             }
         }
@@ -81,7 +82,6 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-
             String js = getResources().getString(R.string.grab_html_from_webview);
 
             if (url.contains("//www.tsumino.com/Book/Info/")) {
@@ -99,7 +99,6 @@ public class TsuminoActivity extends BaseWebActivity {
                 }
             } else if (url.contains("//www.tsumino.com/Read/View/") && downloadFabPressed) {
                 downloadFabPressed = false;
-
                 int currentIndex = webView.copyBackForwardList().getCurrentIndex();
                 webView.goBackOrForward(historyIndex - currentIndex);
                 processDownload();
