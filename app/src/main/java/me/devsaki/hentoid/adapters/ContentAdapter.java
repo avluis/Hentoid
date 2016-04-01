@@ -100,7 +100,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
             String series = "";
             List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
-            if (seriesAttributes != null) {
+            if (seriesAttributes == null) {
+                viewHolder.tvSeries.setVisibility(View.GONE);
+            } else {
                 for (int i = 0; i < seriesAttributes.size(); i++) {
                     Attribute attribute = seriesAttributes.get(i);
                     series += attribute.getName();
@@ -108,13 +110,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                         series += ", ";
                     }
                 }
+                viewHolder.tvSeries.setVisibility(View.VISIBLE);
             }
             viewHolder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@series@", series)));
-
-            // If no series found, then hide tag from list item
-            if (seriesAttributes == null) {
-                viewHolder.tvSeries.setVisibility(View.GONE);
-            }
 
             String artists = "";
             List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
