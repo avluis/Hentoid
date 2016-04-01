@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -130,9 +131,10 @@ public class SelectFolderActivity extends AppCompatActivity implements
 
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
-                                        Intent intent = new Intent(SelectFolderActivity.this,
-                                                ImporterActivity.class);
-                                        startActivity(intent);
+                                        Intent selectFolder = new Intent(
+                                                getApplicationContext(), ImporterActivity.class);
+                                        selectFolder.addFlags(Intent.FLAG_ACTIVITY_FORWARD_RESULT);
+                                        startActivity(selectFolder);
                                         finish();
                                     }
 
@@ -148,8 +150,9 @@ public class SelectFolderActivity extends AppCompatActivity implements
                                 })
                         .show();
             } else {
-                Intent intent = new Intent(this, DownloadsActivity.class);
-                startActivity(intent);
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra("result", "Success");
+                setResult(Activity.RESULT_OK, returnIntent);
                 finish();
             }
         }

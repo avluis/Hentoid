@@ -16,9 +16,9 @@ import me.devsaki.hentoid.util.AndroidHelper;
 
 /**
  * Created by avluis on 03/20/2016.
- * Welcome activity
- * Presents required permissions, sets storage directory and library import
- * Finish implementing: TODO: File Picker, Library Import
+ * Welcome (Intro Slide) Activity
+ * Presents required permissions, then calls the proper activity to:
+ * Set storage directory and library import
  */
 public class IntroSlideActivity extends AppIntro2 {
     private int importSlide = 4;
@@ -56,17 +56,14 @@ public class IntroSlideActivity extends AppIntro2 {
 
     @Override
     public void onSlideChanged() {
-        // Show the import dialog just prior to the last slide
+        // Show the import activity just prior to the last slide
         if (pager.getCurrentItem() == importSlide) {
-            System.out.println("Is this the right slide?");
-
             Handler handler = new Handler();
-
             handler.postDelayed(new Runnable() {
 
                 public void run() {
                     Intent selectFolder = new Intent(
-                            getApplicationContext(), SelectFolderActivity2.class);
+                            getApplicationContext(), SelectFolderActivity.class);
                     startActivityForResult(selectFolder, 1);
                 }
             }, 100);
@@ -77,18 +74,12 @@ public class IntroSlideActivity extends AppIntro2 {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
             if (resultCode == Activity.RESULT_OK) {
-                // If we get RESULT_OK, then we validate
-                // TODO: Implement result validation
+                // If we get RESULT_OK, then:
                 System.out.println("RESULT_OK: ");
                 String result = data.getStringExtra("result");
                 System.out.println(result);
 
-                /* If result passes validation, then:
-                * TODO: If library path contains prior downloads, we import then move to next slide
-                * TODO: If library path is clean, then we simply move to next slide
-                */
-
-                // Move to next slide
+                // If result passes validation, then we move to next slide
                 pager.setCurrentItem(importSlide + 1);
             }
             if (resultCode == Activity.RESULT_CANCELED) {
@@ -96,7 +87,6 @@ public class IntroSlideActivity extends AppIntro2 {
                 // If we get RESULT_CANCELED, then go back 2 slides
                 pager.setCurrentItem(importSlide - 2);
             }
-
         }
     }
 }

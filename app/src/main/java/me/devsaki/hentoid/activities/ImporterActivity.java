@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.activities;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.TextView;
@@ -73,9 +75,19 @@ public class ImporterActivity extends AppCompatActivity {
             if (contents != null && contents.size() > 0) {
                 hentoidDB.insertContents(contents.toArray(new Content[contents.size()]));
             }
-            Intent intent = new Intent(ImporterActivity.this, DownloadsActivity.class);
-            startActivity(intent);
-            finish();
+            Handler handler = new Handler();
+
+            handler.postDelayed(new Runnable() {
+                private static final String result = "We've made it this far...";
+
+                public void run() {
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra("result", result);
+                    setResult(Activity.RESULT_OK, returnIntent);
+                    finish();
+                }
+            }, 100);
+
         }
 
         @Override
