@@ -40,10 +40,10 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  */
 public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
     private static final String TAG = DownloadsActivity.class.getName();
+
     static SharedPreferences preferences;
     static String settingDir;
     private static int order;
-    private static boolean orderUpdated;
     private static Menu searchMenu;
     private static SearchView searchView;
     private static DrawerLayout mDrawerLayout;
@@ -135,13 +135,11 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if ((mDrawerLayout.isDrawerOpen(GravityCompat.START)) && (!s.isEmpty())) {
-                    clearSearchQuery();
-                } else if ((s.equals("")) && (orderUpdated)) {
-                    clearSearchQuery();
-                    orderUpdated = false;
-                } else {
+                if ((!mDrawerLayout.isDrawerOpen(GravityCompat.START)) && (!s.equals(""))) {
+                    // If Drawer is not open and string is not empty
                     submitSearchQuery(s, 1000);
+                } else {
+                    clearSearchQuery();
                 }
 
                 return true;
@@ -154,26 +152,25 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
             // Save current sort order
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
-            orderUpdated = true;
         } else {
             menu.findItem(R.id.action_order_alphabetic).setVisible(true);
             menu.findItem(R.id.action_order_by_date).setVisible(false);
 
             // Save current sort order
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
-            orderUpdated = true;
         }
 
         return true;
     }
 
     // Close nav drawer if open
-    // Clear search query onBackPressed
+    // Clear search query onBackPressed (go back to first page if not already)
     // Double-Back (press back twice) to exit (after clearing searchView)
     @Override
     public void onBackPressed() {
         if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawer(GravityCompat.START);
+            clearQuery();
         } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
         } else {
