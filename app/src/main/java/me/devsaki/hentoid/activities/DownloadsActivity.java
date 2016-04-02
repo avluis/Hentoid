@@ -44,15 +44,15 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     private static SharedPreferences preferences;
     private static String settingDir;
     private static int order;
-    private static Menu searchMenu;
-    private static SearchView searchView;
-    private static DrawerLayout mDrawerLayout;
-    private static boolean orderUpdated;
+    private Menu searchMenu;
+    private SearchView searchView;
+    private DrawerLayout mDrawerLayout;
+    private boolean orderUpdated;
     private final Handler searchHandler = new Handler();
     private long backButtonPressed;
 
     // DO NOT use this in onCreateOptionsMenu
-    private static void clearQuery() {
+    private void clearQuery() {
         if (searchView.isShown()) {
             searchView.setIconified(true);
             searchMenu.findItem(R.id.action_search).collapseActionView();
@@ -353,7 +353,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                     .selectContentByQuery(query, currentPage, qtyPages,
                             order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
 
-            if ((mDrawerLayout.isDrawerOpen(GravityCompat.START)) || (query.isEmpty())) {
+            if (query.isEmpty()) {
                 getActivity().setTitle(R.string.title_activity_downloads);
             } else {
                 getActivity().setTitle(getResources()
