@@ -41,12 +41,13 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
 public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
     private static final String TAG = DownloadsActivity.class.getName();
 
-    static SharedPreferences preferences;
-    static String settingDir;
+    private static SharedPreferences preferences;
+    private static String settingDir;
     private static int order;
     private static Menu searchMenu;
     private static SearchView searchView;
     private static DrawerLayout mDrawerLayout;
+    private static boolean orderUpdated;
     private final Handler searchHandler = new Handler();
     private long backButtonPressed;
 
@@ -59,10 +60,12 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         searchView.setQuery("", false);
     }
 
-    private void clearSearchQuery() {
+    private void clearSearchQuery(int option) {
+        if (option == 1) {
+            searchView.clearFocus();
+        }
         getFragment().setQuery("");
         getFragment().searchContent();
-        searchView.clearFocus();
     }
 
     private void submitSearchQuery(String s) {
@@ -117,7 +120,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         inflater.inflate(R.menu.menu_content_list, menu);
 
         // Associate searchable configuration with the SearchView
-        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        final SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
         searchMenu = menu;
         searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
@@ -135,11 +138,13 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if ((!mDrawerLayout.isDrawerOpen(GravityCompat.START)) && (!s.equals(""))) {
-                    // If Drawer is not open and string is not empty
+                if ((!mDrawerLayout.isDrawerOpen(GravityCompat.START)) && (!s.isEmpty())) {
                     submitSearchQuery(s, 1000);
+                } else if ((s.isEmpty()) && (orderUpdated)) {
+                    clearSearchQuery(1);
+                    orderUpdated = false;
                 } else {
-                    clearSearchQuery();
+                    clearSearchQuery(0);
                 }
 
                 return true;
@@ -152,12 +157,14 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
             // Save current sort order
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+            orderUpdated = true;
         } else {
             menu.findItem(R.id.action_order_alphabetic).setVisible(true);
             menu.findItem(R.id.action_order_by_date).setVisible(false);
 
             // Save current sort order
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+            orderUpdated = true;
         }
 
         return true;
@@ -179,7 +186,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                     Toast.LENGTH_SHORT);
         }
         backButtonPressed = System.currentTimeMillis();
-        clearSearchQuery();
+        clearSearchQuery(1);
     }
 
     @Override

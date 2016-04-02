@@ -236,15 +236,15 @@ public class BaseWebActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (event.getAction() == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_BACK) {
-            WebBackForwardList wbfl = webView.copyBackForwardList();
-            int i = wbfl.getCurrentIndex();
+            WebBackForwardList webBFL = webView.copyBackForwardList();
+            int i = webBFL.getCurrentIndex();
             do {
                 i--;
             }
             while (i >= 0 && webView.getOriginalUrl()
-                    .equals(wbfl.getItemAtIndex(i).getOriginalUrl()));
-            if (webView.canGoBackOrForward(i - wbfl.getCurrentIndex())) {
-                webView.goBackOrForward(i - wbfl.getCurrentIndex());
+                    .equals(webBFL.getItemAtIndex(i).getOriginalUrl()));
+            if (webView.canGoBackOrForward(i - webBFL.getCurrentIndex())) {
+                webView.goBackOrForward(i - webBFL.getCurrentIndex());
             } else {
                 finish();
             }
