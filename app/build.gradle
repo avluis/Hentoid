@@ -46,6 +46,7 @@ dependencies {
     compile 'commons-io:commons-io:2.4'
     compile 'net.rdrei.android.dirchooser:library:2.1@aar'
     compile 'org.jsoup:jsoup:1.8.3'
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
