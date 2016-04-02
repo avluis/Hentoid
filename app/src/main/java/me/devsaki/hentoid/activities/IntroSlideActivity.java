@@ -58,6 +58,7 @@ public class IntroSlideActivity extends AppIntro2 {
     public void onSlideChanged() {
         // Show the import activity just prior to the last slide
         if (pager.getCurrentItem() == importSlide) {
+            setProgressButtonEnabled(false);
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
 
@@ -73,6 +74,7 @@ public class IntroSlideActivity extends AppIntro2 {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
+            setProgressButtonEnabled(true);
             if (resultCode == Activity.RESULT_OK) {
                 // If we get RESULT_OK, then:
                 System.out.println("RESULT_OK: ");
