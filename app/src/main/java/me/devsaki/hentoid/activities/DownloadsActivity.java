@@ -44,7 +44,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     private static SharedPreferences preferences;
     private static String settingDir;
     private static int order;
-    private Menu searchMenu;
+    private MenuItem searchMenuItem;
     private SearchView searchView;
     private DrawerLayout mDrawerLayout;
     private boolean orderUpdated;
@@ -55,7 +55,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     private void clearQuery() {
         if (searchView.isShown()) {
             searchView.setIconified(true);
-            searchMenu.findItem(R.id.action_search).collapseActionView();
+            searchMenuItem.collapseActionView();
         }
         searchView.setQuery("", false);
     }
@@ -122,7 +122,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         // Associate searchable configuration with the SearchView
         final SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
-        searchMenu = menu;
+        searchMenuItem = menu.findItem(R.id.action_search);
         searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(true);
