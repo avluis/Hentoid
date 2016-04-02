@@ -16,8 +16,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import me.devsaki.hentoid.HentoidApplication;
-import me.devsaki.hentoid.components.ImageDownloadBatch;
-import me.devsaki.hentoid.components.ImageDownloadTask;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -42,7 +40,6 @@ public class DownloadService extends IntentService {
     public static boolean paused;
     private NotificationPresenter notificationPresenter;
     private HentoidDB db;
-    private ExecutorService executorService;
     private Content currentContent;
 
     public DownloadService() {
@@ -52,18 +49,14 @@ public class DownloadService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-
         db = new HentoidDB(this);
+        notificationPresenter = new NotificationPresenter();
 
         Log.i(TAG, "Download service created");
-
-        notificationPresenter = new NotificationPresenter();
-        executorService = Executors.newFixedThreadPool(2);
     }
 
     @Override
     public void onDestroy() {
-        executorService.shutdown();
         super.onDestroy();
 
         Log.i(TAG, "Download service destroyed");
@@ -101,57 +94,29 @@ public class DownloadService extends IntentService {
                 return;
             }
 
-            Log.i(TAG, "Start Download Content : " + currentContent.getTitle());
+            Log.i(TAG, "Content download started: " + currentContent.getTitle());
 
             // Tracking Event (Download Added)
             HentoidApplication.getInstance().trackEvent("Download Service", "Download",
                     "Download Content: Start.");
 
-            boolean error = false;
-            // Directory
+            // Initialize
             File dir = AndroidHelper.getDownloadDir(currentContent, this);
-            try {
-                // Download Cover Image
-                executorService.submit(
-                        new ImageDownloadTask(
-                                dir, "thumb", currentContent.getCoverImageUrl()
-                        )
-                ).get();
-            } catch (Exception e) {
-                Log.e(TAG, "Error Saving cover image " + currentContent.getTitle(), e);
-                error = true;
+            ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
+
+            //add download tasks
+            downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());
+            for (ImageFile imageFile : currentContent.getImageFiles()) {
+                downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
             }
 
-            if (paused) {
-                interruptDownload();
-                if (currentContent.getStatus() == StatusContent.SAVED) {
-                    try {
-                        FileUtils.deleteDirectory(dir);
-                    } catch (IOException e) {
-                        Log.e(TAG, "error deleting content directory", e);
-                    }
-                }
+            //Track and wait for download to complete
+            final int qtyPages = currentContent.getQtyPages();
+            for (int i = 0; i <= qtyPages; ++i) {
 
-                return;
-            }
-
-            List<ImageFile> imageFiles = currentContent.getImageFiles();
-            ImageDownloadBatch downloadBatch = new ImageDownloadBatch(executorService);
-            for (ImageFile imageFile : imageFiles) {
-                if (imageFile.getStatus() != StatusContent.IGNORED) {
-                    downloadBatch.addTask(
-                            new ImageDownloadTask(
-                                    dir, imageFile.getName(), imageFile.getUrl()
-                            )
-                    );
-                }
-            }
-
-            int i = 0;
-            for (ImageFile imageFile : imageFiles) {
                 if (paused) {
                     interruptDownload();
-                    downloadBatch.cancel();
+                    downloadBatch.cancelAllTasks();
                     if (currentContent.getStatus() == StatusContent.SAVED) {
                         try {
                             FileUtils.deleteDirectory(dir);
@@ -162,40 +127,33 @@ public class DownloadService extends IntentService {
 
                     return;
                 }
-                if (!NetworkStatus.isOnline(this)) {
-                    Log.e(TAG, "No connection");
-                    downloadBatch.cancel();
 
-                    return;
-                }
-                boolean imageFileErrorDownload = false;
-                try {
-                    downloadBatch.waitForCompletedTask();
-                } catch (Exception e) {
-                    Log.e(TAG, "Error downloading image file");
-                    error = true;
-                    imageFileErrorDownload = true;
-                }
-                i++;
-                double percent = i * 100.0 / imageFiles.size();
+                downloadBatch.waitForOneCompletedTask();
+                double percent = i * 100.0 / qtyPages;
                 notificationPresenter.updateNotification(percent);
                 updateActivity(percent);
+            }
 
-                if (imageFileErrorDownload) {
+            //assign status tag to ImageFile(s)
+            short errorCount = downloadBatch.getErrorCount();
+            for (ImageFile imageFile : currentContent.getImageFiles()) {
+                if (errorCount > 0) {
                     imageFile.setStatus(StatusContent.ERROR);
+                    errorCount--;
                 } else {
                     imageFile.setStatus(StatusContent.DOWNLOADED);
                 }
                 db.updateImageFileStatus(imageFile);
             }
 
-            db.updateContentStatus(currentContent);
-            currentContent.setDownloadDate(new Date().getTime());
-            if (error) {
+            //assign status tag to Content, add timestamp, and save to db
+            if (downloadBatch.hasError()) {
                 currentContent.setStatus(StatusContent.ERROR);
             } else {
                 currentContent.setStatus(StatusContent.DOWNLOADED);
             }
+            currentContent.setDownloadDate(new Date().getTime());
+            db.updateContentStatus(currentContent);
 
             // Save JSON file
             try {
@@ -203,12 +161,12 @@ public class DownloadService extends IntentService {
             } catch (IOException e) {
                 Log.e(TAG, "Error Save JSON " + currentContent.getTitle(), e);
             }
-            db.updateContentStatus(currentContent);
-
-            Log.i(TAG, "Finish Download Content : " + currentContent.getTitle());
 
             notificationPresenter.updateNotification(0);
             updateActivity(-1);
+            Log.i(TAG, "Content download finished: " + currentContent.getTitle());
+
+            //Search for queued content download tasks and fire intent
             currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
             if (currentContent != null) {
                 Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
