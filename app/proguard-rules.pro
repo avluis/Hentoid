@@ -30,3 +30,5 @@
 -keepclassmembers class me.devsaki.hentoid.activities.TsuminoActivity$PageLoadListener {
    <methods>;
 }
+
+-keep class com.github.paolorotolo.** {*;}

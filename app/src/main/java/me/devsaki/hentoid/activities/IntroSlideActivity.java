@@ -83,6 +83,9 @@ public class IntroSlideActivity extends AppIntro2 {
 
                 // If result passes validation, then we move to next slide
                 pager.setCurrentItem(importSlide + 1);
+                // Disallow swiping back
+                setSwipeLock(true);
+
             }
             if (resultCode == Activity.RESULT_CANCELED) {
                 System.out.println("RESULT_CANCELED");
