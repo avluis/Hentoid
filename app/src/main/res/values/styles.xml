@@ -27,4 +27,9 @@
         <item name="android:backgroundDimEnabled">true</item>
     </style>
 
+    <style name="AppCompatAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:textColorPrimary">@android:color/black</item>
+    </style>
+
 </resources>

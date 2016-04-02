@@ -99,13 +99,11 @@
         <activity
             android:name=".activities.SelectFolderActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:launchMode="singleTask" />
         <activity
             android:name=".activities.ImporterActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:launchMode="singleTask" />
         <activity
             android:name=".activities.AppLockActivity"
             android:launchMode="singleTask"
