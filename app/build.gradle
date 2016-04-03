@@ -36,17 +36,20 @@ dependencies {
     compile 'com.android.support:design:23.2.1'
     compile 'com.android.support:recyclerview-v7:23.2.1'
     compile 'com.android.support:support-v4:23.2.1'
+    compile('com.github.afollestad.material-dialogs:commons:0.8.5.7@aar') {
+        transitive = true
+    }
     compile 'com.github.bumptech.glide:glide:3.6.1'
     compile 'com.github.lzyzsd:circleprogress:1.1.0'
     compile 'com.github.paolorotolo:appintro:3.4.0'
     compile 'com.github.tajchert:nammu:1.1.1'
     compile 'com.google.android.gms:play-services-analytics:8.4.0'
     compile 'com.google.code.gson:gson:2.4'
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'com.mani:ThinDownloadManager:1.2.0'
     compile 'commons-io:commons-io:2.4'
     compile 'net.rdrei.android.dirchooser:library:2.1@aar'
     compile 'org.jsoup:jsoup:1.8.3'
-    compile 'com.squareup.okhttp3:okhttp:3.2.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

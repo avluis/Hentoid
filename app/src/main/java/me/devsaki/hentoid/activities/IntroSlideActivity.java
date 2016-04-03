@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 
 import com.github.paolorotolo.appintro.AppIntro2;
 
@@ -40,6 +41,9 @@ public class IntroSlideActivity extends AppIntro2 {
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_04));
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_05));
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_06));
+
+        setVibrate(true);
+        setVibrateIntensity(30);
     }
 
     @Override
@@ -64,7 +68,7 @@ public class IntroSlideActivity extends AppIntro2 {
 
                 public void run() {
                     Intent selectFolder = new Intent(
-                            getApplicationContext(), SelectFolderActivity.class);
+                            getApplicationContext(), ImportActivity.class);
                     startActivityForResult(selectFolder, 1);
                 }
             }, 100);
@@ -75,10 +79,10 @@ public class IntroSlideActivity extends AppIntro2 {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == 1) {
             setProgressButtonEnabled(true);
+            String result = data.getStringExtra("result");
             if (resultCode == Activity.RESULT_OK) {
                 // If we get RESULT_OK, then:
                 System.out.println("RESULT_OK: ");
-                String result = data.getStringExtra("result");
                 System.out.println(result);
 
                 // If result passes validation, then we move to next slide
@@ -88,9 +92,40 @@ public class IntroSlideActivity extends AppIntro2 {
 
             }
             if (resultCode == Activity.RESULT_CANCELED) {
-                System.out.println("RESULT_CANCELED");
-                // If we get RESULT_CANCELED, then go back 2 slides
-                pager.setCurrentItem(importSlide - 2);
+                switch (result) {
+                    case "PERMISSION_DENIED":
+                        System.out.println("Permission Denied by User");
+
+                        // If we get PERMISSION_DENIED, then go back 3 slides
+                        pager.setCurrentItem(importSlide - 3);
+                        AndroidHelper.singleSnack(pager,
+                                getString(R.string.permission_denied),
+                                Snackbar.LENGTH_LONG);
+                        break;
+                    case "PERMISSION_DENIED_FORCED":
+                        System.out.println("Permission Denied (Forced) by User/Policy");
+
+                        setProgressButtonEnabled(false);
+                        setSwipeLock(true);
+                        pager.setCurrentItem(importSlide - 3);
+                        AndroidHelper.singleSnack(pager,
+                                getString(R.string.permission_denied_forced),
+                                Snackbar.LENGTH_INDEFINITE);
+
+                        Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            public void run() {
+                                finish();
+                            }
+                        }, 5000);
+                        break;
+                    default:
+                        System.out.println("RESULT_CANCELED");
+
+                        // If we get RESULT_CANCELED, then go back 2 slides
+                        pager.setCurrentItem(importSlide - 2);
+                        break;
+                }
             }
         }
     }

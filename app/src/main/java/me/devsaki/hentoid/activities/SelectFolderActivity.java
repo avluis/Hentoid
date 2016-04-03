@@ -150,9 +150,7 @@ public class SelectFolderActivity extends AppCompatActivity implements
                                 })
                         .show();
             } else {
-                Intent returnIntent = new Intent();
-                returnIntent.putExtra("result", "Success");
-                setResult(Activity.RESULT_OK, returnIntent);
+                System.out.println("finish() reached");
                 finish();
             }
         }

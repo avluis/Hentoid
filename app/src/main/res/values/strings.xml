@@ -30,6 +30,14 @@
     <string name="explore">Explore</string>
     <string name="tutorial_select_folder">Select the app download folder.\nIf you don\'t know what are you doing, select default folder.</string>
     <string name="save">Save</string>
+    <string name="hint">Select Library Storage Directory</string>
+    <!-- New Import Activity -->
+    <string name="permission_denied">Hentoid requires access to device storage.\nPlease reconsider.</string>
+    <string name="permission_denied_forced">Permission Denied!\nManually grant storage permission in app settings.</string>
+    <string name="folder_chooser">Choose a Directory</string>
+    <string name="choose_label">Choose</string>
+    <string name="progress_dialog">Importing Library</string>
+    <string name="please_wait">Please wait…</string>
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>

@@ -11,6 +11,8 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
+import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -30,7 +32,8 @@ import me.devsaki.hentoid.enums.Site;
  * Android focused utility class
  */
 public class AndroidHelper {
-    private static Toast mToast;
+    private static Snackbar sSnack;
+    private static Toast sToast;
 
     public static void openContent(Content content, final Context context) {
         SharedPreferences sharedPreferences = HentoidApplication.getAppPreferences();
@@ -263,11 +266,21 @@ public class AndroidHelper {
 
     // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
     public static void singleToast(Context ctx, String text, int duration) {
-        if (mToast != null) {
-            mToast.cancel();
+        if (sToast != null) {
+            sToast.cancel();
+            sToast = null;
         }
-        mToast = Toast.makeText(ctx, text, duration);
-        mToast.show();
+        sToast = Toast.makeText(ctx, text, duration);
+        sToast.show();
+    }
+
+    public static void singleSnack(View view, String text, int duration) {
+        if (sSnack != null) {
+            sSnack.dismiss();
+            sSnack = null;
+        }
+        sSnack = Snackbar.make(view, text, duration);
+        sSnack.show();
     }
 
     @SafeVarargs
