@@ -3,11 +3,14 @@ package me.devsaki.hentoid.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.view.View;
 
 import com.github.paolorotolo.appintro.AppIntro2;
 
@@ -22,7 +25,9 @@ import me.devsaki.hentoid.util.AndroidHelper;
  * Set storage directory and library import
  */
 public class IntroSlideActivity extends AppIntro2 {
-    private int importSlide = 4;
+    private static final int REQUEST_RESULTS = 1;
+    private static final int REQUEST_APP_SETTINGS = 2;
+    private static final int IMPORT_SLIDE = 4;
 
     @Override
     public void init(@Nullable Bundle savedInstanceState) {
@@ -61,7 +66,7 @@ public class IntroSlideActivity extends AppIntro2 {
     @Override
     public void onSlideChanged() {
         // Show the import activity just prior to the last slide
-        if (pager.getCurrentItem() == importSlide) {
+        if (pager.getCurrentItem() == IMPORT_SLIDE) {
             setProgressButtonEnabled(false);
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
@@ -75,58 +80,93 @@ public class IntroSlideActivity extends AppIntro2 {
         }
     }
 
+    private void openAppSettings() {
+        Intent appSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + getPackageName()));
+        appSettings.addCategory(Intent.CATEGORY_DEFAULT);
+        appSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivityForResult(appSettings, REQUEST_APP_SETTINGS);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 1) {
+        if (requestCode == REQUEST_RESULTS) {
+            String resultKey = ImportActivity.getResultKey();
             setProgressButtonEnabled(true);
-            String result = data.getStringExtra("result");
-            if (resultCode == Activity.RESULT_OK) {
-                // If we get RESULT_OK, then:
-                System.out.println("RESULT_OK: ");
-                System.out.println(result);
+            if (data.getStringExtra(resultKey) != null) {
+                String result = data.getStringExtra(resultKey);
+                if (resultCode == Activity.RESULT_OK) {
+                    // If we get RESULT_OK, then:
+                    System.out.println("RESULT_OK: ");
+                    System.out.println(result);
 
-                // If result passes validation, then we move to next slide
-                pager.setCurrentItem(importSlide + 1);
-                // Disallow swiping back
-                setSwipeLock(true);
+                    // If result passes validation, then we move to next slide
+                    pager.setCurrentItem(IMPORT_SLIDE + 1);
+                    // Disallow swiping back
+                    setSwipeLock(true);
 
-            }
-            if (resultCode == Activity.RESULT_CANCELED) {
-                switch (result) {
-                    case "PERMISSION_DENIED":
-                        System.out.println("Permission Denied by User");
-
-                        // If we get PERMISSION_DENIED, then go back 3 slides
-                        pager.setCurrentItem(importSlide - 3);
-                        AndroidHelper.singleSnack(pager,
-                                getString(R.string.permission_denied),
-                                Snackbar.LENGTH_LONG);
-                        break;
-                    case "PERMISSION_DENIED_FORCED":
-                        System.out.println("Permission Denied (Forced) by User/Policy");
-
-                        setProgressButtonEnabled(false);
-                        setSwipeLock(true);
-                        pager.setCurrentItem(importSlide - 3);
-                        AndroidHelper.singleSnack(pager,
-                                getString(R.string.permission_denied_forced),
-                                Snackbar.LENGTH_INDEFINITE);
-
-                        Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            public void run() {
-                                finish();
-                            }
-                        }, 5000);
-                        break;
-                    default:
-                        System.out.println("RESULT_CANCELED");
-
-                        // If we get RESULT_CANCELED, then go back 2 slides
-                        pager.setCurrentItem(importSlide - 2);
-                        break;
                 }
+                if (resultCode == Activity.RESULT_CANCELED) {
+                    switch (result) {
+                        case "PERMISSION_DENIED":
+                            System.out.println("Permission Denied by User");
+
+                            pager.setCurrentItem(IMPORT_SLIDE - 3);
+                            AndroidHelper.singleSnack(pager,
+                                    getString(R.string.permission_denied),
+                                    Snackbar.LENGTH_LONG);
+                            break;
+                        case "PERMISSION_DENIED_FORCED":
+                            System.out.println("Permission Denied (Forced) by User/Policy");
+
+                            setProgressButtonEnabled(false);
+                            setSwipeLock(true);
+                            pager.setCurrentItem(IMPORT_SLIDE - 3);
+
+                            Snackbar.make(pager, getString(R.string.permission_denied_forced),
+                                    Snackbar.LENGTH_INDEFINITE)
+                                    .setAction(getString(R.string.open_app_settings),
+                                            new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View v) {
+                                                    openAppSettings();
+                                                }
+                                            })
+                                    .show();
+                            break;
+                        case "EXISTING_LIBRARY_FOUND":
+                            System.out.println("Existing Library Found");
+
+                            pager.setCurrentItem(IMPORT_SLIDE - 2);
+                            AndroidHelper.singleSnack(pager,
+                                    getString(R.string.existing_library_found),
+                                    Snackbar.LENGTH_LONG);
+                            break;
+                        default:
+                            System.out.println("RESULT_CANCELED");
+
+                            pager.setCurrentItem(IMPORT_SLIDE - 2);
+                            break;
+                    }
+                }
+            } else {
+                System.out.println("Error: Data not received! Bad resultKey.");
+                // TODO: Log to Analytics
+                finish();
             }
+        } else if (requestCode == REQUEST_APP_SETTINGS) {
+            // Back from app settings
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+
+                public void run() {
+                    setProgressButtonEnabled(true);
+                    pager.setCurrentItem(IMPORT_SLIDE - 2);
+                }
+            }, 100);
+        } else {
+            System.out.println("Unknown result code!");
+            super.onActivityResult(requestCode, resultCode, data);
         }
     }
 }

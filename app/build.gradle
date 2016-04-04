@@ -36,7 +36,7 @@ dependencies {
     compile 'com.android.support:design:23.2.1'
     compile 'com.android.support:recyclerview-v7:23.2.1'
     compile 'com.android.support:support-v4:23.2.1'
-    compile('com.github.afollestad.material-dialogs:commons:0.8.5.7@aar') {
+    compile('com.github.afollestad.material-dialogs:core:0.8.5.7@aar') {
         transitive = true
     }
     compile 'com.github.bumptech.glide:glide:3.6.1'
@@ -47,6 +47,9 @@ dependencies {
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
     compile 'com.mani:ThinDownloadManager:1.2.0'
+    compile('com.turhanoz.android:reactivedirectorychooser:0.0.13@aar') {
+        transitive = true
+    }
     compile 'commons-io:commons-io:2.4'
     compile 'net.rdrei.android.dirchooser:library:2.1@aar'
     compile 'org.jsoup:jsoup:1.8.3'

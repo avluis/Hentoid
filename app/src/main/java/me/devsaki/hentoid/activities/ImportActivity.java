@@ -2,43 +2,64 @@ package me.devsaki.hentoid.activities;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
+import com.turhanoz.android.reactivedirectorychooser.event.OnDirectoryCancelEvent;
+import com.turhanoz.android.reactivedirectorychooser.event.OnDirectoryChosenEvent;
+import com.turhanoz.android.reactivedirectorychooser.ui.DirectoryChooserFragment;
+import com.turhanoz.android.reactivedirectorychooser.ui.OnDirectoryChooserFragmentInteraction;
 
-import net.rdrei.android.dirchooser.DirectoryChooserFragment;
-
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.v2.bean.URLBean;
 
 /**
  * Created by avluis on 04/02/2016.
- * For test use only.
+ * Library Directory and Import Activity
  */
 public class ImportActivity extends AppCompatActivity implements
-        DirectoryChooserFragment.OnFragmentInteractionListener {
+        OnDirectoryChooserFragmentInteraction {
     private static final String TAG = ImportActivity.class.getName();
 
-    private final static int STORAGE_PERMISSION_RC = 69;
-    private DirectoryChooserFragment mDirectoryDialog;
+    private final static int STORAGE_PERMISSION_REQUEST = 1;
+    private static final String resultKey = "resultKey";
+    private String result = "RESULT_EMPTY";
+    private File currentRootDirectory = Environment.getExternalStorageDirectory();
+    private MaterialDialog dialog;
+
+    public static String getResultKey() {
+        return resultKey;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,9 +70,7 @@ public class ImportActivity extends AppCompatActivity implements
         pickDownloadFolder();
     }
 
-    /**
-     * Show the Dialog to select the Download folder
-     */
+    // Validate permissions
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public void pickDownloadFolder() {
         if (ActivityCompat.checkSelfPermission(ImportActivity.this,
@@ -59,33 +78,37 @@ public class ImportActivity extends AppCompatActivity implements
                 PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(ImportActivity.this,
                     new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    STORAGE_PERMISSION_RC);
-            return;
+                    STORAGE_PERMISSION_REQUEST);
+        } else {
+            // We can present our directory picker
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            DialogFragment mDirectoryDialog = DirectoryChooserFragment.
+                    newInstance(currentRootDirectory);
+            mDirectoryDialog.show(transaction, "RDC");
         }
-
-        // Insert Folder Picker instance here
-        mDirectoryDialog = DirectoryChooserFragment.newInstance(Constants.DEFAULT_LOCAL_DIRECTORY,
-                String.valueOf(android.os.Environment.getExternalStorageDirectory()));
-
-        mDirectoryDialog.show(getFragmentManager(), null);
     }
 
     @Override
-    public void onSelectDirectory(@NonNull String s) {
-        // TODO : Save result to Prefs
-        mDirectoryDialog.dismiss();
-
-        // TODO: Pass folder path to importer
-        // AndroidHelper.executeAsyncTask(new ImportAsyncTask());
-    }
-
-    @Override
-    public void onCancelChooser() {
-        mDirectoryDialog.dismiss();
+    public void onBackPressed() {
+        // Send result back to activity
+        result = "RESULT_CANCELED";
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("result", "RESULT_CANCELED");
-        setResult(Activity.RESULT_CANCELED, returnIntent);
+        returnIntent.putExtra(resultKey, result);
+        setResult(RESULT_CANCELED, returnIntent);
         finish();
+    }
+
+    @Override
+    public void onEvent(OnDirectoryChosenEvent event) {
+        currentRootDirectory = event.getFile();
+
+        validateFolder(currentRootDirectory);
+
+    }
+
+    @Override
+    public void onEvent(OnDirectoryCancelEvent event) {
+        onBackPressed();
     }
 
     @Override
@@ -100,21 +123,124 @@ public class ImportActivity extends AppCompatActivity implements
                 // Permission Denied
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    result = "PERMISSION_DENIED";
                     Intent returnIntent = new Intent();
-                    returnIntent.putExtra("result", "PERMISSION_DENIED");
-                    setResult(Activity.RESULT_CANCELED, returnIntent);
+                    returnIntent.putExtra(resultKey, result);
+                    setResult(RESULT_CANCELED, returnIntent);
                     finish();
                 } else {
+                    result = "PERMISSION_DENIED_FORCED";
                     Intent returnIntent = new Intent();
-                    returnIntent.putExtra("result", "PERMISSION_DENIED_FORCED");
-                    setResult(Activity.RESULT_CANCELED, returnIntent);
+                    returnIntent.putExtra(resultKey, result);
+                    setResult(RESULT_CANCELED, returnIntent);
                     finish();
                 }
             }
         }
     }
 
-    class ImportAsyncTask extends AsyncTask<Integer, String, List<Content>> {
+    private void validateFolder(File folder) {
+        String hentoidFolder = folder.getAbsolutePath();
+        SharedPreferences prefs = HentoidApplication.getAppPreferences();
+        SharedPreferences.Editor editor = prefs.edit();
+
+        // Validate folder
+        File file = new File(hentoidFolder);
+        if (!file.exists() && !file.isDirectory()) {
+            if (!file.mkdirs()) {
+                Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        File nomedia = new File(hentoidFolder, ".nomedia");
+        boolean hasPermission;
+        try {
+            if (nomedia.exists()) {
+                boolean deleted = nomedia.delete();
+                if (deleted) {
+                    System.out.println(".nomedia file deleted");
+                }
+            }
+            hasPermission = nomedia.createNewFile();
+        } catch (IOException e) {
+            hasPermission = false;
+        }
+
+        if (!hasPermission) {
+            Toast.makeText(this, R.string.error_write_permission, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        editor.putString(Constants.SETTINGS_FOLDER, hentoidFolder);
+
+        boolean directorySaved = editor.commit();
+        if (!directorySaved) {
+            Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<File> downloadDirs = new ArrayList<>();
+        for (Site s : Site.values()) {
+            downloadDirs.add(AndroidHelper.getDownloadDir(s, this));
+        }
+
+        List<File> files = new ArrayList<>();
+        for (File downloadDir : downloadDirs) {
+            File[] contentFiles = downloadDir.listFiles();
+            if (contentFiles != null)
+                files.addAll(Arrays.asList(contentFiles));
+        }
+
+        if (files.size() > 0) {
+            new AlertDialog.Builder(this)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.contents_detected)
+                    .setPositiveButton(android.R.string.yes,
+                            new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Prior Library found, send results to scan
+                                    System.out.println("Scanning files...");
+                                    // TODO: Send results to importer
+                                }
+
+                            })
+                    .setNegativeButton(android.R.string.no,
+                            new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    // Prior Library found, but user chose to cancel
+                                    result = "EXISTING_LIBRARY_FOUND";
+                                    Intent returnIntent = new Intent();
+                                    returnIntent.putExtra(resultKey, result);
+                                    setResult(RESULT_CANCELED, returnIntent);
+                                    finish();
+                                }
+
+                            })
+                    .show();
+        } else {
+            // New Library!
+            Handler handler = new Handler();
+            result = "NEW_LIBRARY_CREATED";
+
+            handler.postDelayed(new Runnable() {
+
+                public void run() {
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra(resultKey, result);
+                    setResult(RESULT_OK, returnIntent);
+                    finish();
+                }
+            }, 100);
+        }
+    }
+
+    private class ImportAsyncTask extends AsyncTask<Integer, String, List<Content>> {
 
         @Override
         protected void onPreExecute() {
@@ -129,8 +255,7 @@ public class ImportActivity extends AppCompatActivity implements
                     .showListener(new DialogInterface.OnShowListener() {
                         @Override
                         public void onShow(DialogInterface dialogInterface) {
-                            final MaterialDialog dialog = (MaterialDialog) dialogInterface;
-
+                            dialog = (MaterialDialog) dialogInterface;
                             // TODO: Hook to dialog here
                         }
                     }).show();

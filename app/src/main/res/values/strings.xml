@@ -32,10 +32,10 @@
     <string name="save">Save</string>
     <string name="hint">Select Library Storage Directory</string>
     <!-- New Import Activity -->
-    <string name="permission_denied">Hentoid requires access to device storage.\nPlease reconsider.</string>
-    <string name="permission_denied_forced">Permission Denied!\nManually grant storage permission in app settings.</string>
-    <string name="folder_chooser">Choose a Directory</string>
-    <string name="choose_label">Choose</string>
+    <string name="open_app_settings">Open App Settings</string>
+    <string name="permission_denied">Hentoid requires write access to device storage.\nPlease reconsider.</string>
+    <string name="permission_denied_forced">Write storage permission denied!\nManually grant storage permission.</string>
+    <string name="existing_library_found">You must select a different folder if you do not wish to import your current library.</string>
     <string name="progress_dialog">Importing Library</string>
     <string name="please_wait">Please wait…</string>
     <!-- Errors -->
