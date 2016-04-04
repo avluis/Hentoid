@@ -86,7 +86,7 @@ public class NhentaiActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("main.82a43f8c3ce0.js")) {
+            if (url.contains("//static.nhentai.net/js/")) {
                 return getJSWebResourceResponseFromAsset();
             } else if (url.contains("ads.contentabc.com")) {
                 return getDomainWebResourceResponseFromAsset();
@@ -101,7 +101,7 @@ public class NhentaiActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
-            if (request.getUrl().toString().contains("main_js.js")) {
+            if (request.getUrl().toString().contains("//static.nhentai.net/js/")) {
                 return getJSWebResourceResponseFromAsset();
             } else if (request.getUrl().toString().contains("ads2.contentabc.com")) {
                 return getDomainWebResourceResponseFromAsset();
