@@ -1,17 +1,23 @@
 package me.devsaki.hentoid.util;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
@@ -313,5 +319,19 @@ public class AndroidHelper {
                 .getAppPreferences().edit();
         editor.putBoolean(ConstantsPreferences.PREF_FIRST_RUN, commit);
         editor.apply();
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    public static boolean permissionsCheck(Activity activity, int permissionRequestCode) {
+        if (ActivityCompat.checkSelfPermission(activity,
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+
+            return true;
+        } else {
+            ActivityCompat.requestPermissions(activity, new String[]{
+                    Manifest.permission.READ_EXTERNAL_STORAGE}, permissionRequestCode);
+
+            return false;
+        }
     }
 }

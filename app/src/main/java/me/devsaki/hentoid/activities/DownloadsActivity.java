@@ -1,13 +1,16 @@
 package me.devsaki.hentoid.activities;
 
+import android.Manifest;
 import android.app.ListFragment;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -212,6 +215,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     }
 
     public static class DownloadsFragment extends ListFragment {
+        private final static int STORAGE_PERMISSION_REQUEST = 1;
         private static String query = "";
         private static int currentPage = 1;
         private static int qtyPages;
@@ -227,15 +231,52 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             currentPage = 1;
         }
 
+        // Validate permissions
+        private void checkPermissions() {
+            if (AndroidHelper.permissionsCheck(getActivity(),
+                    STORAGE_PERMISSION_REQUEST)) {
+                LogHelper.d(TAG, "allow");
+                queryPrefs();
+                searchContent();
+            } else {
+                LogHelper.d(TAG, "deny");
+                AndroidHelper.commitFirstRun(false);
+                Intent intent = new Intent(getActivity(), IntroSlideActivity.class);
+                startActivity(intent);
+                getActivity().finish();
+            }
+        }
+
+        @Override
+        public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                               @NonNull int[] grantResults) {
+            super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+            if (grantResults.length > 0) {
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission Granted
+                    checkPermissions();
+                } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                    // Permission Denied
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                        AndroidHelper.commitFirstRun(false);
+                        Intent intent = new Intent(getActivity(), IntroSlideActivity.class);
+                        startActivity(intent);
+                        getActivity().finish();
+                    } else {
+                        getActivity().finish();
+                    }
+                }
+            }
+        }
+
         @Override
         public void onResume() {
             super.onResume();
 
-            // TODO: Check for permissions here
             LogHelper.d(TAG, "onResume");
-
-            queryPrefs();
-            searchContent();
+            checkPermissions();
 
             // Retrieve list position
             ListView list = getListView();

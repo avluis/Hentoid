@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -79,25 +77,24 @@ public class ImportActivity extends AppCompatActivity implements
 
         setContentView(relativeLayout, layoutParams);
 
-        pickDownloadFolder();
+        checkPermissions();
     }
 
     // Validate permissions
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    private void pickDownloadFolder() {
-        if (ActivityCompat.checkSelfPermission(ImportActivity.this,
-                Manifest.permission.READ_EXTERNAL_STORAGE) !=
-                PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(ImportActivity.this,
-                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
-                    STORAGE_PERMISSION_REQUEST);
-        } else {
-            // We can present our directory picker
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            DialogFragment mDirectoryDialog = DirectoryChooserFragment.
-                    newInstance(currentRootDirectory);
-            mDirectoryDialog.show(transaction, "RDC");
+    private void checkPermissions() {
+        if (AndroidHelper.permissionsCheck(ImportActivity.this,
+                STORAGE_PERMISSION_REQUEST)) {
+            LogHelper.d(TAG, "allow");
+            pickDownloadDirectory();
         }
+    }
+
+    // Present Directory Picker
+    private void pickDownloadDirectory() {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        DialogFragment mDirectoryDialog = DirectoryChooserFragment.
+                newInstance(currentRootDirectory);
+        mDirectoryDialog.show(transaction, "RDC");
     }
 
     @Override
@@ -124,13 +121,14 @@ public class ImportActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                pickDownloadFolder();
+                checkPermissions();
             } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // Permission Denied
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
