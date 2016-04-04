@@ -398,7 +398,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             List<Content> result = getDB()
                     .selectContentByQuery(query, currentPage, qtyPages,
                             order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
-            if (getActivity() != null) {
+            if (isAdded()) {
                 if (query.isEmpty()) {
                     getActivity().setTitle(R.string.title_activity_downloads);
                 } else {

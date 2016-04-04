@@ -108,6 +108,15 @@ public class IntroSlideActivity extends AppIntro2 {
                     pager.setCurrentItem(IMPORT_SLIDE + 1);
                     // Disallow swiping back
                     setSwipeLock(true);
+
+                    // Auto push to DownloadActivity after 10 seconds
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+
+                        public void run() {
+                            onDonePressed();
+                        }
+                    }, 10000);
                 }
                 if (resultCode == Activity.RESULT_CANCELED) {
                     switch (result) {

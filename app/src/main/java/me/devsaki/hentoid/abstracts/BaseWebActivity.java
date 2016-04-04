@@ -1,11 +1,15 @@
 package me.devsaki.hentoid.abstracts;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
@@ -21,6 +25,7 @@ import java.util.Date;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.activities.IntroSlideActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -40,6 +45,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 public class BaseWebActivity extends AppCompatActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
+    private final static int STORAGE_PERMISSION_REQUEST = 1;
     protected ObservableWebView webView;
     private HentoidDB db;
     private Content currentContent;
@@ -87,8 +93,48 @@ public class BaseWebActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // TODO: Check for permissions here
+
         LogHelper.d(TAG, " onResume");
+        checkPermissions();
+    }
+
+    // Validate permissions
+    private void checkPermissions() {
+        if (AndroidHelper.permissionsCheck(this,
+                STORAGE_PERMISSION_REQUEST)) {
+            LogHelper.d(TAG, "allow");
+
+        } else {
+            LogHelper.d(TAG, "deny");
+            AndroidHelper.commitFirstRun(false);
+            Intent intent = new Intent(this, IntroSlideActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission Granted
+                checkPermissions();
+            } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                // Permission Denied
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    AndroidHelper.commitFirstRun(false);
+                    Intent intent = new Intent(this, IntroSlideActivity.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    finish();
+                }
+            }
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
