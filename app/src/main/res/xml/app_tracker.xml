@@ -16,7 +16,7 @@
     <bool name="ga_reportUncaughtExceptions">true</bool>
 
     <!-- Manually defined screen names -->
-    <screenName name="me.devsaki.hentoid.abstracts.BaseWebActivity">Legacy WebView</screenName>
+    <screenName name="me.devsaki.hentoid.activities.BaseWebActivity">Legacy WebView</screenName>
 
     <screenName name="me.devsaki.hentoid.activities.HitomiActivity">Hitomi</screenName>
     <screenName name="me.devsaki.hentoid.activities.NhentaiActivity">NHentai</screenName>

@@ -17,7 +17,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.adapters.ContentQueueAdapter;
+import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
@@ -145,8 +145,8 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
             if (contents == null) {
                 contents = new ArrayList<>();
             }
-            ContentQueueAdapter adapter =
-                    new ContentQueueAdapter(getActivity(), contents);
+            QueueContentAdapter adapter =
+                    new QueueContentAdapter(getActivity(), contents);
             setListAdapter(adapter);
         }
     }

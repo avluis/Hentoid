@@ -52,7 +52,7 @@
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
         <activity
-            android:name=".abstracts.BaseWebActivity"
+            android:name=".activities.BaseWebActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
@@ -115,7 +115,7 @@
             android:exported="false" />
 
         <receiver
-            android:name=".updater.UpdateNotificationReceiver"
+            android:name=".updater.UpdateReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>

@@ -8,10 +8,10 @@ import android.content.Intent;
  * Created by avluis on 8/21/15.
  * Broadcast Receiver for updater.
  */
-public class UpdateNotificationReceiver extends BroadcastReceiver {
+public class UpdateReceiver extends BroadcastReceiver {
     private UpdateCheck instance;
 
-    public UpdateNotificationReceiver() {
+    public UpdateReceiver() {
     }
 
     @Override

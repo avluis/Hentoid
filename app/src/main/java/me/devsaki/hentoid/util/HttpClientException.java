@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.exceptions;
+package me.devsaki.hentoid.util;
 
 /**
  * Created by DevSaki on 15/05/2015.

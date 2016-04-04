@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.abstracts;
+package me.devsaki.hentoid.activities;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -24,8 +24,6 @@ import android.widget.Toast;
 import java.util.Date;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.DownloadsActivity;
-import me.devsaki.hentoid.activities.IntroSlideActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;

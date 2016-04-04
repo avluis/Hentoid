@@ -6,8 +6,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import me.devsaki.hentoid.exceptions.HttpClientException;
-
 /**
  * Created by DevSaki on 14/05/2015.
  * Http related utility class

@@ -17,7 +17,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.AndroidHelper;

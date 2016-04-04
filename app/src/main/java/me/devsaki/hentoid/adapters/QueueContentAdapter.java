@@ -29,13 +29,13 @@ import me.devsaki.hentoid.util.LogHelper;
  * Builds and assigns content from db into adapter
  * for display in queue
  */
-public class ContentQueueAdapter extends ArrayAdapter<Content> {
-    private static final String TAG = LogHelper.makeLogTag(ContentQueueAdapter.class);
+public class QueueContentAdapter extends ArrayAdapter<Content> {
+    private static final String TAG = LogHelper.makeLogTag(QueueContentAdapter.class);
 
     private final Context context;
     private final List<Content> contents;
 
-    public ContentQueueAdapter(Context context, List<Content> contents) {
+    public QueueContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.row_downloads, contents);
         this.context = context;
         this.contents = contents;

@@ -13,7 +13,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
