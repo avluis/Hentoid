@@ -214,12 +214,10 @@ public class ImportActivity extends AppCompatActivity implements
 
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    // Prior Library found, send results to scan
-                                    System.out.println("Scanning files...");
-
-                                    // Drop and recreate db
+                                    // Prior Library found, drop and recreate db
                                     createNewLibrary();
 
+                                    // Send results to scan
                                     AndroidHelper.executeAsyncTask(new ImportAsyncTask());
                                 }
 
@@ -270,7 +268,6 @@ public class ImportActivity extends AppCompatActivity implements
         private List<File> files;
         private List<Content> contents;
         private HentoidDB hentoidDB;
-        private int totalFiles;
         private int currentPercent;
 
         @Override
@@ -292,13 +289,11 @@ public class ImportActivity extends AppCompatActivity implements
                 files.addAll(Arrays.asList(downloadDir.listFiles()));
             }
 
-            totalFiles = files.size();
-
             mDialogBuilder = new MaterialDialog.Builder(ImportActivity.this)
                     .title(R.string.progress_dialog)
                     .content(R.string.please_wait)
                     .contentGravity(GravityEnum.CENTER)
-                    .progress(false, totalFiles, true)
+                    .progress(false, 100, false)
                     .cancelable(false)
                     .showListener(new DialogInterface.OnShowListener() {
                         @Override
@@ -313,7 +308,6 @@ public class ImportActivity extends AppCompatActivity implements
         @Override
         protected void onPostExecute(List<Content> contents) {
             if (contents != null && contents.size() > 0) {
-                mDialog.setContent(R.string.please_wait);
                 // Grab all parsed content and add to database
                 hentoidDB.insertContents(contents.toArray(new Content[contents.size()]));
                 result = "EXISTING_LIBRARY_IMPORTED";
@@ -337,6 +331,11 @@ public class ImportActivity extends AppCompatActivity implements
 
         @Override
         protected void onProgressUpdate(String... values) {
+            if (currentPercent == 100) {
+                mDialog.setContent(R.string.adding_to_db);
+            } else {
+                mDialog.setContent(R.string.scanning_files);
+            }
             mDialog.setProgress(currentPercent);
         }
 

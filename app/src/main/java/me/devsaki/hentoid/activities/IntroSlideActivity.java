@@ -47,6 +47,7 @@ public class IntroSlideActivity extends AppIntro2 {
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_05));
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_06));
 
+        setNavBarColor("#2b0202");
         setVibrate(true);
         setVibrateIntensity(30);
     }
@@ -76,7 +77,7 @@ public class IntroSlideActivity extends AppIntro2 {
                             getApplicationContext(), ImportActivity.class);
                     startActivityForResult(selectFolder, 1);
                 }
-            }, 100);
+            }, 200);
         }
     }
 
