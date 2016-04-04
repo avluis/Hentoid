@@ -21,7 +21,7 @@
         android:layout_height="match_parent"
         android:layout_above="@+id/ll"
         android:gravity="center"
-        android:text="@string/downloads_library_empty"
+        android:text="@string/downloads_empty"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
     <LinearLayout

@@ -57,9 +57,8 @@
     <string name="on_first_page">Moved to first page.</string>
     <string name="press_back_again">Press back key once more to exit!</string>
 
-    <string name="queue_empty">Download queue is empty.</string>
-    <string name="downloads_library_empty">Your downloads library is empty.</string>
-    <string name="no_data">No data.</string>
+    <string name="queue_empty">Go forth and download some things.</string>
+    <string name="downloads_empty">Nothing like that in here!</string>
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>

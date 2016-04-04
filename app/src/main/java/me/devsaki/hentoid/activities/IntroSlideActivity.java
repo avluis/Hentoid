@@ -104,7 +104,6 @@ public class IntroSlideActivity extends AppIntro2 {
                     pager.setCurrentItem(IMPORT_SLIDE + 1);
                     // Disallow swiping back
                     setSwipeLock(true);
-
                 }
                 if (resultCode == Activity.RESULT_CANCELED) {
                     switch (result) {

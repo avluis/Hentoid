@@ -251,7 +251,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
         private void queryPrefs() {
             if (settingDir.isEmpty()) {
-                Intent intent = new Intent(getActivity(), SelectFolderActivity.class);
+                Intent intent = new Intent(getActivity(), ImportActivity.class);
                 startActivity(intent);
                 getActivity().finish();
             }
@@ -321,6 +321,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                             AndroidHelper.singleToast(
                                     mContext, getString(R.string.not_next_page),
                                     Toast.LENGTH_SHORT);
+                            searchContent();
                         }
                     }
                 }
@@ -352,27 +353,36 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             List<Content> result = getDB()
                     .selectContentByQuery(query, currentPage, qtyPages,
                             order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+            if (getActivity() != null) {
+                if (query.isEmpty()) {
+                    getActivity().setTitle(R.string.title_activity_downloads);
+                } else {
+                    getActivity().setTitle(getResources()
+                            .getString(R.string.title_activity_search)
+                            .replace("@search", query));
+                }
+                if (result != null && !result.isEmpty()) {
+                    contents = result;
+                    System.out.println("Content match.");
+                } else if (contents == null) {
+                    contents = new ArrayList<>(0);
+                } else {
+                    System.out.println("No content match.");
+                    contents = new ArrayList<>(0);
+                }
+                if (contents == result || contents.isEmpty()) {
+                    ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
+                    setListAdapter(adapter);
+                }
+                if (prevPage != currentPage) {
+                    btnPage.setText(String.valueOf(currentPage));
+                }
+                prevPage = currentPage;
 
-            if (query.isEmpty()) {
-                getActivity().setTitle(R.string.title_activity_downloads);
             } else {
-                getActivity().setTitle(getResources()
-                        .getString(R.string.title_activity_search)
-                        .replace("@search", query));
+                contents = null;
+                setQuery("");
             }
-            if (result != null && !result.isEmpty()) {
-                contents = result;
-            } else if (contents == null) { // TODO: Possible entry point for no content match?
-                contents = new ArrayList<>(0);
-            }
-            if (contents == result || contents.isEmpty()) {
-                ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
-                setListAdapter(adapter);
-            }
-            if (prevPage != currentPage) {
-                btnPage.setText(String.valueOf(currentPage));
-            }
-            prevPage = currentPage;
 
             return result != null && !result.isEmpty();
         }

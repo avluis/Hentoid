@@ -24,11 +24,11 @@
 
     <screenName name="me.devsaki.hentoid.activities.AboutActivity">About</screenName>
     <screenName name="me.devsaki.hentoid.activities.AppLockActivity">App Lock</screenName>
+    <screenName name="me.devsaki.hentoid.activities.IntroSlideActivity">Intro</screenName>
     <screenName name="me.devsaki.hentoid.activities.DownloadsActivity">Downloads</screenName>
     <screenName name="me.devsaki.hentoid.activities.QueueActivity">Queue</screenName>
-    <screenName name="me.devsaki.hentoid.activities.SelectFolderActivity">Folder Select</screenName>
     <screenName name="me.devsaki.hentoid.activities.SplashActivity">Splash</screenName>
-    <screenName name="me.devsaki.hentoid.activities.ImporterActivity">Import</screenName>
+    <screenName name="me.devsaki.hentoid.activities.ImportActivity">Import</screenName>
     <screenName name="me.devsaki.hentoid.activities.PreferencesActivity">Preferences</screenName>
 
     <!-- See Project Structure -> Analytics -> Google Analytics -> Learn More

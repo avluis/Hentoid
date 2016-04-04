@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -33,16 +34,22 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.v2.bean.DoujinBean;
 import me.devsaki.hentoid.v2.bean.URLBean;
 
 /**
@@ -57,7 +64,6 @@ public class ImportActivity extends AppCompatActivity implements
     private static final String resultKey = "resultKey";
     private String result = "RESULT_EMPTY";
     private File currentRootDirectory = Environment.getExternalStorageDirectory();
-    private MaterialDialog dialog;
 
     public static String getResultKey() {
         return resultKey;
@@ -78,7 +84,7 @@ public class ImportActivity extends AppCompatActivity implements
 
     // Validate permissions
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public void pickDownloadFolder() {
+    private void pickDownloadFolder() {
         if (ActivityCompat.checkSelfPermission(ImportActivity.this,
                 Manifest.permission.READ_EXTERNAL_STORAGE) !=
                 PackageManager.PERMISSION_GRANTED) {
@@ -211,15 +217,10 @@ public class ImportActivity extends AppCompatActivity implements
                                     // Prior Library found, send results to scan
                                     System.out.println("Scanning files...");
 
-                                    // TODO: Remove below after testing
-                                    result = "EXISTING_LIBRARY_IMPORTED";
-                                    Intent returnIntent = new Intent();
-                                    returnIntent.putExtra(resultKey, result);
-                                    setResult(RESULT_OK, returnIntent);
-                                    finish();
-                                    // TODO: Remove above after testing
+                                    // Drop and recreate db
+                                    createNewLibrary();
 
-                                    // TODO: Send results to importer
+                                    AndroidHelper.executeAsyncTask(new ImportAsyncTask());
                                 }
 
                             })
@@ -239,9 +240,11 @@ public class ImportActivity extends AppCompatActivity implements
                             })
                     .show();
         } else {
-            // New Library!
-            Handler handler = new Handler();
+            // New library created - drop and recreate db
+            createNewLibrary();
             result = "NEW_LIBRARY_CREATED";
+
+            Handler handler = new Handler();
 
             handler.postDelayed(new Runnable() {
 
@@ -255,36 +258,191 @@ public class ImportActivity extends AppCompatActivity implements
         }
     }
 
+    private void createNewLibrary() {
+        Context context = getApplicationContext();
+        context.deleteDatabase(Constants.DATABASE_NAME);
+    }
+
     private class ImportAsyncTask extends AsyncTask<Integer, String, List<Content>> {
+        private MaterialDialog mDialog;
+        private MaterialDialog.Builder mDialogBuilder;
+        private List<File> downloadDirs;
+        private List<File> files;
+        private List<Content> contents;
+        private HentoidDB hentoidDB;
+        private int totalFiles;
+        private int currentPercent;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
 
-            new MaterialDialog.Builder(getApplicationContext())
+            hentoidDB = new HentoidDB(ImportActivity.this);
+            downloadDirs = new ArrayList<>();
+
+            for (Site site : Site.values()) {
+                // Grab all folders in site folders in storage directory
+                downloadDirs.add(AndroidHelper.getDownloadDir(site, ImportActivity.this));
+            }
+
+            files = new ArrayList<>();
+
+            for (File downloadDir : downloadDirs) {
+                // Grab all files in downloadDirs
+                files.addAll(Arrays.asList(downloadDir.listFiles()));
+            }
+
+            totalFiles = files.size();
+
+            mDialogBuilder = new MaterialDialog.Builder(ImportActivity.this)
                     .title(R.string.progress_dialog)
                     .content(R.string.please_wait)
                     .contentGravity(GravityEnum.CENTER)
-                    .progress(false, 150, true)
+                    .progress(false, totalFiles, true)
                     .cancelable(false)
                     .showListener(new DialogInterface.OnShowListener() {
                         @Override
                         public void onShow(DialogInterface dialogInterface) {
-                            dialog = (MaterialDialog) dialogInterface;
-                            // TODO: Hook to dialog here
+                            mDialog = (MaterialDialog) dialogInterface;
                         }
-                    }).show();
+                    });
 
+            mDialogBuilder.show();
         }
 
         @Override
+        protected void onPostExecute(List<Content> contents) {
+            if (contents != null && contents.size() > 0) {
+                mDialog.setContent(R.string.please_wait);
+                // Grab all parsed content and add to database
+                hentoidDB.insertContents(contents.toArray(new Content[contents.size()]));
+                result = "EXISTING_LIBRARY_IMPORTED";
+            } else {
+                result = "NEW_LIBRARY_CREATED";
+            }
+            mDialog.dismiss();
+
+            Handler handler = new Handler();
+
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra(resultKey, result);
+                    setResult(RESULT_OK, returnIntent);
+                    finish();
+                }
+            }, 100);
+        }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            mDialog.setProgress(currentPercent);
+        }
+
+        @SuppressWarnings("deprecation")
+        @Override
         protected List<Content> doInBackground(Integer... params) {
-            return null;
+            int processed = 0;
+            if (files.size() > 0) {
+                contents = new ArrayList<>();
+                Date importedDate = new Date();
+                for (File file : files) {
+                    processed++;
+                    currentPercent = (int) (processed * 100.0 / files.size());
+                    if (file.isDirectory()) {
+                        publishProgress(file.getName());
+                        File json = new File(file, Constants.JSON_FILE_NAME_V2);
+                        if (json.exists()) {
+                            try {
+                                Content content = Helper.jsonToObject(json, Content.class);
+                                if (content.getStatus() != StatusContent.DOWNLOADED
+                                        && content.getStatus() != StatusContent.ERROR) {
+                                    content.setStatus(StatusContent.MIGRATED);
+                                }
+                                contents.add(content);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Reading json file", e);
+                            }
+                        } else {
+                            json = new File(file, Constants.JSON_FILE_NAME);
+                            if (json.exists()) {
+                                try {
+                                    ContentV1 content = Helper.jsonToObject(json, ContentV1.class);
+                                    if (content.getStatus() != StatusContent.DOWNLOADED
+                                            && content.getStatus() != StatusContent.ERROR) {
+                                        content.setMigratedStatus();
+                                    }
+                                    Content contentV2 = content.toContent();
+                                    try {
+                                        Helper.saveJson(contentV2, file);
+                                    } catch (IOException e) {
+                                        Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                                    }
+                                    contents.add(contentV2);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Reading json file", e);
+                                }
+                            } else {
+                                json = new File(file, Constants.OLD_JSON_FILE_NAME);
+                                if (json.exists()) {
+                                    try {
+                                        DoujinBean doujinBean =
+                                                Helper.jsonToObject(json, DoujinBean.class);
+                                        ContentV1 content = new ContentV1();
+                                        content.setUrl(doujinBean.getId());
+                                        content.setHtmlDescription(doujinBean.getDescription());
+                                        content.setTitle(doujinBean.getTitle());
+                                        content.setSeries(from(doujinBean.getSeries(),
+                                                AttributeType.SERIE));
+                                        Attribute artist = from(doujinBean.getArtist(),
+                                                AttributeType.ARTIST);
+                                        List<Attribute> artists = null;
+                                        if (artist != null) {
+                                            artists = new ArrayList<>(1);
+                                            artists.add(artist);
+                                        }
+                                        content.setArtists(artists);
+                                        content.setCoverImageUrl(doujinBean.getUrlImageTitle());
+                                        content.setQtyPages(doujinBean.getQtyPages());
+                                        Attribute translator = from(doujinBean.getTranslator(),
+                                                AttributeType.TRANSLATOR);
+                                        List<Attribute> translators = null;
+                                        if (translator != null) {
+                                            translators = new ArrayList<>(1);
+                                            translators.add(translator);
+                                        }
+                                        content.setTranslators(translators);
+                                        content.setTags(from(doujinBean.getLstTags(),
+                                                AttributeType.TAG));
+                                        content.setLanguage(from(doujinBean.getLanguage(),
+                                                AttributeType.LANGUAGE));
+
+                                        content.setMigratedStatus();
+                                        content.setDownloadDate(importedDate.getTime());
+                                        Content contentV2 = content.toContent();
+                                        try {
+                                            Helper.saveJson(contentV2, file);
+                                        } catch (IOException e) {
+                                            Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                                        }
+                                        contents.add(contentV2);
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "Reading json file v2", e);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return contents;
         }
     }
 
-    private List<Attribute> from(List<URLBean> urlBeans,
-                                 @SuppressWarnings("SameParameterValue") AttributeType type) {
+    @SuppressWarnings("SameParameterValue")
+    private List<Attribute> from(List<URLBean> urlBeans, AttributeType type) {
         List<Attribute> attributes = null;
         if (urlBeans == null) {
             return null;

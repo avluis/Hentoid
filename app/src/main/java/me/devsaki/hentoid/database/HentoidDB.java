@@ -21,6 +21,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Constants;
 
 /**
  * Created by DevSaki on 10/05/2015.
@@ -34,11 +35,8 @@ public class HentoidDB extends SQLiteOpenHelper {
     // Database Version
     private static final int DATABASE_VERSION = 1;
 
-    // Database Name
-    private static final String DATABASE_NAME = "hentoid.db";
-
     public HentoidDB(Context context) {
-        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, Constants.DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
