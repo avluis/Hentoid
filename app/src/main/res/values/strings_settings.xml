@@ -16,7 +16,7 @@
     <string name="pref_select_folder_title">Select Downloads Folder</string>
     <string name="pref_select_folder_summary">Select the folder where Hentoid will store your downloads.</string>
     <string name="pref_add_no_media_file_title">Hide Downloaded Images</string>
-    <string name="pref_add_no_media_file_summary">This will prevent downloaded images from showing up in the Gallery App.</string>
+    <string name="pref_add_no_media_file_summary">Prevents downloaded images from showing up in gallery apps.</string>
     <!-- Browser -->
     <string name="pref_webview_category">Browser</string>
     <string name="pref_webview_override_overview_title">Disable Page Overview</string>
