@@ -32,6 +32,8 @@ import me.devsaki.hentoid.enums.Site;
  * Android focused utility class
  */
 public class AndroidHelper {
+    private static final String TAG = LogHelper.makeLogTag(AndroidHelper.class);
+
     private static Snackbar sSnack;
     private static Toast sToast;
 
@@ -81,7 +83,6 @@ public class AndroidHelper {
         }
     }
 
-    // TODO: Add storage permission request
     public static File getThumb(Content content, Context context) {
         File dir = AndroidHelper.getDownloadDir(content, context);
 
@@ -142,7 +143,7 @@ public class AndroidHelper {
     }
 
     @SuppressLint("WorldWriteableFiles")
-    // TODO: Find and update with non-deprecated methods
+    // TODO: Update with non-deprecated methods
     public static File getDefaultDir(String dir, Context context) {
         File file;
         try {
@@ -206,11 +207,11 @@ public class AndroidHelper {
                 ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
                 ConstantsPreferences.PREFS_VERSION_KEY, 0);
 
-        System.out.println("Current Prefs Key value: " + prefsVersion);
+        LogHelper.i(TAG, "Current Prefs Key value: " + prefsVersion);
 
         // Use this whenever any incompatible changes are made to Prefs.
         if (prefsVersion != ConstantsPreferences.PREFS_VERSION) {
-            System.out.println("Shared Prefs Key Mismatch! Clearing Prefs!");
+            LogHelper.i(TAG, "Shared Prefs Key Mismatch! Clearing Prefs!");
 
             // Clear All
             clearSharedPreferences(ctx.getApplicationContext());
@@ -218,7 +219,7 @@ public class AndroidHelper {
             // Save current Pref version key
             saveSharedPrefsKey(ctx.getApplicationContext());
         } else {
-            System.out.println("Prefs Key Match. Carry on.");
+            LogHelper.i(TAG, "Prefs Key Match. Carry on.");
         }
     }
 

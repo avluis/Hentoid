@@ -34,21 +34,22 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Presents the list of downloaded works to the user.
  */
 public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
-    private static final String TAG = DownloadsActivity.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
     private static SharedPreferences preferences;
     private static String settingDir;
     private static int order;
+    private final Handler searchHandler = new Handler();
     private MenuItem searchMenuItem;
     private SearchView searchView;
     private DrawerLayout mDrawerLayout;
     private boolean orderUpdated;
-    private final Handler searchHandler = new Handler();
     private long backButtonPressed;
 
     // DO NOT use this in onCreateOptionsMenu
@@ -230,6 +231,9 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         public void onResume() {
             super.onResume();
 
+            // TODO: Check for permissions here
+            LogHelper.d(TAG, "onResume");
+
             queryPrefs();
             searchContent();
 
@@ -363,12 +367,10 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 }
                 if (result != null && !result.isEmpty()) {
                     contents = result;
-                    System.out.println("Content match.");
-                } else if (contents == null) {
-                    contents = new ArrayList<>(0);
+                    LogHelper.i(TAG, "Content: Match.");
                 } else {
-                    System.out.println("No content match.");
                     contents = new ArrayList<>(0);
+                    LogHelper.i(TAG, "Content: No match.");
                 }
                 if (contents == result || contents.isEmpty()) {
                     ContentAdapter adapter = new ContentAdapter(getActivity(), contents);

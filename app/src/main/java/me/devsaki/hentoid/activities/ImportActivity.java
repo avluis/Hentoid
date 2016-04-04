@@ -18,7 +18,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -49,6 +48,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.v2.bean.DoujinBean;
 import me.devsaki.hentoid.v2.bean.URLBean;
 
@@ -58,7 +58,7 @@ import me.devsaki.hentoid.v2.bean.URLBean;
  */
 public class ImportActivity extends AppCompatActivity implements
         OnDirectoryChooserFragmentInteraction {
-    private static final String TAG = ImportActivity.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 
     private final static int STORAGE_PERMISSION_REQUEST = 1;
     private static final String resultKey = "resultKey";
@@ -171,7 +171,7 @@ public class ImportActivity extends AppCompatActivity implements
             if (nomedia.exists()) {
                 boolean deleted = nomedia.delete();
                 if (deleted) {
-                    System.out.println(".nomedia file deleted");
+                    LogHelper.d(TAG, ".nomedia file deleted");
                 }
             }
             hasPermission = nomedia.createNewFile();
@@ -259,6 +259,44 @@ public class ImportActivity extends AppCompatActivity implements
     private void createNewLibrary() {
         Context context = getApplicationContext();
         context.deleteDatabase(Constants.DATABASE_NAME);
+    }
+
+    @SuppressWarnings("SameParameterValue")
+    private List<Attribute> from(List<URLBean> urlBeans, AttributeType type) {
+        List<Attribute> attributes = null;
+        if (urlBeans == null) {
+            return null;
+        }
+        if (urlBeans.size() > 0) {
+            attributes = new ArrayList<>();
+            for (URLBean urlBean : urlBeans) {
+                Attribute attribute = from(urlBean, type);
+                if (attribute != null) {
+                    attributes.add(attribute);
+                }
+            }
+        }
+
+        return attributes;
+    }
+
+    private Attribute from(URLBean urlBean, AttributeType type) {
+        if (urlBean == null) {
+            return null;
+        }
+        try {
+            if (urlBean.getDescription() == null) {
+                throw new RuntimeException("Problems loading attribute v2.");
+            }
+
+            return new Attribute()
+                    .setName(urlBean.getDescription())
+                    .setUrl(urlBean.getId())
+                    .setType(type);
+        } catch (Exception e) {
+            LogHelper.e(TAG, "Parsing urlBean to attribute", e);
+            return null;
+        }
     }
 
     private class ImportAsyncTask extends AsyncTask<Integer, String, List<Content>> {
@@ -361,7 +399,7 @@ public class ImportActivity extends AppCompatActivity implements
                                 }
                                 contents.add(content);
                             } catch (Exception e) {
-                                Log.e(TAG, "Reading json file", e);
+                                LogHelper.e(TAG, "Reading JSON file", e);
                             }
                         } else {
                             json = new File(file, Constants.JSON_FILE_NAME);
@@ -376,11 +414,11 @@ public class ImportActivity extends AppCompatActivity implements
                                     try {
                                         Helper.saveJson(contentV2, file);
                                     } catch (IOException e) {
-                                        Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                                        LogHelper.e(TAG, "Error Save JSON " + content.getTitle(), e);
                                     }
                                     contents.add(contentV2);
                                 } catch (Exception e) {
-                                    Log.e(TAG, "Reading json file", e);
+                                    LogHelper.e(TAG, "Reading JSON file", e);
                                 }
                             } else {
                                 json = new File(file, Constants.OLD_JSON_FILE_NAME);
@@ -423,11 +461,11 @@ public class ImportActivity extends AppCompatActivity implements
                                         try {
                                             Helper.saveJson(contentV2, file);
                                         } catch (IOException e) {
-                                            Log.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                                            LogHelper.e(TAG, "Error Save JSON " + content.getTitle(), e);
                                         }
                                         contents.add(contentV2);
                                     } catch (Exception e) {
-                                        Log.e(TAG, "Reading json file v2", e);
+                                        LogHelper.e(TAG, "Reading JSON file v2", e);
                                     }
                                 }
                             }
@@ -437,44 +475,6 @@ public class ImportActivity extends AppCompatActivity implements
             }
 
             return contents;
-        }
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private List<Attribute> from(List<URLBean> urlBeans, AttributeType type) {
-        List<Attribute> attributes = null;
-        if (urlBeans == null) {
-            return null;
-        }
-        if (urlBeans.size() > 0) {
-            attributes = new ArrayList<>();
-            for (URLBean urlBean : urlBeans) {
-                Attribute attribute = from(urlBean, type);
-                if (attribute != null) {
-                    attributes.add(attribute);
-                }
-            }
-        }
-
-        return attributes;
-    }
-
-    private Attribute from(URLBean urlBean, AttributeType type) {
-        if (urlBean == null) {
-            return null;
-        }
-        try {
-            if (urlBean.getDescription() == null) {
-                throw new RuntimeException("Problems loading attribute v2.");
-            }
-
-            return new Attribute()
-                    .setName(urlBean.getDescription())
-                    .setUrl(urlBean.getId())
-                    .setType(type);
-        } catch (Exception ex) {
-            Log.e(TAG, "Parsing urlBean to attribute", ex);
-            return null;
         }
     }
 }

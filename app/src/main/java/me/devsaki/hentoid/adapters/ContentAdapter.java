@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,6 +35,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by neko on 11/05/2015.
@@ -43,7 +43,7 @@ import me.devsaki.hentoid.util.Constants;
  * for display in downloads
  */
 public class ContentAdapter extends ArrayAdapter<Content> {
-    private static final String TAG = ContentAdapter.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
     private final Context context;
     private final List<Content> contents;
@@ -237,7 +237,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                 try {
                                     FileUtils.deleteDirectory(dir);
                                 } catch (IOException e) {
-                                    Log.e(TAG, "error deleting content directory", e);
+                                    LogHelper.e(TAG, "error deleting content directory", e);
                                 }
 
                                 db.deleteContent(content);

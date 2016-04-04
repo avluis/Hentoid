@@ -2,7 +2,6 @@ package me.devsaki.hentoid.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.util.Log;
 
 import org.apache.commons.io.FileUtils;
 
@@ -24,6 +23,7 @@ import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
@@ -33,7 +33,7 @@ public class DownloadService extends IntentService {
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
     public static final String NOTIFICATION = "me.devsaki.hentoid.services";
 
-    private static final String TAG = DownloadService.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(DownloadService.class);
 
     public static boolean paused;
     private NotificationPresenter notificationPresenter;
@@ -50,20 +50,20 @@ public class DownloadService extends IntentService {
         db = new HentoidDB(this);
         notificationPresenter = new NotificationPresenter();
 
-        Log.i(TAG, "Download service created");
+        LogHelper.i(TAG, "Download service created");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        Log.i(TAG, "Download service destroyed");
+        LogHelper.i(TAG, "Download service destroyed");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
         if (!NetworkStatus.isOnline(this)) {
-            Log.e(TAG, "No connection");
+            LogHelper.e(TAG, "No connection!");
             return;
         }
 
@@ -92,7 +92,7 @@ public class DownloadService extends IntentService {
                 return;
             }
 
-            Log.i(TAG, "Content download started: " + currentContent.getTitle());
+            LogHelper.i(TAG, "Content download started: " + currentContent.getTitle());
 
             // Tracking Event (Download Added)
             HentoidApplication.getInstance().trackEvent("Download Service", "Download",
@@ -119,7 +119,7 @@ public class DownloadService extends IntentService {
                         try {
                             FileUtils.deleteDirectory(dir);
                         } catch (IOException e) {
-                            Log.e(TAG, "error deleting content directory", e);
+                            LogHelper.e(TAG, "Error deleting content directory! ", e);
                         }
                     }
 
@@ -155,15 +155,14 @@ public class DownloadService extends IntentService {
 
             // Save JSON file
             try {
-                // TODO: This call (on Android M+) requires write storage permission grant
                 Helper.saveJson(currentContent, dir);
             } catch (IOException e) {
-                Log.e(TAG, "Error Save JSON " + currentContent.getTitle(), e);
+                LogHelper.e(TAG, "Error saving JSON " + currentContent.getTitle(), e);
             }
 
             notificationPresenter.updateNotification(0);
             updateActivity(-1);
-            Log.i(TAG, "Content download finished: " + currentContent.getTitle());
+            LogHelper.i(TAG, "Content download finished: " + currentContent.getTitle());
 
             // Search for queued content download tasks and fire intent
             currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
@@ -205,7 +204,7 @@ public class DownloadService extends IntentService {
                     break;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error getting image urls", e);
+            LogHelper.e(TAG, "Error getting image urls ", e);
             throw e;
         }
 

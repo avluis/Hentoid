@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.parsers;
 
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -15,13 +13,14 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by Shiro on 1/5/2016.
  * Handles parsing of content from nhentai
  */
 public class NhentaiParser {
-    private static final String TAG = NhentaiParser.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(NhentaiParser.class);
 
     public static Content parseContent(String json) throws JSONException {
         JSONObject jsonContent = new JSONObject(json);
@@ -116,7 +115,7 @@ public class NhentaiParser {
                 imagesUrl.add(urlImage);
             }
         } catch (JSONException e) {
-            Log.e(TAG, "Error parsing content", e);
+            LogHelper.e(TAG, "Error parsing content", e);
         }
 
         return imagesUrl;

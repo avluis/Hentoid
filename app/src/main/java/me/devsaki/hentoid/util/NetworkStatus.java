@@ -3,13 +3,13 @@ package me.devsaki.hentoid.util;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.util.Log;
 
 /**
  * Created by avluis on 7/6/15.
  * General wrapper for network status query.
  */
 public final class NetworkStatus {
+    private static final String TAG = LogHelper.makeLogTag(NetworkStatus.class);
 
     private static NetworkInfo initialize(Context ctx) {
         Context context = ctx.getApplicationContext();
@@ -28,8 +28,7 @@ public final class NetworkStatus {
 
             return connected;
         } catch (Exception e) {
-            System.out.println("CheckConnectivity Exception: " + e.getMessage());
-            Log.v("connectivity", e.toString());
+            LogHelper.v(TAG, "Connectivity: ", e);
         }
 
         return false;
@@ -44,8 +43,7 @@ public final class NetworkStatus {
 
             return wifi;
         } catch (Exception e) {
-            System.out.println("CheckConnectivity Exception: " + e.getMessage());
-            Log.v("connectivity", e.toString());
+            LogHelper.v(TAG, "Connectivity: ", e);
         }
 
         return false;
@@ -60,8 +58,7 @@ public final class NetworkStatus {
 
             return mobile;
         } catch (Exception e) {
-            System.out.println("CheckConnectivity Exception: " + e.getMessage());
-            Log.v("connectivity", e.toString());
+            LogHelper.v(TAG, "Connectivity: ", e);
         }
 
         return false;

@@ -19,6 +19,7 @@ import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
 import me.devsaki.hentoid.util.AnalyticsTrackers;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -26,7 +27,7 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  * Database, Bitmap Cache, Update checks, etc.
  */
 public class HentoidApplication extends Application {
-    private static final String TAG = HentoidApplication.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(HentoidApplication.class);
 
     private static HentoidApplication mInstance;
     private static SharedPreferences sharedPreferences;
@@ -110,10 +111,10 @@ public class HentoidApplication extends Application {
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         if (AndroidHelper.getMobileUpdatePrefs()) {
-            System.out.println("Updates over Mobile Data: Enabled");
+            LogHelper.i(TAG, "Mobile Updates: ON");
             UpdateCheck(false);
         } else {
-            System.out.println("Updates over Mobile Data: Disabled");
+            LogHelper.i(TAG, "Mobile Updates; OFF");
             UpdateCheck(true);
         }
     }
@@ -123,12 +124,12 @@ public class HentoidApplication extends Application {
                 onlyWifi, false, new UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {
-                        System.out.println("Auto update check: No update available.");
+                        LogHelper.i(TAG, "Update Check: No update.");
                     }
 
                     @Override
                     public void onUpdateAvailable() {
-                        System.out.println("Auto update check: Update available!");
+                        LogHelper.i(TAG, "Update Check: Update!");
                     }
                 });
     }

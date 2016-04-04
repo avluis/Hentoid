@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -22,13 +21,14 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by Shiro on 1/20/2016.
  * Implements nhentai source
  */
 public class NhentaiActivity extends BaseWebActivity {
-    private static final String TAG = NhentaiActivity.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(NhentaiActivity.class);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,7 +118,7 @@ public class NhentaiActivity extends BaseWebActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("nhentai.net"));
             } catch (MalformedURLException e) {
-                Log.d(TAG, "Malformed URL");
+                LogHelper.d(TAG, "Malformed URL");
             }
 
             return false;
@@ -141,7 +141,7 @@ public class NhentaiActivity extends BaseWebActivity {
             try {
                 processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
             } catch (Exception e) {
-                Log.e(TAG, "Error parsing nhentai json: " + url, e);
+                LogHelper.e(TAG, "Error parsing JSON: " + url, e);
             }
 
             return null;

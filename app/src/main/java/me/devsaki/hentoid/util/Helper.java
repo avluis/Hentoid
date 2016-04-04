@@ -14,7 +14,7 @@ import java.io.IOException;
  * Generic utility class
  */
 public final class Helper {
-    private static final String TAG = Helper.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(Helper.class);
 
     public static int ordinalIndexOf(String str, char delimiter, int n) {
         int pos = str.indexOf(delimiter, 0);
@@ -25,7 +25,6 @@ public final class Helper {
         return pos;
     }
 
-    // TODO: Add storage permission request
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Constants.JSON_FILE_NAME_V2);
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();

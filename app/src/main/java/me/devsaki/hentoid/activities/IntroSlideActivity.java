@@ -17,6 +17,7 @@ import com.github.paolorotolo.appintro.AppIntro2;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.BaseSlide;
 import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 03/20/2016.
@@ -25,6 +26,8 @@ import me.devsaki.hentoid.util.AndroidHelper;
  * Set storage directory and library import
  */
 public class IntroSlideActivity extends AppIntro2 {
+    private static final String TAG = LogHelper.makeLogTag(IntroSlideActivity.class);
+
     private static final int REQUEST_RESULTS = 1;
     private static final int REQUEST_APP_SETTINGS = 2;
     private static final int IMPORT_SLIDE = 4;
@@ -98,8 +101,8 @@ public class IntroSlideActivity extends AppIntro2 {
                 String result = data.getStringExtra(resultKey);
                 if (resultCode == Activity.RESULT_OK) {
                     // If we get RESULT_OK, then:
-                    System.out.println("RESULT_OK: ");
-                    System.out.println(result);
+                    LogHelper.d(TAG, "RESULT_OK: ");
+                    LogHelper.d(TAG, result);
 
                     // If result passes validation, then we move to next slide
                     pager.setCurrentItem(IMPORT_SLIDE + 1);
@@ -109,7 +112,7 @@ public class IntroSlideActivity extends AppIntro2 {
                 if (resultCode == Activity.RESULT_CANCELED) {
                     switch (result) {
                         case "PERMISSION_DENIED":
-                            System.out.println("Permission Denied by User");
+                            LogHelper.d(TAG, "Permission Denied by User");
 
                             pager.setCurrentItem(IMPORT_SLIDE - 3);
                             AndroidHelper.singleSnack(pager,
@@ -117,7 +120,7 @@ public class IntroSlideActivity extends AppIntro2 {
                                     Snackbar.LENGTH_LONG);
                             break;
                         case "PERMISSION_DENIED_FORCED":
-                            System.out.println("Permission Denied (Forced) by User/Policy");
+                            LogHelper.d(TAG, "Permission Denied (Forced) by User/Policy");
 
                             setProgressButtonEnabled(false);
                             setSwipeLock(true);
@@ -135,7 +138,7 @@ public class IntroSlideActivity extends AppIntro2 {
                                     .show();
                             break;
                         case "EXISTING_LIBRARY_FOUND":
-                            System.out.println("Existing Library Found");
+                            LogHelper.d(TAG, "Existing Library Found");
 
                             pager.setCurrentItem(IMPORT_SLIDE - 2);
                             AndroidHelper.singleSnack(pager,
@@ -143,14 +146,14 @@ public class IntroSlideActivity extends AppIntro2 {
                                     Snackbar.LENGTH_LONG);
                             break;
                         default:
-                            System.out.println("RESULT_CANCELED");
+                            LogHelper.d(TAG, "RESULT_CANCELED");
 
                             pager.setCurrentItem(IMPORT_SLIDE - 2);
                             break;
                     }
                 }
             } else {
-                System.out.println("Error: Data not received! Bad resultKey.");
+                LogHelper.d(TAG, "Error: Data not received! Bad resultKey.");
                 // TODO: Log to Analytics
                 finish();
             }
@@ -165,7 +168,7 @@ public class IntroSlideActivity extends AppIntro2 {
                 }
             }, 100);
         } else {
-            System.out.println("Unknown result code!");
+            LogHelper.i(TAG, "Unknown result code!");
             super.onActivityResult(requestCode, resultCode, data);
         }
     }

@@ -5,7 +5,6 @@ import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
@@ -23,6 +22,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by Shiro on 1/20/2016.
@@ -31,7 +31,7 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  * Ref: http://goo.gl/UfIsZs
  */
 public class HitomiActivity extends BaseWebActivity {
-    private static final String TAG = HitomiActivity.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(HitomiActivity.class);
 
     @SuppressLint("AddJavascriptInterface")
     @Override
@@ -48,7 +48,7 @@ public class HitomiActivity extends BaseWebActivity {
         if (bWebViewOverview) {
             webView.getSettings().setLoadWithOverviewMode(false);
             webView.setInitialScale(webViewInitialZoom);
-            System.out.println("WebView Initial Scale: " + webViewInitialZoom + "%");
+            LogHelper.d(TAG, "WebView Initial Scale: " + webViewInitialZoom + "%");
         } else {
             webView.setInitialScale(ConstantsPreferences.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);
@@ -107,7 +107,7 @@ public class HitomiActivity extends BaseWebActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("hitomi.la"));
             } catch (MalformedURLException e) {
-                Log.d(TAG, "Malformed URL");
+                LogHelper.d(TAG, "Malformed URL");
             }
 
             return false;

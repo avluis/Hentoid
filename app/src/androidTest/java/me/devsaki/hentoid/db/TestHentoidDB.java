@@ -2,7 +2,6 @@ package me.devsaki.hentoid.db;
 
 import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,11 +13,13 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by neko on 15/06/2015.
  */
 public class TestHentoidDB extends AndroidTestCase {
+    private static final String TAG = LogHelper.makeLogTag(TestHentoidDB.class);
 
     boolean locker1, locker2, locker3, locker4;
 
@@ -40,7 +41,7 @@ public class TestHentoidDB extends AndroidTestCase {
                             db.insertContents(contents.toArray(new Content[contents.size()]));
                         }
                     } catch (Exception ex) {
-                        Log.e("error", "error", ex);
+                        LogHelper.e(TAG, "Error: ", ex);
                     }
                     locker1 = true;
                 }
@@ -56,7 +57,7 @@ public class TestHentoidDB extends AndroidTestCase {
                             db.insertContents(contents.toArray(new Content[contents.size()]));
                         }
                     } catch (Exception ex) {
-                        Log.e("error", "error", ex);
+                        LogHelper.e(TAG, "Error: ", ex);
                     }
                     locker2 = true;
                 }
@@ -71,7 +72,7 @@ public class TestHentoidDB extends AndroidTestCase {
                             db.selectContentByQuery("", 1, 10, false);
                         }
                     } catch (Exception ex) {
-                        Log.e("error", "error", ex);
+                        LogHelper.e(TAG, "Error: ", ex);
                     }
                     locker3 = true;
                 }
@@ -86,16 +87,16 @@ public class TestHentoidDB extends AndroidTestCase {
                             db.selectContentByStatus(StatusContent.DOWNLOADED);
                         }
                     } catch (Exception ex) {
-                        Log.e("error", "error", ex);
+                        LogHelper.e(TAG, "Error: ", ex);
                     }
                     locker4 = true;
                 }
             }).start();
             //noinspection StatementWithEmptyBody
             while (!(locker1 && locker2 && locker3 && locker4)) ;
-            Log.i("Test DB lock", "Success");
+            LogHelper.i(TAG, "DB Lock: Success");
         } catch (Exception ex) {
-            Log.e("test DB lock", "error", ex);
+            LogHelper.e(TAG, "Error: ", ex);
         }
     }
 

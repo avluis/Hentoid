@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.services;
 
-import android.util.Log;
 import android.webkit.CookieManager;
 
 import java.io.File;
@@ -12,6 +11,7 @@ import java.util.concurrent.Semaphore;
 
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.LogHelper;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -24,7 +24,7 @@ import okhttp3.Response;
  */
 final class ImageDownloadBatch {
 
-    private static final String TAG = ImageDownloadBatch.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(ImageDownloadBatch.class);
     private static final int BUFFER_SIZE = 10 * 1024;
     private static final OkHttpClient client = new OkHttpClient();
     private static final CookieManager cookieManager = CookieManager.getInstance();
@@ -53,7 +53,7 @@ final class ImageDownloadBatch {
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
-            Log.e(TAG, "Interrupted while waiting for download task to complete", e);
+            LogHelper.e(TAG, "Interrupted while waiting for download task to complete", e);
         }
     }
 
@@ -80,7 +80,7 @@ final class ImageDownloadBatch {
 
         @Override
         public void onFailure(Call call, IOException e) {
-            Log.e(TAG, "Error downloading image: " + call.request().url(), e);
+            LogHelper.e(TAG, "Error downloading image: " + call.request().url(), e);
             hasError = true;
             synchronized (ImageDownloadBatch.this) {
                 errorCount++;
@@ -89,10 +89,10 @@ final class ImageDownloadBatch {
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
-            Log.i(TAG, "Start downloading image: " + call.request().url());
+            LogHelper.i(TAG, "Start downloading image: " + call.request().url());
 
             if (!response.isSuccessful()) {
-                Log.e(TAG, "Unexpected http status code: " + response.code());
+                LogHelper.e(TAG, "Unexpected http status code: " + response.code());
             }
 
             final File file;
@@ -124,7 +124,7 @@ final class ImageDownloadBatch {
                 output.flush();
             } catch (IOException e) {
                 if (!file.delete()) {
-                    Log.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
+                    LogHelper.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
                 }
                 throw e;
             } finally {
@@ -135,7 +135,7 @@ final class ImageDownloadBatch {
             }
 
             semaphore.release();
-            Log.i(TAG, "Done downloading image: " + call.request().url());
+            LogHelper.i(TAG, "Done downloading image: " + call.request().url());
         }
     }
 } 

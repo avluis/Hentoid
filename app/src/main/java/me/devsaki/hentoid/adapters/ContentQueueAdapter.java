@@ -22,6 +22,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by neko on 11/05/2015.
@@ -29,7 +30,7 @@ import me.devsaki.hentoid.util.AndroidHelper;
  * for display in queue
  */
 public class ContentQueueAdapter extends ArrayAdapter<Content> {
-    private static final String TAG = ContentQueueAdapter.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(ContentQueueAdapter.class);
 
     private final Context context;
     private final List<Content> contents;

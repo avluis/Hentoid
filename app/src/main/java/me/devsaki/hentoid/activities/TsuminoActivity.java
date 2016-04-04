@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
@@ -18,6 +17,7 @@ import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by Shiro on 1/22/2016.
@@ -26,7 +26,7 @@ import me.devsaki.hentoid.util.Helper;
  * Ref: http://goo.gl/UfIsZs
  */
 public class TsuminoActivity extends BaseWebActivity {
-    private static final String TAG = TsuminoActivity.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(TsuminoActivity.class);
 
     private boolean downloadFabPressed = false;
     private int historyIndex;
@@ -61,7 +61,7 @@ public class TsuminoActivity extends BaseWebActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("tsumino.com"));
             } catch (MalformedURLException e) {
-                Log.d(TAG, "Malformed URL");
+                LogHelper.d(TAG, "Malformed URL");
             }
 
             return false;

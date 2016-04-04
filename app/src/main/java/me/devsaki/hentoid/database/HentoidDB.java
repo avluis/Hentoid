@@ -5,7 +5,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,13 +21,14 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by DevSaki on 10/05/2015.
  * db maintenance class
  */
 public class HentoidDB extends SQLiteOpenHelper {
-    private static final String TAG = HentoidDB.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(HentoidDB.class);
 
     private static final Object locker = new Object();
 
@@ -66,7 +66,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void insertContents(Content[] rows) {
         synchronized (locker) {
-            Log.i(TAG, "insertContents");
+            LogHelper.i(TAG, "insertContents");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
@@ -127,7 +127,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG, "insertContents - trying to close the db connection. Condition : "
+                LogHelper.i(TAG, "Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
@@ -141,7 +141,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void insertImageFiles(Content content) {
         synchronized (locker) {
-            Log.i(TAG, "insertImageFiles");
+            LogHelper.i(TAG, "insertImageFiles");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             SQLiteStatement statementImages = null;
@@ -169,7 +169,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.endTransaction();
 
             } finally {
-                Log.i(TAG, "insertImageFiles - trying to close the db connection. Condition : "
+                LogHelper.i(TAG, "Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
@@ -240,7 +240,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     public Content selectContentById(int id) {
         Content result = null;
         synchronized (locker) {
-            Log.i(TAG, "selectContentById");
+            LogHelper.i(TAG, "selectContentById");
             SQLiteDatabase db = null;
             Cursor cursorContents = null;
             try {
@@ -256,7 +256,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContents != null) {
                     cursorContents.close();
                 }
-                Log.i(TAG, "selectContentById - trying to close the db connection. Condition : "
+                LogHelper.i(TAG, "Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
@@ -271,7 +271,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         Content result = null;
 
         synchronized (locker) {
-            Log.i(TAG, "selectContentByStatus");
+            LogHelper.i(TAG, "selectContentByStatus");
 
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
@@ -287,7 +287,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                Log.i(TAG, "selectContentByStatus - trying to close the db connection. Condition : "
+                LogHelper.i(TAG, "Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
@@ -301,7 +301,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     public List<Content> selectContentInQueue() {
         List<Content> result = null;
         synchronized (locker) {
-            Log.i(TAG, "selectContentInQueue");
+            LogHelper.i(TAG, "selectContentInQueue");
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
             try {
@@ -320,7 +320,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                Log.i(TAG, "selectContentInQueue - trying to close the db connection. Condition : "
+                LogHelper.i(TAG, "Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
@@ -336,7 +336,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         List<Content> result = null;
 
         synchronized (locker) {
-            Log.i(TAG, "selectContentByQuery");
+            LogHelper.i(TAG, "selectContentByQuery");
 
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
@@ -377,7 +377,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                Log.i(TAG, "selectContentByQuery - trying to close the db connection. Condition : "
+                LogHelper.i(TAG, "Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
@@ -460,7 +460,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void updateImageFileStatus(ImageFile row) {
         synchronized (locker) {
-            Log.i(TAG, "updateImageFileStatus");
+            LogHelper.i(TAG, "updateImageFileStatus");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             try {
@@ -474,9 +474,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG,
-                        "updateImageFileStatus - trying to close the db connection. Condition : "
-                                + (db != null && db.isOpen()));
+                LogHelper.i(TAG, "Closing db connection. Condition: "
+                        + (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }
@@ -520,7 +519,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void deleteContent(Content content) {
         synchronized (locker) {
-            Log.i(TAG, "deleteContent");
+            LogHelper.i(TAG, "deleteContent");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             SQLiteStatement statementImages = null;
@@ -544,7 +543,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG, "deleteContent - trying to close the db connection. Condition : "
+                LogHelper.i(TAG, "Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
@@ -564,7 +563,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void updateContentStatus(Content row) {
         synchronized (locker) {
-            Log.i(TAG, "updateContentStatus");
+            LogHelper.i(TAG, "updateContentStatus");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
@@ -581,9 +580,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG,
-                        "updateContentStatus - trying to close the db connection. Condition : "
-                                + (db != null && db.isOpen()));
+                LogHelper.i(TAG, "Closing db connection. Condition: "
+                        + (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }
@@ -596,7 +594,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void updateContentStatus(StatusContent updateTo, StatusContent updateFrom) {
         synchronized (locker) {
-            Log.i(TAG, "updateContentStatus2");
+            LogHelper.i(TAG, "updateContentStatus2");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
@@ -611,9 +609,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                Log.i(TAG,
-                        "updateContentStatus2 - trying to close the db connection. Condition : "
-                                + (db != null && db.isOpen()));
+                LogHelper.i(TAG, "Closing db connection. Condition: "
+                        + (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }

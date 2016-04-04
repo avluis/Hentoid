@@ -11,7 +11,6 @@ import android.os.Build;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.Formatter;
-import android.util.Log;
 import android.widget.RemoteViews;
 import android.widget.Toast;
 
@@ -33,6 +32,7 @@ import java.nio.charset.Charset;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
@@ -49,7 +49,7 @@ public class UpdateCheck implements IUpdateCheck {
     public static final String ACTION_UPDATE_DOWNLOADED =
             "me.devsaki.hentoid.updater.UPDATE_DOWNLOADED";
 
-    private static final String TAG = UpdateCheck.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(UpdateCheck.class);
 
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
@@ -101,7 +101,7 @@ public class UpdateCheck implements IUpdateCheck {
                 (!onlyWifi && NetworkStatus.isOnline(context))) {
             connected = true;
         } else {
-            Log.e("networkInfo", "Network is not connected!");
+            LogHelper.e(TAG, "Network is not connected!");
         }
         if (connected) {
             runAsyncTask();
@@ -392,7 +392,7 @@ public class UpdateCheck implements IUpdateCheck {
                 connection.connect();
                 int response = connection.getResponseCode();
 
-                Log.d(TAG, "The response is: " + response);
+                LogHelper.d(TAG, "Response: " + response);
 
                 inputStream = connection.getInputStream();
                 String contentString = readInputStream(inputStream);

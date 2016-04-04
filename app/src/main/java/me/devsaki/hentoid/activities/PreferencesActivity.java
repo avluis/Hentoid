@@ -32,12 +32,14 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by DevSaki on 20/05/2015.
  * Present and set app preferences.
  */
 public class PreferencesActivity extends AppCompatActivity {
+    private static final String TAG = LogHelper.makeLogTag(PreferencesActivity.class);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,12 +184,12 @@ public class PreferencesActivity extends AppCompatActivity {
                             new UpdateCheck.UpdateCheckCallback() {
                                 @Override
                                 public void noUpdateAvailable() {
-                                    System.out.println("Manual update check: No update available.");
+                                    LogHelper.i(TAG, "Manual update check: No update available.");
                                 }
 
                                 @Override
                                 public void onUpdateAvailable() {
-                                    System.out.println("Manual update check: Update available!");
+                                    LogHelper.d(TAG, "Manual update check: Update available!");
                                 }
                             });
 

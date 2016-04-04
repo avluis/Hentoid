@@ -8,7 +8,6 @@ import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebBackForwardList;
@@ -29,6 +28,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
@@ -38,7 +38,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
  * The source itself should contain every method it needs to function.
  */
 public class BaseWebActivity extends AppCompatActivity {
-    private static final String TAG = BaseWebActivity.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
     protected ObservableWebView webView;
     private HentoidDB db;
@@ -66,7 +66,7 @@ public class BaseWebActivity extends AppCompatActivity {
         setContentView(R.layout.activity_base_web);
 
         if (site == null) {
-            Log.w(TAG, "WebView site is null");
+            LogHelper.w(TAG, "Site is null!");
         }
 
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
@@ -82,6 +82,13 @@ public class BaseWebActivity extends AppCompatActivity {
 
         String intentVar = getIntent().getStringExtra(Constants.INTENT_URL);
         webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // TODO: Check for permissions here
+        LogHelper.d(TAG, " onResume");
     }
 
     @SuppressLint("SetJavaScriptEnabled")
