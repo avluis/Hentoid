@@ -21,6 +21,10 @@
         <item name="android:background">@drawable/image_button</item>
     </style>
 
+    <style name="AppIntro" parent="AppTheme">
+        <item name="android:windowBackground">@color/background_app_intro</item>
+    </style>
+
     <style name="ImportTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
@@ -30,11 +34,6 @@
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:backgroundDimEnabled">false</item>
-    </style>
-
-    <style name="AppCompatAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="colorAccent">@color/accent</item>
-        <item name="android:textColorPrimary">@android:color/black</item>
     </style>
 
 </resources>

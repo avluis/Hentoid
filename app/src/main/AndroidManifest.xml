@@ -34,7 +34,8 @@
         <activity
             android:name=".activities.IntroSlideActivity"
             android:configChanges="orientation|screenSize"
-            android:label="@string/app_intro" />
+            android:label="@string/app_intro"
+            android:theme="@style/AppIntro" />
         <activity
             android:name=".activities.HitomiActivity"
             android:configChanges="orientation|screenSize"
@@ -111,6 +112,7 @@
         <activity
             android:name=".activities.AppLockActivity"
             android:launchMode="singleTask"
+            android:theme="@style/AppIntro"
             android:windowSoftInputMode="stateAlwaysVisible" />
 
         <service

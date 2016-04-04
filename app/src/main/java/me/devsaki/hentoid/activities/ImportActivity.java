@@ -18,6 +18,8 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.afollestad.materialdialogs.GravityEnum;
@@ -65,7 +67,11 @@ public class ImportActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_transparent);
+        RelativeLayout relativeLayout = new RelativeLayout(this);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        setContentView(relativeLayout, layoutParams);
 
         pickDownloadFolder();
     }
@@ -204,6 +210,15 @@ public class ImportActivity extends AppCompatActivity implements
                                 public void onClick(DialogInterface dialog, int which) {
                                     // Prior Library found, send results to scan
                                     System.out.println("Scanning files...");
+
+                                    // TODO: Remove below after testing
+                                    result = "EXISTING_LIBRARY_IMPORTED";
+                                    Intent returnIntent = new Intent();
+                                    returnIntent.putExtra(resultKey, result);
+                                    setResult(RESULT_OK, returnIntent);
+                                    finish();
+                                    // TODO: Remove above after testing
+
                                     // TODO: Send results to importer
                                 }
 
