@@ -334,4 +334,10 @@ public class AndroidHelper {
             return false;
         }
     }
+
+    public static void setNavBarColor(Activity activity, String Color) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            activity.getWindow().setNavigationBarColor(android.graphics.Color.parseColor(Color));
+        }
+    }
 }

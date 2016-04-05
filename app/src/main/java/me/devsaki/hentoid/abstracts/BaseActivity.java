@@ -21,6 +21,7 @@ import me.devsaki.hentoid.activities.PreferencesActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.util.AndroidHelper;
 
 /**
  * Created by DevSaki on 04/06/2015.
@@ -41,6 +42,8 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_hentoid);
+
+        AndroidHelper.setNavBarColor(this, "#2b0202");
 
         db = new HentoidDB(this);
 

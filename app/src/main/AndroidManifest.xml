@@ -40,25 +40,26 @@
             android:name=".activities.HitomiActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.NhentaiActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.TsuminoActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.BaseWebActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.DownloadsActivity"
             android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_downloads"
             android:launchMode="singleTask">
             <meta-data
                 android:name="android.app.searchable"

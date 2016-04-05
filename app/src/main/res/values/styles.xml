@@ -36,4 +36,10 @@
         <item name="android:backgroundDimEnabled">true</item>
     </style>
 
+    <style name="BrowserTheme" parent="ImportTheme">
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+        <item name="android:windowFullscreen">true</item>
+    </style>
+
 </resources>

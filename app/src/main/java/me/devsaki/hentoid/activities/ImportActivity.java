@@ -61,7 +61,7 @@ public class ImportActivity extends AppCompatActivity implements
     private final static int STORAGE_PERMISSION_REQUEST = 1;
     private static final String resultKey = "resultKey";
     private String result = "RESULT_EMPTY";
-    private File currentRootDirectory = Environment.getExternalStorageDirectory();
+    private File currentRootDirectory;
 
     public static String getResultKey() {
         return resultKey;
@@ -77,7 +77,22 @@ public class ImportActivity extends AppCompatActivity implements
 
         setContentView(relativeLayout, layoutParams);
 
-        checkPermissions();
+        initImport(savedInstanceState);
+    }
+
+    private void initImport(Bundle savedInstanceState) {
+        if (savedInstanceState == null) {
+            checkPermissions();
+            currentRootDirectory = Environment.getExternalStorageDirectory();
+        } else {
+            currentRootDirectory = (File) savedInstanceState.getSerializable("currentRootDirectory");
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putSerializable("currentRootDirectory", currentRootDirectory);
+        super.onSaveInstanceState(outState);
     }
 
     // Validate permissions
@@ -112,7 +127,6 @@ public class ImportActivity extends AppCompatActivity implements
         currentRootDirectory = event.getFile();
 
         validateFolder(currentRootDirectory);
-
     }
 
     @Override
@@ -128,7 +142,21 @@ public class ImportActivity extends AppCompatActivity implements
         if (grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                checkPermissions();
+                new Handler().post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        Intent intent = getIntent();
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                                Intent.FLAG_ACTIVITY_NEW_TASK |
+                                Intent.FLAG_ACTIVITY_NO_ANIMATION);
+                        overridePendingTransition(0, 0);
+                        finish();
+
+                        overridePendingTransition(0, 0);
+                        startActivity(intent);
+                    }
+                });
             } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // Permission Denied
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,

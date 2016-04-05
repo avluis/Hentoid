@@ -12,14 +12,41 @@ android {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 37
+        versionCode 36
         versionName '1.2.0r1-beta1'
     }
     buildTypes {
-        release {
-            minifyEnabled true
+        debug {
+            debuggable true
+            minifyEnabled false
             shrinkResources true
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            // Library specific proguard files
+            FileCollection proGuardFileCollection = files { file('../.proguard/').listFiles() }
+            proguardFiles(proGuardFileCollection)
+
+            // Default proguard files & project app specific rules
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+            proguardFile 'proguard-project-app.pro'
+
+            // As of Gradle Android plugin 1.1.0, the test APK has a separate config
+            testProguardFile 'proguard-project-test.pro'
+        }
+        release {
+            debuggable false
+            minifyEnabled false
+            shrinkResources true
+
+            // Library specific proguard files
+            FileCollection proGuardFileCollection = files { file('../.proguard/').listFiles() }
+            proguardFiles(proGuardFileCollection)
+
+            // Default proguard files & project app specific rules
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+            proguardFile 'proguard-project-app.pro'
+
+            // As of Gradle Android plugin 1.1.0, the test APK has a separate config
+            testProguardFile 'proguard-project-test.pro'
         }
     }
     packagingOptions {

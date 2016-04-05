@@ -69,6 +69,8 @@ public class BaseWebActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_base_web);
 
+        AndroidHelper.setNavBarColor(this, "#2b0202");
+
         if (site == null) {
             LogHelper.w(TAG, "Site is null!");
         }
