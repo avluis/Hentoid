@@ -52,7 +52,7 @@
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
     <string name="on_first_page">Moved to first page.</string>
-    <string name="press_back_again">Press back key once more to exit!</string>
+    <string name="press_back_again">Press once again to exit</string>
 
     <string name="queue_empty">Go forth and download some things.</string>
     <string name="downloads_empty">Nothing like that in here!</string>
