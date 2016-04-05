@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
  * Created by avluis on 1/9/16.
@@ -18,10 +16,7 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final Boolean firstRun = HentoidApplication.getAppPreferences()
-                .getBoolean(ConstantsPreferences.PREF_FIRST_RUN, false);
-
-        if (!firstRun) {
+        if (AndroidHelper.isFirstRun()) {
             Intent intent = new Intent(this, IntroSlideActivity.class);
             startActivity(intent);
             finish();

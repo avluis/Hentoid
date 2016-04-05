@@ -58,13 +58,13 @@ public class IntroSlideActivity extends AppIntro2 {
 
     @Override
     public void onNextPressed() {
-        // Do something when users tap on Next button.
+        setTitle(R.string.app_name);
     }
 
     @Override
     public void onDonePressed() {
         donePressed = true;
-        AndroidHelper.commitFirstRun(true);
+        AndroidHelper.commitFirstRun(false);
         AndroidHelper.launchMainActivity(this);
         finish();
     }

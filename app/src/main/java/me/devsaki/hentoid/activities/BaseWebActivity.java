@@ -106,10 +106,7 @@ public class BaseWebActivity extends AppCompatActivity {
 
         } else {
             LogHelper.d(TAG, "deny");
-            AndroidHelper.commitFirstRun(false);
-            Intent intent = new Intent(this, IntroSlideActivity.class);
-            startActivity(intent);
-            finish();
+            reset();
         }
     }
 
@@ -126,15 +123,19 @@ public class BaseWebActivity extends AppCompatActivity {
                 // Permission Denied
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    AndroidHelper.commitFirstRun(false);
-                    Intent intent = new Intent(this, IntroSlideActivity.class);
-                    startActivity(intent);
-                    finish();
+                    reset();
                 } else {
                     finish();
                 }
             }
         }
+    }
+
+    private void reset() {
+        AndroidHelper.commitFirstRun(true);
+        Intent intent = new Intent(this, IntroSlideActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     @SuppressLint("SetJavaScriptEnabled")

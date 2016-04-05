@@ -281,12 +281,30 @@ public class AndroidHelper {
         sToast.show();
     }
 
+    public static void singleToast(Context ctx, int resource, int duration) {
+        if (sToast != null) {
+            sToast.cancel();
+            sToast = null;
+        }
+        sToast = Toast.makeText(ctx, ctx.getString(resource), duration);
+        sToast.show();
+    }
+
     public static void singleSnack(View view, String text, int duration) {
         if (sSnack != null) {
             sSnack.dismiss();
             sSnack = null;
         }
         sSnack = Snackbar.make(view, text, duration);
+        sSnack.show();
+    }
+
+    public static void singleSnack(View view, int resource, int duration) {
+        if (sSnack != null) {
+            sSnack.dismiss();
+            sSnack = null;
+        }
+        sSnack = Snackbar.make(view, view.getResources().getString(resource), duration);
         sSnack.show();
     }
 
@@ -312,6 +330,12 @@ public class AndroidHelper {
             Intent intent = new Intent(ctx, AppLockActivity.class);
             ctx.startActivity(intent);
         }
+    }
+
+    public static boolean isFirstRun() {
+        return HentoidApplication.getAppPreferences()
+                .getBoolean(ConstantsPreferences.PREF_FIRST_RUN,
+                        ConstantsPreferences.PREF_FIRST_RUN_DEFAULT);
     }
 
     public static void commitFirstRun(boolean commit) {

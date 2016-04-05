@@ -1,12 +1,13 @@
 <resources>
     <string name="app_name">Hentoid</string>
-    <string name="app_intro">Welcome to Hentoid!</string>
+    <string name="app_intro">Welcome</string>
     <!-- Activities -->
-    <string name="title_activity_search">Search : @search</string>
+    <string name="title_activity_search">Search: @search</string>
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
+    <string name="title_activity_app_lock">App Lock</string>
     <!-- Menu -->
     <string name="menu_search">Search</string>
     <string name="menu_order_alphabetically">order alphabetic</string>
@@ -74,10 +75,9 @@
     <string name="app_lock_enable">App Lock Enabled</string>
     <string name="app_lock_disable">App Lock Disabled</string>
     <string name="pin_invalid">PIN Invalid!</string>
-    <string name="title_activity_app_lock">App Lock</string>
-    <string name="button_ok">OK</string>
+    <string name="pin_ok">PIN OK!</string>
     <!-- About Activity -->
-    <string name="about"><![CDATA[<p><b>Hentoid</b> is a Hentai Manga reader & archiving app.<br />Hentoid was originally created by <b>Cesar Arasaki</b>.</p><p>Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.<br />Hentoid was previously known as FakkuDroid, before support was added for Pururin and Hitomi.</p><br /><p>While initially designed to work with <b>FAKKU</b>, <b>Pururin</b> and <b>Hitomi</b>, support for <b>nhentai</b> and <b>tsumino</b> has also been added after FAKKU going legit and Pururin getting abandoned.</p><p><b>Notes:</b><ul"><li>In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</li><li>FAKKU has dropped support for free content, and while support for FAKKU Books or Subscriptions is not currently planned, this may change in the future.</li></ul>]]></string>
+    <string name="about"><![CDATA[<p><b>Hentoid</b> is a Hentai Manga reader & archiving app.<br />Hentoid was originally created by <b>Cesar Arasaki</b>.</p><p>Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.<br />Hentoid was previously known as FAKKUDroid, before support was added for Pururin and Hitomi.</p><br /><p>While initially designed to work with <b>FAKKU</b>, <b>Pururin</b> and <b>Hitomi</b>, support for <b>nhentai</b> and <b>tsumino</b> has also been added after FAKKU going legit and Pururin getting abandoned.</p><p><b>Notes:</b><br />In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.<br />FAKKU has dropped support for free content, and while support for FAKKU Books or Subscriptions is not currently planned, this may change in the future.]]></string>
     <string name="about_blog"><![CDATA[<u>FakkuDroid</u>]]></string>
     <string name="about_blog_url">http://fakkudroid.blogspot.com/</string>
     <string name="about_community"><![CDATA[<u>Google+</u>]]></string>

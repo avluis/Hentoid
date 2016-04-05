@@ -19,6 +19,7 @@ import android.support.v7.widget.AppCompatSpinner;
 import android.text.InputType;
 import android.util.AttributeSet;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.updater.UpdateCheck;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.LogHelper;
@@ -49,6 +51,8 @@ public class PreferencesActivity extends AppCompatActivity {
 
         getFragmentManager().beginTransaction().replace(android.R.id.content,
                 new MyPreferenceFragment()).commit();
+
+        AndroidHelper.setNavBarColor(this, "#2b0202");
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -140,23 +144,24 @@ public class PreferencesActivity extends AppCompatActivity {
                     input.setGravity(Gravity.CENTER);
                     input.setInputType(InputType.TYPE_CLASS_NUMBER);
                     builder.setView(input);
+                    builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                        @Override
+                        public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                                saveKey(dialog, input);
+
+                                return true;
+                            }
+
+                            return false;
+                        }
+                    });
                     builder.setPositiveButton(android.R.string.ok,
                             new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    String lock = input.getText().toString();
-                                    SharedPreferences.Editor editor = HentoidApplication
-                                            .getAppPreferences().edit();
-                                    editor.putString(ConstantsPreferences.PREF_APP_LOCK, lock);
-                                    editor.apply();
-                                    if (lock.isEmpty()) {
-                                        Toast.makeText(getActivity(), R.string.app_lock_disable,
-                                                Toast.LENGTH_SHORT).show();
-                                    } else {
-                                        Toast.makeText(getActivity(), R.string.app_lock_enable,
-                                                Toast.LENGTH_SHORT).show();
-                                    }
-                                    dialog.cancel();
+                                    saveKey(dialog, input);
                                 }
                             });
                     builder.setNegativeButton(android.R.string.cancel,
@@ -196,6 +201,22 @@ public class PreferencesActivity extends AppCompatActivity {
                     return true;
                 }
             });
+        }
+
+        private void saveKey(DialogInterface dialog, EditText input) {
+            String lock = input.getText().toString();
+            SharedPreferences.Editor editor = HentoidApplication
+                    .getAppPreferences().edit();
+            editor.putString(ConstantsPreferences.PREF_APP_LOCK, lock);
+            editor.apply();
+            if (lock.isEmpty()) {
+                Toast.makeText(getActivity(), R.string.app_lock_disable,
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity(), R.string.app_lock_enable,
+                        Toast.LENGTH_SHORT).show();
+            }
+            dialog.cancel();
         }
     }
 }

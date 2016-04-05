@@ -7,7 +7,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white"
+        android:background="@color/white"
         android:orientation="vertical"
         android:padding="10dp">
 
@@ -101,9 +101,11 @@
                 android:layout_weight="1"
                 android:background="@android:color/holo_red_dark"
                 android:paddingLeft="10dp"
+                android:paddingStart="10dp"
                 android:singleLine="false"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/white"
+                android:textColor="@color/white"
+                tools:ignore="RtlSymmetry"
                 tools:text="Site" />
 
             <TextView
@@ -114,9 +116,11 @@
                 android:layout_weight="1"
                 android:background="@android:color/holo_green_dark"
                 android:paddingLeft="10dp"
+                android:paddingStart="10dp"
                 android:singleLine="false"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/white"
+                android:textColor="@color/white"
+                tools:ignore="RtlSymmetry"
                 tools:text="Downloaded" />
 
             <TextView
@@ -129,9 +133,11 @@
                 android:layout_weight="1"
                 android:background="@android:color/holo_blue_dark"
                 android:paddingLeft="10dp"
+                android:paddingStart="10dp"
                 android:singleLine="false"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@android:color/white"
+                android:textColor="@color/white"
+                tools:ignore="RtlSymmetry"
                 tools:text="09/25/15 12:29" />
         </LinearLayout>
 

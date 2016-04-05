@@ -6,7 +6,7 @@
     android:background="@color/primary"
     android:choiceMode="singleChoice"
     android:clickable="true"
-    android:divider="@android:color/transparent"
+    android:divider="@color/transparent"
     android:dividerHeight="0dp"
     android:dividerPadding="10dp"
     android:orientation="vertical">

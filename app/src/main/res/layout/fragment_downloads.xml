@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_list"
+    android:background="@color/primary_dark"
     tools:context=".activities.DownloadsActivity">
 
     <ListView
@@ -12,7 +12,7 @@
         android:layout_above="@+id/ll"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:divider="@android:color/transparent"
+        android:divider="@color/transparent"
         android:dividerHeight="10dp" />
 
     <TextView
@@ -22,14 +22,15 @@
         android:layout_above="@+id/ll"
         android:gravity="center"
         android:text="@string/downloads_empty"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/white" />
 
     <LinearLayout
         android:id="@+id/ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:background="@drawable/normal_state"
+        android:background="@color/primary"
         android:gravity="center"
         android:orientation="horizontal">
 

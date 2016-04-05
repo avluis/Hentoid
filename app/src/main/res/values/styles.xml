@@ -17,12 +17,8 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:padding">@dimen/nav_menu_padding</item>
         <item name="android:gravity">left|center_vertical</item>
-        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textColor">@color/white</item>
         <item name="android:background">@drawable/image_button</item>
-    </style>
-
-    <style name="AppIntro" parent="AppTheme">
-        <item name="android:windowBackground">@color/background_app_intro</item>
     </style>
 
     <style name="ImportTheme" parent="Theme.AppCompat.Light.NoActionBar">
@@ -30,7 +26,7 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowBackground">@color/transparent</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:backgroundDimEnabled">true</item>

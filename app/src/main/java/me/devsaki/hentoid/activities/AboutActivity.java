@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.AndroidHelper;
 
 /**
  * Created by avluis on 8/22/15.
@@ -39,6 +40,8 @@ public class AboutActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
         setTitle(R.string.title_activity_about);
+
+        AndroidHelper.setNavBarColor(this, "#2b0202");
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
