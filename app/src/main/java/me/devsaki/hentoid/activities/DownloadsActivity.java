@@ -52,7 +52,10 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     private MenuItem searchMenuItem;
     private SearchView searchView;
     private DrawerLayout mDrawerLayout;
-    private boolean orderUpdated;
+    private ListView mDrawerList;
+    private boolean shouldHide;
+    private int mDrawerState;
+    private static boolean orderUpdated;
     private long backButtonPressed;
 
     // DO NOT use this in onCreateOptionsMenu
@@ -100,11 +103,48 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+                mDrawerState = newState;
+                invalidateOptionsMenu();
+            }
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (mDrawerList != null) {
+            mDrawerList.setItemChecked(3, true);
+        }
     }
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
+                mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
+
+        if (!shouldHide) {
             clearQuery();
             menu.findItem(R.id.action_search).setVisible(false);
 
@@ -142,13 +182,34 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if ((!mDrawerLayout.isDrawerOpen(GravityCompat.START)) && (!s.isEmpty())) {
+//                if (shouldHide && !s.isEmpty()) {
+//                    submitSearchQuery(s, 1000);
+//                } else if ((s.isEmpty()) && (orderUpdated)) {
+//                    clearSearchQuery(1);
+//                    orderUpdated = false;
+//                } else {
+//                    clearSearchQuery(0);
+//                }
+
+                if (shouldHide && (!s.isEmpty())) {
+                    LogHelper.d(TAG, "Auto search.");
                     submitSearchQuery(s, 1000);
-                } else if ((s.isEmpty()) && (orderUpdated)) {
+                }
+
+                if (shouldHide && (orderUpdated)) {
+                    LogHelper.d(TAG, "Drawer closed, sort item.");
                     clearSearchQuery(1);
                     orderUpdated = false;
-                } else {
+                }
+
+                if (!shouldHide && (!s.isEmpty())) {
+                    LogHelper.d(TAG, "Drawer open, search not empty.");
                     clearSearchQuery(0);
+                }
+
+                if (!shouldHide && (s.isEmpty())) {
+                    LogHelper.d(TAG, "Drawer open, search empty.");
+                    clearSearchQuery(1);
                 }
 
                 return true;
@@ -161,14 +222,12 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
             // Save current sort order
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
-            orderUpdated = true;
         } else {
             menu.findItem(R.id.action_order_alphabetic).setVisible(true);
             menu.findItem(R.id.action_order_by_date).setVisible(false);
 
             // Save current sort order
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
-            orderUpdated = true;
         }
 
         return true;
@@ -198,12 +257,14 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         switch (item.getItemId()) {
             case R.id.action_order_alphabetic:
                 clearQuery();
+                orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
                 invalidateOptionsMenu();
 
                 return true;
             case R.id.action_order_by_date:
                 clearQuery();
+                orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
                 invalidateOptionsMenu();
 
@@ -305,13 +366,18 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                     ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
                     ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
 
+            int trackOrder = preferences.getInt(
+                    ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
+                    ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+
             if (qtyPages != newQtyPages) {
                 setQuery("");
                 qtyPages = newQtyPages;
+            }
 
-                order = preferences.getInt(
-                        ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
-                        ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+            if (order != trackOrder) {
+                orderUpdated = true;
+                order = trackOrder;
             }
         }
 

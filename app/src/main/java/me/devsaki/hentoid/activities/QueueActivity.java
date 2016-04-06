@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
+import android.widget.ListView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,8 @@ import me.devsaki.hentoid.util.NetworkStatus;
  */
 public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
     private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
+
+    private ListView mDrawerList;
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
 
@@ -52,11 +55,22 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
     }
 
     @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
         getFragment().update();
         registerReceiver(receiver, new IntentFilter(DownloadService.NOTIFICATION));
+
+        if (mDrawerList != null) {
+            mDrawerList.setItemChecked(4, true);
+        }
     }
 
     @Override

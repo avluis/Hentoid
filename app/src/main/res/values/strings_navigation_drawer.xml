@@ -2,12 +2,4 @@
 <resources>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
-
-    <string name="navigation_drawer_hitomi_wb">Hitomi</string>
-    <string name="navigation_drawer_nhentai_wb">nhentai</string>
-    <string name="navigation_drawer_tsumino_wb">Tsumino</string>
-    <string name="navigation_drawer_downloads">Downloads</string>
-    <string name="navigation_drawer_queue">Queue</string>
-    <string name="navigation_drawer_preferences">Preferences</string>
-    <string name="navigation_drawer_about">About</string>
 </resources>

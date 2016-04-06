@@ -5,12 +5,14 @@ import android.app.ListFragment;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
@@ -22,14 +24,18 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by DevSaki on 04/06/2015.
  * Abstract activity to extend from - Implements DrawerLayout
  */
 public abstract class BaseActivity<T extends ListFragment> extends AppCompatActivity {
+    private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
+
     private static HentoidDB db;
     private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
     private T fragment;
 
@@ -47,7 +53,20 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
 
         db = new HentoidDB(this);
 
+        String[] mList = getResources().getStringArray(R.array.nav_drawer_entries);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+        mDrawerList.setAdapter(new ArrayAdapter<>(this,
+                R.layout.drawer_list_item, mList));
+
+        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                selectItem(position);
+            }
+        });
+
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 R.string.drawer_open, R.string.drawer_close) {
 
@@ -69,7 +88,7 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
         FragmentManager fragmentManager = getFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
-        mDrawerLayout.closeDrawer(GravityCompat.START);
+        mDrawerLayout.closeDrawer(mDrawerList);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -99,64 +118,54 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
-        return mDrawerToggle.onOptionsItemSelected(item) || super.onOptionsItemSelected(item);
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
+        }
+        // Handle your other action bar items...
+
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
+        if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
+            mDrawerLayout.closeDrawer(mDrawerList);
         } else {
             super.onBackPressed();
         }
     }
 
-    public void ndOpenWebView(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
+    private void selectItem(int position) {
         Intent intent = null;
 
-        switch (view.getId()) {
-            case R.id.ndHitomiWbButton:
+        switch (position) {
+            case 0:
                 intent = new Intent(this, HitomiActivity.class);
                 break;
-            case R.id.ndNhentaiWbButton:
+            case 1:
                 intent = new Intent(this, NhentaiActivity.class);
                 break;
-            case R.id.ndTsuminoWbButton:
+            case 2:
                 intent = new Intent(this, TsuminoActivity.class);
+                break;
+            case 3:
+                intent = new Intent(this, DownloadsActivity.class);
+                break;
+            case 4:
+                intent = new Intent(this, QueueActivity.class);
+                break;
+            case 5:
+                intent = new Intent(this, PreferencesActivity.class);
+                break;
+            case 6:
+                intent = new Intent(this, AboutActivity.class);
                 break;
         }
         if (intent != null) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        startActivity(intent);
-    }
-
-    @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndDownloads(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, DownloadsActivity.class);
-        startActivity(intent);
-    }
-
-    @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndQueue(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, QueueActivity.class);
-        startActivity(intent);
-    }
-
-    @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndPreferences(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, PreferencesActivity.class);
-        startActivity(intent);
-    }
-
-    @SuppressWarnings({"UnusedParameters", "unused"})
-    public void ndAbout(View view) {
-        mDrawerLayout.closeDrawer(GravityCompat.START);
-        Intent intent = new Intent(this, AboutActivity.class);
+        mDrawerList.setItemChecked(position, true);
+        mDrawerLayout.closeDrawer(mDrawerList);
         startActivity(intent);
     }
 }

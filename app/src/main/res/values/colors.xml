@@ -2,57 +2,21 @@
 <resources>
     <color name="primary">@color/champagne_red</color>
     <color name="primary_dark">@color/dark_red</color>
-    <color name="primary_old">@color/balanced_red</color>
     <color name="ripple">@color/pink_red</color>
     <color name="accent">@color/transparent_red</color>
-    <color name="accent_app_intro">@color/pale_red</color>
-    <color name="accent_pressed">@color/strong_pink</color>
-    <color name="button_action_bar">@color/accent</color>
-    <color name="background_app">@color/primary_dark</color>
-    <color name="background_list">@color/light_gray</color>
 
     <!-- Useful Colors -->
     <!-- White -->
     <color name="white">#FFFFFF</color>
 
-    <!-- Black -->
-    <color name="black">#000000</color>
-
     <!-- Red -->
-    <color name="pale_red">#ffb2b2</color>
     <color name="dark_red">#2b0202</color>
     <color name="champagne_red">#6d0707</color>
-    <color name="red">#ff0000</color>
-    <color name="balanced_red">#9D0A0A</color>
-    <color name="strong_red">#C3352B</color>
-    <color name="bright_red">#F44336</color>
-    <color name="very_dark_grayish_red">#666565</color>
 
     <!-- Pink -->
     <color name="pink_red">#F06292</color>
-    <color name="strong_pink">#C2185B</color>
-
-    <!-- Blue -->
-    <color name="mostly_desaturated_dark_blue">#607D8B</color>
-    <color name="strong_blue">#0083BF</color>
-    <color name="dark_blue">#005A8A</color>
-    <color name="very_light_blue">#8C9EFF</color>
-
-    <!-- Gray -->
-    <color name="light_gray">#E6E6E6</color>
-    <color name="gray">#bebebe</color>
-    <color name="dark_gray">#757575</color>
-    <color name="very_dark_gray">#333333</color>
-    <color name="very_dark_gray_mostly_black">#303030</color>
-
-    <!-- Cyan -->
-    <color name="strong_cyan">#00B8D4</color>
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>
     <color name="transparent_red">#ffcc0000</color>
-    <color name="saturated_white">#fac1c1c1</color>
-    <color name="transparent_white">#E5FFFFFF</color>
-    <color name="transparent_light_white">#E5CCCCCC</color>
-    <color name="transparent_black">#7d000000</color>
 </resources>

@@ -28,15 +28,6 @@
         <item name="android:windowBackground">@drawable/background_splash</item>
     </style>
 
-    <style name="NavDrawerButtonStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">@dimen/nav_menu_padding</item>
-        <item name="android:gravity">left|center_vertical</item>
-        <item name="android:textColor">@color/white</item>
-        <item name="android:background">@drawable/image_button</item>
-    </style>
-
     <style name="ImportTheme" parent="Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
