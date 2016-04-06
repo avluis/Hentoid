@@ -11,12 +11,6 @@
         android:orientation="vertical"
         android:padding="10dp">
 
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_margin="10dp"
-            android:background="@android:color/holo_red_light" />
-
         <ProgressBar
             android:id="@+id/pbDownload"
             style="@style/Base.Widget.AppCompat.ProgressBar.Horizontal"
@@ -36,7 +30,8 @@
             android:singleLine="false"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/holo_red_dark"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            tools:text="The Best Thing Ever Made" />
 
         <View
             android:layout_width="fill_parent"
@@ -55,7 +50,8 @@
                 android:layout_width="100dp"
                 android:layout_height="140dp"
                 android:layout_margin="1dp"
-                tools:ignore="ContentDescription" />
+                tools:ignore="ContentDescription"
+                tools:src="@drawable/ic_hentoid" />
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -69,7 +65,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:singleLine="false"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    tools:text="Best Series Ever" />
 
                 <TextView
                     android:id="@+id/tvArtist"
@@ -77,7 +74,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:singleLine="false"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    tools:text="Best Author Ever" />
 
                 <TextView
                     android:id="@+id/tvTags"
@@ -85,7 +83,8 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:singleLine="false"
-                    android:textAppearance="?android:attr/textAppearanceSmall" />
+                    android:textAppearance="?android:attr/textAppearanceSmall"
+                    tools:text="Best Set of TAGs Ever\nToo Awesome to pass up" />
             </LinearLayout>
         </LinearLayout>
 
@@ -116,7 +115,7 @@
                 android:singleLine="false"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@color/white"
-                tools:text="Site" />
+                tools:text="Not FAKKU" />
         </LinearLayout>
 
         <View

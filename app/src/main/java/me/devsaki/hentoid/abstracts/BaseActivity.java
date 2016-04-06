@@ -33,7 +33,7 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
     private ActionBarDrawerToggle mDrawerToggle;
     private T fragment;
 
-    public static HentoidDB getDB() {
+    protected static HentoidDB getDB() {
         return db;
     }
 

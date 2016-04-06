@@ -42,7 +42,7 @@
                 android:layout_height="140dp"
                 android:layout_margin="5dp"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_launcher_web" />
+                tools:src="@drawable/ic_hentoid" />
 
             <LinearLayout
                 android:layout_width="match_parent"

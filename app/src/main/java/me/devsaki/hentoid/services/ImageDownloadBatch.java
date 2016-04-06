@@ -87,6 +87,7 @@ final class ImageDownloadBatch {
             }
         }
 
+        @SuppressWarnings("TryFinallyCanBeTryWithResources")
         @Override
         public void onResponse(Call call, Response response) throws IOException {
             LogHelper.i(TAG, "Start downloading image: " + call.request().url());

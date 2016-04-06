@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
@@ -56,7 +57,7 @@ public class HitomiActivity extends BaseWebActivity {
 
     private WebResourceResponse getJSWebResourceResponseFromAsset(String file) {
         String[] jsFiles = {"hitomi.js", "hitomi-horizontal.js", "hitomi-vertical.js"};
-        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
 
         for (String jsFile : jsFiles) {
             if (file.contains(jsFile)) {

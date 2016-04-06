@@ -4,7 +4,7 @@ package me.devsaki.hentoid.util;
  * Created by DevSaki on 15/05/2015.
  * HttpClientException handler
  */
-public class HttpClientException extends Exception {
+class HttpClientException extends Exception {
 
     private String result;
     private int code;

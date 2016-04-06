@@ -185,7 +185,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
         } else {
-            AndroidHelper.singleSnack(
+            AndroidHelper.sSnack(
                     findViewById(android.R.id.list), R.string.press_back_again,
                     Snackbar.LENGTH_SHORT);
         }
@@ -338,7 +338,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                     if (currentPage != 1) {
                         setQuery("");
                         searchContent();
-                        AndroidHelper.singleSnack(container, R.string.on_first_page,
+                        AndroidHelper.sSnack(container, R.string.on_first_page,
                                 Snackbar.LENGTH_SHORT);
 
                         return true;
@@ -354,13 +354,13 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 @Override
                 public void onClick(View v) {
                     if (qtyPages <= 0) {
-                        AndroidHelper.singleSnack(container, R.string.not_limit_per_page,
+                        AndroidHelper.sSnack(container, R.string.not_limit_per_page,
                                 Snackbar.LENGTH_SHORT);
                     } else {
                         currentPage++;
                         if (!searchContent()) {
                             btnPage.setText(String.valueOf(--currentPage));
-                            AndroidHelper.singleSnack(container, R.string.not_next_page,
+                            AndroidHelper.sSnack(container, R.string.not_next_page,
                                     Snackbar.LENGTH_SHORT);
                             searchContent();
                         }
@@ -375,10 +375,10 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                         currentPage--;
                         searchContent();
                     } else if (qtyPages > 0) {
-                        AndroidHelper.singleSnack(container, R.string.not_previous_page,
+                        AndroidHelper.sSnack(container, R.string.not_previous_page,
                                 Snackbar.LENGTH_SHORT);
                     } else {
-                        AndroidHelper.singleSnack(container, R.string.not_limit_per_page,
+                        AndroidHelper.sSnack(container, R.string.not_limit_per_page,
                                 Snackbar.LENGTH_SHORT);
                     }
                 }

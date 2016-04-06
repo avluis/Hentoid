@@ -133,8 +133,7 @@ public class IntroSlideActivity extends AppIntro2 {
                                 LogHelper.d(TAG, "Permission Denied by User");
 
                                 pager.setCurrentItem(IMPORT_SLIDE - 3);
-                                AndroidHelper.singleSnack(pager,
-                                        getString(R.string.permission_denied),
+                                AndroidHelper.sSnack(pager, R.string.permission_denied,
                                         Snackbar.LENGTH_LONG);
                                 break;
                             case "PERMISSION_DENIED_FORCED":
@@ -144,9 +143,9 @@ public class IntroSlideActivity extends AppIntro2 {
                                 setSwipeLock(true);
                                 pager.setCurrentItem(IMPORT_SLIDE - 3);
 
-                                Snackbar.make(pager, getString(R.string.permission_denied_forced),
+                                Snackbar.make(pager, R.string.permission_denied_forced,
                                         Snackbar.LENGTH_INDEFINITE)
-                                        .setAction(getString(R.string.open_app_settings),
+                                        .setAction(R.string.open_app_settings,
                                                 new View.OnClickListener() {
                                                     @Override
                                                     public void onClick(View v) {
@@ -159,8 +158,7 @@ public class IntroSlideActivity extends AppIntro2 {
                                 LogHelper.d(TAG, "Existing Library Found");
 
                                 pager.setCurrentItem(IMPORT_SLIDE - 2);
-                                AndroidHelper.singleSnack(pager,
-                                        getString(R.string.existing_library_found),
+                                AndroidHelper.sSnack(pager, R.string.existing_library_found,
                                         Snackbar.LENGTH_LONG);
                                 break;
                             default:

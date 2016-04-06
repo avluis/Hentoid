@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -38,7 +39,7 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private WebResourceResponse getJSWebResourceResponseFromAsset() {
-        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "main_js.js";
         try {
             return getUtf8EncodedJSWebResourceResponse(getAssets().open(file));
@@ -48,7 +49,7 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private WebResourceResponse getDomainWebResourceResponseFromAsset() {
-        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "ads2";
         try {
             return getUtf8EncodedHtmlWebResourceResponse(getAssets().open(file));
@@ -58,7 +59,7 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private WebResourceResponse getCssWebResourceResponseFromAsset() {
-        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "main_style.css";
         try {
             return getUtf8EncodedCssWebResourceResponse(getAssets().open(file));

@@ -150,7 +150,7 @@ public class AndroidHelper {
 
     @SuppressLint("WorldWriteableFiles")
     // TODO: Update with non-deprecated methods
-    public static File getDefaultDir(String dir, Context context) {
+    private static File getDefaultDir(String dir, Context context) {
         File file;
         try {
             file = new File(Environment.getExternalStorageDirectory()
@@ -165,8 +165,10 @@ public class AndroidHelper {
                 file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
                 file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
                 if (!file.exists()) {
-                    // noinspection ResultOfMethodCallIgnored
-                    file.mkdirs();
+                    boolean mkdirs = file.mkdirs();
+                    if (mkdirs) {
+                        LogHelper.d(TAG, "Directory created");
+                    }
                 }
             }
         }
@@ -272,7 +274,7 @@ public class AndroidHelper {
     }
 
     // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
-    public static void singleToast(Context ctx, String text, int duration) {
+    public static void sToast(Context ctx, String text, int duration) {
         if (sToast != null) {
             sToast.cancel();
             sToast = null;
@@ -281,7 +283,7 @@ public class AndroidHelper {
         sToast.show();
     }
 
-    public static void singleToast(Context ctx, int resource, int duration) {
+    public static void sToast(Context ctx, int resource, int duration) {
         if (sToast != null) {
             sToast.cancel();
             sToast = null;
@@ -290,7 +292,7 @@ public class AndroidHelper {
         sToast.show();
     }
 
-    public static void singleSnack(View view, String text, int duration) {
+    public static void sSnack(View view, String text, int duration) {
         if (sSnack != null) {
             sSnack.dismiss();
             sSnack = null;
@@ -299,7 +301,7 @@ public class AndroidHelper {
         sSnack.show();
     }
 
-    public static void singleSnack(View view, int resource, int duration) {
+    public static void sSnack(View view, int resource, int duration) {
         if (sSnack != null) {
             sSnack.dismiss();
             sSnack = null;

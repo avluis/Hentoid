@@ -44,7 +44,7 @@ public class BaseWebActivity extends AppCompatActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
     private final static int STORAGE_PERMISSION_REQUEST = 1;
-    protected ObservableWebView webView;
+    ObservableWebView webView;
     private HentoidDB db;
     private Content currentContent;
     private Site site;
@@ -53,11 +53,11 @@ public class BaseWebActivity extends AppCompatActivity {
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
 
-    protected Site getSite() {
+    Site getSite() {
         return site;
     }
 
-    protected void setSite(Site site) {
+    void setSite(Site site) {
         this.site = site;
     }
 
@@ -250,7 +250,7 @@ public class BaseWebActivity extends AppCompatActivity {
         processDownload();
     }
 
-    protected void processDownload() {
+    void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
@@ -309,7 +309,7 @@ public class BaseWebActivity extends AppCompatActivity {
         return false;
     }
 
-    protected void processContent(Content content) {
+    void processContent(Content content) {
         if (content == null) {
             return;
         }
@@ -359,7 +359,7 @@ public class BaseWebActivity extends AppCompatActivity {
         }
     }
 
-    protected class CustomWebViewClient extends WebViewClient {
+    class CustomWebViewClient extends WebViewClient {
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {

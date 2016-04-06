@@ -23,15 +23,14 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
  * If set, this will allow us to 'lock' the app behind a password/code.
  */
 public class AppLockActivity extends AppCompatActivity {
+
+    private final long DELAY = 1000;
+    private final long[] goodPinPattern = {0, 250, 100, 100};
+    private final long[] wrongPinPattern = {0, 200, 200, 200};
     private TextView tvAppLock;
     private EditText etPin;
     private Vibrator vibrator;
-
     private Handler handler = new Handler();
-    private final long DELAY = 1000;
-
-    private final long[] goodPinPattern = {0, 250, 100, 100};
-    private final long[] wrongPinPattern = {0, 200, 200, 200};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

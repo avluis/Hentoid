@@ -16,7 +16,7 @@ import android.widget.Toast;
 
 import com.thin.downloadmanager.DownloadManager;
 import com.thin.downloadmanager.DownloadRequest;
-import com.thin.downloadmanager.DownloadStatusListener;
+import com.thin.downloadmanager.DownloadStatusListenerV1;
 import com.thin.downloadmanager.ThinDownloadManager;
 
 import org.json.JSONException;
@@ -31,6 +31,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -152,7 +153,7 @@ public class UpdateCheck implements IUpdateCheck {
 
         builder = new NotificationCompat
                 .Builder(context)
-                .setSmallIcon(R.drawable.ic_hentoid)
+                .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVibrate(new long[]{1, 1, 1})
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
@@ -181,7 +182,7 @@ public class UpdateCheck implements IUpdateCheck {
 
         builder = new NotificationCompat
                 .Builder(context)
-                .setSmallIcon(R.drawable.ic_hentoid)
+                .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setTicker(context.getString(R.string.downloading_update))
                 .setContent(notificationView)
                 .setDeleteIntent(removeIntent);
@@ -205,7 +206,7 @@ public class UpdateCheck implements IUpdateCheck {
 
         builder = new NotificationCompat
                 .Builder(context)
-                .setSmallIcon(R.drawable.ic_hentoid)
+                .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVibrate(new long[]{1, 1, 1})
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
@@ -238,27 +239,30 @@ public class UpdateCheck implements IUpdateCheck {
 
     public void downloadUpdate() {
         if (downloadURL != null) {
-            cancelDownload();
+
+            if (downloadID != -1) {
+                cancelDownload();
+            }
 
             Uri downloadUri = Uri.parse(downloadURL);
-            context.getExternalCacheDir();
             Uri destinationUri = Uri.parse(updateDownloadPath =
                     context.getExternalCacheDir() + "/hentoid_update.apk");
 
             DownloadRequest downloadRequest = new DownloadRequest(downloadUri)
                     .setDestinationURI(destinationUri)
                     .setPriority(DownloadRequest.Priority.HIGH)
-                    .setDownloadListener(new DownloadStatusListener() {
+                    .setStatusListener(new DownloadStatusListenerV1() {
                         private boolean posted;
 
                         @Override
-                        public void onDownloadComplete(int id) {
+                        public void onDownloadComplete(DownloadRequest request) {
                             cancelNotificationAndUpdateRunnable();
                             updateDownloadedNotification();
                         }
 
                         @Override
-                        public void onDownloadFailed(int id, int errorCode, String errorMessage) {
+                        public void onDownloadFailed(DownloadRequest request, int errorCode,
+                                                     String errorMessage) {
                             cancelNotificationAndUpdateRunnable();
                             if (errorCode != DownloadManager.ERROR_DOWNLOAD_CANCELLED) {
                                 try {
@@ -277,8 +281,8 @@ public class UpdateCheck implements IUpdateCheck {
                         }
 
                         @Override
-                        public void onProgress(int id, long totalBytes, long downloadedBytes,
-                                               int progress) {
+                        public void onProgress(DownloadRequest request, long totalBytes,
+                                               long downloadedBytes, int progress) {
                             progressBar = progress;
                             total = totalBytes;
                             done = downloadedBytes;
@@ -292,9 +296,9 @@ public class UpdateCheck implements IUpdateCheck {
 
             downloadManager = new ThinDownloadManager();
             downloadID = downloadManager.add(downloadRequest);
+            LogHelper.d(TAG, "DownloadID: " + downloadID);
         } else {
-            Toast.makeText(context.getApplicationContext(), R.string.update_failed,
-                    Toast.LENGTH_LONG).show();
+            AndroidHelper.sToast(context, R.string.update_failed, Toast.LENGTH_LONG);
             instance.cancelNotification();
         }
     }
@@ -342,16 +346,6 @@ public class UpdateCheck implements IUpdateCheck {
                     if (getAppVersionCode(context) < updateVersionCode) {
                         if (updateCheckResult != null) {
                             updateCheckResult.onUpdateAvailable();
-                            if (showToast) {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(context,
-                                                "Update Check: An update is available!",
-                                                Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
                         }
                         downloadURL = jsonObject.getString(KEY_UPDATED_URL);
                         updateAvailableNotification(downloadURL);
@@ -362,9 +356,9 @@ public class UpdateCheck implements IUpdateCheck {
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        Toast.makeText(context,
+                                        AndroidHelper.sToast(context,
                                                 "Update Check: No new updates.",
-                                                Toast.LENGTH_LONG).show();
+                                                Toast.LENGTH_SHORT);
                                     }
                                 });
                             }

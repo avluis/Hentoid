@@ -84,8 +84,8 @@ final class NotificationPresenter {
                     .setColor(ContextCompat.getColor(appInstance.getApplicationContext(),
                             R.color.accent))
                     .setContentText("")
-                    .setContentTitle(resources.getString(R.string.download_completed_multiple)
-                                    .replace("%d", String.valueOf(downloadCount))
+                    .setContentTitle(resources.getQuantityString(R.plurals.download_completed,
+                                    downloadCount).replace("%d", String.valueOf(downloadCount))
                     );
             notificationManager.notify(notificationId, currentBuilder.build());
 
@@ -96,7 +96,8 @@ final class NotificationPresenter {
                 currentBuilder.setContentTitle(resources.getString(R.string.downloading));
                 break;
             case DOWNLOADED:
-                currentBuilder.setContentTitle(resources.getString(R.string.download_completed));
+                currentBuilder.setContentTitle(resources.getQuantityString(
+                        R.plurals.download_completed, downloadCount));
                 // Tracking Event (Download Completed)
                 appInstance.trackEvent("Download Service", "Download",
                         "Download Content: Success.");

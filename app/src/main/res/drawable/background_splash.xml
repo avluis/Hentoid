@@ -6,7 +6,7 @@
     <item>
         <bitmap
             android:gravity="center"
-            android:src="@drawable/ic_hentoid"
+            android:src="@drawable/ic_hentoid_trans"
             android:tileMode="repeat" />
     </item>
 

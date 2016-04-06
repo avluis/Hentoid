@@ -189,12 +189,12 @@ public class PreferencesActivity extends AppCompatActivity {
                             new UpdateCheck.UpdateCheckCallback() {
                                 @Override
                                 public void noUpdateAvailable() {
-                                    LogHelper.i(TAG, "Manual update check: No update available.");
+                                    LogHelper.i(TAG, "Update Check: No update.");
                                 }
 
                                 @Override
                                 public void onUpdateAvailable() {
-                                    LogHelper.d(TAG, "Manual update check: Update available!");
+                                    LogHelper.d(TAG, "Update Check: Update!");
                                 }
                             });
 
