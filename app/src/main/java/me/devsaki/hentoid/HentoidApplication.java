@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
@@ -155,6 +156,7 @@ public class HentoidApplication extends Application {
         Glide.with(this)
                 .load(image)
                 .override(imageQuality.getWidth(), imageQuality.getHeight())
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .into(mImageView);
     }
 }

@@ -15,10 +15,27 @@ android {
         versionCode 36
         versionName '1.2.0r1-beta1'
     }
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+        exclude 'README.md'
+        exclude 'LICENSE'
+        exclude 'update.json'
+    }
+
+    signingConfigs {
+        release
+        releaseProguard
+    }
+
     buildTypes {
         debug {
             debuggable true
             minifyEnabled false
+        }
+        debugProguard {
+            debuggable true
+            minifyEnabled true
             shrinkResources true
 
             // Library specific proguard files
@@ -35,7 +52,13 @@ android {
         release {
             debuggable false
             minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        releaseProguard {
+            debuggable false
+            minifyEnabled true
             shrinkResources true
+            signingConfig signingConfigs.releaseProguard
 
             // Library specific proguard files
             FileCollection proGuardFileCollection = files { file('../.proguard/').listFiles() }
@@ -49,33 +72,71 @@ android {
             testProguardFile 'proguard-project-test.pro'
         }
     }
-    packagingOptions {
-        exclude 'README.md'
-        exclude 'LICENSE'
-        exclude 'update.json'
+}
+
+def Properties props = new Properties()
+def propFile = new File('.signing/signing.properties')
+if (propFile.canRead()) {
+    props.load(new FileInputStream(propFile))
+
+    if (props != null && props.containsKey('STORE_FILE') && props.containsKey('STORE_PASSWORD')
+            && props.containsKey('KEY_ALIAS') && props.containsKey('KEY_PASSWORD')) {
+        'release'
+        android.signingConfigs.release.storeFile = file(props['STORE_FILE'])
+        android.signingConfigs.release.storePassword = props['STORE_PASSWORD']
+        android.signingConfigs.release.keyAlias = props['KEY_ALIAS']
+        android.signingConfigs.release.keyPassword = props['KEY_PASSWORD']
+        'releaseProguard'
+        android.signingConfigs.releaseProguard.storeFile = file(props['STORE_FILE'])
+        android.signingConfigs.releaseProguard.storePassword = props['STORE_PASSWORD']
+        android.signingConfigs.releaseProguard.keyAlias = props['KEY_ALIAS']
+        android.signingConfigs.releaseProguard.keyPassword = props['KEY_PASSWORD']
+    } else {
+        println 'signing.properties found but some entries are missing'
+        android.buildTypes.release.signingConfig = null
+        android.buildTypes.releaseProguard.signingConfig = null
     }
+} else {
+    println 'signing.properties not found'
+    android.buildTypes.release.signingConfig = null
+    android.buildTypes.releaseProguard.signingConfig = null
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    // Support libraries
     compile 'com.android.support:appcompat-v7:23.2.1'
     compile 'com.android.support:cardview-v7:23.2.1'
     compile 'com.android.support:design:23.2.1'
     compile 'com.android.support:recyclerview-v7:23.2.1'
     compile 'com.android.support:support-v4:23.2.1'
+    // Material progress dialog
     compile('com.github.afollestad.material-dialogs:core:0.8.5.7@aar') {
         transitive = true
     }
-    compile 'com.github.bumptech.glide:glide:3.6.1'
+    // Image loader
+    compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
+    // Integrate with OkHttp3
+    compile 'com.github.bumptech.glide:okhttp-integration:1.5.0-SNAPSHOT'
+    // Intro screens or slides
     compile 'com.github.paolorotolo:appintro:3.4.0'
-    compile 'com.google.android.gms:play-services-analytics:8.4.0'
+    // Google Play Services Analytics
+    compile('com.google.android.gms:play-services-analytics:8.4.0') {
+        exclude module: 'play-services-ads'
+    }
+    // Java serialization/deserialization (Java Objects into JSON and back)
     compile 'com.google.code.gson:gson:2.4'
-    compile 'com.squareup.okhttp3:okhttp:3.2.0'
-    compile 'com.mani:ThinDownloadManager:1.2.0'
+    // Download app updates (without user prompts)
+    compile 'com.mani:ThinDownloadManager:1.2.4'
+    // Directory file picker (as fragment)
     compile('com.turhanoz.android:reactivedirectorychooser:0.0.13@aar') {
         transitive = true
     }
+    // Additional Support Libraries
+    // HTTP & HTTP/2 client
+    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+    // IO functionality
     compile 'commons-io:commons-io:2.4'
+    // JSOUP HTML parser
     compile 'org.jsoup:jsoup:1.8.3'
 }
 

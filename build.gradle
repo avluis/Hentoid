@@ -16,8 +16,10 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
+        maven { url "https://jitpack.io" }
         maven {
-            url "https://jitpack.io"
+            name 'glide-snapshot'
+            url 'http://oss.sonatype.org/content/repositories/snapshots'
         }
     }
 }
