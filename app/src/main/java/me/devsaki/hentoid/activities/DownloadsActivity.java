@@ -158,7 +158,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
                         if (!query.equals("")) {
                             query = "";
-                            submitSearchQuery("", 0);
+                            submitSearchQuery("", 300);
                         }
 
                         return true;
@@ -397,24 +397,6 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 @Override
                 public void onClick(View v) {
                     searchContent();
-                }
-            });
-
-            btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (currentPage != 1) {
-                        setQuery("");
-                        searchContent();
-                        AndroidHelper.sSnack(container, R.string.on_first_page,
-                                Snackbar.LENGTH_SHORT);
-
-                        return true;
-                    } else {
-                        searchContent();
-
-                        return true;
-                    }
                 }
             });
 

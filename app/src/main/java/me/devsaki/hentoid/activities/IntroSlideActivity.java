@@ -70,6 +70,16 @@ public class IntroSlideActivity extends AppIntro2 {
     }
 
     @Override
+    public void onBackPressed() {
+        if (pager.getCurrentItem() == IMPORT_SLIDE + 1) {
+            // DO NOT ALLOW
+            LogHelper.d(TAG, "You can't leave just yet!");
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
     public void onSlideChanged() {
         // Show the import activity just prior to the last slide
         if (pager.getCurrentItem() == IMPORT_SLIDE) {

@@ -71,7 +71,7 @@ public class ImportActivity extends AppCompatActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        RelativeLayout relativeLayout = new RelativeLayout(this);
+        RelativeLayout relativeLayout = new RelativeLayout(this, null, R.style.ImportTheme);
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
@@ -235,6 +235,7 @@ public class ImportActivity extends AppCompatActivity implements
         if (files.size() > 0) {
             new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setCancelable(false)
                     .setTitle(R.string.app_name)
                     .setMessage(R.string.contents_detected)
                     .setPositiveButton(android.R.string.yes,

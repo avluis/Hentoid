@@ -5,6 +5,7 @@ import android.app.ListFragment;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +29,7 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
     private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
 
     private static HentoidDB db;
+    private final Handler handler = new Handler();
     private String[] mActivityList;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -130,6 +132,12 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        handler.removeCallbacksAndMessages(null);
+    }
+
     private void selectItem(int position) {
         String activity = null;
         for (String selectedActivity : mActivityList) {
@@ -146,11 +154,18 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
             LogHelper.e(TAG, "Class not found: ", e);
         }
 
-        Intent intent = new Intent(this, cls);
+        final Intent intent = new Intent(this, cls);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         mDrawerList.setItemChecked(position, true);
         mDrawerLayout.closeDrawer(mDrawerList);
-        startActivity(intent);
+
+        handler.removeCallbacksAndMessages(null);
+        handler.postDelayed(new Runnable() {
+
+            public void run() {
+                startActivity(intent);
+            }
+        }, 300);
     }
 }
