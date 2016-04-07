@@ -298,11 +298,11 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         private void checkPermissions() {
             if (AndroidHelper.permissionsCheck(getActivity(),
                     STORAGE_PERMISSION_REQUEST)) {
-                LogHelper.d(TAG, "allow");
+                LogHelper.d(TAG, "Storage permission allowed!");
                 queryPrefs();
                 searchContent();
             } else {
-                LogHelper.d(TAG, "deny");
+                LogHelper.d(TAG, "Storage permission denied!");
                 reset();
             }
         }
@@ -328,6 +328,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             }
         }
 
+        // TODO: This could be relaxed - we could try another permission request
         private void reset() {
             AndroidHelper.commitFirstRun(true);
             Intent intent = new Intent(getActivity(), IntroSlideActivity.class);
@@ -338,8 +339,6 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         @Override
         public void onResume() {
             super.onResume();
-
-            LogHelper.d(TAG, "onResume");
             checkPermissions();
 
             // Retrieve list position
@@ -460,14 +459,14 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         private boolean searchContent() {
             List<Content> result = getDB()
                     .selectContentByQuery(query, currentPage, qtyPages,
-                            order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+                            order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
             if (isAdded()) {
                 if (result != null && !result.isEmpty()) {
                     contents = result;
-                    LogHelper.i(TAG, "Content: Match.");
+                    LogHelper.d(TAG, "Content: Match.");
                 } else {
                     contents = new ArrayList<>(0);
-                    LogHelper.i(TAG, "Content: No match.");
+                    LogHelper.d(TAG, "Content: No match.");
                 }
                 if (contents == result || contents.isEmpty()) {
                     ContentAdapter adapter = new ContentAdapter(getActivity(), contents);

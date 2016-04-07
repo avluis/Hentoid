@@ -30,7 +30,7 @@ public enum Site {
 
     public static Site searchByCode(int code) {
         if (code == -1) {
-            LogHelper.e(TAG, "Invalid site code");
+            LogHelper.w(TAG, "Invalid site code!");
         }
         for (Site s : Site.values()) {
             if (s.getCode() == code)

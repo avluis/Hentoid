@@ -30,6 +30,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
 
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
@@ -102,7 +103,7 @@ public class UpdateCheck implements IUpdateCheck {
                 (!onlyWifi && NetworkStatus.isOnline(context))) {
             connected = true;
         } else {
-            LogHelper.e(TAG, "Network is not connected!");
+            LogHelper.w(TAG, "Network is not connected!");
         }
         if (connected) {
             runAsyncTask();
@@ -111,7 +112,12 @@ public class UpdateCheck implements IUpdateCheck {
     }
 
     private void runAsyncTask() {
-        String updateURL = Constants.UPDATE_URL;
+        String updateURL;
+        if (BuildConfig.DEBUG) {
+            updateURL = Constants.DEBUG_UPDATE_URL;
+        } else {
+            updateURL = Constants.UPDATE_URL;
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
@@ -372,7 +378,7 @@ public class UpdateCheck implements IUpdateCheck {
             return null;
         }
 
-        private JSONObject downloadURL(String updateURL) throws IOException, JSONException {
+        JSONObject downloadURL(String updateURL) throws IOException, JSONException {
             InputStream inputStream = null;
             try {
                 disableConnectionReuse();
@@ -392,11 +398,18 @@ public class UpdateCheck implements IUpdateCheck {
                 String contentString = readInputStream(inputStream);
 
                 return new JSONObject(contentString);
+            } catch (IOException io) {
+                // TODO: Log to Analytics
+                LogHelper.e(TAG, "JSON file not found: ", io);
+            } catch (JSONException jex) {
+                // TODO: Log to Analytics
+                LogHelper.e(TAG, "JSON file not properly formatted: ", jex);
             } finally {
                 if (inputStream != null) {
                     inputStream.close();
                 }
             }
+            return null;
         }
 
         private void disableConnectionReuse() {

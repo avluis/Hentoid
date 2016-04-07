@@ -111,10 +111,10 @@ public class HentoidApplication extends Application {
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         if (AndroidHelper.getMobileUpdatePrefs()) {
-            LogHelper.i(TAG, "Mobile Updates: ON");
+            LogHelper.d(TAG, "Mobile Updates: ON");
             UpdateCheck(false);
         } else {
-            LogHelper.i(TAG, "Mobile Updates; OFF");
+            LogHelper.d(TAG, "Mobile Updates; OFF");
             UpdateCheck(true);
         }
     }
@@ -124,12 +124,12 @@ public class HentoidApplication extends Application {
                 onlyWifi, false, new UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {
-                        LogHelper.i(TAG, "Update Check: No update.");
+                        LogHelper.d(TAG, "Update Check: No update.");
                     }
 
                     @Override
                     public void onUpdateAvailable() {
-                        LogHelper.i(TAG, "Update Check: Update!");
+                        LogHelper.d(TAG, "Update Check: Update!");
                     }
                 });
     }

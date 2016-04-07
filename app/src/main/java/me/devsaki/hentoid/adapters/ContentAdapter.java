@@ -237,7 +237,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                 try {
                                     FileUtils.deleteDirectory(dir);
                                 } catch (IOException e) {
-                                    LogHelper.e(TAG, "error deleting content directory", e);
+                                    LogHelper.e(TAG, "Error deleting content directory: ", e);
                                 }
 
                                 db.deleteContent(content);

@@ -99,8 +99,10 @@ public class ImportActivity extends AppCompatActivity implements
     private void checkPermissions() {
         if (AndroidHelper.permissionsCheck(ImportActivity.this,
                 STORAGE_PERMISSION_REQUEST)) {
-            LogHelper.d(TAG, "allow");
+            LogHelper.d(TAG, "Storage permission allowed!");
             pickDownloadDirectory();
+        } else {
+            LogHelper.d(TAG, "Storage permission denied!");
         }
     }
 
@@ -320,7 +322,7 @@ public class ImportActivity extends AppCompatActivity implements
                     .setUrl(urlBean.getId())
                     .setType(type);
         } catch (Exception e) {
-            LogHelper.e(TAG, "Parsing urlBean to attribute", e);
+            LogHelper.e(TAG, "Parsing urlBean to attribute: ", e);
             return null;
         }
     }
@@ -425,7 +427,7 @@ public class ImportActivity extends AppCompatActivity implements
                                 }
                                 contents.add(content);
                             } catch (Exception e) {
-                                LogHelper.e(TAG, "Reading JSON file", e);
+                                LogHelper.e(TAG, "Reading JSON file: ", e);
                             }
                         } else {
                             json = new File(file, Constants.JSON_FILE_NAME);
@@ -444,7 +446,7 @@ public class ImportActivity extends AppCompatActivity implements
                                     }
                                     contents.add(contentV2);
                                 } catch (Exception e) {
-                                    LogHelper.e(TAG, "Reading JSON file", e);
+                                    LogHelper.e(TAG, "Reading JSON file: ", e);
                                 }
                             } else {
                                 json = new File(file, Constants.OLD_JSON_FILE_NAME);
@@ -491,7 +493,7 @@ public class ImportActivity extends AppCompatActivity implements
                                         }
                                         contents.add(contentV2);
                                     } catch (Exception e) {
-                                        LogHelper.e(TAG, "Reading JSON file v2", e);
+                                        LogHelper.e(TAG, "Reading JSON file v2: ", e);
                                     }
                                 }
                             }

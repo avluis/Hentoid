@@ -115,7 +115,7 @@ public class NhentaiParser {
                 imagesUrl.add(urlImage);
             }
         } catch (JSONException e) {
-            LogHelper.e(TAG, "Error parsing content", e);
+            LogHelper.e(TAG, "Error parsing content: ", e);
         }
 
         return imagesUrl;

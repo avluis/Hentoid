@@ -143,7 +143,7 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
             cls = Class.forName("me.devsaki.hentoid.activities." + activity + "Activity");
         } catch (ClassNotFoundException e) {
             // TODO: Log to Analytics
-            LogHelper.e(TAG, "Class not found", e);
+            LogHelper.e(TAG, "Class not found: ", e);
         }
 
         Intent intent = new Intent(this, cls);

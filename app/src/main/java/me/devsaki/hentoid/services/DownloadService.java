@@ -50,20 +50,20 @@ public class DownloadService extends IntentService {
         db = new HentoidDB(this);
         notificationPresenter = new NotificationPresenter();
 
-        LogHelper.i(TAG, "Download service created");
+        LogHelper.d(TAG, "Download service created");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        LogHelper.i(TAG, "Download service destroyed");
+        LogHelper.d(TAG, "Download service destroyed");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
         if (!NetworkStatus.isOnline(this)) {
-            LogHelper.e(TAG, "No connection!");
+            LogHelper.w(TAG, "No connection!");
             return;
         }
 
@@ -92,7 +92,7 @@ public class DownloadService extends IntentService {
                 return;
             }
 
-            LogHelper.i(TAG, "Content download started: " + currentContent.getTitle());
+            LogHelper.d(TAG, "Content download started: " + currentContent.getTitle());
 
             // Tracking Event (Download Added)
             HentoidApplication.getInstance().trackEvent("Download Service", "Download",
@@ -119,7 +119,7 @@ public class DownloadService extends IntentService {
                         try {
                             FileUtils.deleteDirectory(dir);
                         } catch (IOException e) {
-                            LogHelper.e(TAG, "Error deleting content directory! ", e);
+                            LogHelper.e(TAG, "Error deleting content directory: ", e);
                         }
                     }
 
@@ -157,12 +157,12 @@ public class DownloadService extends IntentService {
             try {
                 Helper.saveJson(currentContent, dir);
             } catch (IOException e) {
-                LogHelper.e(TAG, "Error saving JSON " + currentContent.getTitle(), e);
+                LogHelper.e(TAG, "Error saving JSON: " + currentContent.getTitle(), e);
             }
 
             notificationPresenter.updateNotification(0);
             updateActivity(-1);
-            LogHelper.i(TAG, "Content download finished: " + currentContent.getTitle());
+            LogHelper.d(TAG, "Content download finished: " + currentContent.getTitle());
 
             // Search for queued content download tasks and fire intent
             currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
@@ -204,7 +204,7 @@ public class DownloadService extends IntentService {
                     break;
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, "Error getting image urls ", e);
+            LogHelper.e(TAG, "Error getting image urls: ", e);
             throw e;
         }
 

@@ -24,4 +24,7 @@ public abstract class Constants {
 
     public static final String UPDATE_URL =
             "https://raw.githubusercontent.com/csaki/Hentoid/master/app/update.json";
+
+    public static final String DEBUG_UPDATE_URL =
+            "https://avnet.ws/.apps/hentoid/debug/update.json";
 }

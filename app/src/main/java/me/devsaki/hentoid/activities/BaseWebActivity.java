@@ -102,7 +102,6 @@ public class BaseWebActivity extends AppCompatActivity {
         if (AndroidHelper.permissionsCheck(this,
                 STORAGE_PERMISSION_REQUEST)) {
             LogHelper.d(TAG, "Storage permission allowed!");
-
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
             reset();

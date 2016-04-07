@@ -27,7 +27,7 @@ public class ZipManager {
             byte data[] = new byte[BUFFER];
 
             for (String file : files) {
-                LogHelper.v(TAG, "Compressing File: " + file);
+                LogHelper.d(TAG, "Compressing File: " + file);
 
                 FileInputStream inputStream = new FileInputStream(file);
                 input = new BufferedInputStream(inputStream, BUFFER);
@@ -42,7 +42,7 @@ public class ZipManager {
             }
             zipOut.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.e(TAG, "Compression Failed: ", e);
         }
     }
 
@@ -54,7 +54,7 @@ public class ZipManager {
             ZipInputStream zipInput = new ZipInputStream(fileInput);
             ZipEntry zipEntry;
             while ((zipEntry = zipInput.getNextEntry()) != null) {
-                LogHelper.v(TAG, "Extracting File: " + zipEntry.getName());
+                LogHelper.d(TAG, "Extracting File: " + zipEntry.getName());
 
                 if (zipEntry.isDirectory()) {
                     dirChecker(zipEntry.getName());
@@ -79,7 +79,7 @@ public class ZipManager {
         if (!file.isDirectory()) {
             final boolean mkdirs = file.mkdirs();
             if (mkdirs) {
-                LogHelper.v(TAG, "Directory Created.");
+                LogHelper.d(TAG, "Directory Created.");
             }
         }
     }

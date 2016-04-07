@@ -189,7 +189,7 @@ public class PreferencesActivity extends AppCompatActivity {
                             new UpdateCheck.UpdateCheckCallback() {
                                 @Override
                                 public void noUpdateAvailable() {
-                                    LogHelper.i(TAG, "Update Check: No update.");
+                                    LogHelper.d(TAG, "Update Check: No update.");
                                 }
 
                                 @Override

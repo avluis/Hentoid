@@ -53,7 +53,7 @@ final class ImageDownloadBatch {
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
-            LogHelper.e(TAG, "Interrupted while waiting for download task to complete", e);
+            LogHelper.e(TAG, "Interrupt while waiting on download task completion: ", e);
         }
     }
 
@@ -90,10 +90,10 @@ final class ImageDownloadBatch {
         @SuppressWarnings("TryFinallyCanBeTryWithResources")
         @Override
         public void onResponse(Call call, Response response) throws IOException {
-            LogHelper.i(TAG, "Start downloading image: " + call.request().url());
+            LogHelper.d(TAG, "Start downloading image: " + call.request().url());
 
             if (!response.isSuccessful()) {
-                LogHelper.e(TAG, "Unexpected http status code: " + response.code());
+                LogHelper.w(TAG, "Unexpected http status code: " + response.code());
             }
 
             final File file;
@@ -136,7 +136,7 @@ final class ImageDownloadBatch {
             }
 
             semaphore.release();
-            LogHelper.i(TAG, "Done downloading image: " + call.request().url());
+            LogHelper.d(TAG, "Done downloading image: " + call.request().url());
         }
     }
-} 
+}

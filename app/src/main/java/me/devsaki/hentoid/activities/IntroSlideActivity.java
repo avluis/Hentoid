@@ -175,7 +175,7 @@ public class IntroSlideActivity extends AppIntro2 {
                     initImport();
                 }
             } else {
-                LogHelper.i(TAG, "Data is null!");
+                LogHelper.d(TAG, "Data is null!");
                 // TODO: Log to Analytics
                 // Try again!
                 initImport();
@@ -191,7 +191,7 @@ public class IntroSlideActivity extends AppIntro2 {
                 }
             }, 100);
         } else {
-            LogHelper.i(TAG, "Unknown result code!");
+            LogHelper.d(TAG, "Unknown result code!");
             super.onActivityResult(requestCode, resultCode, data);
         }
     }

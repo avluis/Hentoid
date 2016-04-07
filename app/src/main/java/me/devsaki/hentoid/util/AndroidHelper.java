@@ -216,11 +216,11 @@ public class AndroidHelper {
                 ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
                 ConstantsPreferences.PREFS_VERSION_KEY, 0);
 
-        LogHelper.i(TAG, "Current Prefs Key value: " + prefsVersion);
+        LogHelper.d(TAG, "Current Prefs Key value: " + prefsVersion);
 
         // Use this whenever any incompatible changes are made to Prefs.
         if (prefsVersion != ConstantsPreferences.PREFS_VERSION) {
-            LogHelper.i(TAG, "Shared Prefs Key Mismatch! Clearing Prefs!");
+            LogHelper.d(TAG, "Shared Prefs Key Mismatch! Clearing Prefs!");
 
             // Clear All
             clearSharedPreferences(ctx.getApplicationContext());
@@ -228,7 +228,7 @@ public class AndroidHelper {
             // Save current Pref version key
             saveSharedPrefsKey(ctx.getApplicationContext());
         } else {
-            LogHelper.i(TAG, "Prefs Key Match. Carry on.");
+            LogHelper.d(TAG, "Prefs Key Match. Carry on.");
         }
     }
 
