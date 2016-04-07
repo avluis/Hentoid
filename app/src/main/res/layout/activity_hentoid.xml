@@ -10,15 +10,8 @@
         android:clickable="true" />
 
     <!-- The navigation drawer -->
-    <ListView
+    <include
         android:id="@+id/left_drawer"
-        style="@style/AppTheme.DrawerBackground"
-        android:layout_width="140dp"
-        android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:choiceMode="singleChoice"
-        android:clickable="true"
-        android:divider="@color/transparent"
-        android:dividerHeight="0dp" />
+        layout="@layout/drawer_list" />
 
 </android.support.v4.widget.DrawerLayout>
