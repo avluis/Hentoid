@@ -12,7 +12,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.SearchView;
@@ -48,47 +47,16 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     private static SharedPreferences preferences;
     private static String settingDir;
     private static int order;
+    private static boolean orderUpdated;
+    private static String query = "";
     private final Handler searchHandler = new Handler();
-    private MenuItem searchMenuItem;
+    private MenuItem searchMenu;
     private SearchView searchView;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private boolean shouldHide;
     private int mDrawerState;
-    private static boolean orderUpdated;
     private long backButtonPressed;
-
-    // DO NOT use this in onCreateOptionsMenu
-    private void clearQuery() {
-        if (searchView.isShown()) {
-            searchView.setIconified(true);
-            searchMenuItem.collapseActionView();
-        }
-        searchView.setQuery("", false);
-    }
-
-    private void clearSearchQuery(int option) {
-        if (option == 1) {
-            searchView.clearFocus();
-        }
-        getFragment().setQuery("");
-        getFragment().searchContent();
-    }
-
-    private void submitSearchQuery(String s) {
-        submitSearchQuery(s, 0);
-    }
-
-    private void submitSearchQuery(final String s, long delay) {
-        searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                getFragment().setQuery(s.trim());
-                getFragment().searchContent();
-            }
-        }, delay);
-    }
 
     @Override
     protected DownloadsFragment buildFragment() {
@@ -101,6 +69,8 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
         preferences = HentoidApplication.getAppPreferences();
         settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
+        order = preferences.getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
+                ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
@@ -108,17 +78,14 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
-
             }
 
             @Override
             public void onDrawerOpened(View drawerView) {
-
             }
 
             @Override
             public void onDrawerClosed(View drawerView) {
-
             }
 
             @Override
@@ -145,7 +112,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
 
         if (!shouldHide) {
-            clearQuery();
+            MenuItemCompat.collapseActionView(searchMenu);
             menu.findItem(R.id.action_search).setVisible(false);
 
             if (order == 0) {
@@ -159,15 +126,44 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(final Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_content_list, menu);
 
         // Associate searchable configuration with the SearchView
         final SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
 
-        searchMenuItem = menu.findItem(R.id.action_search);
-        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
+        searchMenu = menu.findItem(R.id.action_search);
+        searchView = (SearchView) MenuItemCompat.getActionView(searchMenu);
+        MenuItemCompat.setOnActionExpandListener(this.searchMenu,
+                new MenuItemCompat.OnActionExpandListener() {
+                    @Override
+                    public boolean onMenuItemActionExpand(MenuItem item) {
+                        if (order == 0) {
+                            menu.findItem(R.id.action_order_by_date).setVisible(false);
+                        } else {
+                            menu.findItem(R.id.action_order_alphabetic).setVisible(false);
+                        }
+
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onMenuItemActionCollapse(MenuItem item) {
+                        if (order == 0) {
+                            menu.findItem(R.id.action_order_by_date).setVisible(true);
+                        } else {
+                            menu.findItem(R.id.action_order_alphabetic).setVisible(true);
+                        }
+
+                        if (!query.equals("")) {
+                            query = "";
+                            submitSearchQuery("", 0);
+                        }
+
+                        return true;
+                    }
+                });
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setIconifiedByDefault(true);
         searchView.setQueryHint(getString(R.string.search_hint));
@@ -182,34 +178,18 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
 
             @Override
             public boolean onQueryTextChange(String s) {
-//                if (shouldHide && !s.isEmpty()) {
-//                    submitSearchQuery(s, 1000);
-//                } else if ((s.isEmpty()) && (orderUpdated)) {
-//                    clearSearchQuery(1);
-//                    orderUpdated = false;
-//                } else {
-//                    clearSearchQuery(0);
-//                }
 
                 if (shouldHide && (!s.isEmpty())) {
-                    LogHelper.d(TAG, "Auto search.");
                     submitSearchQuery(s, 1000);
                 }
 
                 if (shouldHide && (orderUpdated)) {
-                    LogHelper.d(TAG, "Drawer closed, sort item.");
-                    clearSearchQuery(1);
+                    clearQuery(0);
                     orderUpdated = false;
                 }
 
                 if (!shouldHide && (!s.isEmpty())) {
-                    LogHelper.d(TAG, "Drawer open, search not empty.");
-                    clearSearchQuery(0);
-                }
-
-                if (!shouldHide && (s.isEmpty())) {
-                    LogHelper.d(TAG, "Drawer open, search empty.");
-                    clearSearchQuery(1);
+                    clearQuery(1);
                 }
 
                 return true;
@@ -233,37 +213,60 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         return true;
     }
 
+    private void clearQuery(int option) {
+        if (option == 1) {
+            searchView.clearFocus();
+            searchView.setIconified(true);
+        }
+        query = "";
+        getFragment().setQuery("");
+        getFragment().searchContent();
+    }
+
+    private void submitSearchQuery(String s) {
+        submitSearchQuery(s, 0);
+    }
+
+    private void submitSearchQuery(final String s, long delay) {
+        query = s;
+        searchHandler.removeCallbacksAndMessages(null);
+        searchHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                getFragment().setQuery(s.trim());
+                getFragment().searchContent();
+            }
+        }, delay);
+    }
+
+
     // Close nav drawer if open
-    // Clear search query onBackPressed (go back to first page if not already)
     // Double-Back (press back twice) to exit (after clearing searchView)
     @Override
     public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-            clearQuery();
+        if (!shouldHide) {
+            mDrawerLayout.closeDrawer(mDrawerList);
         } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
         } else {
             AndroidHelper.sSnack(
                     findViewById(android.R.id.list), R.string.press_back_again,
                     Snackbar.LENGTH_SHORT);
+            backButtonPressed = System.currentTimeMillis();
         }
-        backButtonPressed = System.currentTimeMillis();
-        clearSearchQuery(1);
+        clearQuery(1);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_order_alphabetic:
-                clearQuery();
                 orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
                 invalidateOptionsMenu();
 
                 return true;
             case R.id.action_order_by_date:
-                clearQuery();
                 orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
                 invalidateOptionsMenu();

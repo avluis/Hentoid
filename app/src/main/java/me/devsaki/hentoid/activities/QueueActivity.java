@@ -31,8 +31,6 @@ import me.devsaki.hentoid.util.NetworkStatus;
 public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
     private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
 
-    private ListView mDrawerList;
-
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
 
         @Override
@@ -48,6 +46,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
             }
         }
     };
+    private ListView mDrawerList;
 
     @Override
     protected QueueFragment buildFragment() {
