@@ -158,7 +158,7 @@ public class IntroSlideActivity extends AppIntro2 {
                                 LogHelper.d(TAG, "Existing Library Found");
 
                                 pager.setCurrentItem(IMPORT_SLIDE - 2);
-                                AndroidHelper.sSnack(pager, R.string.existing_library_found,
+                                AndroidHelper.sSnack(pager, R.string.existing_library_error,
                                         Snackbar.LENGTH_LONG);
                                 break;
                             default:

@@ -27,6 +27,7 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by Shiro on 1/20/2016.
  * Implements Hitomi.la source
+ * <p/>
  * TODO: Re-implement without use of JavaScript:
  * Ref: http://goo.gl/UfIsZs
  */

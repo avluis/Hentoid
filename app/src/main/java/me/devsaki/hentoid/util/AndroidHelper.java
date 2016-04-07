@@ -18,6 +18,7 @@ import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
@@ -361,9 +362,12 @@ public class AndroidHelper {
         }
     }
 
-    public static void setNavBarColor(Activity activity, String Color) {
+    // TODO: Research/check for possible NullPointerException on older devices
+    public static void setNavBarColor(Activity activity, int color) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            activity.getWindow().setNavigationBarColor(android.graphics.Color.parseColor(Color));
+            Context context = activity.getApplicationContext();
+            int navColor = ContextCompat.getColor(context, color);
+            activity.getWindow().setNavigationBarColor(navColor);
         }
     }
 }

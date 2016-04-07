@@ -37,7 +37,7 @@ public class AppLockActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_lock);
 
-        AndroidHelper.setNavBarColor(this, "#2b0202");
+        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 

@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--
+    THIS LIST IS CASE SENSITIVE!!!
+    ITEMS CAN BE REORDERED AS NEEDED BUT
+    CASE MUST MATCH CLASS NAME EXACTLY (minus 'Activity') -->
     <string-array name="nav_drawer_entries">
         <item>Hitomi</item>
-        <item>nhentai</item>
+        <item>Nhentai</item>
         <item>Tsumino</item>
         <item>Downloads</item>
         <item>Queue</item>

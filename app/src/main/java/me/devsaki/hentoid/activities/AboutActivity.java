@@ -41,7 +41,7 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
         setTitle(R.string.title_activity_about);
 
-        AndroidHelper.setNavBarColor(this, "#2b0202");
+        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);

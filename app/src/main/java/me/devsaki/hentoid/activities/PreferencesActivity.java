@@ -38,7 +38,7 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by DevSaki on 20/05/2015.
- * Present and set app preferences.
+ * Set up and present preferences.
  */
 public class PreferencesActivity extends AppCompatActivity {
     private static final String TAG = LogHelper.makeLogTag(PreferencesActivity.class);
@@ -52,7 +52,7 @@ public class PreferencesActivity extends AppCompatActivity {
         getFragmentManager().beginTransaction().replace(android.R.id.content,
                 new MyPreferenceFragment()).commit();
 
-        AndroidHelper.setNavBarColor(this, "#2b0202");
+        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {

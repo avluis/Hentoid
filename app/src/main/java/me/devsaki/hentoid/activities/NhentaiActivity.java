@@ -82,6 +82,27 @@ public class NhentaiActivity extends BaseWebActivity {
 
     private class NhentaiWebViewClient extends CustomWebViewClient {
 
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            try {
+                URL u = new URL(url);
+                return !(u.getHost().endsWith("nhentai.net"));
+            } catch (MalformedURLException e) {
+                LogHelper.d(TAG, "Malformed URL");
+            }
+
+            return false;
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+
+            if (url.contains("//nhentai.net/g/")) {
+                AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
+            }
+        }
+
         @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
@@ -109,27 +130,6 @@ public class NhentaiActivity extends BaseWebActivity {
                 return getCssWebResourceResponseFromAsset();
             } else {
                 return super.shouldInterceptRequest(view, request);
-            }
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            try {
-                URL u = new URL(url);
-                return !(u.getHost().endsWith("nhentai.net"));
-            } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
-            }
-
-            return false;
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains("//nhentai.net/g/")) {
-                AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
             }
         }
     }

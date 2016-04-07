@@ -21,6 +21,8 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by Shiro on 1/22/2016.
  * Implements tsumino source
+ * <p/>
+ * TODO: Implement Pop-Up/Ad filters
  * TODO: Re-implement without use of JavaScript:
  * Ref: http://goo.gl/UfIsZs
  */

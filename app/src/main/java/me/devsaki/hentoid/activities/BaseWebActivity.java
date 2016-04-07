@@ -69,7 +69,7 @@ public class BaseWebActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_base_web);
 
-        AndroidHelper.setNavBarColor(this, "#2b0202");
+        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
 
         if (site == null) {
             LogHelper.w(TAG, "Site is null!");
@@ -94,7 +94,6 @@ public class BaseWebActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        LogHelper.d(TAG, " onResume");
         checkPermissions();
     }
 
@@ -102,10 +101,10 @@ public class BaseWebActivity extends AppCompatActivity {
     private void checkPermissions() {
         if (AndroidHelper.permissionsCheck(this,
                 STORAGE_PERMISSION_REQUEST)) {
-            LogHelper.d(TAG, "allow");
+            LogHelper.d(TAG, "Storage permission allowed!");
 
         } else {
-            LogHelper.d(TAG, "deny");
+            LogHelper.d(TAG, "Storage permission denied!");
             reset();
         }
     }
@@ -131,6 +130,7 @@ public class BaseWebActivity extends AppCompatActivity {
         }
     }
 
+    // TODO: This could be relaxed - we could try another permission request
     private void reset() {
         AndroidHelper.commitFirstRun(true);
         Intent intent = new Intent(this, IntroSlideActivity.class);

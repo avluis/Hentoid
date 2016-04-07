@@ -52,7 +52,7 @@ import me.devsaki.hentoid.v2.bean.URLBean;
 
 /**
  * Created by avluis on 04/02/2016.
- * Library Directory and Import Activity
+ * Library Directory selection and Import Activity
  */
 public class ImportActivity extends AppCompatActivity implements
         OnDirectoryChooserFragmentInteraction {

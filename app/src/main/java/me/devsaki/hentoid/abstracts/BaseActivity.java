@@ -15,25 +15,20 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.AboutActivity;
-import me.devsaki.hentoid.activities.DownloadsActivity;
-import me.devsaki.hentoid.activities.HitomiActivity;
-import me.devsaki.hentoid.activities.NhentaiActivity;
-import me.devsaki.hentoid.activities.PreferencesActivity;
-import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by DevSaki on 04/06/2015.
- * Abstract activity to extend from - Implements DrawerLayout
+ * Abstract activity to extend from
+ * Implements DrawerLayout
  */
 public abstract class BaseActivity<T extends ListFragment> extends AppCompatActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
 
     private static HentoidDB db;
+    private String[] mActivityList;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -49,16 +44,16 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
 
         setContentView(R.layout.activity_hentoid);
 
-        AndroidHelper.setNavBarColor(this, "#2b0202");
+        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
 
         db = new HentoidDB(this);
 
-        String[] mList = getResources().getStringArray(R.array.nav_drawer_entries);
+        mActivityList = getResources().getStringArray(R.array.nav_drawer_entries);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
         mDrawerList.setAdapter(new ArrayAdapter<>(this,
-                R.layout.drawer_list_item, mList));
+                R.layout.drawer_list_item, mActivityList));
 
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -136,34 +131,24 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
     }
 
     private void selectItem(int position) {
-        Intent intent = null;
+        String activity = null;
+        for (String selectedActivity : mActivityList) {
+            if (selectedActivity.equals(mActivityList[position])) {
+                activity = selectedActivity;
+            }
+        }
 
-        switch (position) {
-            case 0:
-                intent = new Intent(this, HitomiActivity.class);
-                break;
-            case 1:
-                intent = new Intent(this, NhentaiActivity.class);
-                break;
-            case 2:
-                intent = new Intent(this, TsuminoActivity.class);
-                break;
-            case 3:
-                intent = new Intent(this, DownloadsActivity.class);
-                break;
-            case 4:
-                intent = new Intent(this, QueueActivity.class);
-                break;
-            case 5:
-                intent = new Intent(this, PreferencesActivity.class);
-                break;
-            case 6:
-                intent = new Intent(this, AboutActivity.class);
-                break;
+        Class<?> cls = null;
+        try {
+            cls = Class.forName("me.devsaki.hentoid.activities." + activity + "Activity");
+        } catch (ClassNotFoundException e) {
+            // TODO: Log to Analytics
+            LogHelper.e(TAG, "Class not found", e);
         }
-        if (intent != null) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        }
+
+        Intent intent = new Intent(this, cls);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         mDrawerList.setItemChecked(position, true);
         mDrawerLayout.closeDrawer(mDrawerList);
         startActivity(intent);
