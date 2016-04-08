@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -33,6 +32,9 @@ import me.devsaki.hentoid.activities.AppLockActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+
+import static android.content.pm.PackageManager.NameNotFoundException;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -61,8 +63,9 @@ public class AndroidHelper {
             }
         }
         if (imageFile == null) {
-            String message = context.getString(R.string.not_image_file_found).replace("@dir", dir.getAbsolutePath());
-            Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
+            String message = context.getString(R.string.image_file_not_found).replace("@dir",
+                    dir.getAbsolutePath());
+            sToast(context, message, Toast.LENGTH_SHORT);
         } else {
             int readContentPreference = Integer.parseInt(sharedPreferences.getString(
                     ConstantsPreferences.PREF_READ_CONTENT_LISTS,
@@ -118,8 +121,10 @@ public class AndroidHelper {
             if (!file.mkdirs()) {
                 file = new File(settingDir + folderDir);
                 if (!file.exists()) {
-                    // noinspection ResultOfMethodCallIgnored
-                    file.mkdirs();
+                    boolean mkdirs = file.mkdirs();
+                    if (mkdirs) {
+                        LogHelper.d(TAG, "Directory created");
+                    }
                 }
             }
         }
@@ -140,8 +145,10 @@ public class AndroidHelper {
             if (!file.mkdirs()) {
                 file = new File(settingDir + folderDir);
                 if (!file.exists()) {
-                    // noinspection ResultOfMethodCallIgnored
-                    file.mkdirs();
+                    boolean mkdirs = file.mkdirs();
+                    if (mkdirs) {
+                        LogHelper.d(TAG, "Directory created");
+                    }
                 }
             }
         }
@@ -269,8 +276,7 @@ public class AndroidHelper {
             intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
             context.startActivity(intent);
         } catch (Exception e) {
-            Toast.makeText(context, R.string.error_open_perfect_viewer,
-                    Toast.LENGTH_SHORT).show();
+            sToast(context, R.string.error_open_perfect_viewer, Toast.LENGTH_SHORT);
         }
     }
 
@@ -293,21 +299,16 @@ public class AndroidHelper {
         sToast.show();
     }
 
+    public static void sSnack(View view, int resource, int duration) {
+        sSnack(view, view.getResources().getString(resource), duration);
+    }
+
     public static void sSnack(View view, String text, int duration) {
         if (sSnack != null) {
             sSnack.dismiss();
             sSnack = null;
         }
         sSnack = Snackbar.make(view, text, duration);
-        sSnack.show();
-    }
-
-    public static void sSnack(View view, int resource, int duration) {
-        if (sSnack != null) {
-            sSnack.dismiss();
-            sSnack = null;
-        }
-        sSnack = Snackbar.make(view, view.getResources().getString(resource), duration);
         sSnack.show();
     }
 
@@ -351,7 +352,7 @@ public class AndroidHelper {
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     public static boolean permissionsCheck(Activity activity, int permissionRequestCode) {
         if (ActivityCompat.checkSelfPermission(activity,
-                Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
 
             return true;
         } else {
@@ -368,6 +369,15 @@ public class AndroidHelper {
             Context context = activity.getApplicationContext();
             int navColor = ContextCompat.getColor(context, color);
             activity.getWindow().setNavigationBarColor(navColor);
+        }
+    }
+
+    public static int getAppVersionCode(Context context) throws NameNotFoundException {
+        if (context != null) {
+            return context.getPackageManager().getPackageInfo(
+                    context.getPackageName(), 0).versionCode;
+        } else {
+            throw new NullPointerException("context is null");
         }
     }
 }

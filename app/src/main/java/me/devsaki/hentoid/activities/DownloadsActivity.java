@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -286,6 +287,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         private static int index = -1;
         private static int top;
         private int prevPage;
+        private TextView emptyText;
         private Button btnPage;
         private List<Content> contents;
 
@@ -389,6 +391,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
             btnPage = (Button) rootView.findViewById(R.id.btnPage);
+            emptyText = (TextView) rootView.findViewById(android.R.id.empty);
             ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
             ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
             ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
@@ -449,6 +452,11 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 } else {
                     contents = new ArrayList<>(0);
                     LogHelper.d(TAG, "Content: No match.");
+                    if (!query.equals("")) {
+                        emptyText.setText(R.string.search_entry_not_found);
+                    } else {
+                        emptyText.setText(R.string.downloads_empty);
+                    }
                 }
                 if (contents == result || contents.isEmpty()) {
                     ContentAdapter adapter = new ContentAdapter(getActivity(), contents);

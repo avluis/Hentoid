@@ -125,16 +125,6 @@ public class UpdateCheck implements IUpdateCheck {
         }
     }
 
-    @Override
-    public int getAppVersionCode(Context context) throws PackageManager.NameNotFoundException {
-        if (context != null) {
-            return context.getPackageManager().getPackageInfo(
-                    context.getPackageName(), 0).versionCode;
-        } else {
-            throw new NullPointerException("context is null");
-        }
-    }
-
     private void updateAvailableNotification(String updateURL) {
         if (downloadManager != null) {
             downloadingUpdateNotification();
@@ -349,7 +339,7 @@ public class UpdateCheck implements IUpdateCheck {
                 JSONObject jsonObject = downloadURL(params[0]);
                 if (jsonObject != null) {
                     int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
-                    if (getAppVersionCode(context) < updateVersionCode) {
+                    if (AndroidHelper.getAppVersionCode(context) < updateVersionCode) {
                         if (updateCheckResult != null) {
                             updateCheckResult.onUpdateAvailable();
                         }
@@ -371,8 +361,18 @@ public class UpdateCheck implements IUpdateCheck {
                         }
                     }
                 }
-            } catch (IOException | JSONException | PackageManager.NameNotFoundException e) {
-                e.printStackTrace();
+            } catch (IOException | JSONException e) {
+                // TODO: Log to Analytics
+                LogHelper.e(TAG, "Error with JSON File: ", e);
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        AndroidHelper.sToast(context, R.string.error_dependency, Toast.LENGTH_SHORT);
+                    }
+                });
+            } catch (PackageManager.NameNotFoundException e) {
+                // TODO: Log to Analytics
+                LogHelper.e(TAG, "Package Name NOT Found! ", e);
             }
 
             return null;
