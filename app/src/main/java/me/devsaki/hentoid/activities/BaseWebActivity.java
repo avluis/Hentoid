@@ -19,7 +19,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.Toast;
 
 import java.util.Date;
 
@@ -252,12 +251,12 @@ public class BaseWebActivity extends AppCompatActivity {
     void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
-            Toast.makeText(this, R.string.already_downloaded, Toast.LENGTH_SHORT).show();
+            AndroidHelper.toast(this, R.string.already_downloaded);
             hideFab(fabDownload);
 
             return;
         }
-        Toast.makeText(this, R.string.in_queue, Toast.LENGTH_SHORT).show();
+        AndroidHelper.toast(this, R.string.in_queue);
         currentContent.setDownloadDate(new Date().getTime())
                 .setStatus(StatusContent.DOWNLOADING);
 

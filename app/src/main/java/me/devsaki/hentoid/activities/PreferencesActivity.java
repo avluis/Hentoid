@@ -23,7 +23,6 @@ import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -108,7 +107,7 @@ public class PreferencesActivity extends AppCompatActivity {
             addPreferencesFromResource(R.xml.preferences);
 
             Preference addNoMediaFile = getPreferenceScreen()
-                    .findPreference("pref_add_no_media_file");
+                    .findPreference(ConstantsPreferences.PREF_ADD_NO_MEDIA_FILE);
             addNoMediaFile.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
                 @Override
@@ -118,22 +117,21 @@ public class PreferencesActivity extends AppCompatActivity {
                     File nomedia = new File(settingDir, ".nomedia");
                     if (!nomedia.exists()) {
                         try {
-                            // noinspection ResultOfMethodCallIgnored
-                            nomedia.createNewFile();
+                            boolean createFile = nomedia.createNewFile();
+                            LogHelper.d(TAG, createFile);
                         } catch (IOException e) {
-                            Toast.makeText(getActivity(), R.string.error_creating_nomedia_file,
-                                    Toast.LENGTH_SHORT).show();
+                            AndroidHelper.toast(getActivity(), R.string.error_creating_nomedia_file);
                             return true;
                         }
                     }
-                    Toast.makeText(getActivity(), R.string.nomedia_file_created,
-                            Toast.LENGTH_SHORT).show();
+                    AndroidHelper.toast(getActivity(), R.string.nomedia_file_created);
 
                     return true;
                 }
             });
 
-            Preference appLock = getPreferenceScreen().findPreference("pref_app_lock");
+            Preference appLock = getPreferenceScreen().findPreference(ConstantsPreferences.
+                    PREF_APP_LOCK);
             appLock.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
                 @Override
@@ -178,13 +176,12 @@ public class PreferencesActivity extends AppCompatActivity {
             });
 
             Preference mUpdateCheck = getPreferenceScreen()
-                    .findPreference("pref_check_updates_manual");
+                    .findPreference(ConstantsPreferences.PREF_CHECK_UPDATE_MANUAL);
             mUpdateCheck.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    Toast.makeText(getActivity().getApplicationContext(), "Checking for updates...",
-                            Toast.LENGTH_SHORT).show();
-                    UpdateCheck.getInstance().checkForUpdate(getActivity().getApplicationContext(),
+                    AndroidHelper.toast("Checking for updates...");
+                    UpdateCheck.getInstance().checkForUpdate(HentoidApplication.getAppContext(),
                             false, true,
                             new UpdateCheck.UpdateCheckCallback() {
                                 @Override
@@ -210,11 +207,9 @@ public class PreferencesActivity extends AppCompatActivity {
             editor.putString(ConstantsPreferences.PREF_APP_LOCK, lock);
             editor.apply();
             if (lock.isEmpty()) {
-                Toast.makeText(getActivity(), R.string.app_lock_disable,
-                        Toast.LENGTH_SHORT).show();
+                AndroidHelper.toast(getActivity(), R.string.app_lock_disabled);
             } else {
-                Toast.makeText(getActivity(), R.string.app_lock_enable,
-                        Toast.LENGTH_SHORT).show();
+                AndroidHelper.toast(getActivity(), R.string.app_lock_enable);
             }
             dialog.cancel();
         }

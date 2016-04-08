@@ -68,6 +68,11 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if ((getIntent().getIntExtra(HentoidApplication.DOWNLOAD_COUNT, 0)) != 0) {
+            // Reset download count
+            HentoidApplication.setDownloadCount(0);
+        }
+
         preferences = HentoidApplication.getAppPreferences();
         settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
         order = preferences.getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,

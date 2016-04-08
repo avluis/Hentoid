@@ -18,7 +18,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
@@ -188,7 +187,7 @@ public class ImportActivity extends AppCompatActivity implements
         File file = new File(hentoidFolder);
         if (!file.exists() && !file.isDirectory()) {
             if (!file.mkdirs()) {
-                Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
+                AndroidHelper.toast(this, R.string.error_creating_folder);
                 return;
             }
         }
@@ -208,7 +207,7 @@ public class ImportActivity extends AppCompatActivity implements
         }
 
         if (!hasPermission) {
-            Toast.makeText(this, R.string.error_write_permission, Toast.LENGTH_SHORT).show();
+            AndroidHelper.toast(this, R.string.error_write_permission);
             return;
         }
 
@@ -216,7 +215,7 @@ public class ImportActivity extends AppCompatActivity implements
 
         boolean directorySaved = editor.commit();
         if (!directorySaved) {
-            Toast.makeText(this, R.string.error_creating_folder, Toast.LENGTH_SHORT).show();
+            AndroidHelper.toast(this, R.string.error_creating_folder);
             return;
         }
 

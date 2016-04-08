@@ -31,7 +31,8 @@ import me.devsaki.hentoid.util.NetworkStatus;
  */
 public class DownloadService extends IntentService {
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
-    public static final String NOTIFICATION = "me.devsaki.hentoid.services";
+    public static final String DOWNLOAD_NOTIFICATION =
+            "me.devsaki.hentoid.services.DOWNLOAD_NOTIFICATION";
 
     private static final String TAG = LogHelper.makeLogTag(DownloadService.class);
 
@@ -100,6 +101,21 @@ public class DownloadService extends IntentService {
 
             // Initialize
             File dir = AndroidHelper.getDownloadDir(currentContent, this);
+
+            // TODO: Test this!!!
+            // If the download directory already has files,
+            // then we simply delete them, since this points to a failed download
+            boolean isDirEmpty = AndroidHelper.isDirEmpty(dir);
+            LogHelper.d(TAG, "Is directory empty: " + isDirEmpty);
+
+            if (!isDirEmpty) {
+                String[] children = dir.list();
+                for (String child : children) {
+                    // noinspection ResultOfMethodCallIgnored
+                    new File(dir, child).delete();
+                }
+            }
+
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
 
             // Add download tasks
@@ -182,7 +198,7 @@ public class DownloadService extends IntentService {
     }
 
     private void updateActivity(double percent) {
-        Intent intent = new Intent(NOTIFICATION);
+        Intent intent = new Intent(DOWNLOAD_NOTIFICATION);
         intent.putExtra(INTENT_PERCENT_BROADCAST, percent);
         sendBroadcast(intent);
     }

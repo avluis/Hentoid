@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
@@ -21,14 +22,16 @@ import okhttp3.Response;
  * Created by Shiro on 3/28/2016.
  * Handles image download tasks and batch operations
  * Intended to have default access level for use with DownloadService class only
+ * <p/>
+ * TODO: Implement timeout handling; check line #51
+ * Ref: https://goo.gl/OF86un
  */
 final class ImageDownloadBatch {
 
     private static final String TAG = LogHelper.makeLogTag(ImageDownloadBatch.class);
     private static final int BUFFER_SIZE = 10 * 1024;
-    private static final OkHttpClient client = new OkHttpClient();
     private static final CookieManager cookieManager = CookieManager.getInstance();
-
+    private static OkHttpClient client = new OkHttpClient();
     private final Semaphore semaphore = new Semaphore(0);
     private boolean hasError = false;
     private short errorCount = 0;
@@ -43,6 +46,13 @@ final class ImageDownloadBatch {
                 .url(url)
                 .addHeader("User-Agent", Constants.USER_AGENT)
                 .addHeader("Cookie", cookies)
+                .build();
+
+        // TODO: Currently testing these:
+        client = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
                 .build();
 
         client.newCall(request)

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.widget.ImageView;
@@ -27,10 +28,14 @@ import me.devsaki.hentoid.util.LogHelper;
  * Database, Bitmap Cache, Update checks, etc.
  */
 public class HentoidApplication extends Application {
+    public static final String DOWNLOAD_COUNT = "DOWNLOAD_COUNT";
+
     private static final String TAG = LogHelper.makeLogTag(HentoidApplication.class);
 
     private static HentoidApplication mInstance;
     private static SharedPreferences sharedPreferences;
+    private static Context context;
+    private static int downloadCount = 0;
 
     public static synchronized HentoidApplication getInstance() {
         return mInstance;
@@ -38,6 +43,18 @@ public class HentoidApplication extends Application {
 
     public static SharedPreferences getAppPreferences() {
         return sharedPreferences;
+    }
+
+    public static Context getAppContext() {
+        return context;
+    }
+
+    public static int getDownloadCount() {
+        return downloadCount;
+    }
+
+    public static void setDownloadCount(int downloadCount) {
+        HentoidApplication.downloadCount = downloadCount;
     }
 
     public synchronized Tracker getGoogleAnalyticsTracker() {
@@ -98,13 +115,15 @@ public class HentoidApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        HentoidApplication.context = getApplicationContext();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mInstance = this;
 
         AnalyticsTrackers.initialize(this);
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
 
-        AndroidHelper.queryPrefsKey(getApplicationContext());
+        AndroidHelper.queryPrefsKey(getAppContext());
         AndroidHelper.ignoreSslErrors();
 
         HentoidDB db = new HentoidDB(this);
@@ -120,7 +139,7 @@ public class HentoidApplication extends Application {
     }
 
     private void UpdateCheck(boolean onlyWifi) {
-        UpdateCheck.getInstance().checkForUpdate(getApplicationContext(),
+        UpdateCheck.getInstance().checkForUpdate(getAppContext(),
                 onlyWifi, false, new UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {

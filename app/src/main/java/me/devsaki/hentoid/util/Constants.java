@@ -27,4 +27,6 @@ public abstract class Constants {
 
     public static final String DEBUG_UPDATE_URL =
             "https://avnet.ws/.apps/hentoid/debug/update.json";
+
+    public static final int UPDATE_NOTIFICATION_ID = 4368643;
 }

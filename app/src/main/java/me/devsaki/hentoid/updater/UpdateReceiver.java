@@ -4,11 +4,15 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
+import me.devsaki.hentoid.util.LogHelper;
+
 /**
  * Created by avluis on 8/21/15.
  * Broadcast Receiver for updater.
  */
 public class UpdateReceiver extends BroadcastReceiver {
+    private static final String TAG = LogHelper.makeLogTag(UpdateReceiver.class);
+
     private UpdateCheck instance;
 
     public UpdateReceiver() {
@@ -22,19 +26,17 @@ public class UpdateReceiver extends BroadcastReceiver {
         try {
             String action = intent.getAction();
             if (action.equals(UpdateCheck.ACTION_DOWNLOAD_CANCELLED)) {
-                try {
-                    instance.cancelDownload();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else if (action.equalsIgnoreCase(UpdateCheck.ACTION_NOTIFICATION_REMOVED)) {
-                instance.cancelNotificationAndUpdateRunnable();
-            } else if (action.equals(UpdateCheck.ACTION_DOWNLOAD_UPDATE)) {
-                instance.cancelNotification();
-                instance.downloadingUpdateNotification();
+                instance.cancelDownload();
+            }
+            if (action.equalsIgnoreCase(UpdateCheck.ACTION_NOTIFICATION_REMOVED)) {
+                instance.cancelDownload();
+            }
+            if (action.equals(UpdateCheck.ACTION_DOWNLOAD_UPDATE)) {
                 instance.downloadUpdate();
-            } else if (action.equals(UpdateCheck.ACTION_UPDATE_DOWNLOADED)) {
-                instance.cancelNotification();
+                instance.downloadingUpdateNotification();
+            }
+            if (action.equals(UpdateCheck.ACTION_INSTALL_UPDATE)) {
+                instance.cancelNotificationAndUpdateRunnable();
                 instance.installUpdate();
             }
         } catch (Exception e) {

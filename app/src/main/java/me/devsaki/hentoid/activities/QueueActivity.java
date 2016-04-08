@@ -65,7 +65,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
         super.onResume();
 
         getFragment().update();
-        registerReceiver(receiver, new IntentFilter(DownloadService.NOTIFICATION));
+        registerReceiver(receiver, new IntentFilter(DownloadService.DOWNLOAD_NOTIFICATION));
 
         if (mDrawerList != null) {
             mDrawerList.setItemChecked(4, true);

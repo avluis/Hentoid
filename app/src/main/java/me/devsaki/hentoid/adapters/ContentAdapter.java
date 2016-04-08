@@ -13,7 +13,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
@@ -45,13 +44,13 @@ import me.devsaki.hentoid.util.LogHelper;
 public class ContentAdapter extends ArrayAdapter<Content> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
-    private final Context context;
+    private final Context ctx;
     private final List<Content> contents;
     private final SimpleDateFormat sdf;
 
-    public ContentAdapter(Context context, List<Content> contents) {
-        super(context, R.layout.row_downloads, contents);
-        this.context = context;
+    public ContentAdapter(Context ctx, List<Content> contents) {
+        super(ctx, R.layout.row_downloads, contents);
+        this.ctx = ctx;
         this.contents = contents;
         sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
     }
@@ -61,7 +60,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         ViewHolder viewHolder;
 
         if (convertView == null) {
-            LayoutInflater inflater = (LayoutInflater) context
+            LayoutInflater inflater = (LayoutInflater) ctx
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.row_downloads, parent, false);
 
@@ -83,9 +82,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
         final Content content = contents.get(position);
 
-        String templateTvSeries = context.getResources().getString(R.string.tvSeries);
-        String templateTvArtist = context.getResources().getString(R.string.tvArtists);
-        String templateTvTags = context.getResources().getString(R.string.tvTags);
+        String templateTvSeries = ctx.getResources().getString(R.string.tvSeries);
+        String templateTvArtist = ctx.getResources().getString(R.string.tvArtists);
+        String templateTvTags = ctx.getResources().getString(R.string.tvTags);
 
         if (content != null) {
             viewHolder.tvSite.setText(content.getSite().getDescription());
@@ -198,7 +197,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 numberImagesError++;
             }
         }
-        String message = context.getString(R.string.download_again_dialog).replace("@error",
+        String message = ctx.getString(R.string.download_again_dialog).replace("@error",
                 numberImagesError + "").replace("@total", numberImages + "");
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setMessage(message)
@@ -209,12 +208,11 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                 content.setStatus(StatusContent.DOWNLOADING)
                                         .setDownloadDate(new Date().getTime());
                                 db.updateContentStatus(content);
-                                Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
+                                Intent intent = new Intent(Intent.ACTION_SYNC, null, ctx,
                                         DownloadService.class);
-                                context.startService(intent);
+                                ctx.startService(intent);
 
-                                Toast.makeText(context, R.string.in_queue, Toast.LENGTH_SHORT)
-                                        .show();
+                                AndroidHelper.toast(ctx, R.string.in_queue);
                                 contents.remove(content);
                                 int index = listView.getFirstVisiblePosition();
                                 View v = listView.getChildAt(0);
@@ -242,10 +240,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
                                 db.deleteContent(content);
 
-                                Toast.makeText(getContext(),
+                                AndroidHelper.toast(getContext(),
                                         getContext().getResources().getString(R.string.deleted)
-                                                .replace("@content", content.getTitle()),
-                                        Toast.LENGTH_SHORT).show();
+                                                .replace("@content", content.getTitle()));
                                 contents.remove(content);
                                 int index = listView.getFirstVisiblePosition();
                                 View v = listView.getChildAt(0);

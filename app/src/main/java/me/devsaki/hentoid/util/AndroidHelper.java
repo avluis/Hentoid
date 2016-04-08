@@ -65,7 +65,7 @@ public class AndroidHelper {
         if (imageFile == null) {
             String message = context.getString(R.string.image_file_not_found).replace("@dir",
                     dir.getAbsolutePath());
-            sToast(context, message, Toast.LENGTH_SHORT);
+            toast(context, message);
         } else {
             int readContentPreference = Integer.parseInt(sharedPreferences.getString(
                     ConstantsPreferences.PREF_READ_CONTENT_LISTS,
@@ -122,9 +122,7 @@ public class AndroidHelper {
                 file = new File(settingDir + folderDir);
                 if (!file.exists()) {
                     boolean mkdirs = file.mkdirs();
-                    if (mkdirs) {
-                        LogHelper.d(TAG, "Directory created");
-                    }
+                    LogHelper.d(TAG, mkdirs);
                 }
             }
         }
@@ -146,9 +144,7 @@ public class AndroidHelper {
                 file = new File(settingDir + folderDir);
                 if (!file.exists()) {
                     boolean mkdirs = file.mkdirs();
-                    if (mkdirs) {
-                        LogHelper.d(TAG, "Directory created");
-                    }
+                    LogHelper.d(TAG, mkdirs);
                 }
             }
         }
@@ -174,14 +170,28 @@ public class AndroidHelper {
                 file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
                 if (!file.exists()) {
                     boolean mkdirs = file.mkdirs();
-                    if (mkdirs) {
-                        LogHelper.d(TAG, "Directory created");
-                    }
+                    LogHelper.d(TAG, mkdirs);
                 }
             }
         }
 
         return file;
+    }
+
+    public static boolean isDirEmpty(File directory) {
+        if (directory.isDirectory()) {
+            String[] files = directory.list();
+            if (files.length == 0) {
+                LogHelper.d(TAG, "Directory is empty!");
+                return true;
+            } else {
+                LogHelper.d(TAG, "Directory is NOT empty!");
+                return false;
+            }
+        } else {
+            LogHelper.d(TAG, "This is not a directory!");
+        }
+        return false;
     }
 
     public static String getSessionCookie() {
@@ -267,35 +277,73 @@ public class AndroidHelper {
                 ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT);
     }
 
-    private static void openPerfectViewer(File firstImage, Context context) {
+    private static void openPerfectViewer(File firstImage, Context ctx) {
         try {
-            Intent intent = context
+            Intent intent = ctx
                     .getPackageManager()
                     .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
             intent.setAction(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
-            context.startActivity(intent);
+            ctx.startActivity(intent);
         } catch (Exception e) {
-            sToast(context, R.string.error_open_perfect_viewer, Toast.LENGTH_SHORT);
+            toast(ctx, R.string.error_open_perfect_viewer);
         }
     }
 
     // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
-    public static void sToast(Context ctx, String text, int duration) {
-        if (sToast != null) {
-            sToast.cancel();
-            sToast = null;
+    public static void toast(String text) {
+        Context ctx = HentoidApplication.getAppContext();
+        if (ctx != null) {
+            toast(ctx, text);
         }
-        sToast = Toast.makeText(ctx, text, duration);
-        sToast.show();
     }
 
-    public static void sToast(Context ctx, int resource, int duration) {
-        if (sToast != null) {
-            sToast.cancel();
-            sToast = null;
+    public static void toast(Context ctx, String text) {
+        toast(ctx, text, 0);
+    }
+
+    public static void toast(Context ctx, int resource) {
+        toast(ctx, resource, 0);
+    }
+
+    public static void toast(Context ctx, String text, int duration) {
+        toast(ctx, text, -1, duration);
+    }
+
+    public static void toast(Context ctx, int resource, int duration) {
+        toast(ctx, null, resource, duration);
+    }
+
+    private static void toast(Context ctx, String text, int resource, int duration) {
+        String message = null;
+        if (text != null) {
+            message = text;
+        } else if (resource != -1) {
+            message = ctx.getString(resource);
+        } else {
+            Throwable noResource = new Throwable("You must provide a String or Resource ID");
+            try {
+                throw noResource;
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
         }
-        sToast = Toast.makeText(ctx, ctx.getString(resource), duration);
+
+        switch (duration) {
+            case 1:
+                duration = Toast.LENGTH_LONG;
+                break;
+            default:
+                duration = Toast.LENGTH_SHORT;
+                break;
+        }
+
+        try {
+            sToast.getView().isShown();
+            sToast.setText(message);
+        } catch (Exception e) {
+            sToast = Toast.makeText(ctx, message, duration);
+        }
         sToast.show();
     }
 

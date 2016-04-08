@@ -25,8 +25,10 @@ public abstract class ConstantsPreferences {
     public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
     public static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
     public static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
+    public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
     public static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
     public static final String PREF_APP_LOCK = "pref_app_lock";
+    public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
     public static final String PREF_FIRST_RUN = "pref_first_run";
     public static final boolean PREF_FIRST_RUN_DEFAULT = true;
 
