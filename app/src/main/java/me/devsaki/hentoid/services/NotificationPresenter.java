@@ -18,6 +18,7 @@ import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -116,7 +117,7 @@ final class NotificationPresenter {
             case PAUSED:
                 currentBuilder.setContentTitle(resources.getString(R.string.download_paused));
                 break;
-            case SAVED:
+            case CANCELED:
                 currentBuilder.setContentTitle(resources.getString(R.string.download_cancelled));
                 // Tracking Event (Download Cancelled)
                 appInstance.trackEvent("Download Service", "Download",
@@ -160,9 +161,12 @@ final class NotificationPresenter {
             case PAUSED:
                 resultIntent = new Intent(appInstance, QueueActivity.class);
                 break;
-            case SAVED:
+            case CANCELED:
                 resultIntent = new Intent(appInstance, currentContent.getWebActivityClass());
-                resultIntent.putExtra("url", currentContent.getUrl());
+                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                Bundle cancelBundle = new Bundle();
+                cancelBundle.putString(Constants.INTENT_URL, currentContent.getGalleryUrl());
+                resultIntent.putExtras(cancelBundle);
                 break;
         }
 
