@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 
@@ -17,6 +18,7 @@ import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.Constants;
 
 /**
  * Created by Shiro on 3/18/2016.
@@ -85,7 +87,7 @@ final class NotificationPresenter {
                             R.color.accent))
                     .setContentText("")
                     .setContentTitle(resources.getString(R.string.download_completed_multiple)
-                                    .replace("%d", String.valueOf(downloadCount))
+                            .replace("%d", String.valueOf(downloadCount))
                     );
             notificationManager.notify(notificationId, currentBuilder.build());
 
@@ -104,7 +106,7 @@ final class NotificationPresenter {
             case PAUSED:
                 currentBuilder.setContentTitle(resources.getString(R.string.download_paused));
                 break;
-            case SAVED:
+            case CANCELED:
                 currentBuilder.setContentTitle(resources.getString(R.string.download_cancelled));
                 // Tracking Event (Download Cancelled)
                 appInstance.trackEvent("Download Service", "Download",
@@ -141,9 +143,12 @@ final class NotificationPresenter {
             case PAUSED:
                 resultIntent = new Intent(appInstance, QueueActivity.class);
                 break;
-            case SAVED:
+            case CANCELED:
                 resultIntent = new Intent(appInstance, currentContent.getWebActivityClass());
-                resultIntent.putExtra("url", currentContent.getUrl());
+                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                Bundle cancelBundle = new Bundle();
+                cancelBundle.putString(Constants.INTENT_URL, currentContent.getGalleryUrl());
+                resultIntent.putExtras(cancelBundle);
                 break;
         }
 

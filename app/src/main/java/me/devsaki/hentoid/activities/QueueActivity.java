@@ -124,7 +124,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
         }
 
         public void cancel(Content content) {
-            content.setStatus(StatusContent.SAVED);
+            content.setStatus(StatusContent.CANCELED);
             getDB().updateContentStatus(content);
             if (content.getId() == contents.get(0).getId()) {
                 DownloadService.paused = true;
