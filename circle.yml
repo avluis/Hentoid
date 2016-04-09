@@ -23,5 +23,5 @@ dependencies:
 
 test:
   override:
-    - ./gradlew clean assemble -PdisablePreDex
-    - cp -r Hentoid/build/outputs $CIRCLE_ARTIFACTS
+    - ./gradlew clean assembleDebug -PdisablePreDex
+    - cp -r /home/ubuntu/Hentoid/build/outputs $CIRCLE_ARTIFACTS
