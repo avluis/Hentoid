@@ -52,10 +52,13 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
 
         mActivityList = getResources().getStringArray(R.array.nav_drawer_entries);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mDrawerList = (ListView) findViewById(R.id.drawer_list);
 
         mDrawerList.setAdapter(new ArrayAdapter<>(this,
                 R.layout.drawer_list_item, mActivityList));
+
+        AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.menu_item_color,
+                R.color.menu_item_active_color);
 
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -108,18 +111,23 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        mDrawerToggle.onConfigurationChanged(newConfig);
+        if (mDrawerToggle != null) {
+            mDrawerToggle.onConfigurationChanged(newConfig);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle, if it returns
         // true, then it has handled the app icon touch event
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
+        if (mDrawerToggle != null && mDrawerToggle.onOptionsItemSelected(item)) {
             return true;
         }
-        // Handle your other action bar items...
-
+        // If not handled by drawerToggle, home needs to be handled by returning to previous
+        if (item != null && item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        }
         return super.onOptionsItemSelected(item);
     }
 
@@ -139,12 +147,16 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
     }
 
     private void selectItem(int position) {
+        handler.removeCallbacksAndMessages(null);
+
         String activity = null;
         for (String selectedActivity : mActivityList) {
             if (selectedActivity.equals(mActivityList[position])) {
                 activity = selectedActivity;
             }
         }
+
+        mDrawerList.setItemChecked(position, true);
 
         Class<?> cls = null;
         try {
@@ -157,15 +169,28 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
         final Intent intent = new Intent(this, cls);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        mDrawerList.setItemChecked(position, true);
         mDrawerLayout.closeDrawer(mDrawerList);
 
-        handler.removeCallbacksAndMessages(null);
         handler.postDelayed(new Runnable() {
-
             public void run() {
                 startActivity(intent);
             }
         }, 300);
+    }
+
+    private void updateDrawerToggle() {
+        if (mDrawerToggle == null) {
+            return;
+        }
+        boolean isRoot = getSupportFragmentManager().getBackStackEntryCount() == 0;
+        mDrawerToggle.setDrawerIndicatorEnabled(isRoot);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowHomeEnabled(!isRoot);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(!isRoot);
+            getSupportActionBar().setHomeButtonEnabled(!isRoot);
+        }
+        if (isRoot) {
+            mDrawerToggle.syncState();
+        }
     }
 }

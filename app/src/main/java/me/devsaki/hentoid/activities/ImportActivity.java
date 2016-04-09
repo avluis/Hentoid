@@ -44,6 +44,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.ConstantsImport;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.v2.bean.DoujinBean;
@@ -57,14 +58,11 @@ public class ImportActivity extends AppCompatActivity implements
         OnDirectoryChooserFragmentInteraction {
     private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 
-    private final static int STORAGE_PERMISSION_REQUEST = 1;
-    private static final String resultKey = "resultKey";
-    private String result = "RESULT_EMPTY";
+    private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
+    private static final String resultKey = ConstantsImport.RESULT_KEY;
+    private static final String dirKey = "currentDir";
+    private String result;
     private File currentRootDirectory;
-
-    public static String getResultKey() {
-        return resultKey;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,25 +77,28 @@ public class ImportActivity extends AppCompatActivity implements
         initImport(savedInstanceState);
     }
 
-    private void initImport(Bundle savedInstanceState) {
-        if (savedInstanceState == null) {
+    private void initImport(Bundle savedState) {
+        if (savedState == null) {
             checkPermissions();
             currentRootDirectory = Environment.getExternalStorageDirectory();
+            result = ConstantsImport.RESULT_EMPTY;
         } else {
-            currentRootDirectory = (File) savedInstanceState.getSerializable("currentRootDirectory");
+            currentRootDirectory = (File) savedState.getSerializable(dirKey);
+            result = savedState.getString(resultKey);
         }
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable("currentRootDirectory", currentRootDirectory);
+        outState.putSerializable(dirKey, currentRootDirectory);
+        outState.putString(resultKey, result);
         super.onSaveInstanceState(outState);
     }
 
     // Validate permissions
     private void checkPermissions() {
         if (AndroidHelper.permissionsCheck(ImportActivity.this,
-                STORAGE_PERMISSION_REQUEST)) {
+                REQUEST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
             pickDownloadDirectory();
         } else {
@@ -116,7 +117,8 @@ public class ImportActivity extends AppCompatActivity implements
     @Override
     public void onBackPressed() {
         // Send result back to activity
-        result = "RESULT_CANCELED";
+        result = ConstantsImport.RESULT_CANCELED;
+        LogHelper.d(TAG, result);
         Intent returnIntent = new Intent();
         returnIntent.putExtra(resultKey, result);
         setResult(RESULT_CANCELED, returnIntent);
@@ -126,7 +128,7 @@ public class ImportActivity extends AppCompatActivity implements
     @Override
     public void onEvent(OnDirectoryChosenEvent event) {
         currentRootDirectory = event.getFile();
-
+        LogHelper.d(TAG, currentRootDirectory);
         validateFolder(currentRootDirectory);
     }
 
@@ -143,32 +145,22 @@ public class ImportActivity extends AppCompatActivity implements
         if (grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                new Handler().post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        Intent intent = getIntent();
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                                Intent.FLAG_ACTIVITY_NEW_TASK |
-                                Intent.FLAG_ACTIVITY_NO_ANIMATION);
-                        overridePendingTransition(0, 0);
-                        finish();
-
-                        overridePendingTransition(0, 0);
-                        startActivity(intent);
-                    }
-                });
+                result = ConstantsImport.PERMISSION_GRANTED;
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra(resultKey, result);
+                setResult(RESULT_OK, returnIntent);
+                finish();
             } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // Permission Denied
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    result = "PERMISSION_DENIED";
+                    result = ConstantsImport.PERMISSION_DENIED;
                     Intent returnIntent = new Intent();
                     returnIntent.putExtra(resultKey, result);
                     setResult(RESULT_CANCELED, returnIntent);
                     finish();
                 } else {
-                    result = "PERMISSION_DENIED_FORCED";
+                    result = ConstantsImport.PERMISSION_DENIED_FORCED;
                     Intent returnIntent = new Intent();
                     returnIntent.putExtra(resultKey, result);
                     setResult(RESULT_CANCELED, returnIntent);
@@ -256,7 +248,7 @@ public class ImportActivity extends AppCompatActivity implements
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
                                     // Prior Library found, but user chose to cancel
-                                    result = "EXISTING_LIBRARY_FOUND";
+                                    result = ConstantsImport.EXISTING_LIBRARY_FOUND;
                                     Intent returnIntent = new Intent();
                                     returnIntent.putExtra(resultKey, result);
                                     setResult(RESULT_CANCELED, returnIntent);
@@ -268,9 +260,12 @@ public class ImportActivity extends AppCompatActivity implements
         } else {
             // New library created - drop and recreate db
             createNewLibrary();
-            result = "NEW_LIBRARY_CREATED";
+            result = ConstantsImport.NEW_LIBRARY_CREATED;
 
             Handler handler = new Handler();
+
+            LogHelper.d(TAG, result);
+            LogHelper.d(TAG, resultKey);
 
             handler.postDelayed(new Runnable() {
 
@@ -285,7 +280,7 @@ public class ImportActivity extends AppCompatActivity implements
     }
 
     private void createNewLibrary() {
-        Context context = getApplicationContext();
+        Context context = HentoidApplication.getAppContext();
         context.deleteDatabase(Constants.DATABASE_NAME);
     }
 
@@ -376,9 +371,9 @@ public class ImportActivity extends AppCompatActivity implements
             if (contents != null && contents.size() > 0) {
                 // Grab all parsed content and add to database
                 hentoidDB.insertContents(contents.toArray(new Content[contents.size()]));
-                result = "EXISTING_LIBRARY_IMPORTED";
+                result = ConstantsImport.EXISTING_LIBRARY_IMPORTED;
             } else {
-                result = "NEW_LIBRARY_CREATED";
+                result = ConstantsImport.NEW_LIBRARY_CREATED;
             }
             mDialog.dismiss();
 

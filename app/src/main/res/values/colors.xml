@@ -5,6 +5,9 @@
     <color name="ripple">@color/pink_red</color>
     <color name="accent">@color/transparent_red</color>
 
+    <color name="menu_item_color">@color/primary_dark</color>
+    <color name="menu_item_active_color">@color/primary</color>
+
     <!-- Useful Colors -->
     <!-- White -->
     <color name="white">#FFFFFF</color>

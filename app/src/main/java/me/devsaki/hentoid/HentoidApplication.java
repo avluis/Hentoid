@@ -89,10 +89,10 @@ public class HentoidApplication extends Application {
             Tracker tracker = getGoogleAnalyticsTracker();
 
             tracker.send(new HitBuilders.ExceptionBuilder()
-                            .setDescription(new StandardExceptionParser(this, null)
-                                    .getDescription(Thread.currentThread().getName(), e))
-                            .setFatal(false)
-                            .build()
+                    .setDescription(new StandardExceptionParser(this, null)
+                            .getDescription(Thread.currentThread().getName(), e))
+                    .setFatal(false)
+                    .build()
             );
         }
     }

@@ -101,7 +101,6 @@
         <activity
             android:name=".activities.ImportActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
             android:theme="@style/ImportTheme" />
         <activity
             android:name=".activities.AppLockActivity"

@@ -9,7 +9,7 @@
     </style>
 
     <style name="AppTheme.DrawerBackground" parent="AppTheme">
-        <item name="android:background">@color/primary</item>
+        <item name="android:background">@color/primary_dark</item>
     </style>
 
     <style name="AppTheme.DarkBackground" parent="AppTheme">

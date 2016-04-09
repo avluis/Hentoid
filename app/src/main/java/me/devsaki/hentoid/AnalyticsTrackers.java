@@ -12,7 +12,6 @@ import java.util.Map;
  * Created by avluis on 2/11/16.
  * A collection of Google Analytics trackers. Fetch the tracker you need using
  * {@code AnalyticsTrackers.getInstance().get(...)}
- * <p/>
  */
 public final class AnalyticsTrackers {
 

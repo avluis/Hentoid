@@ -11,8 +11,8 @@ import android.net.NetworkInfo;
 public final class NetworkStatus {
     private static final String TAG = LogHelper.makeLogTag(NetworkStatus.class);
 
-    private static NetworkInfo initialize(Context ctx) {
-        Context context = ctx.getApplicationContext();
+    private static NetworkInfo initialize(Context cxt) {
+        Context context = cxt.getApplicationContext();
         ConnectivityManager connMgr = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
 

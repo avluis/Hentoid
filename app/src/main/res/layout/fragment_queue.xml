@@ -8,7 +8,7 @@
         android:id="@android:id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/ll"
+        android:layout_above="@+id/queue_nav"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:divider="@color/transparent"
@@ -18,14 +18,14 @@
         android:id="@android:id/empty"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/ll"
+        android:layout_above="@+id/queue_nav"
         android:gravity="center"
         android:text="@string/queue_empty"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white" />
 
     <LinearLayout
-        android:id="@+id/ll"
+        android:id="@+id/queue_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"

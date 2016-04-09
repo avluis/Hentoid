@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ListView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_list"
     style="@style/AppTheme.DrawerBackground"
     android:layout_width="@dimen/drawer_menu_layout_width"
     android:layout_height="match_parent"

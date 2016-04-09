@@ -22,6 +22,7 @@ import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -57,7 +58,10 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mDrawerList = (ListView) findViewById(R.id.drawer_list);
+
+        AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.menu_item_color,
+                R.color.menu_item_active_color);
     }
 
     @Override

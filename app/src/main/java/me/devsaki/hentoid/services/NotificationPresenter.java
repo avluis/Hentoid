@@ -96,7 +96,7 @@ final class NotificationPresenter {
                     .setContentText("")
                     .setDeleteIntent(getDeleteIntent())
                     .setContentTitle(resources.getQuantityString(R.plurals.download_completed,
-                                    downloadCount).replace("%d", String.valueOf(downloadCount))
+                            downloadCount).replace("%d", String.valueOf(downloadCount))
                     );
             notificationManager.notify(notificationId, currentBuilder.build());
 

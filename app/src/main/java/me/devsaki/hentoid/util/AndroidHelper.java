@@ -9,9 +9,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
@@ -20,10 +21,13 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.AbsListView;
+import android.widget.EdgeEffect;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import me.devsaki.hentoid.HentoidApplication;
@@ -35,6 +39,8 @@ import me.devsaki.hentoid.enums.Site;
 
 import static android.content.pm.PackageManager.NameNotFoundException;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.os.Build.VERSION;
+import static android.os.Build.VERSION_CODES;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -206,30 +212,30 @@ public class AndroidHelper {
                 .apply();
     }
 
-    private static void clearSharedPreferences(Context ctx) {
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+    private static void clearSharedPreferences(Context cxt) {
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(cxt);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.clear();
         editor.apply();
     }
 
-    private static void clearSharedPreferences(String prefsName, Context ctx) {
-        SharedPreferences sharedPrefs = ctx.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+    private static void clearSharedPreferences(String prefsName, Context cxt) {
+        SharedPreferences sharedPrefs = cxt.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.clear();
         editor.apply();
     }
 
-    private static void saveSharedPrefsKey(Context ctx) {
-        SharedPreferences sharedPrefs = ctx.getSharedPreferences(
+    private static void saveSharedPrefsKey(Context cxt) {
+        SharedPreferences sharedPrefs = cxt.getSharedPreferences(
                 ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putInt(ConstantsPreferences.PREFS_VERSION_KEY, ConstantsPreferences.PREFS_VERSION);
         editor.apply();
     }
 
-    public static void queryPrefsKey(Context ctx) {
-        final int prefsVersion = ctx.getSharedPreferences(
+    public static void queryPrefsKey(Context cxt) {
+        final int prefsVersion = cxt.getSharedPreferences(
                 ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
                 ConstantsPreferences.PREFS_VERSION_KEY, 0);
 
@@ -240,10 +246,10 @@ public class AndroidHelper {
             LogHelper.d(TAG, "Shared Prefs Key Mismatch! Clearing Prefs!");
 
             // Clear All
-            clearSharedPreferences(ctx.getApplicationContext());
+            clearSharedPreferences(cxt.getApplicationContext());
 
             // Save current Pref version key
-            saveSharedPrefsKey(ctx.getApplicationContext());
+            saveSharedPrefsKey(cxt.getApplicationContext());
         } else {
             LogHelper.d(TAG, "Prefs Key Match. Carry on.");
         }
@@ -277,49 +283,49 @@ public class AndroidHelper {
                 ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT);
     }
 
-    private static void openPerfectViewer(File firstImage, Context ctx) {
+    private static void openPerfectViewer(File firstImage, Context cxt) {
         try {
-            Intent intent = ctx
+            Intent intent = cxt
                     .getPackageManager()
                     .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
             intent.setAction(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
-            ctx.startActivity(intent);
+            cxt.startActivity(intent);
         } catch (Exception e) {
-            toast(ctx, R.string.error_open_perfect_viewer);
+            toast(cxt, R.string.error_open_perfect_viewer);
         }
     }
 
     // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
     public static void toast(String text) {
-        Context ctx = HentoidApplication.getAppContext();
-        if (ctx != null) {
-            toast(ctx, text);
+        Context cxt = HentoidApplication.getAppContext();
+        if (cxt != null) {
+            toast(cxt, text);
         }
     }
 
-    public static void toast(Context ctx, String text) {
-        toast(ctx, text, 0);
+    public static void toast(Context cxt, String text) {
+        toast(cxt, text, 0);
     }
 
-    public static void toast(Context ctx, int resource) {
-        toast(ctx, resource, 0);
+    public static void toast(Context cxt, int resource) {
+        toast(cxt, resource, 0);
     }
 
-    public static void toast(Context ctx, String text, int duration) {
-        toast(ctx, text, -1, duration);
+    public static void toast(Context cxt, String text, int duration) {
+        toast(cxt, text, -1, duration);
     }
 
-    public static void toast(Context ctx, int resource, int duration) {
-        toast(ctx, null, resource, duration);
+    public static void toast(Context cxt, int resource, int duration) {
+        toast(cxt, null, resource, duration);
     }
 
-    private static void toast(Context ctx, String text, int resource, int duration) {
+    private static void toast(Context cxt, String text, int resource, int duration) {
         String message = null;
         if (text != null) {
             message = text;
         } else if (resource != -1) {
-            message = ctx.getString(resource);
+            message = cxt.getString(resource);
         } else {
             Throwable noResource = new Throwable("You must provide a String or Resource ID");
             try {
@@ -342,23 +348,23 @@ public class AndroidHelper {
             sToast.getView().isShown();
             sToast.setText(message);
         } catch (Exception e) {
-            sToast = Toast.makeText(ctx, message, duration);
+            sToast = Toast.makeText(cxt, message, duration);
         }
         sToast.show();
     }
 
-    public static void sSnack(View view, int resource, int duration) {
-        sSnack(view, view.getResources().getString(resource), duration);
-    }
-
-    public static void sSnack(View view, String text, int duration) {
-        if (sSnack != null) {
-            sSnack.dismiss();
-            sSnack = null;
-        }
-        sSnack = Snackbar.make(view, text, duration);
-        sSnack.show();
-    }
+//    public static void sSnack(View view, int resource, int duration) {
+//        sSnack(view, view.getResources().getString(resource), duration);
+//    }
+//
+//    public static void sSnack(View view, String text, int duration) {
+//        if (sSnack != null) {
+//            sSnack.dismiss();
+//            sSnack = null;
+//        }
+//        sSnack = Snackbar.make(view, text, duration);
+//        sSnack.show();
+//    }
 
     @SafeVarargs
     public static <T> void executeAsyncTask(AsyncTask<T, ?, ?> task, T... params) {
@@ -370,17 +376,17 @@ public class AndroidHelper {
         StrictMode.setThreadPolicy(policy);
     }
 
-    public static void launchMainActivity(Context ctx) {
+    public static void launchMainActivity(Context cxt) {
 
         final String appLock = HentoidApplication.getAppPreferences()
                 .getString(ConstantsPreferences.PREF_APP_LOCK, "");
 
         if (appLock.isEmpty()) {
-            Intent intent = new Intent(ctx, DownloadsActivity.class);
-            ctx.startActivity(intent);
+            Intent intent = new Intent(cxt, DownloadsActivity.class);
+            cxt.startActivity(intent);
         } else {
-            Intent intent = new Intent(ctx, AppLockActivity.class);
-            ctx.startActivity(intent);
+            Intent intent = new Intent(cxt, AppLockActivity.class);
+            cxt.startActivity(intent);
         }
     }
 
@@ -397,7 +403,7 @@ public class AndroidHelper {
         editor.apply();
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    @TargetApi(VERSION_CODES.JELLY_BEAN)
     public static boolean permissionsCheck(Activity activity, int permissionRequestCode) {
         if (ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
@@ -413,10 +419,45 @@ public class AndroidHelper {
 
     // TODO: Research/check for possible NullPointerException on older devices
     public static void setNavBarColor(Activity activity, int color) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
             Context context = activity.getApplicationContext();
             int navColor = ContextCompat.getColor(context, color);
             activity.getWindow().setNavigationBarColor(navColor);
+        }
+    }
+
+    // Mainly for use with Android < 5.0 - sets OverScroll Glow and Edge Line
+    public static void changeEdgeEffect(Context cxt, View list, int glowColor, int lineColor) {
+        if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
+            EdgeEffect edgeEffectTop = new EdgeEffect(cxt);
+            edgeEffectTop.setColor(glowColor);
+            EdgeEffect edgeEffectBottom = new EdgeEffect(cxt);
+            edgeEffectBottom.setColor(glowColor);
+
+            try {
+                Field f1 = AbsListView.class.getDeclaredField("mEdgeGlowTop");
+                f1.setAccessible(true);
+                f1.set(list, edgeEffectTop);
+
+                Field f2 = AbsListView.class.getDeclaredField("mEdgeGlowBottom");
+                f2.setAccessible(true);
+                f2.set(list, edgeEffectBottom);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            // Android < 5.0 - OverScroll Glow
+            int glowDrawableId = cxt.getResources().getIdentifier("overscroll_glow", "drawable",
+                    "android");
+            Drawable androidGlow = ContextCompat.getDrawable(cxt, glowDrawableId);
+            androidGlow.setColorFilter(ContextCompat.getColor(cxt, glowColor),
+                    PorterDuff.Mode.SRC_ATOP);
+            // Android < 5.0 - OverScroll Edge Line
+            final int edgeDrawableId = cxt.getResources().getIdentifier("overscroll_edge",
+                    "drawable", "android");
+            final Drawable overScrollEdge = ContextCompat.getDrawable(cxt, edgeDrawableId);
+            overScrollEdge.setColorFilter(ContextCompat.getColor(cxt, lineColor),
+                    PorterDuff.Mode.SRC_ATOP);
         }
     }
 

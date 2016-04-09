@@ -25,9 +25,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.Charset;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
@@ -64,7 +65,7 @@ public class UpdateCheck {
     private int downloadID = -1;
     private DownloadManager downloadManager;
     private String updateDownloadPath;
-    private Context ctx;
+    private Context cxt;
     private UpdateCheckCallback updateCheckResult;
     private Handler mHandler;
     private String downloadURL;
@@ -73,6 +74,7 @@ public class UpdateCheck {
     private long done;
     private boolean showToast;
     private boolean connected;
+    private int retryCount = 0;
 
     private UpdateCheck() {
     }
@@ -93,7 +95,7 @@ public class UpdateCheck {
             throw new NullPointerException("Context or UpdateURL is null!");
         }
 
-        this.ctx = context;
+        this.cxt = context;
         this.updateCheckResult = updateCheckResult;
         mHandler = new Handler(context.getMainLooper());
 
@@ -104,18 +106,27 @@ public class UpdateCheck {
             LogHelper.w(TAG, "Network is not connected!");
         }
         if (connected) {
-            runAsyncTask();
+            runAsyncTask(false);
         }
         this.showToast = showToast;
     }
 
-    private void runAsyncTask() {
+    private void runAsyncTask(boolean retry) {
         String updateURL;
-        if (BuildConfig.DEBUG) {
-            updateURL = Constants.DEBUG_UPDATE_URL;
+
+        if (retry) {
+            updateURL = Constants.LEGACY_UPDATE_URL;
+            retryCount++;
+            LogHelper.d(TAG, "Retrying! Count: " + retryCount);
         } else {
-            updateURL = Constants.UPDATE_URL;
+            if (BuildConfig.DEBUG) {
+                updateURL = Constants.DEBUG_UPDATE_URL;
+            } else {
+                updateURL = Constants.UPDATE_URL;
+            }
         }
+
+        LogHelper.d(TAG, updateURL);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
@@ -128,23 +139,23 @@ public class UpdateCheck {
 
         Intent installUpdate = new Intent(ACTION_DOWNLOAD_UPDATE);
         installUpdate.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent updateIntent = PendingIntent.getBroadcast(ctx, 0, installUpdate, 0);
+        PendingIntent updateIntent = PendingIntent.getBroadcast(cxt, 0, installUpdate, 0);
 
-        notificationView = new RemoteViews(ctx.getPackageName(),
+        notificationView = new RemoteViews(cxt.getPackageName(),
                 R.layout.notification_update_available);
         notificationManager = (NotificationManager)
-                ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+                cxt.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
-                .Builder(ctx)
+                .Builder(cxt)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVibrate(new long[]{1, 1, 1})
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setTicker(ctx.getString(R.string.update_available))
+                .setTicker(cxt.getString(R.string.update_available))
                 .setContent(notificationView);
         notificationView.setTextViewText(R.id.tv_2,
-                ctx.getString(R.string.download_update));
+                cxt.getString(R.string.download_update));
         notificationView.setOnClickPendingIntent(R.id.rl_notify_root, updateIntent);
 
         notificationManager.notify(NOTIFICATION_ID, builder.build());
@@ -161,27 +172,27 @@ public class UpdateCheck {
     public void downloadingUpdateNotification() {
         Intent stopIntent = new Intent(ACTION_DOWNLOAD_CANCELLED);
         stopIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent cancelIntent = PendingIntent.getBroadcast(ctx, 0, stopIntent, 0);
+        PendingIntent cancelIntent = PendingIntent.getBroadcast(cxt, 0, stopIntent, 0);
 
         Intent clearIntent = new Intent(ACTION_NOTIFICATION_REMOVED);
         clearIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent removeIntent = PendingIntent.getBroadcast(ctx, 0, clearIntent, 0);
+        PendingIntent removeIntent = PendingIntent.getBroadcast(cxt, 0, clearIntent, 0);
 
-        notificationView = new RemoteViews(ctx.getPackageName(),
+        notificationView = new RemoteViews(cxt.getPackageName(),
                 R.layout.notification_update);
         notificationManager = (NotificationManager)
-                ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+                cxt.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
-                .Builder(ctx)
+                .Builder(cxt)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
-                .setTicker(ctx.getString(R.string.downloading_update))
+                .setTicker(cxt.getString(R.string.downloading_update))
                 .setAutoCancel(false)
                 .setOngoing(true)
                 .setContent(notificationView)
                 .setDeleteIntent(removeIntent);
         notificationView.setProgressBar(R.id.pb_notification, 100, 0, true);
-        notificationView.setTextViewText(R.id.tv_1, ctx.getString(R.string.downloading_update));
+        notificationView.setTextViewText(R.id.tv_1, cxt.getString(R.string.downloading_update));
         notificationView.setTextViewText(R.id.tv_2, "");
         notificationView.setOnClickPendingIntent(R.id.bt_cancel, cancelIntent);
 
@@ -191,27 +202,27 @@ public class UpdateCheck {
     private void updateDownloadedNotification() {
         Intent installUpdate = new Intent(ACTION_INSTALL_UPDATE);
         installUpdate.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent installIntent = PendingIntent.getBroadcast(ctx, 0, installUpdate, 0);
+        PendingIntent installIntent = PendingIntent.getBroadcast(cxt, 0, installUpdate, 0);
 
         Intent clearIntent = new Intent(ACTION_NOTIFICATION_REMOVED);
         clearIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent removeIntent = PendingIntent.getBroadcast(ctx, 0, clearIntent, 0);
+        PendingIntent removeIntent = PendingIntent.getBroadcast(cxt, 0, clearIntent, 0);
 
-        notificationView = new RemoteViews(ctx.getPackageName(),
+        notificationView = new RemoteViews(cxt.getPackageName(),
                 R.layout.notification_update_available);
         notificationManager = (NotificationManager)
-                ctx.getSystemService(Context.NOTIFICATION_SERVICE);
+                cxt.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
-                .Builder(ctx)
+                .Builder(cxt)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVibrate(new long[]{1, 1, 1})
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setDeleteIntent(removeIntent)
-                .setTicker(ctx.getString(R.string.install_update))
+                .setTicker(cxt.getString(R.string.install_update))
                 .setContent(notificationView);
-        notificationView.setTextViewText(R.id.tv_2, ctx.getString(R.string.install_update));
+        notificationView.setTextViewText(R.id.tv_2, cxt.getString(R.string.install_update));
         notificationView.setOnClickPendingIntent(R.id.rl_notify_root, installIntent);
 
         notificationManager.notify(NOTIFICATION_ID, builder.build());
@@ -233,7 +244,7 @@ public class UpdateCheck {
         intent.setDataAndType(Uri.parse("file://" + updateDownloadPath),
                 "application/vnd.android.package-archive");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        ctx.startActivity(intent);
+        cxt.startActivity(intent);
     }
 
     public void downloadUpdate() {
@@ -245,7 +256,7 @@ public class UpdateCheck {
             }
 
             Uri downloadUri = Uri.parse(downloadURL);
-            Uri destinationUri = Uri.parse(updateDownloadPath = ctx.getExternalCacheDir() +
+            Uri destinationUri = Uri.parse(updateDownloadPath = cxt.getExternalCacheDir() +
                     "/hentoid_update.apk");
 
             DownloadRequest downloadRequest = new DownloadRequest(downloadUri)
@@ -274,9 +285,9 @@ public class UpdateCheck {
                                     notificationView.setProgressBar(R.id.pb_notification, 100, 0,
                                             true);
                                     notificationView.setTextViewText(R.id.tv_1,
-                                            ctx.getString(R.string.error_network));
+                                            cxt.getString(R.string.error_network));
                                     notificationView.setTextViewText(R.id.tv_2,
-                                            ctx.getString(R.string.error_file));
+                                            cxt.getString(R.string.error_file));
                                     notificationManager.notify(NOTIFICATION_ID, builder.build());
                                 } catch (Exception e) {
                                     e.printStackTrace();
@@ -286,9 +297,9 @@ public class UpdateCheck {
 //                                    notificationView.setProgressBar(R.id.pb_notification, 100, 0,
 //                                            true);
 //                                    notificationView.setTextViewText(R.id.tv_1,
-//                                            ctx.getString(R.string.error_network));
+//                                            cxt.getString(R.string.error_network));
 //                                    notificationView.setTextViewText(R.id.tv_2,
-//                                            ctx.getString(R.string.error));
+//                                            cxt.getString(R.string.error));
 //                                    notificationManager.notify(NOTIFICATION_ID, builder.build());
 //                                } catch (Exception e) {
 //                                    e.printStackTrace();
@@ -370,7 +381,7 @@ public class UpdateCheck {
                 JSONObject jsonObject = downloadURL(params[0]);
                 if (jsonObject != null) {
                     int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
-                    if (AndroidHelper.getAppVersionCode(ctx) < updateVersionCode) {
+                    if (AndroidHelper.getAppVersionCode(cxt) < updateVersionCode) {
                         if (updateCheckResult != null) {
                             updateCheckResult.onUpdateAvailable();
                         }
@@ -383,20 +394,35 @@ public class UpdateCheck {
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        AndroidHelper.toast(ctx, R.string.update_check_no_update);
+                                        AndroidHelper.toast(cxt, R.string.update_check_no_update);
                                     }
                                 });
                             }
                         }
                     }
                 }
-            } catch (IOException | JSONException e) {
+            } catch (IOException e) {
+                // TODO: Log to Analytics
+                LogHelper.e(TAG, "IO ERROR: ", e);
+
+                if (retryCount == 0) {
+                    runAsyncTask(true);
+                } else {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            AndroidHelper.toast(cxt, R.string.error_dependency);
+
+                        }
+                    });
+                }
+            } catch (JSONException e) {
                 // TODO: Log to Analytics
                 LogHelper.e(TAG, "Error with JSON File: ", e);
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AndroidHelper.toast(ctx, R.string.error_dependency);
+                        AndroidHelper.toast(cxt, R.string.error_dependency);
                     }
                 });
             } catch (PackageManager.NameNotFoundException e) {
@@ -412,7 +438,7 @@ public class UpdateCheck {
             try {
                 disableConnectionReuse();
                 URL url = new URL(updateURL);
-                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
                 connection.setReadTimeout(10000);
                 connection.setConnectTimeout(15000);
                 connection.setRequestMethod("GET");
@@ -464,8 +490,8 @@ public class UpdateCheck {
         public void run() {
             notificationView.setProgressBar(R.id.pb_notification, 100, progressBar, false);
             notificationView.setTextViewText(R.id.tv_2,
-                    "(" + Formatter.formatShortFileSize(ctx, done) + "/"
-                            + Formatter.formatShortFileSize(ctx, total) + ") "
+                    "(" + Formatter.formatShortFileSize(cxt, done) + "/"
+                            + Formatter.formatShortFileSize(cxt, total) + ") "
                             + progressBar
                             + "%");
             notificationManager.notify(NOTIFICATION_ID, builder.build());

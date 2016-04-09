@@ -44,13 +44,13 @@ import me.devsaki.hentoid.util.LogHelper;
 public class ContentAdapter extends ArrayAdapter<Content> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
-    private final Context ctx;
+    private final Context cxt;
     private final List<Content> contents;
     private final SimpleDateFormat sdf;
 
-    public ContentAdapter(Context ctx, List<Content> contents) {
-        super(ctx, R.layout.row_downloads, contents);
-        this.ctx = ctx;
+    public ContentAdapter(Context cxt, List<Content> contents) {
+        super(cxt, R.layout.row_downloads, contents);
+        this.cxt = cxt;
         this.contents = contents;
         sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
     }
@@ -60,7 +60,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         ViewHolder viewHolder;
 
         if (convertView == null) {
-            LayoutInflater inflater = (LayoutInflater) ctx
+            LayoutInflater inflater = (LayoutInflater) cxt
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             convertView = inflater.inflate(R.layout.row_downloads, parent, false);
 
@@ -82,9 +82,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
         final Content content = contents.get(position);
 
-        String templateTvSeries = ctx.getResources().getString(R.string.tvSeries);
-        String templateTvArtist = ctx.getResources().getString(R.string.tvArtists);
-        String templateTvTags = ctx.getResources().getString(R.string.tvTags);
+        String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
+        String templateTvArtist = cxt.getResources().getString(R.string.tvArtists);
+        String templateTvTags = cxt.getResources().getString(R.string.tvTags);
 
         if (content != null) {
             viewHolder.tvSite.setText(content.getSite().getDescription());
@@ -197,7 +197,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 numberImagesError++;
             }
         }
-        String message = ctx.getString(R.string.download_again_dialog).replace("@error",
+        String message = cxt.getString(R.string.download_again_dialog).replace("@error",
                 numberImagesError + "").replace("@total", numberImages + "");
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setMessage(message)
@@ -208,11 +208,11 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                 content.setStatus(StatusContent.DOWNLOADING)
                                         .setDownloadDate(new Date().getTime());
                                 db.updateContentStatus(content);
-                                Intent intent = new Intent(Intent.ACTION_SYNC, null, ctx,
+                                Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
                                         DownloadService.class);
-                                ctx.startService(intent);
+                                cxt.startService(intent);
 
-                                AndroidHelper.toast(ctx, R.string.in_queue);
+                                AndroidHelper.toast(cxt, R.string.in_queue);
                                 contents.remove(content);
                                 int index = listView.getFirstVisiblePosition();
                                 View v = listView.getChildAt(0);

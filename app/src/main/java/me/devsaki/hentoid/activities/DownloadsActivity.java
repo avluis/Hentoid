@@ -10,7 +10,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -79,7 +78,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mDrawerList = (ListView) findViewById(R.id.drawer_list);
 
         mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
             @Override
@@ -255,9 +254,9 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
         } else {
-            AndroidHelper.sSnack(
-                    findViewById(android.R.id.list), R.string.press_back_again,
-                    Snackbar.LENGTH_SHORT);
+//            AndroidHelper.sSnack(
+//                    findViewById(android.R.id.list), R.string.press_back_again,
+//                    Snackbar.LENGTH_SHORT);
             backButtonPressed = System.currentTimeMillis();
         }
         clearQuery(1);
@@ -412,14 +411,14 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 @Override
                 public void onClick(View v) {
                     if (qtyPages <= 0) {
-                        AndroidHelper.sSnack(container, R.string.not_limit_per_page,
-                                Snackbar.LENGTH_SHORT);
+//                        AndroidHelper.sSnack(container, R.string.not_limit_per_page,
+//                                Snackbar.LENGTH_SHORT);
                     } else {
                         currentPage++;
                         if (!searchContent()) {
                             btnPage.setText(String.valueOf(--currentPage));
-                            AndroidHelper.sSnack(container, R.string.not_next_page,
-                                    Snackbar.LENGTH_SHORT);
+//                            AndroidHelper.sSnack(container, R.string.not_next_page,
+//                                    Snackbar.LENGTH_SHORT);
                             searchContent();
                         }
                     }
@@ -433,11 +432,11 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                         currentPage--;
                         searchContent();
                     } else if (qtyPages > 0) {
-                        AndroidHelper.sSnack(container, R.string.not_previous_page,
-                                Snackbar.LENGTH_SHORT);
+//                        AndroidHelper.sSnack(container, R.string.not_previous_page,
+//                                Snackbar.LENGTH_SHORT);
                     } else {
-                        AndroidHelper.sSnack(container, R.string.not_limit_per_page,
-                                Snackbar.LENGTH_SHORT);
+//                        AndroidHelper.sSnack(container, R.string.not_limit_per_page,
+//                                Snackbar.LENGTH_SHORT);
                     }
                 }
             });

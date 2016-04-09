@@ -10,8 +10,6 @@
         android:clickable="true" />
 
     <!-- The navigation drawer -->
-    <include
-        android:id="@+id/left_drawer"
-        layout="@layout/drawer_list" />
+    <include layout="@layout/include_drawer_list" />
 
 </android.support.v4.widget.DrawerLayout>
