@@ -5,5 +5,14 @@ machine:
 
 dependencies:
   pre:
-    - echo y | android update sdk --no-ui --all --filter "tools, platform-tools, extra-android-support, extra-android-m2repository, extra-google-google_play_services, extra-google-m2repository, android-23"
-    - echo y | android update sdk --no-ui --all --filter "build-tools-23.0.3"
+    - chmod +x gradlew
+    - sudo apt-get update
+    - sudo apt-get install -qq libstdc++6:i386 lib32z1 expect
+    - set COMPONENTS="build-tools-23.0.3, android-23, extra-android-m2repository, extra-android-support, extra-google-google_play_service, extra-google-m2repository"
+    - set LICENSES="android-sdk-license-c81a61d9"
+    - curl -L https://raw.github.com/embarkmobile/android-sdk-installer/version-2/android-sdk-installer | bash /dev/stdin --install=$COMPONENTS --accept=$LICENSES --dir=/usr/local/android-sdk-linux && source ~/.android-sdk-installer/env
+
+test:
+  override:
+    - ./gradlew clean assemble -PdisablePreDex
+    - cp -r Hentoid/build/outputs $CIRCLE_ARTIFACTS
