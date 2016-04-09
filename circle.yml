@@ -9,9 +9,9 @@ dependencies:
     - sudo apt-get install -qq libstdc++6:i386 lib32z1 expect
     - export COMPONENTS="build-tools-23.0.3,android-23,extra-android-support,extra-google-google_play_services,extra-google-m2repository,extra-android-m2repository"
     - curl -L https://avnet.ws/android-sdk/android-sdk-installer | bash /dev/stdin --install=$COMPONENTS --accept=android-sdk-license-c81a61d9
+    - source ~/.android-sdk-installer/env
     - echo y | android update sdk --no-ui --all --filter "platform-tools"
     - echo y | android update sdk --no-ui --all --filter "build-tools-23.0.3"
-    - source ~/.android-sdk-installer/env
 
 
 test:
