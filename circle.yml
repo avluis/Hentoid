@@ -4,7 +4,7 @@ general:
 
 machine:
   environment:
-    ANDROID_HOME: /usr/local/android-sdk-linux/android-sdk-linux/
+    ANDROID_HOME: /usr/local/android-sdk-linux/
     GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
 
 dependencies:
@@ -13,8 +13,8 @@ dependencies:
     - wget -c -O $ANDROID_HOME/android-sdk_r24.4.1-linux.tgz http://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
     - tar xzf $ANDROID_HOME/android-sdk_r24.4.1-linux.tgz --directory $ANDROID_HOME
     - cd /usr/local/android-sdk-linux/android-sdk-linux/tools
-    - echo y | ./android update sdk --no-ui --all --filter tools
     - echo y | ./android update sdk --no-ui --all --filter platform-tools
+    - echo y | ./android update sdk --no-ui --all --filter tools
     - echo y | ./android update sdk --no-ui --all --filter build-tools-23.0.3
     - echo y | ./android update sdk --no-ui --all --filter android-23
     - echo y | ./android update sdk --no-ui --all --filter extra-google-m2repository,extra-google-google_play_services,extra-android-support,extra-android-m2repository
