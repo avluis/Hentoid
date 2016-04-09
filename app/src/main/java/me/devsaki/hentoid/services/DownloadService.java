@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -117,7 +115,7 @@ public class DownloadService extends IntentService {
                 if (paused) {
                     interruptDownload();
                     downloadBatch.cancelAllTasks();
-                    if (currentContent.getStatus() == StatusContent.SAVED) {
+                    if (currentContent.getStatus() == StatusContent.CANCELED) {
                         try {
                             FileUtils.deleteDirectory(dir);
                         } catch (IOException e) {
