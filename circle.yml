@@ -1,5 +1,6 @@
 machine:
   environment:
+    ANDROID_HOME: "~/.android-sdk-installer"
     GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
 
 dependencies:
