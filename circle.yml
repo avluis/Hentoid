@@ -8,9 +8,9 @@ dependencies:
     - chmod +x gradlew
     - sudo apt-get update
     - sudo apt-get install -qq libstdc++6:i386 lib32z1 expect
-    - export COMPONENTS="tools,platform-tools,build-tools-23.0.3,android-23,extra-android-support,extra-google-google_play_services,extra-google-m2repository,extra-android-m2repository"
-    - export LICENSES="android-sdk-license-c81a61d9"
-    - curl -L https://raw.github.com/embarkmobile/android-sdk-installer/version-2/android-sdk-installer | bash /dev/stdin --install=$COMPONENTS --accept=$LICENSES --dir=$ANDROID_HOME
+    - export COMPONENTS="build-tools-23.0.3,android-23,extra-android-support,extra-google-google_play_services,extra-google-m2repository,extra-android-m2repository"
+    - curl -L https://raw.github.com/embarkmobile/android-sdk-installer/version-2/android-sdk-installer | bash /dev/stdin --install=$COMPONENTS --accept=android-sdk-license-c81a61d9 --dir=$ANDROID_HOME
+    - echo y | android update sdk --no-ui --all --filter "platform-tools"
     - echo y | android update sdk --no-ui --all --filter "build-tools-23.0.3"
     - source $ANDROID_HOME/env
 
