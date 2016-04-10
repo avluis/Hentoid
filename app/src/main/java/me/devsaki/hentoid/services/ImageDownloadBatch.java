@@ -22,7 +22,7 @@ import okhttp3.Response;
  * Created by Shiro on 3/28/2016.
  * Handles image download tasks and batch operations
  * Intended to have default access level for use with DownloadService class only
- * <p/>
+ * <p>
  * TODO: Implement timeout handling; check line #51
  * Ref: https://goo.gl/OF86un
  */

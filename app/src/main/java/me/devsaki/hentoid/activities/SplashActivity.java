@@ -9,7 +9,7 @@ import me.devsaki.hentoid.util.AndroidHelper;
 /**
  * Created by avluis on 1/9/16.
  * Displays a Splash while starting up.
- * <p/>
+ * <p>
  * Nothing but a splash/activity selection should be defined here.
  */
 public class SplashActivity extends AppCompatActivity {

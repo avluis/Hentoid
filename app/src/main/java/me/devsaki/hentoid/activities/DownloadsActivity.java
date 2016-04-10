@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.app.ListFragment;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
