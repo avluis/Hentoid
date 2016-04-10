@@ -35,7 +35,7 @@ public class HentoidApplication extends Application {
     private static HentoidApplication mInstance;
     private static SharedPreferences sharedPreferences;
     private static Context context;
-    private static volatile int downloadCount = 0;
+    private static int downloadCount = 0;
 
     public static synchronized HentoidApplication getInstance() {
         return mInstance;

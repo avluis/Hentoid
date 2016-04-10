@@ -16,20 +16,20 @@ import android.widget.ListView;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseFragmentActivity;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Presents the list of works currently downloading to the user.
  */
-public class QueueActivity extends BaseFragmentActivity<QueueActivity.QueueFragment> {
+public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
     private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -60,7 +60,8 @@ public class QueueActivity extends BaseFragmentActivity<QueueActivity.QueueFragm
 
         mDrawerList = (ListView) findViewById(R.id.drawer_list);
 
-        super.initializeToolbar();
+        AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.menu_item_color,
+                R.color.menu_item_active_color);
     }
 
     @Override
@@ -69,10 +70,14 @@ public class QueueActivity extends BaseFragmentActivity<QueueActivity.QueueFragm
 
         getFragment().update();
         registerReceiver(receiver, new IntentFilter(DownloadService.DOWNLOAD_NOTIFICATION));
+
+        if (mDrawerList != null) {
+            mDrawerList.setItemChecked(4, true);
+        }
     }
 
     @Override
-    public void onPause() {
+    protected void onPause() {
         super.onPause();
 
         unregisterReceiver(receiver);
@@ -140,8 +145,6 @@ public class QueueActivity extends BaseFragmentActivity<QueueActivity.QueueFragm
             content.setStatus(StatusContent.CANCELED);
             getDB().updateContentStatus(content);
             if (content.getId() == contents.get(0).getId()) {
-                int downloadCount = HentoidApplication.getDownloadCount();
-                HentoidApplication.setDownloadCount(--downloadCount);
                 DownloadService.paused = true;
             }
             contents.remove(content);
