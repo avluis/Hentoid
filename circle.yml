@@ -27,5 +27,5 @@ dependencies:
 test:
   override:
     - export TERM="dumb"
-    - if [ -e ./gradlew ]; then ./gradlew clean assembleDebug -PdisablePreDex
+    - if [ -e ./gradlew ]; then ./gradlew clean assembleDebug -PdisablePreDex;else gradle clean assembleDebug -PdisablePreDex;fi
     - cp -r /home/ubuntu/Hentoid/app/build/outputs $CIRCLE_ARTIFACTS
