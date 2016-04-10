@@ -22,7 +22,8 @@
         android:gravity="center"
         android:text="@string/downloads_empty"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/white" />
+        android:textColor="@color/white"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/download_nav"

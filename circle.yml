@@ -2,11 +2,13 @@ general:
     artifacts:
         - /home/ubuntu/Hentoid/app/build/outputs/apk/
 
+## Customize the test machine
 machine:
   environment:
     ANDROID_HOME: /usr/local/android-sdk-linux/
     GRADLE_OPTS: '-Dorg.gradle.jvmargs="-Xmx1024m -XX:+HeapDumpOnOutOfMemoryError"'
 
+## Customize dependencies
 dependencies:
   pre:
     - chmod +x gradlew
@@ -21,7 +23,9 @@ dependencies:
     - echo y | android update sdk --no-ui --all --filter android-23
     - echo y | android update sdk --no-ui --all --filter extra-google-m2repository,extra-google-google_play_services,extra-android-support,extra-android-m2repository
 
+## Customize test commands
 test:
   override:
-    - ./gradlew clean assembleDebug -PdisablePreDex
+    - export TERM="dumb"
+    - if [ -e ./gradlew ]; then ./gradlew clean assembleDebug -PdisablePreDex
     - cp -r /home/ubuntu/Hentoid/app/build/outputs $CIRCLE_ARTIFACTS

@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.File;
@@ -16,13 +16,16 @@ import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.util.NetworkStatus;
+import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 /**
  * Created by neko on 11/05/2015.
@@ -34,6 +37,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private final Context context;
     private final List<Content> contents;
+    private final HentoidDB db = new HentoidDB(getContext());
 
     public QueueContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.row_downloads, contents);
@@ -120,7 +124,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
             viewHolder.tvTags.setText(Html.fromHtml(tags));
 
-            File coverFile = AndroidHelper.getThumb(content, getContext());
+            File coverFile = AndroidHelper.getThumb(content, context);
             String image = coverFile != null ?
                     coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
@@ -130,7 +134,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    //((QueueActivity) getContext()).getFragment().cancel(content);
+                    cancel(content);
                     notifyDataSetChanged();
                 }
             });
@@ -139,9 +143,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 @Override
                 public void onClick(View v) {
                     if (content.getStatus() != StatusContent.DOWNLOADING) {
-                        //((QueueActivity) getContext()).getFragment().resume(content);
+                        resume(content);
                     } else {
-                        //((QueueActivity) getContext()).getFragment().pause(content);
+                        pause(content);
                         notifyDataSetChanged();
                     }
                 }
@@ -150,7 +154,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 btnPause.setText(R.string.resume);
             }
 
-            ProgressBar pb = (ProgressBar) convertView.findViewById(R.id.pbDownload);
+            MaterialProgressBar pb = (MaterialProgressBar) convertView.findViewById(R.id.pbDownload);
             if (content.getStatus() == StatusContent.PAUSED) {
                 pb.setVisibility(View.INVISIBLE);
             } else if (content.getPercent() > 0) {
@@ -164,6 +168,39 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
 
         return convertView;
+    }
+
+    private void cancel(Content content) {
+        content.setStatus(StatusContent.CANCELED);
+        db.updateContentStatus(content);
+        if (content.getId() == contents.get(0).getId()) {
+            DownloadService.paused = true;
+        }
+        contents.remove(content);
+    }
+
+    private void pause(Content content) {
+        content.setStatus(StatusContent.PAUSED);
+        db.updateContentStatus(content);
+        // TODO: Update Fragment
+        // update();
+        if (content.getId() == contents.get(0).getId()) {
+            DownloadService.paused = true;
+        }
+    }
+
+    private void resume(Content content) {
+        if (NetworkStatus.isOnline(context)) {
+            content.setStatus(StatusContent.DOWNLOADING);
+            db.updateContentStatus(content);
+            // TODO: Update Fragment
+            // update();
+            if (content.getId() == contents.get(0).getId()) {
+                Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
+                        DownloadService.class);
+                context.startService(intent);
+            }
+        }
     }
 
     static class ViewHolder {

@@ -16,7 +16,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -28,17 +27,12 @@ import me.devsaki.hentoid.util.LogHelper;
 public abstract class BaseActivity extends AppCompatActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
 
-    private static HentoidDB db;
     private final Handler handler = new Handler();
     private String[] mActivityList;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
     private Fragment fragment;
-
-    protected static HentoidDB getDB() {
-        return db;
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +41,6 @@ public abstract class BaseActivity extends AppCompatActivity {
         setContentView(R.layout.activity_hentoid);
 
         AndroidHelper.setNavBarColor(this, R.color.primary_dark);
-
-        db = new HentoidDB(this);
 
         mActivityList = getResources().getStringArray(R.array.nav_drawer_entries);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);

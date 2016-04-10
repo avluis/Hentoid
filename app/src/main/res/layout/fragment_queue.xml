@@ -22,7 +22,8 @@
         android:gravity="center"
         android:text="@string/queue_empty"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/white" />
+        android:textColor="@color/white"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/queue_nav"
