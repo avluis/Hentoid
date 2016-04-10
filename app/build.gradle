@@ -5,8 +5,6 @@ android {
     buildToolsVersion '23.0.3'
     compileOptions {
         encoding "UTF-8"
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
@@ -16,11 +14,15 @@ android {
         versionName '1.2.0r1'
     }
     packagingOptions {
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/NOTICE'
         exclude 'README.md'
         exclude 'LICENSE'
         exclude 'update.json'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/DEPENDENCIES.txt'
     }
     signingConfigs {
         release
@@ -104,8 +106,10 @@ dependencies {
     }
     // Image loader
     compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
-    // Integrate with OkHttp3
-    compile 'com.github.bumptech.glide:okhttp-integration:1.5.0-SNAPSHOT'
+    // Integrate with OkHttp
+    compile ('com.github.bumptech.glide:okhttp-integration:1.5.0-SNAPSHOT') {
+        exclude group: 'com.squareup.okhttp', module: 'okhttp'
+    }
     // Intro screens or slides
     compile 'com.github.paolorotolo:appintro:3.4.0'
     // Google Play Services Analytics
@@ -116,9 +120,15 @@ dependencies {
     compile 'com.google.code.gson:gson:2.4'
     // Download app updates (without user prompts)
     compile 'com.mani:ThinDownloadManager:1.2.4'
+    // RxAndroid - Because boilerplate
+    compile 'io.reactivex:rxandroid:1.1.0'
+    // Because RxAndroid releases are few and far between, it is recommended you also
+    // explicitly depend on RxJava's latest version for bug fixes and new features.
+    compile 'io.reactivex:rxjava:1.1.0'
     // Directory file picker (as fragment)
     compile('com.turhanoz.android:reactivedirectorychooser:0.0.13@aar') {
         transitive = true
+        exclude group: 'com.netflix.rxjava', module: 'rxjava-android'
     }
     // Additional Support Libraries
     // HTTP & HTTP/2 client
