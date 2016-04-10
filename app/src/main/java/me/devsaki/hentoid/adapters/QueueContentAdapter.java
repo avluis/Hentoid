@@ -130,7 +130,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    ((QueueActivity) getContext()).getFragment().cancel(content);
+                    //((QueueActivity) getContext()).getFragment().cancel(content);
                     notifyDataSetChanged();
                 }
             });
@@ -139,9 +139,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 @Override
                 public void onClick(View v) {
                     if (content.getStatus() != StatusContent.DOWNLOADING) {
-                        ((QueueActivity) getContext()).getFragment().resume(content);
+                        //((QueueActivity) getContext()).getFragment().resume(content);
                     } else {
-                        ((QueueActivity) getContext()).getFragment().pause(content);
+                        //((QueueActivity) getContext()).getFragment().pause(content);
                         notifyDataSetChanged();
                     }
                 }

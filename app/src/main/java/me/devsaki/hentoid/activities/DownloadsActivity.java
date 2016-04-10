@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.SearchView;
@@ -41,7 +42,7 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Presents the list of downloaded works to the user.
  */
-public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
+public class DownloadsActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
     private static SharedPreferences preferences;
@@ -224,8 +225,8 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             searchView.setIconified(true);
         }
         query = "";
-        getFragment().setQuery("");
-        getFragment().searchContent();
+        //getFragment().setQuery("");
+        //getFragment().searchContent();
     }
 
     private void submitSearchQuery(String s) {
@@ -238,8 +239,8 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         searchHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                getFragment().setQuery(s.trim());
-                getFragment().searchContent();
+                //getFragment().setQuery(s.trim());
+                //getFragment().searchContent();
             }
         }, delay);
     }
@@ -283,7 +284,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         }
     }
 
-    public static class DownloadsFragment extends ListFragment {
+    public static class DownloadsFragment extends Fragment {
         private final static int STORAGE_PERMISSION_REQUEST = 1;
         private static String query = "";
         private static int currentPage = 1;
@@ -294,6 +295,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         private TextView emptyText;
         private Button btnPage;
         private List<Content> contents;
+        private ListView mListView;
 
         public void setQuery(String query) {
             DownloadsFragment.query = query;
@@ -348,17 +350,17 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
             checkPermissions();
 
             // Retrieve list position
-            ListView list = getListView();
-            list.setSelectionFromTop(index, top);
+            // ListView list = getListView();
+            mListView.setSelectionFromTop(index, top);
         }
 
         @Override
         public void onPause() {
             // Get & save current list position
-            ListView list = getListView();
-            index = list.getFirstVisiblePosition();
-            View view = list.getChildAt(0);
-            top = (view == null) ? 0 : (view.getTop() - list.getPaddingTop());
+            // ListView list = getListView();
+            index = mListView.getFirstVisiblePosition();
+            View view = mListView.getChildAt(0);
+            top = (view == null) ? 0 : (view.getTop() - mListView.getPaddingTop());
 
             super.onPause();
         }
@@ -393,6 +395,8 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
         public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
+
+            mListView = (ListView) rootView.findViewById(android.R.id.list);
 
             btnPage = (Button) rootView.findViewById(R.id.btnPage);
             emptyText = (TextView) rootView.findViewById(android.R.id.empty);
@@ -464,7 +468,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 }
                 if (contents == result || contents.isEmpty()) {
                     ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
-                    setListAdapter(adapter);
+                    mListView.setAdapter(adapter);
                 }
                 if (prevPage != currentPage) {
                     btnPage.setText(String.valueOf(currentPage));

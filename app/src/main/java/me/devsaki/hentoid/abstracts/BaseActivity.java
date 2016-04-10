@@ -1,11 +1,11 @@
 package me.devsaki.hentoid.abstracts;
 
-import android.app.FragmentManager;
-import android.app.ListFragment;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -25,7 +25,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * Abstract activity to extend from
  * Implements DrawerLayout
  */
-public abstract class BaseActivity<T extends ListFragment> extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
 
     private static HentoidDB db;
@@ -34,7 +34,7 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
-    private T fragment;
+    private Fragment fragment;
 
     protected static HentoidDB getDB() {
         return db;
@@ -85,7 +85,7 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         fragment = buildFragment();
-        FragmentManager fragmentManager = getFragmentManager();
+        FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
         mDrawerLayout.closeDrawer(mDrawerList);
@@ -95,9 +95,9 @@ public abstract class BaseActivity<T extends ListFragment> extends AppCompatActi
         }
     }
 
-    protected abstract T buildFragment();
+    protected abstract Fragment buildFragment();
 
-    public T getFragment() {
+    public Fragment getFragment() {
         return fragment;
     }
 

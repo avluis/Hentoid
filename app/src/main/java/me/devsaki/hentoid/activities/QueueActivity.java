@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +30,7 @@ import me.devsaki.hentoid.util.NetworkStatus;
 /**
  * Presents the list of works currently downloading to the user.
  */
-public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
+public class QueueActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
 
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -40,9 +41,9 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
             if (bundle != null) {
                 double percent = bundle.getDouble(DownloadService.INTENT_PERCENT_BROADCAST);
                 if (percent >= 0) {
-                    getFragment().updatePercent(percent);
+                    //getFragment().updatePercent(percent);
                 } else {
-                    getFragment().update();
+                    //getFragment().update();
                 }
             }
         }
@@ -68,7 +69,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
     protected void onResume() {
         super.onResume();
 
-        getFragment().update();
+        //getFragment().update();
         registerReceiver(receiver, new IntentFilter(DownloadService.DOWNLOAD_NOTIFICATION));
 
         if (mDrawerList != null) {
@@ -83,8 +84,9 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
         unregisterReceiver(receiver);
     }
 
-    public static class QueueFragment extends ListFragment {
+    public static class QueueFragment extends Fragment {
 
+        private ListView mListView;
         private List<Content> contents;
         private Context mContext;
 
@@ -93,6 +95,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
+            mListView = (ListView) rootView.findViewById(android.R.id.list);
             mContext = getActivity().getApplicationContext();
 
             ImageButton btnStart = (ImageButton) rootView.findViewById(R.id.btnStart);
@@ -153,7 +156,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
         public void updatePercent(double percent) {
             if (contents != null && !contents.isEmpty()) {
                 contents.get(0).setPercent(percent);
-                ((ArrayAdapter) getListAdapter()).notifyDataSetChanged();
+                ((ArrayAdapter) mListView.getAdapter()).notifyDataSetChanged();
             }
         }
 
@@ -164,7 +167,7 @@ public class QueueActivity extends BaseActivity<QueueActivity.QueueFragment> {
             }
             QueueContentAdapter adapter =
                     new QueueContentAdapter(getActivity(), contents);
-            setListAdapter(adapter);
+            mListView.setAdapter(adapter);
         }
     }
 }
