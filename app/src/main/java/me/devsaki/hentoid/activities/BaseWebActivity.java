@@ -222,10 +222,6 @@ public class BaseWebActivity extends AppCompatActivity {
     @SuppressWarnings("UnusedParameters")
     public void onHomeFabClick(View view) {
         Intent intent = new Intent(this, DownloadsActivity.class);
-
-        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
-        // it can interfere with Double-Back (press back twice) to exit
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }

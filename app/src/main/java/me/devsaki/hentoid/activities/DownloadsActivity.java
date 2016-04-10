@@ -30,7 +30,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.abstracts.BaseFragmentActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.AndroidHelper;
@@ -41,7 +41,7 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Presents the list of downloaded works to the user.
  */
-public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
+public class DownloadsActivity extends BaseFragmentActivity<DownloadsActivity.DownloadsFragment> {
     private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
     private static SharedPreferences preferences;
@@ -67,10 +67,7 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if ((getIntent().getIntExtra(HentoidApplication.DOWNLOAD_COUNT, 0)) != 0) {
-            // Reset download count
-            HentoidApplication.setDownloadCount(0);
-        }
+        LogHelper.d(TAG, "onCreate");
 
         preferences = HentoidApplication.getAppPreferences();
         settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
@@ -99,14 +96,24 @@ public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsF
                 invalidateOptionsMenu();
             }
         });
+
+        super.initializeToolbar();
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
 
-        if (mDrawerList != null) {
-            mDrawerList.setItemChecked(3, true);
+        LogHelper.d(TAG, "onStart");
+
+        if ((getIntent().getIntExtra(HentoidApplication.DOWNLOAD_COUNT, 0)) != 0) {
+            LogHelper.d(TAG, getIntent().getIntExtra(HentoidApplication.DOWNLOAD_COUNT, 0));
+            LogHelper.d(TAG, "Download Count: ", HentoidApplication.getDownloadCount());
+            LogHelper.d(TAG, "Download Count reset.");
+            HentoidApplication.setDownloadCount(0);
+            LogHelper.d(TAG, "Download Count: ", HentoidApplication.getDownloadCount());
+        } else {
+            LogHelper.d(TAG, "Download Count: ", HentoidApplication.getDownloadCount());
         }
     }
 

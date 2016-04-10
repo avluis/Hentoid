@@ -51,7 +51,6 @@ final class NotificationPresenter {
     }
 
     void downloadStarted(final Content content) {
-        downloadCount++;
         currentContent = content;
         currentBuilder = new NotificationCompat.Builder(appInstance)
                 .setContentText(currentContent.getTitle())
@@ -60,7 +59,7 @@ final class NotificationPresenter {
                         R.color.accent))
                 .setLocalOnly(true);
 
-        HentoidApplication.setDownloadCount(downloadCount);
+        HentoidApplication.setDownloadCount(++downloadCount);
 
         LogHelper.d(TAG, "Download Counter: " + downloadCount);
 
@@ -147,8 +146,7 @@ final class NotificationPresenter {
             case ERROR:
             case UNHANDLED_ERROR:
                 resultIntent = new Intent(appInstance, DownloadsActivity.class);
-                resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                resultIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
                 Bundle bundle = new Bundle();
                 bundle.putInt(HentoidApplication.DOWNLOAD_COUNT,
