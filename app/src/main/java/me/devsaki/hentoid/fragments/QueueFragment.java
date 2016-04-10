@@ -22,11 +22,15 @@ import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 04/10/2016.
+ * TODO: WIP
+ * Presents the list of works currently downloading to the user.
  */
 public class QueueFragment extends BaseFragment {
+    private static final String TAG = LogHelper.makeLogTag(QueueFragment.class);
 
     private ListView mListView;
     private TextView mEmptyText;
@@ -112,8 +116,10 @@ public class QueueFragment extends BaseFragment {
         if (contents == null) {
             contents = new ArrayList<>();
             mEmptyText.setVisibility(View.VISIBLE);
+        } else {
+            mEmptyText.setVisibility(View.GONE);
         }
-        QueueContentAdapter adapter = new QueueContentAdapter(mContext, contents);
+        QueueContentAdapter adapter = new QueueContentAdapter(mContext, contents, QueueFragment.this);
         mListView.setAdapter(adapter);
     }
 }

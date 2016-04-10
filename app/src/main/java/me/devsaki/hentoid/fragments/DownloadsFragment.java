@@ -32,6 +32,8 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 04/10/2016.
+ * TODO: WIP
+ * Presents the list of downloaded works to the user.
  */
 public class DownloadsFragment extends BaseFragment {
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
@@ -42,14 +44,14 @@ public class DownloadsFragment extends BaseFragment {
     private static int qtyPages;
     private static int index = -1;
     private static int top;
+    private static SharedPreferences prefs;
+    private static String settingDir;
+    private static int order;
     private int prevPage;
     private TextView emptyText;
     private Button btnPage;
     private List<Content> contents;
     private ListView mListView;
-    private static SharedPreferences prefs;
-    private static String settingDir;
-    private static int order;
 
     public void setQuery(String query) {
         DownloadsFragment.query = query;

@@ -22,7 +22,7 @@ import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
- * Presents the list of downloaded works to the user.
+ * TODO: WIP
  */
 public class DownloadsActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);

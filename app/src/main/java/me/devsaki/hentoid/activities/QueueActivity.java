@@ -9,7 +9,7 @@ import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
- * Presents the list of works currently downloading to the user.
+ * TODO: WIP
  */
 public class QueueActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);

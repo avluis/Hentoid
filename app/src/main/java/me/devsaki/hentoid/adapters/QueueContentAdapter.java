@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.File;
@@ -21,14 +22,15 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.fragments.QueueFragment;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
-import me.zhanghai.android.materialprogressbar.MaterialProgressBar;
 
 /**
  * Created by neko on 11/05/2015.
+ * TODO: WIP
  * Builds and assigns content from db into adapter
  * for display in queue
  */
@@ -38,49 +40,57 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private final Context context;
     private final List<Content> contents;
     private final HentoidDB db = new HentoidDB(getContext());
+    private final QueueFragment fragment;
 
-    public QueueContentAdapter(Context context, List<Content> contents) {
-        super(context, R.layout.row_downloads, contents);
-        this.context = context;
+    public QueueContentAdapter(Context cxt, List<Content> contents, QueueFragment fragment) {
+        super(cxt, R.layout.row_queue, contents);
+        this.context = cxt;
         this.contents = contents;
+        this.fragment = fragment;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder viewHolder;
+    public View getView(int position, View view, ViewGroup parent) {
+        ViewHolder holder;
 
-        if (convertView == null) {
+        if (view != null) {
+            holder = (ViewHolder) view.getTag();
+        } else {
             LayoutInflater inflater = (LayoutInflater) context
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            convertView = inflater.inflate(R.layout.row_queue, parent, false);
+            view = inflater.inflate(R.layout.row_queue, parent, false);
 
-            viewHolder = new ViewHolder();
-
-            viewHolder.tvTitle = (TextView) convertView.findViewById(R.id.tvTitle);
-            viewHolder.ivCover = (ImageView) convertView.findViewById(R.id.ivCover);
-            viewHolder.tvSeries = (TextView) convertView.findViewById(R.id.tvSeries);
-            viewHolder.tvArtist = (TextView) convertView.findViewById(R.id.tvArtist);
-            viewHolder.tvTags = (TextView) convertView.findViewById(R.id.tvTags);
-            viewHolder.tvSite = (TextView) convertView.findViewById(R.id.tvSite);
-
-            convertView.setTag(viewHolder);
-        } else {
-            viewHolder = (ViewHolder) convertView.getTag();
+            holder = new ViewHolder();
+            view.setTag(holder);
         }
+
+        holder.tvTitle = (TextView) view.findViewById(R.id.tvTitle);
+        holder.ivCover = (ImageView) view.findViewById(R.id.ivCover);
+        holder.tvSeries = (TextView) view.findViewById(R.id.tvSeries);
+        holder.tvArtist = (TextView) view.findViewById(R.id.tvArtist);
+        holder.tvTags = (TextView) view.findViewById(R.id.tvTags);
+        holder.tvSite = (TextView) view.findViewById(R.id.tvSite);
 
         final Content content = contents.get(position);
 
-        String templateTvSeries = context.getResources().getString(R.string.tvSeries);
-        String templateTvArtist = context.getResources().getString(R.string.tvArtists);
-        String templateTvTags = context.getResources().getString(R.string.tvTags);
+        String templateTvSeries = context.getString(R.string.tvSeries);
+        String templateTvArtist = context.getString(R.string.tvArtists);
+        String templateTvTags = context.getString(R.string.tvTags);
 
         if (content != null) {
-            viewHolder.tvSite.setText(content.getSite().getDescription());
+            holder.tvSite.setText(content.getSite().getDescription());
 
-            viewHolder.tvTitle.setText(content.getTitle());
+            if (content.getTitle() == null) {
+                holder.tvTitle.setText(R.string.tvTitleEmpty);
+            } else {
+                holder.tvTitle.setText(content.getTitle());
+            }
+
             String series = "";
             List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
-            if (seriesAttributes != null) {
+            if (seriesAttributes == null) {
+                holder.tvSeries.setVisibility(View.GONE);
+            } else {
                 for (int i = 0; i < seriesAttributes.size(); i++) {
                     Attribute attribute = seriesAttributes.get(i);
                     series += attribute.getName();
@@ -88,13 +98,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                         series += ", ";
                     }
                 }
+                holder.tvSeries.setVisibility(View.VISIBLE);
             }
-            viewHolder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@series@", series)));
-
-            // If no series found, then hide tag from list item
-            if (seriesAttributes == null) {
-                viewHolder.tvSeries.setVisibility(View.GONE);
-            }
+            holder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@series@", series)));
 
             String artists = "";
             List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
@@ -107,7 +113,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                     }
                 }
             }
-            viewHolder.tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
+            holder.tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
 
             String tags = "";
             List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
@@ -122,15 +128,15 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                     }
                 }
             }
-            viewHolder.tvTags.setText(Html.fromHtml(tags));
+            holder.tvTags.setText(Html.fromHtml(tags));
 
             File coverFile = AndroidHelper.getThumb(content, context);
             String image = coverFile != null ?
                     coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
-            HentoidApplication.getInstance().loadBitmap(image, viewHolder.ivCover);
+            HentoidApplication.getInstance().loadBitmap(image, holder.ivCover);
 
-            Button btnCancel = (Button) convertView.findViewById(R.id.btnCancel);
+            Button btnCancel = (Button) view.findViewById(R.id.btnCancel);
             btnCancel.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -138,7 +144,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                     notifyDataSetChanged();
                 }
             });
-            Button btnPause = (Button) convertView.findViewById(R.id.btnPause);
+            Button btnPause = (Button) view.findViewById(R.id.btnPause);
             btnPause.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -154,25 +160,30 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 btnPause.setText(R.string.resume);
             }
 
-            MaterialProgressBar pb = (MaterialProgressBar) convertView.findViewById(R.id.pbDownload);
-            if (content.getStatus() == StatusContent.PAUSED) {
-                pb.setVisibility(View.INVISIBLE);
-            } else if (content.getPercent() > 0) {
+            ProgressBar pb = (ProgressBar) view.findViewById(R.id.pbDownload);
+            if (content.getStatus() != StatusContent.PAUSED) {
                 pb.setVisibility(View.VISIBLE);
-                pb.setIndeterminate(false);
-                pb.setProgress((int) content.getPercent());
+                if (content.getPercent() > 0) {
+                    pb.setIndeterminate(false);
+                    pb.setProgress((int) content.getPercent());
+                } else {
+                    pb.setIndeterminate(true);
+                }
             } else {
-                pb.setVisibility(View.VISIBLE);
-                pb.setIndeterminate(true);
+                pb.setVisibility(View.INVISIBLE);
             }
         }
 
-        return convertView;
+        return view;
     }
 
     private void cancel(Content content) {
+        if (content.getStatus() == StatusContent.PAUSED) {
+            content.setStatus(StatusContent.DOWNLOADING);
+        }
         content.setStatus(StatusContent.CANCELED);
         db.updateContentStatus(content);
+        fragment.update();
         if (content.getId() == contents.get(0).getId()) {
             DownloadService.paused = true;
         }
@@ -182,8 +193,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void pause(Content content) {
         content.setStatus(StatusContent.PAUSED);
         db.updateContentStatus(content);
-        // TODO: Update Fragment
-        // update();
+        fragment.update();
         if (content.getId() == contents.get(0).getId()) {
             DownloadService.paused = true;
         }
@@ -193,8 +203,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         if (NetworkStatus.isOnline(context)) {
             content.setStatus(StatusContent.DOWNLOADING);
             db.updateContentStatus(content);
-            // TODO: Update Fragment
-            // update();
+            fragment.update();
             if (content.getId() == contents.get(0).getId()) {
                 Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
                         DownloadService.class);

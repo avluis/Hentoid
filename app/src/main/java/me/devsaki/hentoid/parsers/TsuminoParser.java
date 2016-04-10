@@ -41,9 +41,9 @@ public class TsuminoParser {
 
             int qtyPages =
                     Integer.parseInt(content
-                                    .select(":has(div.book-info:containsOwn(Pages))")
-                                    .select("div.book-data")
-                                    .text()
+                            .select(":has(div.book-info:containsOwn(Pages))")
+                            .select("div.book-data")
+                            .text()
                     );
 
             AttributeMap attributes = new AttributeMap();

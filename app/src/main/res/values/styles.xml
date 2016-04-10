@@ -45,4 +45,8 @@
         <item name="android:windowFullscreen">false</item>
     </style>
 
+    <style name="LinearProgress" parent="Theme.AppCompat.Light">
+        <item name="colorAccent">@color/accent</item>
+    </style>
+
 </resources>
