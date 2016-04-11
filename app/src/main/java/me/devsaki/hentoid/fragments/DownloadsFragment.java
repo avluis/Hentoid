@@ -1,13 +1,22 @@
 package me.devsaki.hentoid.fragments;
 
 import android.Manifest;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -47,13 +56,20 @@ public class DownloadsFragment extends BaseFragment {
     private static SharedPreferences prefs;
     private static String settingDir;
     private static int order;
+    private static boolean orderUpdated;
+    private final Handler searchHandler = new Handler();
     private int prevPage;
     private TextView emptyText;
     private Button btnPage;
-    private List<Content> contents;
     private ListView mListView;
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private int mDrawerState;
+    private MenuItem searchMenu;
+    private SearchView searchView;
+    private boolean shouldHide;
 
-    public void setQuery(String query) {
+    private void setQuery(String query) {
         DownloadsFragment.query = query;
         currentPage = 1;
     }
@@ -68,6 +84,27 @@ public class DownloadsFragment extends BaseFragment {
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
             reset();
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_order_alphabetic:
+                orderUpdated = true;
+                order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
+                getActivity().invalidateOptionsMenu();
+
+                return true;
+            case R.id.action_order_by_date:
+                orderUpdated = true;
+                order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
+                getActivity().invalidateOptionsMenu();
+
+                return true;
+            default:
+
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -101,6 +138,137 @@ public class DownloadsFragment extends BaseFragment {
     }
 
     @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
+                mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
+
+        if (!shouldHide) {
+            MenuItemCompat.collapseActionView(searchMenu);
+            menu.findItem(R.id.action_search).setVisible(false);
+
+            if (order == 0) {
+                menu.findItem(R.id.action_order_by_date).setVisible(false);
+            } else {
+                menu.findItem(R.id.action_order_alphabetic).setVisible(false);
+            }
+        }
+    }
+
+    @Override
+    public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_content_list, menu);
+
+        // Associate searchable configuration with the SearchView
+        final SearchManager searchManager = (SearchManager)
+                getActivity().getSystemService(Context.SEARCH_SERVICE);
+
+        searchMenu = menu.findItem(R.id.action_search);
+        searchView = (SearchView) MenuItemCompat.getActionView(searchMenu);
+        MenuItemCompat.setOnActionExpandListener(this.searchMenu,
+                new MenuItemCompat.OnActionExpandListener() {
+                    @Override
+                    public boolean onMenuItemActionExpand(MenuItem item) {
+                        if (order == 0) {
+                            menu.findItem(R.id.action_order_by_date).setVisible(false);
+                        } else {
+                            menu.findItem(R.id.action_order_alphabetic).setVisible(false);
+                        }
+
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onMenuItemActionCollapse(MenuItem item) {
+                        if (order == 0) {
+                            menu.findItem(R.id.action_order_by_date).setVisible(true);
+                        } else {
+                            menu.findItem(R.id.action_order_alphabetic).setVisible(true);
+                        }
+
+                        if (!query.equals("")) {
+                            query = "";
+                            submitSearchQuery(query, 300);
+                        }
+
+                        return true;
+                    }
+                });
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(
+                getActivity().getComponentName()));
+        searchView.setIconifiedByDefault(true);
+        searchView.setQueryHint(getString(R.string.search_hint));
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                submitSearchQuery(s);
+                searchView.clearFocus();
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+
+                if (shouldHide && (!s.isEmpty())) {
+                    submitSearchQuery(s, 1000);
+                }
+
+                if (shouldHide && (orderUpdated)) {
+                    clearQuery(0);
+                    orderUpdated = false;
+                }
+
+                if (!shouldHide && (!s.isEmpty())) {
+                    clearQuery(1);
+                }
+
+                return true;
+            }
+        });
+        SharedPreferences.Editor editor = HentoidApplication.getAppPreferences().edit();
+        if (order == 0) {
+            menu.findItem(R.id.action_order_alphabetic).setVisible(false);
+            menu.findItem(R.id.action_order_by_date).setVisible(true);
+
+            // Save current sort order
+            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+        } else {
+            menu.findItem(R.id.action_order_alphabetic).setVisible(true);
+            menu.findItem(R.id.action_order_by_date).setVisible(false);
+
+            // Save current sort order
+            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+        }
+    }
+
+    private void clearQuery(int option) {
+        if (option == 1) {
+            searchView.clearFocus();
+            searchView.setIconified(true);
+        }
+        query = "";
+        setQuery(query);
+        searchContent();
+    }
+
+    private void submitSearchQuery(String s) {
+        submitSearchQuery(s, 0);
+    }
+
+    private void submitSearchQuery(final String s, long delay) {
+        query = s;
+        searchHandler.removeCallbacksAndMessages(null);
+        searchHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                setQuery(s);
+                searchContent();
+            }
+        }, delay);
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         checkPermissions();
@@ -125,10 +293,35 @@ public class DownloadsFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setHasOptionsMenu(true);
+
         prefs = HentoidApplication.getAppPreferences();
         settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         order = prefs.getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
                 ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+
+        mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
+        mDrawerList = (ListView) getActivity().findViewById(R.id.drawer_list);
+
+        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+                mDrawerState = newState;
+                getActivity().invalidateOptionsMenu();
+            }
+        });
     }
 
     private void queryPrefs() {
@@ -152,8 +345,7 @@ public class DownloadsFragment extends BaseFragment {
         }
 
         if (order != trackOrder) {
-            // TODO: Subscribe to this or move out
-            // orderUpdated = true;
+            orderUpdated = true;
             order = trackOrder;
         }
     }
@@ -196,6 +388,24 @@ public class DownloadsFragment extends BaseFragment {
             }
         });
 
+        btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (currentPage != 1) {
+                    setQuery("");
+                    searchContent();
+//                    AndroidHelper.sSnack(container, R.string.on_first_page,
+//                            Snackbar.LENGTH_SHORT);
+
+                    return true;
+                } else {
+                    searchContent();
+
+                    return true;
+                }
+            }
+        });
+
         btnPrevious.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -217,20 +427,25 @@ public class DownloadsFragment extends BaseFragment {
 
     // TODO: Rewrite with non-blocking code - AsyncTask could be a good replacement
     private boolean searchContent() {
+        List<Content> contents;
         List<Content> result = BaseFragment.getDB()
                 .selectContentByQuery(query, currentPage, qtyPages,
                         order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+
         if (isAdded()) {
             if (result != null && !result.isEmpty()) {
                 contents = result;
+                emptyText.setVisibility(View.GONE);
                 LogHelper.d(TAG, "Content: Match.");
             } else {
                 contents = new ArrayList<>(0);
                 LogHelper.d(TAG, "Content: No match.");
                 if (!query.equals("")) {
                     emptyText.setText(R.string.search_entry_not_found);
+                    emptyText.setVisibility(View.VISIBLE);
                 } else {
                     emptyText.setText(R.string.downloads_empty);
+                    emptyText.setVisibility(View.VISIBLE);
                 }
             }
             if (contents == result || contents.isEmpty()) {
@@ -242,9 +457,6 @@ public class DownloadsFragment extends BaseFragment {
             }
             prevPage = currentPage;
 
-        } else {
-            contents = null;
-            setQuery("");
         }
 
         return result != null && !result.isEmpty();

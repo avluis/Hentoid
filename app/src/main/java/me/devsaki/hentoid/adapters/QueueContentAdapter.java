@@ -192,6 +192,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void pause(Content content) {
         content.setStatus(StatusContent.PAUSED);
+        // Anytime a download status is set to downloading,
+        // download count goes up by one.
+        int downloadCount = HentoidApplication.getDownloadCount();
+        HentoidApplication.setDownloadCount(--downloadCount);
+
         db.updateContentStatus(content);
         fragment.update();
         if (content.getId() == contents.get(0).getId()) {

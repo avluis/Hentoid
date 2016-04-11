@@ -32,4 +32,9 @@ public class QueueActivity extends BaseActivity {
                     R.color.menu_item_active_color);
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
 }

@@ -105,6 +105,8 @@ public class DownloadService extends IntentService {
             // TODO: Test this!!!
             // If the download directory already has files,
             // then we simply delete them, since this points to a failed download
+            // This includes in progress, that were paused, then resumed
+            // So technically, we are download everything again.
             boolean isDirEmpty = AndroidHelper.isDirEmpty(dir);
             LogHelper.d(TAG, "Is directory empty: " + isDirEmpty);
 

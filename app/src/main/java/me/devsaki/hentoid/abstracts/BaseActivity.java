@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -32,7 +33,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
-    private Fragment fragment;
+    private long backButtonPressed;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,7 +77,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         // Set the drawer toggle as the DrawerListener
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
-        fragment = buildFragment();
+        Fragment fragment = buildFragment();
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
@@ -88,10 +89,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected abstract Fragment buildFragment();
-
-    public Fragment getFragment() {
-        return fragment;
-    }
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -125,12 +122,18 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
-            mDrawerLayout.closeDrawer(mDrawerList);
-        } else {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawer(GravityCompat.START);
+        } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
             super.onBackPressed();
+        } else {
+//            AndroidHelper.sSnack(
+//                findViewById(android.R.id.list), R.string.press_back_again,
+//                Snackbar.LENGTH_SHORT);
+            backButtonPressed = System.currentTimeMillis();
         }
     }
+
 
     @Override
     protected void onDestroy() {
