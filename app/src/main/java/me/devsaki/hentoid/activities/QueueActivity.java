@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.activities;
 
-import android.widget.ListView;
+import android.content.Context;
+import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
@@ -9,32 +11,38 @@ import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
- * TODO: WIP
+ * Presents works currently in the download queue
  */
 public class QueueActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
 
+    private Context mContext;
+
     @Override
     protected QueueFragment buildFragment() {
-        return new QueueFragment();
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        ListView mDrawerList = (ListView) findViewById(R.id.drawer_list);
-
-        if (mDrawerList != null) {
-            mDrawerList.setItemChecked(4, true);
-            AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.menu_item_color,
-                    R.color.menu_item_active_color);
-        }
+        return QueueFragment.newInstance();
     }
 
     @Override
-    public void onBackPressed() {
-        finish();
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(getLayoutResId());
+
+        mContext = getApplicationContext();
+
+        initializeToolbar();
+        setTitle(getToolbarTitle());
+        FragmentManager manager = getSupportFragmentManager();
+        manager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                LogHelper.d(TAG, "Update UI Here!");
+            }
+        });
+    }
+
+    @Override
+    protected String getToolbarTitle() {
+        return AndroidHelper.getActivityName(mContext, R.string.title_activity_queue);
     }
 }

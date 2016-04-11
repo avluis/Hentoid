@@ -11,7 +11,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -62,12 +61,12 @@ public class DownloadsFragment extends BaseFragment {
     private TextView emptyText;
     private Button btnPage;
     private ListView mListView;
-    private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
-    private int mDrawerState;
     private MenuItem searchMenu;
     private SearchView searchView;
-    private boolean shouldHide;
+
+    public static DownloadsFragment newInstance() {
+        return new DownloadsFragment();
+    }
 
     private void setQuery(String query) {
         DownloadsFragment.query = query;
@@ -94,12 +93,14 @@ public class DownloadsFragment extends BaseFragment {
                 orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
                 getActivity().invalidateOptionsMenu();
+                searchContent();
 
                 return true;
             case R.id.action_order_by_date:
                 orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
                 getActivity().invalidateOptionsMenu();
+                searchContent();
 
                 return true;
             default:
@@ -137,23 +138,23 @@ public class DownloadsFragment extends BaseFragment {
         getActivity().finish();
     }
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
-                mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
-
-        if (!shouldHide) {
-            MenuItemCompat.collapseActionView(searchMenu);
-            menu.findItem(R.id.action_search).setVisible(false);
-
-            if (order == 0) {
-                menu.findItem(R.id.action_order_by_date).setVisible(false);
-            } else {
-                menu.findItem(R.id.action_order_alphabetic).setVisible(false);
-            }
-        }
-    }
+//    @Override
+//    public void onPrepareOptionsMenu(Menu menu) {
+//        boolean drawerOpen = mDrawerLayout.isDrawerOpen(GravityCompat.START);
+//        shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
+//                mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
+//
+//        if (!shouldHide) {
+//            MenuItemCompat.collapseActionView(searchMenu);
+//            menu.findItem(R.id.action_search).setVisible(false);
+//
+//            if (order == 0) {
+//                menu.findItem(R.id.action_order_by_date).setVisible(false);
+//            } else {
+//                menu.findItem(R.id.action_order_alphabetic).setVisible(false);
+//            }
+//        }
+//    }
 
     @Override
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
@@ -209,19 +210,18 @@ public class DownloadsFragment extends BaseFragment {
 
             @Override
             public boolean onQueryTextChange(String s) {
-
-                if (shouldHide && (!s.isEmpty())) {
+                if (!s.isEmpty()) {
                     submitSearchQuery(s, 1000);
                 }
 
-                if (shouldHide && (orderUpdated)) {
+                if (orderUpdated) {
                     clearQuery(0);
                     orderUpdated = false;
                 }
 
-                if (!shouldHide && (!s.isEmpty())) {
-                    clearQuery(1);
-                }
+//                if (!s.isEmpty()) {
+//                    clearQuery(1);
+//                }
 
                 return true;
             }
@@ -300,28 +300,28 @@ public class DownloadsFragment extends BaseFragment {
         order = prefs.getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
                 ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
 
-        mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) getActivity().findViewById(R.id.drawer_list);
-
-        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
-            }
-
-            @Override
-            public void onDrawerOpened(View drawerView) {
-            }
-
-            @Override
-            public void onDrawerClosed(View drawerView) {
-            }
-
-            @Override
-            public void onDrawerStateChanged(int newState) {
-                mDrawerState = newState;
-                getActivity().invalidateOptionsMenu();
-            }
-        });
+        // TODO: Move out
+//        mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
+//
+//        mDrawerLayout.addDrawerListener(new DrawerLayout.DrawerListener() {
+//            @Override
+//            public void onDrawerSlide(View drawerView, float slideOffset) {
+//            }
+//
+//            @Override
+//            public void onDrawerOpened(View drawerView) {
+//            }
+//
+//            @Override
+//            public void onDrawerClosed(View drawerView) {
+//            }
+//
+//            @Override
+//            public void onDrawerStateChanged(int newState) {
+//                mDrawerState = newState;
+//                getActivity().invalidateOptionsMenu();
+//            }
+//        });
     }
 
     private void queryPrefs() {

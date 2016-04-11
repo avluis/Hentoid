@@ -53,6 +53,10 @@ public class QueueFragment extends BaseFragment {
         }
     };
 
+    public static QueueFragment newInstance() {
+        return new QueueFragment();
+    }
+
     @Override
     public void onResume() {
         super.onResume();

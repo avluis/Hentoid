@@ -1,7 +1,9 @@
 package me.devsaki.hentoid.activities;
 
+import android.content.Context;
 import android.os.Bundle;
-import android.widget.ListView;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
@@ -11,20 +13,40 @@ import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
- * TODO: WIP
+ * Presents works in the library (downloaded)
  */
 public class DownloadsActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
+    private Context mContext;
+
     @Override
-    protected DownloadsFragment buildFragment() {
-        return new DownloadsFragment();
+    protected Fragment buildFragment() {
+        return DownloadsFragment.newInstance();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(getLayoutResId());
 
+        mContext = getApplicationContext();
+
+        initializeToolbar();
+        setTitle(getToolbarTitle());
+
+        resetDownloadCount();
+
+        FragmentManager manager = getSupportFragmentManager();
+        manager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
+            @Override
+            public void onBackStackChanged() {
+                LogHelper.d(TAG, "Update UI Here!");
+            }
+        });
+    }
+
+    private void resetDownloadCount() {
         if ((getIntent().getIntExtra(HentoidApplication.DOWNLOAD_COUNT, 0)) != 0) {
             // Reset download count
             HentoidApplication.setDownloadCount(0);
@@ -32,15 +54,7 @@ public class DownloadsActivity extends BaseActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-
-        ListView mDrawerList = (ListView) findViewById(R.id.drawer_list);
-
-        if (mDrawerList != null) {
-            mDrawerList.setItemChecked(3, true);
-            AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.menu_item_color,
-                    R.color.menu_item_active_color);
-        }
+    protected String getToolbarTitle() {
+        return AndroidHelper.getActivityName(mContext, R.string.title_activity_downloads);
     }
 }

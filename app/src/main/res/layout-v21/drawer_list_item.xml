@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:clickable="true"
-    android:foreground="?android:attr/selectableItemBackground"
     android:minHeight="@dimen/drawer_item_height"
     android:orientation="horizontal"
     android:paddingEnd="@dimen/drawer_item_horizontal_padding"
@@ -19,8 +17,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginEnd="@dimen/drawer_item_icon_margin_end"
-        android:layout_marginRight="@dimen/drawer_item_icon_margin_end"
         android:tint="@color/drawer_item_tint_color"
+        android:tintMode="src_in"
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_menu_about" />
 

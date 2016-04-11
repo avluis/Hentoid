@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="start"
     android:clickable="true"
+    android:elevation="@dimen/drawer_layout_elevation"
     android:fitsSystemWindows="true"
     custom:myInsetForeground="#4000">
 

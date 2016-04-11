@@ -22,4 +22,11 @@
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>
     <color name="transparent_red">#ffcc0000</color>
+
+    <!-- DrawerLayout -->
+    <color name="drawer_header_background">@color/primary_dark</color>
+    <color name="drawer_list_background">@color/primary_dark</color>
+    <color name="drawer_item_selected_background">@color/primary</color>
+    <color name="drawer_item_unselected_background">@color/primary_dark</color>
+    <color name="drawer_item_tint_color">@color/white</color>
 </resources>
