@@ -49,7 +49,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private final static int STORAGE_PERMISSION_REQUEST = 1;
-    private static final String KEY_SAVED_QUERY = "KEY_SAVED_QUERY";
     private static String query = "";
     private static int currentPage = 1;
     private static int qtyPages;
@@ -114,20 +113,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null) {
-            query = savedInstanceState.getString(KEY_SAVED_QUERY);
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString(KEY_SAVED_QUERY, query);
     }
 
     @Override
@@ -446,13 +431,13 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                         order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
 
         if (isAdded()) {
-            if (query.isEmpty()) {
-                getActivity().setTitle(R.string.title_activity_downloads);
-            } else {
-                getActivity().setTitle(getResources()
-                        .getString(R.string.title_activity_search)
-                        .replace("@search", query));
-            }
+//            if (query.isEmpty()) {
+//                getActivity().setTitle(R.string.title_activity_downloads);
+//            } else {
+//                getActivity().setTitle(getResources()
+//                        .getString(R.string.title_activity_search)
+//                        .replace("@search", query));
+//            }
             if (result != null && !result.isEmpty()) {
                 contents = result;
                 emptyText.setVisibility(View.GONE);
@@ -483,7 +468,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     @Override
     public void onDrawerSlide(View drawerView, float slideOffset) {
-
     }
 
     @Override
