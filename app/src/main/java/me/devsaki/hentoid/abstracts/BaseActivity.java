@@ -29,7 +29,7 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 4/11/2016.
- * <p>
+ * <p/>
  * Abstract activity with toolbar and navigation drawer.
  * Implementations must call {@link #initializeToolbar()} on
  * onCreate, after setContentView() is called.
@@ -115,6 +115,9 @@ public abstract class BaseActivity extends AppCompatActivity {
 
         if (fragment == null) {
             fragment = buildFragment();
+
+            LogHelper.d(TAG, fragment);
+
             manager.beginTransaction()
                     .add(R.id.content_frame, fragment)
                     .commit();
@@ -163,6 +166,7 @@ public abstract class BaseActivity extends AppCompatActivity {
                     "Layout is required to include a Toolbar with id " +
                             "'toolbar'");
         }
+        setSupportActionBar(mToolbar);
 
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (mDrawerLayout != null) {
@@ -181,7 +185,6 @@ public abstract class BaseActivity extends AppCompatActivity {
             AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.menu_item_color,
                     R.color.menu_item_active_color);
             populateDrawerItems();
-            setSupportActionBar(mToolbar);
             updateDrawerToggle();
         } else {
             setSupportActionBar(mToolbar);

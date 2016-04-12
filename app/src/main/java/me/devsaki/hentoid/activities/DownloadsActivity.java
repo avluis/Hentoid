@@ -37,13 +37,12 @@ public class DownloadsActivity extends BaseActivity {
 
         resetDownloadCount();
 
-        FragmentManager manager = getSupportFragmentManager();
-        manager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                LogHelper.d(TAG, "Update UI Here!");
-            }
-        });
+        getSupportFragmentManager().addOnBackStackChangedListener(
+                new FragmentManager.OnBackStackChangedListener() {
+                    public void onBackStackChanged() {
+                        LogHelper.d(TAG, "Update UI");
+                    }
+                });
     }
 
     private void resetDownloadCount() {

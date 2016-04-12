@@ -32,13 +32,13 @@ public class QueueActivity extends BaseActivity {
 
         initializeToolbar();
         setTitle(getToolbarTitle());
-        FragmentManager manager = getSupportFragmentManager();
-        manager.addOnBackStackChangedListener(new FragmentManager.OnBackStackChangedListener() {
-            @Override
-            public void onBackStackChanged() {
-                LogHelper.d(TAG, "Update UI Here!");
-            }
-        });
+
+        getSupportFragmentManager().addOnBackStackChangedListener(
+                new FragmentManager.OnBackStackChangedListener() {
+                    public void onBackStackChanged() {
+                        LogHelper.d(TAG, "Update UI");
+                    }
+                });
     }
 
     @Override
