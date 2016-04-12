@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -35,6 +36,7 @@ import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.IntroSlideActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
+import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
@@ -44,6 +46,7 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
+ * TODO: Fix UI
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener {
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
@@ -70,6 +73,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private DrawerLayout mDrawerLayout;
     private int mDrawerState;
     private boolean shouldHide;
+    private List<Content> result;
+    private SearchContent getList;
+    private ContentAdapter mListAdapter;
 
     public static DownloadsFragment newInstance() {
         return new DownloadsFragment();
@@ -316,6 +322,15 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (getList != null) {
+            getList.cancel(true);
+        }
+    }
+
+    @Override
     public void onPause() {
         // Get & save current list position
         // ListView list = getListView();
@@ -330,6 +345,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setRetainInstance(true);
         setHasOptionsMenu(true);
 
         prefs = HentoidApplication.getAppPreferences();
@@ -370,13 +386,12 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
         mListView = (ListView) rootView.findViewById(android.R.id.list);
+        emptyText = (TextView) rootView.findViewById(android.R.id.empty);
 
         mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
-
         mDrawerLayout.addDrawerListener(this);
 
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
-        emptyText = (TextView) rootView.findViewById(android.R.id.empty);
         ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
         ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
         ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
@@ -438,12 +453,23 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         return rootView;
     }
 
-    // TODO: Rewrite with non-blocking code - AsyncTask could be a good replacement
+    private void getListContents(Context context, String query, int page, int qtyPages,
+                                 boolean order) {
+        getList = new SearchContent(context, query, page, qtyPages, order, this);
+        getList.execute();
+    }
+
+    public void setListContent(List<Content> list) {
+        this.result = list;
+        mListAdapter = new ContentAdapter(getActivity(), result);
+        mListView.setAdapter(mListAdapter);
+        mListAdapter.notifyDataSetChanged();
+    }
+
+
     private boolean searchContent() {
-        List<Content> contents;
-        List<Content> result = BaseFragment.getDB()
-                .selectContentByQuery(query, currentPage, qtyPages,
-                        order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+        getListContents(getContext(), query, currentPage, qtyPages,
+                order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
 
         if (isAdded()) {
             if (query.isEmpty()) {
@@ -453,6 +479,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                         .getString(R.string.title_activity_search)
                         .replace("@search", query));
             }
+            List<Content> contents;
             if (result != null && !result.isEmpty()) {
                 contents = result;
                 emptyText.setVisibility(View.GONE);
@@ -469,8 +496,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 }
             }
             if (contents == result || contents.isEmpty()) {
-                ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
-                mListView.setAdapter(adapter);
+                mListAdapter = new ContentAdapter(getActivity(), contents);
+                mListView.setAdapter(mListAdapter);
             }
             if (prevPage != currentPage) {
                 btnPage.setText(String.valueOf(currentPage));
@@ -483,7 +510,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     @Override
     public void onDrawerSlide(View drawerView, float slideOffset) {
-
     }
 
     @Override

@@ -331,8 +331,9 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    // This is a long running task, execute with AsyncTask or similar
     public List<Content> selectContentByQuery(String query, int page, int qty,
-                                              boolean orderAlphabetic) {
+                                              boolean order) {
         List<Content> result = null;
 
         synchronized (locker) {
@@ -345,7 +346,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 query = "%" + query + "%";
                 db = getReadableDatabase();
                 String sql = ContentTable.SELECT_DOWNLOADS;
-                if (orderAlphabetic) {
+                if (order) {
                     sql += ContentTable.ORDER_ALPHABETIC;
                 } else {
                     sql += ContentTable.ORDER_BY_DATE;
