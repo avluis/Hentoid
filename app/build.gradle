@@ -120,15 +120,8 @@ dependencies {
     compile 'com.google.code.gson:gson:2.4'
     // Download app updates (without user prompts)
     compile 'com.mani:ThinDownloadManager:1.2.4'
-    // RxAndroid - Because boilerplate
-    compile 'io.reactivex:rxandroid:1.1.0'
-    // Because RxAndroid releases are few and far between, it is recommended you also
-    // explicitly depend on RxJava's latest version for bug fixes and new features.
-    compile 'io.reactivex:rxjava:1.1.0'
-    // Directory file picker (as fragment)
     compile('com.turhanoz.android:reactivedirectorychooser:0.0.13@aar') {
         transitive = true
-        exclude group: 'com.netflix.rxjava', module: 'rxjava-android'
     }
     // Additional Support Libraries
     // HTTP & HTTP/2 client
