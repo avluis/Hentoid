@@ -63,13 +63,9 @@ public class DrawerMenuContents {
     public int getPosition(Class activityClass) {
         for (int i = 0; i < activities.length; i++) {
             if (activities[i].equals(activityClass)) {
-                LogHelper.d(TAG, activities[i]);
-                LogHelper.d(TAG, i);
-                LogHelper.d(TAG, activityClass);
                 return i;
             }
         }
-        LogHelper.d(TAG, activityClass);
         return -1;
     }
 

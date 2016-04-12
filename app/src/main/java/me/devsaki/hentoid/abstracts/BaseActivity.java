@@ -42,6 +42,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
 
     private Context mContext;
+    private Fragment fragment;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private DrawerMenuContents mDrawerMenuContents;
@@ -51,12 +52,12 @@ public abstract class BaseActivity extends AppCompatActivity {
             new FragmentManager.OnBackStackChangedListener() {
                 @Override
                 public void onBackStackChanged() {
-                    LogHelper.d(TAG, "BackStackChanged");
                     updateDrawerToggle();
                 }
             };
     private boolean isToolbarInitialized;
     private int itemToOpen = -1;
+    private int currentPos = -1;
     private boolean itemTapped;
     private final DrawerLayout.DrawerListener mDrawerListener = new DrawerLayout.DrawerListener() {
         @Override
@@ -75,10 +76,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         @Override
         public void onDrawerClosed(View drawerView) {
             if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
-            int position = itemToOpen;
-            LogHelper.d(TAG, position);
-            LogHelper.d(TAG, itemToOpen);
 
+            int position = itemToOpen;
             if (position >= 0 && itemTapped) {
                 itemTapped = false;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -86,7 +85,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                     Intent intent = new Intent(BaseActivity.this, activityClass);
                     Bundle bundle = ActivityOptions.makeCustomAnimation(
                             BaseActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
-
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent, bundle);
                 } else {
@@ -111,23 +109,29 @@ public abstract class BaseActivity extends AppCompatActivity {
         setContentView(getLayoutResId());
 
         FragmentManager manager = getSupportFragmentManager();
-        Fragment fragment = manager.findFragmentById(R.id.content_frame);
+        fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment == null) {
             fragment = buildFragment();
 
-            LogHelper.d(TAG, fragment);
-
             manager.beginTransaction()
-                    .add(R.id.content_frame, fragment)
+                    .add(R.id.content_frame, fragment, getFragmentTag())
                     .commit();
         }
+        LogHelper.d(TAG, "Fragment Tag: " + fragment.getTag());
     }
 
     protected abstract Fragment buildFragment();
 
     protected String getToolbarTitle() {
         return AndroidHelper.getActivityName(mContext, R.string.app_name);
+    }
+
+    private String getFragmentTag() {
+        if (fragment != null) {
+            return fragment.getClass().getSimpleName();
+        }
+        return null;
     }
 
     @Override
@@ -141,6 +145,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressWarnings("SameReturnValue")
     @LayoutRes
     protected int getLayoutResId() {
         return R.layout.activity_hentoid;
@@ -167,7 +172,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                             "'toolbar'");
         }
         setSupportActionBar(mToolbar);
-
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (mDrawerLayout != null) {
             mDrawerList = (ListView) findViewById(R.id.drawer_list);
@@ -176,7 +180,6 @@ public abstract class BaseActivity extends AppCompatActivity {
                         "A layout with a drawerLayout is required to " +
                                 "include a ListView with id 'drawer_list'");
             }
-            // Create an ActionBarDrawerToggle that will handle opening/closing of the drawer:
             mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                     mToolbar, R.string.drawer_open, R.string.drawer_close);
             mDrawerLayout.addDrawerListener(mDrawerListener);
@@ -194,7 +197,8 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     private void populateDrawerItems() {
         mDrawerMenuContents = new DrawerMenuContents(this);
-        final int selectedPosition = mDrawerMenuContents.getPosition(this.getClass());
+        updateDrawerPosition();
+        final int selectedPosition = currentPos;
         final int unselectedColor = ContextCompat.getColor(getApplicationContext(),
                 R.color.drawer_item_unselected_background);
         final int selectedColor = ContextCompat.getColor(getApplicationContext(),
@@ -219,8 +223,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if (position != selectedPosition) {
-                    view.setBackgroundColor(ContextCompat.getColor(getApplicationContext(),
-                            R.color.drawer_item_selected_background));
+                    mDrawerList.setItemChecked(position, true);
                     itemToOpen = position;
                     itemTapped = true;
                 }
@@ -228,6 +231,15 @@ public abstract class BaseActivity extends AppCompatActivity {
             }
         });
         mDrawerList.setAdapter(adapter);
+    }
+
+    protected void updateDrawerPosition() {
+        final int selectedPosition = mDrawerMenuContents.getPosition(this.getClass());
+        updateSelected(selectedPosition);
+    }
+
+    private void updateSelected(int position) {
+        currentPos = position;
     }
 
     @Override
@@ -283,6 +295,7 @@ public abstract class BaseActivity extends AppCompatActivity {
             fragmentManager.popBackStack();
         } else {
             // Lastly, it will rely on the system behavior for back
+            updateDrawerPosition();
             super.onBackPressed();
         }
     }
