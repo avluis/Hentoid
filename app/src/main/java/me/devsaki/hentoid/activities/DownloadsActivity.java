@@ -7,17 +7,19 @@ import android.support.v4.app.Fragment;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.fragments.DownloadsFragment;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.DrawerMenuContents;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
- * Presents works in the library (downloaded)
+ * Handles hosting of DownloadsFragment for single screen.
  */
-public class DownloadsActivity extends BaseActivity {
+public class DownloadsActivity extends BaseActivity implements BaseFragment.BackInterface {
     private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
+    private BaseFragment baseFragment;
     private Context mContext;
 
     @Override
@@ -32,6 +34,8 @@ public class DownloadsActivity extends BaseActivity {
 
         mContext = getApplicationContext();
 
+        LogHelper.d(TAG, "onCreate");
+
         initializeToolbar();
         setTitle(getToolbarTitle());
 
@@ -42,6 +46,14 @@ public class DownloadsActivity extends BaseActivity {
         if ((getIntent().getIntExtra(HentoidApplication.DOWNLOAD_COUNT, 0)) != 0) {
             // Reset download count
             HentoidApplication.setDownloadCount(0);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (baseFragment == null || !baseFragment.onBackPressed()) {
+            // Fragment did not consume onBackPressed.
+            super.onBackPressed();
         }
     }
 
@@ -61,5 +73,10 @@ public class DownloadsActivity extends BaseActivity {
         DrawerMenuContents mDrawerMenuContents = new DrawerMenuContents(this);
         mDrawerMenuContents.getPosition(this.getClass());
         super.updateDrawerPosition();
+    }
+
+    @Override
+    public void setSelectedFragment(BaseFragment baseFragment) {
+        this.baseFragment = baseFragment;
     }
 }

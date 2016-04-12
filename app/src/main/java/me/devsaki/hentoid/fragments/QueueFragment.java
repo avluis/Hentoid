@@ -26,7 +26,6 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 04/10/2016.
- * TODO: WIP
  * Presents the list of works currently downloading to the user.
  */
 public class QueueFragment extends BaseFragment {
@@ -108,9 +107,10 @@ public class QueueFragment extends BaseFragment {
         return rootView;
     }
 
-    public void updatePercent(double percent) {
+    private void updatePercent(double percent) {
         if (contents != null && !contents.isEmpty()) {
             contents.get(0).setPercent(percent);
+            LogHelper.d(TAG, percent);
             ((ArrayAdapter) mListView.getAdapter()).notifyDataSetChanged();
         }
     }
@@ -125,5 +125,11 @@ public class QueueFragment extends BaseFragment {
         }
         QueueContentAdapter adapter = new QueueContentAdapter(mContext, contents, QueueFragment.this);
         mListView.setAdapter(adapter);
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        // Let the activity handle it.
+        return false;
     }
 }
