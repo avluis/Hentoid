@@ -36,46 +36,46 @@ import me.devsaki.hentoid.util.NetworkStatus;
 public class QueueContentAdapter extends ArrayAdapter<Content> {
     private static final String TAG = LogHelper.makeLogTag(QueueContentAdapter.class);
 
-    private final Context context;
+    private final Context cxt;
     private final List<Content> contents;
     private final HentoidDB db = new HentoidDB(getContext());
     private final QueueFragment fragment;
 
     public QueueContentAdapter(Context cxt, List<Content> contents, QueueFragment fragment) {
         super(cxt, R.layout.row_queue, contents);
-        this.context = cxt;
+        this.cxt = cxt;
         this.contents = contents;
         this.fragment = fragment;
     }
 
     @Override
     public View getView(int position, View view, ViewGroup parent) {
-        ViewHolder holder;
-
-        if (view != null) {
-            holder = (ViewHolder) view.getTag();
-        } else {
-            LayoutInflater inflater = (LayoutInflater) context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            view = inflater.inflate(R.layout.row_queue, parent, false);
-
-            holder = new ViewHolder();
-            view.setTag(holder);
-        }
-
-        holder.tvTitle = (TextView) view.findViewById(R.id.tvTitle);
-        holder.ivCover = (ImageView) view.findViewById(R.id.ivCover);
-        holder.tvSeries = (TextView) view.findViewById(R.id.tvSeries);
-        holder.tvArtist = (TextView) view.findViewById(R.id.tvArtist);
-        holder.tvTags = (TextView) view.findViewById(R.id.tvTags);
-        holder.tvSite = (TextView) view.findViewById(R.id.tvSite);
-
         final Content content = contents.get(position);
 
-        String templateTvSeries = context.getString(R.string.tvSeries);
-        String templateTvArtist = context.getString(R.string.tvArtists);
-        String templateTvTags = context.getString(R.string.tvTags);
+        // Get the data item for this position
+        ViewHolder holder;
+        // Check if an existing view is being reused, otherwise inflate the view
+        if (view == null) {
+            holder = new ViewHolder();
+            LayoutInflater inflater = LayoutInflater.from(cxt);
+            view = inflater.inflate(R.layout.row_queue, parent, false);
 
+            holder.tvTitle = (TextView) view.findViewById(R.id.tvTitle);
+            holder.ivCover = (ImageView) view.findViewById(R.id.ivCover);
+            holder.tvSeries = (TextView) view.findViewById(R.id.tvSeries);
+            holder.tvArtist = (TextView) view.findViewById(R.id.tvArtist);
+            holder.tvTags = (TextView) view.findViewById(R.id.tvTags);
+            holder.tvSite = (TextView) view.findViewById(R.id.tvSite);
+
+            view.setTag(holder);
+        } else {
+            holder = (ViewHolder) view.getTag();
+        }
+
+        String templateTvSeries = cxt.getString(R.string.tvSeries);
+        String templateTvArtist = cxt.getString(R.string.tvArtists);
+        String templateTvTags = cxt.getString(R.string.tvTags);
+        // Populate the data into the template view using the data object
         if (content != null) {
             holder.tvSite.setText(content.getSite().getDescription());
 
@@ -129,7 +129,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
             holder.tvTags.setText(Html.fromHtml(tags));
 
-            File coverFile = AndroidHelper.getThumb(content, context);
+            File coverFile = AndroidHelper.getThumb(content, cxt);
             String image = coverFile != null ?
                     coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
@@ -172,7 +172,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 pb.setVisibility(View.INVISIBLE);
             }
         }
-
+        // Return the completed view to render on screen
         return view;
     }
 
@@ -204,19 +204,20 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void resume(Content content) {
-        if (NetworkStatus.isOnline(context)) {
+        if (NetworkStatus.isOnline(cxt)) {
             content.setStatus(StatusContent.DOWNLOADING);
             db.updateContentStatus(content);
             fragment.update();
             if (content.getId() == contents.get(0).getId()) {
-                Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
+                Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
                         DownloadService.class);
-                context.startService(intent);
+                cxt.startService(intent);
             }
         }
     }
 
-    static class ViewHolder {
+    // View lookup cache
+    private static class ViewHolder {
         TextView tvTitle;
         ImageView ivCover;
         TextView tvSeries;

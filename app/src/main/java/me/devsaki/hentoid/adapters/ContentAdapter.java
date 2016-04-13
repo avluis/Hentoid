@@ -60,34 +60,34 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
     @Override
     public View getView(int position, View view, final ViewGroup parent) {
-        ViewHolder holder;
+        final Content content = contents.get(position);
 
-        if (view != null) {
-            holder = (ViewHolder) view.getTag();
-        } else {
-            LayoutInflater inflater = (LayoutInflater) cxt
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        // Get the data item for this position
+        ViewHolder holder;
+        // Check if an existing view is being reused, otherwise inflate the view
+        if (view == null) {
+            holder = new ViewHolder();
+            LayoutInflater inflater = LayoutInflater.from(cxt);
             view = inflater.inflate(R.layout.row_downloads, parent, false);
 
-            holder = new ViewHolder();
+            holder.tvTitle = (TextView) view.findViewById(R.id.tvTitle);
+            holder.ivCover = (ImageView) view.findViewById(R.id.ivCover);
+            holder.tvSeries = (TextView) view.findViewById(R.id.tvSeries);
+            holder.tvArtist = (TextView) view.findViewById(R.id.tvArtist);
+            holder.tvTags = (TextView) view.findViewById(R.id.tvTags);
+            holder.tvSite = (TextView) view.findViewById(R.id.tvSite);
+            holder.tvStatus = (TextView) view.findViewById(R.id.tvStatus);
+            holder.tvSavedDate = (TextView) view.findViewById(R.id.tvSavedDate);
+
             view.setTag(holder);
+        } else {
+            holder = (ViewHolder) view.getTag();
         }
-
-        holder.tvTitle = (TextView) view.findViewById(R.id.tvTitle);
-        holder.ivCover = (ImageView) view.findViewById(R.id.ivCover);
-        holder.tvSeries = (TextView) view.findViewById(R.id.tvSeries);
-        holder.tvArtist = (TextView) view.findViewById(R.id.tvArtist);
-        holder.tvTags = (TextView) view.findViewById(R.id.tvTags);
-        holder.tvSite = (TextView) view.findViewById(R.id.tvSite);
-        holder.tvStatus = (TextView) view.findViewById(R.id.tvStatus);
-        holder.tvSavedDate = (TextView) view.findViewById(R.id.tvSavedDate);
-
-        final Content content = contents.get(position);
 
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
         String templateTvArtist = cxt.getResources().getString(R.string.tvArtists);
         String templateTvTags = cxt.getResources().getString(R.string.tvTags);
-
+        // Populate the data into the template view using the data object
         if (content != null) {
             holder.tvSite.setText(content.getSite().getDescription());
             holder.tvStatus.setText(content.getStatus().getDescription());
@@ -185,7 +185,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 }
             });
         }
-
+        // Return the completed view to render on screen
         return view;
     }
 
@@ -264,7 +264,8 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         cxt.startActivity(intent);
     }
 
-    static class ViewHolder {
+    // View lookup cache
+    private static class ViewHolder {
         TextView tvTitle;
         ImageView ivCover;
         TextView tvSeries;
