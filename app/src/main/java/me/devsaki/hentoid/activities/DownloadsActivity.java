@@ -49,7 +49,7 @@ public class DownloadsActivity extends BaseActivity implements BaseFragment.Back
 
     @Override
     public void onBackPressed() {
-        if (baseFragment == null || !baseFragment.onBackPressed()) {
+        if (baseFragment == null || baseFragment.onBackPressed()) {
             // Fragment did not consume onBackPressed.
             super.onBackPressed();
         }

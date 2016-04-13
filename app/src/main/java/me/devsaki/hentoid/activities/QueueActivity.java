@@ -55,7 +55,7 @@ public class QueueActivity extends PrimaryActivity implements BaseFragment.BackI
 
     @Override
     public void onBackPressed() {
-        if (baseFragment == null || !baseFragment.onBackPressed()) {
+        if (baseFragment == null || baseFragment.onBackPressed()) {
             // Fragment did not consume onBackPressed.
             super.onBackPressed();
         }

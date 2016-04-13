@@ -136,6 +136,6 @@ public class QueueFragment extends BaseFragment {
     @Override
     public boolean onBackPressed() {
         // Let the activity handle it.
-        return false;
+        return true;
     }
 }

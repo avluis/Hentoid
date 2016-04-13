@@ -258,15 +258,15 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         // If the drawer is open, back will close it
         if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawers();
-            return true;
+            return false;
         }
         if (backButtonPressed + 2000 > System.currentTimeMillis()) {
-            return false;
+            return true;
         } else {
             backButtonPressed = System.currentTimeMillis();
         }
         clearQuery(1);
-        return true;
+        return false;
     }
 
     private void clearQuery(int option) {

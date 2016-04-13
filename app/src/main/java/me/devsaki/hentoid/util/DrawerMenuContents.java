@@ -17,8 +17,8 @@ public class DrawerMenuContents {
     public static final String FIELD_TITLE = "title";
     public static final String FIELD_ICON = "icon";
     private static final String TAG = LogHelper.makeLogTag(DrawerMenuContents.class);
+    private final String[] mActivityList;
     private ArrayList<Map<String, ?>> items;
-    private String[] mActivityList;
     private Class[] activities;
 
     public DrawerMenuContents(Context context) {
