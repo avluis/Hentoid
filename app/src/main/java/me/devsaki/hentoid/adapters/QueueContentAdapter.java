@@ -50,9 +50,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     @Override
     public View getView(int position, View view, ViewGroup parent) {
-        final Content content = contents.get(position);
-
         // Get the data item for this position
+        final Content content = contents.get(position);
         ViewHolder holder;
         // Check if an existing view is being reused, otherwise inflate the view
         if (view == null) {

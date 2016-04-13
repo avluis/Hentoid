@@ -47,6 +47,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
     private final Context cxt;
     private final List<Content> contents;
+    private final HentoidDB db = new HentoidDB(getContext());
     private final SimpleDateFormat sdf;
     private final DownloadsFragment fragment;
 
@@ -60,9 +61,8 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
     @Override
     public View getView(int position, View view, final ViewGroup parent) {
-        final Content content = contents.get(position);
-
         // Get the data item for this position
+        final Content content = contents.get(position);
         ViewHolder holder;
         // Check if an existing view is being reused, otherwise inflate the view
         if (view == null) {
@@ -206,7 +206,6 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 .setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                HentoidDB db = new HentoidDB(cxt);
                                 content.setStatus(StatusContent.DOWNLOADING)
                                         .setDownloadDate(new Date().getTime());
                                 db.updateContentStatus(content);
@@ -232,8 +231,6 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 .setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                HentoidDB db = new HentoidDB(cxt);
-
                                 try {
                                     FileUtils.deleteDirectory(dir);
                                 } catch (IOException e) {
