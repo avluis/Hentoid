@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:layout_gravity="start"
     android:clickable="true"
+    android:clipToPadding="false"
     android:elevation="@dimen/drawer_layout_elevation"
     android:fitsSystemWindows="true"
     custom:myInsetForeground="#4000">
@@ -21,7 +22,7 @@
             android:layout_width="155dp"
             android:layout_height="155dp"
             android:layout_gravity="center"
-            android:src="@mipmap/ic_launcher"
+            android:src="@drawable/ic_hentoid_web"
             tools:ignore="ContentDescription" />
     </FrameLayout>
 

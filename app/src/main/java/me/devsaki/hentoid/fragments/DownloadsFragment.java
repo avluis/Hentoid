@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
@@ -77,6 +76,12 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private void setQuery(String query) {
         DownloadsFragment.query = query;
         currentPage = 1;
+    }
+
+    public void update() {
+        // setQuery("");
+        // currentPage = 1;
+        searchContent();
     }
 
     // Validate permissions
@@ -373,22 +378,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             }
         });
 
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (qtyPages <= 0) {
-                    AndroidHelper.toast(getContext(), R.string.not_limit_per_page);
-                } else {
-                    currentPage++;
-                    if (!searchContent()) {
-                        btnPage.setText(String.valueOf(--currentPage));
-                        AndroidHelper.toast(getContext(), R.string.not_next_page);
-                        searchContent();
-                    }
-                }
-            }
-        });
-
         btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
@@ -402,6 +391,22 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                     searchContent();
 
                     return true;
+                }
+            }
+        });
+
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (qtyPages <= 0) {
+                    AndroidHelper.toast(getContext(), R.string.not_limit_per_page);
+                } else {
+                    currentPage++;
+                    if (!searchContent()) {
+                        btnPage.setText(String.valueOf(--currentPage));
+                        AndroidHelper.toast(getContext(), R.string.not_next_page);
+                        searchContent();
+                    }
                 }
             }
         });
@@ -454,7 +459,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 }
             }
             if (contents == result || contents.isEmpty()) {
-                ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
+                ContentAdapter adapter = new ContentAdapter(getActivity(), contents, this);
                 mListView.setAdapter(adapter);
             }
             if (prevPage != currentPage) {

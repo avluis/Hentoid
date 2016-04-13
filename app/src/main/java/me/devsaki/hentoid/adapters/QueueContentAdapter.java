@@ -30,7 +30,6 @@ import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Created by neko on 11/05/2015.
- * TODO: WIP
  * Builds and assigns content from db into adapter
  * for display in queue
  */

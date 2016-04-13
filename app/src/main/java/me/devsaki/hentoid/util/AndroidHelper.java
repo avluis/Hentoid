@@ -20,7 +20,6 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
@@ -53,7 +52,6 @@ import static android.os.Build.VERSION_CODES;
 public class AndroidHelper {
     private static final String TAG = LogHelper.makeLogTag(AndroidHelper.class);
 
-    private static Snackbar sSnack;
     private static Toast sToast;
 
     public static void openContent(Content content, final Context context) {
@@ -356,19 +354,6 @@ public class AndroidHelper {
         }
         sToast.show();
     }
-
-//    public static void sSnack(View view, int resource, int duration) {
-//        sSnack(view, view.getResources().getString(resource), duration);
-//    }
-//
-//    public static void sSnack(View view, String text, int duration) {
-//        if (sSnack != null) {
-//            sSnack.dismiss();
-//            sSnack = null;
-//        }
-//        sSnack = Snackbar.make(view, text, duration);
-//        sSnack.show();
-//    }
 
     @SafeVarargs
     public static <T> void executeAsyncTask(AsyncTask<T, ?, ?> task, T... params) {

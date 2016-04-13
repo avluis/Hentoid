@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
@@ -16,13 +15,13 @@ import android.widget.TextView;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.abstracts.PrimaryActivity;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
  * If set, this will allow us to 'lock' the app behind a password/code.
  */
-public class AppLockActivity extends AppCompatActivity {
+public class AppLockActivity extends PrimaryActivity {
 
     private final long DELAY = 1000;
     private final long[] goodPinPattern = {0, 250, 100, 100};
@@ -36,8 +35,6 @@ public class AppLockActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_lock);
-
-        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 

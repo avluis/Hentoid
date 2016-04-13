@@ -31,6 +31,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.fragments.DownloadsFragment;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
@@ -38,7 +39,6 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by neko on 11/05/2015.
- * TODO: WIP
  * Builds and assigns content from db into adapter
  * for display in downloads
  */
@@ -48,11 +48,13 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     private final Context cxt;
     private final List<Content> contents;
     private final SimpleDateFormat sdf;
+    private final DownloadsFragment fragment;
 
-    public ContentAdapter(Context cxt, List<Content> contents) {
+    public ContentAdapter(Context cxt, List<Content> contents, DownloadsFragment fragment) {
         super(cxt, R.layout.row_downloads, contents);
         this.cxt = cxt;
         this.contents = contents;
+        this.fragment = fragment;
         sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
     }
 
@@ -141,9 +143,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             }
             holder.tvTags.setText(Html.fromHtml(tags));
 
-            final File dir = AndroidHelper.getDownloadDir(content, getContext());
+            final File dir = AndroidHelper.getDownloadDir(content, cxt);
 
-            File coverFile = AndroidHelper.getThumb(content, getContext());
+            File coverFile = AndroidHelper.getThumb(content, cxt);
             String image = coverFile != null ?
                     coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
@@ -153,7 +155,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             btnRead.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AndroidHelper.openContent(content, getContext());
+                    AndroidHelper.openContent(content, cxt);
                 }
             });
             Button btnDelete = (Button) view.findViewById(R.id.btnDelete);
@@ -199,12 +201,12 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         }
         String message = cxt.getString(R.string.download_again_dialog).replace("@error",
                 numberImagesError + "").replace("@total", numberImages + "");
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(message)
                 .setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                HentoidDB db = new HentoidDB(getContext());
+                                HentoidDB db = new HentoidDB(cxt);
                                 content.setStatus(StatusContent.DOWNLOADING)
                                         .setDownloadDate(new Date().getTime());
                                 db.updateContentStatus(content);
@@ -225,12 +227,12 @@ public class ContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void deleteContent(final Content content, final File dir, final ListView listView) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
-                                HentoidDB db = new HentoidDB(getContext());
+                                HentoidDB db = new HentoidDB(cxt);
 
                                 try {
                                     FileUtils.deleteDirectory(dir);
@@ -240,8 +242,8 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
                                 db.deleteContent(content);
 
-                                AndroidHelper.toast(getContext(),
-                                        getContext().getResources().getString(R.string.deleted)
+                                AndroidHelper.toast(cxt,
+                                        cxt.getResources().getString(R.string.deleted)
                                                 .replace("@content", content.getTitle()));
                                 contents.remove(content);
                                 int index = listView.getFirstVisiblePosition();
@@ -250,15 +252,16 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
                                 notifyDataSetChanged();
                                 listView.setSelectionFromTop(index, top);
+                                fragment.update();
                             }
                         }).setNegativeButton(android.R.string.no, null).create().show();
     }
 
     private void viewContent(Content content) {
-        Intent intent = new Intent(getContext(), content.getWebActivityClass());
+        Intent intent = new Intent(cxt, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Constants.INTENT_URL, content.getGalleryUrl());
-        getContext().startActivity(intent);
+        cxt.startActivity(intent);
     }
 
     static class ViewHolder {

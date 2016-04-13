@@ -13,7 +13,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,16 +28,18 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 4/11/2016.
- * <p/>
+ * <p>
  * Abstract activity with toolbar and navigation drawer.
- * Implementations must call {@link #initializeToolbar()} on
- * onCreate, after setContentView() is called.
- * Implementations must have these layout elements:
+ * Needs to be extended by any activity that wants to be shown as a top level activity.
+ * <p>
+ * The requirements for a subclass are:
+ * calling {@link #initializeToolbar()} on onCreate, after setContentView() is called.
+ * In addition, subclasses must have these layout elements:
  * - {@link android.support.v7.widget.Toolbar} with id 'toolbar'.
  * - {@link android.support.v4.widget.DrawerLayout} with id 'drawer_layout'.
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
-public abstract class BaseActivity extends AppCompatActivity {
+public abstract class BaseActivity extends PrimaryActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
 
     private Context mContext;
@@ -104,9 +105,8 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mContext = getApplicationContext();
-        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
         setContentView(getLayoutResId());
+        mContext = getApplicationContext();
 
         FragmentManager manager = getSupportFragmentManager();
         fragment = manager.findFragmentById(R.id.content_frame);
@@ -185,8 +185,8 @@ public abstract class BaseActivity extends AppCompatActivity {
             mDrawerLayout.addDrawerListener(mDrawerListener);
             mDrawerLayout.setStatusBarBackgroundColor(
                     AndroidHelper.getThemeColor(this, R.attr.colorPrimary, R.color.primary));
-            AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.menu_item_color,
-                    R.color.menu_item_active_color);
+            AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.drawer_list_background,
+                    R.color.drawer_item_selected_background);
             populateDrawerItems();
             updateDrawerToggle();
         } else {

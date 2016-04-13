@@ -34,8 +34,6 @@ public class DownloadsActivity extends BaseActivity implements BaseFragment.Back
 
         mContext = getApplicationContext();
 
-        LogHelper.d(TAG, "onCreate");
-
         initializeToolbar();
         setTitle(getToolbarTitle());
 

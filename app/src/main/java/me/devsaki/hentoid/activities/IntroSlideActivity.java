@@ -129,8 +129,8 @@ public class IntroSlideActivity extends AppIntro2 {
                             setProgressButtonEnabled(false);
                             pager.setCurrentItem(IMPORT_SLIDE - 1);
 
-//                            AndroidHelper.sSnack(pager, R.string.permission_granted,
-//                                    Snackbar.LENGTH_SHORT);
+                            Snackbar.make(pager, R.string.permission_granted,
+                                    Snackbar.LENGTH_SHORT);
 
                             Handler handler = new Handler();
                             handler.postDelayed(new Runnable() {
@@ -163,8 +163,8 @@ public class IntroSlideActivity extends AppIntro2 {
                                 LogHelper.d(TAG, "Permission Denied by User");
 
                                 pager.setCurrentItem(IMPORT_SLIDE - 3);
-//                                AndroidHelper.sSnack(pager, R.string.permission_denied,
-//                                        Snackbar.LENGTH_LONG);
+                                Snackbar.make(pager, R.string.permission_denied,
+                                        Snackbar.LENGTH_LONG);
                                 break;
                             case ConstantsImport.PERMISSION_DENIED_FORCED:
                                 LogHelper.d(TAG, "Permission Denied (Forced) by User/Policy");
@@ -188,8 +188,8 @@ public class IntroSlideActivity extends AppIntro2 {
                                 LogHelper.d(TAG, "Existing Library Found");
 
                                 pager.setCurrentItem(IMPORT_SLIDE - 2);
-//                                AndroidHelper.sSnack(pager, R.string.existing_library_error,
-//                                        Snackbar.LENGTH_LONG);
+                                Snackbar.make(pager, R.string.existing_library_error,
+                                        Snackbar.LENGTH_LONG);
                                 break;
                             default:
                                 LogHelper.d(TAG, "RESULT_CANCELED");

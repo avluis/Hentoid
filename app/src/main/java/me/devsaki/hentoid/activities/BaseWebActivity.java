@@ -11,7 +11,6 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebBackForwardList;
@@ -23,6 +22,7 @@ import android.webkit.WebViewClient;
 import java.util.Date;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.PrimaryActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -39,7 +39,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public class BaseWebActivity extends AppCompatActivity {
+public class BaseWebActivity extends PrimaryActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
     private final static int STORAGE_PERMISSION_REQUEST = 1;
@@ -67,8 +67,6 @@ public class BaseWebActivity extends AppCompatActivity {
         db = new HentoidDB(this);
 
         setContentView(R.layout.activity_base_web);
-
-        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
 
         if (site == null) {
             LogHelper.w(TAG, "Site is null!");
