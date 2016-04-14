@@ -147,9 +147,8 @@ final class NotificationPresenter {
             case ERROR:
             case UNHANDLED_ERROR:
                 resultIntent = new Intent(appInstance, DownloadsActivity.class);
-                resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
+                resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
+                        Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 Bundle bundle = new Bundle();
                 bundle.putInt(HentoidApplication.DOWNLOAD_COUNT,
                         HentoidApplication.getDownloadCount());

@@ -146,6 +146,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         // We have asked for permissions, but still denied.
         AndroidHelper.commitFirstRun(true);
         Intent intent = new Intent(getActivity(), IntroSlideActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         getActivity().finish();
     }

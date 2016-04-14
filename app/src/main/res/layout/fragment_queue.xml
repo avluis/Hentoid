@@ -33,6 +33,7 @@
         android:layout_alignParentBottom="true"
         android:background="@drawable/normal_state"
         android:gravity="center"
+        android:minHeight="?attr/actionBarSize"
         android:orientation="horizontal">
 
         <ImageButton

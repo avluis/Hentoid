@@ -68,10 +68,9 @@ public class IntroSlideActivity extends AppIntro2 {
         donePressed = true;
         AndroidHelper.commitFirstRun(false);
         Intent intent = new Intent(this, DownloadsActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with Double-Back (press back twice) to exit
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }

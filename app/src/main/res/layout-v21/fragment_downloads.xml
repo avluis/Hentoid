@@ -34,6 +34,7 @@
         android:background="@color/primary"
         android:elevation="@dimen/toolbar_layout_elevation"
         android:gravity="center"
+        android:minHeight="?attr/actionBarSize"
         android:orientation="horizontal">
 
         <ImageButton

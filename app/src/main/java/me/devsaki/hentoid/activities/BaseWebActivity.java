@@ -131,6 +131,7 @@ public class BaseWebActivity extends PrimaryActivity {
         // We have asked for permissions, but still denied.
         AndroidHelper.commitFirstRun(true);
         Intent intent = new Intent(this, IntroSlideActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }
@@ -221,10 +222,9 @@ public class BaseWebActivity extends PrimaryActivity {
     @SuppressWarnings("UnusedParameters")
     public void onHomeFabClick(View view) {
         Intent intent = new Intent(this, DownloadsActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with Double-Back (press back twice) to exit
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }
