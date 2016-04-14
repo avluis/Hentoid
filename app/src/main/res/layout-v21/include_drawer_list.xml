@@ -2,19 +2,20 @@
 <me.devsaki.hentoid.views.ScrimInsetsRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="240dp"
+    android:layout_width="@dimen/drawer_menu_layout_width"
     android:layout_height="match_parent"
     android:layout_gravity="start"
     android:clickable="true"
     android:clipToPadding="false"
     android:elevation="@dimen/drawer_layout_elevation"
+    android:background="@color/drawer_list_background"
     android:fitsSystemWindows="true"
     custom:myInsetForeground="#4000">
 
     <FrameLayout
         android:id="@+id/drawer_header"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="160dp"
         android:background="@color/drawer_header_background">
 
         <ImageView
@@ -31,7 +32,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/drawer_header"
-        android:background="@color/drawer_list_background"
         android:choiceMode="singleChoice"
         android:drawSelectorOnTop="true"
         android:fastScrollEnabled="false"

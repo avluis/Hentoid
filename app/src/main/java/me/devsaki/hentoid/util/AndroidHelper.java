@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.util;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -56,7 +55,7 @@ public class AndroidHelper {
 
     public static void openContent(Content content, final Context context) {
         SharedPreferences sharedPreferences = HentoidApplication.getAppPreferences();
-        File dir = AndroidHelper.getDownloadDir(content, context);
+        File dir = AndroidHelper.getContentDownloadDir(content, context);
 
         File imageFile = null;
         File[] files = dir.listFiles();
@@ -102,7 +101,7 @@ public class AndroidHelper {
     }
 
     public static File getThumb(Content content, Context context) {
-        File dir = AndroidHelper.getDownloadDir(content, context);
+        File dir = AndroidHelper.getContentDownloadDir(content, context);
 
         File[] fileList = dir.listFiles(
                 new FileFilter() {
@@ -116,7 +115,7 @@ public class AndroidHelper {
         return fileList.length > 0 ? fileList[0] : null;
     }
 
-    public static File getDownloadDir(Content content, Context context) {
+    public static File getContentDownloadDir(Content content, Context context) {
         File file;
         SharedPreferences prefs = HentoidApplication.getAppPreferences();
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
@@ -138,7 +137,7 @@ public class AndroidHelper {
         return file;
     }
 
-    public static File getDownloadDir(Site site, Context context) {
+    public static File getSiteDownloadDir(Site site, Context context) {
         File file;
         SharedPreferences prefs = HentoidApplication.getAppPreferences();
         String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
@@ -160,21 +159,19 @@ public class AndroidHelper {
         return file;
     }
 
-    @SuppressLint("WorldWriteableFiles")
-    // TODO: Update with non-deprecated methods
-    private static File getDefaultDir(String dir, Context context) {
+    public static File getDefaultDir(String dir, Context context) {
         File file;
         try {
             file = new File(Environment.getExternalStorageDirectory()
                     + "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
         } catch (Exception e) {
-            file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
+            file = context.getDir("", Context.MODE_PRIVATE);
             file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY);
         }
 
         if (!file.exists()) {
             if (!file.mkdirs()) {
-                file = context.getDir("", Context.MODE_WORLD_WRITEABLE);
+                file = context.getDir("", Context.MODE_PRIVATE);
                 file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
                 if (!file.exists()) {
                     boolean mkdirs = file.mkdirs();
@@ -416,6 +413,7 @@ public class AndroidHelper {
     }
 
     // Mainly for use with Android < 5.0 - sets OverScroll Glow and Edge Line
+    // TODO: Needs testing
     public static void changeEdgeEffect(Context cxt, View list, int glowColor, int lineColor) {
         if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
             EdgeEffect edgeEffectTop = new EdgeEffect(cxt);

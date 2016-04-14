@@ -16,7 +16,7 @@
         android:paddingLeft="32dp"
         android:paddingRight="32dp"
         android:text="@string/slide_01_header"
-        android:textColor="#ffffff"
+        android:textColor="@color/app_intro_text"
         android:textSize="28sp" />
 
     <LinearLayout
@@ -45,7 +45,7 @@
         android:paddingLeft="64dp"
         android:paddingRight="64dp"
         android:text="@string/slide_01_text"
-        android:textColor="#ffffff"
+        android:textColor="@color/app_intro_text"
         android:textSize="16sp" />
 
     <TextView

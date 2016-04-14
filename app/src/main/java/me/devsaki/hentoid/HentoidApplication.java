@@ -32,6 +32,7 @@ public class HentoidApplication extends Application {
 
     private static final String TAG = LogHelper.makeLogTag(HentoidApplication.class);
 
+    public static boolean beginImport;
     private static HentoidApplication mInstance;
     private static SharedPreferences sharedPreferences;
     private static Context context;

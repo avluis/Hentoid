@@ -1,32 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">@color/champagne_red</color>
-    <color name="primary_dark">@color/dark_red</color>
+    <color name="primary">@color/very_dark_red</color>
+    <color name="primary_dark">@color/very_dark_mostly_black_red</color>
     <color name="ripple">@color/material_pink_300</color>
     <color name="accent">@color/red_accent_700</color>
-    <color name="text">@color/material_red_50</color>
 
     <!-- Useful Colors -->
     <!-- White -->
     <color name="white">#FFFFFF</color>
 
     <!-- Red -->
-    <color name="dark_red">#2b0202</color>
-    <color name="champagne_red">#6d0707</color>
+    <color name="very_dark_mostly_black_red">#2b0202</color>
+    <color name="very_dark_red">#400404</color>
     <color name="material_red_50">#ffebee</color>
     <color name="red_accent_700">#d50000</color>
 
     <!-- Pink -->
     <color name="material_pink_300">#F06292</color>
+    <color name="very_dark_pink">#6d0721</color>
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>
 
     <!-- Drawer Layout -->
-    <color name="drawer_header_background">@color/primary_dark</color>
-    <color name="drawer_list_background">@color/primary_dark</color>
-    <color name="drawer_item_selected_background">@color/primary</color>
-    <color name="drawer_item_hover_background">@color/accent</color>
-    <color name="drawer_item_unselected_background">@color/primary_dark</color>
+    <color name="drawer_header_background">@color/very_dark_mostly_black_red</color>
+    <color name="drawer_list_background">@color/very_dark_mostly_black_red</color>
+    <color name="drawer_item_background">@color/very_dark_red</color>
+    <color name="drawer_item_selected_background">@color/very_dark_mostly_black_red</color>
+    <color name="drawer_item_unselected_background">@color/very_dark_red</color>
     <color name="drawer_item_tint_color">@color/white</color>
+
+    <!-- App Intro -->
+    <color name="app_intro_text">@color/material_red_50</color>
 </resources>

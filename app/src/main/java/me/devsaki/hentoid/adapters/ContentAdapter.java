@@ -143,7 +143,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             }
             holder.tvTags.setText(Html.fromHtml(tags));
 
-            final File dir = AndroidHelper.getDownloadDir(content, cxt);
+            final File dir = AndroidHelper.getContentDownloadDir(content, cxt);
 
             File coverFile = AndroidHelper.getThumb(content, cxt);
             String image = coverFile != null ?

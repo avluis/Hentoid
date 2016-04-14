@@ -74,7 +74,7 @@ public class AppLockActivity extends PrimaryActivity {
                         tvAppLock.setText(R.string.app_lock_pin);
                     }
 
-                    if (s.length() >= 3) {
+                    if (s.length() >= 4) {
                         handler = new Handler();
                         handler.postDelayed(new Runnable() {
                             @Override

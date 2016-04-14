@@ -28,10 +28,10 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 4/11/2016.
- * <p>
+ * <p/>
  * Abstract activity with toolbar and navigation drawer.
  * Needs to be extended by any activity that wants to be shown as a top level activity.
- * <p>
+ * <p/>
  * The requirements for a subclass are:
  * calling {@link #initializeToolbar()} on onCreate, after setContentView() is called.
  * In addition, subclasses must have these layout elements:
@@ -60,46 +60,7 @@ public abstract class BaseActivity extends PrimaryActivity {
     private int itemToOpen = -1;
     private int currentPos = -1;
     private boolean itemTapped;
-    private final DrawerLayout.DrawerListener mDrawerListener = new DrawerLayout.DrawerListener() {
-        @Override
-        public void onDrawerSlide(View drawerView, float slideOffset) {
-            if (mDrawerToggle != null) mDrawerToggle.onDrawerSlide(drawerView, slideOffset);
-        }
-
-        @Override
-        public void onDrawerOpened(View drawerView) {
-            if (mDrawerToggle != null) mDrawerToggle.onDrawerOpened(drawerView);
-            if (getSupportActionBar() != null) {
-                getSupportActionBar().setTitle(getToolbarTitle());
-            }
-        }
-
-        @Override
-        public void onDrawerClosed(View drawerView) {
-            if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
-
-            int position = itemToOpen;
-            if (position >= 0 && itemTapped) {
-                itemTapped = false;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    Class activityClass = mDrawerMenuContents.getActivity(position);
-                    Intent intent = new Intent(BaseActivity.this, activityClass);
-                    Bundle bundle = ActivityOptions.makeCustomAnimation(
-                            BaseActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    startActivity(intent, bundle);
-                } else {
-                    Class activityClass = mDrawerMenuContents.getActivity(position);
-                    startActivity(new Intent(BaseActivity.this, activityClass));
-                }
-            }
-        }
-
-        @Override
-        public void onDrawerStateChanged(int newState) {
-            if (mDrawerToggle != null) mDrawerToggle.onDrawerStateChanged(newState);
-        }
-    };
+    private DrawerLayout.DrawerListener mDrawerListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -172,6 +133,7 @@ public abstract class BaseActivity extends PrimaryActivity {
                             "'toolbar'");
         }
         setSupportActionBar(mToolbar);
+        setUpNavDrawer();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (mDrawerLayout != null) {
             mDrawerList = (ListView) findViewById(R.id.drawer_list);
@@ -185,14 +147,57 @@ public abstract class BaseActivity extends PrimaryActivity {
             mDrawerLayout.addDrawerListener(mDrawerListener);
             mDrawerLayout.setStatusBarBackgroundColor(
                     AndroidHelper.getThemeColor(this, R.attr.colorPrimary, R.color.primary));
-            AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.drawer_list_background,
-                    R.color.drawer_item_selected_background);
+//            AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.drawer_list_background,
+//                    R.color.drawer_item_selected_background);
             populateDrawerItems();
             updateDrawerToggle();
         } else {
             setSupportActionBar(mToolbar);
         }
         isToolbarInitialized = true;
+    }
+
+    private void setUpNavDrawer() {
+        mDrawerListener = new DrawerLayout.DrawerListener() {
+            @Override
+            public void onDrawerSlide(View drawerView, float slideOffset) {
+                if (mDrawerToggle != null) mDrawerToggle.onDrawerSlide(drawerView, slideOffset);
+            }
+
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                if (mDrawerToggle != null) mDrawerToggle.onDrawerOpened(drawerView);
+                if (getSupportActionBar() != null) {
+                    getSupportActionBar().setTitle(getToolbarTitle());
+                }
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
+
+                int position = itemToOpen;
+                if (position >= 0 && itemTapped) {
+                    itemTapped = false;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        Class activityClass = mDrawerMenuContents.getActivity(position);
+                        Intent intent = new Intent(BaseActivity.this, activityClass);
+                        Bundle bundle = ActivityOptions.makeCustomAnimation(
+                                BaseActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent, bundle);
+                    } else {
+                        Class activityClass = mDrawerMenuContents.getActivity(position);
+                        startActivity(new Intent(BaseActivity.this, activityClass));
+                    }
+                }
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+                if (mDrawerToggle != null) mDrawerToggle.onDrawerStateChanged(newState);
+            }
+        };
     }
 
     private void populateDrawerItems() {
@@ -231,6 +236,10 @@ public abstract class BaseActivity extends PrimaryActivity {
             }
         });
         mDrawerList.setAdapter(adapter);
+    }
+
+    protected boolean isNavDrawerOpen() {
+        return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START);
     }
 
     protected void updateDrawerPosition() {

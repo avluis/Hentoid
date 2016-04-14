@@ -33,12 +33,12 @@ public class DrawerMenuContents {
         String activity;
         String title;
         int resource;
-        String resourcePath = "ic_menu_";
+        String resourcePrefix = "ic_menu_";
         Class<?> cls = null;
         for (int i = 0; i < mActivityList.length; i++) {
             activity = mActivityList[i];
             title = mActivityList[i].toUpperCase();
-            resource = AndroidHelper.getId(resourcePath + mActivityList[i].toLowerCase(),
+            resource = AndroidHelper.getId(resourcePrefix + mActivityList[i].toLowerCase(),
                     R.drawable.class);
             try {
                 cls = Class.forName("me.devsaki.hentoid.activities." + activity + "Activity");

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="drawer_menu_layout_width">160dp</dimen>
+    <dimen name="drawer_menu_layout_width">220dp</dimen>
     <dimen name="drawer_menu_margin_end">16dp</dimen>
 
     <dimen name="about_ic_group_layout_margin_top">15dp</dimen>

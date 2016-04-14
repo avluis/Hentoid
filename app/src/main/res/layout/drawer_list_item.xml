@@ -10,7 +10,7 @@
     android:paddingLeft="@dimen/drawer_item_horizontal_padding"
     android:paddingRight="@dimen/drawer_item_horizontal_padding"
     android:paddingStart="@dimen/drawer_item_horizontal_padding"
-    tools:background="@color/primary">
+    tools:background="@color/drawer_item_background">
 
     <ImageView
         android:id="@+id/drawer_item_icon"

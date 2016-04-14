@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -9,7 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.KeyEvent;
 import android.view.View;
@@ -30,6 +28,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.ConstantsImport;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
@@ -42,7 +41,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 public class BaseWebActivity extends PrimaryActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
-    private final static int STORAGE_PERMISSION_REQUEST = 1;
+    private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
     ObservableWebView webView;
     private HentoidDB db;
     private Content currentContent;
@@ -51,6 +50,7 @@ public class BaseWebActivity extends PrimaryActivity {
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
+    private boolean permissionChecked;
 
     Site getSite() {
         return site;
@@ -97,11 +97,14 @@ public class BaseWebActivity extends PrimaryActivity {
     // Validate permissions
     private void checkPermissions() {
         if (AndroidHelper.permissionsCheck(this,
-                STORAGE_PERMISSION_REQUEST)) {
+                REQUEST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
-            reset();
+            if (permissionChecked) {
+                reset();
+            }
+            permissionChecked = true;
         }
     }
 
@@ -113,21 +116,19 @@ public class BaseWebActivity extends PrimaryActivity {
         if (grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                checkPermissions();
+                LogHelper.d(TAG, "Permissions granted.");
             } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // Permission Denied
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    reset();
-                } else {
-                    finish();
-                }
+                permissionChecked = true;
             }
+        } else {
+            // Permissions cannot be set, either via policy or forced by user.
+            finish();
         }
     }
 
-    // TODO: This could be relaxed - we could try another permission request
     private void reset() {
+        // We have asked for permissions, but still denied.
         AndroidHelper.commitFirstRun(true);
         Intent intent = new Intent(this, IntroSlideActivity.class);
         startActivity(intent);
@@ -220,7 +221,7 @@ public class BaseWebActivity extends PrimaryActivity {
     @SuppressWarnings("UnusedParameters")
     public void onHomeFabClick(View view) {
         Intent intent = new Intent(this, DownloadsActivity.class);
-
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with Double-Back (press back twice) to exit
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Elevation (V21+ API) -->
+    <dimen name="default_elevation">2dp</dimen>
+    <dimen name="drawer_layout_elevation">4dp</dimen>
+    <dimen name="toolbar_layout_elevation">6dp</dimen>
+</resources>

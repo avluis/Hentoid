@@ -58,6 +58,7 @@ public class DownloadsActivity extends BaseActivity implements BaseFragment.Back
     @Override
     protected void onResume() {
         super.onResume();
+
         updateDrawerPosition();
     }
 

@@ -32,6 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/primary"
+        android:elevation="@dimen/toolbar_layout_elevation"
         android:gravity="center"
         android:orientation="horizontal">
 

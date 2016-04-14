@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments;
 
-import android.Manifest;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
@@ -9,7 +8,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -37,6 +35,7 @@ import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.ConstantsImport;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -47,7 +46,7 @@ import me.devsaki.hentoid.util.LogHelper;
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener {
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
-    private final static int STORAGE_PERMISSION_REQUEST = 1;
+    private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
     private static String query = "";
     private static int currentPage = 1;
     private static int qtyPages;
@@ -68,6 +67,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private DrawerLayout mDrawerLayout;
     private int mDrawerState;
     private boolean shouldHide;
+    private boolean permissionChecked;
 
     public static DownloadsFragment newInstance() {
         return new DownloadsFragment();
@@ -82,19 +82,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         // setQuery("");
         // currentPage = 1;
         searchContent();
-    }
-
-    // Validate permissions
-    private void checkPermissions() {
-        if (AndroidHelper.permissionsCheck(getActivity(),
-                STORAGE_PERMISSION_REQUEST)) {
-            LogHelper.d(TAG, "Storage permission allowed!");
-            queryPrefs();
-            searchContent();
-        } else {
-            LogHelper.d(TAG, "Storage permission denied!");
-            reset();
-        }
     }
 
     @Override
@@ -120,6 +107,22 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         }
     }
 
+    // Validate permissions
+    private void checkPermissions() {
+        if (AndroidHelper.permissionsCheck(getActivity(),
+                REQUEST_STORAGE_PERMISSION)) {
+            LogHelper.d(TAG, "Storage permission allowed!");
+            queryPrefs();
+            searchContent();
+        } else {
+            LogHelper.d(TAG, "Storage permission denied!");
+            if (permissionChecked) {
+                reset();
+            }
+            permissionChecked = true;
+        }
+    }
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
                                            @NonNull int[] grantResults) {
@@ -128,21 +131,19 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         if (grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                checkPermissions();
+                LogHelper.d(TAG, "Permissions granted.");
             } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // Permission Denied
-                if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    reset();
-                } else {
-                    getActivity().finish();
-                }
+                permissionChecked = true;
             }
+        } else {
+            // Permissions cannot be set, either via policy or forced by user.
+            getActivity().finish();
         }
     }
 
-    // TODO: This could be relaxed - we could try another permission request
     private void reset() {
+        // We have asked for permissions, but still denied.
         AndroidHelper.commitFirstRun(true);
         Intent intent = new Intent(getActivity(), IntroSlideActivity.class);
         startActivity(intent);
@@ -298,6 +299,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     @Override
     public void onResume() {
         super.onResume();
+
         checkPermissions();
 
         // Retrieve list position

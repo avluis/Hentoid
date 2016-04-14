@@ -79,12 +79,27 @@ public class ImportActivity extends PrimaryActivity implements
 
     private void initImport(Bundle savedState) {
         if (savedState == null) {
-            checkPermissions();
-            currentRootDirectory = Environment.getExternalStorageDirectory();
             result = ConstantsImport.RESULT_EMPTY;
         } else {
             currentRootDirectory = (File) savedState.getSerializable(dirKey);
             result = savedState.getString(resultKey);
+        }
+        checkForDefaultDirectory();
+    }
+
+    private void checkForDefaultDirectory() {
+        if (checkPermissions()) {
+            File file = new File(Environment.getExternalStorageDirectory() +
+                    "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/");
+            if (file.exists() && file.isDirectory()) {
+                LogHelper.d(TAG, "Default Directory Found.");
+                currentRootDirectory = file;
+            } else {
+                currentRootDirectory = AndroidHelper.getDefaultDir("", this);
+            }
+            pickDownloadDirectory();
+        } else {
+            LogHelper.d(TAG, "Do we have permission?");
         }
     }
 
@@ -96,14 +111,15 @@ public class ImportActivity extends PrimaryActivity implements
     }
 
     // Validate permissions
-    private void checkPermissions() {
+    private boolean checkPermissions() {
         if (AndroidHelper.permissionsCheck(ImportActivity.this,
                 REQUEST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
-            pickDownloadDirectory();
+            return true;
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
         }
+        return false;
     }
 
     // Present Directory Picker
@@ -213,7 +229,7 @@ public class ImportActivity extends PrimaryActivity implements
 
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(AndroidHelper.getDownloadDir(s, this));
+            downloadDirs.add(AndroidHelper.getSiteDownloadDir(s, this));
         }
 
         List<File> files = new ArrayList<>();
@@ -340,7 +356,7 @@ public class ImportActivity extends PrimaryActivity implements
 
             for (Site site : Site.values()) {
                 // Grab all folders in site folders in storage directory
-                downloadDirs.add(AndroidHelper.getDownloadDir(site, ImportActivity.this));
+                downloadDirs.add(AndroidHelper.getSiteDownloadDir(site, ImportActivity.this));
             }
 
             files = new ArrayList<>();

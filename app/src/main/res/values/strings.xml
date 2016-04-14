@@ -30,10 +30,10 @@
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
     <string name="permission_granted">Permission set, restarting library import.</string>
-    <string name="permission_denied">Hentoid requires write access to device storage.\nPlease reconsider.</string>
+    <string name="permission_denied">Hentoid requires write access to device storage.</string>
     <string name="permission_denied_forced">Write storage permission denied!\nManually grant storage permission.</string>
     <string name="existing_library_error">You must select a different folder if you do not wish to import your current library.</string>
-    <string name="contents_detected">The app has detected a previous library in this folder.\nDo you want to import this library?</string>
+    <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="progress_dialog">Importing Library</string>
     <string name="please_wait">Please wait…</string>
     <string name="scanning_files">Scanning files…</string>
@@ -44,7 +44,7 @@
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it from Google Play.</string>
 
-    <string name="download_again_dialog">Total images : @total\nImage Error: @error</string>
+    <string name="download_again_dialog">Total images: @total\nImage Error: @error</string>
     <string name="ask_delete">Are you sure you wish to delete this?</string>
     <string name="deleted">\@content deleted.</string>
 
@@ -57,6 +57,9 @@
     <string name="queue_empty">Why am I empty?</string>
     <string name="downloads_empty">Go ahead, download something.</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
+    
+    <string name="ok">OK</string>
+    <string name="reset">Permissions has been reset.\n Resetting app.</string>
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>
@@ -83,11 +86,11 @@
     <!-- About Activity -->
     <string name="about">
         <![CDATA[
-        <p><b>Hentoid</b> is a Hentai Manga reader & archiving app.<br>
+        <p><b>Hentoid</b> is a Doujinshi & Manga archiving app.<br>
         Hentoid was originally created by <b>Cesar Arasaki</b>.</p>
         <p>Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.<br>
         Hentoid was previously known as FakkuDroid, before it was relaunched as an entirely new app.</p>
-        <p>While initially designed to work with <b>FAKKU</b>, <b>Pururin</b> and <b>Hitomi</b>, support for <b>nhentai</b> and <b>tsumino</b> has also been added.</p>
+        <p>While initially designed to work with <b>FAKKU</b>, <b>Pururin</b> and <b>Hitomi</b> - support for <b>nhentai</b> and <b>tsumino</b> has also been added.</p>
         <p>Unfortunately, FAKKU has gone legit soon after this and Pururin was left to die as their domain expired.</p>
         <p><b>Notes:</b><br>
         In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.<br>
@@ -101,7 +104,11 @@
     <string name="about_notes">
         <![CDATA[
         <p>Android 6.0 Runtime Permissions support.<br>
+        New Look! New Navigation Drawer!<br>
         Improved Browsing and Navigation UI.<br>
         Improved Download Service back-end.<br>
-        No intrusive Pop-UP ADs on sources.</p>]]></string>
+        Improved Search and result handling.<br>
+        Improved Import routine & On-the-fly Preference changes.<br>
+        Viewport scaling options for Hitomi.<br>
+        No intrusive Pop-UP ADs on nhentai and Hitomi.</p>]]></string>
 </resources>
