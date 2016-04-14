@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.ui;
 
 import android.content.Context;
 
@@ -8,10 +8,21 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 04/11/2016.
- * Populate Drawer Menu Contents
+ * Populates Drawer Menu Contents from a resource string array.
+ * This includes generation the required class names, menu item title
+ * and menu item icon.
+ * <p/>
+ * This class is expecting a list of activities named like so:
+ * '[activity_name]' - it then builds the actual Activity class as so:
+ * '[activity_name]Activity.class'.
+ * From this list, it will also build the activity title and corresponding
+ * activity drawable with the following resource id:
+ * 'R.drawable.ic_menu_[activity_name]' - make sure this drawable actually exists.
  */
 public class DrawerMenuContents {
     public static final String FIELD_TITLE = "title";

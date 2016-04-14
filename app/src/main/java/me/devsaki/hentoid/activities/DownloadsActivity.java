@@ -9,8 +9,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.fragments.DownloadsFragment;
+import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.DrawerMenuContents;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**

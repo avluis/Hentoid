@@ -2,8 +2,13 @@
 <resources>
     <!--
     THIS LIST IS CASE SENSITIVE!!!
-    ITEMS CAN BE REORDERED AS NEEDED BUT
-    CASE MUST MATCH CLASS NAME EXACTLY (minus 'Activity') -->
+    ITEMS CAN BE REORDERED AS NEEDED BUT CAPITALIZATION
+    MUST MATCH ACTIVITY CLASS NAME EXACTLY (minus 'Activity'):
+    '[activity_name]' -> '[activity_name]Activity.class'
+    'Sample' -> 'SampleActivity.class'
+
+    IN ADDITION TO DRAWABLES THAT MATCH THE FOLLOWING RULES:
+    'res/drawable/ic_menu_[activity_name]' (minus 'Activity') -->
     <string-array name="nav_drawer_entries">
         <item>Hitomi</item>
         <item>Nhentai</item>

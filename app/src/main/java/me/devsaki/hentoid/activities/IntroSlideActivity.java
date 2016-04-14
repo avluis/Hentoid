@@ -56,6 +56,7 @@ public class IntroSlideActivity extends AppIntro2 {
         setNavBarColor("#2b0202");
         setVibrate(true);
         setVibrateIntensity(30);
+        pager.setPagingEnabled(false);
     }
 
     @Override

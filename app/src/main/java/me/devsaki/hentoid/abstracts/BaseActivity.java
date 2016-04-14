@@ -22,8 +22,8 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.DrawerMenuContents;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
