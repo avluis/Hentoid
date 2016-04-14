@@ -295,6 +295,12 @@ public class AndroidHelper {
         }
     }
 
+    public static void cancelToast() {
+        if (sToast != null) {
+            sToast.cancel();
+        }
+    }
+
     // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
     public static void toast(String text) {
         Context cxt = HentoidApplication.getAppContext();

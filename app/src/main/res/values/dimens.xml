@@ -11,6 +11,9 @@
     <dimen name="drawer_item_height">48dp</dimen>
     <dimen name="drawer_item_horizontal_padding">16dp</dimen>
 
+    <!-- browser padding -->
+    <dimen name="activity_base_web_padding">10dp</dimen>
+
     <dimen name="download_fab_margin">16dp</dimen>
     <dimen name="downloads_fab_margin">6dp</dimen>
     <dimen name="refresh_fab_margin">6dp</dimen>

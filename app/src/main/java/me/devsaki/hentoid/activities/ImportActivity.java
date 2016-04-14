@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
 import com.afollestad.materialdialogs.GravityEnum;
@@ -240,7 +241,7 @@ public class ImportActivity extends PrimaryActivity implements
         }
 
         if (files.size() > 0) {
-            new AlertDialog.Builder(this)
+            final AlertDialog dialog = new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setCancelable(false)
                     .setTitle(R.string.app_name)
@@ -272,7 +273,9 @@ public class ImportActivity extends PrimaryActivity implements
                                 }
 
                             })
-                    .show();
+                    .create();
+            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            dialog.show();
         } else {
             // New library created - drop and recreate db
             createNewLibrary();
@@ -376,9 +379,11 @@ public class ImportActivity extends PrimaryActivity implements
                         @Override
                         public void onShow(DialogInterface dialogInterface) {
                             mDialog = (MaterialDialog) dialogInterface;
+                            mDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                         }
                     });
 
+            mDialogBuilder.build();
             mDialogBuilder.show();
         }
 

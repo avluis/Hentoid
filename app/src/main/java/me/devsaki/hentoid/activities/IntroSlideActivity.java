@@ -69,9 +69,9 @@ public class IntroSlideActivity extends AppIntro2 {
         donePressed = true;
         AndroidHelper.commitFirstRun(false);
         Intent intent = new Intent(this, DownloadsActivity.class);
-        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
-        // it can interfere with Double-Back (press back twice) to exit
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                | Intent.FLAG_ACTIVITY_NEW_TASK
+                | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();
     }
@@ -124,7 +124,6 @@ public class IntroSlideActivity extends AppIntro2 {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQUEST_IMPORT_RESULTS) {
             LogHelper.d(TAG, "REQUEST RESULT RECEIVED");
-            setProgressButtonEnabled(true);
             if (data != null) {
                 if (data.getStringExtra(resultKey) != null) {
                     String result = data.getStringExtra(resultKey);
@@ -136,6 +135,7 @@ public class IntroSlideActivity extends AppIntro2 {
 
                         if (result.equals(ConstantsImport.PERMISSION_GRANTED)) {
                             LogHelper.d(TAG, "Permission Allowed, resetting.");
+
                             HentoidApplication.beginImport = false;
                             setProgressButtonEnabled(false);
                             pager.setCurrentItem(IMPORT_SLIDE - 1);
@@ -151,19 +151,11 @@ public class IntroSlideActivity extends AppIntro2 {
                                 }
                             }, 2000);
                         } else {
-                            // Back from successful import
-                            // SystemClock.sleep(100);
-                            Handler importHandler = new Handler();
-                            importHandler.postDelayed(new Runnable() {
-
-                                public void run() {
-                                    // Disallow swiping back
-                                    setSwipeLock(true);
-                                    // If result passes validation, then we move to next slide
-                                    pager.setCurrentItem(IMPORT_SLIDE + 1);
-                                }
-                            }, 500);
-                            importHandler.removeCallbacks(null);
+                            // Disallow swiping back
+                            setSwipeLock(true);
+                            // If result passes validation, then we move to next slide
+                            pager.setCurrentItem(IMPORT_SLIDE + 1);
+                            setProgressButtonEnabled(true);
 
                             // Auto push to DownloadActivity after 10 seconds
                             Handler doneHandler = new Handler();
@@ -186,6 +178,7 @@ public class IntroSlideActivity extends AppIntro2 {
                                 pager.setCurrentItem(IMPORT_SLIDE - 3);
                                 Snackbar.make(pager, R.string.permission_denied,
                                         Snackbar.LENGTH_LONG).show();
+                                setProgressButtonEnabled(true);
                                 break;
                             case ConstantsImport.PERMISSION_DENIED_FORCED:
                                 LogHelper.d(TAG, "Permission Denied (Forced) by User/Policy");
@@ -211,11 +204,13 @@ public class IntroSlideActivity extends AppIntro2 {
                                 pager.setCurrentItem(IMPORT_SLIDE - 2);
                                 Snackbar.make(pager, R.string.existing_library_error,
                                         Snackbar.LENGTH_LONG).show();
+                                setProgressButtonEnabled(true);
                                 break;
                             default:
                                 LogHelper.d(TAG, "RESULT_CANCELED");
 
                                 pager.setCurrentItem(IMPORT_SLIDE - 2);
+                                setProgressButtonEnabled(true);
                                 break;
                         }
                         HentoidApplication.beginImport = false;
