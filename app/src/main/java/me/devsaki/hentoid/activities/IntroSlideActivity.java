@@ -61,7 +61,18 @@ public class IntroSlideActivity extends AppIntro2 {
 
     @Override
     public void onNextPressed() {
-        setTitle(R.string.app_name);
+        if (pager.getCurrentItem() >= 1) {
+            setTitle(R.string.app_name);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (pager.getCurrentItem() >= 1) {
+            setTitle(R.string.app_name);
+        }
     }
 
     @Override
