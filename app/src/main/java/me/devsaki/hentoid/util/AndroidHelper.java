@@ -375,6 +375,10 @@ public class AndroidHelper {
 
         if (appLock.isEmpty()) {
             Intent intent = new Intent(cxt, DownloadsActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            ((Activity) cxt).overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             cxt.startActivity(intent);
         } else {
             Intent intent = new Intent(cxt, AppLockActivity.class);

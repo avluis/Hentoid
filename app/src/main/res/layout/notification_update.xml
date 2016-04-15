@@ -22,8 +22,9 @@
         android:layout_centerVertical="true"
         android:layout_marginLeft="3dp"
         android:layout_marginRight="3dp"
-        android:background="@drawable/btn_exchange_selector"
+        android:background="@drawable/btn_cancel_update_selector"
         android:text="@string/cancel"
+        android:textColor="@color/white"
         tools:ignore="ButtonOrder" />
 
     <TextView

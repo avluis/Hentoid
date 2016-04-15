@@ -39,13 +39,13 @@
         android:orientation="vertical">
 
         <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
             android:contentDescription="@null"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:src="@drawable/ic_hentoid_web" />
+            android:src="@drawable/ic_hentoid" />
     </LinearLayout>
 
     <TextView

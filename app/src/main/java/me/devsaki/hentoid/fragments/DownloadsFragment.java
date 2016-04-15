@@ -263,11 +263,11 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             return false;
         }
         if (backButtonPressed + 1000 > System.currentTimeMillis()) {
-            AndroidHelper.toast(getContext(), "Come back soon!");
+            AndroidHelper.toast(getContext(), R.string.back_exit);
             return true;
         } else {
             backButtonPressed = System.currentTimeMillis();
-            AndroidHelper.toast(getContext(), "Press back twice (quickly) to exit.");
+            AndroidHelper.toast(getContext(), R.string.press_back_again);
         }
         clearQuery(1);
         return false;

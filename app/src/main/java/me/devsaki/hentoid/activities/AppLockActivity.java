@@ -11,7 +11,11 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
@@ -28,18 +32,25 @@ public class AppLockActivity extends PrimaryActivity {
     private final long[] wrongPinPattern = {0, 200, 200, 200};
     private TextView tvAppLock;
     private EditText etPin;
+    private ImageView ivLock;
     private Vibrator vibrator;
     private Handler handler = new Handler();
+    private Map<String, Integer> imageMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_lock);
 
+        imageMap.put("Locked", R.drawable.ic_lock_closed);
+        imageMap.put("Open", R.drawable.ic_lock_open);
+
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        tvAppLock = (TextView) findViewById(R.id.tv_app_lock);
-        etPin = (EditText) findViewById(R.id.etPin);
+        tvAppLock = (TextView) findViewById(R.id.tv_app_lock_subtitle);
+        etPin = (EditText) findViewById(R.id.et_pin);
+        ivLock = (ImageView) findViewById(R.id.iv_lock);
+
         if (etPin != null) {
             etPin.setGravity(Gravity.CENTER);
             etPin.setOnKeyListener(new View.OnKeyListener() {
@@ -100,17 +111,23 @@ public class AppLockActivity extends PrimaryActivity {
         }
         if (appLock.equals(pin)) {
             etPin.setText("");
+            etPin.clearFocus();
+
             tvAppLock.setText(R.string.pin_ok);
+            ivLock.setImageResource(imageMap.get("Open"));
 
             if (vibrator.hasVibrator()) {
                 vibrator.vibrate(goodPinPattern, -1);
             }
 
             Intent intent = new Intent(this, DownloadsActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             finish();
         } else {
-            etPin.setText("");
+            ivLock.setImageResource(imageMap.get("Locked"));
             tvAppLock.setText(R.string.pin_invalid);
 
             if (vibrator.hasVibrator()) {

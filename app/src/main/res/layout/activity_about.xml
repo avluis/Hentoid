@@ -18,7 +18,7 @@
             <ImageView
                 android:layout_width="@dimen/about_ic_hentoid_width"
                 android:layout_height="@dimen/about_ic_hentoid_height"
-                android:src="@drawable/ic_hentoid_web"
+                android:src="@drawable/ic_hentoid"
                 tools:ignore="ContentDescription" />
 
             <GridLayout

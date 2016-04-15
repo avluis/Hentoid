@@ -23,7 +23,7 @@
             android:layout_width="155dp"
             android:layout_height="155dp"
             android:layout_gravity="center"
-            android:src="@drawable/ic_hentoid_web"
+            android:src="@drawable/ic_hentoid"
             tools:ignore="ContentDescription" />
     </FrameLayout>
 

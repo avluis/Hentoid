@@ -20,7 +20,7 @@
         android:textSize="38sp" />
 
     <TextView
-        android:id="@+id/tv_app_lock"
+        android:id="@+id/tv_app_lock_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
         android:layout_gravity="center"
@@ -34,7 +34,7 @@
         android:textSize="24sp" />
 
     <EditText
-        android:id="@+id/etPin"
+        android:id="@+id/et_pin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -42,6 +42,7 @@
         android:ems="8"
         android:gravity="center"
         android:inputType="numberPassword"
+        android:singleLine="true"
         android:textColor="@color/white"
         android:textSize="16sp">
 
@@ -51,20 +52,20 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="8"
+        android:layout_weight="7"
         android:gravity="center"
         android:orientation="vertical">
 
         <ImageView
-            android:id="@+id/btnOk"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:id="@+id/iv_lock"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="center"
             android:clickable="true"
             android:contentDescription="@null"
             android:onClick="checkPin"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:src="@drawable/ic_lock" />
+            android:src="@drawable/ic_lock_closed" />
     </LinearLayout>
 </LinearLayout>
