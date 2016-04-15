@@ -5,11 +5,12 @@
     android:layout_width="@dimen/drawer_menu_layout_width"
     android:layout_height="match_parent"
     android:layout_gravity="start"
-    android:background="@color/drawer_list_background"
+    android:layout_marginEnd="@dimen/drawer_menu_margin_end"
+    android:layout_marginRight="@dimen/drawer_menu_margin_end"
     android:clickable="true"
     android:clipToPadding="false"
     android:fitsSystemWindows="true"
-    custom:myInsetForeground="#4000">
+    custom:myInsetForeground="@color/drawer_list_highlight_color">
 
     <FrameLayout
         android:id="@+id/drawer_header"
@@ -31,6 +32,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@+id/drawer_header"
+        android:background="@color/drawer_list_background"
         android:choiceMode="singleChoice"
         android:drawSelectorOnTop="true"
         android:fastScrollEnabled="false"

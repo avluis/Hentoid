@@ -3,4 +3,9 @@
     <style name="LinearProgress" parent="Theme.AppCompat.Light">
         <item name="colorAccent">@color/accent</item>
     </style>
+
+    <!-- Toolbar -->
+    <style name="Toolbar" parent="AppTheme.NoActionBar">
+        <item name="android:background">?android:attr/colorPrimary</item>
+    </style>
 </resources>

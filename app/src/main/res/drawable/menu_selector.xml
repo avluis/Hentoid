@@ -6,5 +6,5 @@
     <item android:drawable="@color/drawer_item_selected_background" android:state_checked="true" />
     <item android:drawable="@color/drawer_item_selected_background" android:state_selected="true" />
 
-    <item android:drawable="@color/drawer_list_background" android:state_activated="false" />
+    <item android:drawable="@color/drawer_item_background" android:state_activated="false" />
 </selector>

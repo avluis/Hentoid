@@ -3,11 +3,11 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="drawer_menu_layout_width">200dp</dimen>
+    <dimen name="drawer_menu_layout_width">160dp</dimen>
     <dimen name="drawer_menu_margin_end">16dp</dimen>
 
     <!-- navigation drawer -->
-    <dimen name="drawer_item_icon_margin_end">32dp</dimen>
+    <dimen name="drawer_item_icon_margin_end">16dp</dimen>
     <dimen name="drawer_item_height">48dp</dimen>
     <dimen name="drawer_item_horizontal_padding">16dp</dimen>
 

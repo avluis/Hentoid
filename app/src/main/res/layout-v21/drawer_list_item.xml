@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:foreground="?android:attr/selectableItemBackground"
     android:minHeight="@dimen/drawer_item_height"
     android:orientation="horizontal"
     android:paddingEnd="@dimen/drawer_item_horizontal_padding"
@@ -15,7 +16,7 @@
         android:id="@+id/drawer_item_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
+        android:layout_gravity="center_vertical|start"
         android:layout_marginEnd="@dimen/drawer_item_icon_margin_end"
         android:tint="@color/drawer_item_tint_color"
         android:tintMode="src_in"
@@ -26,7 +27,7 @@
         android:id="@+id/drawer_item_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
+        android:layout_gravity="center_vertical|start"
         android:textColor="@color/drawer_item_tint_color"
         tools:text="About" />
 

@@ -5,6 +5,7 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import me.devsaki.hentoid.R;
@@ -48,8 +49,8 @@ public class DrawerMenuContents {
         Class<?> cls = null;
         for (int i = 0; i < mActivityList.length; i++) {
             activity = mActivityList[i];
-            title = mActivityList[i].toUpperCase();
-            resource = AndroidHelper.getId(resourcePrefix + mActivityList[i].toLowerCase(),
+            title = mActivityList[i].toUpperCase(Locale.US);
+            resource = AndroidHelper.getId(resourcePrefix + mActivityList[i].toLowerCase(Locale.US),
                     R.drawable.class);
             try {
                 cls = Class.forName("me.devsaki.hentoid.activities." + activity + "Activity");

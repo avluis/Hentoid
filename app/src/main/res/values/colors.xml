@@ -12,6 +12,7 @@
     <!-- Red -->
     <color name="very_dark_mostly_black_red">#2b0202</color>
     <color name="very_dark_red">#400404</color>
+    <color name="very_dark_red_2">#400000</color>
     <color name="material_red_50">#ffebee</color>
     <color name="red_accent_700">#d50000</color>
 
@@ -24,6 +25,7 @@
 
     <!-- Drawer Layout -->
     <color name="drawer_header_background">@color/very_dark_mostly_black_red</color>
+    <color name="drawer_list_highlight_color">@color/very_dark_red_2</color>
     <color name="drawer_list_background">@color/very_dark_mostly_black_red</color>
     <color name="drawer_item_background">@color/very_dark_red</color>
     <color name="drawer_item_selected_background">@color/very_dark_mostly_black_red</color>
