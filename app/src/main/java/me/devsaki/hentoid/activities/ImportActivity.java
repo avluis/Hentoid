@@ -485,6 +485,7 @@ public class ImportActivity extends PrimaryActivity implements
                             json = new File(file, Constants.JSON_FILE_NAME);
                             if (json.exists()) {
                                 try {
+                                    //noinspection deprecation
                                     ContentV1 content = Helper.jsonToObject(json, ContentV1.class);
                                     if (content.getStatus() != StatusContent.DOWNLOADED
                                             && content.getStatus() != StatusContent.ERROR) {
@@ -509,6 +510,7 @@ public class ImportActivity extends PrimaryActivity implements
                                     try {
                                         DoujinBean doujinBean =
                                                 Helper.jsonToObject(json, DoujinBean.class);
+                                        //noinspection deprecation
                                         ContentV1 content = new ContentV1();
                                         content.setUrl(doujinBean.getId());
                                         content.setHtmlDescription(doujinBean.getDescription());

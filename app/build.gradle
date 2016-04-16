@@ -69,9 +69,7 @@ android {
         }
     }
     lintOptions {
-        disable 'InvalidPackage'
-        disable 'GoogleAppIndexingWarning'
-        disable 'MissingTranslation'
+        lintConfig file("../lint.xml")
     }
 }
 

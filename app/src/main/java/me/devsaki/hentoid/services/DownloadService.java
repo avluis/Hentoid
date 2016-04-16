@@ -111,11 +111,12 @@ public class DownloadService extends IntentService {
             LogHelper.d(TAG, "Is directory empty: " + isDirEmpty);
 
             if (!isDirEmpty) {
+                boolean delete = false;
                 String[] children = dir.list();
                 for (String child : children) {
-                    // noinspection ResultOfMethodCallIgnored
-                    new File(dir, child).delete();
+                    delete = new File(dir, child).delete();
                 }
+                LogHelper.d(TAG, "Directory cleaned: " + delete);
             }
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();

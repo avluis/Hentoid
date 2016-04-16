@@ -30,12 +30,12 @@ public class AppLockActivity extends PrimaryActivity {
     private final long DELAY = 1000;
     private final long[] goodPinPattern = {0, 250, 100, 100};
     private final long[] wrongPinPattern = {0, 200, 200, 200};
+    private final Map<String, Integer> imageMap = new HashMap<>();
     private TextView tvAppLock;
     private EditText etPin;
     private ImageView ivLock;
     private Vibrator vibrator;
     private Handler handler = new Handler();
-    private Map<String, Integer> imageMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
