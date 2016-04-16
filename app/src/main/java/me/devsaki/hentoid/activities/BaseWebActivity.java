@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -152,9 +151,19 @@ public class BaseWebActivity extends PrimaryActivity {
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
                 if (newProgress == 100) {
-                    swipeLayout.setRefreshing(false);
+                    swipeLayout.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            swipeLayout.setRefreshing(false);
+                        }
+                    });
                 } else {
-                    swipeLayout.setRefreshing(true);
+                    swipeLayout.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            swipeLayout.setRefreshing(true);
+                        }
+                    });
                 }
             }
         });
@@ -194,13 +203,9 @@ public class BaseWebActivity extends PrimaryActivity {
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        swipeLayout.setRefreshing(false);
-                    }
-                }, 5000);
-                webView.reload();
+                if (!swipeLayout.isRefreshing() || !webViewIsLoading) {
+                    webView.reload();
+                }
             }
         });
         swipeLayout.setColorSchemeResources(
@@ -255,7 +260,7 @@ public class BaseWebActivity extends PrimaryActivity {
 
             return;
         }
-        AndroidHelper.toast(this, R.string.in_queue);
+        AndroidHelper.toast(this, R.string.add_to_queue);
         currentContent.setDownloadDate(new Date().getTime())
                 .setStatus(StatusContent.DOWNLOADING);
 

@@ -213,7 +213,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                         DownloadService.class);
                                 cxt.startService(intent);
 
-                                AndroidHelper.toast(cxt, R.string.in_queue);
+                                AndroidHelper.toast(cxt, R.string.add_to_queue);
                                 contents.remove(content);
                                 int index = listView.getFirstVisiblePosition();
                                 View v = listView.getChildAt(0);
