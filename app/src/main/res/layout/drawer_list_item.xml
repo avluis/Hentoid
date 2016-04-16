@@ -17,8 +17,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
-        android:layout_marginEnd="@dimen/drawer_item_icon_margin_end"
-        android:layout_marginRight="@dimen/drawer_item_icon_margin_end"
+        android:layout_marginEnd="@dimen/drawer_icon_margin_end"
+        android:layout_marginLeft="@dimen/drawer_icon_margin_start"
+        android:layout_marginRight="@dimen/drawer_icon_margin_end"
+        android:layout_marginStart="@dimen/drawer_icon_margin_start"
         android:tint="@color/drawer_item_tint_color"
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_menu_about" />
@@ -28,6 +30,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
+        android:layout_marginLeft="@dimen/drawer_item_text_margin_start"
+        android:layout_marginStart="@dimen/drawer_item_text_margin_start"
         android:textColor="@color/drawer_item_tint_color"
         tools:text="About" />
 

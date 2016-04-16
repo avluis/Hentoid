@@ -3,21 +3,21 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="drawer_menu_layout_width">160dp</dimen>
-    <dimen name="drawer_menu_margin_end">16dp</dimen>
-
     <!-- navigation drawer -->
-    <dimen name="drawer_item_icon_margin_end">16dp</dimen>
+    <dimen name="drawer_icon_margin_start">16dp</dimen>
+    <dimen name="drawer_icon_margin_end">16dp</dimen>
+    <dimen name="drawer_item_text_margin_start">16dp</dimen>
     <dimen name="drawer_item_height">48dp</dimen>
-    <dimen name="drawer_item_horizontal_padding">16dp</dimen>
+    <dimen name="drawer_item_horizontal_padding">8dp</dimen>
 
-    <!-- browser padding -->
+    <!-- browser -->
     <dimen name="activity_base_web_padding">10dp</dimen>
 
     <dimen name="download_fab_margin">16dp</dimen>
     <dimen name="downloads_fab_margin">6dp</dimen>
     <dimen name="refresh_fab_margin">6dp</dimen>
 
+    <!-- about -->
     <dimen name="about_ic_group_layout_margin_top">5dp</dimen>
     <dimen name="about_ic_hentoid_width">120dp</dimen>
     <dimen name="about_ic_hentoid_height">120dp</dimen>

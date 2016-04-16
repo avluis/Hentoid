@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     style="@style/AppTheme.AppIntro"
     android:layout_width="match_parent"
@@ -28,13 +29,13 @@
         android:orientation="vertical">
 
         <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:contentDescription="@null"
             android:paddingLeft="16dp"
             android:paddingRight="16dp"
-            android:src="@drawable/ic_hentoid" />
+            android:src="@drawable/ic_hentoid"
+            tools:ignore="ContentDescription" />
     </LinearLayout>
 
     <TextView

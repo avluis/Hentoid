@@ -145,7 +145,7 @@ public class ImportActivity extends PrimaryActivity implements
     @Override
     public void onEvent(OnDirectoryChosenEvent event) {
         currentRootDirectory = event.getFile();
-        LogHelper.d(TAG, currentRootDirectory);
+        LogHelper.d(TAG, "Storage Path: " + currentRootDirectory);
         validateFolder(currentRootDirectory);
     }
 
@@ -342,7 +342,7 @@ public class ImportActivity extends PrimaryActivity implements
     }
 
     private class ImportAsyncTask extends AsyncTask<Integer, String, List<Content>> {
-        private MaterialDialog mDialog;
+        private MaterialDialog mProgressDialog;
         private MaterialDialog.Builder mDialogBuilder;
         private List<File> downloadDirs;
         private List<File> files;
@@ -378,8 +378,8 @@ public class ImportActivity extends PrimaryActivity implements
                     .showListener(new DialogInterface.OnShowListener() {
                         @Override
                         public void onShow(DialogInterface dialogInterface) {
-                            mDialog = (MaterialDialog) dialogInterface;
-                            mDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                            mProgressDialog = (MaterialDialog) dialogInterface;
+                            mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
                         }
                     });
 
@@ -396,7 +396,7 @@ public class ImportActivity extends PrimaryActivity implements
             } else {
                 result = ConstantsImport.NEW_LIBRARY_CREATED;
             }
-            mDialog.dismiss();
+            mProgressDialog.dismiss();
 
             Handler handler = new Handler();
 
@@ -414,11 +414,11 @@ public class ImportActivity extends PrimaryActivity implements
         @Override
         protected void onProgressUpdate(String... values) {
             if (currentPercent == 100) {
-                mDialog.setContent(R.string.adding_to_db);
+                mProgressDialog.setContent(R.string.adding_to_db);
             } else {
-                mDialog.setContent(R.string.scanning_files);
+                mProgressDialog.setContent(R.string.scanning_files);
             }
-            mDialog.setProgress(currentPercent);
+            mProgressDialog.setProgress(currentPercent);
         }
 
         @SuppressWarnings("deprecation")

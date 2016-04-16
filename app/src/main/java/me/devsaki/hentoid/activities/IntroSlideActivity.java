@@ -84,6 +84,7 @@ public class IntroSlideActivity extends AppIntro2 {
                 | Intent.FLAG_ACTIVITY_NEW_TASK
                 | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
     }
 
