@@ -33,7 +33,6 @@ public class IntroSlideActivity extends AppIntro2 {
     private static final int REQUEST_APP_SETTINGS = ConstantsImport.REQUEST_APP_SETTINGS;
     private static final int IMPORT_SLIDE = 4;
     private static final String resultKey = ConstantsImport.RESULT_KEY;
-    private boolean donePressed;
 
     @Override
     public void init(@Nullable Bundle savedInstanceState) {
@@ -77,7 +76,7 @@ public class IntroSlideActivity extends AppIntro2 {
 
     @Override
     public void onDonePressed() {
-        donePressed = true;
+        HentoidApplication.donePressed = true;
         AndroidHelper.commitFirstRun(false);
         Intent intent = new Intent(this, DownloadsActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -174,7 +173,7 @@ public class IntroSlideActivity extends AppIntro2 {
                             doneHandler.postDelayed(new Runnable() {
 
                                 public void run() {
-                                    if (!donePressed) {
+                                    if (!HentoidApplication.donePressed) {
                                         onDonePressed();
                                     }
                                 }

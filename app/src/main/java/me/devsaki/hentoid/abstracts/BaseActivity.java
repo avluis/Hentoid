@@ -186,9 +186,11 @@ public abstract class BaseActivity extends PrimaryActivity {
                                 BaseActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent, bundle);
+                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                     } else {
                         Class activityClass = mDrawerMenuContents.getActivity(position);
                         startActivity(new Intent(BaseActivity.this, activityClass));
+                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                     }
                 }
             }
@@ -236,10 +238,6 @@ public abstract class BaseActivity extends PrimaryActivity {
             }
         });
         mDrawerList.setAdapter(adapter);
-    }
-
-    protected boolean isNavDrawerOpen() {
-        return mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START);
     }
 
     protected void updateDrawerPosition() {

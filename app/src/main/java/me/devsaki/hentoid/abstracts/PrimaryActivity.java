@@ -19,4 +19,10 @@ public abstract class PrimaryActivity extends AppCompatActivity {
 
         AndroidHelper.setNavBarColor(this, R.color.primary_dark);
     }
+
+    @Override
+    public void onBackPressed() {
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        super.onBackPressed();
+    }
 }

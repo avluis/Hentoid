@@ -23,7 +23,6 @@
     <style name="SplashTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@drawable/bg_splash</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowFullscreen">true</item>
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
@@ -41,7 +40,6 @@
     <style name="BrowserTheme" parent="ImportTheme">
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
-        <item name="android:windowFullscreen">true</item>
         <item name="android:windowIsFloating">false</item>
     </style>
 
