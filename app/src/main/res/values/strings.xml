@@ -34,7 +34,9 @@
     <string name="permission_denied_forced">Write storage permission denied!\nManually grant storage permission.</string>
     <string name="existing_library_error">Please select a different folder.</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
-    <string name="progress_dialog">Importing Library</string>
+    <string name="import_dialog">Importing Library</string>
+    <string name="add_dialog">Adding files to DB</string>
+    <string name="cleaning_up_db">Cleaning up DB</string>
     <string name="please_wait">Please wait…</string>
     <string name="scanning_files">Scanning files…</string>
     <string name="adding_to_db">Adding files to database…</string>

@@ -5,7 +5,7 @@
     <string name="slide_01_text">Hentoid is a Doujinshi\n &amp; Manga archiving app.</string>
     <!-- Slide 02 -->
     <string name="slide_02_header">Permissions</string>
-    <string name="slide_02_text">Starting with Android 6.0,\n we need to ask you for permission to device storage</string>
+    <string name="slide_02_text">Starting with Android 6.0,\n we need to ask you for permission to device storage.</string>
     <!-- Slide 02 Alt -->
     <string name="slide_02_alt_header">What to expect?</string>
     <string name="slide_02_alt_text">Hentoid supports:\n nhentai, hitomi, tsumino\n &amp; archived content from\n FAKKU and Pururin.</string>

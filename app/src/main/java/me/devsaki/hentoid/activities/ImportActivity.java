@@ -11,9 +11,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -62,8 +62,21 @@ public class ImportActivity extends PrimaryActivity implements
     private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
     private static final String resultKey = ConstantsImport.RESULT_KEY;
     private static final String dirKey = "currentDir";
+    private AlertDialog mAddDialog;
     private String result;
+    private final Handler mImportHandler = new Handler(new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            if (msg.what == 0) {
+                cleanUp(mAddDialog);
+            }
+            mImportHandler.removeCallbacksAndMessages(null);
+            return false;
+        }
+    });
     private File currentRootDirectory;
+    private DirectoryChooserFragment mDirectoryDialog;
+    private HentoidDB db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +87,15 @@ public class ImportActivity extends PrimaryActivity implements
                 ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         setContentView(relativeLayout, layoutParams);
+
+        db = new HentoidDB(this);
+
+        mAddDialog = new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_dialog_warning)
+                .setTitle(R.string.add_dialog)
+                .setMessage(R.string.please_wait)
+                .setCancelable(false)
+                .create();
 
         initImport(savedInstanceState);
     }
@@ -126,7 +148,7 @@ public class ImportActivity extends PrimaryActivity implements
     // Present Directory Picker
     private void pickDownloadDirectory() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        DialogFragment mDirectoryDialog = DirectoryChooserFragment.
+        mDirectoryDialog = DirectoryChooserFragment.
                 newInstance(currentRootDirectory);
         mDirectoryDialog.show(transaction, "RDC");
     }
@@ -146,6 +168,7 @@ public class ImportActivity extends PrimaryActivity implements
     public void onEvent(OnDirectoryChosenEvent event) {
         currentRootDirectory = event.getFile();
         LogHelper.d(TAG, "Storage Path: " + currentRootDirectory);
+        mDirectoryDialog.dismiss();
         validateFolder(currentRootDirectory);
     }
 
@@ -203,6 +226,7 @@ public class ImportActivity extends PrimaryActivity implements
 
         File nomedia = new File(hentoidFolder, ".nomedia");
         boolean hasPermission;
+        // Clean up (if any) nomedia file
         try {
             if (nomedia.exists()) {
                 boolean deleted = nomedia.delete();
@@ -210,9 +234,12 @@ public class ImportActivity extends PrimaryActivity implements
                     LogHelper.d(TAG, ".nomedia file deleted");
                 }
             }
+            // Re-create nomedia file to confirm write permissions
             hasPermission = nomedia.createNewFile();
         } catch (IOException e) {
             hasPermission = false;
+            // TODO: Log to Analytics
+            LogHelper.e(TAG, "We couldn't confirm write permissions to this location: ", e);
         }
 
         if (!hasPermission) {
@@ -240,51 +267,52 @@ public class ImportActivity extends PrimaryActivity implements
                 files.addAll(Arrays.asList(contentFiles));
         }
 
+        final AlertDialog dialog = new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_dialog_warning)
+                .setCancelable(false)
+                .setTitle(R.string.app_name)
+                .setMessage(R.string.contents_detected)
+                .setPositiveButton(android.R.string.yes,
+                        new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                // Prior Library found, drop and recreate db
+                                cleanUpDB();
+
+                                // Send results to scan
+                                AndroidHelper.executeAsyncTask(new ImportAsyncTask());
+                            }
+
+                        })
+                .setNegativeButton(android.R.string.no,
+                        new DialogInterface.OnClickListener() {
+
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                                // Prior Library found, but user chose to cancel
+                                result = ConstantsImport.EXISTING_LIBRARY_FOUND;
+                                Intent returnIntent = new Intent();
+                                returnIntent.putExtra(resultKey, result);
+                                setResult(RESULT_CANCELED, returnIntent);
+                                finish();
+                            }
+
+                        })
+                .create();
+        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         if (files.size() > 0) {
-            final AlertDialog dialog = new AlertDialog.Builder(this)
-                    .setIcon(android.R.drawable.ic_dialog_alert)
-                    .setCancelable(false)
-                    .setTitle(R.string.app_name)
-                    .setMessage(R.string.contents_detected)
-                    .setPositiveButton(android.R.string.yes,
-                            new DialogInterface.OnClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Prior Library found, drop and recreate db
-                                    createNewLibrary();
-
-                                    // Send results to scan
-                                    AndroidHelper.executeAsyncTask(new ImportAsyncTask());
-                                }
-
-                            })
-                    .setNegativeButton(android.R.string.no,
-                            new DialogInterface.OnClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Prior Library found, but user chose to cancel
-                                    result = ConstantsImport.EXISTING_LIBRARY_FOUND;
-                                    Intent returnIntent = new Intent();
-                                    returnIntent.putExtra(resultKey, result);
-                                    setResult(RESULT_CANCELED, returnIntent);
-                                    finish();
-                                }
-
-                            })
-                    .create();
-            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
             dialog.show();
         } else {
-            // New library created - drop and recreate db
-            createNewLibrary();
+            // New library created - drop and recreate db (in case user is re-importing)
+            cleanUpDB();
             result = ConstantsImport.NEW_LIBRARY_CREATED;
 
             Handler handler = new Handler();
 
             LogHelper.d(TAG, result);
-            LogHelper.d(TAG, resultKey);
 
             handler.postDelayed(new Runnable() {
 
@@ -298,9 +326,42 @@ public class ImportActivity extends PrimaryActivity implements
         }
     }
 
-    private void createNewLibrary() {
+    private void cleanUpDB() {
         Context context = HentoidApplication.getAppContext();
         context.deleteDatabase(Constants.DATABASE_NAME);
+        LogHelper.d(TAG, R.string.cleaning_up_db);
+    }
+
+    private void cleanUp(AlertDialog mAddDialog) {
+        if (mAddDialog != null) {
+            mAddDialog.dismiss();
+        }
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra(resultKey, result);
+        setResult(RESULT_OK, returnIntent);
+        finish();
+    }
+
+    private void finishImport(final List<Content> contents) {
+        if (contents != null && contents.size() > 0) {
+            LogHelper.d(TAG, "Adding contents to db.");
+            mAddDialog.show();
+
+            Thread thread = new Thread() {
+                @Override
+                public void run() {
+                    // Grab all parsed content and add to database
+                    db.insertContents(contents.toArray(new Content[contents.size()]));
+                    mImportHandler.sendEmptyMessage(0);
+                }
+            };
+            thread.start();
+
+            result = ConstantsImport.EXISTING_LIBRARY_IMPORTED;
+        } else {
+            result = ConstantsImport.NEW_LIBRARY_CREATED;
+            cleanUp(mAddDialog);
+        }
     }
 
     @SuppressWarnings("SameParameterValue")
@@ -342,83 +403,60 @@ public class ImportActivity extends PrimaryActivity implements
     }
 
     private class ImportAsyncTask extends AsyncTask<Integer, String, List<Content>> {
-        private MaterialDialog mProgressDialog;
-        private MaterialDialog.Builder mDialogBuilder;
+        private MaterialDialog mImportDialog;
         private List<File> downloadDirs;
         private List<File> files;
         private List<Content> contents;
-        private HentoidDB hentoidDB;
         private int currentPercent;
 
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
 
-            hentoidDB = new HentoidDB(ImportActivity.this);
-            downloadDirs = new ArrayList<>();
+            final MaterialDialog mScanDialog =
+                    new MaterialDialog.Builder(ImportActivity.this)
+                            .title(R.string.import_dialog)
+                            .content(R.string.please_wait)
+                            .contentGravity(GravityEnum.CENTER)
+                            .progress(false, 100, false)
+                            .cancelable(false)
+                            .showListener(new DialogInterface.OnShowListener() {
+                                @Override
+                                public void onShow(DialogInterface dialogInterface) {
+                                    mImportDialog = (MaterialDialog) dialogInterface;
+                                }
+                            }).build();
+            mScanDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
 
+            downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {
                 // Grab all folders in site folders in storage directory
                 downloadDirs.add(AndroidHelper.getSiteDownloadDir(site, ImportActivity.this));
             }
 
             files = new ArrayList<>();
-
             for (File downloadDir : downloadDirs) {
                 // Grab all files in downloadDirs
                 files.addAll(Arrays.asList(downloadDir.listFiles()));
             }
 
-            mDialogBuilder = new MaterialDialog.Builder(ImportActivity.this)
-                    .title(R.string.progress_dialog)
-                    .content(R.string.please_wait)
-                    .contentGravity(GravityEnum.CENTER)
-                    .progress(false, 100, false)
-                    .cancelable(false)
-                    .showListener(new DialogInterface.OnShowListener() {
-                        @Override
-                        public void onShow(DialogInterface dialogInterface) {
-                            mProgressDialog = (MaterialDialog) dialogInterface;
-                            mProgressDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-                        }
-                    });
-
-            mDialogBuilder.build();
-            mDialogBuilder.show();
+            mScanDialog.show();
         }
 
         @Override
         protected void onPostExecute(List<Content> contents) {
-            if (contents != null && contents.size() > 0) {
-                // Grab all parsed content and add to database
-                hentoidDB.insertContents(contents.toArray(new Content[contents.size()]));
-                result = ConstantsImport.EXISTING_LIBRARY_IMPORTED;
-            } else {
-                result = ConstantsImport.NEW_LIBRARY_CREATED;
-            }
-            mProgressDialog.dismiss();
-
-            Handler handler = new Handler();
-
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    Intent returnIntent = new Intent();
-                    returnIntent.putExtra(resultKey, result);
-                    setResult(RESULT_OK, returnIntent);
-                    finish();
-                }
-            }, 100);
+            mImportDialog.dismiss();
+            finishImport(contents);
         }
 
         @Override
         protected void onProgressUpdate(String... values) {
             if (currentPercent == 100) {
-                mProgressDialog.setContent(R.string.adding_to_db);
+                mImportDialog.setContent(R.string.adding_to_db);
             } else {
-                mProgressDialog.setContent(R.string.scanning_files);
+                mImportDialog.setContent(R.string.scanning_files);
             }
-            mProgressDialog.setProgress(currentPercent);
+            mImportDialog.setProgress(currentPercent);
         }
 
         @SuppressWarnings("deprecation")
@@ -427,12 +465,9 @@ public class ImportActivity extends PrimaryActivity implements
             int processed = 0;
             if (files.size() > 0) {
                 contents = new ArrayList<>();
-                Date importedDate = new Date();
                 for (File file : files) {
-                    processed++;
-                    currentPercent = (int) (processed * 100.0 / files.size());
                     if (file.isDirectory()) {
-                        publishProgress(file.getName());
+                        // (v2) JSON file format
                         File json = new File(file, Constants.JSON_FILE_NAME_V2);
                         if (json.exists()) {
                             try {
@@ -443,9 +478,10 @@ public class ImportActivity extends PrimaryActivity implements
                                 }
                                 contents.add(content);
                             } catch (Exception e) {
-                                LogHelper.e(TAG, "Reading JSON file: ", e);
+                                LogHelper.e(TAG, "Error reading JSON (v2) file: ", e);
                             }
                         } else {
+                            // (v1) JSON file format
                             json = new File(file, Constants.JSON_FILE_NAME);
                             if (json.exists()) {
                                 try {
@@ -454,18 +490,21 @@ public class ImportActivity extends PrimaryActivity implements
                                             && content.getStatus() != StatusContent.ERROR) {
                                         content.setMigratedStatus();
                                     }
-                                    Content contentV2 = content.toContent();
+                                    Content contentV2 = content.toV2Content();
                                     try {
                                         Helper.saveJson(contentV2, file);
                                     } catch (IOException e) {
-                                        LogHelper.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                                        LogHelper.e(TAG, "Error converting JSON (v1) to JSON (v2): "
+                                                + content.getTitle(), e);
                                     }
                                     contents.add(contentV2);
                                 } catch (Exception e) {
-                                    LogHelper.e(TAG, "Reading JSON file: ", e);
+                                    LogHelper.e(TAG, "Error reading JSON (v1) file: ", e);
                                 }
                             } else {
+                                // (old) JSON file format (legacy and/or FAKKUDroid App)
                                 json = new File(file, Constants.OLD_JSON_FILE_NAME);
+                                Date importedDate = new Date();
                                 if (json.exists()) {
                                     try {
                                         DoujinBean doujinBean =
@@ -501,20 +540,25 @@ public class ImportActivity extends PrimaryActivity implements
 
                                         content.setMigratedStatus();
                                         content.setDownloadDate(importedDate.getTime());
-                                        Content contentV2 = content.toContent();
+                                        Content contentV2 = content.toV2Content();
                                         try {
                                             Helper.saveJson(contentV2, file);
                                         } catch (IOException e) {
-                                            LogHelper.e(TAG, "Error Save JSON " + content.getTitle(), e);
+                                            LogHelper.e(TAG,
+                                                    "Error converting JSON (old) to JSON (v2): "
+                                                            + content.getTitle(), e);
                                         }
                                         contents.add(contentV2);
                                     } catch (Exception e) {
-                                        LogHelper.e(TAG, "Reading JSON file v2: ", e);
+                                        LogHelper.e(TAG, "Error reading JSON (old) file: ", e);
                                     }
                                 }
                             }
                         }
+                        publishProgress();
                     }
+                    processed++;
+                    currentPercent = (int) (processed * 100.0 / files.size());
                 }
             }
 
