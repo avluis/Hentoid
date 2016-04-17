@@ -37,8 +37,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * - {@link android.support.v4.widget.DrawerLayout} with id 'drawer_layout'.
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
-public abstract class BaseActivity extends PrimaryActivity {
-    private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
+public abstract class DrawerActivity extends PrimaryActivity {
+    private static final String TAG = LogHelper.makeLogTag(DrawerActivity.class);
 
     private Context mContext;
     private Fragment fragment;
@@ -179,15 +179,15 @@ public abstract class BaseActivity extends PrimaryActivity {
                     itemTapped = false;
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                         Class activityClass = mDrawerMenuContents.getActivity(position);
-                        Intent intent = new Intent(BaseActivity.this, activityClass);
+                        Intent intent = new Intent(DrawerActivity.this, activityClass);
                         Bundle bundle = ActivityOptions.makeCustomAnimation(
-                                BaseActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
+                                DrawerActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent, bundle);
                         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                     } else {
                         Class activityClass = mDrawerMenuContents.getActivity(position);
-                        startActivity(new Intent(BaseActivity.this, activityClass));
+                        startActivity(new Intent(DrawerActivity.this, activityClass));
                         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
                     }
                 }
