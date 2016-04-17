@@ -73,38 +73,10 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         return new DownloadsFragment();
     }
 
-    private void setQuery(String query) {
-        DownloadsFragment.query = query;
-        currentPage = 1;
-    }
-
     public void update() {
         // setQuery("");
         // currentPage = 1;
         searchContent();
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_order_alphabetic:
-                orderUpdated = true;
-                order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
-                getActivity().invalidateOptionsMenu();
-                searchContent();
-
-                return true;
-            case R.id.action_order_by_date:
-                orderUpdated = true;
-                order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
-                getActivity().invalidateOptionsMenu();
-                searchContent();
-
-                return true;
-            default:
-
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     // Validate permissions
@@ -256,21 +228,26 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     @Override
-    public boolean onBackPressed() {
-        // If the drawer is open, back will close it
-        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawers();
-            return false;
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_order_alphabetic:
+                orderUpdated = true;
+                order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
+                getActivity().invalidateOptionsMenu();
+                searchContent();
+
+                return true;
+            case R.id.action_order_by_date:
+                orderUpdated = true;
+                order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
+                getActivity().invalidateOptionsMenu();
+                searchContent();
+
+                return true;
+            default:
+
+                return super.onOptionsItemSelected(item);
         }
-        if (backButtonPressed + 1000 > System.currentTimeMillis()) {
-            AndroidHelper.toast(getContext(), R.string.back_exit);
-            return true;
-        } else {
-            backButtonPressed = System.currentTimeMillis();
-            AndroidHelper.toast(getContext(), R.string.press_back_again);
-        }
-        clearQuery(1);
-        return false;
     }
 
     private void clearQuery(int option) {
@@ -299,40 +276,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         }, delay);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        checkPermissions();
-
-        // Retrieve list position
-        // ListView list = getListView();
-        mListView.setSelectionFromTop(index, top);
-    }
-
-    @Override
-    public void onPause() {
-        // Get & save current list position
-        // ListView list = getListView();
-        index = mListView.getFirstVisiblePosition();
-        View view = mListView.getChildAt(0);
-        top = (view == null) ? 0 : (view.getTop() - mListView.getPaddingTop());
-
-        super.onPause();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setHasOptionsMenu(true);
-
-        prefs = HentoidApplication.getAppPreferences();
-        settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
-        order = prefs.getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
-                ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
-    }
-
     private void queryPrefs() {
         if (settingDir.isEmpty()) {
             Intent intent = new Intent(getActivity(), ImportActivity.class);
@@ -357,6 +300,48 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             orderUpdated = true;
             order = trackOrder;
         }
+    }
+
+    private void setQuery(String query) {
+        DownloadsFragment.query = query;
+        currentPage = 1;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        checkPermissions();
+
+        // Retrieve list position
+        if (index > 0) {
+            mListView.setSelectionFromTop(index, top);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        // Get & save current list position
+        index = mListView.getFirstVisiblePosition();
+
+        if (index > 0) {
+            View view = mListView.getChildAt(0);
+            top = (view == null) ? 0 : (view.getTop() - mListView.getPaddingTop());
+        }
+
+        super.onPause();
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        setHasOptionsMenu(true);
+
+        prefs = HentoidApplication.getAppPreferences();
+        settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+        order = prefs.getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
+                ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
     }
 
     @Override
@@ -431,6 +416,24 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         });
 
         return rootView;
+    }
+
+    @Override
+    public boolean onBackPressed() {
+        // If the drawer is open, back will close it
+        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
+            mDrawerLayout.closeDrawers();
+            return false;
+        }
+        if (backButtonPressed + 1000 > System.currentTimeMillis()) {
+            AndroidHelper.toast(getContext(), R.string.back_exit);
+            return true;
+        } else {
+            backButtonPressed = System.currentTimeMillis();
+            AndroidHelper.toast(getContext(), R.string.press_back_again);
+        }
+        clearQuery(1);
+        return false;
     }
 
     // TODO: Rewrite with non-blocking code - AsyncTask could be a good replacement
