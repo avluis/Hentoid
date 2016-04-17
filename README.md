@@ -3,9 +3,9 @@ ___
 
 ## [Testers & programmers wanted!](https://github.com/csaki/Hentoid/issues/46)
 
-[![Hentoid App Icon](https://github.com/avluis/Hentoid-Resources/raw/master/wiki/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/avluis/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-debug.apk?branch=master&filter=successful)
+[![Hentoid App Icon](https://raw.githubusercontent.com/avluis/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/avluis/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-debug.apk?branch=optimize&filter=successful)
 
-##### `Hentoid` is a Hentai Manga reader & archiving app originally designed to work with:
+##### `Hentoid` is a Doujinshi & H-Manga archiving app originally designed to work with:
 ###### [FAKKU](http://fakku.net/), [Pururin](https://github.com/avluis/Hentoid-Resources/blob/master/repo/assets/img/pururin.jpg) and [Hitomi](http://hitomi.la/).
 ###### [nhentai](http://nhentai.net/) support was recently added after FAKKU going legit, and Pururin getting abandoned.
 ###### [tsumino](http://tsumino.com/) support is in as well, after many requests from the community.

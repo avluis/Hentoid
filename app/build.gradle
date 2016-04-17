@@ -11,7 +11,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 36
-        versionName '1.2.0r1'
+        versionName '1.2.0'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -34,7 +34,7 @@ android {
     buildTypes {
         debug {
             debuggable true
-            minifyEnabled false
+            minifyEnabled true
             shrinkResources true
 
             // Library specific proguard files
