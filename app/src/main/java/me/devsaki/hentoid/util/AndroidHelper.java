@@ -47,6 +47,11 @@ import static android.os.Build.VERSION_CODES;
 /**
  * Created by DevSaki on 20/05/2015.
  * Android focused utility class
+ * <p/>
+ * TODO: Research/check for possible NullPointerException on older devices:
+ * {@link #setNavBarColor}
+ * TODO: Test the following:
+ * {@link #changeEdgeEffect}, {@link #cleanDir}, {@link #deleteDir}
  */
 public class AndroidHelper {
     private static final String TAG = LogHelper.makeLogTag(AndroidHelper.class);
@@ -183,7 +188,8 @@ public class AndroidHelper {
         return file;
     }
 
-    public static boolean isDirEmpty(File directory) {
+    // Is the target directory empty or not
+    private static boolean isDirEmpty(File directory) {
         if (directory.isDirectory()) {
             String[] files = directory.list();
             if (files.length == 0) {
@@ -197,6 +203,37 @@ public class AndroidHelper {
             LogHelper.d(TAG, "This is not a directory!");
         }
         return false;
+    }
+
+    // Gathers list of files in a directory and
+    // deletes them but only if the directory is NOT empty
+    // It does NOT delete the target directory
+    public static void cleanDir(File directory) {
+        boolean isDirEmpty = isDirEmpty(directory);
+
+        if (!isDirEmpty) {
+            boolean delete = false;
+            String[] children = directory.list();
+            for (String child : children) {
+                delete = new File(directory, child).delete();
+            }
+            LogHelper.d(TAG, "Directory cleaned: " + delete);
+        }
+    }
+
+    // As long as there are files in a directory
+    // it will recursively delete them -
+    // finally, once there are no files,
+    // it deletes the target directory
+    public static boolean deleteDir(File directory) {
+        if (directory.isDirectory())
+            for (File child : directory.listFiles()) {
+                deleteDir(child);
+            }
+
+        boolean delete = directory.delete();
+        LogHelper.d(TAG, "File/directory deleted: " + delete);
+        return delete;
     }
 
     public static String getSessionCookie() {
@@ -309,6 +346,13 @@ public class AndroidHelper {
         }
     }
 
+    public static void toast(int resource) {
+        Context cxt = HentoidApplication.getAppContext();
+        if (cxt != null) {
+            toast(cxt, cxt.getResources().getString(resource));
+        }
+    }
+
     public static void toast(Context cxt, String text) {
         toast(cxt, text, 0);
     }
@@ -409,7 +453,6 @@ public class AndroidHelper {
         }
     }
 
-    // TODO: Research/check for possible NullPointerException on older devices
     public static void setNavBarColor(Activity activity, int color) {
         if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
             Context context = activity.getApplicationContext();
@@ -419,7 +462,6 @@ public class AndroidHelper {
     }
 
     // Mainly for use with Android < 5.0 - sets OverScroll Glow and Edge Line
-    // TODO: Needs testing
     public static void changeEdgeEffect(Context cxt, View list, int glowColor, int lineColor) {
         if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
             EdgeEffect edgeEffectTop = new EdgeEffect(cxt);

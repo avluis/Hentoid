@@ -17,7 +17,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Populates Drawer Menu Contents from a resource string array.
  * This includes generation the required class names, menu item title
  * and menu item icon.
- * <p/>
  * This class is expecting a list of activities named like so:
  * '[activity_name]' - it then builds the actual Activity class as so:
  * '[activity_name]Activity.class'.

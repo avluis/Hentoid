@@ -1,8 +1,10 @@
 package me.devsaki.hentoid.fragments;
 
 import android.app.SearchManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -33,6 +35,7 @@ import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.IntroSlideActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsImport;
@@ -42,6 +45,10 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
+ * <p/>
+ * TODO: Track number of pages to improve pagination.
+ * TODO: Rewrite with non-blocking code; AsyncTask or Thread with Handler:
+ * {@link #searchContent()}
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener {
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
@@ -61,6 +68,22 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private TextView emptyText;
     private Button btnPage;
     private ListView mListView;
+    private Context mContext;
+    private final BroadcastReceiver receiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Bundle bundle = intent.getExtras();
+            if (bundle != null) {
+                double percent = bundle.getDouble(DownloadService.INTENT_PERCENT_BROADCAST);
+                if (percent >= 0) {
+                    LogHelper.d(TAG, "Download Progress: " + percent);
+                } else {
+                    update();
+                }
+            }
+        }
+    };
     private MenuItem searchMenu;
     private SearchView searchView;
     private long backButtonPressed;
@@ -76,7 +99,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     public void update() {
         // setQuery("");
         // currentPage = 1;
+        getPosition();
         searchContent();
+        setPosition();
     }
 
     // Validate permissions
@@ -116,6 +141,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     private void reset() {
         // We have asked for permissions, but still denied.
+        AndroidHelper.toast(R.string.reset);
         AndroidHelper.commitFirstRun(true);
         Intent intent = new Intent(getActivity(), IntroSlideActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -147,7 +173,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
         // Associate searchable configuration with the SearchView
         final SearchManager searchManager = (SearchManager)
-                getActivity().getSystemService(Context.SEARCH_SERVICE);
+                mContext.getSystemService(Context.SEARCH_SERVICE);
 
         searchMenu = menu.findItem(R.id.action_search);
         searchView = (SearchView) MenuItemCompat.getActionView(searchMenu);
@@ -313,14 +339,22 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
         checkPermissions();
 
-        // Retrieve list position
-        if (index > 0) {
-            mListView.setSelectionFromTop(index, top);
-        }
+        setPosition();
+
+        mContext.registerReceiver(receiver, new IntentFilter(
+                DownloadService.DOWNLOAD_NOTIFICATION));
     }
 
     @Override
     public void onPause() {
+        super.onPause();
+
+        getPosition();
+
+        mContext.unregisterReceiver(receiver);
+    }
+
+    private void getPosition() {
         // Get & save current list position
         index = mListView.getFirstVisiblePosition();
 
@@ -328,8 +362,13 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             View view = mListView.getChildAt(0);
             top = (view == null) ? 0 : (view.getTop() - mListView.getPaddingTop());
         }
+    }
 
-        super.onPause();
+    private void setPosition() {
+        // Retrieve list position
+        if (index > 0) {
+            mListView.setSelectionFromTop(index, top);
+        }
     }
 
     @Override
@@ -337,6 +376,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         super.onCreate(savedInstanceState);
 
         setHasOptionsMenu(true);
+
+        mContext = getContext();
 
         prefs = HentoidApplication.getAppPreferences();
         settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
@@ -352,14 +393,44 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         mListView = (ListView) rootView.findViewById(android.R.id.list);
 
         mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
-
         mDrawerLayout.addDrawerListener(this);
 
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
         emptyText = (TextView) rootView.findViewById(android.R.id.empty);
-        ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
-        ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
+
         ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
+        ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
+        ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
+
+        btnPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (currentPage > 1) {
+                    currentPage--;
+                    searchContent();
+                } else if (qtyPages > 0) {
+                    AndroidHelper.toast(mContext, R.string.not_previous_page);
+                } else {
+                    AndroidHelper.toast(mContext, R.string.not_limit_per_page);
+                }
+            }
+        });
+
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (qtyPages <= 0) {
+                    AndroidHelper.toast(mContext, R.string.not_limit_per_page);
+                } else {
+                    currentPage++;
+                    if (!searchContent()) {
+                        btnPage.setText(String.valueOf(--currentPage));
+                        AndroidHelper.toast(mContext, R.string.not_next_page);
+                        searchContent();
+                    }
+                }
+            }
+        });
 
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -374,43 +445,13 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 if (currentPage != 1) {
                     setQuery("");
                     searchContent();
-                    AndroidHelper.toast(getContext(), R.string.on_first_page);
+                    AndroidHelper.toast(mContext, R.string.on_first_page);
 
                     return true;
                 } else {
                     searchContent();
 
                     return true;
-                }
-            }
-        });
-
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (qtyPages <= 0) {
-                    AndroidHelper.toast(getContext(), R.string.not_limit_per_page);
-                } else {
-                    currentPage++;
-                    if (!searchContent()) {
-                        btnPage.setText(String.valueOf(--currentPage));
-                        AndroidHelper.toast(getContext(), R.string.not_next_page);
-                        searchContent();
-                    }
-                }
-            }
-        });
-
-        btnPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentPage > 1) {
-                    currentPage--;
-                    searchContent();
-                } else if (qtyPages > 0) {
-                    AndroidHelper.toast(getContext(), R.string.not_previous_page);
-                } else {
-                    AndroidHelper.toast(getContext(), R.string.not_limit_per_page);
                 }
             }
         });
@@ -426,17 +467,16 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             return false;
         }
         if (backButtonPressed + 1000 > System.currentTimeMillis()) {
-            AndroidHelper.toast(getContext(), R.string.back_exit);
+            AndroidHelper.toast(mContext, R.string.back_exit);
             return true;
         } else {
             backButtonPressed = System.currentTimeMillis();
-            AndroidHelper.toast(getContext(), R.string.press_back_again);
+            AndroidHelper.toast(mContext, R.string.press_back_again);
         }
         clearQuery(1);
         return false;
     }
 
-    // TODO: Rewrite with non-blocking code - AsyncTask could be a good replacement
     private boolean searchContent() {
         List<Content> contents;
         List<Content> result = BaseFragment.getDB()
@@ -467,7 +507,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 }
             }
             if (contents == result || contents.isEmpty()) {
-                ContentAdapter adapter = new ContentAdapter(getActivity(), contents, this);
+                ContentAdapter adapter = new ContentAdapter(mContext, contents, this);
                 mListView.setAdapter(adapter);
             }
             if (prevPage != currentPage) {

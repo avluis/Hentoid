@@ -25,7 +25,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by Shiro on 3/18/2016.
  * Responsible for handling download service notifications
  * Methods are intended to have default level accessors for use with DownloadService class only
- * TODO: Reset notification when a download is paused (when there are multiple downloads).
  */
 final class NotificationPresenter {
     private static final String TAG = LogHelper.makeLogTag(NotificationPresenter.class);
@@ -147,8 +146,8 @@ final class NotificationPresenter {
             case ERROR:
             case UNHANDLED_ERROR:
                 resultIntent = new Intent(appInstance, DownloadsActivity.class);
-                resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 Bundle bundle = new Bundle();
                 bundle.putInt(HentoidApplication.DOWNLOAD_COUNT,
                         HentoidApplication.getDownloadCount());

@@ -12,7 +12,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
@@ -30,8 +33,7 @@ import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Created by neko on 11/05/2015.
- * Builds and assigns content from db into adapter
- * for display in queue
+ * Builds and assigns content from db into adapter for display in queue fragment
  */
 public class QueueContentAdapter extends ArrayAdapter<Content> {
     private static final String TAG = LogHelper.makeLogTag(QueueContentAdapter.class);
@@ -176,16 +178,18 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void cancel(Content content) {
+        // Quick hack as workaround if download is paused
         if (content.getStatus() == StatusContent.PAUSED) {
-            content.setStatus(StatusContent.DOWNLOADING);
+            resume(content);
         }
         content.setStatus(StatusContent.CANCELED);
         db.updateContentStatus(content);
-        fragment.update();
         if (content.getId() == contents.get(0).getId()) {
             DownloadService.paused = true;
         }
         contents.remove(content);
+        fragment.update();
+        clearDownload(content);
     }
 
     private void pause(Content content) {
@@ -196,22 +200,40 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         HentoidApplication.setDownloadCount(--downloadCount);
 
         db.updateContentStatus(content);
-        fragment.update();
         if (content.getId() == contents.get(0).getId()) {
             DownloadService.paused = true;
         }
+        fragment.update();
     }
 
     private void resume(Content content) {
         if (NetworkStatus.isOnline(cxt)) {
             content.setStatus(StatusContent.DOWNLOADING);
             db.updateContentStatus(content);
-            fragment.update();
             if (content.getId() == contents.get(0).getId()) {
                 Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
                         DownloadService.class);
                 cxt.startService(intent);
             }
+            fragment.update();
+        }
+    }
+
+    private void clearDownload(Content content) {
+        if (content.getStatus() == StatusContent.CANCELED) {
+            File dir = AndroidHelper.getContentDownloadDir(content, cxt);
+
+            // This loves to fail
+            try {
+                FileUtils.deleteDirectory(dir);
+            } catch (IOException e) {
+                LogHelper.e(TAG, "Error deleting content directory: ", e);
+            }
+
+            // Run this as well
+            // Log will state if directory was deleted (deleteDirectory failed)
+            // or if it was not (deleteDirectory success)
+            AndroidHelper.deleteDir(dir);
         }
     }
 

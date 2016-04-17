@@ -11,7 +11,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.apache.commons.io.FileUtils;
@@ -39,8 +38,7 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by neko on 11/05/2015.
- * Builds and assigns content from db into adapter
- * for display in downloads
+ * Builds and assigns content from db into adapter for display in downloads fragment
  */
 public class ContentAdapter extends ArrayAdapter<Content> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
@@ -117,7 +115,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
             String artists = "";
             List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-            if (artistAttributes != null) {
+            if (artistAttributes == null) {
+                holder.tvArtist.setVisibility(View.GONE);
+            } else {
                 for (int i = 0; i < artistAttributes.size(); i++) {
                     Attribute attribute = artistAttributes.get(i);
                     artists += attribute.getName();
@@ -125,6 +125,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                         artists += ", ";
                     }
                 }
+                holder.tvArtist.setVisibility(View.VISIBLE);
             }
             holder.tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
 
@@ -162,7 +163,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             btnDelete.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    deleteContent(content, dir, (ListView) parent);
+                    deleteContent(content, dir);
                 }
             });
             Button btnDownloadAgain = (Button) view.findViewById(R.id.btnDownloadAgain);
@@ -170,7 +171,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 btnDownloadAgain.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        downloadAgain(content, (ListView) parent);
+                        downloadAgain(content);
                     }
                 });
                 btnDownloadAgain.setVisibility(View.VISIBLE);
@@ -189,7 +190,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         return view;
     }
 
-    private void downloadAgain(final Content content, final ListView listView) {
+    private void downloadAgain(final Content content) {
         int numberImages;
         int numberImagesError = 0;
 
@@ -209,23 +210,21 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                 content.setStatus(StatusContent.DOWNLOADING)
                                         .setDownloadDate(new Date().getTime());
                                 db.updateContentStatus(content);
+
                                 Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
                                         DownloadService.class);
+
                                 cxt.startService(intent);
+                                contents.remove(content);
+                                notifyDataSetChanged();
+                                fragment.update();
 
                                 AndroidHelper.toast(cxt, R.string.add_to_queue);
-                                contents.remove(content);
-                                int index = listView.getFirstVisiblePosition();
-                                View v = listView.getChildAt(0);
-                                int top = (v == null) ? 0 : (v.getTop() - listView.getPaddingTop());
-
-                                notifyDataSetChanged();
-                                listView.setSelectionFromTop(index, top);
                             }
                         }).setNegativeButton(android.R.string.no, null).create().show();
     }
 
-    private void deleteContent(final Content content, final File dir, final ListView listView) {
+    private void deleteContent(final Content content, final File dir) {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
@@ -237,19 +236,17 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                                     LogHelper.e(TAG, "Error deleting content directory: ", e);
                                 }
 
+                                // Above statement can fail, so we run the following
+                                AndroidHelper.deleteDir(dir);
+
                                 db.deleteContent(content);
-
-                                AndroidHelper.toast(cxt,
-                                        cxt.getResources().getString(R.string.deleted)
-                                                .replace("@content", content.getTitle()));
                                 contents.remove(content);
-                                int index = listView.getFirstVisiblePosition();
-                                View v = listView.getChildAt(0);
-                                int top = (v == null) ? 0 : (v.getTop() - listView.getPaddingTop());
-
                                 notifyDataSetChanged();
-                                listView.setSelectionFromTop(index, top);
                                 fragment.update();
+
+                                String title = cxt.getResources().getString(R.string.deleted)
+                                        .replace("@content", content.getTitle());
+                                AndroidHelper.toast(cxt, title);
                             }
                         }).setNegativeButton(android.R.string.no, null).create().show();
     }

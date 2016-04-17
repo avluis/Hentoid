@@ -24,6 +24,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * <p/>
  * TODO: Implement Pop-Up/Ad filters
  * TODO: Re-implement without use of JavaScript:
+ * {@link TsuminoWebViewClient#onPageFinished(WebView, String)}
  * Ref: http://goo.gl/UfIsZs
  */
 public class TsuminoActivity extends BaseWebActivity {

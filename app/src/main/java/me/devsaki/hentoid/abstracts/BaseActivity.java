@@ -28,10 +28,8 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 4/11/2016.
- * <p/>
  * Abstract activity with toolbar and navigation drawer.
  * Needs to be extended by any activity that wants to be shown as a top level activity.
- * <p/>
  * The requirements for a subclass are:
  * calling {@link #initializeToolbar()} on onCreate, after setContentView() is called.
  * In addition, subclasses must have these layout elements:

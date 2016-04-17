@@ -23,7 +23,8 @@ import okhttp3.Response;
  * Handles image download tasks and batch operations
  * Intended to have default access level for use with DownloadService class only
  * <p/>
- * TODO: Implement timeout handling; check line #51
+ * TODO: Test timeout handling:
+ * {@link ImageDownloadBatch#newTask}
  * Ref: https://goo.gl/OF86un
  */
 final class ImageDownloadBatch {
@@ -48,7 +49,6 @@ final class ImageDownloadBatch {
                 .addHeader("Cookie", cookies)
                 .build();
 
-        // TODO: Currently testing these:
         client = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
                 .writeTimeout(10, TimeUnit.SECONDS)
