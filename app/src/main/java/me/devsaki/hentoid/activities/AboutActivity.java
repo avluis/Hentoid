@@ -11,13 +11,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.PrimaryActivity;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 
 /**
  * Created by avluis on 8/22/15.
  * Presents an About Screen for the user to inquire more about the app.
  */
-public class AboutActivity extends PrimaryActivity {
+public class AboutActivity extends BaseActivity {
     private String verName = "Hentoid ver: ";
 
     @Override

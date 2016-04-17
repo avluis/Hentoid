@@ -19,13 +19,13 @@ import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.PrimaryActivity;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
  * If set, this will allow us to 'lock' the app behind a password/code.
  */
-public class AppLockActivity extends PrimaryActivity {
+public class AppLockActivity extends BaseActivity {
 
     private final long DELAY = 1000;
     private final long[] goodPinPattern = {0, 250, 100, 100};

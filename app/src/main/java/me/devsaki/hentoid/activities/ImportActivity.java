@@ -35,7 +35,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.PrimaryActivity;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -55,7 +55,7 @@ import me.devsaki.hentoid.v2.bean.URLBean;
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
  */
-public class ImportActivity extends PrimaryActivity implements
+public class ImportActivity extends BaseActivity implements
         OnDirectoryChooserFragmentInteraction {
     private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 

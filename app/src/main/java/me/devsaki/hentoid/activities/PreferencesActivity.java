@@ -25,7 +25,7 @@ import java.io.IOException;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.PrimaryActivity;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
@@ -36,7 +36,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by DevSaki on 20/05/2015.
  * Set up and present preferences.
  */
-public class PreferencesActivity extends PrimaryActivity {
+public class PreferencesActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(PreferencesActivity.class);
 
     @Override

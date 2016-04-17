@@ -19,7 +19,7 @@ import android.webkit.WebViewClient;
 import java.util.Date;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.PrimaryActivity;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -37,7 +37,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public class BaseWebActivity extends PrimaryActivity {
+public class BaseWebActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
     private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;

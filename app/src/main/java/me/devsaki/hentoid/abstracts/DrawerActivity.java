@@ -37,7 +37,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * - {@link android.support.v4.widget.DrawerLayout} with id 'drawer_layout'.
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
-public abstract class DrawerActivity extends PrimaryActivity {
+public abstract class DrawerActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(DrawerActivity.class);
 
     private Context mContext;

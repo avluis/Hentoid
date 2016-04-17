@@ -11,7 +11,7 @@ import me.devsaki.hentoid.util.AndroidHelper;
  * Created by avluis on 04/13/2016.
  * Abstract Activity for common elements
  */
-public abstract class PrimaryActivity extends AppCompatActivity {
+public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
