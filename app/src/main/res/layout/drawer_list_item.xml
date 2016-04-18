@@ -6,33 +6,20 @@
     android:foreground="?android:attr/selectableItemBackground"
     android:minHeight="@dimen/drawer_item_height"
     android:orientation="horizontal"
-    android:paddingEnd="@dimen/drawer_item_horizontal_padding"
-    android:paddingLeft="@dimen/drawer_item_horizontal_padding"
-    android:paddingRight="@dimen/drawer_item_horizontal_padding"
-    android:paddingStart="@dimen/drawer_item_horizontal_padding"
     tools:background="@color/drawer_item_background">
-
-    <ImageView
-        android:id="@+id/drawer_item_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical|start"
-        android:layout_marginEnd="@dimen/drawer_icon_margin_end"
-        android:layout_marginLeft="@dimen/drawer_icon_margin_start"
-        android:layout_marginRight="@dimen/drawer_icon_margin_end"
-        android:layout_marginStart="@dimen/drawer_icon_margin_start"
-        android:tint="@color/drawer_item_tint_color"
-        tools:ignore="ContentDescription"
-        tools:src="@drawable/ic_menu_about" />
 
     <TextView
         android:id="@+id/drawer_item_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
         android:layout_gravity="center_vertical|start"
-        android:layout_marginLeft="@dimen/drawer_item_text_margin_start"
-        android:layout_marginStart="@dimen/drawer_item_text_margin_start"
+        android:drawablePadding="@dimen/drawer_item_drawable_padding_start"
+        android:gravity="center_vertical"
+        android:paddingLeft="@dimen/drawer_item_padding_start"
+        android:paddingStart="@dimen/drawer_item_padding_start"
         android:textColor="@color/drawer_item_tint_color"
+        tools:drawableLeft="@drawable/ic_menu_about"
+        tools:ignore="RtlSymmetry"
         tools:text="About" />
 
 </LinearLayout>

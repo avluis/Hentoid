@@ -3,7 +3,4 @@
 
     <!-- Background drawable for standalone items that need focus/pressed states. -->
     <attr name="item_background" format="reference" />
-    <declare-styleable name="ScrimInsetsView">
-        <attr name="myInsetForeground" format="reference|color" />
-    </declare-styleable>
 </resources>

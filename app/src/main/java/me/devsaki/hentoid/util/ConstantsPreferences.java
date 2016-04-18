@@ -31,6 +31,7 @@ public abstract class ConstantsPreferences {
     public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
     public static final String PREF_FIRST_RUN = "pref_first_run";
     public static final boolean PREF_FIRST_RUN_DEFAULT = true;
+    public static final String PREF_WELCOME_DONE = "pref_welcome_done";
 
     public static final String WEB_SESSION_COOKIE = "web_session_cookie";
 }

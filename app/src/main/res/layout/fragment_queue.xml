@@ -12,7 +12,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:divider="@color/transparent"
-        android:dividerHeight="10dp" />
+        android:dividerHeight="10dp"
+        android:scrollbars="none" />
 
     <TextView
         android:id="@android:id/empty"

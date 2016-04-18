@@ -59,7 +59,7 @@ public class AndroidHelper {
     private static Toast sToast;
 
     public static void openContent(Content content, final Context context) {
-        SharedPreferences sharedPreferences = HentoidApplication.getAppPreferences();
+        SharedPreferences sp = HentoidApplication.getAppPreferences();
         File dir = AndroidHelper.getContentDownloadDir(content, context);
 
         File imageFile = null;
@@ -79,7 +79,7 @@ public class AndroidHelper {
                     dir.getAbsolutePath());
             toast(context, message);
         } else {
-            int readContentPreference = Integer.parseInt(sharedPreferences.getString(
+            int readContentPreference = Integer.parseInt(sp.getString(
                     ConstantsPreferences.PREF_READ_CONTENT_LISTS,
                     ConstantsPreferences.PREF_READ_CONTENT_DEFAULT + ""));
             if (readContentPreference == ConstantsPreferences.PREF_READ_CONTENT_ASK) {
@@ -122,8 +122,8 @@ public class AndroidHelper {
 
     public static File getContentDownloadDir(Content content, Context context) {
         File file;
-        SharedPreferences prefs = HentoidApplication.getAppPreferences();
-        String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+        SharedPreferences sp = HentoidApplication.getAppPreferences();
+        String settingDir = sp.getString(Constants.SETTINGS_FOLDER, "");
         String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
         if (settingDir.isEmpty()) {
             return getDefaultDir(folderDir, context);
@@ -144,8 +144,8 @@ public class AndroidHelper {
 
     public static File getSiteDownloadDir(Site site, Context context) {
         File file;
-        SharedPreferences prefs = HentoidApplication.getAppPreferences();
-        String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+        SharedPreferences sp = HentoidApplication.getAppPreferences();
+        String settingDir = sp.getString(Constants.SETTINGS_FOLDER, "");
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
             return getDefaultDir(folderDir, context);
@@ -248,24 +248,24 @@ public class AndroidHelper {
                 .apply();
     }
 
-    private static void clearSharedPreferences(Context cxt) {
-        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(cxt);
-        SharedPreferences.Editor editor = sharedPrefs.edit();
+    private static void clearSharedPreferences() {
+        SharedPreferences.Editor editor = HentoidApplication
+                .getAppPreferences().edit();
         editor.clear();
         editor.apply();
     }
 
     private static void clearSharedPreferences(String prefsName, Context cxt) {
-        SharedPreferences sharedPrefs = cxt.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPrefs.edit();
+        SharedPreferences sp = cxt.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
         editor.clear();
         editor.apply();
     }
 
     private static void saveSharedPrefsKey(Context cxt) {
-        SharedPreferences sharedPrefs = cxt.getSharedPreferences(
+        SharedPreferences sp = cxt.getSharedPreferences(
                 ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPrefs.edit();
+        SharedPreferences.Editor editor = sp.edit();
         editor.putInt(ConstantsPreferences.PREFS_VERSION_KEY, ConstantsPreferences.PREFS_VERSION);
         editor.apply();
     }
@@ -282,7 +282,7 @@ public class AndroidHelper {
             LogHelper.d(TAG, "Shared Prefs Key Mismatch! Clearing Prefs!");
 
             // Clear All
-            clearSharedPreferences(cxt.getApplicationContext());
+            clearSharedPreferences();
 
             // Save current Pref version key
             saveSharedPrefsKey(cxt.getApplicationContext());
@@ -439,6 +439,28 @@ public class AndroidHelper {
         editor.apply();
     }
 
+    /**
+     * Return true if the first-app-run-activities have already been executed.
+     *
+     * @param context Context to be used to lookup the {@link android.content.SharedPreferences}.
+     */
+    public static boolean isFirstRunProcessComplete(final Context context) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        return sp.getBoolean(ConstantsPreferences.PREF_WELCOME_DONE, false);
+    }
+
+    /**
+     * Mark {@code newValue whether} this is the first time the first-app-run-processes have run.
+     * Managed by {@link me.devsaki.hentoid.abstracts.DrawerActivity} the base activity.
+     *
+     * @param context  Context to be used to edit the {@link android.content.SharedPreferences}.
+     * @param newValue New value that will be set.
+     */
+    public static void markFirstRunProcessesDone(final Context context, boolean newValue) {
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
+        sp.edit().putBoolean(ConstantsPreferences.PREF_WELCOME_DONE, newValue).apply();
+    }
+
     @TargetApi(VERSION_CODES.JELLY_BEAN)
     public static boolean permissionsCheck(Activity activity, int permissionRequestCode) {
         if (ActivityCompat.checkSelfPermission(activity,
@@ -453,6 +475,7 @@ public class AndroidHelper {
         }
     }
 
+    // Sets navigation bar background color
     public static void setNavBarColor(Activity activity, int color) {
         if (VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
             Context context = activity.getApplicationContext();

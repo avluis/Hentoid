@@ -4,11 +4,17 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!-- navigation drawer -->
-    <dimen name="drawer_icon_margin_start">16dp</dimen>
-    <dimen name="drawer_icon_margin_end">16dp</dimen>
-    <dimen name="drawer_item_text_margin_start">16dp</dimen>
+    <dimen name="drawer_item_padding_start">16dp</dimen>
+    <dimen name="drawer_item_drawable_padding_start">16dp</dimen>
     <dimen name="drawer_item_height">48dp</dimen>
-    <dimen name="drawer_item_horizontal_padding">8dp</dimen>
+    <dimen name="drawer_image_height">160dp</dimen>
+    <dimen name="drawer_header_icon_padding">16dp</dimen>
+
+    <!-- Elevation (V21+ API) -->
+    <dimen name="default_elevation">2dp</dimen>
+    <dimen name="drawer_layout_elevation">4dp</dimen>
+    <dimen name="drawer_layout_header_elevation">6dp</dimen>
+    <dimen name="toolbar_layout_elevation">6dp</dimen>
 
     <!-- browser -->
     <dimen name="activity_base_web_padding">10dp</dimen>

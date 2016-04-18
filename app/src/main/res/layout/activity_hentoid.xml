@@ -3,25 +3,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <include
-            android:id="@+id/toolbar"
-            layout="@layout/include_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+        <include layout="@layout/include_toolbar" />
 
         <FrameLayout
             android:id="@+id/content_frame"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_below="@id/toolbar"
             android:clickable="true" />
 
-
-    </RelativeLayout>
+    </LinearLayout>
 
     <!-- The navigation drawer -->
     <include layout="@layout/include_drawer_list" />

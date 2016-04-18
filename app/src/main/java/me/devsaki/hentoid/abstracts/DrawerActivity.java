@@ -19,9 +19,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.ui.CompoundAdapter;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -143,8 +143,6 @@ public abstract class DrawerActivity extends BaseActivity {
             mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                     mToolbar, R.string.drawer_open, R.string.drawer_close);
             mDrawerLayout.addDrawerListener(mDrawerListener);
-            mDrawerLayout.setStatusBarBackgroundColor(
-                    AndroidHelper.getThemeColor(this, R.attr.colorPrimary, R.color.primary));
 //            AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.drawer_list_background,
 //                    R.color.drawer_item_selected_background);
             populateDrawerItems();
@@ -153,6 +151,14 @@ public abstract class DrawerActivity extends BaseActivity {
             setSupportActionBar(mToolbar);
         }
         isToolbarInitialized = true;
+
+        // When the user runs the app for the first time, we want to land them with the
+        // navigation drawer open. But just the first time.
+        if (!AndroidHelper.isFirstRunProcessComplete(this)) {
+            // first run of the app starts with the nav drawer open
+            AndroidHelper.markFirstRunProcessesDone(this, true);
+            mDrawerLayout.openDrawer(GravityCompat.START);
+        }
     }
 
     private void setUpNavDrawer() {
@@ -208,10 +214,9 @@ public abstract class DrawerActivity extends BaseActivity {
                 R.color.drawer_item_unselected_background);
         final int selectedColor = ContextCompat.getColor(getApplicationContext(),
                 R.color.drawer_item_selected_background);
-        SimpleAdapter adapter = new SimpleAdapter(this, mDrawerMenuContents.getItems(),
+        final CompoundAdapter adapter = new CompoundAdapter(this, mDrawerMenuContents.getItems(),
                 R.layout.drawer_list_item,
-                new String[]{DrawerMenuContents.FIELD_TITLE, DrawerMenuContents.FIELD_ICON},
-                new int[]{R.id.drawer_item_title, R.id.drawer_item_icon}) {
+                new String[]{DrawerMenuContents.FIELD_TITLE}, new int[]{R.id.drawer_item_title}) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);

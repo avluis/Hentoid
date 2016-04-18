@@ -9,5 +9,4 @@
         <ignore regexp="ga_trackingId" />
         <ignore path="build/" />
     </issue>
-    <issue id="UseCompoundDrawables" severity="informational" />
 </lint>

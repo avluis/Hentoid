@@ -304,7 +304,7 @@ public class BaseWebActivity extends BaseActivity {
             if (webView.canGoBackOrForward(i - webBFL.getCurrentIndex())) {
                 webView.goBackOrForward(i - webBFL.getCurrentIndex());
             } else {
-                finish();
+                super.onBackPressed();
             }
 
             return true;

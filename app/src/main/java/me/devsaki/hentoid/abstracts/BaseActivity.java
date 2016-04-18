@@ -22,7 +22,7 @@ public abstract class BaseActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         super.onBackPressed();
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
 }
