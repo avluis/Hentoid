@@ -4,8 +4,8 @@
     android:id="@+id/drawer_header"
     android:layout_width="match_parent"
     android:layout_height="@dimen/drawer_image_height"
-    android:padding="@dimen/drawer_header_icon_padding"
-    tools:background="@color/drawer_header_background">
+    android:background="@drawable/nav_header_bg"
+    android:padding="@dimen/drawer_header_icon_padding">
 
     <ImageView
         android:id="@+id/app_logo"
