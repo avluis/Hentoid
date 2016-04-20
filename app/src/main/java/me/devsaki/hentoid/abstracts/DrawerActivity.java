@@ -124,14 +124,19 @@ public abstract class DrawerActivity extends BaseActivity {
 
     protected void initializeToolbar() {
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
-
         if (mToolbar == null) {
             throw new IllegalStateException(
                     "Layout is required to include a Toolbar with id " +
                             "'toolbar'");
+        } else {
+            setSupportActionBar(mToolbar);
+            setupActionBarDrawerToggle();
+            initializeNavigationDrawer();
+            isToolbarInitialized = true;
         }
-        setSupportActionBar(mToolbar);
-        setUpNavDrawer();
+    }
+
+    private void initializeNavigationDrawer() {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         if (mDrawerLayout != null) {
             mDrawerList = (ListView) findViewById(R.id.drawer_list);
@@ -143,14 +148,9 @@ public abstract class DrawerActivity extends BaseActivity {
             mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                     mToolbar, R.string.drawer_open, R.string.drawer_close);
             mDrawerLayout.addDrawerListener(mDrawerListener);
-//            AndroidHelper.changeEdgeEffect(this, mDrawerList, R.color.drawer_list_background,
-//                    R.color.drawer_item_selected_background);
             populateDrawerItems();
             updateDrawerToggle();
-        } else {
-            setSupportActionBar(mToolbar);
         }
-        isToolbarInitialized = true;
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
@@ -161,7 +161,7 @@ public abstract class DrawerActivity extends BaseActivity {
         }
     }
 
-    private void setUpNavDrawer() {
+    private void setupActionBarDrawerToggle() {
         mDrawerListener = new DrawerLayout.DrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
