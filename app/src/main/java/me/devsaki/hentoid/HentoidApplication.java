@@ -176,6 +176,9 @@ public class HentoidApplication extends Application {
 
         Glide.with(this)
                 .load(image)
+                .centerCrop()
+                .placeholder(R.drawable.ic_placeholder)
+                .crossFade()
                 .override(imageQuality.getWidth(), imageQuality.getHeight())
                 .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .into(mImageView);
