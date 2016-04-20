@@ -5,30 +5,35 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 
 /**
  * If set, this will allow us to 'lock' the app behind a password/code.
  */
-public class AppLockActivity extends AppCompatActivity {
+public class AppLockActivity extends BaseActivity {
 
     private final long DELAY = 1000;
     private final long[] goodPinPattern = {0, 250, 100, 100};
     private final long[] wrongPinPattern = {0, 200, 200, 200};
+    private final Map<String, Integer> imageMap = new HashMap<>();
     private TextView tvAppLock;
     private EditText etPin;
+    private ImageView ivLock;
     private Vibrator vibrator;
     private Handler handler = new Handler();
 
@@ -37,12 +42,15 @@ public class AppLockActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_lock);
 
-        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
+        imageMap.put("Locked", R.drawable.ic_lock_closed);
+        imageMap.put("Open", R.drawable.ic_lock_open);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        tvAppLock = (TextView) findViewById(R.id.tv_app_lock);
-        etPin = (EditText) findViewById(R.id.etPin);
+        tvAppLock = (TextView) findViewById(R.id.tv_app_lock_subtitle);
+        etPin = (EditText) findViewById(R.id.et_pin);
+        ivLock = (ImageView) findViewById(R.id.iv_lock);
+
         if (etPin != null) {
             etPin.setGravity(Gravity.CENTER);
             etPin.setOnKeyListener(new View.OnKeyListener() {
@@ -77,7 +85,7 @@ public class AppLockActivity extends AppCompatActivity {
                         tvAppLock.setText(R.string.app_lock_pin);
                     }
 
-                    if (s.length() >= 3) {
+                    if (s.length() >= 4) {
                         handler = new Handler();
                         handler.postDelayed(new Runnable() {
                             @Override
@@ -103,7 +111,10 @@ public class AppLockActivity extends AppCompatActivity {
         }
         if (appLock.equals(pin)) {
             etPin.setText("");
+            etPin.clearFocus();
+
             tvAppLock.setText(R.string.pin_ok);
+            ivLock.setImageResource(imageMap.get("Open"));
 
             if (vibrator.hasVibrator()) {
                 vibrator.vibrate(goodPinPattern, -1);
@@ -111,9 +122,10 @@ public class AppLockActivity extends AppCompatActivity {
 
             Intent intent = new Intent(this, DownloadsActivity.class);
             startActivity(intent);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         } else {
-            etPin.setText("");
+            ivLock.setImageResource(imageMap.get("Locked"));
             tvAppLock.setText(R.string.pin_invalid);
 
             if (vibrator.hasVibrator()) {

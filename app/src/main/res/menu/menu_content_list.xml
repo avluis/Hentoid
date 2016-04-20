@@ -11,7 +11,7 @@
         tools:ignore="AlwaysShowAction" />
     <item
         android:id="@+id/action_order_alphabetic"
-        android:icon="@drawable/ic_menu_sort_alphabetical"
+        android:icon="@drawable/ic_menu_sort_alpha"
         android:title="@string/menu_order_alphabetically"
         app:showAsAction="always" />
     <item

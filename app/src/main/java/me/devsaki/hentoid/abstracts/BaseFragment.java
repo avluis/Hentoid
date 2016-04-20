@@ -10,15 +10,13 @@ import me.devsaki.hentoid.database.HentoidDB;
 /**
  * Created by avluis on 04/10/2016.
  * Basic Fragment Abstract Class
- * <p/>
- * Implementations receive an onBackPressed
- * handled by the hosting activity.
+ * Implementations receive an onBackPressed handled by the hosting activity.
  */
 public abstract class BaseFragment extends Fragment {
 
     private static HentoidDB db;
 
-    protected BackInterface backInterface;
+    private BackInterface backInterface;
 
     protected static HentoidDB getDB() {
         return db;

@@ -12,7 +12,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
@@ -30,53 +33,50 @@ import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Created by neko on 11/05/2015.
- * TODO: WIP
- * Builds and assigns content from db into adapter
- * for display in queue
+ * Builds and assigns content from db into adapter for display in queue fragment
  */
 public class QueueContentAdapter extends ArrayAdapter<Content> {
     private static final String TAG = LogHelper.makeLogTag(QueueContentAdapter.class);
 
-    private final Context context;
+    private final Context cxt;
     private final List<Content> contents;
     private final HentoidDB db = new HentoidDB(getContext());
     private final QueueFragment fragment;
 
     public QueueContentAdapter(Context cxt, List<Content> contents, QueueFragment fragment) {
         super(cxt, R.layout.row_queue, contents);
-        this.context = cxt;
+        this.cxt = cxt;
         this.contents = contents;
         this.fragment = fragment;
     }
 
     @Override
     public View getView(int position, View view, ViewGroup parent) {
+        // Get the data item for this position
+        final Content content = contents.get(position);
         ViewHolder holder;
-
-        if (view != null) {
-            holder = (ViewHolder) view.getTag();
-        } else {
-            LayoutInflater inflater = (LayoutInflater) context
-                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        // Check if an existing view is being reused, otherwise inflate the view
+        if (view == null) {
+            holder = new ViewHolder();
+            LayoutInflater inflater = LayoutInflater.from(cxt);
             view = inflater.inflate(R.layout.row_queue, parent, false);
 
-            holder = new ViewHolder();
+            holder.tvTitle = (TextView) view.findViewById(R.id.tvTitle);
+            holder.ivCover = (ImageView) view.findViewById(R.id.ivCover);
+            holder.tvSeries = (TextView) view.findViewById(R.id.tvSeries);
+            holder.tvArtist = (TextView) view.findViewById(R.id.tvArtist);
+            holder.tvTags = (TextView) view.findViewById(R.id.tvTags);
+            holder.tvSite = (TextView) view.findViewById(R.id.tvSite);
+
             view.setTag(holder);
+        } else {
+            holder = (ViewHolder) view.getTag();
         }
 
-        holder.tvTitle = (TextView) view.findViewById(R.id.tvTitle);
-        holder.ivCover = (ImageView) view.findViewById(R.id.ivCover);
-        holder.tvSeries = (TextView) view.findViewById(R.id.tvSeries);
-        holder.tvArtist = (TextView) view.findViewById(R.id.tvArtist);
-        holder.tvTags = (TextView) view.findViewById(R.id.tvTags);
-        holder.tvSite = (TextView) view.findViewById(R.id.tvSite);
-
-        final Content content = contents.get(position);
-
-        String templateTvSeries = context.getString(R.string.tvSeries);
-        String templateTvArtist = context.getString(R.string.tvArtists);
-        String templateTvTags = context.getString(R.string.tvTags);
-
+        String templateTvSeries = cxt.getString(R.string.tvSeries);
+        String templateTvArtist = cxt.getString(R.string.tvArtists);
+        String templateTvTags = cxt.getString(R.string.tvTags);
+        // Populate the data into the template view using the data object
         if (content != null) {
             holder.tvSite.setText(content.getSite().getDescription());
 
@@ -130,7 +130,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
             holder.tvTags.setText(Html.fromHtml(tags));
 
-            File coverFile = AndroidHelper.getThumb(content, context);
+            File coverFile = AndroidHelper.getThumb(content, cxt);
             String image = coverFile != null ?
                     coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
@@ -173,21 +173,23 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 pb.setVisibility(View.INVISIBLE);
             }
         }
-
+        // Return the completed view to render on screen
         return view;
     }
 
     private void cancel(Content content) {
+        // Quick hack as workaround if download is paused
         if (content.getStatus() == StatusContent.PAUSED) {
-            content.setStatus(StatusContent.DOWNLOADING);
+            resume(content);
         }
         content.setStatus(StatusContent.CANCELED);
         db.updateContentStatus(content);
-        fragment.update();
         if (content.getId() == contents.get(0).getId()) {
             DownloadService.paused = true;
         }
         contents.remove(content);
+        fragment.update();
+        clearDownload(content);
     }
 
     private void pause(Content content) {
@@ -198,26 +200,45 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         HentoidApplication.setDownloadCount(--downloadCount);
 
         db.updateContentStatus(content);
-        fragment.update();
         if (content.getId() == contents.get(0).getId()) {
             DownloadService.paused = true;
         }
+        fragment.update();
     }
 
     private void resume(Content content) {
-        if (NetworkStatus.isOnline(context)) {
+        if (NetworkStatus.isOnline(cxt)) {
             content.setStatus(StatusContent.DOWNLOADING);
             db.updateContentStatus(content);
-            fragment.update();
             if (content.getId() == contents.get(0).getId()) {
-                Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
+                Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
                         DownloadService.class);
-                context.startService(intent);
+                cxt.startService(intent);
             }
+            fragment.update();
         }
     }
 
-    static class ViewHolder {
+    private void clearDownload(Content content) {
+        if (content.getStatus() == StatusContent.CANCELED) {
+            File dir = AndroidHelper.getContentDownloadDir(content, cxt);
+
+            // This loves to fail
+            try {
+                FileUtils.deleteDirectory(dir);
+            } catch (IOException e) {
+                LogHelper.e(TAG, "Error deleting content directory: ", e);
+            }
+
+            // Run this as well
+            // Log will state if directory was deleted (deleteDirectory failed)
+            // or if it was not (deleteDirectory success)
+            AndroidHelper.deleteDir(dir);
+        }
+    }
+
+    // View lookup cache
+    private static class ViewHolder {
         TextView tvTitle;
         ImageView ivCover;
         TextView tvSeries;

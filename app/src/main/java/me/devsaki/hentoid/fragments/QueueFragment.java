@@ -73,13 +73,19 @@ public class QueueFragment extends BaseFragment {
     }
 
     @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mContext = getActivity().getApplicationContext();
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
         mListView = (ListView) rootView.findViewById(android.R.id.list);
         mEmptyText = (TextView) rootView.findViewById(android.R.id.empty);
-        mContext = getActivity().getApplicationContext();
 
         ImageButton btnStart = (ImageButton) rootView.findViewById(R.id.btnStart);
         btnStart.setOnClickListener(new View.OnClickListener() {
@@ -130,6 +136,6 @@ public class QueueFragment extends BaseFragment {
     @Override
     public boolean onBackPressed() {
         // Let the activity handle it.
-        return false;
+        return true;
     }
 }

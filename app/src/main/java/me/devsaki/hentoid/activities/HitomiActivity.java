@@ -27,8 +27,9 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by Shiro on 1/20/2016.
  * Implements Hitomi.la source
- * <p>
+ * <p/>
  * TODO: Re-implement without use of JavaScript:
+ * {@link HitomiWebViewClient#onPageFinished(WebView, String)}
  * Ref: http://goo.gl/UfIsZs
  */
 public class HitomiActivity extends BaseWebActivity {

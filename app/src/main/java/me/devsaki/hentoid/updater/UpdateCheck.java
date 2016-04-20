@@ -231,11 +231,7 @@ public class UpdateCheck {
     public void installUpdate() {
         Intent intent;
 
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
-            // noinspection deprecation
-            intent.putExtra(Intent.EXTRA_ALLOW_REPLACE, true);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
         } else {
             intent = new Intent(Intent.ACTION_VIEW);

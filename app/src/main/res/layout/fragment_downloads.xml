@@ -12,7 +12,8 @@
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
         android:divider="@color/transparent"
-        android:dividerHeight="10dp" />
+        android:dividerHeight="10dp"
+        android:scrollbars="none" />
 
     <TextView
         android:id="@android:id/empty"
@@ -27,11 +28,13 @@
 
     <LinearLayout
         android:id="@+id/download_nav"
+        style="@style/Widget.AppCompat.Toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/primary"
         android:gravity="center"
+        android:minHeight="?attr/actionBarSize"
         android:orientation="horizontal">
 
         <ImageButton
@@ -39,7 +42,7 @@
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_gravity="center"
-            android:background="@drawable/image_button"
+            android:background="@drawable/btn_content_selector"
             android:padding="3dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_action_previous_item"
@@ -56,7 +59,7 @@
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_gravity="center"
-            android:background="@drawable/image_button"
+            android:background="@drawable/btn_content_selector"
             android:padding="3dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_action_next_item"
@@ -67,7 +70,7 @@
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
             android:layout_gravity="center"
-            android:background="@drawable/image_button"
+            android:background="@drawable/btn_content_selector"
             android:padding="3dp"
             android:scaleType="fitXY"
             android:src="@drawable/ic_action_refresh"

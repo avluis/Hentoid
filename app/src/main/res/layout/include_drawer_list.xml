@@ -1,38 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<me.devsaki.hentoid.views.ScrimInsetsRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:custom="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="240dp"
+<android.support.design.widget.NavigationView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navigation_view"
+    android:layout_width="wrap_content"
     android:layout_height="match_parent"
     android:layout_gravity="start"
-    android:clickable="true"
-    android:fitsSystemWindows="true"
-    custom:myInsetForeground="#4000">
+    android:clickable="true">
 
-    <FrameLayout
-        android:id="@+id/drawer_header"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:background="@color/drawer_header_background">
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-        <ImageView
-            android:id="@+id/app_logo"
-            android:layout_width="155dp"
-            android:layout_height="155dp"
-            android:layout_gravity="center"
-            android:src="@mipmap/ic_launcher"
-            tools:ignore="ContentDescription" />
-    </FrameLayout>
+        <include layout="@layout/nav_header" />
 
-    <ListView
-        android:id="@+id/drawer_list"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/drawer_header"
-        android:background="@color/drawer_list_background"
-        android:choiceMode="singleChoice"
-        android:drawSelectorOnTop="true"
-        android:fastScrollEnabled="false"
-        android:listSelector="?android:selectableItemBackground" />
+        <ListView
+            android:id="@+id/drawer_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/drawer_list_background"
+            android:choiceMode="singleChoice"
+            android:drawSelectorOnTop="true"
+            android:fastScrollEnabled="false"
+            android:listSelector="?android:selectableItemBackground"
+            android:scrollbars="none" />
 
-</me.devsaki.hentoid.views.ScrimInsetsRelativeLayout>
+    </LinearLayout>
+</android.support.design.widget.NavigationView>

@@ -14,6 +14,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/12/2016.
  * Initial Implementation:
  * Grabs content from db with provided query
+ * <p/>
  * TODO: Implement a callback (and/or convert to a service)
  */
 public class SearchContent extends AsyncTask<Void, Void, List<Content>> {

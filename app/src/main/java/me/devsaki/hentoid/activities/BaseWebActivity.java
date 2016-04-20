@@ -1,17 +1,13 @@
 package me.devsaki.hentoid.activities;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebBackForwardList;
@@ -23,6 +19,7 @@ import android.webkit.WebViewClient;
 import java.util.Date;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -30,6 +27,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.ConstantsImport;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
@@ -39,10 +37,10 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public class BaseWebActivity extends AppCompatActivity {
+public class BaseWebActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
-    private final static int STORAGE_PERMISSION_REQUEST = 1;
+    private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
     ObservableWebView webView;
     private HentoidDB db;
     private Content currentContent;
@@ -51,6 +49,7 @@ public class BaseWebActivity extends AppCompatActivity {
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
+    private boolean permissionChecked;
 
     Site getSite() {
         return site;
@@ -67,8 +66,6 @@ public class BaseWebActivity extends AppCompatActivity {
         db = new HentoidDB(this);
 
         setContentView(R.layout.activity_base_web);
-
-        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
 
         if (site == null) {
             LogHelper.w(TAG, "Site is null!");
@@ -99,11 +96,14 @@ public class BaseWebActivity extends AppCompatActivity {
     // Validate permissions
     private void checkPermissions() {
         if (AndroidHelper.permissionsCheck(this,
-                STORAGE_PERMISSION_REQUEST)) {
+                REQUEST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
-            reset();
+            if (permissionChecked) {
+                reset();
+            }
+            permissionChecked = true;
         }
     }
 
@@ -115,23 +115,23 @@ public class BaseWebActivity extends AppCompatActivity {
         if (grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                checkPermissions();
+                LogHelper.d(TAG, "Permissions granted.");
             } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // Permission Denied
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    reset();
-                } else {
-                    finish();
-                }
+                permissionChecked = true;
             }
+        } else {
+            // Permissions cannot be set, either via policy or forced by user.
+            finish();
         }
     }
 
-    // TODO: This could be relaxed - we could try another permission request
     private void reset() {
+        // We have asked for permissions, but still denied.
+        AndroidHelper.toast(R.string.reset);
         AndroidHelper.commitFirstRun(true);
         Intent intent = new Intent(this, IntroSlideActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();
     }
@@ -152,9 +152,19 @@ public class BaseWebActivity extends AppCompatActivity {
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
                 if (newProgress == 100) {
-                    swipeLayout.setRefreshing(false);
+                    swipeLayout.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            swipeLayout.setRefreshing(false);
+                        }
+                    });
                 } else {
-                    swipeLayout.setRefreshing(true);
+                    swipeLayout.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            swipeLayout.setRefreshing(true);
+                        }
+                    });
                 }
             }
         });
@@ -194,13 +204,9 @@ public class BaseWebActivity extends AppCompatActivity {
         swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        swipeLayout.setRefreshing(false);
-                    }
-                }, 5000);
-                webView.reload();
+                if (!swipeLayout.isRefreshing() || !webViewIsLoading) {
+                    webView.reload();
+                }
             }
         });
         swipeLayout.setColorSchemeResources(
@@ -222,11 +228,11 @@ public class BaseWebActivity extends AppCompatActivity {
     @SuppressWarnings("UnusedParameters")
     public void onHomeFabClick(View view) {
         Intent intent = new Intent(this, DownloadsActivity.class);
-
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with Double-Back (press back twice) to exit
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
     }
 
@@ -256,7 +262,7 @@ public class BaseWebActivity extends AppCompatActivity {
 
             return;
         }
-        AndroidHelper.toast(this, R.string.in_queue);
+        AndroidHelper.toast(this, R.string.add_to_queue);
         currentContent.setDownloadDate(new Date().getTime())
                 .setStatus(StatusContent.DOWNLOADING);
 
@@ -298,7 +304,7 @@ public class BaseWebActivity extends AppCompatActivity {
             if (webView.canGoBackOrForward(i - webBFL.getCurrentIndex())) {
                 webView.goBackOrForward(i - webBFL.getCurrentIndex());
             } else {
-                finish();
+                super.onBackPressed();
             }
 
             return true;

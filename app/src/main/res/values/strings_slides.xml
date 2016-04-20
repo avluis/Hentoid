@@ -2,23 +2,23 @@
 <resources>
     <!-- Slide 01 -->
     <string name="slide_01_header">Welcome to Hentoid!</string>
-    <string name="slide_01_text">Hentoid is a Hentai Manga\n reader &amp; archiving app</string>
+    <string name="slide_01_text">Hentoid is a Doujinshi\n&amp; H-Manga archiving app.</string>
     <!-- Slide 02 -->
     <string name="slide_02_header">Permissions</string>
-    <string name="slide_02_text">Starting with Android 6.0,\n we need to ask you for permission to device storage</string>
+    <string name="slide_02_text">Got Marshmallows?\nWe need to ask you for permission to device storage.</string>
     <!-- Slide 02 Alt -->
-    <string name="slide_02_alt_header">Did you know?</string>
-    <string name="slide_02_alt_text">Hentoid supports:\n nhentai, hitomi, tsumino &amp; archived downloads from FAKKU and Pururin</string>
+    <string name="slide_02_alt_header">What to expect?</string>
+    <string name="slide_02_alt_text">Hentoid supports:\nNhentai, Hitomi, Tsumino\n&amp; archived content from\nFAKKU and Pururin.</string>
     <!-- Slide 03 -->
     <string name="slide_03_header">Storage Folder</string>
-    <string name="slide_03_text">Hentoid requires a dedicated folder for storing your media</string>
+    <string name="slide_03_text">Hentoid requires a dedicated folder for storing your media.</string>
     <!-- Slide 04 -->
     <string name="slide_04_header">Importing</string>
-    <string name="slide_04_text">If you have prior downloads,\n make sure to set that as your storage folder</string>
+    <string name="slide_04_text">Do you have an existing library?\nMake sure to set that as your storage folder.</string>
     <!-- Slide 05 -->
     <string name="slide_05_header">Library</string>
     <string name="slide_05_text">Initializing Library…</string>
     <!-- Slide 06 -->
-    <string name="slide_06_header">All done!</string>
-    <string name="slide_06_text">With that out of the way,\n enjoy the app!</string>
+    <string name="slide_06_header">All set up!</string>
+    <string name="slide_06_text">We are set!\nEnjoy the app.</string>
 </resources>

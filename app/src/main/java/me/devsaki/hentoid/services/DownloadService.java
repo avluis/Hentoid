@@ -3,8 +3,6 @@ package me.devsaki.hentoid.services;
 import android.app.IntentService;
 import android.content.Intent;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +26,8 @@ import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Download Manager implemented as a service
+ * <p/>
+ * TODO: Implement download job tracking (1 chapter = 1 job)
  */
 public class DownloadService extends IntentService {
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
@@ -100,45 +100,37 @@ public class DownloadService extends IntentService {
                     "Download Content: Start.");
 
             // Initialize
-            File dir = AndroidHelper.getDownloadDir(currentContent, this);
+            File dir = AndroidHelper.getContentDownloadDir(currentContent, this);
 
-            // TODO: Test this!!!
             // If the download directory already has files,
             // then we simply delete them, since this points to a failed download
-            // This includes in progress, that were paused, then resumed
-            // So technically, we are download everything again.
-            boolean isDirEmpty = AndroidHelper.isDirEmpty(dir);
-            LogHelper.d(TAG, "Is directory empty: " + isDirEmpty);
-
-            if (!isDirEmpty) {
-                String[] children = dir.list();
-                for (String child : children) {
-                    // noinspection ResultOfMethodCallIgnored
-                    new File(dir, child).delete();
-                }
-            }
+            // This includes in progress downloads, that were paused, then resumed.
+            // So technically, we are downloading everything once again.
+            // This is required for ImageDownloadBatch to not hang on a download.
+            AndroidHelper.cleanDir(dir);
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
 
             // Add download tasks
             downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());
-            for (ImageFile imageFile : currentContent.getImageFiles()) {
-                downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
-            }
+            do {
+                for (ImageFile imageFile : currentContent.getImageFiles()) {
+                    downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
+                }
+            } while (false);
 
             // Track and wait for download to complete
             final int qtyPages = currentContent.getQtyPages();
             for (int i = 0; i <= qtyPages; ++i) {
 
                 if (paused) {
+                    LogHelper.d(TAG, "Interrupt!!");
                     interruptDownload();
                     downloadBatch.cancelAllTasks();
+
                     if (currentContent.getStatus() == StatusContent.CANCELED) {
-                        try {
-                            FileUtils.deleteDirectory(dir);
-                        } catch (IOException e) {
-                            LogHelper.e(TAG, "Error deleting content directory: ", e);
-                        }
+                        // Update notification
+                        notificationPresenter.downloadInterrupted(currentContent);
                     }
 
                     return;

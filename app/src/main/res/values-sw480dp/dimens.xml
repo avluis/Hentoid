@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- about -->
     <dimen name="about_ic_hentoid_width">260dp</dimen>
     <dimen name="about_ic_hentoid_height">260dp</dimen>
     <dimen name="about_ic_icons_width">55dp</dimen>
