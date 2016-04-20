@@ -410,7 +410,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                     .detectLeakedSqlLiteObjects()
                     .detectLeakedClosableObjects()
                     .penaltyLog()
-                    .penaltyDeath()
+                    //.penaltyDeath()
                     .build());
         }
         super.onCreate(savedInstanceState);
