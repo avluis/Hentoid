@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.text.Html;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -64,9 +65,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         TextView tvSeries;
         TextView tvArtist;
         TextView tvTags;
-        TextView tvSite;
-        TextView tvStatus;
-        TextView tvSavedDate;
+        //TextView tvSite;
+        //TextView tvStatus;
+        //TextView tvSavedDate;
 
         // Check if an existing view is being reused, otherwise inflate the view
         if (convertView == null) {
@@ -77,12 +78,11 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             tvSeries = (TextView) convertView.findViewById(R.id.tvSeries);
             tvArtist = (TextView) convertView.findViewById(R.id.tvArtist);
             tvTags = (TextView) convertView.findViewById(R.id.tvTags);
-            tvSite = (TextView) convertView.findViewById(R.id.tvSite);
-            tvStatus = (TextView) convertView.findViewById(R.id.tvStatus);
-            tvSavedDate = (TextView) convertView.findViewById(R.id.tvSavedDate);
+            //tvSite = (TextView) convertView.findViewById(R.id.tvSite);
+            //tvStatus = (TextView) convertView.findViewById(R.id.tvStatus);
+            //tvSavedDate = (TextView) convertView.findViewById(R.id.tvSavedDate);
 
-            convertView.setTag(new ViewHolder(tvTitle, ivCover, tvSeries, tvArtist, tvTags, tvSite,
-                    tvStatus, tvSavedDate));
+            convertView.setTag(new ViewHolder(tvTitle, ivCover, tvSeries, tvArtist, tvTags));
         } else {
             ViewHolder viewHolder = (ViewHolder) convertView.getTag();
             tvTitle = viewHolder.tvTitle;
@@ -90,9 +90,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
             tvSeries = viewHolder.tvSeries;
             tvArtist = viewHolder.tvArtist;
             tvTags = viewHolder.tvTags;
-            tvSite = viewHolder.tvSite;
-            tvStatus = viewHolder.tvStatus;
-            tvSavedDate = viewHolder.tvSavedDate;
+            //tvSite = viewHolder.tvSite;
+            //tvStatus = viewHolder.tvStatus;
+            //tvSavedDate = viewHolder.tvSavedDate;
         }
 
         // Get the data item for this position
@@ -103,9 +103,9 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         String templateTvTags = cxt.getResources().getString(R.string.tvTags);
         // Populate the data into the template view using the data object
         if (content != null) {
-            tvSite.setText(content.getSite().getDescription());
-            tvStatus.setText(content.getStatus().getDescription());
-            tvSavedDate.setText(sdf.format(new Date(content.getDownloadDate())));
+            //tvSite.setText(content.getSite().getDescription());
+            //tvStatus.setText(content.getStatus().getDescription());
+            //tvSavedDate.setText(sdf.format(new Date(content.getDownloadDate())));
 
             if (content.getTitle() == null) {
                 tvTitle.setText(R.string.tvTitleEmpty);
@@ -159,6 +159,7 @@ public class ContentAdapter extends ArrayAdapter<Content> {
                 }
             }
             tvTags.setText(Html.fromHtml(tags));
+            tvTags.setMovementMethod(new ScrollingMovementMethod());
 
             final File dir = AndroidHelper.getContentDownloadDir(content, cxt);
 
@@ -168,39 +169,39 @@ public class ContentAdapter extends ArrayAdapter<Content> {
 
             HentoidApplication.getInstance().loadBitmap(image, ivCover);
 
-            Button btnRead = (Button) convertView.findViewById(R.id.btnRead);
-            btnRead.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AndroidHelper.openContent(content, cxt);
-                }
-            });
-            Button btnDelete = (Button) convertView.findViewById(R.id.btnDelete);
-            btnDelete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    deleteContent(content, dir);
-                }
-            });
-            Button btnDownloadAgain = (Button) convertView.findViewById(R.id.btnDownloadAgain);
-            if (content.getStatus() == StatusContent.ERROR) {
-                btnDownloadAgain.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        downloadAgain(content);
-                    }
-                });
-                btnDownloadAgain.setVisibility(View.VISIBLE);
-            } else {
-                btnDownloadAgain.setVisibility(View.GONE);
-            }
-            Button btnView = (Button) convertView.findViewById(R.id.btnViewBrowser);
-            btnView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    viewContent(content);
-                }
-            });
+//            Button btnRead = (Button) convertView.findViewById(R.id.btnRead);
+//            btnRead.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    AndroidHelper.openContent(content, cxt);
+//                }
+//            });
+//            Button btnDelete = (Button) convertView.findViewById(R.id.btnDelete);
+//            btnDelete.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    deleteContent(content, dir);
+//                }
+//            });
+//            Button btnDownloadAgain = (Button) convertView.findViewById(R.id.btnDownloadAgain);
+//            if (content.getStatus() == StatusContent.ERROR) {
+//                btnDownloadAgain.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        downloadAgain(content);
+//                    }
+//                });
+//                btnDownloadAgain.setVisibility(View.VISIBLE);
+//            } else {
+//                btnDownloadAgain.setVisibility(View.GONE);
+//            }
+//            Button btnView = (Button) convertView.findViewById(R.id.btnViewBrowser);
+//            btnView.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View v) {
+//                    viewContent(content);
+//                }
+//            });
         }
         // Return the completed view to render on screen
         return convertView;
@@ -281,21 +282,20 @@ public class ContentAdapter extends ArrayAdapter<Content> {
         public final TextView tvSeries;
         public final TextView tvArtist;
         public final TextView tvTags;
-        public final TextView tvSite;
-        public final TextView tvStatus;
-        public final TextView tvSavedDate;
+        //public final TextView tvSite;
+        //public final TextView tvStatus;
+        //public final TextView tvSavedDate;
 
         public ViewHolder(TextView tvTitle, ImageView ivCover, TextView tvSeries,
-                          TextView tvArtist, TextView tvTags, TextView tvSite, TextView tvStatus,
-                          TextView tvSavedDate) {
+                          TextView tvArtist, TextView tvTags) {
             this.tvTitle = tvTitle;
             this.ivCover = ivCover;
             this.tvSeries = tvSeries;
             this.tvArtist = tvArtist;
             this.tvTags = tvTags;
-            this.tvSite = tvSite;
-            this.tvStatus = tvStatus;
-            this.tvSavedDate = tvSavedDate;
+            //this.tvSite = tvSite;
+            //this.tvStatus = tvStatus;
+            //this.tvSavedDate = tvSavedDate;
         }
     }
 }

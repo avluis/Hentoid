@@ -6,7 +6,7 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:background="@color/white"
         android:orientation="vertical"
         android:padding="10dp">
@@ -41,6 +41,7 @@
                 android:layout_width="100dp"
                 android:layout_height="140dp"
                 android:layout_margin="5dp"
+                android:scaleType="centerCrop"
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_placeholder" />
 
@@ -73,124 +74,12 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
+                    android:maxLines="5"
+                    android:scrollbars="vertical"
                     android:singleLine="false"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     tools:text="tag1, tag2, tag3, etc." />
             </LinearLayout>
-        </LinearLayout>
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_margin="10dp"
-            android:background="@android:color/holo_red_light" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
-
-            <TextView
-                android:id="@+id/tvSite"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="10dp"
-                android:layout_marginStart="10dp"
-                android:layout_weight="1"
-                android:background="@android:color/holo_red_dark"
-                android:gravity="center_horizontal|start"
-                android:paddingLeft="10dp"
-                android:paddingStart="10dp"
-                android:singleLine="true"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/white"
-                tools:ignore="RtlSymmetry"
-                tools:text="Site" />
-
-            <TextView
-                android:id="@+id/tvStatus"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@android:color/holo_green_dark"
-                android:gravity="center_horizontal"
-                android:paddingEnd="10dp"
-                android:paddingLeft="10dp"
-                android:paddingRight="10dp"
-                android:paddingStart="10dp"
-                android:singleLine="true"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/white"
-                tools:ignore="RtlSymmetry"
-                tools:text="Downloaded" />
-
-            <TextView
-                android:id="@+id/tvSavedDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_marginRight="10dp"
-                android:layout_weight="1"
-                android:background="@android:color/holo_blue_dark"
-                android:gravity="center_horizontal|end"
-                android:paddingEnd="10dp"
-                android:paddingRight="10dp"
-                android:singleLine="true"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/white"
-                tools:ignore="RtlSymmetry"
-                tools:text="09/25/15 12:29" />
-        </LinearLayout>
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_margin="10dp"
-            android:background="@android:color/holo_red_light" />
-
-        <Button
-            android:id="@+id/btnDownloadAgain"
-            style="?android:attr/borderlessButtonStyle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/download_again"
-            android:textStyle="bold"
-            android:visibility="gone" />
-
-        <LinearLayout
-            style="@style/Base.Widget.AppCompat.ButtonBar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
-
-            <Button
-                android:id="@+id/btnViewBrowser"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:text="@string/view_browser"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btnDelete"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:text="@string/delete"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btnRead"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:text="@string/read"
-                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 </android.support.v7.widget.CardView>
