@@ -18,6 +18,8 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.holders.ContentHolder;
+import me.devsaki.hentoid.listener.ItemClickListener;
+import me.devsaki.hentoid.listener.ItemLongClickListener;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -30,6 +32,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private final Context cxt;
     private List<Content> contents = new ArrayList<>();
+    private ItemClickListener mClickListener;
+    private ItemLongClickListener mLongClickListener;
 
     public ContentAdapter(Context cxt, final List<Content> contents) {
         this.cxt = cxt;
@@ -52,7 +56,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         final View view = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.row_downloads, parent, false);
 
-        return new ContentHolder(view);
+        return new ContentHolder(view, mClickListener, mLongClickListener);
     }
 
     @Override
@@ -61,6 +65,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         // These two should(?) always match
         LogHelper.d(TAG, "Adapter Position: " + holder.getAdapterPosition());
+        // Even if these two are the same, you want to use this one:
         LogHelper.d(TAG, "Layout Position: " + holder.getLayoutPosition());
 
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
@@ -136,5 +141,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     @Override
     public int getItemCount() {
         return (null != contents ? contents.size() : 0);
+    }
+
+    public void setOnItemClickListener(ItemClickListener clickListener) {
+        this.mClickListener = clickListener;
+    }
+
+    public void setOnItemLongClickListener(ItemLongClickListener longClickListener) {
+        this.mLongClickListener = longClickListener;
     }
 }

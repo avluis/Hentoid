@@ -39,6 +39,8 @@ import me.devsaki.hentoid.activities.IntroSlideActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.listener.ItemClickListener;
+import me.devsaki.hentoid.listener.ItemLongClickListener;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
@@ -54,7 +56,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * TODO: Track number of items/pages.
  * {@link #searchContent()}
  */
-public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener {
+public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
+        ItemClickListener, ItemLongClickListener {
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
@@ -70,7 +73,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private TextView emptyText;
     private Button btnPage;
     private RecyclerView mListView;
-    private ContentAdapter mContentAdapter;
+    private ContentAdapter mAdapter;
     private List<Content> result;
     private Context mContext;
     private MenuItem searchMenu;
@@ -401,10 +404,11 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(layoutManager);
 
-        mContentAdapter = new ContentAdapter(mContext, result);
-        mListView.setAdapter(mContentAdapter);
+        mAdapter = new ContentAdapter(mContext, result);
+        mListView.setAdapter(mAdapter);
 
-        mListView.setHasFixedSize(true);
+        this.mAdapter.setOnItemClickListener(this);
+        this.mAdapter.setOnItemLongClickListener(this);
 
         mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
         mDrawerLayout.addDrawerListener(this);
@@ -510,8 +514,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             }
         }
         if (contents == result || contents.isEmpty()) {
-            mContentAdapter.setContentList(result);
-            mListView.setAdapter(mContentAdapter);
+            mAdapter.setContentList(result);
+            mListView.setAdapter(mAdapter);
         }
         if (prevPage != currentPage) {
             btnPage.setText(String.valueOf(currentPage));
@@ -548,5 +552,17 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     public void onContentReady(boolean ready) {
         LogHelper.d(TAG, "Content ready? " + ready);
         displayResults();
+    }
+
+    @Override
+    public void onItemClick(View view, int position) {
+        LogHelper.d(TAG, result.get(position));
+        AndroidHelper.toast(mContext, result.get(position).getTitle() + " clicked.");
+    }
+
+    @Override
+    public void onItemLongClick(View view, int position) {
+        LogHelper.d(TAG, result.get(position));
+        AndroidHelper.toast(mContext, result.get(position).getTitle() + " long clicked.");
     }
 }
