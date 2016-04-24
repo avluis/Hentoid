@@ -9,8 +9,10 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.os.StrictMode;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -53,7 +55,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * Presents the list of downloaded works to the user.
  * <p/>
  * TODO: Add additional UI elements to CardView.
- * TODO: Track number of items/pages.
+ * TODO: Retain list when paused
  * {@link #searchContent()}
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
@@ -61,6 +63,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
+    private final static String LIST_STATE_KEY = "list_state";
     private static String query = "";
     private static int currentPage = 1;
     private static int qtyPages;
@@ -98,14 +101,13 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             }
         }
     };
+    private LinearLayoutManager mLayoutManager;
+    private Parcelable mListState;
     private boolean permissionChecked;
+    private boolean isLastPage;
 
     public static DownloadsFragment newInstance() {
         return new DownloadsFragment();
-    }
-
-    public void update() {
-        searchContent();
     }
 
     // Validate permissions
@@ -114,7 +116,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 REQUEST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
             queryPrefs();
-            searchContent();
+            update();
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
             if (permissionChecked) {
@@ -264,14 +266,14 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
                 getActivity().invalidateOptionsMenu();
-                searchContent();
+                update();
 
                 return true;
             case R.id.action_order_by_date:
                 orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
                 getActivity().invalidateOptionsMenu();
-                searchContent();
+                update();
 
                 return true;
             default:
@@ -287,7 +289,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         }
         query = "";
         setQuery(query);
-        searchContent();
+        update();
     }
 
     private void submitSearchQuery(String s) {
@@ -301,7 +303,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             @Override
             public void run() {
                 setQuery(s);
-                searchContent();
+                update();
             }
         }, delay);
     }
@@ -343,15 +345,45 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
         checkPermissions();
 
-        mContext.registerReceiver(receiver, new IntentFilter(
+        getContext().registerReceiver(receiver, new IntentFilter(
                 DownloadService.DOWNLOAD_NOTIFICATION));
+
+        if (mListState != null) {
+            mLayoutManager.onRestoreInstanceState(mListState);
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-        mContext.unregisterReceiver(receiver);
+        getContext().unregisterReceiver(receiver);
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        mListState = mLayoutManager.onSaveInstanceState();
+        outState.putParcelable(LIST_STATE_KEY, mListState);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle state) {
+        super.onViewStateRestored(state);
+
+        if (state != null) {
+            mListState = state.getParcelable(LIST_STATE_KEY);
+        }
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle state) {
+        super.onViewCreated(view, state);
+
+        if (mListState != null) {
+            mListState = state.getParcelable(LIST_STATE_KEY);
+        }
     }
 
     @Override
@@ -364,7 +396,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
              * {@link StrictMode.ThreadPolicy.Builder#detectNetwork()}
              */
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-            //        .detectDiskReads()
+                    //        .detectDiskReads()
                     .detectDiskWrites()
                     .detectNetwork()
                     .penaltyLog()
@@ -377,7 +409,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                     .detectLeakedSqlLiteObjects()
                     .detectLeakedClosableObjects()
                     .penaltyLog()
-            //        .penaltyDeath()
+                    //        .penaltyDeath()
                     .build());
         }
         super.onCreate(savedInstanceState);
@@ -401,8 +433,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         mListView = (RecyclerView) rootView.findViewById(R.id.list);
         emptyText = (TextView) rootView.findViewById(R.id.empty);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(mContext);
-        mListView.setLayoutManager(layoutManager);
+        mLayoutManager = new LinearLayoutManager(mContext);
+        mListView.setLayoutManager(mLayoutManager);
 
         mAdapter = new ContentAdapter(mContext, result);
         mListView.setAdapter(mAdapter);
@@ -424,7 +456,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             public void onClick(View v) {
                 if (currentPage > 1) {
                     currentPage--;
-                    searchContent();
+                    update();
                 } else if (qtyPages > 0) {
                     AndroidHelper.toast(mContext, R.string.not_previous_page);
                 } else {
@@ -439,11 +471,11 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 if (qtyPages <= 0) {
                     AndroidHelper.toast(mContext, R.string.not_limit_per_page);
                 } else {
-                    currentPage++;
-                    if (!searchContent()) {
-                        btnPage.setText(String.valueOf(--currentPage));
+                    if (isLastPage) {
                         AndroidHelper.toast(mContext, R.string.not_next_page);
-                        searchContent();
+                    } else {
+                        currentPage++;
+                        update();
                     }
                 }
             }
@@ -452,7 +484,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                searchContent();
+                update();
             }
         });
 
@@ -461,12 +493,12 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             public boolean onLongClick(View v) {
                 if (currentPage != 1) {
                     setQuery("");
-                    searchContent();
+                    update();
                     AndroidHelper.toast(mContext, R.string.on_first_page);
 
                     return true;
                 } else {
-                    searchContent();
+                    update();
 
                     return true;
                 }
@@ -494,6 +526,15 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         return false;
     }
 
+    public void update() {
+        searchContent();
+    }
+
+    private void searchContent() {
+        search = new SearchContent(mContext, this, query, currentPage, qtyPages,
+                order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+    }
+
     private void displayResults() {
         List<Content> contents;
         result = search.getContent();
@@ -513,21 +554,27 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 emptyText.setVisibility(View.VISIBLE);
             }
         }
+
         if (contents == result || contents.isEmpty()) {
             mAdapter.setContentList(result);
             mListView.setAdapter(mAdapter);
+            LogHelper.d(TAG, "Adapter set.");
+
+            LogHelper.d(TAG, mAdapter.getItemCount());
+
+            if (mAdapter.getItemCount() < qtyPages) {
+                isLastPage = true;
+                LogHelper.d(TAG, "On the last page.");
+            } else {
+                isLastPage = false;
+                LogHelper.d(TAG, "Not on the last page.");
+            }
         }
+
         if (prevPage != currentPage) {
             btnPage.setText(String.valueOf(currentPage));
         }
         prevPage = currentPage;
-    }
-
-    private boolean searchContent() {
-        search = new SearchContent(mContext, this, query, currentPage, qtyPages,
-                order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
-
-        return result != null && !result.isEmpty();
     }
 
     @Override
@@ -556,13 +603,18 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     @Override
     public void onItemClick(View view, int position) {
-        LogHelper.d(TAG, result.get(position));
         AndroidHelper.toast(mContext, result.get(position).getTitle() + " clicked.");
+
+        AndroidHelper.openContent(result.get(position), mContext);
     }
 
     @Override
     public void onItemLongClick(View view, int position) {
-        LogHelper.d(TAG, result.get(position));
         AndroidHelper.toast(mContext, result.get(position).getTitle() + " long clicked.");
+
+        Intent intent = new Intent(mContext, result.get(position).getWebActivityClass());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(Constants.INTENT_URL, result.get(position).getGalleryUrl());
+        mContext.startActivity(intent);
     }
 }
