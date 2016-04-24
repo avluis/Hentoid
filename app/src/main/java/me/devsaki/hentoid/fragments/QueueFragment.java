@@ -138,4 +138,9 @@ public class QueueFragment extends BaseFragment {
         // Let the activity handle it.
         return true;
     }
+
+    @Override
+    public void onContentReady(boolean ready) {
+        // Ignore for now
+    }
 }

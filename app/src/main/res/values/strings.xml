@@ -105,12 +105,5 @@
     <string name="about_github_url" translatable="false">https://github.com/csaki/Hentoid</string>
     <string name="about_notes">
         <![CDATA[
-        <p>Android 6.0 Runtime Permissions support.<br>
-        New Look! New Navigation Drawer!<br>
-        Improved Browsing and Navigation UI.<br>
-        Improved Download Service back-end.<br>
-        Improved Search and result handling.<br>
-        Improved Import routine & On-the-fly Preference changes.<br>
-        Viewport scaling options for Hitomi.<br>
-        No intrusive Pop-UP ADs on nhentai and Hitomi.</p>]]></string>
+        <p>Async data load - RecyclerView</p>]]></string>
 </resources>

@@ -2,70 +2,82 @@ package me.devsaki.hentoid.database;
 
 import android.content.Context;
 import android.os.AsyncTask;
-import android.support.v4.app.Fragment;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.fragments.DownloadsFragment;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 04/12/2016.
- * Initial Implementation:
- * Grabs content from db with provided query
  * <p/>
- * TODO: Implement a callback (and/or convert to a service)
+ * Grabs content from db with provided query
  */
-public class SearchContent extends AsyncTask<Void, Void, List<Content>> {
-
+public class SearchContent {
     private static final String TAG = LogHelper.makeLogTag(SearchContent.class);
 
     private final HentoidDB db;
+    private Context mContext;
+    private static int counter = 0;
 
     private final String mQuery;
     private final int mPage;
     private final int mQty;
     private final boolean mOrder;
-    private List<Content> contents;
-    private DownloadsFragment fragment;
+    private List<Content> contentList = new ArrayList<>();
 
-    public SearchContent(final Context context, String query, int page, int qty, boolean order,
-                         DownloadsFragment fragment) {
-        Context mContext = context.getApplicationContext();
+    public SearchContent(final Context context, final ContentInterface contentInterface,
+                         String query, int page, int qty, boolean order) {
+        // Rotating the screen should not cause an additional call
+        if (mContext == null) {
+            counter++;
+            LogHelper.d(TAG, "I've been called: " + counter + ((counter > 1) ? " times." : " time."));
+        }
+
+        mContext = context.getApplicationContext();
+        //contentInterface.onContentReady(false);
+
         mQuery = query;
         mPage = page;
         mQty = qty;
         mOrder = order;
-        this.fragment = fragment;
 
         db = new HentoidDB(mContext);
+
+        retrieveResults(contentInterface);
     }
 
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
+    public List<Content> getContent() {
+        return contentList;
     }
 
-    @Override
-    protected List<Content> doInBackground(Void... params) {
-        if (this.isCancelled()) {
-            return null;
-        }
-        // TODO: Implement null result
-        while (contents == null) {
-            try {
-                contents = db.selectContentByQuery(mQuery, mPage, mQty, mOrder);
-            } catch (Exception e) {
-                LogHelper.e(TAG, "Could not load data from db: ", e);
+    private void retrieveResults(final ContentInterface contentInterface) {
+        new AsyncTask<Void, Void, List<Content>>() {
+
+            @Override
+            protected List<Content> doInBackground(Void... params) {
+                pullContent();
+                return contentList;
             }
-        }
-        return contents;
+
+            @Override
+            protected void onPostExecute(List<Content> contents) {
+                contentList = contents;
+                contentInterface.onContentReady(true);
+            }
+        }.execute();
     }
 
-    @Override
-    protected void onPostExecute(List<Content> contents) {
-        super.onPostExecute(contents);
-        fragment.setListContent(contents);
+    private synchronized void pullContent() {
+        try {
+            contentList = db.selectContentByQuery(mQuery, mPage, mQty, mOrder);
+        } catch (Exception e) {
+            LogHelper.e(TAG, "Could not load data from db: ", e);
+        }
+    }
+
+    public interface ContentInterface {
+        void onContentReady(boolean ready);
     }
 }

@@ -64,7 +64,8 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
 
     @Override
     protected String getToolbarTitle() {
-        return AndroidHelper.getActivityName(mContext, R.string.title_activity_downloads);
+        // return AndroidHelper.getActivityName(mContext, R.string.title_activity_downloads);
+        return "Experimental";
     }
 
     @Override
