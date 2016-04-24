@@ -73,9 +73,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         String templateTvTags = cxt.getResources().getString(R.string.tvTags);
 
         if (content.getTitle() == null) {
-            holder.tvTitle.setText(R.string.tvTitleEmpty);
+            holder.tvTitle.setText(R.string.tvEmpty);
         } else {
             holder.tvTitle.setText(content.getTitle());
+            holder.tvTitle.setSelected(true);
         }
 
         String series = "";
@@ -110,6 +111,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
         holder.tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
 
+        if (seriesAttributes == null && artistAttributes == null) {
+            holder.tvSeries.setText(R.string.tvEmpty);
+            holder.tvSeries.setVisibility(View.VISIBLE);
+        }
+
         String tags = "";
         List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
         if (tagsAttributes != null) {
@@ -124,7 +130,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         }
         holder.tvTags.setText(Html.fromHtml(tags));
-        holder.tvTags.setMovementMethod(new ScrollingMovementMethod());
 
         File coverFile = AndroidHelper.getThumb(content, cxt);
         String image = coverFile != null ?

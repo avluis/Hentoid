@@ -29,6 +29,7 @@
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
             android:clickable="false"
+            android:textIsSelectable="false"
             tools:text="1" />
 
         <ImageButton

@@ -81,9 +81,10 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             holder.tvSite.setText(content.getSite().getDescription());
 
             if (content.getTitle() == null) {
-                holder.tvTitle.setText(R.string.tvTitleEmpty);
+                holder.tvTitle.setText(R.string.tvEmpty);
             } else {
                 holder.tvTitle.setText(content.getTitle());
+                holder.tvTitle.setSelected(true);
             }
 
             String series = "";
@@ -114,6 +115,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 }
             }
             holder.tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
+
+            if (seriesAttributes == null && artistAttributes == null) {
+                holder.tvSeries.setText(R.string.tvEmpty);
+                holder.tvSeries.setVisibility(View.VISIBLE);
+            }
 
             String tags = "";
             List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);

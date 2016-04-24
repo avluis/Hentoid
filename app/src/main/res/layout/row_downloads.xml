@@ -20,7 +20,12 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:singleLine="false"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/holo_red_dark"
             android:textStyle="bold"
@@ -29,7 +34,12 @@
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:layout_margin="10dp"
+            android:layout_marginBottom="5dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="1dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginStart="1dp"
+            android:layout_marginTop="5dp"
             android:background="@android:color/holo_red_light" />
 
         <LinearLayout
@@ -49,8 +59,8 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center_vertical"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
                 android:orientation="vertical">
 
                 <TextView
@@ -71,13 +81,22 @@
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     tools:text="Artist: Name" />
 
+                <View
+                    android:layout_width="fill_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginStart="1dp"
+                    android:layout_marginTop="5dp"
+                    android:background="@android:color/holo_red_light" />
+
                 <TextView
                     android:id="@+id/tvTags"
-                    android:layout_width="match_parent"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:maxLines="5"
-                    android:scrollbars="vertical"
+                    android:layout_gravity="center_horizontal|start"
                     android:singleLine="false"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     tools:text="tag1, tag2, tag3, etc." />

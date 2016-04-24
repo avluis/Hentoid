@@ -23,7 +23,7 @@
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
     <!-- TextViews -->
-    <string name="tvTitleEmpty" translatable="false">[No data]</string>
+    <string name="tvEmpty" translatable="false">[No data]</string>
     <string name="tvSeries"><![CDATA[<b>Series:</b> @series@]]></string>
     <string name="tvArtists"><![CDATA[<b>Artist:</b> @artist@]]></string>
     <string name="tvTags" translatable="false"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>

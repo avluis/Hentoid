@@ -72,7 +72,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private static int order;
     private static boolean orderUpdated;
     private final Handler searchHandler = new Handler();
-    private int prevPage;
     private TextView emptyText;
     private Button btnPage;
     private RecyclerView mListView;
@@ -571,10 +570,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             }
         }
 
-        if (prevPage != currentPage) {
-            btnPage.setText(String.valueOf(currentPage));
-        }
-        prevPage = currentPage;
+        btnPage.setText(String.valueOf(currentPage));
     }
 
     @Override
