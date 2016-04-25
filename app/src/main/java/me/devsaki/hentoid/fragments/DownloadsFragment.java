@@ -515,7 +515,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             return false;
         }
         if (backButtonPressed + 2000 > System.currentTimeMillis()) {
-            AndroidHelper.toast(mContext, "Exiting RecyclerView");
+            AndroidHelper.toast(mContext, "Come back soon!");
             return true;
         } else {
             backButtonPressed = System.currentTimeMillis();
@@ -606,11 +606,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     @Override
     public void onItemLongClick(View view, int position) {
-        AndroidHelper.toast(mContext, result.get(position).getTitle() + " long clicked.");
-
-        Intent intent = new Intent(mContext, result.get(position).getWebActivityClass());
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(Constants.INTENT_URL, result.get(position).getGalleryUrl());
-        mContext.startActivity(intent);
+        AndroidHelper.toast(mContext, "Not yet implemented");
+        LogHelper.d(TAG, result.get(position).getTitle() + " long clicked.");
     }
 }

@@ -4,103 +4,70 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    app:cardCornerRadius="2dp"
     app:cardUseCompatPadding="true">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:orientation="vertical"
-        android:padding="10dp">
-
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:ellipsize="marquee"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:singleLine="true"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="@android:color/holo_red_dark"
-            android:textStyle="bold"
-            tools:text="Title: Name" />
-
-        <View
-            android:layout_width="fill_parent"
-            android:layout_height="1dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginLeft="1dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginStart="1dp"
-            android:layout_marginTop="5dp"
-            android:background="@android:color/holo_red_light" />
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
 
         <LinearLayout
+            android:id="@+id/row_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:background="@color/white"
+            android:orientation="vertical"
+            android:padding="5dp">
 
-            <ImageView
-                android:id="@+id/ivCover"
-                android:layout_width="100dp"
-                android:layout_height="140dp"
-                android:layout_margin="5dp"
-                android:scaleType="centerCrop"
-                tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_placeholder" />
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:orientation="vertical">
+                android:layout_gravity="center_horizontal|start"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:ellipsize="marquee"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:marqueeRepeatLimit="marquee_forever"
+                android:scrollHorizontally="true"
+                android:singleLine="true"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@android:color/holo_red_dark"
+                android:textStyle="bold"
+                tools:text="Title: Name" />
 
-                <TextView
-                    android:id="@+id/tvSeries"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:singleLine="false"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    tools:text="Series: Name" />
+            <View
+                android:layout_width="fill_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="5dp"
+                android:layout_marginEnd="10dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginRight="10dp"
+                android:layout_marginStart="1dp"
+                android:layout_marginTop="5dp"
+                android:background="@android:color/holo_red_light" />
 
-                <TextView
-                    android:id="@+id/tvArtist"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:singleLine="false"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    tools:text="Artist: Name" />
+            <include layout="@layout/include_row_details" />
 
-                <View
-                    android:layout_width="fill_parent"
-                    android:layout_height="1dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginLeft="1dp"
-                    android:layout_marginRight="10dp"
-                    android:layout_marginStart="1dp"
-                    android:layout_marginTop="5dp"
-                    android:background="@android:color/holo_red_light" />
-
-                <TextView
-                    android:id="@+id/tvTags"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal|start"
-                    android:singleLine="false"
-                    android:textAppearance="?android:attr/textAppearanceSmall"
-                    tools:text="tag1, tag2, tag3, etc." />
-            </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+
+        <ImageView
+            android:id="@+id/ivSite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/row_details"
+            android:adjustViewBounds="true"
+            android:clickable="true"
+            android:paddingBottom="5dp"
+            android:paddingEnd="8dp"
+            android:paddingLeft="5dp"
+            android:paddingRight="8dp"
+            android:paddingStart="5dp"
+            android:paddingTop="8dp"
+            tools:background="@color/card_item_src_normal"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_menu_hitomi" />
+    </RelativeLayout>
+
 </android.support.v7.widget.CardView>

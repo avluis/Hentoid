@@ -1,9 +1,9 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,7 +61,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     @Override
     public void onBindViewHolder(ContentHolder holder, int position) {
-        Content content = contents.get(position);
+        final Content content = contents.get(position);
 
         // These two should(?) always match
         LogHelper.d(TAG, "Adapter Position: " + holder.getAdapterPosition());
@@ -78,6 +78,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.tvTitle.setText(content.getTitle());
             holder.tvTitle.setSelected(true);
         }
+
+        File coverFile = AndroidHelper.getThumb(content, cxt);
+        String image = coverFile != null ?
+                coverFile.getAbsolutePath() : content.getCoverImageUrl();
+
+        HentoidApplication.getInstance().loadBitmap(image, holder.ivCover);
 
         String series = "";
         List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
@@ -131,11 +137,37 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
         holder.tvTags.setText(Html.fromHtml(tags));
 
-        File coverFile = AndroidHelper.getThumb(content, cxt);
-        String image = coverFile != null ?
-                coverFile.getAbsolutePath() : content.getCoverImageUrl();
+        if (content.getSite() != null) {
+            int img = content.getSite().getIco();
+            holder.ivSite.setImageResource(img);
+            holder.ivSite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AndroidHelper.viewContent(content, cxt);
+                }
+            });
+        } else {
+            holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
+        }
 
-        HentoidApplication.getInstance().loadBitmap(image, holder.ivCover);
+        if (content.getStatus() != null) {
+            String status = content.getStatus().getDescription();
+            int bg;
+            switch (status) {
+                case "Downloaded":
+                    bg = R.color.card_item_src_normal;
+                    break;
+                case "Migrated":
+                    bg = R.color.card_item_src_migrated;
+                    break;
+                default:
+                    LogHelper.d(TAG, status);
+                    bg = R.color.card_item_src_other;
+            }
+            holder.ivSite.setBackgroundColor(ContextCompat.getColor(cxt, bg));
+        } else {
+            holder.ivSite.setVisibility(View.GONE);
+        }
     }
 
     @Override

@@ -11,9 +11,9 @@ public enum Site {
 
     FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_favicon_fakku),
     PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_favicon_pururin),
-    HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_stat_hitomi),
-    NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_stat_nhentai),
-    TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_stat_tsumi);
+    HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_menu_hitomi),
+    NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_menu_nhentai),
+    TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_menu_tsumino);
 
     private static final String TAG = LogHelper.makeLogTag(Site.class);
     private final int code;

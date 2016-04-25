@@ -14,7 +14,7 @@ import me.devsaki.hentoid.listener.ItemLongClickListener;
 /**
  * Created by avluis on 04/23/2016.
  * <p/>
- * TODO: Add tvSite, tvStatus, tvSavedDate
+ * TODO: Add tvSavedDate
  */
 public class ContentHolder extends RecyclerView.ViewHolder implements
         OnClickListener, OnLongClickListener {
@@ -23,8 +23,7 @@ public class ContentHolder extends RecyclerView.ViewHolder implements
     public final TextView tvSeries;
     public final TextView tvArtist;
     public final TextView tvTags;
-//    public final TextView tvSite;
-//    public final TextView tvStatus;
+    public final ImageView ivSite;
 //    public final TextView tvSavedDate;
 
     private ItemClickListener mClickListener;
@@ -39,8 +38,7 @@ public class ContentHolder extends RecyclerView.ViewHolder implements
         tvSeries = (TextView) itemView.findViewById(R.id.tvSeries);
         tvArtist = (TextView) itemView.findViewById(R.id.tvArtist);
         tvTags = (TextView) itemView.findViewById(R.id.tvTags);
-//        tvSite = (TextView) itemView.findViewById(R.id.tvSite);
-//        tvStatus = (TextView) itemView.findViewById(R.id.tvStatus);
+        ivSite = (ImageView) itemView.findViewById(R.id.ivSite);
 //        tvSavedDate = (TextView) itemView.findViewById(R.id.tvSavedDate);
 
         this.mClickListener = clickListener;

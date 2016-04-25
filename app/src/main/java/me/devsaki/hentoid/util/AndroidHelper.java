@@ -105,6 +105,13 @@ public class AndroidHelper {
         }
     }
 
+    public static void viewContent(Content content, final Context context) {
+        Intent intent = new Intent(context, content.getWebActivityClass());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra(Constants.INTENT_URL, content.getGalleryUrl());
+        context.startActivity(intent);
+    }
+
     public static File getThumb(Content content, Context context) {
         File dir = AndroidHelper.getContentDownloadDir(content, context);
 
