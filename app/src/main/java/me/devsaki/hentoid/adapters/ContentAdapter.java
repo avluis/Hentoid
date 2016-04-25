@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
@@ -20,6 +21,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.holders.ContentHolder;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemLongClickListener;
+import me.devsaki.hentoid.listener.ItemTouchListener;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -27,7 +29,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
  */
-public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
+public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
+        implements ItemTouchListener {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
     private final Context cxt;
@@ -188,9 +191,38 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         notifyItemInserted(position);
     }
 
+    // TODO: Remove item from db and file system
     public void remove(Content item) {
         int position = contents.indexOf(item);
+        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" +
+                // ", db and file system" +
+                ".");
         contents.remove(position);
         notifyItemRemoved(position);
+    }
+
+    // TODO: Apply changes to db
+    @Override
+    public boolean onItemMove(int fromPosition, int toPosition) {
+        if (fromPosition < toPosition) {
+            for (int i = fromPosition; i < toPosition; i++) {
+                Collections.swap(contents, i, i + 1);
+            }
+        } else {
+            for (int i = fromPosition; i > toPosition; i--) {
+                Collections.swap(contents, i, i - 1);
+            }
+        }
+        LogHelper.d(TAG, "Moving item: " + contents.get(toPosition).getTitle() + " from position: "
+                + fromPosition + " to position: " + toPosition);
+        notifyItemMoved(fromPosition, toPosition);
+        return true;
+    }
+
+    @Override
+    public void onItemDismiss(int position) {
+        Content item = contents.get(position);
+        LogHelper.d(TAG, "Item dismissed: " + item.getTitle());
+        remove(item);
     }
 }

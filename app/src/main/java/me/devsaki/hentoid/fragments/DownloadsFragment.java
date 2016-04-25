@@ -19,6 +19,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,6 +50,7 @@ import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsImport;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.util.SimpleItemTouchHelper;
 
 /**
  * Created by avluis on 04/10/2016.
@@ -353,6 +355,16 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             mLayoutManager.onRestoreInstanceState(mListState);
         }
 
+        setUpAdapter();
+
+        if (result == null) {
+            update();
+        } else {
+            setCurrentPage();
+        }
+    }
+
+    private void setUpAdapter() {
         if (mAdapter == null) {
             mAdapter = new ContentAdapter(mContext, result);
             mAdapter.setOnItemClickListener(this);
@@ -361,11 +373,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             mListView.setAdapter(mAdapter);
         }
 
-        if (result == null) {
-            update();
-        } else {
-            setCurrentPage();
-        }
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelper(mAdapter);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
+        touchHelper.attachToRecyclerView(mListView);
     }
 
     private void setCurrentPage() {
@@ -623,7 +633,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     @Override
     public void onItemLongClick(View view, int position) {
-        AndroidHelper.toast(mContext, "Not yet implemented");
+        AndroidHelper.toast(mContext, "Drag item up/down to re-arrange list.");
         LogHelper.d(TAG, result.get(position).getTitle() + " long clicked.");
     }
 }
