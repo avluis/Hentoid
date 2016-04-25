@@ -5,6 +5,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     app:cardCornerRadius="2dp"
+    app:cardElevation="5dp"
     app:cardUseCompatPadding="true">
 
     <RelativeLayout
@@ -17,7 +18,7 @@
             android:layout_height="wrap_content"
             android:background="@color/white"
             android:orientation="vertical"
-            android:padding="5dp">
+            android:padding="10dp">
 
             <TextView
                 android:id="@+id/tvTitle"

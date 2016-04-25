@@ -187,4 +187,15 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     public void setOnItemLongClickListener(ItemLongClickListener longClickListener) {
         this.mLongClickListener = longClickListener;
     }
+
+    public void add(int position, Content item) {
+        contents.add(position, item);
+        notifyItemInserted(position);
+    }
+
+    public void remove(Content item) {
+        int position = contents.indexOf(item);
+        contents.remove(position);
+        notifyItemRemoved(position);
+    }
 }

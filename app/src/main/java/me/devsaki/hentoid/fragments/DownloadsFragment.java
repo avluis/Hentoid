@@ -85,6 +85,11 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private int mDrawerState;
     private boolean shouldHide;
     private SearchContent search;
+    private LinearLayoutManager mLayoutManager;
+    private Parcelable mListState;
+    private boolean permissionChecked;
+    private boolean isLastPage;
+    private boolean isLoaded;
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
 
         @Override
@@ -100,10 +105,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             }
         }
     };
-    private LinearLayoutManager mLayoutManager;
-    private Parcelable mListState;
-    private boolean permissionChecked;
-    private boolean isLastPage;
 
     public static DownloadsFragment newInstance() {
         return new DownloadsFragment();
@@ -115,7 +116,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 REQUEST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
             queryPrefs();
-            update();
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
             if (permissionChecked) {
@@ -325,6 +325,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         if (qtyPages != newQtyPages) {
             setQuery("");
             qtyPages = newQtyPages;
+            update();
         }
 
         if (order != trackOrder) {
@@ -350,6 +351,22 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         if (mListState != null) {
             mLayoutManager.onRestoreInstanceState(mListState);
         }
+
+        if (mAdapter == null) {
+            mAdapter = new ContentAdapter(mContext, result);
+            mAdapter.setOnItemClickListener(this);
+            mAdapter.setOnItemLongClickListener(this);
+        }
+
+        if (result == null) {
+            update();
+        } else {
+            setCurrentPage();
+        }
+    }
+
+    private void setCurrentPage() {
+        btnPage.setText(String.valueOf(currentPage));
     }
 
     @Override
@@ -432,14 +449,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         mListView = (RecyclerView) rootView.findViewById(R.id.list);
         emptyText = (TextView) rootView.findViewById(R.id.empty);
 
+        mListView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(mLayoutManager);
-
-        mAdapter = new ContentAdapter(mContext, result);
-        mListView.setAdapter(mAdapter);
-
-        this.mAdapter.setOnItemClickListener(this);
-        this.mAdapter.setOnItemLongClickListener(this);
 
         mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
         mDrawerLayout.addDrawerListener(this);
@@ -470,11 +482,11 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 if (qtyPages <= 0) {
                     AndroidHelper.toast(mContext, R.string.not_limit_per_page);
                 } else {
-                    if (isLastPage) {
-                        AndroidHelper.toast(mContext, R.string.not_next_page);
-                    } else {
+                    if (!isLastPage && isLoaded) {
                         currentPage++;
                         update();
+                    } else {
+                        AndroidHelper.toast(mContext, R.string.not_next_page);
                     }
                 }
             }
@@ -522,16 +534,19 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             AndroidHelper.toast(mContext, R.string.press_back_again);
         }
         clearQuery(1);
+
         return false;
     }
 
     public void update() {
         searchContent();
+        setCurrentPage();
     }
 
     private void searchContent() {
         search = new SearchContent(mContext, this, query, currentPage, qtyPages,
                 order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+        isLoaded = false;
     }
 
     private void displayResults() {
@@ -569,8 +584,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 LogHelper.d(TAG, "Not on the last page.");
             }
         }
-
-        btnPage.setText(String.valueOf(currentPage));
+        isLoaded = true;
     }
 
     @Override
@@ -599,7 +613,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     @Override
     public void onItemClick(View view, int position) {
-        AndroidHelper.toast(mContext, result.get(position).getTitle() + " clicked.");
+        AndroidHelper.toast(mContext, "Opening: " + result.get(position).getTitle());
 
         AndroidHelper.openContent(result.get(position), mContext);
     }
