@@ -63,11 +63,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     public void onBindViewHolder(ContentHolder holder, int position) {
         final Content content = contents.get(position);
 
-        // These two should(?) always match
-        LogHelper.d(TAG, "Adapter Position: " + holder.getAdapterPosition());
-        // Even if these two are the same, you want to use this one:
-        LogHelper.d(TAG, "Layout Position: " + holder.getLayoutPosition());
-
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
         String templateTvArtist = cxt.getResources().getString(R.string.tvArtists);
         String templateTvTags = cxt.getResources().getString(R.string.tvTags);

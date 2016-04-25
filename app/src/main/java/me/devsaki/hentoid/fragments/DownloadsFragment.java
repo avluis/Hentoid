@@ -100,6 +100,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 if (percent >= 0) {
                     LogHelper.d(TAG, "Download Progress: " + percent);
                 } else {
+                    // TODO: Update ContentAdapter#add instead
                     update();
                 }
             }
@@ -356,6 +357,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             mAdapter = new ContentAdapter(mContext, result);
             mAdapter.setOnItemClickListener(this);
             mAdapter.setOnItemLongClickListener(this);
+        } else {
+            mListView.setAdapter(mAdapter);
         }
 
         if (result == null) {
