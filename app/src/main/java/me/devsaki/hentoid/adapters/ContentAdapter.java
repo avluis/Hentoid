@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
@@ -199,24 +198,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
                 ".");
         contents.remove(position);
         notifyItemRemoved(position);
-    }
-
-    // TODO: Apply changes to db
-    @Override
-    public boolean onItemMove(int fromPosition, int toPosition) {
-        if (fromPosition < toPosition) {
-            for (int i = fromPosition; i < toPosition; i++) {
-                Collections.swap(contents, i, i + 1);
-            }
-        } else {
-            for (int i = fromPosition; i > toPosition; i--) {
-                Collections.swap(contents, i, i - 1);
-            }
-        }
-        LogHelper.d(TAG, "Moving item: " + contents.get(toPosition).getTitle() + " from position: "
-                + fromPosition + " to position: " + toPosition);
-        notifyItemMoved(fromPosition, toPosition);
-        return true;
     }
 
     @Override

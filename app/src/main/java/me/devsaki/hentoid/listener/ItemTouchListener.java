@@ -5,7 +5,5 @@ package me.devsaki.hentoid.listener;
  * Item Touch Listener
  */
 public interface ItemTouchListener {
-    boolean onItemMove(int fromPosition, int toPosition);
-
     void onItemDismiss(int position);
 }
