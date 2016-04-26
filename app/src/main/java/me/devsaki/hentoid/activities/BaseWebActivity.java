@@ -368,7 +368,7 @@ public class BaseWebActivity extends BaseActivity {
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             webViewIsLoading = true;
-            fabRefreshOrStop.setImageResource(R.drawable.ic_action_stop);
+            fabRefreshOrStop.setImageResource(R.drawable.ic_action_clear);
             fabRefreshOrStop.show();
             fabDownloads.show();
             hideFab(fabDownload);

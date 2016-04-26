@@ -373,9 +373,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             mListView.setAdapter(mAdapter);
         }
 
-        ItemTouchHelper.Callback callback = new SimpleItemTouchHelper(mAdapter);
-        ItemTouchHelper touchHelper = new ItemTouchHelper(callback);
-        touchHelper.attachToRecyclerView(mListView);
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelper(mContext, mAdapter);
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(callback);
+        mItemTouchHelper.attachToRecyclerView(mListView);
     }
 
     private void setCurrentPage() {
@@ -627,13 +627,12 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     @Override
     public void onItemClick(View view, int position) {
         AndroidHelper.toast(mContext, "Opening: " + result.get(position).getTitle());
-
         AndroidHelper.openContent(result.get(position), mContext);
     }
 
     @Override
     public void onItemLongClick(View view, int position) {
-        AndroidHelper.toast(mContext, "Drag item up/down to re-arrange list.");
+        AndroidHelper.toast(mContext, "Not yet implemented.");
         LogHelper.d(TAG, result.get(position).getTitle() + " long clicked.");
     }
 }

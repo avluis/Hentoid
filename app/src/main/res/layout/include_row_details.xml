@@ -59,6 +59,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal|start"
+            android:layout_marginBottom="5dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginLeft="1dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginStart="1dp"
             android:singleLine="false"
             android:textAppearance="?android:attr/textAppearanceSmall"
             tools:text="tag1, tag2, tag3, etc." />

@@ -63,7 +63,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
     }
 
     @Override
-    public void onBindViewHolder(ContentHolder holder, int position) {
+    public void onBindViewHolder(final ContentHolder holder, int position) {
         final Content content = contents.get(position);
 
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
@@ -168,6 +168,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
         }
     }
 
+    public void setOnItemLongClickListener(ItemLongClickListener longClickListener) {
+        this.mLongClickListener = longClickListener;
+    }
+
+    public void add(int position, Content item) {
+        contents.add(position, item);
+        notifyItemInserted(position);
+    }
+
+    public void setOnItemClickListener(ItemClickListener clickListener) {
+        this.mClickListener = clickListener;
+    }
+
     @Override
     public long getItemId(int position) {
         return contents.get(position).getId();
@@ -176,19 +189,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
     @Override
     public int getItemCount() {
         return (null != contents ? contents.size() : 0);
-    }
-
-    public void setOnItemClickListener(ItemClickListener clickListener) {
-        this.mClickListener = clickListener;
-    }
-
-    public void setOnItemLongClickListener(ItemLongClickListener longClickListener) {
-        this.mLongClickListener = longClickListener;
-    }
-
-    public void add(int position, Content item) {
-        contents.add(position, item);
-        notifyItemInserted(position);
     }
 
     // TODO: Remove item from db and file system

@@ -31,4 +31,7 @@
     <dimen name="about_ic_icons_height">30dp</dimen>
     <dimen name="about_ic_icons_textSize">12sp</dimen>
     <dimen name="about_textSize">12sp</dimen>
+
+    <!-- card view -->
+    <dimen name="ic_clear_margin">16dp</dimen>
 </resources>

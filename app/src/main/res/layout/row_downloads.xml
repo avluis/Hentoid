@@ -4,50 +4,50 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:foreground="?attr/selectableItemBackground"
     app:cardCornerRadius="2dp"
     app:cardElevation="5dp"
     app:cardUseCompatPadding="true">
 
     <RelativeLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/white">
 
         <LinearLayout
             android:id="@+id/row_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
             android:orientation="vertical"
-            android:padding="10dp">
+            android:paddingBottom="5dp"
+            android:paddingEnd="1dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="1dp"
+            android:paddingStart="10dp">
 
-            <TextView
-                android:id="@+id/tvTitle"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|start"
-                android:layout_marginLeft="5dp"
-                android:layout_marginRight="5dp"
-                android:ellipsize="marquee"
-                android:focusable="true"
-                android:focusableInTouchMode="true"
-                android:marqueeRepeatLimit="marquee_forever"
-                android:scrollHorizontally="true"
-                android:singleLine="true"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textColor="@android:color/holo_red_dark"
-                android:textStyle="bold"
-                tools:text="Title: Name" />
+                android:layout_height="?listPreferredItemHeightSmall">
 
-            <View
-                android:layout_width="fill_parent"
-                android:layout_height="1dp"
-                android:layout_marginBottom="5dp"
-                android:layout_marginEnd="10dp"
-                android:layout_marginLeft="1dp"
-                android:layout_marginRight="10dp"
-                android:layout_marginStart="1dp"
-                android:layout_marginTop="5dp"
-                android:background="@android:color/holo_red_light" />
+                <TextView
+                    android:id="@+id/tvTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginRight="15dp"
+                    android:ellipsize="marquee"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:marqueeRepeatLimit="marquee_forever"
+                    android:scrollHorizontally="true"
+                    android:singleLine="true"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    android:textColor="@android:color/holo_red_dark"
+                    android:textStyle="bold"
+                    tools:text="This is a rather long title, just because we need it to be." />
+
+            </FrameLayout>
 
             <include layout="@layout/include_row_details" />
 
