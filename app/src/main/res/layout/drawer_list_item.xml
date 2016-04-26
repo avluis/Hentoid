@@ -6,7 +6,7 @@
     android:foreground="?android:attr/selectableItemBackground"
     android:minHeight="@dimen/drawer_item_height"
     android:orientation="horizontal"
-    tools:background="@color/drawer_item_background">
+    tools:background="@color/drawer_list_background">
 
     <TextView
         android:id="@+id/drawer_item_title"

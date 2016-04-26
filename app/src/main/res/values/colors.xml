@@ -24,9 +24,7 @@
     <color name="transparent">#00000000</color>
 
     <!-- Drawer Layout -->
-    <color name="drawer_header_background">@color/very_dark_red_2</color>
     <color name="drawer_list_background">@color/very_dark_red_2</color>
-    <color name="drawer_item_background">@color/very_dark_red</color>
     <color name="drawer_item_selected_background">@color/very_dark_mostly_black_red</color>
     <color name="drawer_item_unselected_background">@color/very_dark_red</color>
     <color name="drawer_item_tint_color">@color/white</color>

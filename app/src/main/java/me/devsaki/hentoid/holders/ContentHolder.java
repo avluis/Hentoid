@@ -1,7 +1,8 @@
 package me.devsaki.hentoid.holders;
 
 import android.graphics.Color;
-import android.support.v7.widget.DrawableUtils;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,8 +30,9 @@ public class ContentHolder extends RecyclerView.ViewHolder implements
     public final ImageView ivSite;
     // public final TextView tvSavedDate;
 
-    private ItemClickListener mClickListener;
-    private ItemLongClickListener mLongClickListener;
+    private final ItemClickListener mClickListener;
+    private final ItemLongClickListener mLongClickListener;
+    private Drawable currentBg;
 
     public ContentHolder(final View itemView,
                          ItemClickListener clickListener, ItemLongClickListener longClickListener) {
@@ -71,11 +73,21 @@ public class ContentHolder extends RecyclerView.ViewHolder implements
     @Override
     public void onItemSelected() {
         String bgColor = "#400404";
+        currentBg = itemView.getBackground();
         itemView.setBackgroundColor(Color.parseColor(bgColor));
     }
 
     @Override
     public void onItemClear() {
-        itemView.setBackgroundColor(0);
+        if (currentBg != null) {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+                //noinspection deprecation
+                itemView.setBackgroundDrawable(currentBg);
+            } else {
+                itemView.setBackground(currentBg);
+            }
+        } else {
+            itemView.setBackgroundColor(0);
+        }
     }
 }

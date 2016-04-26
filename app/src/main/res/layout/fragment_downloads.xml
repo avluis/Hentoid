@@ -8,12 +8,7 @@
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/downloads_toolbar"
-        android:layout_marginLeft="10dp"
-        android:layout_marginRight="10dp"
-        android:divider="@color/transparent"
-        android:dividerHeight="10dp"
-        android:scrollbars="none" />
+        android:layout_above="@+id/downloads_toolbar"/>
 
     <TextView
         android:id="@+id/empty"
