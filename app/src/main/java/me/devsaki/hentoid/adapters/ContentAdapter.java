@@ -64,7 +64,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         if (holder.itemView.isSelected()) {
-            LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle() + " is selected.");
+            LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle()
+                    + " is a selected item currently in view.");
         }
 
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
@@ -185,12 +186,28 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
+                // If focusItem is set, ignore
+                if (focusedItem != -1) {
+                    // If focusItem is the same as set, unset
+                    if (holder.getLayoutPosition() == focusedItem) {
+                        notifyItemChanged(focusedItem);
+                        holder.itemView.setSelected(false);
+                        notifyItemChanged(focusedItem);
+                        focusedItem = -1;
+                        LogHelper.d(TAG, "Position: " + holder.getLayoutPosition()
+                                + ": " + content.getTitle() + " has been unselected.");
+                    }
+                    return true;
+                }
+
+                // If focusItem is not set, set
                 notifyItemChanged(focusedItem);
                 focusedItem = holder.getLayoutPosition();
                 notifyItemChanged(focusedItem);
 
                 AndroidHelper.toast(cxt, "Not yet implemented.");
-                LogHelper.d(TAG, content.getTitle() + " long clicked.");
+                LogHelper.d(TAG, "Position: " + holder.getAdapterPosition()
+                        + ": " + content.getTitle() + " has been selected.");
 
                 return true;
             }

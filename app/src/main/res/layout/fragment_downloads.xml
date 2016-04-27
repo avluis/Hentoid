@@ -22,6 +22,17 @@
         android:textColor="@color/white"
         android:visibility="gone" />
 
+    <TextView
+        android:id="@+id/loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/downloads_toolbar"
+        android:gravity="center"
+        android:text="@string/downloads_loading"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/white"
+        android:visibility="gone" />
+
     <include
         android:id="@+id/downloads_toolbar"
         layout="@layout/include_downloads_toolbar"

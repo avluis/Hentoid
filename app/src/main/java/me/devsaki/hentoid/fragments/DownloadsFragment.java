@@ -56,7 +56,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * TODO: Retain list when paused
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
-        SearchContent.ContentInterface {
+        SearchContent.Callback {
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
@@ -69,11 +69,12 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private static int order;
     private static boolean orderUpdated;
     private final Handler searchHandler = new Handler();
+    private TextView loadingText;
     private TextView emptyText;
     private Button btnPage;
     private RecyclerView mListView;
     private ContentAdapter mAdapter;
-    private List<Content> result;
+    private List<Content> result = new ArrayList<>();
     private Context mContext;
     private MenuItem searchMenu;
     private SearchView searchView;
@@ -349,22 +350,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         if (mListState != null) {
             mLayoutManager.onRestoreInstanceState(mListState);
         }
-
-        setUpAdapter();
-
-        if (result == null) {
-            update();
-        } else {
-            setCurrentPage();
-        }
-    }
-
-    private void setUpAdapter() {
-        if (mAdapter == null) {
-            mAdapter = new ContentAdapter(mContext, result);
-        } else {
-            mListView.setAdapter(mAdapter);
-        }
     }
 
     private void setCurrentPage() {
@@ -449,11 +434,19 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
         mListView = (RecyclerView) rootView.findViewById(R.id.list);
+        loadingText = (TextView) rootView.findViewById(R.id.loading);
         emptyText = (TextView) rootView.findViewById(R.id.empty);
 
         mListView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(mLayoutManager);
+        mAdapter = new ContentAdapter(mContext, result);
+        mListView.setAdapter(mAdapter);
+
+        if (mAdapter.getItemCount() == 0) {
+            mListView.setVisibility(View.GONE);
+            loadingText.setVisibility(View.VISIBLE);
+        }
 
         mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
         mDrawerLayout.addDrawerListener(this);
@@ -546,37 +539,43 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     private void searchContent() {
-        search = new SearchContent(mContext, this, query, currentPage, qtyPages,
+        search = new SearchContent(mContext, query, currentPage, qtyPages,
                 order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+        search.retrieveResults(this);
         isLoaded = false;
     }
 
     private void displayResults() {
         List<Content> contents;
         result = search.getContent();
+        loadingText.setVisibility(View.GONE);
 
         if (result != null && !result.isEmpty()) {
             contents = result;
             emptyText.setVisibility(View.GONE);
-            LogHelper.d(TAG, "Content: Match.");
+            mListView.setVisibility(View.VISIBLE);
+            LogHelper.d(TAG, "Result: Match.");
         } else {
             contents = new ArrayList<>(0);
-            LogHelper.d(TAG, "Content: No match.");
+            LogHelper.d(TAG, "Result: No match.");
             if (!query.equals("")) {
+                mListView.setVisibility(View.GONE);
                 emptyText.setText(R.string.search_entry_not_found);
                 emptyText.setVisibility(View.VISIBLE);
-            } else {
+            } else if (isLoaded) {
+                mListView.setVisibility(View.GONE);
                 emptyText.setText(R.string.downloads_empty);
                 emptyText.setVisibility(View.VISIBLE);
             }
         }
 
-        if (contents == result || contents.isEmpty()) {
+        if (contents == result) {
             mAdapter.setContentList(result);
             mListView.setAdapter(mAdapter);
             LogHelper.d(TAG, "Adapter set.");
 
-            LogHelper.d(TAG, mAdapter.getItemCount());
+            LogHelper.d(TAG, "Items in page: " + mAdapter.getItemCount());
+            LogHelper.d(TAG, "Items per page setting: " + qtyPages);
 
             if (mAdapter.getItemCount() < qtyPages) {
                 isLastPage = true;
@@ -585,6 +584,10 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 isLastPage = false;
                 LogHelper.d(TAG, "Not on the last page.");
             }
+        } else if (contents.isEmpty()) {
+            LogHelper.d(TAG, "All empty.");
+        } else {
+            LogHelper.d(TAG, "What about me?");
         }
         isLoaded = true;
     }
@@ -608,7 +611,17 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     @Override
-    public void onContentReady() {
-        displayResults();
+    public void onContentReady(boolean success) {
+        if (success) {
+            LogHelper.d(TAG, "Contents have loaded.");
+            displayResults();
+        }
+    }
+
+    @Override
+    public void onContentFailed(boolean failure) {
+        if (failure) {
+            LogHelper.d(TAG, "Contents failed to load.");
+        }
     }
 }
