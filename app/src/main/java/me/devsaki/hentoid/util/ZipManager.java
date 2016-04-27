@@ -12,6 +12,8 @@ import java.util.zip.ZipOutputStream;
 /**
  * Created by avluis on 8/25/15.
  * General Compression/Extraction utility.
+ * <p/>
+ * TODO: For future use
  */
 public class ZipManager {
     private static final String TAG = LogHelper.makeLogTag(ZipManager.class);

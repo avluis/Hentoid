@@ -6,14 +6,13 @@ import android.support.v4.app.Fragment;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.database.SearchContent;
 
 /**
  * Created by avluis on 04/10/2016.
  * Basic Fragment Abstract Class
  * Implementations receive an onBackPressed handled by the hosting activity.
  */
-public abstract class BaseFragment extends Fragment implements SearchContent.ContentInterface {
+public abstract class BaseFragment extends Fragment {
 
     private static HentoidDB db;
 

@@ -12,22 +12,21 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.listener.ItemTouchListener;
 import me.devsaki.hentoid.listener.ItemTouchViewListener;
 
 /**
  * Created by avluis on 04/25/2016.
  * Overrides and implements ItemTouchHelper.Callback
+ * <p/>
+ * TODO: For future use
  */
 public class SimpleItemTouchHelper extends ItemTouchHelper.Callback {
 
-    private final ItemTouchListener itemTouchListener;
     private Drawable background;
     private Drawable clearDrawable;
     private int clearDrawableMargin;
 
-    public SimpleItemTouchHelper(Context context, ItemTouchListener listener) {
-        itemTouchListener = listener;
+    public SimpleItemTouchHelper(Context context) {
         background = new ColorDrawable(ContextCompat.getColor(context, R.color.primary));
         clearDrawable = ContextCompat.getDrawable(context, R.drawable.ic_delete_forever);
         clearDrawable.setColorFilter(Color.WHITE, PorterDuff.Mode.SRC_ATOP);
@@ -41,23 +40,23 @@ public class SimpleItemTouchHelper extends ItemTouchHelper.Callback {
 
     @Override
     public boolean isItemViewSwipeEnabled() {
-        return true;
+        return false;
+    }
+
+    @Override
+    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+        // Disabled.
     }
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        return makeFlag(ItemTouchHelper.ACTION_STATE_SWIPE, ItemTouchHelper.START);
+        return 0;
     }
 
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder,
                           RecyclerView.ViewHolder target) {
         return false;
-    }
-
-    @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-        itemTouchListener.onItemDismiss(viewHolder.getAdapterPosition());
     }
 
     @Override

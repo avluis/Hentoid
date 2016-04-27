@@ -19,7 +19,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -42,15 +41,12 @@ import me.devsaki.hentoid.activities.IntroSlideActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.listener.ItemClickListener;
-import me.devsaki.hentoid.listener.ItemLongClickListener;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
 import me.devsaki.hentoid.util.ConstantsImport;
 import me.devsaki.hentoid.util.ConstantsPreferences;
 import me.devsaki.hentoid.util.LogHelper;
-import me.devsaki.hentoid.util.SimpleItemTouchHelper;
 
 /**
  * Created by avluis on 04/10/2016.
@@ -58,10 +54,9 @@ import me.devsaki.hentoid.util.SimpleItemTouchHelper;
  * <p/>
  * TODO: Add additional UI elements to CardView.
  * TODO: Retain list when paused
- * {@link #searchContent()}
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
-        ItemClickListener, ItemLongClickListener {
+        SearchContent.ContentInterface {
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
@@ -367,15 +362,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private void setUpAdapter() {
         if (mAdapter == null) {
             mAdapter = new ContentAdapter(mContext, result);
-            mAdapter.setOnItemClickListener(this);
-            mAdapter.setOnItemLongClickListener(this);
         } else {
             mListView.setAdapter(mAdapter);
         }
-
-        ItemTouchHelper.Callback callback = new SimpleItemTouchHelper(mContext, mAdapter);
-        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(callback);
-        mItemTouchHelper.attachToRecyclerView(mListView);
     }
 
     private void setCurrentPage() {
@@ -619,20 +608,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     @Override
-    public void onContentReady(boolean ready) {
-        LogHelper.d(TAG, "Content ready? " + ready);
+    public void onContentReady() {
         displayResults();
-    }
-
-    @Override
-    public void onItemClick(View view, int position) {
-        AndroidHelper.toast(mContext, "Opening: " + result.get(position).getTitle());
-        AndroidHelper.openContent(result.get(position), mContext);
-    }
-
-    @Override
-    public void onItemLongClick(View view, int position) {
-        AndroidHelper.toast(mContext, "Not yet implemented.");
-        LogHelper.d(TAG, result.get(position).getTitle() + " long clicked.");
     }
 }

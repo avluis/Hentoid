@@ -16,15 +16,13 @@ import me.devsaki.hentoid.util.LogHelper;
  */
 public class SearchContent {
     private static final String TAG = LogHelper.makeLogTag(SearchContent.class);
-
-    private final HentoidDB db;
-    private Context mContext;
     private static int counter = 0;
-
+    private final HentoidDB db;
     private final String mQuery;
     private final int mPage;
     private final int mQty;
     private final boolean mOrder;
+    private Context mContext;
     private List<Content> contentList = new ArrayList<>();
 
     public SearchContent(final Context context, final ContentInterface contentInterface,
@@ -36,7 +34,6 @@ public class SearchContent {
         }
 
         mContext = context.getApplicationContext();
-        //contentInterface.onContentReady(false);
 
         mQuery = query;
         mPage = page;
@@ -64,7 +61,7 @@ public class SearchContent {
             @Override
             protected void onPostExecute(List<Content> contents) {
                 contentList = contents;
-                contentInterface.onContentReady(true);
+                contentInterface.onContentReady();
             }
         }.execute();
     }
@@ -78,6 +75,6 @@ public class SearchContent {
     }
 
     public interface ContentInterface {
-        void onContentReady(boolean ready);
+        void onContentReady();
     }
 }

@@ -1,27 +1,19 @@
 package me.devsaki.hentoid.holders;
 
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.view.View.OnLongClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.listener.ItemClickListener;
-import me.devsaki.hentoid.listener.ItemLongClickListener;
-import me.devsaki.hentoid.listener.ItemTouchViewListener;
 
 /**
  * Created by avluis on 04/23/2016.
  * <p/>
  * TODO: Add tvSavedDate
  */
-public class ContentHolder extends RecyclerView.ViewHolder implements
-        OnClickListener, OnLongClickListener, ItemTouchViewListener {
+public class ContentHolder extends RecyclerView.ViewHolder {
+
     public final TextView tvTitle;
     public final ImageView ivCover;
     public final TextView tvSeries;
@@ -30,12 +22,7 @@ public class ContentHolder extends RecyclerView.ViewHolder implements
     public final ImageView ivSite;
     // public final TextView tvSavedDate;
 
-    private final ItemClickListener mClickListener;
-    private final ItemLongClickListener mLongClickListener;
-    private Drawable currentBg;
-
-    public ContentHolder(final View itemView,
-                         ItemClickListener clickListener, ItemLongClickListener longClickListener) {
+    public ContentHolder(final View itemView) {
         super(itemView);
 
         tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
@@ -46,48 +33,6 @@ public class ContentHolder extends RecyclerView.ViewHolder implements
         ivSite = (ImageView) itemView.findViewById(R.id.ivSite);
         // tvSavedDate = (TextView) itemView.findViewById(R.id.tvSavedDate);
 
-        this.mClickListener = clickListener;
-        this.mLongClickListener = longClickListener;
-
-        itemView.setOnClickListener(this);
-        itemView.setOnLongClickListener(this);
-
         itemView.setClickable(true);
-    }
-
-    @Override
-    public void onClick(View v) {
-        if (mClickListener != null) {
-            mClickListener.onItemClick(v, getLayoutPosition());
-        }
-    }
-
-    @Override
-    public boolean onLongClick(View v) {
-        if (mLongClickListener != null) {
-            mLongClickListener.onItemLongClick(v, getLayoutPosition());
-        }
-        return true;
-    }
-
-    @Override
-    public void onItemSelected() {
-        String bgColor = "#400404";
-        currentBg = itemView.getBackground();
-        itemView.setBackgroundColor(Color.parseColor(bgColor));
-    }
-
-    @Override
-    public void onItemClear() {
-        if (currentBg != null) {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
-                //noinspection deprecation
-                itemView.setBackgroundDrawable(currentBg);
-            } else {
-                itemView.setBackground(currentBg);
-            }
-        } else {
-            itemView.setBackgroundColor(0);
-        }
     }
 }

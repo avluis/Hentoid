@@ -10,11 +10,13 @@
     <color name="white">#FFFFFF</color>
 
     <!-- Red -->
-    <color name="very_dark_mostly_black_red">#2b0202</color>
+    <color name="red_accent_700">#d50000</color>
     <color name="very_dark_red">#400404</color>
     <color name="very_dark_red_2">#400000</color>
+    <color name="very_dark_mostly_black_red">#2b0202</color>
+    <color name="very_pale_red">#ffd2d8</color>
     <color name="material_red_50">#ffebee</color>
-    <color name="red_accent_700">#d50000</color>
+    <color name="material_red_100">#FFFFCDD2</color>
 
     <!-- Pink -->
     <color name="material_pink_300">#F06292</color>

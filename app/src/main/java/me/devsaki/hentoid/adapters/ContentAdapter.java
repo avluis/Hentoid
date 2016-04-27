@@ -18,9 +18,6 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.holders.ContentHolder;
-import me.devsaki.hentoid.listener.ItemClickListener;
-import me.devsaki.hentoid.listener.ItemLongClickListener;
-import me.devsaki.hentoid.listener.ItemTouchListener;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -28,14 +25,12 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
  */
-public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
-        implements ItemTouchListener {
+public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
     private final Context cxt;
     private List<Content> contents = new ArrayList<>();
-    private ItemClickListener mClickListener;
-    private ItemLongClickListener mLongClickListener;
+    private int focusedItem = -1;
 
     public ContentAdapter(Context cxt, final List<Content> contents) {
         this.cxt = cxt;
@@ -45,11 +40,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
     public void setContentList(List<Content> contentList) {
         this.contents = contentList;
         updateContentList();
-        // For the first few pages, this should reflect 'Quantity Per Page' setting
-        LogHelper.d(TAG, "Number of items in view: " + getItemCount());
     }
 
-    public void updateContentList() {
+    private void updateContentList() {
+        focusedItem = -1;
         this.notifyDataSetChanged();
     }
 
@@ -58,12 +52,20 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
         final View view = LayoutInflater.from(parent.getContext()).inflate(
                 R.layout.row_downloads, parent, false);
 
-        return new ContentHolder(view, mClickListener, mLongClickListener);
+        return new ContentHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final ContentHolder holder, int position) {
+    public void onBindViewHolder(final ContentHolder holder, final int position) {
         final Content content = contents.get(position);
+
+        if (focusedItem != -1) {
+            holder.itemView.setSelected(focusedItem == position);
+        }
+
+        if (holder.itemView.isSelected()) {
+            LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle() + " is selected.");
+        }
 
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
         String templateTvArtist = cxt.getResources().getString(R.string.tvArtists);
@@ -165,19 +167,39 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
         } else {
             holder.ivSite.setVisibility(View.GONE);
         }
-    }
 
-    public void setOnItemLongClickListener(ItemLongClickListener longClickListener) {
-        this.mLongClickListener = longClickListener;
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (focusedItem != -1) {
+                    notifyItemChanged(focusedItem);
+                    focusedItem = -1;
+                    notifyItemChanged(focusedItem);
+                }
+
+                AndroidHelper.toast(cxt, "Opening: " + content.getTitle());
+                AndroidHelper.openContent(content, cxt);
+            }
+        });
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                notifyItemChanged(focusedItem);
+                focusedItem = holder.getLayoutPosition();
+                notifyItemChanged(focusedItem);
+
+                AndroidHelper.toast(cxt, "Not yet implemented.");
+                LogHelper.d(TAG, content.getTitle() + " long clicked.");
+
+                return true;
+            }
+        });
     }
 
     public void add(int position, Content item) {
         contents.add(position, item);
         notifyItemInserted(position);
-    }
-
-    public void setOnItemClickListener(ItemClickListener clickListener) {
-        this.mClickListener = clickListener;
     }
 
     @Override
@@ -198,12 +220,5 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder>
                 ".");
         contents.remove(position);
         notifyItemRemoved(position);
-    }
-
-    @Override
-    public void onItemDismiss(int position) {
-        Content item = contents.get(position);
-        LogHelper.d(TAG, "Item dismissed: " + item.getTitle());
-        remove(item);
     }
 }
