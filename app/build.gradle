@@ -62,6 +62,7 @@ android {
             proguardFiles(proGuardFileCollection)
 
             // Default proguard files & project app specific rules
+            //noinspection GroovyAssignabilityCheck
             proguardFile getDefaultProguardFile('proguard-android.txt')
             proguardFile 'proguard-project-app.pro'
 
