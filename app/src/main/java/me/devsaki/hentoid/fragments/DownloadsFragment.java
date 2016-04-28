@@ -583,6 +583,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         btnPage.setText(String.valueOf(currentPage));
     }
 
+    // TODO: Move visibility logic to external method
     private void displayResults() {
         List<Content> contents;
         result = search.getContent();
@@ -627,7 +628,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         } else {
             LogHelper.d(TAG, "What about me?");
         }
-        isLoaded = true;
     }
 
     @Override
@@ -652,6 +652,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     public void onContentReady(boolean success) {
         if (success) {
             LogHelper.d(TAG, "Contents have loaded.");
+            isLoaded = true;
             displayResults();
         }
     }
@@ -660,6 +661,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     public void onContentFailed(boolean failure) {
         if (failure) {
             LogHelper.d(TAG, "Contents failed to load.");
+            isLoaded = false;
         }
     }
 }
