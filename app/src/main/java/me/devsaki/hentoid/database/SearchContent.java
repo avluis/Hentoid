@@ -31,7 +31,7 @@ public class SearchContent {
         // Rotating the screen should not cause an additional call
         if (mContext == null) {
             counter++;
-            LogHelper.d(TAG, "I've been called: " + counter + ((counter > 1) ? " times." : " time."));
+            LogHelper.d(TAG, "I've been called " + counter + ((counter > 1) ? " times." : " time."));
         }
 
         mContext = context.getApplicationContext();

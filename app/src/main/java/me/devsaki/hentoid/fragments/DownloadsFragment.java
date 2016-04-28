@@ -27,6 +27,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -52,8 +53,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
  * <p/>
- * TODO: Add additional UI elements to CardView.
- * TODO: Retain list when paused
+ * TODO: Add additional UI elements
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
         SearchContent.Callback {
@@ -71,6 +71,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private final Handler searchHandler = new Handler();
     private TextView loadingText;
     private TextView emptyText;
+    private LinearLayout downloadNav;
+    private LinearLayout downloadNavFrame;
     private Button btnPage;
     private RecyclerView mListView;
     private ContentAdapter mAdapter;
@@ -98,7 +100,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 if (percent >= 0) {
                     LogHelper.d(TAG, "Download Progress: " + percent);
                 } else {
-                    // TODO: Update ContentAdapter#add instead
+                    // TODO: Call ContentAdapter#add as well
                     update();
                 }
             }
@@ -113,7 +115,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private void checkPermissions() {
         if (AndroidHelper.permissionsCheck(getActivity(),
                 REQUEST_STORAGE_PERMISSION)) {
-            LogHelper.d(TAG, "Storage permission allowed!");
             queryPrefs();
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
@@ -307,7 +308,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     private void queryPrefs() {
+        LogHelper.d(TAG, "queryPrefs");
         if (settingDir.isEmpty()) {
+            LogHelper.d(TAG, "Where are my files?!");
             Intent intent = new Intent(getActivity(), ImportActivity.class);
             startActivity(intent);
             getActivity().finish();
@@ -317,17 +320,19 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
                 ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
 
-        int trackOrder = prefs.getInt(
-                ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
-                ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
-
         if (qtyPages != newQtyPages) {
+            LogHelper.d(TAG, "qtyPages updated");
             setQuery("");
             qtyPages = newQtyPages;
             update();
         }
 
+        int trackOrder = prefs.getInt(
+                ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
+                ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+
         if (order != trackOrder) {
+            LogHelper.d(TAG, "order updated");
             orderUpdated = true;
             order = trackOrder;
         }
@@ -350,10 +355,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         if (mListState != null) {
             mLayoutManager.onRestoreInstanceState(mListState);
         }
-    }
 
-    private void setCurrentPage() {
-        btnPage.setText(String.valueOf(currentPage));
+        checkResults();
     }
 
     @Override
@@ -361,6 +364,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         super.onPause();
 
         getContext().unregisterReceiver(receiver);
+
+        //isLoaded = false;
     }
 
     @Override
@@ -426,6 +431,11 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
         order = prefs.getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
                 ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+        qtyPages = Integer.parseInt(prefs.getString(
+                ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
+                ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+
+        LogHelper.d(TAG, "onCreate");
     }
 
     @Override
@@ -452,6 +462,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         mDrawerLayout.addDrawerListener(this);
 
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
+
+        downloadNav = (LinearLayout) rootView.findViewById(R.id.downloads_nav);
+        downloadNavFrame = (LinearLayout) rootView.findViewById(R.id.downloads_nav_frame);
 
         ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
         ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
@@ -480,7 +493,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                     if (!isLastPage && isLoaded) {
                         currentPage++;
                         update();
-                    } else {
+                    } else if (isLastPage) {
                         AndroidHelper.toast(mContext, R.string.not_next_page);
                     }
                 }
@@ -528,9 +541,30 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             backButtonPressed = System.currentTimeMillis();
             AndroidHelper.toast(mContext, R.string.press_back_again);
         }
-        clearQuery(1);
+
+        if (query.isEmpty()) {
+            LogHelper.d(TAG, "Query is empty.");
+        } else {
+            clearQuery(1);
+            LogHelper.d(TAG, "Cleared query.");
+        }
 
         return false;
+    }
+
+    private void checkResults() {
+        if (result != null) {
+            LogHelper.d(TAG, "Result is not null.");
+            LogHelper.d(TAG, "isLoaded: " + isLoaded);
+            if (result.isEmpty() && !isLoaded) {
+                LogHelper.d(TAG, "Result is empty!");
+                update();
+            } else {
+                setCurrentPage();
+            }
+        } else {
+            LogHelper.d(TAG, "Result is null.");
+        }
     }
 
     public void update() {
@@ -539,10 +573,14 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     private void searchContent() {
+        isLoaded = false;
         search = new SearchContent(mContext, query, currentPage, qtyPages,
                 order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
         search.retrieveResults(this);
-        isLoaded = false;
+    }
+
+    private void setCurrentPage() {
+        btnPage.setText(String.valueOf(currentPage));
     }
 
     private void displayResults() {

@@ -42,7 +42,7 @@
         android:ems="8"
         android:gravity="center"
         android:inputType="numberPassword"
-        android:singleLine="true"
+        android:maxLines="1"
         android:textColor="@color/white"
         android:textSize="16sp">
 

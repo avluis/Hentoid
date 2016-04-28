@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
@@ -34,8 +35,12 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
 
         initializeToolbar();
         setTitle(getToolbarTitle());
+    }
 
-        resetDownloadCount();
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 
     private void resetDownloadCount() {
@@ -58,6 +63,7 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
         super.onResume();
 
         updateDrawerPosition();
+        resetDownloadCount();
     }
 
     @Override

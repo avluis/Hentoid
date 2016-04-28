@@ -32,7 +32,7 @@
 
                 <TextView
                     android:id="@+id/tvTitle"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginEnd="15dp"
@@ -40,8 +40,9 @@
                     android:ellipsize="marquee"
                     android:focusable="true"
                     android:focusableInTouchMode="true"
+                    android:lines="1"
                     android:marqueeRepeatLimit="marquee_forever"
-                    android:scrollHorizontally="true"
+                    android:maxLines="1"
                     android:singleLine="true"
                     android:textAppearance="?android:attr/textAppearanceMedium"
                     android:textColor="@android:color/holo_red_dark"

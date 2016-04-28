@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="?attr/actionBarSize"
-    android:theme="@style/Base.Theme.AppCompat.CompactMenu">
+    android:theme="@style/Base.Theme.AppCompat.CompactMenu"
+    app:contentInsetEnd="0dp"
+    app:contentInsetStart="0dp">
 
     <LinearLayout
-        android:id="@+id/download_nav"
+        android:id="@+id/downloads_nav"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
@@ -48,6 +51,26 @@
             android:scaleType="fitXY"
             android:src="@drawable/ic_action_refresh"
             tools:ignore="ContentDescription" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/downloads_nav_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/material_red_100"
+        android:minHeight="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        tools:background="@color/white">
+
+        <TextView
+            android:id="@+id/downloads_item_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:maxLines="1"
+            android:text="@string/title_activity_downloads"
+            tools:background="@color/transparent" />
     </LinearLayout>
 
 </android.support.v7.widget.Toolbar>

@@ -29,12 +29,6 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:ellipsize="marquee"
-            android:focusable="true"
-            android:focusableInTouchMode="true"
-            android:marqueeRepeatLimit="marquee_forever"
-            android:scrollHorizontally="true"
-            android:singleLine="true"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/holo_red_dark"
             android:textStyle="bold"
@@ -61,7 +55,7 @@
                 android:id="@+id/ivCover"
                 android:layout_width="100dp"
                 android:layout_height="140dp"
-                android:layout_margin="1dp"
+                android:padding="1dp"
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_placeholder" />
 
@@ -76,7 +70,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:singleLine="false"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@android:color/black"
                     tools:text="Best Series Ever" />
@@ -86,7 +79,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
-                    android:singleLine="false"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@android:color/black"
                     tools:text="Best Author Ever" />
@@ -107,7 +99,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal|start"
-                    android:singleLine="false"
+                    android:layout_marginBottom="5dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginLeft="1dp"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginStart="1dp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     android:textColor="@android:color/black"
                     tools:text="Best Set of TAGs Ever\nToo Awesome to pass up" />
@@ -138,7 +134,6 @@
                 android:gravity="center_horizontal"
                 android:paddingLeft="10dp"
                 android:paddingRight="10dp"
-                android:singleLine="false"
                 android:textAppearance="?android:attr/textAppearanceSmall"
                 android:textColor="@color/white"
                 tools:text="Not FAKKU" />
