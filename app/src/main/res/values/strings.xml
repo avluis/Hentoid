@@ -53,7 +53,8 @@
     <string name="not_limit_per_page">Not limit per page.</string>
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
-    <string name="on_first_page">Moved to first page.</string>
+    <string name="on_first_page">Already on the first page.</string>
+    <string name="moving_to_first_page">Moving to first page.</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
     <string name="back_exit">Come back soon!</string>
 

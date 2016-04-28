@@ -473,13 +473,13 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         btnPrevious.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (currentPage > 1) {
+                if (currentPage > 1 && isLoaded) {
                     currentPage--;
                     update();
-                } else if (qtyPages > 0) {
+                } else if (qtyPages > 0 && isLoaded) {
                     AndroidHelper.toast(mContext, R.string.not_previous_page);
                 } else {
-                    AndroidHelper.toast(mContext, R.string.not_limit_per_page);
+                    LogHelper.d(TAG, R.string.not_limit_per_page);
                 }
             }
         });
@@ -488,7 +488,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             @Override
             public void onClick(View v) {
                 if (qtyPages <= 0) {
-                    AndroidHelper.toast(mContext, R.string.not_limit_per_page);
+                    LogHelper.d(TAG, R.string.not_limit_per_page);
                 } else {
                     if (!isLastPage && isLoaded) {
                         currentPage++;
@@ -503,24 +503,28 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                update();
+                if (isLoaded) {
+                    update();
+                }
             }
         });
 
         btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if (currentPage != 1) {
+                if (currentPage != 1 && isLoaded) {
+                    AndroidHelper.toast(mContext, R.string.moving_to_first_page);
                     setQuery("");
                     update();
+
+                    return true;
+                } else if (currentPage == 1 && isLoaded) {
                     AndroidHelper.toast(mContext, R.string.on_first_page);
 
                     return true;
-                } else {
-                    update();
-
-                    return true;
                 }
+
+                return false;
             }
         });
 
