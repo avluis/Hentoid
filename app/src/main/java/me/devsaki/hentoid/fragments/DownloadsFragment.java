@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -7,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -60,6 +63,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
+    private final static int SHOW_LOADING = 1;
+    private final static int SHOW_BLANK = 2;
+    private final static int SHOW_RESULT = 3;
     private final static String LIST_STATE_KEY = "list_state";
     private static String query = "";
     private static int currentPage = 1;
@@ -90,6 +96,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private boolean permissionChecked;
     private boolean isLastPage;
     private boolean isLoaded;
+    private ObjectAnimator animator;
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
 
         @Override
@@ -99,7 +106,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 double percent = bundle.getDouble(DownloadService.INTENT_PERCENT_BROADCAST);
                 if (percent >= 0) {
                     LogHelper.d(TAG, "Download Progress: " + percent);
-                } else {
+                } else if (isLoaded) {
                     // TODO: Call ContentAdapter#add as well
                     update();
                 }
@@ -286,8 +293,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             searchView.clearFocus();
             searchView.setIconified(true);
         }
-        query = "";
-        setQuery(query);
+        setQuery(query = "");
         update();
     }
 
@@ -364,8 +370,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         super.onPause();
 
         getContext().unregisterReceiver(receiver);
-
-        //isLoaded = false;
     }
 
     @Override
@@ -434,8 +438,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         qtyPages = Integer.parseInt(prefs.getString(
                 ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
                 ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
-
-        LogHelper.d(TAG, "onCreate");
     }
 
     @Override
@@ -572,8 +574,60 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     public void update() {
+        toggleUI(SHOW_LOADING);
         searchContent();
         setCurrentPage();
+    }
+
+    private void toggleUI(int mode) {
+        switch (mode) {
+            case SHOW_LOADING:
+                mListView.setVisibility(View.GONE);
+                emptyText.setVisibility(View.GONE);
+                loadingText.setVisibility(View.VISIBLE);
+                startAnimation();
+                break;
+            case SHOW_BLANK:
+                mListView.setVisibility(View.GONE);
+                emptyText.setVisibility(View.VISIBLE);
+                loadingText.setVisibility(View.GONE);
+                break;
+            case SHOW_RESULT:
+                mListView.setVisibility(View.VISIBLE);
+                emptyText.setVisibility(View.GONE);
+                loadingText.setVisibility(View.GONE);
+                break;
+            default:
+                stopAnimation();
+                loadingText.setVisibility(View.GONE);
+        }
+    }
+
+    private void startAnimation() {
+        int POWER_LEVEL = 9000;
+
+        Drawable[] compoundDrawables = loadingText.getCompoundDrawables();
+        for (Drawable drawable : compoundDrawables) {
+            if (drawable == null) {
+                continue;
+            }
+
+            animator = ObjectAnimator.ofInt(drawable, "level", 0, POWER_LEVEL);
+            animator.setRepeatCount(ValueAnimator.INFINITE);
+            animator.setRepeatMode(ValueAnimator.REVERSE);
+            animator.start();
+        }
+    }
+
+    private void stopAnimation() {
+        Drawable[] compoundDrawables = loadingText.getCompoundDrawables();
+        for (Drawable drawable : compoundDrawables) {
+            if (drawable == null) {
+                continue;
+            }
+
+            animator.cancel();
+        }
     }
 
     private void searchContent() {
@@ -591,24 +645,21 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private void displayResults() {
         List<Content> contents;
         result = search.getContent();
-        loadingText.setVisibility(View.GONE);
+        toggleUI(0);
 
         if (result != null && !result.isEmpty()) {
             contents = result;
-            emptyText.setVisibility(View.GONE);
-            mListView.setVisibility(View.VISIBLE);
+            toggleUI(SHOW_RESULT);
             LogHelper.d(TAG, "Result: Match.");
         } else {
             contents = new ArrayList<>(0);
             LogHelper.d(TAG, "Result: No match.");
             if (!query.equals("")) {
-                mListView.setVisibility(View.GONE);
                 emptyText.setText(R.string.search_entry_not_found);
-                emptyText.setVisibility(View.VISIBLE);
+                toggleUI(SHOW_BLANK);
             } else if (isLoaded) {
-                mListView.setVisibility(View.GONE);
                 emptyText.setText(R.string.downloads_empty);
-                emptyText.setVisibility(View.VISIBLE);
+                toggleUI(SHOW_BLANK);
             }
         }
 
@@ -664,6 +715,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     @Override
     public void onContentFailed(boolean failure) {
         if (failure) {
+            // TODO: Log to Analytics
             LogHelper.d(TAG, "Contents failed to load.");
             isLoaded = false;
         }
