@@ -99,7 +99,7 @@ public class NhentaiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("//nhentai.net/g/")) {
-                AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
+                AndroidHelper.executeAsyncTask(new JsonLoader(), url + "json");
             }
         }
 
@@ -134,7 +134,7 @@ public class NhentaiActivity extends BaseWebActivity {
         }
     }
 
-    private class LoaderJson extends AsyncTask<String, Integer, Content> {
+    private class JsonLoader extends AsyncTask<String, Integer, Content> {
         @Override
         protected Content doInBackground(String... params) {
             String url = params[0];

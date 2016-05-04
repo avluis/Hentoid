@@ -1,12 +1,11 @@
 package me.devsaki.hentoid.activities;
 
-import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -17,7 +16,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 
-import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.AndroidHelper;
@@ -27,22 +26,16 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by Shiro on 1/20/2016.
  * Implements Hitomi.la source
- * <p/>
- * TODO: Re-implement without use of JavaScript:
- * {@link HitomiWebViewClient#onPageFinished(WebView, String)}
- * Ref: http://goo.gl/UfIsZs
  */
 public class HitomiActivity extends BaseWebActivity {
     private static final String TAG = LogHelper.makeLogTag(HitomiActivity.class);
 
-    @SuppressLint("AddJavascriptInterface")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setSite(Site.HITOMI);
         super.onCreate(savedInstanceState);
 
         webView.setWebViewClient(new HitomiWebViewClient());
-        webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
 
         boolean bWebViewOverview = AndroidHelper.getWebViewOverviewPrefs();
         int webViewInitialZoom = AndroidHelper.getWebViewInitialZoomPrefs();
@@ -116,34 +109,26 @@ public class HitomiActivity extends BaseWebActivity {
         }
 
         @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            String js = getResources().getString(R.string.grab_html_from_webview);
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
 
             if (url.contains("//hitomi.la/galleries/")) {
-                // following calls PageLoadListener.processHTML(*)
-                // Conditional fixes issue with loadUrl("javascript:") on Android 4.4+
-                if (Build.VERSION.SDK_INT >= 19) {
-                    view.evaluateJavascript(js, new ValueCallback<String>() {
-                        @Override
-                        public void onReceiveValue(String s) {
-                            // Ignored - our js returns null
-                        }
-                    });
-                } else {
-                    view.loadUrl(js);
-                }
+                AndroidHelper.executeAsyncTask(new HtmlLoader(), url);
             }
         }
     }
 
-    private class PageLoadListener {
-        @JavascriptInterface
-        public void processHTML(String html) {
-            if (html == null) {
-                return;
+    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
+        @Override
+        protected Content doInBackground(String... params) {
+            String url = params[0];
+            try {
+                processContent(HitomiParser.parseContent(url));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            processContent(HitomiParser.parseContent(html));
+
+            return null;
         }
     }
 }

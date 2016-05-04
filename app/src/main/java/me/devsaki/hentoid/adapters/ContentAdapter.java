@@ -42,7 +42,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         updateContentList();
     }
 
-    private void updateContentList() {
+    public void updateContentList() {
         focusedItem = -1;
         this.notifyDataSetChanged();
     }

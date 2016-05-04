@@ -1,20 +1,19 @@
 package me.devsaki.hentoid.activities;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
-import android.os.Build;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
-import android.webkit.JavascriptInterface;
-import android.webkit.ValueCallback;
 import android.webkit.WebView;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.TsuminoParser;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -23,9 +22,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Implements tsumino source
  * <p/>
  * TODO: Implement Pop-Up/Ad filters
- * TODO: Re-implement without use of JavaScript:
- * {@link TsuminoWebViewClient#onPageFinished(WebView, String)}
- * Ref: http://goo.gl/UfIsZs
  */
 public class TsuminoActivity extends BaseWebActivity {
     private static final String TAG = LogHelper.makeLogTag(TsuminoActivity.class);
@@ -33,14 +29,12 @@ public class TsuminoActivity extends BaseWebActivity {
     private boolean downloadFabPressed = false;
     private int historyIndex;
 
-    @SuppressLint("AddJavascriptInterface")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setSite(Site.TSUMINO);
         super.onCreate(savedInstanceState);
 
         webView.setWebViewClient(new TsuminoWebViewClient());
-        webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -79,27 +73,10 @@ public class TsuminoActivity extends BaseWebActivity {
                             url.contains("//www.tsumino.com/Read/AuthProcess"))) {
                 downloadFabPressed = false;
             }
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            super.onPageFinished(view, url);
-            String js = getResources().getString(R.string.grab_html_from_webview);
 
             if (url.contains("//www.tsumino.com/Book/Info/")) {
-                // following calls PageLoadListener.processHTML(*)
-                // Conditional fixes issue with loadUrl("javascript:") on Android 4.4+
-                if (Build.VERSION.SDK_INT >= 19) {
-                    view.evaluateJavascript(js, new ValueCallback<String>() {
-                        @Override
-                        public void onReceiveValue(String s) {
-                            // Ignored - our js returns null
-                        }
-                    });
-                } else {
-                    view.loadUrl(js);
-                }
-            } else if (url.contains("//www.tsumino.com/Read/View/") && downloadFabPressed) {
+                AndroidHelper.executeAsyncTask(new HtmlLoader(), url);
+            } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;
                 int currentIndex = webView.copyBackForwardList().getCurrentIndex();
                 webView.goBackOrForward(historyIndex - currentIndex);
@@ -108,13 +85,17 @@ public class TsuminoActivity extends BaseWebActivity {
         }
     }
 
-    private class PageLoadListener {
-        @JavascriptInterface
-        public void processHTML(String html) {
-            if (html == null) {
-                return;
+    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
+        @Override
+        protected Content doInBackground(String... params) {
+            String url = params[0];
+            try {
+                processContent(TsuminoParser.parseContent(url));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            processContent(TsuminoParser.parseContent(html));
+
+            return null;
         }
     }
 }

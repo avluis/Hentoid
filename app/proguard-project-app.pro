@@ -76,25 +76,9 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
--keepclassmembers class * {
-    @android.webkit.JavascriptInterface <methods>;
-}
 
--keepattributes JavascriptInterface
 -keepattributes InnerClasses
 -keepattributes EnclosingMethod
-
--keep public class me.devsaki.hentoid.activities.HitomiActivity$PageLoadListener
--keep public class * implements me.devsaki.hentoid.activities.HitomiActivity$PageLoadListener
--keepclassmembers class me.devsaki.hentoid.activities.HitomiActivity$PageLoadListener {
-   <methods>;
-}
-
--keep public class me.devsaki.hentoid.activities.TsuminoActivity$PageLoadListener
--keep public class * implements me.devsaki.hentoid.activities.TsuminoActivity$PageLoadListener
--keepclassmembers class me.devsaki.hentoid.activities.TsuminoActivity$PageLoadListener {
-   <methods>;
-}
 
 -keep class com.github.paolorotolo.** {*;}
 

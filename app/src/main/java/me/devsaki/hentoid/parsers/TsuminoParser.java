@@ -5,6 +5,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,10 +22,10 @@ import me.devsaki.hentoid.util.AttributeMap;
  */
 public class TsuminoParser {
 
-    public static Content parseContent(String html) {
-        Document doc = Jsoup.parse(html);
-        Elements content = doc.select("div.book-line");
+    public static Content parseContent(String urlString) throws IOException {
+        Document doc = Jsoup.connect(urlString).get();
 
+        Elements content = doc.select("div.book-line");
         if (content.size() > 0) {
             String url = doc
                     .select("div.book-page-cover a")

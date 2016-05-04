@@ -6,10 +6,12 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
 import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.DownloadsFragment;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
+import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -68,8 +70,7 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
 
     @Override
     protected String getToolbarTitle() {
-        // return AndroidHelper.getActivityName(mContext, R.string.title_activity_downloads);
-        return "Experimental";
+        return AndroidHelper.getActivityName(mContext, R.string.title_activity_downloads);
     }
 
     @Override

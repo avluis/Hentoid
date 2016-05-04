@@ -57,6 +57,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * Presents the list of downloaded works to the user.
  * <p/>
  * TODO: Add additional UI elements
+ * Because of the way we load data, and the need to not make unnecessary load calls:
+ * TODO: If fragment resumed via back stack navigation & if db has new content, refresh result
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
         SearchContent.Callback {
@@ -107,7 +109,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 if (percent >= 0) {
                     LogHelper.d(TAG, "Download Progress: " + percent);
                 } else if (isLoaded) {
-                    // TODO: Call ContentAdapter#add as well
+                    mAdapter.updateContentList();
                     update();
                 }
             }
@@ -408,7 +410,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
              * {@link StrictMode.ThreadPolicy.Builder#detectNetwork()}
              */
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-                    //        .detectDiskReads()
+//                    .detectDiskReads()
                     .detectDiskWrites()
                     .detectNetwork()
                     .penaltyLog()
@@ -421,7 +423,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                     .detectLeakedSqlLiteObjects()
                     .detectLeakedClosableObjects()
                     .penaltyLog()
-                    //        .penaltyDeath()
+//                    .penaltyDeath()
                     .build());
         }
         super.onCreate(savedInstanceState);
@@ -522,6 +524,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                     return true;
                 } else if (currentPage == 1 && isLoaded) {
                     AndroidHelper.toast(mContext, R.string.on_first_page);
+                    update();
 
                     return true;
                 }
@@ -641,7 +644,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         btnPage.setText(String.valueOf(currentPage));
     }
 
-    // TODO: Move visibility logic to external method
     private void displayResults() {
         List<Content> contents;
         result = search.getContent();

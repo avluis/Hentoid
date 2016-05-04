@@ -5,6 +5,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +22,9 @@ import me.devsaki.hentoid.util.AttributeMap;
  */
 public class HitomiParser {
 
-    public static Content parseContent(String html) {
-        Document doc = Jsoup.parse(html);
+    public static Content parseContent(String urlString) throws IOException {
+        Document doc = Jsoup.connect(urlString).get();
+
         Elements content = doc.select(".content");
         if (content.size() > 0) {
             String coverImageUrlTEMP = "https:" + content.select(".cover img").attr("src");
