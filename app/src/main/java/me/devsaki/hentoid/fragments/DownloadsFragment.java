@@ -80,7 +80,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private TextView loadingText;
     private TextView emptyText;
     private LinearLayout downloadNav;
-    private LinearLayout downloadNavFrame;
     private Button btnPage;
     private RecyclerView mListView;
     private ContentAdapter mAdapter;
@@ -164,24 +163,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(GravityCompat.START);
-        shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
-                mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
-
-        if (!shouldHide) {
-            MenuItemCompat.collapseActionView(searchMenu);
-            menu.findItem(R.id.action_search).setVisible(false);
-
-            if (order == 0) {
-                menu.findItem(R.id.action_order_by_date).setVisible(false);
-            } else {
-                menu.findItem(R.id.action_order_alphabetic).setVisible(false);
-            }
-        }
-    }
-
-    @Override
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_content_list, menu);
 
@@ -195,22 +176,14 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 new MenuItemCompat.OnActionExpandListener() {
                     @Override
                     public boolean onMenuItemActionExpand(MenuItem item) {
-                        if (order == 0) {
-                            menu.findItem(R.id.action_order_by_date).setVisible(false);
-                        } else {
-                            menu.findItem(R.id.action_order_alphabetic).setVisible(false);
-                        }
+                        toggleSortMenuItem(menu, false);
 
                         return true;
                     }
 
                     @Override
                     public boolean onMenuItemActionCollapse(MenuItem item) {
-                        if (order == 0) {
-                            menu.findItem(R.id.action_order_by_date).setVisible(true);
-                        } else {
-                            menu.findItem(R.id.action_order_alphabetic).setVisible(true);
-                        }
+                        toggleSortMenuItem(menu, true);
 
                         if (!query.equals("")) {
                             query = "";
@@ -265,6 +238,31 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             // Save current sort order
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
         }
+
+        menu.findItem(R.id.action_delete).setVisible(false);
+    }
+
+    @Override
+    public void onPrepareOptionsMenu(Menu menu) {
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(GravityCompat.START);
+        shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
+                mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
+
+        if (!shouldHide) {
+            MenuItemCompat.collapseActionView(searchMenu);
+            menu.findItem(R.id.action_search).setVisible(false);
+            menu.findItem(R.id.action_delete).setVisible(false);
+
+            toggleSortMenuItem(menu, false);
+        }
+    }
+
+    private void toggleSortMenuItem(Menu menu, boolean show) {
+        if (order == 0) {
+            menu.findItem(R.id.action_order_by_date).setVisible(show);
+        } else {
+            menu.findItem(R.id.action_order_alphabetic).setVisible(show);
+        }
     }
 
     @Override
@@ -273,15 +271,15 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             case R.id.action_order_alphabetic:
                 orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
-                getActivity().invalidateOptionsMenu();
                 update();
+                getActivity().invalidateOptionsMenu();
 
                 return true;
             case R.id.action_order_by_date:
                 orderUpdated = true;
                 order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
-                getActivity().invalidateOptionsMenu();
                 update();
+                getActivity().invalidateOptionsMenu();
 
                 return true;
             default:
@@ -468,7 +466,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
 
         downloadNav = (LinearLayout) rootView.findViewById(R.id.downloads_nav);
-        downloadNavFrame = (LinearLayout) rootView.findViewById(R.id.downloads_nav_frame);
 
         ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
         ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);

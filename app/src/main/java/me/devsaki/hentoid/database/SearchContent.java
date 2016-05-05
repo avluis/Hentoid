@@ -17,30 +17,21 @@ import me.devsaki.hentoid.util.LogHelper;
 public class SearchContent {
     private static final String TAG = LogHelper.makeLogTag(SearchContent.class);
 
-    private static int counter = 0;
     private final HentoidDB db;
     private final String mQuery;
     private final int mPage;
     private final int mQty;
     private final boolean mOrder;
     private volatile State mCurrentState = State.NON_INITIALIZED;
-    private Context mContext;
     private List<Content> contentList = new ArrayList<>();
 
     public SearchContent(final Context context, String query, int page, int qty, boolean order) {
-        // Rotating the screen should not cause an additional call
-        if (mContext == null) {
-            counter++;
-            LogHelper.d(TAG, "I've been called " + counter + ((counter > 1) ? " times." : " time."));
-        }
-
-        mContext = context.getApplicationContext();
         mQuery = query;
         mPage = page;
         mQty = qty;
         mOrder = order;
 
-        db = new HentoidDB(mContext);
+        db = new HentoidDB(context.getApplicationContext());
     }
 
     public List<Content> getContent() {

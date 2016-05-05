@@ -12,6 +12,7 @@
     <string name="menu_search">Search</string>
     <string name="menu_order_alphabetically">order alphabetic</string>
     <string name="menu_order_date">order by date</string>
+    <string name="menu_delete">Delete</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
     <!-- Floating Action Buttons -->
     <string name="read">Read</string>
