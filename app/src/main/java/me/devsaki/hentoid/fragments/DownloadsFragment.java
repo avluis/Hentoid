@@ -79,7 +79,9 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private final Handler searchHandler = new Handler();
     private TextView loadingText;
     private TextView emptyText;
-    private LinearLayout downloadNav;
+    private LinearLayout toolbarLayout;
+    private LinearLayout navigationLayout;
+    private LinearLayout contextLayout;
     private Button btnPage;
     private RecyclerView mListView;
     private ContentAdapter mAdapter;
@@ -91,6 +93,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private DrawerLayout mDrawerLayout;
     private int mDrawerState;
     private boolean shouldHide;
+    private boolean hideToolbar;
     private SearchContent search;
     private LinearLayoutManager mLayoutManager;
     private Parcelable mListState;
@@ -465,7 +468,35 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
 
-        downloadNav = (LinearLayout) rootView.findViewById(R.id.downloads_nav);
+        toolbarLayout = (LinearLayout) rootView.findViewById(R.id.downloads_toolbar);
+        navigationLayout = (LinearLayout) rootView.findViewById(R.id.downloads_nav);
+        contextLayout = (LinearLayout) rootView.findViewById(R.id.downloads_context);
+
+        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+
+                if (hideToolbar) {
+                    toolbarLayout.setVisibility(View.GONE);
+                } else {
+                    toolbarLayout.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                LogHelper.d(TAG, "dx: " + dx);
+                LogHelper.d(TAG, "dy: " + dy);
+
+                if (dy > 10) {
+                    hideToolbar = true;
+                } else if (dy < -1) {
+                    hideToolbar = false;
+                }
+            }
+        });
 
         ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
         ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
