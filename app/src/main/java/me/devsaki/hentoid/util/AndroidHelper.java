@@ -58,7 +58,7 @@ public class AndroidHelper {
 
     private static Toast sToast;
 
-    public static void openContent(Content content, final Context context) {
+    public static void openContent(final Context context, Content content) {
         SharedPreferences sp = HentoidApplication.getAppPreferences();
         File dir = AndroidHelper.getContentDownloadDir(content, context);
 

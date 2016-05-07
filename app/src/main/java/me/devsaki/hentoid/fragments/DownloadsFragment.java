@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.view.ActionMode;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -77,6 +78,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private static int order;
     private static boolean orderUpdated;
     private final Handler searchHandler = new Handler();
+    private ActionMode mActionMode;
     private TextView loadingText;
     private TextView emptyText;
     private LinearLayout toolbarLayout;
@@ -241,8 +243,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             // Save current sort order
             editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
         }
-
-        menu.findItem(R.id.action_delete).setVisible(false);
     }
 
     @Override
@@ -254,7 +254,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         if (!shouldHide) {
             MenuItemCompat.collapseActionView(searchMenu);
             menu.findItem(R.id.action_search).setVisible(false);
-            menu.findItem(R.id.action_delete).setVisible(false);
 
             toggleSortMenuItem(menu, false);
         }
@@ -487,8 +486,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
-                LogHelper.d(TAG, "dx: " + dx);
-                LogHelper.d(TAG, "dy: " + dy);
 
                 if (dy > 10) {
                     hideToolbar = true;
@@ -562,6 +559,44 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         });
 
         return rootView;
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        LogHelper.d(TAG, "onActivityCreated");
+
+        ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.menu_context_menu, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.action_delete:
+                        LogHelper.d(TAG, "delete item");
+                        mode.finish();
+                        return true;
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                mActionMode = null;
+            }
+        };
     }
 
     @Override

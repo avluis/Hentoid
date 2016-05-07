@@ -18,6 +18,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.holders.ContentHolder;
+import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -30,7 +31,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private final Context cxt;
     private List<Content> contents = new ArrayList<>();
-    private int focusedItem = -1;
+    private int selectedItem = -1;
 
     public ContentAdapter(Context cxt, final List<Content> contents) {
         this.cxt = cxt;
@@ -43,7 +44,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     public void updateContentList() {
-        focusedItem = -1;
+        selectedItem = -1;
         this.notifyDataSetChanged();
     }
 
@@ -59,8 +60,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     public void onBindViewHolder(final ContentHolder holder, final int position) {
         final Content content = contents.get(position);
 
-        if (focusedItem != -1) {
-            holder.itemView.setSelected(focusedItem == position);
+        if (selectedItem != -1) {
+            holder.itemView.setSelected(selectedItem == position);
         }
 
         if (holder.itemView.isSelected()) {
@@ -169,54 +170,73 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setVisibility(View.GONE);
         }
 
-        holder.itemView.setOnClickListener(new View.OnClickListener() {
+        holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, position) {
+
             @Override
             public void onClick(View v) {
-                if (focusedItem != -1) {
-                    notifyItemChanged(focusedItem);
-                    focusedItem = -1;
-                    notifyItemChanged(focusedItem);
-                }
+                if (selectedItem != -1) {
+                    // If selectedItem is the same as set, unset
+                    if (selectedItem == holder.getLayoutPosition()) {
+                        notifyItemChanged(selectedItem);
+                        holder.itemView.setSelected(false);
+                        selectedItem = -1;
+                        notifyItemChanged(selectedItem);
 
-                AndroidHelper.toast(cxt, "Opening: " + content.getTitle());
-                AndroidHelper.openContent(content, cxt);
+                        setSelected(false, -1);
+
+                        super.onClick(v);
+                    } else {
+                        AndroidHelper.toast(cxt, "Please clear selection first.");
+                    }
+                } else {
+                    setSelected(false, -1);
+                    super.onClick(v);
+                }
             }
         });
 
-        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+        holder.itemView.setOnLongClickListener(new ItemClickListener(cxt, content, position) {
+
             @Override
             public boolean onLongClick(View v) {
                 // If focusItem is set, ignore
-                if (focusedItem != -1) {
+                if (selectedItem != -1) {
                     // If focusItem is the same as set, unset
-                    if (holder.getLayoutPosition() == focusedItem) {
-                        notifyItemChanged(focusedItem);
+                    if (holder.getLayoutPosition() == selectedItem) {
+                        notifyItemChanged(selectedItem);
                         holder.itemView.setSelected(false);
-                        notifyItemChanged(focusedItem);
-                        focusedItem = -1;
-                        LogHelper.d(TAG, "Position: " + holder.getLayoutPosition()
-                                + ": " + content.getTitle() + " has been unselected.");
+                        selectedItem = -1;
+                        notifyItemChanged(selectedItem);
+
+                        setSelected(false, -1);
+
+                        super.onLongClick(v);
+
+                        return true;
+                    } else {
+                        int focusedItem = holder.getLayoutPosition();
+
+                        setSelected(true, selectedItem);
+                        clearAndSelect(contents, focusedItem);
+
+                        return true;
                     }
+                } else if (selectedItem == -1) {
+                    // If focusItem is not set, set
+                    notifyItemChanged(selectedItem);
+                    selectedItem = holder.getLayoutPosition();
+                    notifyItemChanged(selectedItem);
+
+                    setSelected(true, selectedItem);
+
+                    super.onLongClick(v);
+
                     return true;
                 }
 
-                // If focusItem is not set, set
-                notifyItemChanged(focusedItem);
-                focusedItem = holder.getLayoutPosition();
-                notifyItemChanged(focusedItem);
-
-                AndroidHelper.toast(cxt, "Not yet implemented.");
-                LogHelper.d(TAG, "Position: " + holder.getAdapterPosition()
-                        + ": " + content.getTitle() + " has been selected.");
-
-                return true;
+                return false;
             }
         });
-    }
-
-    public void add(int position, Content item) {
-        contents.add(position, item);
-        notifyItemInserted(position);
     }
 
     @Override
@@ -227,6 +247,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     @Override
     public int getItemCount() {
         return (null != contents ? contents.size() : 0);
+    }
+
+    public void add(int position, Content item) {
+        contents.add(position, item);
+        notifyItemInserted(position);
     }
 
     // TODO: Remove item from db and file system

@@ -242,7 +242,7 @@ public class BaseWebActivity extends BaseActivity {
             currentContent = db.selectContentById(currentContent.getId());
             if (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()) {
-                AndroidHelper.openContent(currentContent, this);
+                AndroidHelper.openContent(this, currentContent);
             } else {
                 hideFab(fabRead);
             }
