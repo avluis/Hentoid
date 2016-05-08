@@ -295,7 +295,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         });
 
         if (holder.itemView.isSelected()) {
-            holder.itemView.findViewById(R.id.ivDelete)
+            holder.itemView.findViewById(R.id.delete)
                     .setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
