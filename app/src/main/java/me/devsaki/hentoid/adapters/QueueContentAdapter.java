@@ -136,7 +136,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
             holder.tvTags.setText(Html.fromHtml(tags));
 
-            File coverFile = AndroidHelper.getThumb(content, cxt);
+            File coverFile = AndroidHelper.getThumb(cxt, content);
             String image = coverFile != null ?
                     coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
@@ -227,7 +227,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void clearDownload(Content content) {
         if (content.getStatus() == StatusContent.CANCELED) {
-            File dir = AndroidHelper.getContentDownloadDir(content, cxt);
+            File dir = AndroidHelper.getContentDownloadDir(cxt, content);
 
             // This loves to fail
             try {

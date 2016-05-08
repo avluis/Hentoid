@@ -13,7 +13,6 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
@@ -37,7 +36,6 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
@@ -57,7 +55,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
  * <p/>
- * TODO: Add additional UI elements
  * Because of the way we load data, and the need to not make unnecessary load calls:
  * TODO: If fragment resumed via back stack navigation & if db has new content, refresh result
  */
@@ -402,30 +399,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        if (BuildConfig.DEBUG) {
-            // StrictMode to assist with refactoring
-            /** {@link StrictMode.ThreadPolicy},
-             * {@link StrictMode.ThreadPolicy.Builder#detectDiskReads()},
-             * {@link StrictMode.ThreadPolicy.Builder#detectDiskWrites()},
-             * {@link StrictMode.ThreadPolicy.Builder#detectNetwork()}
-             */
-            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
-//                    .detectDiskReads()
-                    .detectDiskWrites()
-                    .detectNetwork()
-                    .penaltyLog()
-                    .build());
-            /** {@link StrictMode.VmPolicy},
-             * {@link StrictMode.VmPolicy.Builder#detectLeakedSqlLiteObjects()},
-             * {@link StrictMode.VmPolicy.Builder#detectLeakedClosableObjects()}
-             */
-            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
-                    .detectLeakedSqlLiteObjects()
-                    .detectLeakedClosableObjects()
-                    .penaltyLog()
-//                    .penaltyDeath()
-                    .build());
-        }
         super.onCreate(savedInstanceState);
 
         setRetainInstance(true);

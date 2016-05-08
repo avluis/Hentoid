@@ -60,7 +60,7 @@ public class AndroidHelper {
 
     public static void openContent(final Context context, Content content) {
         SharedPreferences sp = HentoidApplication.getAppPreferences();
-        File dir = AndroidHelper.getContentDownloadDir(content, context);
+        File dir = AndroidHelper.getContentDownloadDir(context, content);
 
         File imageFile = null;
         File[] files = dir.listFiles();
@@ -89,31 +89,31 @@ public class AndroidHelper {
                         .setPositiveButton(R.string.open_default_image_viewer,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        openFile(file, context);
+                                        openFile(context, file);
                                     }
                                 })
                         .setNegativeButton(R.string.open_perfect_viewer,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        openPerfectViewer(file, context);
+                                        openPerfectViewer(context, file);
                                     }
                                 }).create().show();
             } else if (readContentPreference == ConstantsPreferences
                     .PREF_READ_CONTENT_PERFECT_VIEWER) {
-                openPerfectViewer(imageFile, context);
+                openPerfectViewer(context, imageFile);
             }
         }
     }
 
-    public static void viewContent(Content content, final Context context) {
+    public static void viewContent(final Context context, Content content) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Constants.INTENT_URL, content.getGalleryUrl());
         context.startActivity(intent);
     }
 
-    public static File getThumb(Content content, Context context) {
-        File dir = AndroidHelper.getContentDownloadDir(content, context);
+    public static File getThumb(Context context, Content content) {
+        File dir = AndroidHelper.getContentDownloadDir(context, content);
 
         File[] fileList = dir.listFiles(
                 new FileFilter() {
@@ -127,13 +127,13 @@ public class AndroidHelper {
         return fileList.length > 0 ? fileList[0] : null;
     }
 
-    public static File getContentDownloadDir(Content content, Context context) {
+    public static File getContentDownloadDir(Context context, Content content) {
         File file;
         SharedPreferences sp = HentoidApplication.getAppPreferences();
         String settingDir = sp.getString(Constants.SETTINGS_FOLDER, "");
         String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(folderDir, context);
+            return getDefaultDir(context, folderDir);
         }
         file = new File(settingDir, folderDir);
         if (!file.exists()) {
@@ -149,13 +149,13 @@ public class AndroidHelper {
         return file;
     }
 
-    public static File getSiteDownloadDir(Site site, Context context) {
+    public static File getSiteDownloadDir(Context context, Site site) {
         File file;
         SharedPreferences sp = HentoidApplication.getAppPreferences();
         String settingDir = sp.getString(Constants.SETTINGS_FOLDER, "");
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(folderDir, context);
+            return getDefaultDir(context, folderDir);
         }
         file = new File(settingDir, folderDir);
         if (!file.exists()) {
@@ -171,7 +171,7 @@ public class AndroidHelper {
         return file;
     }
 
-    public static File getDefaultDir(String dir, Context context) {
+    public static File getDefaultDir(Context context, String dir) {
         File file;
         try {
             file = new File(Environment.getExternalStorageDirectory()
@@ -262,7 +262,7 @@ public class AndroidHelper {
         editor.apply();
     }
 
-    private static void clearSharedPreferences(String prefsName, Context cxt) {
+    private static void clearSharedPreferences(Context cxt, String prefsName) {
         SharedPreferences sp = cxt.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.clear();
@@ -298,7 +298,7 @@ public class AndroidHelper {
         }
     }
 
-    private static void openFile(File aFile, Context context) {
+    private static void openFile(Context context, File aFile) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
@@ -326,7 +326,7 @@ public class AndroidHelper {
                 ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT);
     }
 
-    private static void openPerfectViewer(File firstImage, Context cxt) {
+    private static void openPerfectViewer(Context cxt, File firstImage) {
         try {
             Intent intent = cxt
                     .getPackageManager()

@@ -118,7 +118,7 @@ public class ImportActivity extends BaseActivity implements
                 LogHelper.d(TAG, "Default Directory Found.");
                 currentRootDirectory = file;
             } else {
-                currentRootDirectory = AndroidHelper.getDefaultDir("", this);
+                currentRootDirectory = AndroidHelper.getDefaultDir(this, "");
             }
             pickDownloadDirectory();
         } else {
@@ -257,7 +257,7 @@ public class ImportActivity extends BaseActivity implements
 
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(AndroidHelper.getSiteDownloadDir(s, this));
+            downloadDirs.add(AndroidHelper.getSiteDownloadDir(this, s));
         }
 
         List<File> files = new ArrayList<>();
@@ -431,7 +431,7 @@ public class ImportActivity extends BaseActivity implements
             downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {
                 // Grab all folders in site folders in storage directory
-                downloadDirs.add(AndroidHelper.getSiteDownloadDir(site, ImportActivity.this));
+                downloadDirs.add(AndroidHelper.getSiteDownloadDir(ImportActivity.this, site));
             }
 
             files = new ArrayList<>();

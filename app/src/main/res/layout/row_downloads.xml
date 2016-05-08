@@ -11,6 +11,7 @@
     app:cardUseCompatPadding="true">
 
     <RelativeLayout
+        android:id="@+id/item"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/row_item_selector">
@@ -30,24 +31,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="?listPreferredItemHeightSmall">
 
-                <TextView
+                <include
                     android:id="@+id/tvTitle"
+                    layout="@layout/include_row_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginEnd="15dp"
-                    android:layout_marginRight="15dp"
-                    android:ellipsize="marquee"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
-                    android:lines="1"
-                    android:marqueeRepeatLimit="marquee_forever"
-                    android:maxLines="1"
-                    android:singleLine="true"
-                    android:textAppearance="?android:attr/textAppearanceMedium"
-                    android:textColor="@android:color/holo_red_dark"
-                    android:textStyle="bold"
-                    tools:text="This is a rather long title, just because we need it to be." />
+                    android:layout_marginRight="15dp" />
 
             </FrameLayout>
 
@@ -89,4 +80,88 @@
             tools:ignore="ContentDescription" />
     </RelativeLayout>
 
+    <LinearLayout
+        android:id="@+id/item_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:weightSum="4">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="150dp"
+            android:layout_weight="3"
+            android:background="@drawable/row_item_selector"
+            android:orientation="vertical"
+            android:paddingBottom="5dp"
+            android:paddingEnd="1dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="1dp"
+            android:paddingStart="10dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="?listPreferredItemHeightSmall">
+
+                <include
+                    android:id="@+id/tvTitle2"
+                    layout="@layout/include_row_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginEnd="15dp"
+                    android:layout_marginRight="15dp" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/ivCover2"
+                    android:layout_width="75dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="5dp"
+                    android:layout_marginRight="5dp"
+                    android:adjustViewBounds="true"
+                    android:padding="1dp"
+                    android:scaleType="fitCenter"
+                    tools:ignore="ContentDescription"
+                    tools:src="@drawable/ic_placeholder" />
+
+                <TextView
+                    android:id="@+id/tvDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start|center_vertical"
+                    android:textAppearance="?android:attr/textAppearanceMedium"
+                    tools:text="Downloaded: 2016/06/24" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/card_item_src_other">
+
+            <ImageView
+                android:id="@+id/ivDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_centerVertical="true"
+                android:layout_gravity="center"
+                android:adjustViewBounds="true"
+                android:clickable="true"
+                android:padding="8dp"
+                android:src="@drawable/ic_delete_forever"
+                android:text="@string/delete"
+                tools:ignore="ContentDescription" />
+
+        </RelativeLayout>
+    </LinearLayout>
 </android.support.v7.widget.CardView>

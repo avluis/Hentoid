@@ -10,11 +10,18 @@ import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
@@ -38,12 +45,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
     private final Context cxt;
+    private final SimpleDateFormat sdf;
     private List<Content> contents = new ArrayList<>();
     private int selectedItem = -1;
 
     public ContentAdapter(Context cxt, final List<Content> contents) {
         this.cxt = cxt;
         this.contents = contents;
+        sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
     }
 
     public void setContentList(List<Content> contentList) {
@@ -72,9 +81,23 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.itemView.setSelected(selectedItem == position);
         }
 
+        RelativeLayout select = (RelativeLayout) holder.itemView.findViewById(R.id.item);
+        LinearLayout actions = (LinearLayout) holder.itemView.findViewById(R.id.item_actions);
+
         if (holder.itemView.isSelected()) {
             LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle()
                     + " is a selected item currently in view.");
+
+            select.setVisibility(View.GONE);
+            actions.setVisibility(View.VISIBLE);
+
+            holder.tvDate.setText(cxt.getResources().getString(R.string.download_date)
+                    .replace("@date", sdf.format(new Date(content.getDownloadDate()))));
+        } else {
+            select.setVisibility(View.VISIBLE);
+            actions.setVisibility(View.GONE);
+
+            holder.tvDate.setText(R.string.tvEmpty);
         }
 
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
@@ -83,16 +106,27 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         if (content.getTitle() == null) {
             holder.tvTitle.setText(R.string.tvEmpty);
+            if (holder.itemView.isSelected()) {
+                holder.tvTitle2.setText(R.string.tvEmpty);
+            }
         } else {
             holder.tvTitle.setText(content.getTitle());
             holder.tvTitle.setSelected(true);
+            if (holder.itemView.isSelected()) {
+                holder.tvTitle2.setText(content.getTitle());
+                holder.tvTitle2.setSelected(true);
+            }
         }
 
-        File coverFile = AndroidHelper.getThumb(content, cxt);
+        File coverFile = AndroidHelper.getThumb(cxt, content);
         String image = coverFile != null ?
                 coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
         HentoidApplication.getInstance().loadBitmap(image, holder.ivCover);
+
+        if (holder.itemView.isSelected()) {
+            HentoidApplication.getInstance().loadBitmap(image, holder.ivCover2);
+        }
 
         String series = "";
         List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
@@ -152,7 +186,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AndroidHelper.viewContent(content, cxt);
+                    AndroidHelper.viewContent(cxt, content);
                 }
             });
         } else {
@@ -181,7 +215,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 holder.ivError.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        downloadAgain(content, v);
+                        downloadAgain(content);
                     }
                 });
             } else {
@@ -259,9 +293,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 return false;
             }
         });
+
+        if (holder.itemView.isSelected()) {
+            holder.itemView.findViewById(R.id.ivDelete)
+                    .setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            deleteContent(content, holder);
+                        }
+                    });
+        }
     }
 
-    private void downloadAgain(final Content content, View v) {
+    private void downloadAgain(final Content content) {
         int images;
         int imgErrors = 0;
 
@@ -304,6 +348,34 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 .show();
     }
 
+    private void deleteContent(final Content content, final ContentHolder holder) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
+        builder.setMessage(R.string.ask_delete)
+                .setPositiveButton(android.R.string.yes,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                notifyItemChanged(selectedItem);
+                                holder.itemView.setSelected(false);
+                                selectedItem = -1;
+                                notifyItemChanged(selectedItem);
+                                deleteItem(content);
+                            }
+                        })
+                .setNegativeButton(android.R.string.no,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                notifyItemChanged(selectedItem);
+                                holder.itemView.setSelected(false);
+                                selectedItem = -1;
+                                notifyItemChanged(selectedItem);
+                            }
+                        })
+                .create()
+                .show();
+    }
+
     @Override
     public long getItemId(int position) {
         return contents.get(position).getId();
@@ -319,19 +391,33 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         notifyItemInserted(position);
     }
 
-    public void remove(Content item) {
+    private void remove(Content item) {
         int position = contents.indexOf(item);
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" + ".");
         contents.remove(position);
         notifyItemRemoved(position);
     }
 
-    // TODO: Remove item from db and file system
     private void deleteItem(Content item) {
-        int position = contents.indexOf(item);
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" +
                 ", db and file system" + ".");
-        contents.remove(position);
-        notifyItemRemoved(position);
+
+        final File dir = AndroidHelper.getContentDownloadDir(cxt, item);
+        HentoidDB db = new HentoidDB(cxt);
+
+        try {
+            FileUtils.deleteDirectory(dir);
+        } catch (IOException e) {
+            LogHelper.e(TAG, "Error deleting directory: ", e);
+        }
+
+        // TODO: Make Asynchronous
+        db.deleteContent(item);
+
+        AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content",
+                item.getTitle()));
+
+        remove(item);
+        notifyDataSetChanged();
     }
 }

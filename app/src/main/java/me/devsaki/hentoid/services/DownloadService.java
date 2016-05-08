@@ -100,7 +100,7 @@ public class DownloadService extends IntentService {
                     "Download Content: Start.");
 
             // Initialize
-            File dir = AndroidHelper.getContentDownloadDir(currentContent, this);
+            File dir = AndroidHelper.getContentDownloadDir(this, currentContent);
 
             // If the download directory already has files,
             // then we simply delete them, since this points to a failed download
