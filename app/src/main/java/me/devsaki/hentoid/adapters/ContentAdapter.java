@@ -1,7 +1,10 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
@@ -10,15 +13,20 @@ import android.view.ViewGroup;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.holders.ContentHolder;
 import me.devsaki.hentoid.listener.ItemClickListener;
+import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -152,20 +160,34 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         if (content.getStatus() != null) {
-            String status = content.getStatus().getDescription();
+            StatusContent status = content.getStatus();
             int bg;
             switch (status) {
-                case "Downloaded":
+                case DOWNLOADED:
                     bg = R.color.card_item_src_normal;
                     break;
-                case "Migrated":
+                case MIGRATED:
                     bg = R.color.card_item_src_migrated;
                     break;
                 default:
-                    LogHelper.d(TAG, status);
+                    LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle() +
+                            " - Status: " + status);
                     bg = R.color.card_item_src_other;
             }
             holder.ivSite.setBackgroundColor(ContextCompat.getColor(cxt, bg));
+
+            if (status == StatusContent.ERROR) {
+                holder.ivError.setVisibility(View.VISIBLE);
+                holder.ivError.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        downloadAgain(content, v);
+                    }
+                });
+            } else {
+                holder.ivError.setVisibility(View.GONE);
+            }
+
         } else {
             holder.ivSite.setVisibility(View.GONE);
         }
@@ -239,6 +261,49 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         });
     }
 
+    private void downloadAgain(final Content content, View v) {
+        int images;
+        int imgErrors = 0;
+
+        images = content.getImageFiles().size();
+
+        for (ImageFile imgFile : content.getImageFiles()) {
+            if (imgFile.getStatus() == StatusContent.ERROR) {
+                imgErrors++;
+            }
+        }
+
+        String message = cxt.getString(R.string.download_again_dialog_message).replace("@error",
+                imgErrors + "").replace("@total", images + "");
+        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
+        builder.setTitle(R.string.download_again_dialog_title)
+                .setMessage(message)
+                .setPositiveButton(android.R.string.yes,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                HentoidDB db = new HentoidDB(cxt);
+
+                                content.setStatus(StatusContent.DOWNLOADING);
+                                content.setDownloadDate(new Date().getTime());
+
+                                // TODO: Make Asynchronous
+                                db.updateContentStatus(content);
+
+                                Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
+                                        DownloadService.class);
+                                cxt.startService(intent);
+
+                                AndroidHelper.toast(cxt, R.string.add_to_queue);
+                                remove(content);
+                                notifyDataSetChanged();
+                            }
+                        })
+                .setNegativeButton(android.R.string.no, null)
+                .create()
+                .show();
+    }
+
     @Override
     public long getItemId(int position) {
         return contents.get(position).getId();
@@ -254,12 +319,18 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         notifyItemInserted(position);
     }
 
-    // TODO: Remove item from db and file system
     public void remove(Content item) {
         int position = contents.indexOf(item);
+        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" + ".");
+        contents.remove(position);
+        notifyItemRemoved(position);
+    }
+
+    // TODO: Remove item from db and file system
+    private void deleteItem(Content item) {
+        int position = contents.indexOf(item);
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" +
-                // ", db and file system" +
-                ".");
+                ", db and file system" + ".");
         contents.remove(position);
         notifyItemRemoved(position);
     }

@@ -60,6 +60,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/row_details"
+            android:layout_alignLeft="@+id/row_details"
+            android:layout_alignStart="@+id/row_details"
             android:adjustViewBounds="true"
             android:clickable="true"
             android:paddingBottom="5dp"
@@ -71,6 +73,20 @@
             tools:background="@color/card_item_src_normal"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_hitomi" />
+
+        <ImageView
+            android:id="@+id/ivError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/row_details"
+            android:layout_alignEnd="@+id/row_details"
+            android:layout_alignRight="@+id/row_details"
+            android:adjustViewBounds="true"
+            android:background="@color/card_item_src_other"
+            android:clickable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_item_error_outline"
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

@@ -20,6 +20,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
     public final TextView tvArtist;
     public final TextView tvTags;
     public final ImageView ivSite;
+    public final ImageView ivError;
     // public final TextView tvSavedDate;
 
     public ContentHolder(final View itemView) {
@@ -31,6 +32,7 @@ public class ContentHolder extends RecyclerView.ViewHolder {
         tvArtist = (TextView) itemView.findViewById(R.id.tvArtist);
         tvTags = (TextView) itemView.findViewById(R.id.tvTags);
         ivSite = (ImageView) itemView.findViewById(R.id.ivSite);
+        ivError = (ImageView) itemView.findViewById(R.id.ivError);
         // tvSavedDate = (TextView) itemView.findViewById(R.id.tvSavedDate);
 
         itemView.setClickable(true);
