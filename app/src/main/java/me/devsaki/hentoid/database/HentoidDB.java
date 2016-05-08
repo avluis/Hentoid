@@ -31,12 +31,21 @@ public class HentoidDB extends SQLiteOpenHelper {
     private static final String TAG = LogHelper.makeLogTag(HentoidDB.class);
 
     private static final Object locker = new Object();
-
-    // Database Version
     private static final int DATABASE_VERSION = 1;
+    private static HentoidDB instance;
 
-    public HentoidDB(Context context) {
+    private HentoidDB(Context context) {
         super(context, Constants.DATABASE_NAME, null, DATABASE_VERSION);
+    }
+
+    // Use this to get db instance
+    public static synchronized HentoidDB getInstance(Context context) {
+        // Use application context only
+        if (instance == null) {
+            instance = new HentoidDB(context.getApplicationContext());
+        }
+
+        return instance;
     }
 
     @Override

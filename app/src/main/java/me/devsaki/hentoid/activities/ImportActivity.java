@@ -88,7 +88,7 @@ public class ImportActivity extends BaseActivity implements
 
         setContentView(relativeLayout, layoutParams);
 
-        db = new HentoidDB(this);
+        db = HentoidDB.getInstance(this);
 
         mAddDialog = new AlertDialog.Builder(this)
                 .setIcon(R.drawable.ic_dialog_warning)

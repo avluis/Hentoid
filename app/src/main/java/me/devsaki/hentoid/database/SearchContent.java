@@ -26,12 +26,11 @@ public class SearchContent {
     private List<Content> contentList = new ArrayList<>();
 
     public SearchContent(final Context context, String query, int page, int qty, boolean order) {
+        db = HentoidDB.getInstance(context);
         mQuery = query;
         mPage = page;
         mQty = qty;
         mOrder = order;
-
-        db = new HentoidDB(context.getApplicationContext());
     }
 
     public List<Content> getContent() {
@@ -39,8 +38,7 @@ public class SearchContent {
     }
 
     public void retrieveResults(final Callback callback) {
-
-        LogHelper.d(TAG, "retrieveResults called");
+        LogHelper.d(TAG, "Retrieving results.");
 
         if (mCurrentState == State.INITIALIZED) {
             callback.onContentReady(true);

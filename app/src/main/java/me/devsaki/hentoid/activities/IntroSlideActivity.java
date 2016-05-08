@@ -76,7 +76,7 @@ public class IntroSlideActivity extends AppIntro2 {
 
     @Override
     public void onDonePressed() {
-        HentoidApplication.donePressed = true;
+        HentoidApplication.setDonePressed(true);
         AndroidHelper.commitFirstRun(false);
         Intent intent = new Intent(this, DownloadsActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -107,7 +107,7 @@ public class IntroSlideActivity extends AppIntro2 {
     }
 
     private void initImport() {
-        if (!HentoidApplication.beginImport) {
+        if (!HentoidApplication.hasImportStarted()) {
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
 
@@ -119,7 +119,7 @@ public class IntroSlideActivity extends AppIntro2 {
             }, 200);
             handler.removeCallbacks(null);
         }
-        HentoidApplication.beginImport = true;
+        HentoidApplication.setBeginImport(true);
     }
 
     private void openAppSettings() {
@@ -147,7 +147,7 @@ public class IntroSlideActivity extends AppIntro2 {
                         if (result.equals(ConstantsImport.PERMISSION_GRANTED)) {
                             LogHelper.d(TAG, "Permission Allowed, resetting.");
 
-                            HentoidApplication.beginImport = false;
+                            HentoidApplication.setBeginImport(false);
                             setProgressButtonEnabled(false);
                             pager.setCurrentItem(IMPORT_SLIDE - 1);
 
@@ -173,7 +173,7 @@ public class IntroSlideActivity extends AppIntro2 {
                             doneHandler.postDelayed(new Runnable() {
 
                                 public void run() {
-                                    if (!HentoidApplication.donePressed) {
+                                    if (!HentoidApplication.isDonePressed()) {
                                         onDonePressed();
                                     }
                                 }
@@ -224,7 +224,7 @@ public class IntroSlideActivity extends AppIntro2 {
                                 setProgressButtonEnabled(true);
                                 break;
                         }
-                        HentoidApplication.beginImport = false;
+                        HentoidApplication.setBeginImport(false);
                     }
                 } else {
                     LogHelper.d(TAG, "Error: Data not received! Bad resultKey.");
@@ -240,7 +240,7 @@ public class IntroSlideActivity extends AppIntro2 {
             }
         } else if (requestCode == REQUEST_APP_SETTINGS) {
             // Back from app settings
-            HentoidApplication.beginImport = false;
+            HentoidApplication.setBeginImport(false);
             Handler handler = new Handler();
             handler.postDelayed(new Runnable() {
 

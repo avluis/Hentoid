@@ -126,7 +126,7 @@ public class UpdateCheck {
             }
         }
 
-        LogHelper.d(TAG, updateURL);
+        LogHelper.d(TAG, "Update URL: " + updateURL);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
@@ -247,7 +247,6 @@ public class UpdateCheck {
         if (downloadURL != null) {
 
             if (downloadID != -1) {
-                LogHelper.d(TAG, "HEY!");
                 cancelDownload();
             }
 

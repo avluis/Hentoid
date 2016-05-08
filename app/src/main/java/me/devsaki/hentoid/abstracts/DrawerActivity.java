@@ -77,7 +77,6 @@ public abstract class DrawerActivity extends BaseActivity {
                     .add(R.id.content_frame, fragment, getFragmentTag())
                     .commit();
         }
-        LogHelper.d(TAG, "Fragment Tag: " + fragment.getTag());
     }
 
     protected abstract Fragment buildFragment();

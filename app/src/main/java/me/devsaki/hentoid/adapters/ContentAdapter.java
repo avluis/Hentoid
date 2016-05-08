@@ -326,7 +326,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                HentoidDB db = new HentoidDB(cxt);
+                                HentoidDB db = HentoidDB.getInstance(cxt);
 
                                 content.setStatus(StatusContent.DOWNLOADING);
                                 content.setDownloadDate(new Date().getTime());
@@ -403,7 +403,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 ", db and file system" + ".");
 
         final File dir = AndroidHelper.getContentDownloadDir(cxt, item);
-        HentoidDB db = new HentoidDB(cxt);
+        HentoidDB db = HentoidDB.getInstance(cxt);
 
         try {
             FileUtils.deleteDirectory(dir);

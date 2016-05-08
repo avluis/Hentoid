@@ -48,7 +48,7 @@ public class DownloadService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        db = new HentoidDB(this);
+        db = HentoidDB.getInstance(this);
         notificationPresenter = new NotificationPresenter();
 
         LogHelper.d(TAG, "Download service created");

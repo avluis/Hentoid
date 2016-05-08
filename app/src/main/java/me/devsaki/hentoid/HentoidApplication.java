@@ -32,15 +32,17 @@ public class HentoidApplication extends Application {
 
     private static final String TAG = LogHelper.makeLogTag(HentoidApplication.class);
 
-    public static boolean beginImport;
-    public static boolean donePressed;
-    private static HentoidApplication mInstance;
+    private static boolean beginImport;
+    private static boolean donePressed;
+    private static HentoidApplication instance;
     private static SharedPreferences sharedPreferences;
     private static Context context;
     private static int downloadCount = 0;
 
+    // Only for use when activity context cannot be passed or used e.g.;
+    // Notification resources, Analytics, etc.
     public static synchronized HentoidApplication getInstance() {
-        return mInstance;
+        return instance;
     }
 
     public static SharedPreferences getAppPreferences() {
@@ -57,6 +59,22 @@ public class HentoidApplication extends Application {
 
     public static void setDownloadCount(int downloadCount) {
         HentoidApplication.downloadCount = downloadCount;
+    }
+
+    public static boolean hasImportStarted() {
+        return beginImport;
+    }
+
+    public static void setBeginImport(boolean started) {
+        HentoidApplication.beginImport = started;
+    }
+
+    public static boolean isDonePressed() {
+        return donePressed;
+    }
+
+    public static void setDonePressed(boolean pressed) {
+        HentoidApplication.donePressed = pressed;
     }
 
     public synchronized Tracker getGoogleAnalyticsTracker() {
@@ -120,7 +138,7 @@ public class HentoidApplication extends Application {
 
         HentoidApplication.context = getApplicationContext();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mInstance = this;
+        instance = this;
 
         AnalyticsTrackers.initialize(this);
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
@@ -128,7 +146,7 @@ public class HentoidApplication extends Application {
         AndroidHelper.queryPrefsKey(getAppContext());
         AndroidHelper.ignoreSslErrors();
 
-        HentoidDB db = new HentoidDB(this);
+        HentoidDB db = HentoidDB.getInstance(this);
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         if (AndroidHelper.getMobileUpdatePrefs()) {

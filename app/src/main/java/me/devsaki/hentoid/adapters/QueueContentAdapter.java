@@ -40,7 +40,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private final Context cxt;
     private final List<Content> contents;
-    private final HentoidDB db = new HentoidDB(getContext());
+    private final HentoidDB db = HentoidDB.getInstance(getContext());
     private final QueueFragment fragment;
 
     public QueueContentAdapter(Context cxt, List<Content> contents, QueueFragment fragment) {

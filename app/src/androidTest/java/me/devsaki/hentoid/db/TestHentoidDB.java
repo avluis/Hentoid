@@ -17,6 +17,7 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by neko on 15/06/2015.
+ * Basic database test case
  */
 public class TestHentoidDB extends AndroidTestCase {
     private static final String TAG = LogHelper.makeLogTag(TestHentoidDB.class);
@@ -27,7 +28,7 @@ public class TestHentoidDB extends AndroidTestCase {
         List<Content> contents = generateRandomContent();
 
         RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-        HentoidDB db = new HentoidDB(context);
+        HentoidDB db = HentoidDB.getInstance(context);
         db.insertContents(contents.toArray(new Content[contents.size()]));
         try {
             new Thread(new Runnable() {
@@ -35,7 +36,7 @@ public class TestHentoidDB extends AndroidTestCase {
                 public void run() {
                     try {
                         RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-                        HentoidDB db = new HentoidDB(context);
+                        HentoidDB db = HentoidDB.getInstance(context);
                         for (int i = 0; i < 100; i++) {
                             List<Content> contents = generateRandomContent();
                             db.insertContents(contents.toArray(new Content[contents.size()]));
@@ -51,7 +52,7 @@ public class TestHentoidDB extends AndroidTestCase {
                 public void run() {
                     try {
                         RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-                        HentoidDB db = new HentoidDB(context);
+                        HentoidDB db = HentoidDB.getInstance(context);
                         for (int i = 0; i < 100; i++) {
                             List<Content> contents = generateRandomContent();
                             db.insertContents(contents.toArray(new Content[contents.size()]));
@@ -67,7 +68,7 @@ public class TestHentoidDB extends AndroidTestCase {
                 public void run() {
                     try {
                         RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-                        HentoidDB db = new HentoidDB(context);
+                        HentoidDB db = HentoidDB.getInstance(context);
                         for (int i = 0; i < 100; i++) {
                             db.selectContentByQuery("", 1, 10, false);
                         }
@@ -82,7 +83,7 @@ public class TestHentoidDB extends AndroidTestCase {
                 public void run() {
                     try {
                         RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-                        HentoidDB db = new HentoidDB(context);
+                        HentoidDB db = HentoidDB.getInstance(context);
                         for (int i = 0; i < 100; i++) {
                             db.selectContentByStatus(StatusContent.DOWNLOADED);
                         }

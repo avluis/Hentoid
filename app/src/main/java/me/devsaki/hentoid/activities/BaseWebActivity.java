@@ -63,7 +63,7 @@ public class BaseWebActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        db = new HentoidDB(this);
+        db = HentoidDB.getInstance(this);
 
         setContentView(R.layout.activity_base_web);
 
