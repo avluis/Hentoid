@@ -73,6 +73,11 @@ public class TsuminoActivity extends BaseWebActivity {
                             url.contains("//www.tsumino.com/Read/AuthProcess"))) {
                 downloadFabPressed = false;
             }
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            super.onPageFinished(view, url);
 
             if (url.contains("//www.tsumino.com/Book/Info/")) {
                 AndroidHelper.executeAsyncTask(new HtmlLoader(), url);
