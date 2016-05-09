@@ -3,7 +3,7 @@
     <string name="app_intro">Welcome</string>
     <!-- Activities -->
     <string name="title_activity_search">Search: @search</string>
-    <string name="title_activity_downloads">Experimental</string>
+    <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>

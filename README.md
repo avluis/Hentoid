@@ -3,7 +3,7 @@ ___
 
 ## [Testers & programmers wanted!](https://github.com/csaki/Hentoid/issues/46)
 
-[![Hentoid App Icon](https://raw.githubusercontent.com/avluis/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/avluis/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-debug.apk?branch=experimental&filter=successful)
+[![Hentoid App Icon](https://raw.githubusercontent.com/avluis/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/avluis/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-debug.apk?branch=alpha&filter=successful)
 
 ##### `Hentoid` is a Doujinshi & H-Manga archiving app originally designed to work with:
 ###### [FAKKU](http://fakku.net/), [Pururin](https://github.com/avluis/Hentoid-Resources/blob/master/repo/assets/img/pururin.jpg) and [Hitomi](http://hitomi.la/).
