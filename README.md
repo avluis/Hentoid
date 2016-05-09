@@ -1,8 +1,6 @@
 [![Circle CI](https://circleci.com/gh/avluis/Hentoid.svg?style=shield&circle-token=bb41b75f5b24c8d08258a88fe3dd04a88be7c8cb)](https://circleci.com/gh/avluis/Hentoid)
 ___
 
-## [Testers & programmers wanted!](https://github.com/csaki/Hentoid/issues/46)
-
 [![Hentoid App Icon](https://raw.githubusercontent.com/avluis/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/avluis/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-debug.apk?branch=alpha&filter=successful)
 
 ##### `Hentoid` is a Doujinshi & H-Manga archiving app originally designed to work with:
