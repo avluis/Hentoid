@@ -214,7 +214,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                     submitSearchQuery(s, 1000);
                 }
 
-                if (shouldHide && (orderUpdated)) {
+                if (shouldHide && orderUpdated) {
                     clearQuery(0);
                     orderUpdated = false;
                 }
@@ -664,6 +664,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     private void searchContent() {
+        clearSelection();
         isLoaded = false;
         search = new SearchContent(mContext, query, currentPage, qtyPages,
                 order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
