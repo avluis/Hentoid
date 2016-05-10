@@ -7,6 +7,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +34,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.holders.ContentHolder;
 import me.devsaki.hentoid.listener.ItemClickListener;
+import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -46,13 +48,55 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private final Context cxt;
     private final SimpleDateFormat sdf;
+    private final SparseBooleanArray selectedItems;
+    private final ItemSelectListener listener;
     private List<Content> contents = new ArrayList<>();
-    private int selectedItem = -1;
 
-    public ContentAdapter(Context cxt, final List<Content> contents) {
+    public ContentAdapter(Context cxt, final List<Content> contents, ItemSelectListener listener) {
         this.cxt = cxt;
         this.contents = contents;
+        this.listener = listener;
         sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
+        selectedItems = new SparseBooleanArray();
+    }
+
+    private void toggleSelection(int pos) {
+        if (selectedItems.get(pos, false)) {
+            selectedItems.delete(pos);
+            LogHelper.d(TAG, "Removed item: " + pos);
+        } else {
+            selectedItems.put(pos, true);
+            LogHelper.d(TAG, "Added item: " + pos);
+        }
+        notifyItemChanged(pos);
+    }
+
+    public void clearSelections() {
+        selectedItems.clear();
+        notifyDataSetChanged();
+    }
+
+    private int getSelectedItemCount() {
+        return selectedItems.size();
+    }
+
+    private List<Integer> getSelectedItems() {
+        List<Integer> items = new ArrayList<>(selectedItems.size());
+        for (int i = 0; i < selectedItems.size(); i++) {
+            items.add(selectedItems.keyAt(i));
+        }
+
+        return items;
+    }
+
+    private boolean getSelectedItem(int item) {
+        for (int i = 0; i < selectedItems.size(); i++) {
+            if (selectedItems.keyAt(i) == item) {
+                return selectedItems.get(item);
+            }
+        }
+
+        return false;
     }
 
     public void setContentList(List<Content> contentList) {
@@ -61,7 +105,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     public void updateContentList() {
-        selectedItem = -1;
         this.notifyDataSetChanged();
     }
 
@@ -74,25 +117,34 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     @Override
-    public void onBindViewHolder(final ContentHolder holder, final int position) {
-        final Content content = contents.get(position);
+    public void onBindViewHolder(final ContentHolder holder, final int pos) {
+        final Content content = contents.get(pos);
 
-        if (selectedItem != -1) {
-            holder.itemView.setSelected(selectedItem == position);
+        if (getSelectedItems() != null) {
+            int itemPos = holder.getLayoutPosition();
+            boolean selected = getSelectedItem(itemPos);
+
+            if (getSelectedItem(itemPos)) {
+                LogHelper.d(TAG, "Selected items: " + getSelectedItems());
+                holder.itemView.setSelected(selected);
+            } else {
+                holder.itemView.setSelected(false);
+            }
         }
 
-        RelativeLayout select = (RelativeLayout) holder.itemView.findViewById(R.id.item);
+        final RelativeLayout select = (RelativeLayout) holder.itemView.findViewById(R.id.item);
         LinearLayout actions = (LinearLayout) holder.itemView.findViewById(R.id.item_actions);
 
+        // TODO: if getSelectedItemCount() > 1, go into multi-delete mode (multi-select support)
         if (holder.itemView.isSelected()) {
-            LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle()
+            LogHelper.d(TAG, "Position: " + pos + ": " + content.getTitle()
                     + " is a selected item currently in view.");
 
             select.setVisibility(View.GONE);
             actions.setVisibility(View.VISIBLE);
 
-            holder.tvDate.setText(cxt.getResources().getString(R.string.download_date)
-                    .replace("@date", sdf.format(new Date(content.getDownloadDate()))));
+            holder.tvDate.setText(cxt.getString(R.string.download_date).replace("@date",
+                    sdf.format(new Date(content.getDownloadDate()))));
         } else {
             select.setVisibility(View.VISIBLE);
             actions.setVisibility(View.GONE);
@@ -204,7 +256,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                     bg = R.color.card_item_src_migrated;
                     break;
                 default:
-                    LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle() +
+                    LogHelper.d(TAG, "Position: " + pos + ": " + content.getTitle() +
                             " - Status: " + status);
                     bg = R.color.card_item_src_other;
             }
@@ -226,64 +278,60 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setVisibility(View.GONE);
         }
 
-        holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, position) {
+        holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, pos, listener) {
 
             @Override
             public void onClick(View v) {
-                if (selectedItem != -1) {
-                    // If selectedItem is the same as set, unset
-                    if (selectedItem == holder.getLayoutPosition()) {
-                        notifyItemChanged(selectedItem);
-                        holder.itemView.setSelected(false);
-                        selectedItem = -1;
-                        notifyItemChanged(selectedItem);
+                if (getSelectedItems() != null) {
+                    int itemPos = holder.getLayoutPosition();
+                    boolean selected = getSelectedItem(itemPos);
+                    boolean selectionMode = getSelectedItemCount() > 0;
 
-                        setSelected(false, -1);
+                    if (selectionMode) {
+                        LogHelper.d(TAG, "In Selection Mode - ignore open requests.");
+                        if (selected) {
+                            LogHelper.d(TAG, "Item already selected, remove it.");
+
+                            toggleSelection(itemPos);
+                            setSelected(false, getSelectedItemCount());
+                        } else {
+                            LogHelper.d(TAG, "Item not selected it, add it.");
+
+                            toggleSelection(itemPos);
+                            setSelected(true, getSelectedItemCount());
+                        }
+                    } else {
+                        LogHelper.d(TAG, "Not in selection mode, opening item.");
+
+                        clearSelections(); // JIC
+                        setSelected(false, getSelectedItemCount());
 
                         super.onClick(v);
-                    } else {
-                        AndroidHelper.toast(cxt, "Please clear selection first.");
                     }
-                } else {
-                    setSelected(false, -1);
-                    super.onClick(v);
                 }
             }
         });
 
-        holder.itemView.setOnLongClickListener(new ItemClickListener(cxt, content, position) {
+        holder.itemView.setOnLongClickListener(new ItemClickListener(cxt, content, pos, listener) {
 
             @Override
             public boolean onLongClick(View v) {
-                // If focusItem is set, ignore
-                if (selectedItem != -1) {
-                    // If focusItem is the same as set, unset
-                    if (holder.getLayoutPosition() == selectedItem) {
-                        notifyItemChanged(selectedItem);
-                        holder.itemView.setSelected(false);
-                        selectedItem = -1;
-                        notifyItemChanged(selectedItem);
+                if (getSelectedItems() != null) {
 
-                        setSelected(false, -1);
+                    int itemPos = holder.getLayoutPosition();
+                    boolean selected = getSelectedItem(itemPos);
 
-                        super.onLongClick(v);
+                    if (selected) {
+                        LogHelper.d(TAG, "Item already selected, remove it.");
 
-                        return true;
+                        toggleSelection(itemPos);
+                        setSelected(false, getSelectedItemCount());
                     } else {
-                        int focusedItem = holder.getLayoutPosition();
+                        LogHelper.d(TAG, "Item not selected it, add it.");
 
-                        setSelected(true, selectedItem);
-                        clearAndSelect(contents, focusedItem);
-
-                        return true;
+                        toggleSelection(itemPos);
+                        setSelected(true, getSelectedItemCount());
                     }
-                } else if (selectedItem == -1) {
-                    // If focusItem is not set, set
-                    notifyItemChanged(selectedItem);
-                    selectedItem = holder.getLayoutPosition();
-                    notifyItemChanged(selectedItem);
-
-                    setSelected(true, selectedItem);
 
                     super.onLongClick(v);
 
@@ -294,12 +342,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         });
 
+        // TODO: Add support for multi-delete mode (multi-select support)
         if (holder.itemView.isSelected()) {
             holder.itemView.findViewById(R.id.delete)
                     .setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            deleteContent(content, holder);
+                            deleteContent(content);
                         }
                     });
         }
@@ -348,17 +397,15 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 .show();
     }
 
-    private void deleteContent(final Content content, final ContentHolder holder) {
+    // TODO: Add support for multi-delete mode (multi-select support)
+    private void deleteContent(final Content content) {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                notifyItemChanged(selectedItem);
-                                holder.itemView.setSelected(false);
-                                selectedItem = -1;
-                                notifyItemChanged(selectedItem);
+                                clearSelections();
                                 deleteItem(content);
                             }
                         })
@@ -366,10 +413,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                notifyItemChanged(selectedItem);
-                                holder.itemView.setSelected(false);
-                                selectedItem = -1;
-                                notifyItemChanged(selectedItem);
+                                clearSelections();
                             }
                         })
                 .create()
@@ -398,9 +442,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         notifyItemRemoved(position);
     }
 
+    // TODO: Add support for multi-delete mode (multi-select support)
     private void deleteItem(Content item) {
-        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" +
-                ", db and file system" + ".");
+        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " db and file system" + ".");
 
         final File dir = AndroidHelper.getContentDownloadDir(cxt, item);
         HentoidDB db = HentoidDB.getInstance(cxt);
@@ -414,8 +458,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         // TODO: Make Asynchronous
         db.deleteContent(item);
 
-        AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content",
-                item.getTitle()));
+        AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
 
         remove(item);
         notifyDataSetChanged();

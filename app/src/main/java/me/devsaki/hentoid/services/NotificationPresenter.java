@@ -29,7 +29,7 @@ import me.devsaki.hentoid.util.LogHelper;
 final class NotificationPresenter {
     private static final String TAG = LogHelper.makeLogTag(NotificationPresenter.class);
 
-    private final static int notificationId = 0;
+    private final static int NOTIFICATION_ID = 0;
     private final HentoidApplication appInstance;
     private final Resources resources;
     private final NotificationManager notificationManager;
@@ -58,8 +58,6 @@ final class NotificationPresenter {
                 .setColor(ContextCompat.getColor(appInstance.getApplicationContext(),
                         R.color.accent))
                 .setLocalOnly(true);
-
-        HentoidApplication.setDownloadCount(downloadCount);
 
         LogHelper.d(TAG, "Download Counter: " + downloadCount);
 
@@ -98,7 +96,7 @@ final class NotificationPresenter {
                     .setContentTitle(resources.getQuantityString(R.plurals.download_completed,
                             downloadCount).replace("%d", String.valueOf(downloadCount))
                     );
-            notificationManager.notify(notificationId, currentBuilder.build());
+            notificationManager.notify(NOTIFICATION_ID, currentBuilder.build());
 
             return;
         }
@@ -136,7 +134,7 @@ final class NotificationPresenter {
                         "Download Content: Unhandled Error.");
                 break;
         }
-        notificationManager.notify(notificationId, currentBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, currentBuilder.build());
     }
 
     private PendingIntent getIntent() {

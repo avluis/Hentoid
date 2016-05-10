@@ -2,6 +2,7 @@ package me.devsaki.hentoid.fragments;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -43,6 +44,7 @@ import me.devsaki.hentoid.activities.IntroSlideActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Constants;
@@ -53,12 +55,9 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
- * <p/>
- * Because of the way we load data, and the need to not make unnecessary load calls:
- * TODO: If fragment resumed via back stack navigation & if db has new content, refresh result
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
-        SearchContent.Callback {
+        SearchContent.Callback, ItemClickListener.ItemSelectListener {
     private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
@@ -91,6 +90,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private int mDrawerState;
     private boolean shouldHide;
     private boolean hideToolbar;
+    private boolean overrideHideToolbar;
     private SearchContent search;
     private LinearLayoutManager mLayoutManager;
     private Parcelable mListState;
@@ -108,8 +108,11 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 if (percent >= 0) {
                     LogHelper.d(TAG, "Download Progress: " + percent);
                 } else if (isLoaded) {
+                    LogHelper.d(TAG, "Download complete, reload.");
+                    // TODO: Make use of ContentAdapter.add
                     mAdapter.updateContentList();
                     update();
+                    resetCount();
                 }
             }
         }
@@ -121,8 +124,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     // Validate permissions
     private void checkPermissions() {
-        if (AndroidHelper.permissionsCheck(getActivity(),
-                REQUEST_STORAGE_PERMISSION)) {
+        if (AndroidHelper.permissionsCheck(getActivity(), REQUEST_STORAGE_PERMISSION)) {
             queryPrefs();
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
@@ -355,17 +357,10 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         getContext().registerReceiver(receiver, new IntentFilter(
                 DownloadService.DOWNLOAD_NOTIFICATION));
 
-        if (mListState != null) {
-            mLayoutManager.onRestoreInstanceState(mListState);
-        }
-
         checkResults();
 
-        if (toolbarLayout != null) {
-            if (toolbarLayout.getVisibility() == View.GONE) {
-                hideToolbar = false;
-                toolbarLayout.setVisibility(View.VISIBLE);
-            }
+        if (mListState != null) {
+            mLayoutManager.onRestoreInstanceState(mListState);
         }
     }
 
@@ -374,6 +369,8 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         super.onPause();
 
         getContext().unregisterReceiver(receiver);
+
+        clearSelection();
     }
 
     @Override
@@ -432,7 +429,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         mListView.setHasFixedSize(true);
         mLayoutManager = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(mLayoutManager);
-        mAdapter = new ContentAdapter(mContext, result);
+        mAdapter = new ContentAdapter(mContext, result, this);
         mListView.setAdapter(mAdapter);
 
         if (mAdapter.getItemCount() == 0) {
@@ -454,10 +451,12 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
 
-                if (hideToolbar) {
-                    toolbarLayout.setVisibility(View.GONE);
-                } else {
-                    toolbarLayout.setVisibility(View.VISIBLE);
+                if (!overrideHideToolbar) {
+                    if (hideToolbar) {
+                        toolbarLayout.setVisibility(View.GONE);
+                    } else {
+                        toolbarLayout.setVisibility(View.VISIBLE);
+                    }
                 }
             }
 
@@ -549,18 +548,27 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             AndroidHelper.toast(mContext, R.string.back_exit);
             return true;
         } else {
+            clearSelection();
+
             backButtonPressed = System.currentTimeMillis();
             AndroidHelper.toast(mContext, R.string.press_back_again);
         }
 
         if (query.isEmpty()) {
             LogHelper.d(TAG, "Query is empty.");
+            return false;
         } else {
             clearQuery(1);
             LogHelper.d(TAG, "Cleared query.");
         }
 
         return false;
+    }
+
+    private void clearSelection() {
+        if (mAdapter != null) {
+            mAdapter.clearSelections();
+        }
     }
 
     private void checkResults() {
@@ -570,12 +578,29 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             if (result.isEmpty() && !isLoaded) {
                 LogHelper.d(TAG, "Result is empty!");
                 update();
+            }
+            if (HentoidApplication.getDownloadCount() > 0) {
+                if (isLoaded) {
+                    // TODO: Make use of ContentAdapter.add
+                    mAdapter.updateContentList();
+                    update();
+                }
+                resetCount();
             } else {
                 setCurrentPage();
+                showToolbar(true, false);
             }
         } else {
             LogHelper.d(TAG, "Result is null.");
         }
+    }
+
+    private void resetCount() {
+        LogHelper.d(TAG, "Download Count: " + HentoidApplication.getDownloadCount());
+        HentoidApplication.setDownloadCount(0);
+        NotificationManager manager = (NotificationManager) mContext.getSystemService(
+                Context.NOTIFICATION_SERVICE);
+        manager.cancel(0);
     }
 
     public void update() {
@@ -589,21 +614,21 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             case SHOW_LOADING:
                 mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.GONE);
-                toolbarLayout.setVisibility(View.GONE);
                 loadingText.setVisibility(View.VISIBLE);
+                showToolbar(false, false);
                 startAnimation();
                 break;
             case SHOW_BLANK:
                 mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.VISIBLE);
-                toolbarLayout.setVisibility(View.GONE);
                 loadingText.setVisibility(View.GONE);
+                showToolbar(false, false);
                 break;
             case SHOW_RESULT:
                 mListView.setVisibility(View.VISIBLE);
                 emptyText.setVisibility(View.GONE);
-                toolbarLayout.setVisibility(View.VISIBLE);
                 loadingText.setVisibility(View.GONE);
+                showToolbar(true, false);
                 break;
             default:
                 stopAnimation();
@@ -687,7 +712,22 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         } else if (contents.isEmpty()) {
             LogHelper.d(TAG, "All empty.");
         } else {
-            LogHelper.d(TAG, "What about me?");
+            LogHelper.d(TAG, "Shouldn't be seeing this...");
+        }
+    }
+
+    private void showToolbar(boolean show, boolean override) {
+        this.overrideHideToolbar = override;
+        if (toolbarLayout != null) {
+            if (show) {
+                if (toolbarLayout.getVisibility() == View.GONE) {
+                    toolbarLayout.setVisibility(View.VISIBLE);
+                }
+            } else {
+                toolbarLayout.setVisibility(View.GONE);
+            }
+
+            hideToolbar = !show;
         }
     }
 
@@ -725,5 +765,19 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             LogHelper.d(TAG, "Content results failed to load.");
             isLoaded = false;
         }
+    }
+
+    @Override
+    public void onItemSelected() {
+        LogHelper.d(TAG, "onItemSelected");
+
+        showToolbar(false, true);
+    }
+
+    @Override
+    public void onItemClear() {
+        LogHelper.d(TAG, "onItemClear");
+
+        showToolbar(true, false);
     }
 }

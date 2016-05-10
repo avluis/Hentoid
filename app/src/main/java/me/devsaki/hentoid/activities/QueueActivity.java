@@ -6,8 +6,8 @@ import android.support.v4.app.FragmentManager;
 import android.view.MenuItem;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.fragments.QueueFragment;
 import me.devsaki.hentoid.util.LogHelper;
 

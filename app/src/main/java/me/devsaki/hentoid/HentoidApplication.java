@@ -61,6 +61,10 @@ public class HentoidApplication extends Application {
         HentoidApplication.downloadCount = downloadCount;
     }
 
+    public static void downloadComplete() {
+        HentoidApplication.downloadCount++;
+    }
+
     public static boolean hasImportStarted() {
         return beginImport;
     }

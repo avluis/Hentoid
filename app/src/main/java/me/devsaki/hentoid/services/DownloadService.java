@@ -170,6 +170,7 @@ public class DownloadService extends IntentService {
                 LogHelper.e(TAG, "Error saving JSON: " + currentContent.getTitle(), e);
             }
 
+            HentoidApplication.downloadComplete();
             notificationPresenter.updateNotification(0);
             updateActivity(-1);
             LogHelper.d(TAG, "Content download finished: " + currentContent.getTitle());

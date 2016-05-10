@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
-import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
@@ -45,13 +44,6 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
         setIntent(intent);
     }
 
-    private void resetDownloadCount() {
-        if ((getIntent().getIntExtra(HentoidApplication.DOWNLOAD_COUNT, 0)) != 0) {
-            // Reset download count
-            HentoidApplication.setDownloadCount(0);
-        }
-    }
-
     @Override
     public void onBackPressed() {
         if (baseFragment == null || baseFragment.onBackPressed()) {
@@ -65,7 +57,6 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
         super.onResume();
 
         updateDrawerPosition();
-        resetDownloadCount();
     }
 
     @Override
