@@ -55,9 +55,11 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
+ * <p/>
+ * TODO: Implement endless scrolling support.
  */
-public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
-        SearchContent.Callback, ItemClickListener.ItemSelectListener {
+public class DownloadsFragment extends BaseFragment implements ContentAdapter.EndlessScrollListener,
+        DrawerLayout.DrawerListener, ItemClickListener.ItemSelectListener, SearchContent.Callback {
     private static final String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private static final int REQUEST_CODE = ConstantsImport.REQUEST_STORAGE_PERMISSION;
@@ -76,8 +78,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     private TextView loadingText;
     private TextView emptyText;
     private LinearLayout toolbarLayout;
-    private LinearLayout navigationLayout;
-    private LinearLayout contextLayout;
     private Button btnPage;
     private RecyclerView mListView;
     private ContentAdapter mAdapter;
@@ -109,7 +109,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                     LogHelper.d(TAG, "Download Progress: " + percent);
                 } else if (isLoaded) {
                     LogHelper.d(TAG, "Download complete, reload.");
-                    // TODO: Make use of ContentAdapter.add
                     mAdapter.updateContentList();
                     update();
                     resetCount();
@@ -443,8 +442,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
 
         toolbarLayout = (LinearLayout) rootView.findViewById(R.id.downloads_toolbar);
-        navigationLayout = (LinearLayout) rootView.findViewById(R.id.downloads_nav);
-        contextLayout = (LinearLayout) rootView.findViewById(R.id.downloads_context);
 
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -580,7 +577,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             }
             if (HentoidApplication.getDownloadCount() > 0) {
                 if (isLoaded) {
-                    // TODO: Make use of ContentAdapter.add
                     mAdapter.updateContentList();
                     update();
                 }
@@ -589,6 +585,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
                 setCurrentPage();
                 showToolbar(true, false);
             }
+            mAdapter.setEndlessScrollListener(this);
         } else {
             LogHelper.d(TAG, "Result is null.");
         }
@@ -602,7 +599,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         manager.cancel(0);
     }
 
-    public void update() {
+    private void update() {
         toggleUI(SHOW_LOADING);
         searchContent();
         setCurrentPage();
@@ -732,24 +729,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
     }
 
     @Override
-    public void onDrawerSlide(View drawerView, float slideOffset) {
-    }
-
-    @Override
-    public void onDrawerOpened(View drawerView) {
-    }
-
-    @Override
-    public void onDrawerClosed(View drawerView) {
-    }
-
-    @Override
-    public void onDrawerStateChanged(int newState) {
-        mDrawerState = newState;
-        getActivity().invalidateOptionsMenu();
-    }
-
-    @Override
     public void onContentReady(boolean success) {
         if (success) {
             LogHelper.d(TAG, "Content results have loaded.");
@@ -779,5 +758,30 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
         LogHelper.d(TAG, "onItemClear");
 
         showToolbar(true, false);
+    }
+
+    @Override
+    public boolean onLoadMore(int position) {
+        LogHelper.d(TAG, "Load more data now~");
+
+        return false;
+    }
+
+    @Override
+    public void onDrawerSlide(View drawerView, float slideOffset) {
+    }
+
+    @Override
+    public void onDrawerOpened(View drawerView) {
+    }
+
+    @Override
+    public void onDrawerClosed(View drawerView) {
+    }
+
+    @Override
+    public void onDrawerStateChanged(int newState) {
+        mDrawerState = newState;
+        getActivity().invalidateOptionsMenu();
     }
 }

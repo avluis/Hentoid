@@ -42,6 +42,8 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
+ * <p/>
+ * TODO: Implement multi-select support
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
@@ -51,6 +53,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
     private List<Content> contents = new ArrayList<>();
+    private EndlessScrollListener endlessScrollListener;
 
     public ContentAdapter(Context cxt, final List<Content> contents, ItemSelectListener listener) {
         this.cxt = cxt;
@@ -58,6 +61,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         this.listener = listener;
         sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
         selectedItems = new SparseBooleanArray();
+    }
+
+    public void setEndlessScrollListener(EndlessScrollListener endlessScrollListener) {
+        this.endlessScrollListener = endlessScrollListener;
     }
 
     private void toggleSelection(int pos) {
@@ -119,6 +126,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     @Override
     public void onBindViewHolder(final ContentHolder holder, final int pos) {
         final Content content = contents.get(pos);
+        final int VISIBLE_THRESHOLD = 5;
+
+        if (pos == getItemCount() - VISIBLE_THRESHOLD) {
+            if (endlessScrollListener != null) {
+                endlessScrollListener.onLoadMore(pos);
+            }
+        }
 
         if (getSelectedItems() != null) {
             int itemPos = holder.getLayoutPosition();
@@ -388,7 +402,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                                 cxt.startService(intent);
 
                                 AndroidHelper.toast(cxt, R.string.add_to_queue);
-                                remove(content);
+                                removeItem(content);
                                 notifyDataSetChanged();
                             }
                         })
@@ -430,12 +444,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         return (null != contents ? contents.size() : 0);
     }
 
-    public void add(int position, Content item) {
+    public void addItem(int position, Content item) {
         contents.add(position, item);
         notifyItemInserted(position);
     }
 
-    private void remove(Content item) {
+    private void removeItem(Content item) {
         int position = contents.indexOf(item);
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" + ".");
         contents.remove(position);
@@ -460,7 +474,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
 
-        remove(item);
+        removeItem(item);
         notifyDataSetChanged();
+    }
+
+    public interface EndlessScrollListener {
+        boolean onLoadMore(int position);
     }
 }
