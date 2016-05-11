@@ -59,7 +59,7 @@ public class ImportActivity extends BaseActivity implements
         OnDirectoryChooserFragmentInteraction {
     private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 
-    private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
+    private static final int REQUEST_CODE = ConstantsImport.REQUEST_STORAGE_PERMISSION;
     private static final String resultKey = ConstantsImport.RESULT_KEY;
     private static final String dirKey = "currentDir";
     private AlertDialog mAddDialog;
@@ -135,8 +135,7 @@ public class ImportActivity extends BaseActivity implements
 
     // Validate permissions
     private boolean checkPermissions() {
-        if (AndroidHelper.permissionsCheck(ImportActivity.this,
-                REQUEST_STORAGE_PERMISSION)) {
+        if (AndroidHelper.permissionsCheck(ImportActivity.this, REQUEST_CODE)) {
             LogHelper.d(TAG, "Storage permission allowed!");
             return true;
         } else {

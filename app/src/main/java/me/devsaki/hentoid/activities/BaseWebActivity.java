@@ -40,7 +40,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 public class BaseWebActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
-    private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
+    private static final int REQUEST_CODE = ConstantsImport.REQUEST_STORAGE_PERMISSION;
     ObservableWebView webView;
     private HentoidDB db;
     private Content currentContent;
@@ -95,8 +95,7 @@ public class BaseWebActivity extends BaseActivity {
 
     // Validate permissions
     private void checkPermissions() {
-        if (AndroidHelper.permissionsCheck(this,
-                REQUEST_STORAGE_PERMISSION)) {
+        if (AndroidHelper.permissionsCheck(this, REQUEST_CODE)) {
             LogHelper.d(TAG, "Storage permission allowed!");
         } else {
             LogHelper.d(TAG, "Storage permission denied!");

@@ -56,7 +56,7 @@ import static android.os.Build.VERSION_CODES;
 public class AndroidHelper {
     private static final String TAG = LogHelper.makeLogTag(AndroidHelper.class);
 
-    private static Toast sToast;
+    private static Toast toast;
 
     public static void openContent(final Context context, Content content) {
         SharedPreferences sp = HentoidApplication.getAppPreferences();
@@ -340,8 +340,9 @@ public class AndroidHelper {
     }
 
     public static void cancelToast() {
-        if (sToast != null) {
-            sToast.cancel();
+        if (toast != null) {
+            toast.cancel();
+            toast = null;
         }
     }
 
@@ -383,7 +384,7 @@ public class AndroidHelper {
         } else if (resource != -1) {
             message = cxt.getString(resource);
         } else {
-            Throwable noResource = new Throwable("You must provide a String or Resource ID");
+            Throwable noResource = new Throwable("You must provide a String or Resource ID!");
             try {
                 throw noResource;
             } catch (Throwable throwable) {
@@ -401,12 +402,14 @@ public class AndroidHelper {
         }
 
         try {
-            sToast.getView().isShown();
-            sToast.setText(message);
+            toast.getView().isShown();
+            toast.setText(message);
         } catch (Exception e) {
-            sToast = Toast.makeText(cxt, message, duration);
+            LogHelper.w(TAG, "toast is null, creating one instead; ", e);
+            toast = Toast.makeText(cxt, message, duration);
         }
-        sToast.show();
+
+        toast.show();
     }
 
     @SafeVarargs

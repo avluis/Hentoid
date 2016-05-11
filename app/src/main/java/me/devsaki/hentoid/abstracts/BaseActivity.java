@@ -25,4 +25,11 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onBackPressed();
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        AndroidHelper.cancelToast();
+    }
 }

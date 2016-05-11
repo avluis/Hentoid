@@ -29,7 +29,7 @@ import me.devsaki.hentoid.util.LogHelper;
 final class NotificationPresenter {
     private static final String TAG = LogHelper.makeLogTag(NotificationPresenter.class);
 
-    private final static int NOTIFICATION_ID = 0;
+    private static final int NOTIFICATION_ID = 0;
     private final HentoidApplication appInstance;
     private final Resources resources;
     private final NotificationManager notificationManager;

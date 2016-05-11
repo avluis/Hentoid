@@ -58,21 +58,21 @@ import me.devsaki.hentoid.util.LogHelper;
  */
 public class DownloadsFragment extends BaseFragment implements DrawerLayout.DrawerListener,
         SearchContent.Callback, ItemClickListener.ItemSelectListener {
-    private final static String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
+    private static final String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
-    private final static int REQUEST_STORAGE_PERMISSION = ConstantsImport.REQUEST_STORAGE_PERMISSION;
-    private final static int SHOW_LOADING = 1;
-    private final static int SHOW_BLANK = 2;
-    private final static int SHOW_RESULT = 3;
-    private final static String LIST_STATE_KEY = "list_state";
+    private static final int REQUEST_CODE = ConstantsImport.REQUEST_STORAGE_PERMISSION;
+    private static final int SHOW_LOADING = 1;
+    private static final int SHOW_BLANK = 2;
+    private static final int SHOW_RESULT = 3;
+    private static final String LIST_STATE_KEY = "list_state";
     private static String query = "";
-    private static int currentPage = 1;
-    private static int qtyPages;
-    private static SharedPreferences prefs;
-    private static String settingDir;
-    private static int order;
-    private static boolean orderUpdated;
     private final Handler searchHandler = new Handler();
+    private int currentPage = 1;
+    private int qtyPages;
+    private SharedPreferences prefs;
+    private String settingDir;
+    private int order;
+    private boolean orderUpdated;
     private TextView loadingText;
     private TextView emptyText;
     private LinearLayout toolbarLayout;
@@ -124,7 +124,7 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
 
     // Validate permissions
     private void checkPermissions() {
-        if (AndroidHelper.permissionsCheck(getActivity(), REQUEST_STORAGE_PERMISSION)) {
+        if (AndroidHelper.permissionsCheck(getActivity(), REQUEST_CODE)) {
             queryPrefs();
         } else {
             LogHelper.d(TAG, "Storage permission denied!");

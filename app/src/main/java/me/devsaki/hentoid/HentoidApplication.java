@@ -12,6 +12,7 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
+import com.squareup.leakcanary.LeakCanary;
 
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.enums.ImageQuality;
@@ -139,6 +140,8 @@ public class HentoidApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        LeakCanary.install(this);
 
         HentoidApplication.context = getApplicationContext();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);

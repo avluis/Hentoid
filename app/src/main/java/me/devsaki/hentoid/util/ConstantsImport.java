@@ -21,6 +21,6 @@ public class ConstantsImport {
 
     public static final int REQUEST_IMPORT_RESULTS = 1;
     public static final int REQUEST_APP_SETTINGS = 2;
-    public final static int REQUEST_STORAGE_PERMISSION = 3;
+    public static final int REQUEST_STORAGE_PERMISSION = 3;
 
 }
