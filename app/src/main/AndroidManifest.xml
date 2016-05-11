@@ -36,22 +36,18 @@
         <activity
             android:name=".activities.HitomiActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
             android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.NhentaiActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
             android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.TsuminoActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
             android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.BaseWebActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
             android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.DownloadsActivity"
@@ -78,7 +74,6 @@
             android:name=".activities.PreferencesActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
-            android:launchMode="standard"
             android:parentActivityName=".activities.DownloadsActivity"
             android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
@@ -90,7 +85,6 @@
             android:name=".activities.AboutActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_about"
-            android:launchMode="standard"
             android:parentActivityName=".activities.DownloadsActivity"
             android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
@@ -107,10 +101,49 @@
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.DarkBackgroundNoActionBar"
             android:windowSoftInputMode="stateAlwaysVisible" />
+        <activity
+            android:name=".activities.IntentActivity"
+            android:theme="@style/BrowserTheme">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://hitomi.la/galleries" -->
+                <data
+                    android:host="hitomi.la"
+                    android:pathPrefix="/galleries"
+                    android:scheme="https" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://nhentai.net/g" -->
+                <data
+                    android:host="nhentai.net"
+                    android:pathPrefix="/g"
+                    android:scheme="http" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://www.tsumino.com/Book/Info" -->
+                <data
+                    android:host="www.tsumino.com"
+                    android:pathPrefix="/Book/Info"
+                    android:scheme="http" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".services.DownloadService"
-            android:configChanges="orientation|screenSize"
             android:enabled="true"
             android:exported="false" />
 

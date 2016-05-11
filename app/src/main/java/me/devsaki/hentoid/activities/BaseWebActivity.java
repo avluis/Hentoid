@@ -224,8 +224,7 @@ public class BaseWebActivity extends BaseActivity {
         }
     }
 
-    @SuppressWarnings("UnusedParameters")
-    public void onHomeFabClick(View view) {
+    private void goHome() {
         Intent intent = new Intent(this, DownloadsActivity.class);
         // If FLAG_ACTIVITY_CLEAR_TOP is not set,
         // it can interfere with Double-Back (press back twice) to exit
@@ -233,6 +232,18 @@ public class BaseWebActivity extends BaseActivity {
         startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
+        goHome();
+    }
+
+    @SuppressWarnings("UnusedParameters")
+    public void onHomeFabClick(View view) {
+        goHome();
     }
 
     @SuppressWarnings("UnusedParameters")

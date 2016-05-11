@@ -545,7 +545,6 @@ public class DownloadsFragment extends BaseFragment implements DrawerLayout.Draw
             return false;
         }
         if (backButtonPressed + 2000 > System.currentTimeMillis()) {
-            AndroidHelper.toast(mContext, R.string.back_exit);
             return true;
         } else {
             clearSelection();
