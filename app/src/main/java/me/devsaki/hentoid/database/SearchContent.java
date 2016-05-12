@@ -11,7 +11,6 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 04/12/2016.
- * <p/>
  * Grabs content from db with provided query
  */
 public class SearchContent {

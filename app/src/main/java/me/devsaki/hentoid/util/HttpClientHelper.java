@@ -26,7 +26,7 @@ public class HttpClientHelper {
 
             urlConnection.setConnectTimeout(10000);
             urlConnection.setRequestMethod("GET");
-            urlConnection.setRequestProperty("User-Agent", Constants.USER_AGENT);
+            urlConnection.setRequestProperty("User-Agent", Consts.USER_AGENT);
 
             if (!sessionCookie.isEmpty()) {
                 urlConnection.setRequestProperty("Cookie", sessionCookie);

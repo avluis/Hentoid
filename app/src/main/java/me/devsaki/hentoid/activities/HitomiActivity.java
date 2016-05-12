@@ -20,7 +20,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -45,7 +45,7 @@ public class HitomiActivity extends BaseWebActivity {
             webView.setInitialScale(webViewInitialZoom);
             LogHelper.d(TAG, "WebView Initial Scale: " + webViewInitialZoom + "%");
         } else {
-            webView.setInitialScale(ConstantsPreferences.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
+            webView.setInitialScale(ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);
         }
     }

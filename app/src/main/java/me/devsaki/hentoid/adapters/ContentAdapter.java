@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -188,10 +188,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         String image = coverFile != null ?
                 coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
-        HentoidApplication.getInstance().loadBitmap(image, holder.ivCover);
+        HentoidApp.getInstance().loadBitmap(image, holder.ivCover);
 
         if (holder.itemView.isSelected()) {
-            HentoidApplication.getInstance().loadBitmap(image, holder.ivCover2);
+            HentoidApp.getInstance().loadBitmap(image, holder.ivCover2);
         }
 
         String series = "";

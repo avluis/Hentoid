@@ -26,8 +26,8 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.ConstantsImport;
+import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
@@ -40,7 +40,6 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 public class BaseWebActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
-    private static final int REQUEST_CODE = ConstantsImport.REQUEST_STORAGE_PERMISSION;
     ObservableWebView webView;
     private HentoidDB db;
     private Content currentContent;
@@ -82,7 +81,7 @@ public class BaseWebActivity extends BaseActivity {
         initWebView();
         initSwipeLayout();
 
-        String intentVar = getIntent().getStringExtra(Constants.INTENT_URL);
+        String intentVar = getIntent().getStringExtra(Consts.INTENT_URL);
         webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
     }
 
@@ -95,7 +94,7 @@ public class BaseWebActivity extends BaseActivity {
 
     // Validate permissions
     private void checkPermissions() {
-        if (AndroidHelper.permissionsCheck(this, REQUEST_CODE)) {
+        if (AndroidHelper.permissionsCheck(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
@@ -191,7 +190,7 @@ public class BaseWebActivity extends BaseActivity {
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
-        webSettings.setUserAgentString(Constants.USER_AGENT);
+        webSettings.setUserAgentString(Consts.USER_AGENT);
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);

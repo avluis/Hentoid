@@ -32,7 +32,7 @@ import java.io.FileFilter;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AppLockActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
@@ -48,10 +48,7 @@ import static android.os.Build.VERSION_CODES;
  * Created by DevSaki on 20/05/2015.
  * Android focused utility class
  * <p/>
- * TODO: Research/check for possible NullPointerException on older devices:
- * {@link #setNavBarColor}
- * TODO: Test the following:
- * {@link #changeEdgeEffect}, {@link #cleanDir}, {@link #deleteDir}
+ * TODO: Add additional image viewers.
  */
 public class AndroidHelper {
     private static final String TAG = LogHelper.makeLogTag(AndroidHelper.class);
@@ -59,7 +56,7 @@ public class AndroidHelper {
     private static Toast toast;
 
     public static void openContent(final Context context, Content content) {
-        SharedPreferences sp = HentoidApplication.getAppPreferences();
+        SharedPreferences sp = HentoidApp.getSharedPrefs();
         File dir = AndroidHelper.getContentDownloadDir(context, content);
 
         File imageFile = null;
@@ -75,14 +72,14 @@ public class AndroidHelper {
             }
         }
         if (imageFile == null) {
-            String message = context.getString(R.string.image_file_not_found).replace("@dir",
-                    dir.getAbsolutePath());
+            String message = context.getString(R.string.image_file_not_found).replace("@dir", dir.getAbsolutePath());
             toast(context, message);
         } else {
-            int readContentPreference = Integer.parseInt(sp.getString(
-                    ConstantsPreferences.PREF_READ_CONTENT_LISTS,
-                    ConstantsPreferences.PREF_READ_CONTENT_DEFAULT + ""));
-            if (readContentPreference == ConstantsPreferences.PREF_READ_CONTENT_ASK) {
+            int readContentPreference = Integer.parseInt(
+                    sp.getString(
+                            ConstsPrefs.PREF_READ_CONTENT_LISTS,
+                            ConstsPrefs.PREF_READ_CONTENT_DEFAULT + ""));
+            if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_ASK) {
                 final File file = imageFile;
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setMessage(R.string.select_the_action)
@@ -98,8 +95,7 @@ public class AndroidHelper {
                                         openPerfectViewer(context, file);
                                     }
                                 }).create().show();
-            } else if (readContentPreference == ConstantsPreferences
-                    .PREF_READ_CONTENT_PERFECT_VIEWER) {
+            } else if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(context, imageFile);
             }
         }
@@ -108,7 +104,7 @@ public class AndroidHelper {
     public static void viewContent(final Context context, Content content) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(Constants.INTENT_URL, content.getGalleryUrl());
+        intent.putExtra(Consts.INTENT_URL, content.getGalleryUrl());
         context.startActivity(intent);
     }
 
@@ -129,8 +125,8 @@ public class AndroidHelper {
 
     public static File getContentDownloadDir(Context context, Content content) {
         File file;
-        SharedPreferences sp = HentoidApplication.getAppPreferences();
-        String settingDir = sp.getString(Constants.SETTINGS_FOLDER, "");
+        SharedPreferences sp = HentoidApp.getSharedPrefs();
+        String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
         String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
         if (settingDir.isEmpty()) {
             return getDefaultDir(context, folderDir);
@@ -151,8 +147,8 @@ public class AndroidHelper {
 
     public static File getSiteDownloadDir(Context context, Site site) {
         File file;
-        SharedPreferences sp = HentoidApplication.getAppPreferences();
-        String settingDir = sp.getString(Constants.SETTINGS_FOLDER, "");
+        SharedPreferences sp = HentoidApp.getSharedPrefs();
+        String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
             return getDefaultDir(context, folderDir);
@@ -174,17 +170,17 @@ public class AndroidHelper {
     public static File getDefaultDir(Context context, String dir) {
         File file;
         try {
-            file = new File(Environment.getExternalStorageDirectory()
-                    + "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+            file = new File(Environment.getExternalStorageDirectory() + "/"
+                    + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
         } catch (Exception e) {
             file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY);
+            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
         }
 
         if (!file.exists()) {
             if (!file.mkdirs()) {
                 file = context.getDir("", Context.MODE_PRIVATE);
-                file = new File(file, "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+                file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
                 if (!file.exists()) {
                     boolean mkdirs = file.mkdirs();
                     LogHelper.d(TAG, mkdirs);
@@ -212,9 +208,8 @@ public class AndroidHelper {
         return false;
     }
 
-    // Gathers list of files in a directory and
-    // deletes them but only if the directory is NOT empty
-    // It does NOT delete the target directory
+    // Gathers list of files in a directory and deletes them
+    // but only if the directory is NOT empty - it does NOT delete the target directory
     public static void cleanDir(File directory) {
         boolean isDirEmpty = isDirEmpty(directory);
 
@@ -228,10 +223,8 @@ public class AndroidHelper {
         }
     }
 
-    // As long as there are files in a directory
-    // it will recursively delete them -
-    // finally, once there are no files,
-    // it deletes the target directory
+    // As long as there are files in a directory it will recursively delete them -
+    // finally, once there are no files, it deletes the target directory
     public static boolean deleteDir(File directory) {
         if (directory.isDirectory())
             for (File child : directory.listFiles()) {
@@ -244,20 +237,18 @@ public class AndroidHelper {
     }
 
     public static String getSessionCookie() {
-        return HentoidApplication.getAppPreferences()
-                .getString(ConstantsPreferences.WEB_SESSION_COOKIE, "");
+        return HentoidApp.getSharedPrefs().getString(ConstsPrefs.WEB_SESSION_COOKIE, "");
     }
 
     public static void setSessionCookie(String sessionCookie) {
-        HentoidApplication.getAppPreferences()
+        HentoidApp.getSharedPrefs()
                 .edit()
-                .putString(ConstantsPreferences.WEB_SESSION_COOKIE, sessionCookie)
+                .putString(ConstsPrefs.WEB_SESSION_COOKIE, sessionCookie)
                 .apply();
     }
 
     private static void clearSharedPreferences() {
-        SharedPreferences.Editor editor = HentoidApplication
-                .getAppPreferences().edit();
+        SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
         editor.clear();
         editor.apply();
     }
@@ -271,21 +262,21 @@ public class AndroidHelper {
 
     private static void saveSharedPrefsKey(Context cxt) {
         SharedPreferences sp = cxt.getSharedPreferences(
-                ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE);
+                ConstsPrefs.PREFS_VERSION_KEY, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
-        editor.putInt(ConstantsPreferences.PREFS_VERSION_KEY, ConstantsPreferences.PREFS_VERSION);
+        editor.putInt(ConstsPrefs.PREFS_VERSION_KEY, ConstsPrefs.PREFS_VERSION);
         editor.apply();
     }
 
     public static void queryPrefsKey(Context cxt) {
         final int prefsVersion = cxt.getSharedPreferences(
-                ConstantsPreferences.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
-                ConstantsPreferences.PREFS_VERSION_KEY, 0);
+                ConstsPrefs.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
+                ConstsPrefs.PREFS_VERSION_KEY, 0);
 
         LogHelper.d(TAG, "Current Prefs Key value: " + prefsVersion);
 
         // Use this whenever any incompatible changes are made to Prefs.
-        if (prefsVersion != ConstantsPreferences.PREFS_VERSION) {
+        if (prefsVersion != ConstsPrefs.PREFS_VERSION) {
             LogHelper.d(TAG, "Shared Prefs Key Mismatch! Clearing Prefs!");
 
             // Clear All
@@ -308,22 +299,22 @@ public class AndroidHelper {
     }
 
     public static boolean getWebViewOverviewPrefs() {
-        return HentoidApplication.getAppPreferences().getBoolean(
-                ConstantsPreferences.PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS,
-                ConstantsPreferences.PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT);
+        return HentoidApp.getSharedPrefs().getBoolean(
+                ConstsPrefs.PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS,
+                ConstsPrefs.PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT);
     }
 
     public static int getWebViewInitialZoomPrefs() {
         return Integer.parseInt(
-                HentoidApplication.getAppPreferences().getString(
-                        ConstantsPreferences.PREF_WEBVIEW_INITIAL_ZOOM_LISTS,
-                        ConstantsPreferences.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT + ""));
+                HentoidApp.getSharedPrefs().getString(
+                        ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_LISTS,
+                        ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT + ""));
     }
 
     public static boolean getMobileUpdatePrefs() {
-        return HentoidApplication.getAppPreferences().getBoolean(
-                ConstantsPreferences.PREF_CHECK_UPDATES_LISTS,
-                ConstantsPreferences.PREF_CHECK_UPDATES_DEFAULT);
+        return HentoidApp.getSharedPrefs().getBoolean(
+                ConstsPrefs.PREF_CHECK_UPDATES_LISTS,
+                ConstsPrefs.PREF_CHECK_UPDATES_DEFAULT);
     }
 
     private static void openPerfectViewer(Context cxt, File firstImage) {
@@ -348,14 +339,14 @@ public class AndroidHelper {
 
     // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
     public static void toast(String text) {
-        Context cxt = HentoidApplication.getAppContext();
+        Context cxt = HentoidApp.getAppContext();
         if (cxt != null) {
             toast(cxt, text);
         }
     }
 
     public static void toast(int resource) {
-        Context cxt = HentoidApplication.getAppContext();
+        Context cxt = HentoidApp.getAppContext();
         if (cxt != null) {
             toast(cxt, cxt.getResources().getString(resource));
         }
@@ -423,9 +414,7 @@ public class AndroidHelper {
     }
 
     public static void launchMainActivity(Context cxt) {
-
-        final String appLock = HentoidApplication.getAppPreferences()
-                .getString(ConstantsPreferences.PREF_APP_LOCK, "");
+        final String appLock = HentoidApp.getSharedPrefs().getString(ConstsPrefs.PREF_APP_LOCK, "");
 
         if (appLock.isEmpty()) {
             Intent intent = new Intent(cxt, DownloadsActivity.class);
@@ -437,15 +426,13 @@ public class AndroidHelper {
     }
 
     public static boolean isFirstRun() {
-        return HentoidApplication.getAppPreferences()
-                .getBoolean(ConstantsPreferences.PREF_FIRST_RUN,
-                        ConstantsPreferences.PREF_FIRST_RUN_DEFAULT);
+        return HentoidApp.getSharedPrefs().getBoolean(
+                ConstsPrefs.PREF_FIRST_RUN, ConstsPrefs.PREF_FIRST_RUN_DEFAULT);
     }
 
     public static void commitFirstRun(boolean commit) {
-        SharedPreferences.Editor editor = HentoidApplication
-                .getAppPreferences().edit();
-        editor.putBoolean(ConstantsPreferences.PREF_FIRST_RUN, commit);
+        SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
+        editor.putBoolean(ConstsPrefs.PREF_FIRST_RUN, commit);
         editor.apply();
     }
 
@@ -456,7 +443,7 @@ public class AndroidHelper {
      */
     public static boolean isFirstRunProcessComplete(final Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        return sp.getBoolean(ConstantsPreferences.PREF_WELCOME_DONE, false);
+        return sp.getBoolean(ConstsPrefs.PREF_WELCOME_DONE, false);
     }
 
     /**
@@ -468,7 +455,7 @@ public class AndroidHelper {
      */
     public static void markFirstRunProcessesDone(final Context context, boolean newValue) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        sp.edit().putBoolean(ConstantsPreferences.PREF_WELCOME_DONE, newValue).apply();
+        sp.edit().putBoolean(ConstsPrefs.PREF_WELCOME_DONE, newValue).apply();
     }
 
     @TargetApi(VERSION_CODES.JELLY_BEAN)

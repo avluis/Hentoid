@@ -20,7 +20,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -35,7 +35,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     private static HentoidDB instance;
 
     private HentoidDB(Context context) {
-        super(context, Constants.DATABASE_NAME, null, DATABASE_VERSION);
+        super(context, Consts.DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     // Use this to get db instance
@@ -341,8 +341,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String query, int page, int qty,
-                                              boolean order) {
+    public List<Content> selectContentByQuery(String query, int page, int qty, boolean order) {
         List<Content> result = null;
 
         synchronized (locker) {

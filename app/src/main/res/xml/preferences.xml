@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
+        android:key="pref_key_downloads_list_settings"
+        android:title="@string/pref_downloads_category">
+
+        <CheckBoxPreference
+            android:defaultValue="@string/pref_endless_scroll_default"
+            android:disableDependentsState="true"
+            android:icon="@null"
+            android:key="pref_endless_scroll"
+            android:summaryOff="@string/pref_endless_scroll_summary_off"
+            android:summaryOn="@string/pref_endless_scroll_summary_on"
+            android:title="@string/pref_endless_scroll_title" />
+    </PreferenceCategory>
+    <PreferenceCategory
         android:key="pref_key_performance_settings"
         android:title="@string/pref_performance_category">
 
@@ -15,6 +28,7 @@
 
         <ListPreference
             android:defaultValue="@string/pref_quantity_per_page_default"
+            android:dependency="pref_endless_scroll"
             android:entries="@array/pref_quantity_per_page_entries"
             android:entryValues="@array/pref_quantity_per_page_entry_values"
             android:icon="@null"
@@ -58,7 +72,8 @@
             android:defaultValue="@string/pref_webview_override_overview_default"
             android:icon="@null"
             android:key="prefs_webview_override_overview_lists"
-            android:summary="@string/pref_webview_override_overview_summary"
+            android:summaryOff="@string/pref_webview_override_overview_summary_off"
+            android:summaryOn="@string/pref_webview_override_overview_summary_on"
             android:title="@string/pref_webview_override_overview_title" />
 
         <ListPreference
@@ -94,7 +109,8 @@
             android:defaultValue="@string/pref_check_updates_default"
             android:icon="@null"
             android:key="pref_check_updates_lists"
-            android:summary="@string/pref_check_updates_summary"
+            android:summaryOff="@string/pref_check_updates_summary_off"
+            android:summaryOn="@string/pref_check_updates_summary_on"
             android:title="@string/pref_check_updates_title" />
     </PreferenceCategory>
 </PreferenceScreen>

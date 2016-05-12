@@ -11,7 +11,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.LogHelper;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -45,7 +45,7 @@ final class ImageDownloadBatch {
 
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", Constants.USER_AGENT)
+                .addHeader("User-Agent", Consts.USER_AGENT)
                 .addHeader("Cookie", cookies)
                 .build();
 

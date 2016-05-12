@@ -18,7 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -140,7 +140,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             String image = coverFile != null ?
                     coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
-            HentoidApplication.getInstance().loadBitmap(image, holder.ivCover);
+            HentoidApp.getInstance().loadBitmap(image, holder.ivCover);
 
             Button btnCancel = (Button) view.findViewById(R.id.btnCancel);
             btnCancel.setOnClickListener(new View.OnClickListener() {
@@ -202,8 +202,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         content.setStatus(StatusContent.PAUSED);
         // Anytime a download status is set to downloading,
         // download count goes up by one.
-        int downloadCount = HentoidApplication.getDownloadCount();
-        HentoidApplication.setDownloadCount(--downloadCount);
+        int downloadCount = HentoidApp.getDownloadCount();
+        HentoidApp.setDownloadCount(--downloadCount);
 
         db.updateContentStatus(content);
         if (content.getId() == contents.get(0).getId()) {

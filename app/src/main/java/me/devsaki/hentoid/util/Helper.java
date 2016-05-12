@@ -26,7 +26,7 @@ public final class Helper {
     }
 
     public static <K> void saveJson(K object, File dir) throws IOException {
-        File file = new File(dir, Constants.JSON_FILE_NAME_V2);
+        File file = new File(dir, Consts.JSON_FILE_NAME_V2);
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
         // convert java object to JSON format, and return as a JSON formatted string

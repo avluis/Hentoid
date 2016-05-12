@@ -19,34 +19,34 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by DevSaki on 20/05/2015.
  * Initializes required components:
  * Database, Bitmap Cache, Update checks, etc.
+ * <p/>
+ * TODO: Cache the number of items in db
  */
-public class HentoidApplication extends Application {
-    public static final String DOWNLOAD_COUNT = "DOWNLOAD_COUNT";
-
-    private static final String TAG = LogHelper.makeLogTag(HentoidApplication.class);
+public class HentoidApp extends Application {
+    private static final String TAG = LogHelper.makeLogTag(HentoidApp.class);
 
     private static boolean beginImport;
     private static boolean donePressed;
-    private static HentoidApplication instance;
-    private static SharedPreferences sharedPreferences;
+    private static HentoidApp instance;
+    private static SharedPreferences sharedPrefs;
     private static Context context;
     private static int downloadCount = 0;
 
     // Only for use when activity context cannot be passed or used e.g.;
     // Notification resources, Analytics, etc.
-    public static synchronized HentoidApplication getInstance() {
+    public static synchronized HentoidApp getInstance() {
         return instance;
     }
 
-    public static SharedPreferences getAppPreferences() {
-        return sharedPreferences;
+    public static SharedPreferences getSharedPrefs() {
+        return sharedPrefs;
     }
 
     public static Context getAppContext() {
@@ -58,11 +58,11 @@ public class HentoidApplication extends Application {
     }
 
     public static void setDownloadCount(int downloadCount) {
-        HentoidApplication.downloadCount = downloadCount;
+        HentoidApp.downloadCount = downloadCount;
     }
 
     public static void downloadComplete() {
-        HentoidApplication.downloadCount++;
+        HentoidApp.downloadCount++;
     }
 
     public static boolean hasImportStarted() {
@@ -70,7 +70,7 @@ public class HentoidApplication extends Application {
     }
 
     public static void setBeginImport(boolean started) {
-        HentoidApplication.beginImport = started;
+        HentoidApp.beginImport = started;
     }
 
     public static boolean isDonePressed() {
@@ -78,7 +78,7 @@ public class HentoidApplication extends Application {
     }
 
     public static void setDonePressed(boolean pressed) {
-        HentoidApplication.donePressed = pressed;
+        HentoidApp.donePressed = pressed;
     }
 
     public synchronized Tracker getGoogleAnalyticsTracker() {
@@ -140,8 +140,8 @@ public class HentoidApplication extends Application {
     public void onCreate() {
         super.onCreate();
 
-        HentoidApplication.context = getApplicationContext();
-        sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        HentoidApp.context = getApplicationContext();
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         instance = this;
 
         AnalyticsTrackers.initialize(this);
@@ -178,9 +178,8 @@ public class HentoidApplication extends Application {
     }
 
     public void loadBitmap(String image, ImageView mImageView) {
-        String imageQualityPref = sharedPreferences.getString(
-                ConstantsPreferences.PREF_QUALITY_IMAGE_LISTS,
-                ConstantsPreferences.PREF_QUALITY_IMAGE_DEFAULT);
+        String imageQualityPref = sharedPrefs.getString(
+                ConstsPrefs.PREF_QUALITY_IMAGE_LISTS, ConstsPrefs.PREF_QUALITY_IMAGE_DEFAULT);
 
         ImageQuality imageQuality;
         switch (imageQualityPref) {

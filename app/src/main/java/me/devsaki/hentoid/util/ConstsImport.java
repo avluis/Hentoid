@@ -4,7 +4,7 @@ package me.devsaki.hentoid.util;
  * Created by avluis on 04/09/2016.
  * Collection of constants for import related results
  */
-public class ConstantsImport {
+public class ConstsImport {
 
     public static final String PERMISSION_GRANTED = "PERMISSION_GRANTED";
     public static final String PERMISSION_DENIED = "PERMISSION_DENIED";
@@ -19,8 +19,8 @@ public class ConstantsImport {
 
     public static final String RESULT_KEY = "RESULT_KEY";
 
-    public static final int REQUEST_IMPORT_RESULTS = 1;
-    public static final int REQUEST_APP_SETTINGS = 2;
-    public static final int REQUEST_STORAGE_PERMISSION = 3;
+    public static final int RQST_IMPORT_RESULTS = 1;
+    public static final int RQST_APP_SETTINGS = 2;
+    public static final int RQST_STORAGE_PERMISSION = 3;
 
 }

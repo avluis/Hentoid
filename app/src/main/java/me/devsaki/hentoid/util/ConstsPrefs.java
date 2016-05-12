@@ -4,7 +4,7 @@ package me.devsaki.hentoid.util;
  * Created by DevSaki on 19/05/2015.
  * Common app preference constants.
  */
-public abstract class ConstantsPreferences {
+public abstract class ConstsPrefs {
 
     public static final String PREFS_VERSION_KEY = "prefs_version";
     public static final int PREFS_VERSION = 2;
@@ -32,6 +32,8 @@ public abstract class ConstantsPreferences {
     public static final String PREF_FIRST_RUN = "pref_first_run";
     public static final boolean PREF_FIRST_RUN_DEFAULT = true;
     public static final String PREF_WELCOME_DONE = "pref_welcome_done";
+    public static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
+    public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
 
     public static final String WEB_SESSION_COOKIE = "web_session_cookie";
 }

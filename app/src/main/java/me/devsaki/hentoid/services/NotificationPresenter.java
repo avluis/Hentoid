@@ -12,13 +12,13 @@ import android.support.v4.content.ContextCompat;
 
 import java.util.Locale;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -30,7 +30,7 @@ final class NotificationPresenter {
     private static final String TAG = LogHelper.makeLogTag(NotificationPresenter.class);
 
     private static final int NOTIFICATION_ID = 0;
-    private final HentoidApplication appInstance;
+    private final HentoidApp appInstance;
     private final Resources resources;
     private final NotificationManager notificationManager;
 
@@ -39,8 +39,8 @@ final class NotificationPresenter {
     private NotificationCompat.Builder currentBuilder = null;
 
     NotificationPresenter() {
-        appInstance = HentoidApplication.getInstance();
-        downloadCount = HentoidApplication.getDownloadCount();
+        appInstance = HentoidApp.getInstance();
+        downloadCount = HentoidApp.getDownloadCount();
         resources = appInstance.getResources();
         notificationManager = (NotificationManager) appInstance
                 .getSystemService(Context.NOTIFICATION_SERVICE);
@@ -147,8 +147,7 @@ final class NotificationPresenter {
                 resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                         Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 Bundle bundle = new Bundle();
-                bundle.putInt(HentoidApplication.DOWNLOAD_COUNT,
-                        HentoidApplication.getDownloadCount());
+                bundle.putInt(Consts.DOWNLOAD_COUNT, HentoidApp.getDownloadCount());
                 resultIntent.putExtras(bundle);
 
                 return PendingIntent.getActivity(appInstance, 0, resultIntent,
@@ -161,7 +160,7 @@ final class NotificationPresenter {
                 resultIntent = new Intent(appInstance, currentContent.getWebActivityClass());
                 resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 Bundle cancelBundle = new Bundle();
-                cancelBundle.putString(Constants.INTENT_URL, currentContent.getGalleryUrl());
+                cancelBundle.putString(Consts.INTENT_URL, currentContent.getGalleryUrl());
                 resultIntent.putExtras(cancelBundle);
                 break;
         }

@@ -33,7 +33,7 @@ import javax.net.ssl.HttpsURLConnection;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.ConstsUpdater;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -56,7 +56,7 @@ public class UpdateCheck {
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
     private static UpdateCheck instance;
-    private final int NOTIFICATION_ID = Constants.UPDATE_NOTIFICATION_ID;
+    private final int NOTIFICATION_ID = ConstsUpdater.UPDATE_NOTIFICATION_ID;
     private final UpdateNotificationRunnable updateNotificationRunnable =
             new UpdateNotificationRunnable();
     private NotificationCompat.Builder builder;
@@ -115,14 +115,14 @@ public class UpdateCheck {
         String updateURL;
 
         if (retry) {
-            updateURL = Constants.LEGACY_UPDATE_URL;
+            updateURL = ConstsUpdater.LEGACY_UPDATE_URL;
             retryCount++;
             LogHelper.d(TAG, "Retrying! Count: " + retryCount);
         } else {
             if (BuildConfig.DEBUG) {
-                updateURL = Constants.DEBUG_UPDATE_URL;
+                updateURL = ConstsUpdater.DEBUG_UPDATE_URL;
             } else {
-                updateURL = Constants.UPDATE_URL;
+                updateURL = ConstsUpdater.UPDATE_URL;
             }
         }
 

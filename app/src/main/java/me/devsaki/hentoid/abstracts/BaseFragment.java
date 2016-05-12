@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
 
 /**
@@ -28,7 +28,7 @@ public abstract class BaseFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Context mContext = HentoidApplication.getAppContext();
+        Context mContext = HentoidApp.getAppContext();
 
         db = HentoidDB.getInstance(mContext);
 

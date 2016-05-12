@@ -23,13 +23,13 @@ import android.widget.EditText;
 import java.io.File;
 import java.io.IOException;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -85,13 +85,13 @@ public class PreferencesActivity extends BaseActivity {
             addPreferencesFromResource(R.xml.preferences);
 
             Preference addNoMediaFile = getPreferenceScreen()
-                    .findPreference(ConstantsPreferences.PREF_ADD_NO_MEDIA_FILE);
+                    .findPreference(ConstsPrefs.PREF_ADD_NO_MEDIA_FILE);
             addNoMediaFile.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    SharedPreferences prefs = HentoidApplication.getAppPreferences();
-                    String settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
+                    SharedPreferences prefs = HentoidApp.getSharedPrefs();
+                    String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
                     File nomedia = new File(settingDir, ".nomedia");
                     if (!nomedia.exists()) {
                         try {
@@ -108,8 +108,7 @@ public class PreferencesActivity extends BaseActivity {
                 }
             });
 
-            Preference appLock = getPreferenceScreen().findPreference(ConstantsPreferences.
-                    PREF_APP_LOCK);
+            Preference appLock = getPreferenceScreen().findPreference(ConstsPrefs.PREF_APP_LOCK);
             appLock.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
                 @Override
@@ -154,12 +153,12 @@ public class PreferencesActivity extends BaseActivity {
             });
 
             Preference mUpdateCheck = getPreferenceScreen()
-                    .findPreference(ConstantsPreferences.PREF_CHECK_UPDATE_MANUAL);
+                    .findPreference(ConstsPrefs.PREF_CHECK_UPDATE_MANUAL);
             mUpdateCheck.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
                     AndroidHelper.toast("Checking for updates...");
-                    UpdateCheck.getInstance().checkForUpdate(HentoidApplication.getAppContext(),
+                    UpdateCheck.getInstance().checkForUpdate(HentoidApp.getAppContext(),
                             false, true,
                             new UpdateCheck.UpdateCheckCallback() {
                                 @Override
@@ -180,9 +179,8 @@ public class PreferencesActivity extends BaseActivity {
 
         private void saveKey(DialogInterface dialog, EditText input) {
             String lock = input.getText().toString();
-            SharedPreferences.Editor editor = HentoidApplication
-                    .getAppPreferences().edit();
-            editor.putString(ConstantsPreferences.PREF_APP_LOCK, lock);
+            SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
+            editor.putString(ConstsPrefs.PREF_APP_LOCK, lock);
             editor.apply();
             if (lock.isEmpty()) {
                 AndroidHelper.toast(getActivity(), R.string.app_lock_disabled);

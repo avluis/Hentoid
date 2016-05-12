@@ -4,7 +4,7 @@ package me.devsaki.hentoid.util;
  * Created by DevSaki on 10/05/2015.
  * Common app constants.
  */
-public abstract class Constants {
+public abstract class Consts {
 
     public static final String DATABASE_NAME = "hentoid.db";
 
@@ -22,14 +22,6 @@ public abstract class Constants {
                     + " AppleWebKit/535.19 (KHTML, like Gecko)"
                     + " Chrome/18.0.1025.166 Mobile Safari/535.19";
 
-    public static final String UPDATE_URL =
-            "https://raw.githubusercontent.com/csaki/Hentoid/master/app/update.json";
+    public static final String DOWNLOAD_COUNT = "DOWNLOAD_COUNT";
 
-    public static final String DEBUG_UPDATE_URL =
-            "https://avnet.ws/.apps/hentoid/debug/update.json";
-
-    public static final String LEGACY_UPDATE_URL =
-            "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
-
-    public static final int UPDATE_NOTIFICATION_ID = 4368643;
 }

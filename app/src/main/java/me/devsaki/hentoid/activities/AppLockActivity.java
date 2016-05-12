@@ -17,13 +17,15 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.ConstsPrefs;
 
 /**
  * If set, this will allow us to 'lock' the app behind a password/code.
+ * <p/>
+ * TODO: On-Screen virtual keyboard
  */
 public class AppLockActivity extends BaseActivity {
 
@@ -103,8 +105,7 @@ public class AppLockActivity extends BaseActivity {
     @SuppressWarnings("UnusedParameters")
     public void checkPin(View view) {
         String pin = etPin.getText().toString();
-        String appLock = HentoidApplication.getAppPreferences()
-                .getString(ConstantsPreferences.PREF_APP_LOCK, "");
+        String appLock = HentoidApp.getSharedPrefs().getString(ConstsPrefs.PREF_APP_LOCK, "");
 
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);

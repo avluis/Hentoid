@@ -36,7 +36,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.ImportActivity;
@@ -47,9 +47,9 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.ConstantsImport;
-import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -62,7 +62,6 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         DrawerLayout.DrawerListener, ItemClickListener.ItemSelectListener, SearchContent.Callback {
     private static final String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
-    private static final int REQUEST_CODE = ConstantsImport.REQUEST_STORAGE_PERMISSION;
     private static final int SHOW_LOADING = 1;
     private static final int SHOW_BLANK = 2;
     private static final int SHOW_RESULT = 3;
@@ -75,6 +74,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     private String settingDir;
     private int order;
     private boolean orderUpdated;
+    private boolean endlessScroll;
     private TextView loadingText;
     private TextView emptyText;
     private LinearLayout toolbarLayout;
@@ -123,7 +123,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
     // Validate permissions
     private void checkPermissions() {
-        if (AndroidHelper.permissionsCheck(getActivity(), REQUEST_CODE)) {
+        if (AndroidHelper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
             queryPrefs();
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
@@ -225,19 +225,19 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 return true;
             }
         });
-        SharedPreferences.Editor editor = HentoidApplication.getAppPreferences().edit();
+        SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
         if (order == 0) {
             menu.findItem(R.id.action_order_alphabetic).setVisible(false);
             menu.findItem(R.id.action_order_by_date).setVisible(true);
 
             // Save current sort order
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+            editor.putInt(ConstsPrefs.PREF_ORDER_CONTENT_LISTS, order).apply();
         } else {
             menu.findItem(R.id.action_order_alphabetic).setVisible(true);
             menu.findItem(R.id.action_order_by_date).setVisible(false);
 
             // Save current sort order
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
+            editor.putInt(ConstsPrefs.PREF_ORDER_CONTENT_LISTS, order).apply();
         }
     }
 
@@ -268,14 +268,14 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         switch (item.getItemId()) {
             case R.id.action_order_alphabetic:
                 orderUpdated = true;
-                order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
+                order = ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC;
                 update();
                 getActivity().invalidateOptionsMenu();
 
                 return true;
             case R.id.action_order_by_date:
                 orderUpdated = true;
-                order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
+                order = ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE;
                 update();
                 getActivity().invalidateOptionsMenu();
 
@@ -311,6 +311,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         }, delay);
     }
 
+    // TODO: Make use of SharedPreferences.OnSharedPreferenceChangeListener()
     private void queryPrefs() {
         LogHelper.d(TAG, "Querying Prefs.");
         if (settingDir.isEmpty()) {
@@ -320,9 +321,10 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             getActivity().finish();
         }
 
-        int newQtyPages = Integer.parseInt(prefs.getString(
-                ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
-                ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+        int newQtyPages = Integer.parseInt(
+                prefs.getString(
+                        ConstsPrefs.PREF_QUANTITY_PER_PAGE_LISTS,
+                        ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
 
         if (qtyPages != newQtyPages) {
             LogHelper.d(TAG, "qtyPages updated.");
@@ -332,14 +334,18 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         }
 
         int trackOrder = prefs.getInt(
-                ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
-                ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
+                ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);
 
         if (order != trackOrder) {
             LogHelper.d(TAG, "order updated.");
             orderUpdated = true;
             order = trackOrder;
         }
+
+        endlessScroll = prefs.getBoolean(
+                ConstsPrefs.PREF_ENDLESS_SCROLL, ConstsPrefs.PREF_ENDLESS_SCROLL_DEFAULT);
+
+        LogHelper.d(TAG, "Endless Scrolling Enabled: " + endlessScroll);
     }
 
     private void setQuery(String query) {
@@ -407,13 +413,20 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
         mContext = getContext();
 
-        prefs = HentoidApplication.getAppPreferences();
-        settingDir = prefs.getString(Constants.SETTINGS_FOLDER, "");
-        order = prefs.getInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
-                ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
-        qtyPages = Integer.parseInt(prefs.getString(
-                ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
-                ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+        prefs = HentoidApp.getSharedPrefs();
+
+        settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+
+        order = prefs.getInt(
+                ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);
+
+        qtyPages = Integer.parseInt(
+                prefs.getString(
+                        ConstsPrefs.PREF_QUANTITY_PER_PAGE_LISTS,
+                        ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+
+        endlessScroll = prefs.getBoolean(
+                ConstsPrefs.PREF_ENDLESS_SCROLL, ConstsPrefs.PREF_ENDLESS_SCROLL_DEFAULT);
     }
 
     @Override
@@ -545,7 +558,6 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             return true;
         } else {
             clearSelection();
-
             backButtonPressed = System.currentTimeMillis();
             AndroidHelper.toast(mContext, R.string.press_back_again);
         }
@@ -575,7 +587,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 LogHelper.d(TAG, "Result is empty!");
                 update();
             }
-            if (HentoidApplication.getDownloadCount() > 0) {
+            if (HentoidApp.getDownloadCount() > 0) {
                 if (isLoaded) {
                     mAdapter.updateContentList();
                     update();
@@ -592,8 +604,8 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     }
 
     private void resetCount() {
-        LogHelper.d(TAG, "Download Count: " + HentoidApplication.getDownloadCount());
-        HentoidApplication.setDownloadCount(0);
+        LogHelper.d(TAG, "Download Count: " + HentoidApp.getDownloadCount());
+        HentoidApp.setDownloadCount(0);
         NotificationManager manager = (NotificationManager) mContext.getSystemService(
                 Context.NOTIFICATION_SERVICE);
         manager.cancel(0);
@@ -633,7 +645,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     }
 
     private void startAnimation() {
-        int POWER_LEVEL = 9000;
+        final int POWER_LEVEL = 9000;
 
         Drawable[] compoundDrawables = loadingText.getCompoundDrawables();
         for (Drawable drawable : compoundDrawables) {
@@ -663,7 +675,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         clearSelection();
         isLoaded = false;
         search = new SearchContent(mContext, query, currentPage, qtyPages,
-                order == ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
+                order == ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE);
         search.retrieveResults(this);
     }
 

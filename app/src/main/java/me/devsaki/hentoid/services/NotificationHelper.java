@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 
 /**
  * Created by avluis on 04/08/2016.
@@ -14,7 +14,7 @@ public class NotificationHelper extends BroadcastReceiver {
     public static final String NOTIFICATION_DELETED =
             "me.devsaki.hentoid.services.NOTIFICATION_DELETED";
 
-    private HentoidApplication instance;
+    private HentoidApp instance;
 
     public NotificationHelper() {
     }
@@ -22,14 +22,14 @@ public class NotificationHelper extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (instance == null) {
-            instance = HentoidApplication.getInstance();
+            instance = HentoidApp.getInstance();
         }
 
         try {
             String action = intent.getAction();
             if (action.equals(NOTIFICATION_DELETED)) {
                 // Reset download count
-                HentoidApplication.setDownloadCount(0);
+                HentoidApp.setDownloadCount(0);
             }
 
         } catch (Exception e) {

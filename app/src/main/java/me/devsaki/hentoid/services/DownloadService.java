@@ -10,7 +10,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -96,7 +96,7 @@ public class DownloadService extends IntentService {
             LogHelper.d(TAG, "Content download started: " + currentContent.getTitle());
 
             // Tracking Event (Download Added)
-            HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+            HentoidApp.getInstance().trackEvent("Download Service", "Download",
                     "Download Content: Start.");
 
             // Initialize
@@ -170,7 +170,7 @@ public class DownloadService extends IntentService {
                 LogHelper.e(TAG, "Error saving JSON: " + currentContent.getTitle(), e);
             }
 
-            HentoidApplication.downloadComplete();
+            HentoidApp.downloadComplete();
             notificationPresenter.updateNotification(0);
             updateActivity(-1);
             LogHelper.d(TAG, "Content download finished: " + currentContent.getTitle());

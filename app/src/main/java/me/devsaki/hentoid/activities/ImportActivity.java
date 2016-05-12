@@ -33,7 +33,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -44,8 +44,8 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.ConstantsImport;
+import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.v2.bean.DoujinBean;
@@ -59,9 +59,7 @@ public class ImportActivity extends BaseActivity implements
         OnDirectoryChooserFragmentInteraction {
     private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 
-    private static final int REQUEST_CODE = ConstantsImport.REQUEST_STORAGE_PERMISSION;
-    private static final String resultKey = ConstantsImport.RESULT_KEY;
-    private static final String dirKey = "currentDir";
+    private static final String DIR_KEY = "currentDir";
     private AlertDialog mAddDialog;
     private String result;
     private final Handler mImportHandler = new Handler(new Handler.Callback() {
@@ -102,10 +100,10 @@ public class ImportActivity extends BaseActivity implements
 
     private void initImport(Bundle savedState) {
         if (savedState == null) {
-            result = ConstantsImport.RESULT_EMPTY;
+            result = ConstsImport.RESULT_EMPTY;
         } else {
-            currentRootDirectory = (File) savedState.getSerializable(dirKey);
-            result = savedState.getString(resultKey);
+            currentRootDirectory = (File) savedState.getSerializable(DIR_KEY);
+            result = savedState.getString(ConstsImport.RESULT_KEY);
         }
         checkForDefaultDirectory();
     }
@@ -113,7 +111,7 @@ public class ImportActivity extends BaseActivity implements
     private void checkForDefaultDirectory() {
         if (checkPermissions()) {
             File file = new File(Environment.getExternalStorageDirectory() +
-                    "/" + Constants.DEFAULT_LOCAL_DIRECTORY + "/");
+                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
             if (file.exists() && file.isDirectory()) {
                 LogHelper.d(TAG, "Default Directory Found.");
                 currentRootDirectory = file;
@@ -128,14 +126,15 @@ public class ImportActivity extends BaseActivity implements
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(dirKey, currentRootDirectory);
-        outState.putString(resultKey, result);
+        outState.putSerializable(DIR_KEY, currentRootDirectory);
+        outState.putString(ConstsImport.RESULT_KEY, result);
         super.onSaveInstanceState(outState);
     }
 
     // Validate permissions
     private boolean checkPermissions() {
-        if (AndroidHelper.permissionsCheck(ImportActivity.this, REQUEST_CODE)) {
+        if (AndroidHelper.permissionsCheck(
+                ImportActivity.this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
             return true;
         } else {
@@ -155,10 +154,10 @@ public class ImportActivity extends BaseActivity implements
     @Override
     public void onBackPressed() {
         // Send result back to activity
-        result = ConstantsImport.RESULT_CANCELED;
+        result = ConstsImport.RESULT_CANCELED;
         LogHelper.d(TAG, result);
         Intent returnIntent = new Intent();
-        returnIntent.putExtra(resultKey, result);
+        returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
         setResult(RESULT_CANCELED, returnIntent);
         finish();
     }
@@ -184,24 +183,24 @@ public class ImportActivity extends BaseActivity implements
         if (grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                result = ConstantsImport.PERMISSION_GRANTED;
+                result = ConstsImport.PERMISSION_GRANTED;
                 Intent returnIntent = new Intent();
-                returnIntent.putExtra(resultKey, result);
+                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
                 setResult(RESULT_OK, returnIntent);
                 finish();
             } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // Permission Denied
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    result = ConstantsImport.PERMISSION_DENIED;
+                    result = ConstsImport.PERMISSION_DENIED;
                     Intent returnIntent = new Intent();
-                    returnIntent.putExtra(resultKey, result);
+                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
                     setResult(RESULT_CANCELED, returnIntent);
                     finish();
                 } else {
-                    result = ConstantsImport.PERMISSION_DENIED_FORCED;
+                    result = ConstsImport.PERMISSION_DENIED_FORCED;
                     Intent returnIntent = new Intent();
-                    returnIntent.putExtra(resultKey, result);
+                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
                     setResult(RESULT_CANCELED, returnIntent);
                     finish();
                 }
@@ -211,7 +210,7 @@ public class ImportActivity extends BaseActivity implements
 
     private void validateFolder(File folder) {
         String hentoidFolder = folder.getAbsolutePath();
-        SharedPreferences prefs = HentoidApplication.getAppPreferences();
+        SharedPreferences prefs = HentoidApp.getSharedPrefs();
         SharedPreferences.Editor editor = prefs.edit();
 
         // Validate folder
@@ -246,7 +245,7 @@ public class ImportActivity extends BaseActivity implements
             return;
         }
 
-        editor.putString(Constants.SETTINGS_FOLDER, hentoidFolder);
+        editor.putString(Consts.SETTINGS_FOLDER, hentoidFolder);
 
         boolean directorySaved = editor.commit();
         if (!directorySaved) {
@@ -292,9 +291,9 @@ public class ImportActivity extends BaseActivity implements
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                                 // Prior Library found, but user chose to cancel
-                                result = ConstantsImport.EXISTING_LIBRARY_FOUND;
+                                result = ConstsImport.EXISTING_LIBRARY_FOUND;
                                 Intent returnIntent = new Intent();
-                                returnIntent.putExtra(resultKey, result);
+                                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
                                 setResult(RESULT_CANCELED, returnIntent);
                                 finish();
                             }
@@ -307,7 +306,7 @@ public class ImportActivity extends BaseActivity implements
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
             cleanUpDB();
-            result = ConstantsImport.NEW_LIBRARY_CREATED;
+            result = ConstsImport.NEW_LIBRARY_CREATED;
 
             Handler handler = new Handler();
 
@@ -317,7 +316,7 @@ public class ImportActivity extends BaseActivity implements
 
                 public void run() {
                     Intent returnIntent = new Intent();
-                    returnIntent.putExtra(resultKey, result);
+                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
                     setResult(RESULT_OK, returnIntent);
                     finish();
                 }
@@ -326,8 +325,8 @@ public class ImportActivity extends BaseActivity implements
     }
 
     private void cleanUpDB() {
-        Context context = HentoidApplication.getAppContext();
-        context.deleteDatabase(Constants.DATABASE_NAME);
+        Context context = HentoidApp.getAppContext();
+        context.deleteDatabase(Consts.DATABASE_NAME);
         LogHelper.d(TAG, R.string.cleaning_up_db);
     }
 
@@ -336,7 +335,7 @@ public class ImportActivity extends BaseActivity implements
             mAddDialog.dismiss();
         }
         Intent returnIntent = new Intent();
-        returnIntent.putExtra(resultKey, result);
+        returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
         setResult(RESULT_OK, returnIntent);
         finish();
     }
@@ -356,9 +355,9 @@ public class ImportActivity extends BaseActivity implements
             };
             thread.start();
 
-            result = ConstantsImport.EXISTING_LIBRARY_IMPORTED;
+            result = ConstsImport.EXISTING_LIBRARY_IMPORTED;
         } else {
-            result = ConstantsImport.NEW_LIBRARY_CREATED;
+            result = ConstsImport.NEW_LIBRARY_CREATED;
             cleanUp(mAddDialog);
         }
     }
@@ -467,7 +466,7 @@ public class ImportActivity extends BaseActivity implements
                 for (File file : files) {
                     if (file.isDirectory()) {
                         // (v2) JSON file format
-                        File json = new File(file, Constants.JSON_FILE_NAME_V2);
+                        File json = new File(file, Consts.JSON_FILE_NAME_V2);
                         if (json.exists()) {
                             try {
                                 Content content = Helper.jsonToObject(json, Content.class);
@@ -481,7 +480,7 @@ public class ImportActivity extends BaseActivity implements
                             }
                         } else {
                             // (v1) JSON file format
-                            json = new File(file, Constants.JSON_FILE_NAME);
+                            json = new File(file, Consts.JSON_FILE_NAME);
                             if (json.exists()) {
                                 try {
                                     //noinspection deprecation
@@ -503,7 +502,7 @@ public class ImportActivity extends BaseActivity implements
                                 }
                             } else {
                                 // (old) JSON file format (legacy and/or FAKKUDroid App)
-                                json = new File(file, Constants.OLD_JSON_FILE_NAME);
+                                json = new File(file, Consts.OLD_JSON_FILE_NAME);
                                 Date importedDate = new Date();
                                 if (json.exists()) {
                                     try {
