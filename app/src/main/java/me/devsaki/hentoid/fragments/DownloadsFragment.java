@@ -80,6 +80,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     private Button btnPage;
     private RecyclerView mListView;
     private ContentAdapter mAdapter;
+    private List<Content> contents;
     private List<Content> result = new ArrayList<>();
     private Context mContext;
     private MenuItem searchMenu;
@@ -257,6 +258,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_order_alphabetic:
+                cleanResults();
                 orderUpdated = true;
                 order = ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC;
                 update();
@@ -264,6 +266,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
                 return true;
             case R.id.action_order_by_date:
+                cleanResults();
                 orderUpdated = true;
                 order = ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE;
                 update();
@@ -274,6 +277,22 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void cleanResults() {
+        if (contents != null) {
+            contents.clear();
+            contents = null;
+        }
+
+        if (result != null) {
+            result.clear();
+        }
+
+        if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }
+        currentPage = 1;
     }
 
     private void clearQuery(int option) {
@@ -310,31 +329,37 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             getActivity().finish();
         }
 
-        int newQtyPages = Integer.parseInt(
+        int qtyPages = Integer.parseInt(
                 prefs.getString(
                         ConstsPrefs.PREF_QUANTITY_PER_PAGE_LISTS,
                         ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
 
-        if (qtyPages != newQtyPages) {
+        if (this.qtyPages != qtyPages) {
             LogHelper.d(TAG, "qtyPages updated.");
             setQuery("");
-            qtyPages = newQtyPages;
+            this.qtyPages = qtyPages;
             update();
         }
 
-        int trackOrder = prefs.getInt(
+        int order = prefs.getInt(
                 ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);
 
-        if (order != trackOrder) {
+        if (this.order != order) {
             LogHelper.d(TAG, "order updated.");
             orderUpdated = true;
-            order = trackOrder;
+            this.order = order;
         }
 
-        endlessScroll = prefs.getBoolean(
+        boolean endlessScroll = prefs.getBoolean(
                 ConstsPrefs.PREF_ENDLESS_SCROLL, ConstsPrefs.PREF_ENDLESS_SCROLL_DEFAULT);
 
-        LogHelper.d(TAG, "Endless Scrolling Enabled: " + endlessScroll);
+        if (this.endlessScroll != endlessScroll) {
+            this.endlessScroll = endlessScroll;
+            cleanResults();
+            update();
+        }
+
+        LogHelper.d(TAG, "Endless Scrolling Enabled: " + this.endlessScroll);
     }
 
     private void setQuery(String query) {
@@ -351,11 +376,11 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         getContext().registerReceiver(receiver, new IntentFilter(
                 DownloadService.DOWNLOAD_NOTIFICATION));
 
-        checkResults();
-
         if (mListState != null) {
             llm.onRestoreInstanceState(mListState);
         }
+
+        checkResults();
     }
 
     @Override
@@ -459,13 +484,13 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 super.onScrolled(recyclerView, dx, dy);
 
                 if (!override) {
-                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
-                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
-                        showToolbar(true, false);
-                    }
-
-                    // TODO: Fix issue with toolbar (sometimes) overlaying content
                     if (result != null && result.size() > 0) {
+                        if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
+                                .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
+                            showToolbar(true, false);
+                        }
+
+                        // TODO: Fix issue with toolbar (sometimes) overlaying content
                         if (llm.findLastVisibleItemPosition() == result.size() - 1) {
                             showToolbar(true, false);
                         } else {
@@ -573,11 +598,23 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
     private void clearSelection() {
         if (mAdapter != null) {
-            mAdapter.clearSelections();
+            if (mListView.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
+                mAdapter.clearSelections();
+            }
         }
     }
 
     private void checkResults() {
+        if (endlessScroll) {
+            mAdapter.setEndlessScrollListener(this);
+            if (contents != null) {
+                LogHelper.d(TAG, "Contents are not null.");
+            } else if (isLoaded) {
+                LogHelper.d(TAG, "Contents are null.");
+                result.clear();
+                update();
+            }
+        }
         if (result != null) {
             LogHelper.d(TAG, "Result is not null.");
             LogHelper.d(TAG, "Are results loaded? " + isLoaded);
@@ -593,7 +630,6 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 setCurrentPage();
                 showToolbar(true, false);
             }
-            mAdapter.setEndlessScrollListener(this);
         } else {
             LogHelper.d(TAG, "Result is null.");
         }
@@ -669,13 +705,11 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             if (drawable == null) {
                 continue;
             }
-
             animator.cancel();
         }
     }
 
     private void searchContent() {
-        clearSelection();
         isLoaded = false;
         search = new SearchContent(mContext, query, currentPage, qtyPages,
                 order == ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE);
@@ -686,15 +720,77 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         btnPage.setText(String.valueOf(currentPage));
     }
 
+    // TODO: Re-implement search results
+    // TODO: Present search results in their own activity
     private void displayResults() {
-        List<Content> contents;
+        clearSelection();
         result = search.getContent();
         toggleUI(0);
 
+//        if (result != null && !result.isEmpty()) {
+//            contents = result;
+//            toggleUI(SHOW_RESULT);
+//            LogHelper.d(TAG, "Result: Match.");
+//        } else {
+//            contents = new ArrayList<>(0);
+//            LogHelper.d(TAG, "Result: No match.");
+//            if (!query.equals("")) {
+//                emptyText.setText(R.string.search_entry_not_found);
+//                toggleUI(SHOW_BLANK);
+//            } else if (isLoaded) {
+//                emptyText.setText(R.string.downloads_empty);
+//                toggleUI(SHOW_BLANK);
+//            }
+//        }
+
+        boolean activeQuery = false;
+        List<Content> searchResults;
+        if (!query.isEmpty()) {
+            LogHelper.d(TAG, "Query: " + query);
+            if (result != null && !result.isEmpty()) {
+                LogHelper.d(TAG, "Result: Match.");
+                activeQuery = true;
+                searchResults = result;
+            } else {
+                LogHelper.d(TAG, "Result: No match.");
+                activeQuery = true;
+                searchResults = new ArrayList<>(0);
+            }
+        } else {
+            activeQuery = false;
+        }
+
+        LogHelper.d(TAG, "Active Query: " + activeQuery);
+
         if (result != null && !result.isEmpty()) {
-            contents = result;
+            if (endlessScroll) {
+                if (contents == null) {
+                    contents = result;
+                    mAdapter.setContentList(contents);
+                    mListView.setAdapter(mAdapter);
+                } else {
+                    int curSize = mAdapter.getItemCount();
+                    contents.addAll(result);
+                    mAdapter.notifyItemRangeInserted(curSize, contents.size() - 1);
+                }
+            } else {
+                contents = result;
+                mAdapter.setContentList(contents);
+                mListView.setAdapter(mAdapter);
+            }
+
             toggleUI(SHOW_RESULT);
-            LogHelper.d(TAG, "Result: Match.");
+
+            LogHelper.d(TAG, "Items in page: " + mAdapter.getItemCount());
+            LogHelper.d(TAG, "Items per page setting: " + qtyPages);
+
+            if (result.size() < qtyPages) {
+                isLastPage = true;
+                LogHelper.d(TAG, "On the last page.");
+            } else {
+                isLastPage = false;
+                LogHelper.d(TAG, "Not on the last page.");
+            }
         } else {
             contents = new ArrayList<>(0);
             LogHelper.d(TAG, "Result: No match.");
@@ -705,26 +801,6 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 emptyText.setText(R.string.downloads_empty);
                 toggleUI(SHOW_BLANK);
             }
-        }
-
-        if (contents == result) {
-            mAdapter.setContentList(result);
-            mListView.setAdapter(mAdapter);
-
-            LogHelper.d(TAG, "Items in page: " + mAdapter.getItemCount());
-            LogHelper.d(TAG, "Items per page setting: " + qtyPages);
-
-            if (mAdapter.getItemCount() < qtyPages) {
-                isLastPage = true;
-                LogHelper.d(TAG, "On the last page.");
-            } else {
-                isLastPage = false;
-                LogHelper.d(TAG, "Not on the last page.");
-            }
-        } else if (contents.isEmpty()) {
-            LogHelper.d(TAG, "All empty.");
-        } else {
-            LogHelper.d(TAG, "Shouldn't be seeing this...");
         }
     }
 
@@ -761,22 +837,29 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
     @Override
     public void onItemSelected() {
-        LogHelper.d(TAG, "onItemSelected");
-
         showToolbar(false, true);
     }
 
     @Override
     public void onItemClear() {
-        LogHelper.d(TAG, "onItemClear");
-
         showToolbar(true, false);
     }
 
     @Override
     public boolean onLoadMore(int position) {
-        LogHelper.d(TAG, "Load more data now~");
+        if (endlessScroll) {
+            LogHelper.d(TAG, "Load more data now~");
+            if (!isLastPage) {
+                currentPage++;
+                searchContent();
 
+                return true;
+            } else {
+                LogHelper.d(TAG, "On the last page.");
+                return false;
+            }
+        }
+        LogHelper.d(TAG, "Endless Scrolling not enabled.");
         return false;
     }
 
