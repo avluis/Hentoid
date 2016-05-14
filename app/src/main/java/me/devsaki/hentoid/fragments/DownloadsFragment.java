@@ -167,8 +167,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 mContext.getSystemService(Context.SEARCH_SERVICE);
 
         searchMenu = menu.findItem(R.id.action_search);
-        searchView = (SearchView) MenuItemCompat.getActionView(searchMenu);
-        MenuItemCompat.setOnActionExpandListener(this.searchMenu,
+        MenuItemCompat.setOnActionExpandListener(searchMenu,
                 new MenuItemCompat.OnActionExpandListener() {
                     @Override
                     public boolean onMenuItemActionExpand(MenuItem item) {
@@ -189,6 +188,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                         return true;
                     }
                 });
+        searchView = (SearchView) MenuItemCompat.getActionView(searchMenu);
         searchView.setSearchableInfo(searchManager.getSearchableInfo(
                 getActivity().getComponentName()));
         searchView.setIconifiedByDefault(true);
@@ -287,6 +287,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
         if (result != null) {
             result.clear();
+            result = null;
         }
 
         if (mAdapter != null) {
@@ -315,6 +316,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             @Override
             public void run() {
                 setQuery(s);
+                cleanResults();
                 update();
             }
         }, delay);
@@ -329,10 +331,25 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             getActivity().finish();
         }
 
+        boolean endlessScroll = prefs.getBoolean(
+                ConstsPrefs.PREF_ENDLESS_SCROLL, ConstsPrefs.PREF_ENDLESS_SCROLL_DEFAULT);
+
+        if (this.endlessScroll != endlessScroll) {
+            this.endlessScroll = endlessScroll;
+            cleanResults();
+            update();
+        }
+
+        LogHelper.d(TAG, "Endless Scrolling Enabled: " + this.endlessScroll);
+
         int qtyPages = Integer.parseInt(
                 prefs.getString(
                         ConstsPrefs.PREF_QUANTITY_PER_PAGE_LISTS,
                         ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+
+        if (this.endlessScroll) {
+            qtyPages = ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT;
+        }
 
         if (this.qtyPages != qtyPages) {
             LogHelper.d(TAG, "qtyPages updated.");
@@ -349,17 +366,6 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             orderUpdated = true;
             this.order = order;
         }
-
-        boolean endlessScroll = prefs.getBoolean(
-                ConstsPrefs.PREF_ENDLESS_SCROLL, ConstsPrefs.PREF_ENDLESS_SCROLL_DEFAULT);
-
-        if (this.endlessScroll != endlessScroll) {
-            this.endlessScroll = endlessScroll;
-            cleanResults();
-            update();
-        }
-
-        LogHelper.d(TAG, "Endless Scrolling Enabled: " + this.endlessScroll);
     }
 
     private void setQuery(String query) {
@@ -484,18 +490,22 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 super.onScrolled(recyclerView, dx, dy);
 
                 if (!override) {
+                    // Show toolbar:
                     if (result != null && result.size() > 0) {
+                        // At top of list
                         if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
                                 .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
                             showToolbar(true, false);
                         }
 
-                        // TODO: Fix issue with toolbar (sometimes) overlaying content
+                        // Last item in list
                         if (llm.findLastVisibleItemPosition() == result.size() - 1) {
                             showToolbar(true, false);
                         } else {
+                            // When scrolling up
                             if (dy < -10) {
                                 showToolbar(true, false);
+                                // When scrolling down
                             } else if (dy > 100) {
                                 showToolbar(false, false);
                             }
@@ -581,16 +591,9 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             return true;
         } else {
             clearSelection();
+            clearQuery(1);
             backButtonPressed = System.currentTimeMillis();
             AndroidHelper.toast(mContext, R.string.press_back_again);
-        }
-
-        if (query.isEmpty()) {
-            LogHelper.d(TAG, "Query is empty.");
-            return false;
-        } else {
-            clearQuery(1);
-            LogHelper.d(TAG, "Cleared query.");
         }
 
         return false;
@@ -636,6 +639,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     }
 
     // TODO: Show reload tool tip.
+    // TODO: Enable Scroll down to refresh
     private void showReloadToolTip() {
         //mAdapter.updateContentList();
         //update();
@@ -720,100 +724,86 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         btnPage.setText(String.valueOf(currentPage));
     }
 
-    // TODO: Re-implement search results
-    // TODO: Present search results in their own activity
     private void displayResults() {
         clearSelection();
-        result = search.getContent();
         toggleUI(0);
+        result = search.getContent();
 
-//        if (result != null && !result.isEmpty()) {
-//            contents = result;
-//            toggleUI(SHOW_RESULT);
-//            LogHelper.d(TAG, "Result: Match.");
-//        } else {
-//            contents = new ArrayList<>(0);
-//            LogHelper.d(TAG, "Result: No match.");
-//            if (!query.equals("")) {
-//                emptyText.setText(R.string.search_entry_not_found);
-//                toggleUI(SHOW_BLANK);
-//            } else if (isLoaded) {
-//                emptyText.setText(R.string.downloads_empty);
-//                toggleUI(SHOW_BLANK);
-//            }
-//        }
-
-        boolean activeQuery = false;
-        List<Content> searchResults;
         if (!query.isEmpty()) {
             LogHelper.d(TAG, "Query: " + query);
             if (result != null && !result.isEmpty()) {
                 LogHelper.d(TAG, "Result: Match.");
-                activeQuery = true;
-                searchResults = result;
+
+                List<Content> searchResults = result;
+                mAdapter.setContentList(searchResults);
+                mListView.setAdapter(mAdapter);
+
+                toggleUI(SHOW_RESULT);
+                showToolbar(true, true);
+                updatePager();
             } else {
                 LogHelper.d(TAG, "Result: No match.");
-                activeQuery = true;
-                searchResults = new ArrayList<>(0);
+                displayNoResults();
             }
         } else {
-            activeQuery = false;
-        }
-
-        LogHelper.d(TAG, "Active Query: " + activeQuery);
-
-        if (result != null && !result.isEmpty()) {
-            if (endlessScroll) {
-                if (contents == null) {
-                    contents = result;
-                    mAdapter.setContentList(contents);
-                    mListView.setAdapter(mAdapter);
+            if (result != null && !result.isEmpty()) {
+                if (endlessScroll) {
+                    if (contents == null) {
+                        contents = result;
+                        mAdapter.setContentList(contents);
+                        mListView.setAdapter(mAdapter);
+                    } else {
+                        int curSize = mAdapter.getItemCount();
+                        contents.addAll(result);
+                        mAdapter.notifyItemRangeInserted(curSize, contents.size() - 1);
+                    }
                 } else {
-                    int curSize = mAdapter.getItemCount();
-                    contents.addAll(result);
-                    mAdapter.notifyItemRangeInserted(curSize, contents.size() - 1);
+                    List<Content> singleResult = result;
+                    mAdapter.setContentList(singleResult);
+                    mListView.setAdapter(mAdapter);
                 }
+                toggleUI(SHOW_RESULT);
+                updatePager();
             } else {
-                contents = result;
-                mAdapter.setContentList(contents);
-                mListView.setAdapter(mAdapter);
+                LogHelper.d(TAG, "Result: Nothing to match.");
+                displayNoResults();
             }
+        }
+    }
 
-            toggleUI(SHOW_RESULT);
+    private void updatePager() {
+        isLastPage = result.size() < qtyPages;
+    }
 
-            LogHelper.d(TAG, "Items in page: " + mAdapter.getItemCount());
-            LogHelper.d(TAG, "Items per page setting: " + qtyPages);
-
-            if (result.size() < qtyPages) {
-                isLastPage = true;
-                LogHelper.d(TAG, "On the last page.");
-            } else {
-                isLastPage = false;
-                LogHelper.d(TAG, "Not on the last page.");
-            }
+    private void displayNoResults() {
+        if (!query.equals("")) {
+            emptyText.setText(R.string.search_entry_not_found);
+            toggleUI(SHOW_BLANK);
+        } else if (isLoaded) {
+            emptyText.setText(R.string.downloads_empty);
+            toggleUI(SHOW_BLANK);
         } else {
-            contents = new ArrayList<>(0);
-            LogHelper.d(TAG, "Result: No match.");
-            if (!query.equals("")) {
-                emptyText.setText(R.string.search_entry_not_found);
-                toggleUI(SHOW_BLANK);
-            } else if (isLoaded) {
-                emptyText.setText(R.string.downloads_empty);
-                toggleUI(SHOW_BLANK);
-            }
+            LogHelper.w(TAG, "Why are we in here?");
         }
     }
 
     private void showToolbar(boolean show, boolean override) {
         this.override = override;
-        if (!endlessScroll) {
+
+        if (override) {
             if (show) {
                 toolbar.setVisibility(View.VISIBLE);
             } else {
                 toolbar.setVisibility(View.GONE);
             }
         } else {
-            toolbar.setVisibility(View.GONE);
+            if (endlessScroll) {
+                toolbar.setVisibility(View.GONE);
+            } else if (show) {
+                toolbar.setVisibility(View.VISIBLE);
+            } else {
+                toolbar.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -847,7 +837,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
     @Override
     public boolean onLoadMore(int position) {
-        if (endlessScroll) {
+        if (endlessScroll && query.isEmpty()) {
             LogHelper.d(TAG, "Load more data now~");
             if (!isLastPage) {
                 currentPage++;
@@ -859,6 +849,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 return false;
             }
         }
+
         LogHelper.d(TAG, "Endless Scrolling not enabled.");
         return false;
     }
