@@ -314,6 +314,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             toggleSelection(itemPos);
                             setSelected(true, getSelectedItemCount());
                         }
+                        onLongClick(v);
                     } else {
                         LogHelper.d(TAG, "Not in selection mode, opening item.");
 

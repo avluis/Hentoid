@@ -22,6 +22,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,7 +31,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -77,7 +77,8 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     private boolean endlessScroll;
     private TextView loadingText;
     private TextView emptyText;
-    private LinearLayout toolbarLayout;
+    private Toolbar toolbar;
+    private boolean override;
     private Button btnPage;
     private RecyclerView mListView;
     private ContentAdapter mAdapter;
@@ -89,10 +90,8 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     private DrawerLayout mDrawerLayout;
     private int mDrawerState;
     private boolean shouldHide;
-    private boolean hideToolbar;
-    private boolean overrideHideToolbar;
     private SearchContent search;
-    private LinearLayoutManager mLayoutManager;
+    private LinearLayoutManager llm;
     private Parcelable mListState;
     private boolean permissionChecked;
     private boolean isLastPage;
@@ -229,16 +228,12 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         if (order == 0) {
             menu.findItem(R.id.action_order_alphabetic).setVisible(false);
             menu.findItem(R.id.action_order_by_date).setVisible(true);
-
-            // Save current sort order
-            editor.putInt(ConstsPrefs.PREF_ORDER_CONTENT_LISTS, order).apply();
         } else {
             menu.findItem(R.id.action_order_alphabetic).setVisible(true);
             menu.findItem(R.id.action_order_by_date).setVisible(false);
-
-            // Save current sort order
-            editor.putInt(ConstsPrefs.PREF_ORDER_CONTENT_LISTS, order).apply();
         }
+        // Save current sort order
+        editor.putInt(ConstsPrefs.PREF_ORDER_CONTENT_LISTS, order).apply();
     }
 
     @Override
@@ -311,7 +306,6 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         }, delay);
     }
 
-    // TODO: Make use of SharedPreferences.OnSharedPreferenceChangeListener()
     private void queryPrefs() {
         LogHelper.d(TAG, "Querying Prefs.");
         if (settingDir.isEmpty()) {
@@ -365,7 +359,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         checkResults();
 
         if (mListState != null) {
-            mLayoutManager.onRestoreInstanceState(mListState);
+            llm.onRestoreInstanceState(mListState);
         }
     }
 
@@ -382,7 +376,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        mListState = mLayoutManager.onSaveInstanceState();
+        mListState = llm.onSaveInstanceState();
         outState.putParcelable(LIST_STATE_KEY, mListState);
     }
 
@@ -439,8 +433,9 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         emptyText = (TextView) rootView.findViewById(R.id.empty);
 
         mListView.setHasFixedSize(true);
-        mLayoutManager = new LinearLayoutManager(mContext);
-        mListView.setLayoutManager(mLayoutManager);
+        llm = new LinearLayoutManager(mContext);
+        mListView.setLayoutManager(llm);
+
         mAdapter = new ContentAdapter(mContext, result, this);
         mListView.setAdapter(mAdapter);
 
@@ -453,31 +448,39 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         mDrawerLayout.addDrawerListener(this);
 
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
-
-        toolbarLayout = (LinearLayout) rootView.findViewById(R.id.downloads_toolbar);
+        toolbar = (Toolbar) rootView.findViewById(R.id.downloads_toolbar);
 
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
 
-                if (!overrideHideToolbar) {
-                    if (hideToolbar) {
-                        toolbarLayout.setVisibility(View.GONE);
-                    } else {
-                        toolbarLayout.setVisibility(View.VISIBLE);
-                    }
-                }
+                // TODO: Add Scroll to refresh
             }
 
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                if (dy > 10) {
-                    hideToolbar = true;
-                } else if (dy < -1) {
-                    hideToolbar = false;
+                if (!override) {
+                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
+                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
+                        showToolbar(true, false);
+                    }
+
+                    // TODO: Fix issue with toolbar (sometimes) overlaying content
+                    if (result != null && result.size() > 0) {
+                        if (llm.findLastVisibleItemPosition() == result.size() - 1) {
+                            showToolbar(true, false);
+                        } else {
+                            if (dy < -10) {
+                                showToolbar(true, false);
+                            } else if (dy > 100) {
+                                showToolbar(false, false);
+                            }
+                        }
+                    }
                 }
             }
         });
@@ -726,17 +729,11 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     }
 
     private void showToolbar(boolean show, boolean override) {
-        this.overrideHideToolbar = override;
-        if (toolbarLayout != null) {
-            if (show) {
-                if (toolbarLayout.getVisibility() == View.GONE) {
-                    toolbarLayout.setVisibility(View.VISIBLE);
-                }
-            } else {
-                toolbarLayout.setVisibility(View.GONE);
-            }
-
-            hideToolbar = !show;
+        this.override = override;
+        if (show) {
+            toolbar.setVisibility(View.VISIBLE);
+        } else {
+            toolbar.setVisibility(View.GONE);
         }
     }
 
