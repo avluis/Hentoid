@@ -55,8 +55,6 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
- * <p/>
- * TODO: Implement endless scrolling support.
  */
 public class DownloadsFragment extends BaseFragment implements ContentAdapter.EndlessScrollListener,
         DrawerLayout.DrawerListener, ItemClickListener.ItemSelectListener, SearchContent.Callback {
@@ -96,7 +94,6 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     private boolean permissionChecked;
     private boolean isLastPage;
     private boolean isLoaded;
-    private ObjectAnimator animator;
     private final BroadcastReceiver receiver = new BroadcastReceiver() {
 
         @Override
@@ -107,14 +104,12 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 if (percent >= 0) {
                     LogHelper.d(TAG, "Download Progress: " + percent);
                 } else if (isLoaded) {
-                    LogHelper.d(TAG, "Download complete, reload.");
-                    mAdapter.updateContentList();
-                    update();
-                    resetCount();
+                    showReloadToolTip();
                 }
             }
         }
     };
+    private ObjectAnimator animator;
 
     public static DownloadsFragment newInstance() {
         return new DownloadsFragment();
@@ -592,10 +587,8 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             }
             if (HentoidApp.getDownloadCount() > 0) {
                 if (isLoaded) {
-                    mAdapter.updateContentList();
-                    update();
+                    showReloadToolTip();
                 }
-                resetCount();
             } else {
                 setCurrentPage();
                 showToolbar(true, false);
@@ -604,6 +597,13 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         } else {
             LogHelper.d(TAG, "Result is null.");
         }
+    }
+
+    // TODO: Show reload tool tip.
+    private void showReloadToolTip() {
+        //mAdapter.updateContentList();
+        //update();
+        //resetCount();
     }
 
     private void resetCount() {
@@ -730,8 +730,12 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
     private void showToolbar(boolean show, boolean override) {
         this.override = override;
-        if (show) {
-            toolbar.setVisibility(View.VISIBLE);
+        if (!endlessScroll) {
+            if (show) {
+                toolbar.setVisibility(View.VISIBLE);
+            } else {
+                toolbar.setVisibility(View.GONE);
+            }
         } else {
             toolbar.setVisibility(View.GONE);
         }
