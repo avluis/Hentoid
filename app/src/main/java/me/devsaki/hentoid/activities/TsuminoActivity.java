@@ -1,17 +1,24 @@
 package me.devsaki.hentoid.activities;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseWebActivity;
@@ -39,6 +46,20 @@ public class TsuminoActivity extends BaseWebActivity {
 
         webView.setWebViewClient(new TsuminoWebViewClient());
         webView.addJavascriptInterface(new PageLoadListener(), "HTMLOUT");
+    }
+
+    private WebResourceResponse getJSWebResourceResponseFromAsset() {
+        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
+        String file = pathPrefix + "no.js";
+        try {
+            return getUtf8EncodedJSWebResourceResponse(getAssets().open(file));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private WebResourceResponse getUtf8EncodedJSWebResourceResponse(InputStream open) {
+        return new WebResourceResponse("text/js", "UTF-8", open);
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -102,6 +123,28 @@ public class TsuminoActivity extends BaseWebActivity {
                 int currentIndex = webView.copyBackForwardList().getCurrentIndex();
                 webView.goBackOrForward(historyIndex - currentIndex);
                 processDownload();
+            }
+        }
+
+        @SuppressWarnings("deprecation") // From API 21 we should use another overload
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull String url) {
+            if (url.contains("pop.js")) {
+                return getJSWebResourceResponseFromAsset();
+            } else {
+                return super.shouldInterceptRequest(view, url);
+            }
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull WebResourceRequest request) {
+            if (request.getUrl().toString().contains("pop.js")) {
+                return getJSWebResourceResponseFromAsset();
+            } else {
+                return super.shouldInterceptRequest(view, request);
             }
         }
     }
