@@ -72,6 +72,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     private int qtyPages;
     private SharedPreferences prefs;
     private String settingDir;
+    private String iq;
     private int order;
     private boolean orderUpdated;
     private boolean endlessScroll;
@@ -115,6 +116,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             }
         }
     };
+    private boolean isSelected;
     private ObjectAnimator animator;
 
     public static DownloadsFragment newInstance() {
@@ -302,6 +304,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     }
 
     private void clearQuery(int option) {
+        LogHelper.d(TAG, "Clearing query with option: " + option);
         if (option == 1) {
             searchView.clearFocus();
             searchView.setIconified(true);
@@ -329,6 +332,8 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
     private void queryPrefs() {
         LogHelper.d(TAG, "Querying Prefs.");
+        boolean shouldUpdate = false;
+
         if (settingDir.isEmpty()) {
             LogHelper.d(TAG, "Where are my files?!");
             Intent intent = new Intent(getActivity(), ImportActivity.class);
@@ -342,10 +347,18 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         if (this.endlessScroll != endlessScroll) {
             this.endlessScroll = endlessScroll;
             cleanResults();
-            update();
+            shouldUpdate = true;
         }
-
         LogHelper.d(TAG, "Endless Scrolling Enabled: " + this.endlessScroll);
+
+        String iq = prefs.getString(
+                ConstsPrefs.PREF_QUALITY_IMAGE_LISTS, ConstsPrefs.PREF_QUALITY_IMAGE_DEFAULT);
+
+        if (!this.iq.equals(iq)) {
+            LogHelper.d(TAG, "IQ updated.");
+            this.iq = iq;
+            shouldUpdate = true;
+        }
 
         int qtyPages = Integer.parseInt(
                 prefs.getString(
@@ -358,9 +371,9 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
         if (this.qtyPages != qtyPages) {
             LogHelper.d(TAG, "qtyPages updated.");
-            setQuery("");
             this.qtyPages = qtyPages;
-            update();
+            setQuery("");
+            shouldUpdate = true;
         }
 
         int order = prefs.getInt(
@@ -370,6 +383,10 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             LogHelper.d(TAG, "order updated.");
             orderUpdated = true;
             this.order = order;
+        }
+
+        if (shouldUpdate) {
+            update();
         }
     }
 
@@ -441,6 +458,10 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         prefs = HentoidApp.getSharedPrefs();
 
         settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+
+        iq = prefs.getString(
+                ConstsPrefs.PREF_QUALITY_IMAGE_LISTS,
+                ConstsPrefs.PREF_QUALITY_IMAGE_DEFAULT);
 
         order = prefs.getInt(
                 ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);
@@ -611,15 +632,28 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         // If the drawer is open, back will close it
         if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawers();
+            backButtonPressed = 0;
+
             return false;
         }
+
+        if (isSelected) {
+            clearSelection();
+            isSelected = false;
+            backButtonPressed = 0;
+
+            return false;
+        }
+
         if (backButtonPressed + 2000 > System.currentTimeMillis()) {
             return true;
         } else {
-            clearSelection();
-            clearQuery(1);
             backButtonPressed = System.currentTimeMillis();
             AndroidHelper.toast(mContext, R.string.press_back_again);
+        }
+
+        if (!query.isEmpty()) {
+            clearQuery(1);
         }
 
         return false;
@@ -866,11 +900,13 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
     @Override
     public void onItemSelected() {
+        isSelected = true;
         showToolbar(false, true);
     }
 
     @Override
     public void onItemClear() {
+        isSelected = false;
         showToolbar(true, false);
     }
 

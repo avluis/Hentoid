@@ -396,7 +396,7 @@ public class AndroidHelper {
             toast.getView().isShown();
             toast.setText(message);
         } catch (Exception e) {
-            LogHelper.w(TAG, "toast is null, creating one instead; ", e);
+            LogHelper.d(TAG, "toast is null, creating one instead;");
             toast = Toast.makeText(cxt, message, duration);
         }
 
