@@ -1,3 +1,8 @@
+<!--
+  Title: Hentoid
+  Description: Doujinshi Android App
+-->
+
 [![Circle CI](https://circleci.com/gh/avluis/Hentoid.svg?style=shield&circle-token=bb41b75f5b24c8d08258a88fe3dd04a88be7c8cb)](https://circleci.com/gh/avluis/Hentoid)
 ___
 
@@ -14,3 +19,5 @@ ___
 ___
 ###### Help us shape Hentoid into the best H-Manga App for you.
 ___
+
+<meta name='keywords' content='doujin, doujinshi, download doujinshi, android app, doujin android app, doujinshi android app, doujin android download, doujinshi android download'>
