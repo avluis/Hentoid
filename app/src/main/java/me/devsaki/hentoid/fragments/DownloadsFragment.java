@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -31,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -76,6 +78,9 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     private TextView loadingText;
     private TextView emptyText;
     private Toolbar toolbar;
+    private LinearLayout toolTip;
+    private SwipeRefreshLayout refreshLayout;
+    private boolean newContent;
     private boolean override;
     private Button btnPage;
     private RecyclerView mListView;
@@ -475,16 +480,10 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
 
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
         toolbar = (Toolbar) rootView.findViewById(R.id.downloads_toolbar);
+        toolTip = (LinearLayout) rootView.findViewById(R.id.tooltip);
+        refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
 
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-
-                // TODO: Add Scroll to refresh
-            }
-
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
@@ -496,18 +495,30 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                         if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
                                 .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
                             showToolbar(true, false);
+                            if (newContent) {
+                                toolTip.setVisibility(View.VISIBLE);
+                            }
                         }
 
                         // Last item in list
                         if (llm.findLastVisibleItemPosition() == result.size() - 1) {
                             showToolbar(true, false);
+                            if (newContent && !endlessScroll) {
+                                toolTip.setVisibility(View.VISIBLE);
+                            }
                         } else {
                             // When scrolling up
                             if (dy < -10) {
                                 showToolbar(true, false);
+                                if (newContent) {
+                                    toolTip.setVisibility(View.VISIBLE);
+                                }
                                 // When scrolling down
                             } else if (dy > 100) {
                                 showToolbar(false, false);
+                                if (newContent) {
+                                    toolTip.setVisibility(View.GONE);
+                                }
                             }
                         }
                     }
@@ -577,6 +588,21 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             }
         });
 
+        toolTip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                commitRefresh();
+            }
+        });
+
+        refreshLayout.setEnabled(false);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                commitRefresh();
+            }
+        });
+
         return rootView;
     }
 
@@ -638,12 +664,25 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
         }
     }
 
-    // TODO: Show reload tool tip.
-    // TODO: Enable Scroll down to refresh
     private void showReloadToolTip() {
-        //mAdapter.updateContentList();
-        //update();
-        //resetCount();
+        if (toolTip.getVisibility() == View.GONE) {
+            toolTip.setVisibility(View.VISIBLE);
+            refreshLayout.setEnabled(true);
+            newContent = true;
+        } else {
+            LogHelper.d(TAG, "Tooltip visible.");
+        }
+    }
+
+    private void commitRefresh() {
+        toolTip.setVisibility(View.GONE);
+        refreshLayout.setRefreshing(false);
+        refreshLayout.setEnabled(false);
+        newContent = false;
+        mAdapter.updateContentList();
+        cleanResults();
+        update();
+        resetCount();
     }
 
     private void resetCount() {

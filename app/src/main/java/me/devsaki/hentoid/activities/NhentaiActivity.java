@@ -141,7 +141,7 @@ public class NhentaiActivity extends BaseWebActivity {
             try {
                 processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
             } catch (Exception e) {
-                LogHelper.e(TAG, "Error parsing JSON: " + url, e);
+                LogHelper.e(TAG, "Error parsing JSON: " + url + "\n", e);
             }
 
             return null;
