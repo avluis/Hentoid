@@ -23,6 +23,12 @@ import me.devsaki.hentoid.util.AttributeMap;
 public class NhentaiParser {
     private static final String TAG = NhentaiParser.class.getName();
 
+    private static class Tag {
+        String url;
+        String name;
+        String type;
+    }
+
     public static Content parseContent(String json) throws JSONException {
         JSONObject jsonContent = new JSONObject(json);
         String titleTEMP = jsonContent.getJSONObject("title").getString("english");
@@ -48,12 +54,24 @@ public class NhentaiParser {
         AttributeMap attributes = new AttributeMap();
         for (int i = 0; i < allTags.length(); i++) {
 
-            JSONArray singleTag = allTags.getJSONArray(i);
-            Attribute attribute = new Attribute()
-                    .setUrl(singleTag.getString(0))
-                    .setName(singleTag.getString(2));
+            Tag tag = new Tag();
+            JSONObject singleTagObject = allTags.optJSONObject(i);
+            if (singleTagObject != null) {
+                tag.url = singleTagObject.getString("url");
+                tag.type = singleTagObject.getString("type");
+                tag.name = singleTagObject.getString("name");
+            } else {
+                JSONArray singleTagArray = allTags.getJSONArray(i);
+                tag.url = singleTagArray.getString(0);
+                tag.type = singleTagArray.getString(1);
+                tag.name = singleTagArray.getString(2);
+            }
 
-            switch (singleTag.getString(1)) {
+            Attribute attribute = new Attribute()
+                    .setUrl(tag.url)
+                    .setName(tag.name);
+
+            switch (tag.type) {
                 case "artist":
                     attribute.setType(AttributeType.ARTIST);
                     break;
