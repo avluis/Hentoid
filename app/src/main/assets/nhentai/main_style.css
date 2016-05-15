@@ -260,6 +260,25 @@ button.btn-secondary:hover,
 .pagination .page.current {
     font-weight: bold
 }
+.pagination.simple .first,
+.pagination.simple .next,
+.pagination.simple .previous {
+    display: inline-block;
+    padding: 10px;
+    border: 1px solid transparent
+}
+.pagination.simple .first.invisible,
+.pagination.simple .next.invisible,
+.pagination.simple .previous.invisible {
+    visibility: hidden;
+    z-index: -1
+}
+.pagination.simple .first:hover,
+.pagination.simple .next:hover,
+.pagination.simple .previous:hover {
+    border-radius: 30px;
+    background-color: #eaeeef
+}
 .nav-tabs {
     margin-bottom: 10px
 }
@@ -427,20 +446,25 @@ label {
     margin-top: 2px
 }
 .gallery,
-.thumb-container {
+.thumb-container,
+.gallery-favorite {
+    position: relative;
     display: inline-block;
     vertical-align: top
 }
 .gallery img,
 .thumb-container img,
+.gallery-favorite img,
 .gallery .cover,
-.thumb-container .cover {
+.thumb-container .cover,
+.gallery-favorite .cover {
     display: block;
     max-width: 100%;
     height: auto
 }
 .gallery a,
-.thumb-container a {
+.thumb-container a,
+.gallery-favorite a {
     text-decoration: none;
     color: #34495e;
     font-weight: bold;
@@ -449,7 +473,8 @@ label {
 }
 @media screen and (min-width: 980px) {
     .gallery,
-    .thumb-container {
+    .thumb-container,
+    .gallery-favorite {
         width: 19%;
         margin: 3px;
         margin-bottom: 2.5em
@@ -457,7 +482,8 @@ label {
 }
 @media screen and (max-width: 979px) {
     .gallery,
-    .thumb-container {
+    .thumb-container,
+    .gallery-favorite {
         width: 24%;
         margin: 2px;
         margin-bottom: 2.7em
@@ -465,7 +491,8 @@ label {
 }
 @media screen and (max-width: 772px) {
     .gallery,
-    .thumb-container {
+    .thumb-container,
+    .gallery-favorite {
         width: 32%;
         margin: 1.5px;
         margin-bottom: 2.85em
@@ -473,11 +500,41 @@ label {
 }
 @media screen and (max-width: 500px) {
     .gallery,
-    .thumb-container {
+    .thumb-container,
+    .gallery-favorite {
         width: 49%;
         margin: 0;
         margin-bottom: 2.95em
     }
+}
+.gallery-favorite .gallery {
+    width: 100%
+}
+.gallery-favorite .btn {
+    display: block;
+    margin-left: auto;
+    margin-right: auto
+}
+.gallery[data-tags*="6346"] .caption:before,
+.gallery[data-tags*="12227"] .caption:before,
+.gallery[data-tags*="29963"] .caption:before {
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    float: left;
+    z-index: 2;
+    background-size: contain;
+    width: 17.5px;
+    height: 11.75px
+}
+.gallery[data-tags*="6346"] .caption:before {
+    background-image: url("/img/jp.af2377f2029a.png")
+}
+.gallery[data-tags*="12227"] .caption:before {
+    background-image: url("/img/gb.6bf3cf5d375d.png")
+}
+.gallery[data-tags*="29963"] .caption:before {
+    background-image: url("/img/cn.b2da62f02008.png")
 }
 .caption {
     background-color: white;
@@ -707,6 +764,7 @@ label {
     text-decoration: underline
 }
 #comment-container {
+    margin-top: 20px;
     padding: 20px
 }
 #comment-container #id_body {
@@ -768,13 +826,17 @@ label {
 #page-container .page-number .num-pages {
     font-weight: 600
 }
+#page-container img.fit-horizontal {
+    max-width: 100%;
+    height: auto
+}
+#page-container img.fit-vertical {
+    max-height: 100%;
+    width: auto
+}
 @media(max-width:768px) {
     #page-container {
         padding: 0
-    }
-    #page-container img {
-        max-width: 100%;
-        height: auto
     }
     #page-container #pagination-page-top {
         display: none
@@ -864,8 +926,7 @@ label {
     text-decoration: none
 }
 #favcontainer {
-    padding: 10px;
-    padding-bottom: 40px
+    padding: 10px
 }
 #favorites-search-container {
     padding: 10px;
