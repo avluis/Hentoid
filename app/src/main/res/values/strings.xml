@@ -110,5 +110,11 @@
     <string name="about_github_url" translatable="false">https://github.com/csaki/Hentoid</string>
     <string name="about_notes">
         <![CDATA[
-        <p>Async data load - RecyclerView</p>]]></string>
+        <p>New look! New navigation drawer!<br>
+        Android 6.0 runtime permissions support.<br>
+        Improved browsing and navigation UI.<br>
+        Improved download service back-end.<br>
+        Improved search and result handling.<br>
+        Improved import routine & preference changes.<br>
+        Reduced chances of intrusive pop-ups on nhentai, hitomi and tsumino.</p>]]></string>
 </resources>
