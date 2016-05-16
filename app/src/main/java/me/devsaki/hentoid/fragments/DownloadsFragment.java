@@ -19,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.DrawerLayout.DrawerListener;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -44,9 +45,12 @@ import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.IntroSlideActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
+import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
+import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.SearchContent;
+import me.devsaki.hentoid.database.SearchContent.ContentListener;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.listener.ItemClickListener;
+import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Consts;
@@ -58,8 +62,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
  */
-public class DownloadsFragment extends BaseFragment implements ContentAdapter.EndlessScrollListener,
-        DrawerLayout.DrawerListener, ItemClickListener.ItemSelectListener, SearchContent.Callback {
+public class DownloadsFragment extends BaseFragment implements ContentListener,
+        ContentsWipedListener, DrawerListener, EndlessScrollListener, ItemSelectListener {
     private static final String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     private static final int SHOW_LOADING = 1;
@@ -672,7 +676,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
             mAdapter.setEndlessScrollListener(this);
             if (contents != null) {
                 LogHelper.d(TAG, "Contents are not null.");
-            } else if (isLoaded) {
+            } else if (isLoaded && result != null) {
                 LogHelper.d(TAG, "Contents are null.");
                 result.clear();
                 update();
@@ -693,6 +697,7 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
                 setCurrentPage();
                 showToolbar(true, false);
             }
+            mAdapter.setContentsWipedListener(this);
         } else {
             LogHelper.d(TAG, "Result is null.");
         }
@@ -899,9 +904,17 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     }
 
     @Override
-    public void onItemSelected() {
+    public void onItemSelected(int selectedCount) {
         isSelected = true;
         showToolbar(false, true);
+
+        if (selectedCount > 1) {
+            LogHelper.d(TAG, selectedCount + " items selected.");
+            // TODO: Update adapter
+        } else if (selectedCount == 1) {
+            LogHelper.d(TAG, selectedCount + " item selected.");
+            // TODO: Update adapter
+        }
     }
 
     @Override
@@ -911,22 +924,22 @@ public class DownloadsFragment extends BaseFragment implements ContentAdapter.En
     }
 
     @Override
-    public boolean onLoadMore(int position) {
+    public void onContentsWiped() {
+        LogHelper.d(TAG, "All items cleared!");
+        update();
+    }
+
+    @Override
+    public void onLoadMore(int position) {
         if (endlessScroll && query.isEmpty()) {
             LogHelper.d(TAG, "Load more data now~");
             if (!isLastPage) {
                 currentPage++;
                 searchContent();
-
-                return true;
-            } else {
-                LogHelper.d(TAG, "On the last page.");
-                return false;
             }
         }
 
         LogHelper.d(TAG, "Endless Scrolling not enabled.");
-        return false;
     }
 
     @Override

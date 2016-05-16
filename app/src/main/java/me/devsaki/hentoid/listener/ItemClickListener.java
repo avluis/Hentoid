@@ -18,8 +18,8 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
 
     private final Context context;
     private final Content content;
-    private final int position;
     private final ItemSelectListener listener;
+    private final int position;
     private int selectedItemCount;
     private boolean selected;
 
@@ -47,13 +47,10 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
 //        }
 //    }
 
-    // TODO: Add support for onItemClearAll (multi-select support)
     private void matchAndClear() {
         if (selectedItemCount > 0) {
             if (selected) {
-                listener.onItemSelected();
-            } else {
-                LogHelper.d(TAG, "Not yet implemented.");
+                listener.onItemSelected(selectedItemCount);
             }
         } else {
             listener.onItemClear();
@@ -79,7 +76,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     }
 
     public interface ItemSelectListener {
-        void onItemSelected();
+        void onItemSelected(int selectedCount);
 
         void onItemClear();
     }

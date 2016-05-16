@@ -51,20 +51,26 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private final Context cxt;
     private final SimpleDateFormat sdf;
     private final SparseBooleanArray selectedItems;
-    private final ItemSelectListener listener;
-    private List<Content> contents = new ArrayList<>();
+    private final ItemSelectListener selectListener;
+    private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
+    private List<Content> contents = new ArrayList<>();
 
     public ContentAdapter(Context cxt, final List<Content> contents, ItemSelectListener listener) {
         this.cxt = cxt;
         this.contents = contents;
-        this.listener = listener;
+        this.selectListener = listener;
+
         sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
         selectedItems = new SparseBooleanArray();
     }
 
-    public void setEndlessScrollListener(EndlessScrollListener endlessScrollListener) {
-        this.endlessScrollListener = endlessScrollListener;
+    public void setEndlessScrollListener(EndlessScrollListener listener) {
+        this.endlessScrollListener = listener;
+    }
+
+    public void setContentsWipedListener(ContentsWipedListener listener) {
+        this.contentsWipedListener = listener;
     }
 
     private void toggleSelection(int pos) {
@@ -292,7 +298,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setVisibility(View.GONE);
         }
 
-        holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, pos, listener) {
+        holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, pos, selectListener) {
 
             @Override
             public void onClick(View v) {
@@ -327,7 +333,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         });
 
-        holder.itemView.setOnLongClickListener(new ItemClickListener(cxt, content, pos, listener) {
+        holder.itemView.setOnLongClickListener(new ItemClickListener(cxt, content, pos, selectListener) {
 
             @Override
             public boolean onLongClick(View v) {
@@ -477,9 +483,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         removeItem(item);
         notifyDataSetChanged();
+
+        if (contents != null) {
+            if (contents.size() == 0) {
+                contentsWipedListener.onContentsWiped();
+            }
+        }
     }
 
     public interface EndlessScrollListener {
-        boolean onLoadMore(int position);
+        void onLoadMore(int position);
+    }
+
+    public interface ContentsWipedListener {
+        void onContentsWiped();
     }
 }

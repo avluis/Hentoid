@@ -36,16 +36,16 @@ public class SearchContent {
         return contentList;
     }
 
-    public void retrieveResults(final Callback callback) {
+    public void retrieveResults(final ContentListener listener) {
         LogHelper.d(TAG, "Retrieving results.");
 
         if (mCurrentState == State.INITIALIZED) {
-            callback.onContentReady(true);
-            callback.onContentFailed(false);
+            listener.onContentReady(true);
+            listener.onContentFailed(false);
             return;
         } else if (mCurrentState == State.FAILED) {
-            callback.onContentReady(false);
-            callback.onContentFailed(true);
+            listener.onContentReady(false);
+            listener.onContentFailed(true);
             return;
         }
 
@@ -59,9 +59,9 @@ public class SearchContent {
 
             @Override
             protected void onPostExecute(State current) {
-                if (callback != null) {
-                    callback.onContentReady(current == State.INITIALIZED);
-                    callback.onContentFailed(current == State.FAILED);
+                if (listener != null) {
+                    listener.onContentReady(current == State.INITIALIZED);
+                    listener.onContentFailed(current == State.FAILED);
                 }
             }
         }.execute();
@@ -91,7 +91,7 @@ public class SearchContent {
         NON_INITIALIZED, INITIALIZING, INITIALIZED, FAILED
     }
 
-    public interface Callback {
+    public interface ContentListener {
         void onContentReady(boolean success);
 
         void onContentFailed(boolean failure);
