@@ -121,6 +121,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         }
     };
     private boolean isSelected;
+    private boolean selectTrigger = false;
     private ObjectAnimator animator;
 
     public static DownloadsFragment newInstance() {
@@ -597,16 +598,18 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                if (currentPage != 1 && isLoaded) {
-                    AndroidHelper.toast(mContext, R.string.moving_to_first_page);
-                    clearQuery(1);
+                if (!endlessScroll) {
+                    if (currentPage != 1 && isLoaded) {
+                        AndroidHelper.toast(mContext, R.string.moving_to_first_page);
+                        clearQuery(1);
 
-                    return true;
-                } else if (currentPage == 1 && isLoaded) {
-                    AndroidHelper.toast(mContext, R.string.on_first_page);
-                    update();
+                        return true;
+                    } else if (currentPage == 1 && isLoaded) {
+                        AndroidHelper.toast(mContext, R.string.on_first_page);
+                        update();
 
-                    return true;
+                        return true;
+                    }
                 }
 
                 return false;
@@ -667,6 +670,8 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         if (mAdapter != null) {
             if (mListView.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
                 mAdapter.clearSelections();
+                selectTrigger = false;
+                showToolbar(true, false);
             }
         }
     }
@@ -807,23 +812,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         toggleUI(0);
         result = search.getContent();
 
-        if (!query.isEmpty()) {
-            LogHelper.d(TAG, "Query: " + query);
-            if (result != null && !result.isEmpty()) {
-                LogHelper.d(TAG, "Result: Match.");
-
-                List<Content> searchResults = result;
-                mAdapter.setContentList(searchResults);
-                mListView.setAdapter(mAdapter);
-
-                toggleUI(SHOW_RESULT);
-                showToolbar(true, true);
-                updatePager();
-            } else {
-                LogHelper.d(TAG, "Result: No match.");
-                displayNoResults();
-            }
-        } else {
+        if (query.isEmpty()) {
             if (result != null && !result.isEmpty()) {
                 if (endlessScroll) {
                     if (contents == null) {
@@ -846,15 +835,33 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 LogHelper.d(TAG, "Result: Nothing to match.");
                 displayNoResults();
             }
+        } else {
+            LogHelper.d(TAG, "Query: " + query);
+            if (result != null && !result.isEmpty()) {
+                LogHelper.d(TAG, "Result: Match.");
+
+                List<Content> searchResults = result;
+                mAdapter.setContentList(searchResults);
+                mListView.setAdapter(mAdapter);
+
+                toggleUI(SHOW_RESULT);
+                showToolbar(true, true);
+                updatePager();
+            } else {
+                LogHelper.d(TAG, "Result: Nothing to match.");
+                displayNoResults();
+            }
         }
     }
 
     private void updatePager() {
+        // TODO: Test: if result.size == qtyPages
         isLastPage = result.size() < qtyPages;
+        LogHelper.d(TAG, "Results: " + result.size());
     }
 
     private void displayNoResults() {
-        if (!query.equals("")) {
+        if (!query.equals("") && isLoaded) {
             emptyText.setText(R.string.search_entry_not_found);
             toggleUI(SHOW_BLANK);
         } else if (isLoaded) {
@@ -904,23 +911,29 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     @Override
-    public void onItemSelected(int selectedCount) {
+    public void onItemSelected(int selectedCount, int position) {
         isSelected = true;
         showToolbar(false, true);
 
-        if (selectedCount > 1) {
-            LogHelper.d(TAG, selectedCount + " items selected.");
-            // TODO: Update adapter
-        } else if (selectedCount == 1) {
-            LogHelper.d(TAG, selectedCount + " item selected.");
-            // TODO: Update adapter
+        if (selectedCount == 2) {
+            // TODO: Show Context Toolbar (delete multiple)
+            selectTrigger = true;
+            mAdapter.notifyDataSetChanged();
         }
     }
 
     @Override
-    public void onItemClear() {
-        isSelected = false;
-        showToolbar(true, false);
+    public void onItemClear(int itemCount, int position) {
+        if (itemCount == 1 && selectTrigger) {
+            // TODO: Hide Context Toolbar
+            selectTrigger = false;
+            mAdapter.notifyDataSetChanged();
+        }
+
+        if (itemCount < 1) {
+            isSelected = false;
+            showToolbar(true, false);
+        }
     }
 
     @Override

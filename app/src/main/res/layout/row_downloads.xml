@@ -164,4 +164,42 @@
 
         </RelativeLayout>
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item_minimal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/row_item_selector"
+        android:baselineAligned="false"
+        android:minHeight="?listPreferredItemHeightSmall"
+        android:orientation="horizontal"
+        android:paddingBottom="5dp"
+        android:paddingEnd="1dp"
+        android:paddingLeft="10dp"
+        android:paddingRight="1dp"
+        android:paddingStart="10dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/ivCover3"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="5dp"
+            android:adjustViewBounds="true"
+            android:padding="1dp"
+            android:scaleType="fitCenter"
+            tools:ignore="ContentDescription"
+            tools:src="@drawable/ic_placeholder" />
+
+        <include
+            android:id="@+id/tvTitle3"
+            layout="@layout/include_row_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="15dp"
+            android:layout_marginRight="15dp" />
+    </LinearLayout>
 </android.support.v7.widget.CardView>

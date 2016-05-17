@@ -10,13 +10,17 @@ import me.devsaki.hentoid.R;
 /**
  * Created by avluis on 04/23/2016.
  * Content Holder for Downloads Content Adapter
+ * <p/>
+ * TODO: Research if possible to re-use widget id (to eliminate duplication)
  */
 public class ContentHolder extends RecyclerView.ViewHolder {
 
     public final TextView tvTitle;
     public final TextView tvTitle2;
+    public final TextView tvTitle3;
     public final ImageView ivCover;
     public final ImageView ivCover2;
+    public final ImageView ivCover3;
     public final TextView tvSeries;
     public final TextView tvArtist;
     public final TextView tvTags;
@@ -29,8 +33,10 @@ public class ContentHolder extends RecyclerView.ViewHolder {
 
         tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
         tvTitle2 = (TextView) itemView.findViewById(R.id.tvTitle2);
+        tvTitle3 = (TextView) itemView.findViewById(R.id.tvTitle3);
         ivCover = (ImageView) itemView.findViewById(R.id.ivCover);
         ivCover2 = (ImageView) itemView.findViewById(R.id.ivCover2);
+        ivCover3 = (ImageView) itemView.findViewById(R.id.ivCover3);
         tvSeries = (TextView) itemView.findViewById(R.id.tvSeries);
         tvArtist = (TextView) itemView.findViewById(R.id.tvArtist);
         tvTags = (TextView) itemView.findViewById(R.id.tvTags);

@@ -47,13 +47,11 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
 //        }
 //    }
 
-    private void matchAndClear() {
-        if (selectedItemCount > 0) {
-            if (selected) {
-                listener.onItemSelected(selectedItemCount);
-            }
+    private void matchAndClear(int position) {
+        if (selected) {
+            listener.onItemSelected(selectedItemCount, position);
         } else {
-            listener.onItemClear();
+            listener.onItemClear(selectedItemCount, position);
         }
     }
 
@@ -70,14 +68,14 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
         LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle() +
                 " has been" + (selected ? " selected." : " unselected."));
 
-        matchAndClear();
+        matchAndClear(position);
 
         return true;
     }
 
     public interface ItemSelectListener {
-        void onItemSelected(int selectedCount);
+        void onItemSelected(int selectedCount, int position);
 
-        void onItemClear();
+        void onItemClear(int itemCount, int position);
     }
 }

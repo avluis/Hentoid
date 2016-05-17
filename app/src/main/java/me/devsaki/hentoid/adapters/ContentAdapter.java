@@ -51,7 +51,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private final Context cxt;
     private final SimpleDateFormat sdf;
     private final SparseBooleanArray selectedItems;
-    private final ItemSelectListener selectListener;
+    private final ItemSelectListener listener;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
     private List<Content> contents = new ArrayList<>();
@@ -59,7 +59,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     public ContentAdapter(Context cxt, final List<Content> contents, ItemSelectListener listener) {
         this.cxt = cxt;
         this.contents = contents;
-        this.selectListener = listener;
+        this.listener = listener;
 
         sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
         selectedItems = new SparseBooleanArray();
@@ -154,20 +154,28 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         final RelativeLayout select = (RelativeLayout) holder.itemView.findViewById(R.id.item);
         LinearLayout actions = (LinearLayout) holder.itemView.findViewById(R.id.item_actions);
+        LinearLayout minimal = (LinearLayout) holder.itemView.findViewById(R.id.item_minimal);
 
-        // TODO: if getSelectedItemCount() > 1, go into multi-delete mode (multi-select support)
         if (holder.itemView.isSelected()) {
             LogHelper.d(TAG, "Position: " + pos + ": " + content.getTitle()
                     + " is a selected item currently in view.");
 
-            select.setVisibility(View.GONE);
-            actions.setVisibility(View.VISIBLE);
+            if (getSelectedItemCount() > 1) {
+                select.setVisibility(View.GONE);
+                actions.setVisibility(View.GONE);
+                minimal.setVisibility(View.VISIBLE);
+            } else {
+                select.setVisibility(View.GONE);
+                actions.setVisibility(View.VISIBLE);
+                minimal.setVisibility(View.GONE);
 
-            holder.tvDate.setText(cxt.getString(R.string.download_date).replace("@date",
-                    sdf.format(new Date(content.getDownloadDate()))));
+                holder.tvDate.setText(cxt.getString(R.string.download_date).replace("@date",
+                        sdf.format(new Date(content.getDownloadDate()))));
+            }
         } else {
             select.setVisibility(View.VISIBLE);
             actions.setVisibility(View.GONE);
+            minimal.setVisibility(View.GONE);
 
             holder.tvDate.setText(R.string.tvEmpty);
         }
@@ -180,6 +188,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.tvTitle.setText(R.string.tvEmpty);
             if (holder.itemView.isSelected()) {
                 holder.tvTitle2.setText(R.string.tvEmpty);
+                holder.tvTitle3.setText(R.string.tvEmpty);
             }
         } else {
             holder.tvTitle.setText(content.getTitle());
@@ -187,6 +196,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             if (holder.itemView.isSelected()) {
                 holder.tvTitle2.setText(content.getTitle());
                 holder.tvTitle2.setSelected(true);
+                holder.tvTitle3.setText(content.getTitle());
+                holder.tvTitle3.setSelected(true);
             }
         }
 
@@ -198,6 +209,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         if (holder.itemView.isSelected()) {
             HentoidApp.getInstance().loadBitmap(image, holder.ivCover2);
+            HentoidApp.getInstance().loadBitmap(image, holder.ivCover3);
         }
 
         String series = "";
@@ -298,7 +310,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setVisibility(View.GONE);
         }
 
-        holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, pos, selectListener) {
+        holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, pos, listener) {
 
             @Override
             public void onClick(View v) {
@@ -315,7 +327,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             toggleSelection(itemPos);
                             setSelected(false, getSelectedItemCount());
                         } else {
-                            LogHelper.d(TAG, "Item not selected it, add it.");
+                            LogHelper.d(TAG, "Item not selected, add it.");
 
                             toggleSelection(itemPos);
                             setSelected(true, getSelectedItemCount());
@@ -333,7 +345,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         });
 
-        holder.itemView.setOnLongClickListener(new ItemClickListener(cxt, content, pos, selectListener) {
+        holder.itemView.setOnLongClickListener(new ItemClickListener(cxt, content, pos, listener) {
 
             @Override
             public boolean onLongClick(View v) {
@@ -348,7 +360,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                         toggleSelection(itemPos);
                         setSelected(false, getSelectedItemCount());
                     } else {
-                        LogHelper.d(TAG, "Item not selected it, add it.");
+                        LogHelper.d(TAG, "Item not selected, add it.");
 
                         toggleSelection(itemPos);
                         setSelected(true, getSelectedItemCount());
