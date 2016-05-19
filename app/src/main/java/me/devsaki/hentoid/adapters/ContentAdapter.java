@@ -430,11 +430,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             }
                         })
                 .setNegativeButton(android.R.string.no, null)
-                .create()
-                .show();
+                .create().show();
     }
 
-    // TODO: Add support for multi-delete mode (multi-select support)
     private void deleteContent(final Content content) {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
@@ -454,8 +452,29 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                                 listener.onItemClear(0, -1);
                             }
                         })
-                .create()
-                .show();
+                .create().show();
+    }
+
+    private void deleteContents(final List<Content> selectedContent) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
+        builder.setMessage(R.string.ask_delete_multiple)
+                .setPositiveButton(android.R.string.yes,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                clearSelections();
+                                deleteItems(selectedContent);
+                            }
+                        })
+                .setNegativeButton(android.R.string.no,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                clearSelections();
+                                listener.onItemClear(0, -1);
+                            }
+                        })
+                .create().show();
     }
 
     @Override
@@ -473,7 +492,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         notifyItemInserted(position);
     }
 
-    public boolean purgeSelectedItems() {
+    public void purgeSelectedItems() {
         if (getSelectedItemCount() > 0) {
             LogHelper.d(TAG, "Preparing to delete selected items...");
 
@@ -481,20 +500,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             selectedContent = processSelection();
 
             if (!selectedContent.isEmpty()) {
-                deleteItems(selectedContent);
+                deleteContents(selectedContent);
             } else {
                 listener.onItemClear(0, -1);
                 LogHelper.d(TAG, "No items to delete!!");
-
-                return false;
             }
-
-            return true;
         } else {
             listener.onItemClear(0, -1);
             LogHelper.d(TAG, "No items to delete!!");
-
-            return false;
         }
     }
 

@@ -149,9 +149,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.action_delete_sweep:
-                    boolean success = mAdapter.purgeSelectedItems();
-                    LogHelper.d(TAG, success ?
-                            "Items successfully deleted." : "Failure deleting items.");
+                    mAdapter.purgeSelectedItems();
                     mode.finish(); // Action picked, so close the CAB
 
                     return true;
