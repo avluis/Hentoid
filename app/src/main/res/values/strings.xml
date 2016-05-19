@@ -117,5 +117,7 @@
         Improved download service back-end.<br>
         Improved search and result handling.<br>
         Improved import routine & preference changes.<br>
-        Reduced chances of intrusive pop-ups on nhentai, hitomi and tsumino.</p>]]></string>
+        Reduced chances of intrusive pop-ups on nhentai, hitomi and tsumino.<br>
+        Support for browsable intent on supported sources (use your own browser).<br>
+        SD Storage on Android 6.0 (when SD card is used as internal storage).</p>]]></string>
 </resources>
