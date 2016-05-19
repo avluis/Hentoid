@@ -25,6 +25,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -74,6 +75,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     private final Handler searchHandler = new Handler();
     private int currentPage = 1;
     private int qtyPages;
+    private ActionMode mActionMode;
     private SharedPreferences prefs;
     private String settingDir;
     private String iq;
@@ -122,6 +124,48 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     };
     private boolean isSelected;
     private boolean selectTrigger = false;
+    // Called when the action mode is created; startActionMode() was called
+    private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            // Inflate a menu resource providing context menu items
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.menu_context_menu, menu);
+
+            return true;
+        }
+
+        // Called each time the action mode is shown. Always called after onCreateActionMode, but
+        // may be called multiple times if the mode is invalidated.
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            menu.findItem(R.id.action_delete_sweep).setVisible(selectTrigger);
+
+            return true;
+        }
+
+        // Called when the user selects a contextual menu item
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.action_delete_sweep:
+                    // TODO: Get selected items.
+                    // TODO: Send selected items to adapter to delete.
+                    mode.finish(); // Action picked, so close the CAB
+
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        // Called when the user exits the action mode
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            clearSelection();
+            mActionMode = null;
+        }
+    };
     private ObjectAnimator animator;
 
     public static DownloadsFragment newInstance() {
@@ -646,7 +690,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
         if (isSelected) {
             clearSelection();
-            isSelected = false;
             backButtonPressed = 0;
 
             return false;
@@ -673,6 +716,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 selectTrigger = false;
                 showToolbar(true, false);
             }
+            isSelected = false;
         }
     }
 
@@ -916,23 +960,43 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         showToolbar(false, true);
 
         if (selectedCount == 2) {
-            // TODO: Show Context Toolbar (delete multiple)
             selectTrigger = true;
             mAdapter.notifyDataSetChanged();
+        }
+
+        if (selectTrigger && mActionMode == null) {
+            mActionMode = toolbar.startActionMode(mActionModeCallback);
+        }
+
+        if (mActionMode != null) {
+            mActionMode.invalidate();
+            mActionMode.setTitle(selectedCount + " items selected");
         }
     }
 
     @Override
     public void onItemClear(int itemCount, int position) {
+        LogHelper.d(TAG, itemCount);
         if (itemCount == 1 && selectTrigger) {
-            // TODO: Hide Context Toolbar
             selectTrigger = false;
             mAdapter.notifyDataSetChanged();
+
+            if (mActionMode != null) {
+                mActionMode.invalidate();
+            }
+        }
+
+        if (mActionMode != null) {
+            mActionMode.setTitle(itemCount + (itemCount > 1 ? " items selected" : "item selected"));
         }
 
         if (itemCount < 1) {
-            isSelected = false;
+            clearSelection();
             showToolbar(true, false);
+
+            if (mActionMode != null) {
+                mActionMode.finish();
+            }
         }
     }
 

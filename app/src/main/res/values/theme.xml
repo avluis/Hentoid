@@ -50,5 +50,6 @@
 
     <style name="AppTheme.DarkBackgroundNoActionBar" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@color/primary_dark</item>
+        <item name="windowActionModeOverlay">true</item>
     </style>
 </resources>

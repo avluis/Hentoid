@@ -473,6 +473,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" + ".");
         contents.remove(position);
         notifyItemRemoved(position);
+
+        if (contents != null) {
+            if (contents.size() == 0) {
+                contentsWipedListener.onContentsWiped();
+            }
+            listener.onItemClear(getSelectedItemCount(), position);
+        }
     }
 
     // TODO: Add support for multi-delete mode (multi-select support)
@@ -495,12 +502,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         removeItem(item);
         notifyDataSetChanged();
-
-        if (contents != null) {
-            if (contents.size() == 0) {
-                contentsWipedListener.onContentsWiped();
-            }
-        }
     }
 
     public interface EndlessScrollListener {
