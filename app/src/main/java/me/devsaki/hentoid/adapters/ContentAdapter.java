@@ -143,7 +143,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             boolean selected = getSelectedItem(itemPos);
 
             if (getSelectedItem(itemPos)) {
-                LogHelper.d(TAG, "Selected items: " + getSelectedItems());
                 holder.itemView.setSelected(selected);
             } else {
                 holder.itemView.setSelected(false);
@@ -381,7 +380,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         });
 
-        // TODO: Add support for multi-delete mode (multi-select support)
         if (holder.itemView.isSelected()) {
             holder.itemView.findViewById(R.id.delete)
                     .setOnClickListener(new View.OnClickListener() {
@@ -475,6 +473,36 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         notifyItemInserted(position);
     }
 
+    public boolean purgeSelectedItems() {
+        if (getSelectedItemCount() > 0) {
+            LogHelper.d(TAG, "Preparing to delete selected items...");
+
+            List<Content> selectedContent = new ArrayList<>();
+            processSelection(selectedContent);
+            deleteItems(selectedContent);
+
+            return true;
+        } else {
+            listener.onItemClear(0, -1);
+            LogHelper.d(TAG, "No items to delete!!");
+
+            return false;
+        }
+    }
+
+    private List<Content> processSelection(List<Content> selectionList) {
+        List<Integer> selection = getSelectedItems();
+        LogHelper.d(TAG, "Selected items: " + selection);
+
+        for (int i = 0; i < selection.size(); i++) {
+            selectionList.add(i, contents.get(selection.get(i)));
+            LogHelper.d(TAG, "Added: " + contents.get(selection.get(i)).getTitle()
+                    + " to removal list.");
+        }
+
+        return selectionList;
+    }
+
     private void removeItem(Content item) {
         int position = contents.indexOf(item);
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" + ".");
@@ -489,7 +517,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
     }
 
-    // TODO: Add support for multi-delete mode (multi-select support)
     private void deleteItem(Content item) {
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " db and file system" + ".");
 
@@ -505,10 +532,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         // TODO: Make Asynchronous
         db.deleteContent(item);
 
-        AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
+        AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content",
+                item.getTitle()));
 
         removeItem(item);
         notifyDataSetChanged();
+    }
+
+    private void deleteItems(List<Content> items) {
+        for (int i = 0; i < items.size(); i++) {
+            LogHelper.d(TAG, "Item to delete: " + i + ": " + items.get(i).getTitle());
+        }
     }
 
     public interface EndlessScrollListener {
