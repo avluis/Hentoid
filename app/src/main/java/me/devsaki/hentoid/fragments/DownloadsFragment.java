@@ -987,7 +987,12 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         }
 
         if (mActionMode != null) {
-            mActionMode.setTitle(itemCount + (itemCount > 1 ? " items selected" : "item selected"));
+            if (itemCount >= 1) {
+                mActionMode.setTitle(
+                        itemCount + (itemCount > 1 ? " items selected" : " item selected"));
+            } else {
+                mActionMode.setTitle("");
+            }
         }
 
         if (itemCount < 1) {
