@@ -477,9 +477,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         if (getSelectedItemCount() > 0) {
             LogHelper.d(TAG, "Preparing to delete selected items...");
 
-            List<Content> selectedContent = new ArrayList<>();
-            processSelection(selectedContent);
-            deleteItems(selectedContent);
+            List<Content> selectedContent;
+            selectedContent = processSelection();
+
+            if (!selectedContent.isEmpty()) {
+                deleteItems(selectedContent);
+            } else {
+                listener.onItemClear(0, -1);
+                LogHelper.d(TAG, "No items to delete!!");
+
+                return false;
+            }
 
             return true;
         } else {
@@ -490,7 +498,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
     }
 
-    private List<Content> processSelection(List<Content> selectionList) {
+    private List<Content> processSelection() {
+        List<Content> selectionList = new ArrayList<>();
         List<Integer> selection = getSelectedItems();
         LogHelper.d(TAG, "Selected items: " + selection);
 
