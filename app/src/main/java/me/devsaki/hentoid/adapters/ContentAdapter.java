@@ -42,8 +42,6 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
- * <p/>
- * TODO: Implement multi-select support
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
@@ -270,6 +268,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (getSelectedItemCount() >= 1) {
+                        clearSelections();
+                        listener.onItemClear(0, -1);
+                    }
                     AndroidHelper.viewContent(cxt, content);
                 }
             });
@@ -299,6 +301,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 holder.ivError.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (getSelectedItemCount() >= 1) {
+                            clearSelections();
+                            listener.onItemClear(0, -1);
+                        }
                         downloadAgain(content);
                     }
                 });
@@ -336,8 +342,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                     } else {
                         LogHelper.d(TAG, "Not in selection mode, opening item.");
 
-                        clearSelections(); // JIC
-                        setSelected(false, getSelectedItemCount());
+                        clearSelections();
+                        setSelected(false, 0);
 
                         super.onClick(v);
                     }
@@ -447,6 +453,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 clearSelections();
+                                listener.onItemClear(0, -1);
                             }
                         })
                 .create()
@@ -478,7 +485,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             if (contents.size() == 0) {
                 contentsWipedListener.onContentsWiped();
             }
-            listener.onItemClear(getSelectedItemCount(), position);
+            listener.onItemClear(0, position);
         }
     }
 

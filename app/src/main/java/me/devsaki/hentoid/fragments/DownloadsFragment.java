@@ -976,7 +976,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
     @Override
     public void onItemClear(int itemCount, int position) {
-        LogHelper.d(TAG, itemCount);
         if (itemCount == 1 && selectTrigger) {
             selectTrigger = false;
             mAdapter.notifyDataSetChanged();

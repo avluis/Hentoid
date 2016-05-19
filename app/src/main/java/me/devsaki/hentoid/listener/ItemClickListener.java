@@ -11,7 +11,7 @@ import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 05/07/2016.
- * Item OnClick and OnLongClick Listener
+ * Item OnClick and OnLongClick Listener with support for item selection
  */
 public class ItemClickListener implements OnClickListener, OnLongClickListener {
     private static final String TAG = LogHelper.makeLogTag(ItemClickListener.class);
@@ -36,18 +36,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
         this.selectedItemCount = selectedItemCount;
     }
 
-//    public void clearAndSelect(List<Content> contents, int selectedItem) {
-//        int currentItem = this.selectedItem;
-//        if (currentItem != selectedItem) {
-//            AndroidHelper.toast(context, "Coming in the next update!");
-//            LogHelper.d(TAG, "Clear: " + "Position: " + this.selectedItem + ": "
-//                    + contents.get(currentItem).getTitle());
-//            LogHelper.d(TAG, "Select: " + "Position: " + selectedItem + ": "
-//                    + contents.get(selectedItem).getTitle());
-//        }
-//    }
-
-    private void matchAndClear(int position) {
+    private void updateSelector(int position) {
         if (selected) {
             listener.onItemSelected(selectedItemCount, position);
         } else {
@@ -65,10 +54,10 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
 
     @Override
     public boolean onLongClick(View v) {
+        updateSelector(position);
+
         LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle() +
                 " has been" + (selected ? " selected." : " unselected."));
-
-        matchAndClear(position);
 
         return true;
     }
