@@ -149,8 +149,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.action_delete_sweep:
-                    // TODO: Get selected items.
-                    // TODO: Send selected items to adapter to delete.
+                    mAdapter.purgeSelectedItems();
                     mode.finish(); // Action picked, so close the CAB
 
                     return true;
@@ -976,7 +975,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
     @Override
     public void onItemClear(int itemCount, int position) {
-        LogHelper.d(TAG, itemCount);
         if (itemCount == 1 && selectTrigger) {
             selectTrigger = false;
             mAdapter.notifyDataSetChanged();
@@ -987,7 +985,12 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         }
 
         if (mActionMode != null) {
-            mActionMode.setTitle(itemCount + (itemCount > 1 ? " items selected" : "item selected"));
+            if (itemCount >= 1) {
+                mActionMode.setTitle(
+                        itemCount + (itemCount > 1 ? " items selected" : " item selected"));
+            } else {
+                mActionMode.setTitle("");
+            }
         }
 
         if (itemCount < 1) {

@@ -51,6 +51,7 @@
     <string name="download_again_dialog_title">Try downloading again?</string>
     <string name="download_again_dialog_message">Total images in download: @total\nImages with error: @error</string>
     <string name="ask_delete">Are you sure you wish to delete this?</string>
+    <string name="ask_delete_multiple">Are you sure you wish to delete the selected items?</string>
     <string name="deleted">\@content deleted.</string>
     <string name="new_content">New Content!</string>
     <string name="not_limit_per_page">Not limit per page.</string>

@@ -42,8 +42,6 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
- * <p/>
- * TODO: Implement multi-select support
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
@@ -145,7 +143,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             boolean selected = getSelectedItem(itemPos);
 
             if (getSelectedItem(itemPos)) {
-                LogHelper.d(TAG, "Selected items: " + getSelectedItems());
                 holder.itemView.setSelected(selected);
             } else {
                 holder.itemView.setSelected(false);
@@ -270,6 +267,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if (getSelectedItemCount() >= 1) {
+                        clearSelections();
+                        listener.onItemClear(0, -1);
+                    }
                     AndroidHelper.viewContent(cxt, content);
                 }
             });
@@ -299,6 +300,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 holder.ivError.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (getSelectedItemCount() >= 1) {
+                            clearSelections();
+                            listener.onItemClear(0, -1);
+                        }
                         downloadAgain(content);
                     }
                 });
@@ -336,8 +341,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                     } else {
                         LogHelper.d(TAG, "Not in selection mode, opening item.");
 
-                        clearSelections(); // JIC
-                        setSelected(false, getSelectedItemCount());
+                        clearSelections();
+                        setSelected(false, 0);
 
                         super.onClick(v);
                     }
@@ -375,7 +380,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         });
 
-        // TODO: Add support for multi-delete mode (multi-select support)
         if (holder.itemView.isSelected()) {
             holder.itemView.findViewById(R.id.delete)
                     .setOnClickListener(new View.OnClickListener() {
@@ -387,13 +391,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
     }
 
-    private void downloadAgain(final Content content) {
+    private void downloadAgain(final Content item) {
         int images;
         int imgErrors = 0;
 
-        images = content.getImageFiles().size();
+        images = item.getImageFiles().size();
 
-        for (ImageFile imgFile : content.getImageFiles()) {
+        for (ImageFile imgFile : item.getImageFiles()) {
             if (imgFile.getStatus() == StatusContent.ERROR) {
                 imgErrors++;
             }
@@ -410,28 +414,26 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             public void onClick(DialogInterface dialog, int which) {
                                 HentoidDB db = HentoidDB.getInstance(cxt);
 
-                                content.setStatus(StatusContent.DOWNLOADING);
-                                content.setDownloadDate(new Date().getTime());
+                                item.setStatus(StatusContent.DOWNLOADING);
+                                item.setDownloadDate(new Date().getTime());
 
                                 // TODO: Make Asynchronous
-                                db.updateContentStatus(content);
+                                db.updateContentStatus(item);
 
                                 Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
                                         DownloadService.class);
                                 cxt.startService(intent);
 
                                 AndroidHelper.toast(cxt, R.string.add_to_queue);
-                                removeItem(content);
+                                removeItem(item);
                                 notifyDataSetChanged();
                             }
                         })
                 .setNegativeButton(android.R.string.no, null)
-                .create()
-                .show();
+                .create().show();
     }
 
-    // TODO: Add support for multi-delete mode (multi-select support)
-    private void deleteContent(final Content content) {
+    private void deleteContent(final Content item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
@@ -439,7 +441,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 clearSelections();
-                                deleteItem(content);
+                                deleteItem(item);
                             }
                         })
                 .setNegativeButton(android.R.string.no,
@@ -447,10 +449,32 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 clearSelections();
+                                listener.onItemClear(0, -1);
                             }
                         })
-                .create()
-                .show();
+                .create().show();
+    }
+
+    private void deleteContents(final List<Content> items) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
+        builder.setMessage(R.string.ask_delete_multiple)
+                .setPositiveButton(android.R.string.yes,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                clearSelections();
+                                deleteItems(items);
+                            }
+                        })
+                .setNegativeButton(android.R.string.no,
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                clearSelections();
+                                listener.onItemClear(0, -1);
+                            }
+                        })
+                .create().show();
     }
 
     @Override
@@ -468,7 +492,44 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         notifyItemInserted(position);
     }
 
+    public void purgeSelectedItems() {
+        if (getSelectedItemCount() > 0) {
+            LogHelper.d(TAG, "Preparing to delete selected items...");
+
+            List<Content> items;
+            items = processSelection();
+
+            if (!items.isEmpty()) {
+                deleteContents(items);
+            } else {
+                listener.onItemClear(0, -1);
+                LogHelper.d(TAG, "No items to delete!!");
+            }
+        } else {
+            listener.onItemClear(0, -1);
+            LogHelper.d(TAG, "No items to delete!!");
+        }
+    }
+
+    private List<Content> processSelection() {
+        List<Content> selectionList = new ArrayList<>();
+        List<Integer> selection = getSelectedItems();
+        LogHelper.d(TAG, "Selected items: " + selection);
+
+        for (int i = 0; i < selection.size(); i++) {
+            selectionList.add(i, contents.get(selection.get(i)));
+            LogHelper.d(TAG, "Added: " + contents.get(selection.get(i)).getTitle()
+                    + " to removal list.");
+        }
+
+        return selectionList;
+    }
+
     private void removeItem(Content item) {
+        removeItem(item, true);
+    }
+
+    private void removeItem(Content item, boolean broadcast) {
         int position = contents.indexOf(item);
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" + ".");
         contents.remove(position);
@@ -478,13 +539,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             if (contents.size() == 0) {
                 contentsWipedListener.onContentsWiped();
             }
-            listener.onItemClear(getSelectedItemCount(), position);
+            if (broadcast) {
+                listener.onItemClear(0, position);
+            }
         }
     }
 
-    // TODO: Add support for multi-delete mode (multi-select support)
     private void deleteItem(Content item) {
-        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " db and file system" + ".");
+        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from db and file system" + ".");
 
         final File dir = AndroidHelper.getContentDownloadDir(cxt, item);
         HentoidDB db = HentoidDB.getInstance(cxt);
@@ -498,10 +560,40 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         // TODO: Make Asynchronous
         db.deleteContent(item);
 
-        AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
-
         removeItem(item);
         notifyDataSetChanged();
+
+        AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content",
+                item.getTitle()));
+    }
+
+    private void deleteItems(List<Content> items) {
+        File dir;
+        HentoidDB db = HentoidDB.getInstance(cxt);
+
+        for (int i = 0; i < items.size(); i++) {
+            removeItem(items.get(i), false);
+        }
+
+        for (int i = 0; i < items.size(); i++) {
+            dir = AndroidHelper.getContentDownloadDir(cxt, items.get(i));
+            LogHelper.d(TAG, "Removing item: " + items.get(i).getTitle()
+                    + " from db and file system" + ".");
+
+            try {
+                FileUtils.deleteDirectory(dir);
+            } catch (IOException e) {
+                LogHelper.d(TAG, "Error deleting directory: ", e);
+            } finally {
+                // TODO: Make Asynchronous
+                db.deleteContent(items.get(i));
+            }
+        }
+
+        listener.onItemClear(0, -1);
+        notifyDataSetChanged();
+
+        AndroidHelper.toast(cxt, "Selected items have been deleted.");
     }
 
     public interface EndlessScrollListener {
