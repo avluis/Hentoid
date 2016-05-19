@@ -3,10 +3,12 @@ package me.devsaki.hentoid.adapters;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -189,11 +191,30 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         } else {
             holder.tvTitle.setText(content.getTitle());
+
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                holder.tvTitle.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                holder.tvTitle.setSingleLine(true);
+                holder.tvTitle.setMarqueeRepeatLimit(5);
+            }
+
             holder.tvTitle.setSelected(true);
+
             if (holder.itemView.isSelected()) {
                 holder.tvTitle2.setText(content.getTitle());
-                holder.tvTitle2.setSelected(true);
                 holder.tvTitle3.setText(content.getTitle());
+
+                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
+                    holder.tvTitle2.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                    holder.tvTitle2.setSingleLine(true);
+                    holder.tvTitle2.setMarqueeRepeatLimit(5);
+
+                    holder.tvTitle3.setEllipsize(TextUtils.TruncateAt.MARQUEE);
+                    holder.tvTitle3.setSingleLine(true);
+                    holder.tvTitle3.setMarqueeRepeatLimit(5);
+                }
+
+                holder.tvTitle2.setSelected(true);
                 holder.tvTitle3.setSelected(true);
             }
         }
