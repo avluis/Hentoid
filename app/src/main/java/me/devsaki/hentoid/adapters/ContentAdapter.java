@@ -48,6 +48,7 @@ import me.devsaki.hentoid.util.LogHelper;
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
+    private static final int VISIBLE_THRESHOLD = 6;
     private final Context cxt;
     private final SimpleDateFormat sdf;
     private final SparseBooleanArray selectedItems;
@@ -132,7 +133,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     @Override
     public void onBindViewHolder(final ContentHolder holder, final int pos) {
         final Content content = contents.get(pos);
-        final int VISIBLE_THRESHOLD = 5;
 
         if (pos == getItemCount() - VISIBLE_THRESHOLD) {
             if (endlessScrollListener != null) {

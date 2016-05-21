@@ -62,6 +62,9 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
+ * <p/>
+ * TODO: Allow user to (instantly) scroll to top when on last item/page (endless scroll)
+ * TODO: Consider showing load progress after last item (endless scroll)
  */
 public class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, DrawerListener, EndlessScrollListener, ItemSelectListener {
@@ -721,14 +724,15 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
     private void checkResults() {
         if (endlessScroll) {
-            mAdapter.setEndlessScrollListener(this);
             if (contents != null) {
                 LogHelper.d(TAG, "Contents are not null.");
             } else if (isLoaded && result != null) {
-                LogHelper.d(TAG, "Contents are null.");
+                LogHelper.d(TAG, "Result is not null.");
                 result.clear();
-                update();
+            } else {
+                LogHelper.d(TAG, "Contents are null.");
             }
+            mAdapter.setEndlessScrollListener(this);
         }
         if (result != null) {
             LogHelper.d(TAG, "Result is not null.");
@@ -737,6 +741,20 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 LogHelper.d(TAG, "Result is empty!");
                 update();
             }
+            checkContent(false);
+            mAdapter.setContentsWipedListener(this);
+        } else {
+            LogHelper.d(TAG, "Result is null.");
+
+            update();
+            checkContent(true);
+        }
+    }
+
+    private void checkContent(boolean clear) {
+        if (clear) {
+            resetCount();
+        } else {
             if (HentoidApp.getDownloadCount() > 0) {
                 if (isLoaded) {
                     showReloadToolTip();
@@ -745,9 +763,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 setCurrentPage();
                 showToolbar(true, false);
             }
-            mAdapter.setContentsWipedListener(this);
-        } else {
-            LogHelper.d(TAG, "Result is null.");
         }
     }
 
@@ -898,7 +913,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     private void updatePager() {
-        // TODO: Test: if result.size == qtyPages
+        // TODO: if result.size == qtyPages (meaning; last page, exact size)
         isLastPage = result.size() < qtyPages;
         LogHelper.d(TAG, "Results: " + result.size());
     }
@@ -1019,7 +1034,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             }
         }
 
-        LogHelper.d(TAG, "Endless Scrolling not enabled.");
+        LogHelper.d(TAG, "Endless Scrolling disabled.");
     }
 
     @Override
