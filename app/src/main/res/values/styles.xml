@@ -6,6 +6,6 @@
 
     <!-- Toolbar -->
     <style name="Toolbar" parent="AppTheme.NoActionBar">
-        <item name="android:background">?android:attr/colorPrimary</item>
+        <item name="android:background">@color/primary</item>
     </style>
 </resources>
