@@ -122,11 +122,11 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "http://nhentai.net/g" -->
+                <!-- Accepts URIs that begin with "https://nhentai.net/g" -->
                 <data
                     android:host="nhentai.net"
                     android:pathPrefix="/g"
-                    android:scheme="http" />
+                    android:scheme="https" />
             </intent-filter>
 
             <intent-filter>
