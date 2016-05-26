@@ -13,7 +13,7 @@ public enum Site {
     FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_favicon_fakku),
     PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_favicon_pururin),
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_stat_hitomi),
-    NHENTAI(3, "nhentai", "http://nhentai.net", R.drawable.ic_stat_nhentai),
+    NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_stat_nhentai),
     TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_stat_tsumi);
 
     private static final String TAG = Site.class.getName();
