@@ -197,6 +197,7 @@ public class HentoidApp extends Application {
 
         Glide.with(this)
                 .load(image)
+                .fitCenter()
                 .placeholder(R.drawable.ic_placeholder)
                 .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .into(mImageView);
