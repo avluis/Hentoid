@@ -54,7 +54,7 @@
             <ImageView
                 android:id="@+id/ivCover"
                 android:layout_width="100dp"
-                android:layout_height="140dp"
+                android:layout_height="wrap_content"
                 android:padding="1dp"
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_placeholder" />
