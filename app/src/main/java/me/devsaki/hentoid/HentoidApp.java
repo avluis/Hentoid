@@ -28,6 +28,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * Database, Bitmap Cache, Update checks, etc.
  * <p/>
  * TODO: Cache the number of items in db
+ * TODO: Clean-up loadBitmap() and associated Prefs Screen settings
  */
 public class HentoidApp extends Application {
     private static final String TAG = LogHelper.makeLogTag(HentoidApp.class);

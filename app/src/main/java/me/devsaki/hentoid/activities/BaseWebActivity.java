@@ -36,6 +36,7 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
  * Browser activity which allows the user to navigate a supported source.
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
+ * TODO: Add additional layout dimensions for alternative screen sizes to layout
  */
 public class BaseWebActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);

@@ -44,6 +44,7 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
+ * TODO: Simplify single item selection layout drawing/merge with multi-select layout
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
