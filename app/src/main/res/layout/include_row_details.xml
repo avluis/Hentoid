@@ -15,7 +15,6 @@
         android:adjustViewBounds="true"
         android:background="@drawable/row_item_cover_frame"
         android:padding="1dp"
-        android:scaleType="centerCrop"
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_placeholder" />
 
