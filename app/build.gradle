@@ -12,8 +12,8 @@ android {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
         targetSdkVersion 22
-        versionCode 37
-        versionName '1.1.6r2'
+        versionCode 38
+        versionName '1.1.6r3'
     }
     buildTypes {
         release {
@@ -37,7 +37,7 @@ dependencies {
     compile 'com.android.support:support-v4:23.4.0'
     compile 'com.github.bumptech.glide:glide:3.6.1'
     compile 'com.github.lzyzsd:circleprogress:1.1.0'
-    compile 'com.google.android.gms:play-services-analytics:8.4.0'
+    compile 'com.google.android.gms:play-services-analytics:9.0.1'
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.mani:ThinDownloadManager:1.2.0'
     compile 'commons-io:commons-io:2.4'
@@ -45,5 +45,3 @@ dependencies {
     compile 'org.jsoup:jsoup:1.8.3'
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
 }
-
-apply plugin: 'com.google.gms.google-services'
