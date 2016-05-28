@@ -24,4 +24,5 @@ public abstract class Consts {
 
     public static final String DOWNLOAD_COUNT = "DOWNLOAD_COUNT";
 
+    public static final String WEB_SESSION_COOKIE = "web_session_cookie";
 }

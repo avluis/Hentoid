@@ -9,8 +9,6 @@ public abstract class ConstsPrefs {
     public static final String PREFS_VERSION_KEY = "prefs_version";
     public static final int PREFS_VERSION = 2;
 
-    public static final String PREF_QUALITY_IMAGE_LISTS = "pref_image_quality_lists";
-    public static final String PREF_QUALITY_IMAGE_DEFAULT = "Medium";
     public static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
     public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
     public static final String PREF_READ_CONTENT_LISTS = "pref_read_content_lists";
@@ -34,6 +32,4 @@ public abstract class ConstsPrefs {
     public static final String PREF_WELCOME_DONE = "pref_welcome_done";
     public static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
     public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
-
-    public static final String WEB_SESSION_COOKIE = "web_session_cookie";
 }

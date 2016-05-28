@@ -10,7 +10,7 @@ android {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 37
+        versionCode 38
         versionName '1.2.0-alpha'
     }
     compileOptions {
@@ -117,7 +117,7 @@ dependencies {
     // Intro screens or slides
     compile 'com.github.paolorotolo:appintro:3.4.0'
     // Google Play Services Analytics
-    compile('com.google.android.gms:play-services-analytics:8.4.0') {
+    compile('com.google.android.gms:play-services-analytics:9.0.1') {
         exclude module: 'play-services-ads'
     }
     // Java serialization/deserialization (Java Objects into JSON and back)
@@ -135,5 +135,3 @@ dependencies {
     // JSOUP HTML parser
     compile 'org.jsoup:jsoup:1.8.3'
 }
-
-apply plugin: 'com.google.gms.google-services'

@@ -26,8 +26,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * Presents required permissions, then calls the proper activity to:
  * Set storage directory and library import
  */
-public class IntroSlideActivity extends AppIntro2 {
-    private static final String TAG = LogHelper.makeLogTag(IntroSlideActivity.class);
+public class IntroActivity extends AppIntro2 {
+    private static final String TAG = LogHelper.makeLogTag(IntroActivity.class);
 
     private static final int IMPORT_SLIDE = 4;
 

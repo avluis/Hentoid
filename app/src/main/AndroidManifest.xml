@@ -30,7 +30,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".activities.IntroSlideActivity"
+            android:name=".activities.IntroActivity"
             android:label="@string/app_intro"
             android:theme="@style/AppTheme" />
         <activity
@@ -71,7 +71,7 @@
                 android:value=".activities.DownloadsActivity" />
         </activity>
         <activity
-            android:name=".activities.PreferencesActivity"
+            android:name=".activities.PrefsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:parentActivityName=".activities.DownloadsActivity"

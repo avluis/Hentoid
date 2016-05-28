@@ -44,7 +44,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.ImportActivity;
-import me.devsaki.hentoid.activities.IntroSlideActivity;
+import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
@@ -81,7 +81,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     private ActionMode mActionMode;
     private SharedPreferences prefs;
     private String settingDir;
-    private String iq;
     private int order;
     private boolean orderUpdated;
     private boolean endlessScroll;
@@ -210,7 +209,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         // We have asked for permissions, but still denied.
         AndroidHelper.toast(R.string.reset);
         AndroidHelper.commitFirstRun(true);
-        Intent intent = new Intent(getActivity(), IntroSlideActivity.class);
+        Intent intent = new Intent(getActivity(), IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         getActivity().finish();
@@ -402,15 +401,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         }
         LogHelper.d(TAG, "Endless Scrolling Enabled: " + this.endlessScroll);
 
-        String iq = prefs.getString(
-                ConstsPrefs.PREF_QUALITY_IMAGE_LISTS, ConstsPrefs.PREF_QUALITY_IMAGE_DEFAULT);
-
-        if (!this.iq.equals(iq)) {
-            LogHelper.d(TAG, "IQ updated.");
-            this.iq = iq;
-            shouldUpdate = true;
-        }
-
         int qtyPages = Integer.parseInt(
                 prefs.getString(
                         ConstsPrefs.PREF_QUANTITY_PER_PAGE_LISTS,
@@ -509,10 +499,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         prefs = HentoidApp.getSharedPrefs();
 
         settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
-
-        iq = prefs.getString(
-                ConstsPrefs.PREF_QUALITY_IMAGE_LISTS,
-                ConstsPrefs.PREF_QUALITY_IMAGE_DEFAULT);
 
         order = prefs.getInt(
                 ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);

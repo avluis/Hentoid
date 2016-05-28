@@ -237,13 +237,13 @@ public class AndroidHelper {
     }
 
     public static String getSessionCookie() {
-        return HentoidApp.getSharedPrefs().getString(ConstsPrefs.WEB_SESSION_COOKIE, "");
+        return HentoidApp.getSharedPrefs().getString(Consts.WEB_SESSION_COOKIE, "");
     }
 
     public static void setSessionCookie(String sessionCookie) {
         HentoidApp.getSharedPrefs()
                 .edit()
-                .putString(ConstsPrefs.WEB_SESSION_COOKIE, sessionCookie)
+                .putString(Consts.WEB_SESSION_COOKIE, sessionCookie)
                 .apply();
     }
 

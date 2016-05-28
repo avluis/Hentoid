@@ -129,7 +129,7 @@ public class BaseWebActivity extends BaseActivity {
         // We have asked for permissions, but still denied.
         AndroidHelper.toast(R.string.reset);
         AndroidHelper.commitFirstRun(true);
-        Intent intent = new Intent(this, IntroSlideActivity.class);
+        Intent intent = new Intent(this, IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
         finish();

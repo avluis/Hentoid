@@ -18,15 +18,6 @@
         android:title="@string/pref_performance_category">
 
         <ListPreference
-            android:defaultValue="@string/pref_image_quality_default"
-            android:entries="@array/pref_image_quality_entries"
-            android:entryValues="@array/pref_image_quality_entry_values"
-            android:icon="@null"
-            android:key="pref_image_quality_lists"
-            android:summary="@string/pref_image_quality_summary"
-            android:title="@string/pref_image_quality_title" />
-
-        <ListPreference
             android:defaultValue="@string/pref_quantity_per_page_default"
             android:dependency="pref_endless_scroll"
             android:entries="@array/pref_quantity_per_page_entries"

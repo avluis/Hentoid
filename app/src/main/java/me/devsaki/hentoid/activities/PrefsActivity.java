@@ -36,8 +36,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by DevSaki on 20/05/2015.
  * Set up and present preferences.
  */
-public class PreferencesActivity extends BaseActivity {
-    private static final String TAG = LogHelper.makeLogTag(PreferencesActivity.class);
+public class PrefsActivity extends BaseActivity {
+    private static final String TAG = LogHelper.makeLogTag(PrefsActivity.class);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

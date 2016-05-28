@@ -14,12 +14,10 @@ import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
 
 import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.enums.ImageQuality;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
 import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -28,7 +26,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Database, Bitmap Cache, Update checks, etc.
  * <p/>
  * TODO: Cache the number of items in db
- * TODO: Clean-up loadBitmap() and associated Prefs Screen settings
  */
 public class HentoidApp extends Application {
     private static final String TAG = LogHelper.makeLogTag(HentoidApp.class);
@@ -80,6 +77,16 @@ public class HentoidApp extends Application {
 
     public static void setDonePressed(boolean pressed) {
         HentoidApp.donePressed = pressed;
+    }
+
+    public void loadBitmap(String image, ImageView imageView) {
+
+        Glide.with(this)
+                .load(image)
+                .fitCenter()
+                .placeholder(R.drawable.ic_placeholder)
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+                .into(imageView);
     }
 
     public synchronized Tracker getGoogleAnalyticsTracker() {
@@ -176,31 +183,5 @@ public class HentoidApp extends Application {
                         LogHelper.d(TAG, "Update Check: Update!");
                     }
                 });
-    }
-
-    public void loadBitmap(String image, ImageView mImageView) {
-        String imageQualityPref = sharedPrefs.getString(
-                ConstsPrefs.PREF_QUALITY_IMAGE_LISTS, ConstsPrefs.PREF_QUALITY_IMAGE_DEFAULT);
-
-        ImageQuality imageQuality;
-        switch (imageQualityPref) {
-            case "Low":
-                imageQuality = ImageQuality.LOW;
-                break;
-            case "High":
-                imageQuality = ImageQuality.HIGH;
-                break;
-            case "Medium":
-            default:
-                imageQuality = ImageQuality.MEDIUM;
-                break;
-        }
-
-        Glide.with(this)
-                .load(image)
-                .fitCenter()
-                .placeholder(R.drawable.ic_placeholder)
-                .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                .into(mImageView);
     }
 }

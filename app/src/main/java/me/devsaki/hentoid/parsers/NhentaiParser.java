@@ -22,12 +22,6 @@ import me.devsaki.hentoid.util.LogHelper;
 public class NhentaiParser {
     private static final String TAG = LogHelper.makeLogTag(NhentaiParser.class);
 
-    private static class Tag {
-        String url;
-        String name;
-        String type;
-    }
-
     public static Content parseContent(String json) throws JSONException {
         JSONObject jsonContent = new JSONObject(json);
         String titleTEMP = jsonContent.getJSONObject("title").getString("english");
@@ -137,5 +131,11 @@ public class NhentaiParser {
         }
 
         return imagesUrl;
+    }
+
+    private static class Tag {
+        String url;
+        String name;
+        String type;
     }
 }
