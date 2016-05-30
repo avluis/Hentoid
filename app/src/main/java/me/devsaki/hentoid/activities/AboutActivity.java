@@ -27,6 +27,7 @@ import me.devsaki.hentoid.R;
 /**
  * Created by avluis on 8/22/15.
  * Presents an About Screen for the user to inquire more about the app.
+ * TODO: Replace blog url with subreddit, add discord links
  */
 public class AboutActivity extends AppCompatActivity {
     private String verName = "Hentoid ver: ";

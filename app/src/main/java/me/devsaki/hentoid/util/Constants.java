@@ -21,5 +21,5 @@ public abstract class Constants {
                     + " Chrome/18.0.1025.166 Mobile Safari/535.19";
 
     public static final String UPDATE_URL =
-            "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
+            "https://raw.githubusercontent.com/AVnetWS/Hentoid/master/update.json";
 }

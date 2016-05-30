@@ -79,6 +79,6 @@
     <string name="about_community"><![CDATA[<u>Google+</u>]]></string>
     <string name="about_community_url">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github"><![CDATA[<u>GitHub</u>]]></string>
-    <string name="about_github_url">https://github.com/csaki/Hentoid</string>
+    <string name="about_github_url">https://github.com/AVnetWS/Hentoid</string>
     <string name="about_notes"><![CDATA[<p>General stability fixes and UI tweaks.<br />Improved download experience/quicker downloads.<br />Less Hitomi/nhentai/tsumino Ads/Pop-Ups!<br />Fixed nhentai parser (due to site changes).</p>]]></string>
 </resources>
