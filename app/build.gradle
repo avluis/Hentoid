@@ -115,7 +115,7 @@ dependencies {
         exclude group: 'com.squareup.okhttp', module: 'okhttp'
     }
     // Intro screens or slides
-    compile 'com.github.paolorotolo:appintro:3.4.0'
+    compile 'com.github.paolorotolo:appintro:4.0.0'
     // Google Play Services Analytics
     compile('com.google.android.gms:play-services-analytics:9.0.1') {
         exclude module: 'play-services-ads'

@@ -9,6 +9,7 @@ import android.os.Handler;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.Fragment;
 import android.view.View;
 
 import com.github.paolorotolo.appintro.AppIntro2;
@@ -30,9 +31,12 @@ public class IntroActivity extends AppIntro2 {
     private static final String TAG = LogHelper.makeLogTag(IntroActivity.class);
 
     private static final int IMPORT_SLIDE = 4;
+    private Fragment doneFragment;
 
     @Override
-    public void init(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_01));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(BaseSlide.newInstance(R.layout.intro_slide_02));
@@ -47,19 +51,14 @@ public class IntroActivity extends AppIntro2 {
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_03));
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_04));
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_05));
-        addSlide(BaseSlide.newInstance(R.layout.intro_slide_06));
+
+        doneFragment = BaseSlide.newInstance(R.layout.intro_slide_06);
+        addSlide(doneFragment);
 
         setNavBarColor("#2b0202");
         setVibrate(true);
         setVibrateIntensity(30);
         pager.setPagingEnabled(false);
-    }
-
-    @Override
-    public void onNextPressed() {
-        if (pager.getCurrentItem() >= 1) {
-            setTitle(R.string.app_name);
-        }
     }
 
     @Override
@@ -72,7 +71,22 @@ public class IntroActivity extends AppIntro2 {
     }
 
     @Override
-    public void onDonePressed() {
+    public void onSlideChanged(@Nullable Fragment oldFragment, @Nullable Fragment newFragment) {
+        super.onSlideChanged(oldFragment, newFragment);
+
+        if (pager.getCurrentItem() >= 1) {
+            setTitle(R.string.app_name);
+        }
+
+        // Show the import activity just prior to the last slide
+        if (pager.getCurrentItem() == IMPORT_SLIDE) {
+            setProgressButtonEnabled(false);
+            initImport();
+        }
+    }
+
+    @Override
+    public void onDonePressed(Fragment currentFragment) {
         HentoidApp.setDonePressed(true);
         AndroidHelper.commitFirstRun(false);
         Intent intent = new Intent(this, DownloadsActivity.class);
@@ -91,15 +105,6 @@ public class IntroActivity extends AppIntro2 {
             LogHelper.d(TAG, "You can't leave just yet!");
         } else {
             super.onBackPressed();
-        }
-    }
-
-    @Override
-    public void onSlideChanged() {
-        // Show the import activity just prior to the last slide
-        if (pager.getCurrentItem() == IMPORT_SLIDE) {
-            setProgressButtonEnabled(false);
-            initImport();
         }
     }
 
@@ -171,7 +176,9 @@ public class IntroActivity extends AppIntro2 {
 
                                 public void run() {
                                     if (!HentoidApp.isDonePressed()) {
-                                        onDonePressed();
+                                        if (doneFragment != null) {
+                                            onDonePressed(doneFragment);
+                                        }
                                     }
                                 }
                             }, 10000);
