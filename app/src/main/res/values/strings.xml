@@ -108,7 +108,7 @@
     <string name="about_community" translatable="false"><![CDATA[<u>Google+</u>]]></string>
     <string name="about_community_url" translatable="false">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github" translatable="false"><![CDATA[<u>GitHub</u>]]></string>
-    <string name="about_github_url" translatable="false">https://github.com/csaki/Hentoid</string>
+    <string name="about_github_url" translatable="false">https://github.com/AVnetWS/Hentoid</string>
     <string name="about_notes">
         <![CDATA[
         <p>New look! New navigation drawer!<br>

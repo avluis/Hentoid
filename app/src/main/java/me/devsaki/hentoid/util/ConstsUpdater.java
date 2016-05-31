@@ -7,11 +7,11 @@ package me.devsaki.hentoid.util;
 public class ConstsUpdater {
 
     public static final String UPDATE_URL =
-            "https://raw.githubusercontent.com/csaki/Hentoid/master/app/update.json";
+            "https://raw.githubusercontent.com/AVnetWS/Hentoid/master/app/update.json";
     public static final String DEBUG_UPDATE_URL =
             "https://avnet.ws/.apps/hentoid/debug/update.json";
     public static final String LEGACY_UPDATE_URL =
-            "https://raw.githubusercontent.com/csaki/Hentoid/master/update.json";
+            "https://raw.githubusercontent.com/AVnetWS/Hentoid/master/update.json";
     public static final int UPDATE_NOTIFICATION_ID = 4368643;
 
 }
