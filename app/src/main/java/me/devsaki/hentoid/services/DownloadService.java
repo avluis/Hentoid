@@ -27,7 +27,8 @@ import me.devsaki.hentoid.util.NetworkStatus;
 /**
  * Download Manager implemented as a service
  * <p/>
- * TODO: Implement download job tracking (1 chapter = 1 job)
+ * TODO: Implement download job tracking:
+ * 1 image = 1 task, n images = 1 chapter = 1 job = 1 bundled task.
  */
 public class DownloadService extends IntentService {
     public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";

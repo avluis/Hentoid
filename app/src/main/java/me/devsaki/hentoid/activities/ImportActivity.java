@@ -236,7 +236,7 @@ public class ImportActivity extends BaseActivity implements
             hasPermission = nomedia.createNewFile();
         } catch (IOException e) {
             hasPermission = false;
-            // TODO: Log to Analytics
+            HentoidApp.getInstance().trackException(e);
             LogHelper.e(TAG, "We couldn't confirm write permissions to this location: ", e);
         }
 

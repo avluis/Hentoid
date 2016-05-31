@@ -31,6 +31,7 @@ import java.nio.charset.Charset;
 import javax.net.ssl.HttpsURLConnection;
 
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstsUpdater;
@@ -356,7 +357,7 @@ public class UpdateCheck {
                 downloadManager.cancel(downloadID);
                 downloadManager.release();
             } catch (Exception e) {
-                // TODO: Log to Analytics
+                HentoidApp.getInstance().trackException(e);
                 LogHelper.d(TAG, "Issue cancelling download: ", e);
             }
         }
@@ -397,7 +398,7 @@ public class UpdateCheck {
                     }
                 }
             } catch (IOException e) {
-                // TODO: Log to Analytics
+                HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "IO ERROR: ", e);
 
                 if (retryCount == 0) {
@@ -412,7 +413,7 @@ public class UpdateCheck {
                     });
                 }
             } catch (JSONException e) {
-                // TODO: Log to Analytics
+                HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Error with JSON File: ", e);
                 mHandler.post(new Runnable() {
                     @Override
@@ -421,7 +422,7 @@ public class UpdateCheck {
                     }
                 });
             } catch (PackageManager.NameNotFoundException e) {
-                // TODO: Log to Analytics
+                HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Package Name NOT Found! ", e);
             }
 
@@ -448,9 +449,9 @@ public class UpdateCheck {
                 String contentString = readInputStream(inputStream);
 
                 return new JSONObject(contentString);
-            } catch (JSONException jex) {
-                // TODO: Log to Analytics
-                LogHelper.e(TAG, "JSON file not properly formatted: ", jex);
+            } catch (JSONException e) {
+                HentoidApp.getInstance().trackException(e);
+                LogHelper.e(TAG, "JSON file not properly formatted: ", e);
             } finally {
                 if (inputStream != null) {
                     inputStream.close();

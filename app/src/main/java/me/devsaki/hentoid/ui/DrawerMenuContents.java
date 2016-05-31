@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -54,7 +55,7 @@ public class DrawerMenuContents {
             try {
                 cls = Class.forName("me.devsaki.hentoid.activities." + activity + "Activity");
             } catch (ClassNotFoundException e) {
-                // TODO: Log to Analytics
+                HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Class not found: ", e);
             }
 
