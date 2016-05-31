@@ -80,11 +80,17 @@ public class HentoidApp extends Application {
     }
 
     public void loadBitmap(String image, ImageView imageView) {
+        // The following is needed due to RecyclerView recycling layouts and Glide not considering
+        // the layout invalid for the current image:
+        // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
+        imageView.layout(0, 0, 0, 0);
 
         Glide.with(this)
                 .load(image)
                 .fitCenter()
+                .crossFade()
                 .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder)
                 .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .into(imageView);
     }

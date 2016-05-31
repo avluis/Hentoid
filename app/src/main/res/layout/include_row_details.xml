@@ -14,6 +14,7 @@
         android:layout_marginRight="5dp"
         android:adjustViewBounds="true"
         android:background="@drawable/row_item_cover_frame"
+        android:minHeight="125dp"
         android:padding="1dp"
         tools:ignore="ContentDescription"
         tools:src="@drawable/ic_placeholder" />
