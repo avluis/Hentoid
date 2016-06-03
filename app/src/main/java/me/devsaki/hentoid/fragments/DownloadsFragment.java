@@ -152,7 +152,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
                 case R.id.action_delete:
-                    //mAdapter.purgeSelectedItem();
+                    mAdapter.purgeSelectedItems();
                     mode.finish();
 
                     return true;

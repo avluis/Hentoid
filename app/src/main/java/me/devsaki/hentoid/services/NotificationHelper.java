@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 04/08/2016.
@@ -13,6 +14,8 @@ import me.devsaki.hentoid.HentoidApp;
 public class NotificationHelper extends BroadcastReceiver {
     public static final String NOTIFICATION_DELETED =
             "me.devsaki.hentoid.services.NOTIFICATION_DELETED";
+
+    private static final String TAG = LogHelper.makeLogTag(NotificationHelper.class);
 
     private HentoidApp instance;
 
@@ -29,7 +32,8 @@ public class NotificationHelper extends BroadcastReceiver {
             String action = intent.getAction();
             if (action.equals(NOTIFICATION_DELETED)) {
                 // Reset download count
-                HentoidApp.setDownloadCount(0);
+                // HentoidApp.setDownloadCount(0);
+                LogHelper.d(TAG, "Notification removed.");
             }
 
         } catch (Exception e) {

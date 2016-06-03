@@ -44,7 +44,6 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
- * TODO: Simplify single item selection layout drawing/merge with multi-select layout
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
@@ -485,17 +484,32 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     public void purgeSelectedItems() {
-        if (getSelectedItemCount() > 0) {
-            LogHelper.d(TAG, "Preparing to delete selected items...");
+        int itemCount = getSelectedItemCount();
+        if (itemCount > 0) {
+            if (itemCount == 1) {
+                LogHelper.d(TAG, "Preparing to delete selected item...");
 
-            List<Content> items;
-            items = processSelection();
+                List<Content> items;
+                items = processSelection();
 
-            if (!items.isEmpty()) {
-                deleteContents(items);
+                if (!items.isEmpty()) {
+                    deleteContent(items.get(0));
+                } else {
+                    listener.onItemClear(0, -1);
+                    LogHelper.d(TAG, "Nothing to delete!!");
+                }
             } else {
-                listener.onItemClear(0, -1);
-                LogHelper.d(TAG, "No items to delete!!");
+                LogHelper.d(TAG, "Preparing to delete selected items...");
+
+                List<Content> items;
+                items = processSelection();
+
+                if (!items.isEmpty()) {
+                    deleteContents(items);
+                } else {
+                    listener.onItemClear(0, -1);
+                    LogHelper.d(TAG, "No items to delete!!");
+                }
             }
         } else {
             listener.onItemClear(0, -1);
