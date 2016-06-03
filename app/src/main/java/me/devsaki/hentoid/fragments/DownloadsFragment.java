@@ -141,6 +141,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         // may be called multiple times if the mode is invalidated.
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            menu.findItem(R.id.action_delete).setVisible(!selectTrigger);
             menu.findItem(R.id.action_delete_sweep).setVisible(selectTrigger);
 
             return true;
@@ -150,9 +151,14 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
+                case R.id.action_delete:
+                    //mAdapter.purgeSelectedItem();
+                    mode.finish();
+
+                    return true;
                 case R.id.action_delete_sweep:
                     mAdapter.purgeSelectedItems();
-                    mode.finish(); // Action picked, so close the CAB
+                    mode.finish();
 
                     return true;
                 default:
@@ -959,38 +965,44 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         isSelected = true;
         showToolbar(false, true);
 
-        if (selectedCount == 2) {
-            selectTrigger = true;
+        if (selectedCount == 1) {
             mAdapter.notifyDataSetChanged();
         }
 
-        if (selectTrigger && mActionMode == null) {
+        if (selectedCount >= 2) {
+            selectTrigger = true;
+        }
+
+        if (mActionMode == null) {
             mActionMode = toolbar.startActionMode(mActionModeCallback);
         }
 
         if (mActionMode != null) {
             mActionMode.invalidate();
-            mActionMode.setTitle(selectedCount + " items selected");
+            mActionMode.setTitle(
+                    selectedCount + (selectedCount > 1 ? " items selected" : " item selected"));
         }
     }
 
     @Override
     public void onItemClear(int itemCount, int position) {
-        if (itemCount == 1 && selectTrigger) {
-            selectTrigger = false;
-            mAdapter.notifyDataSetChanged();
-
-            if (mActionMode != null) {
-                mActionMode.invalidate();
-            }
-        }
-
         if (mActionMode != null) {
             if (itemCount >= 1) {
                 mActionMode.setTitle(
                         itemCount + (itemCount > 1 ? " items selected" : " item selected"));
             } else {
+                selectTrigger = false;
+                mActionMode.invalidate();
                 mActionMode.setTitle("");
+                mAdapter.notifyDataSetChanged();
+            }
+        }
+
+        if (itemCount == 1 && selectTrigger) {
+            selectTrigger = false;
+
+            if (mActionMode != null) {
+                mActionMode.invalidate();
             }
         }
 

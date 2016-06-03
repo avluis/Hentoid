@@ -152,32 +152,20 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         }
 
-        final RelativeLayout select = (RelativeLayout) holder.itemView.findViewById(R.id.item);
-        LinearLayout actions = (LinearLayout) holder.itemView.findViewById(R.id.item_actions);
+        final RelativeLayout items = (RelativeLayout) holder.itemView.findViewById(R.id.item);
         LinearLayout minimal = (LinearLayout) holder.itemView.findViewById(R.id.item_minimal);
 
         if (holder.itemView.isSelected()) {
             LogHelper.d(TAG, "Position: " + pos + ": " + content.getTitle()
                     + " is a selected item currently in view.");
 
-            if (getSelectedItemCount() > 1) {
-                select.setVisibility(View.GONE);
-                actions.setVisibility(View.GONE);
+            if (getSelectedItemCount() >= 1) {
+                items.setVisibility(View.GONE);
                 minimal.setVisibility(View.VISIBLE);
-            } else {
-                select.setVisibility(View.GONE);
-                actions.setVisibility(View.VISIBLE);
-                minimal.setVisibility(View.GONE);
-
-                holder.tvDate.setText(cxt.getString(R.string.download_date).replace("@date",
-                        sdf.format(new Date(content.getDownloadDate()))));
             }
         } else {
-            select.setVisibility(View.VISIBLE);
-            actions.setVisibility(View.GONE);
+            items.setVisibility(View.VISIBLE);
             minimal.setVisibility(View.GONE);
-
-            holder.tvDate.setText(R.string.tvEmpty);
         }
 
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
@@ -188,7 +176,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.tvTitle.setText(R.string.tvEmpty);
             if (holder.itemView.isSelected()) {
                 holder.tvTitle2.setText(R.string.tvEmpty);
-                holder.tvTitle3.setText(R.string.tvEmpty);
             }
         } else {
             holder.tvTitle.setText(content.getTitle());
@@ -203,20 +190,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
             if (holder.itemView.isSelected()) {
                 holder.tvTitle2.setText(content.getTitle());
-                holder.tvTitle3.setText(content.getTitle());
 
                 if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
                     holder.tvTitle2.setEllipsize(TextUtils.TruncateAt.MARQUEE);
                     holder.tvTitle2.setSingleLine(true);
                     holder.tvTitle2.setMarqueeRepeatLimit(5);
-
-                    holder.tvTitle3.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-                    holder.tvTitle3.setSingleLine(true);
-                    holder.tvTitle3.setMarqueeRepeatLimit(5);
                 }
 
                 holder.tvTitle2.setSelected(true);
-                holder.tvTitle3.setSelected(true);
             }
         }
 
@@ -228,7 +209,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         if (holder.itemView.isSelected()) {
             HentoidApp.getInstance().loadBitmap(image, holder.ivCover2);
-            HentoidApp.getInstance().loadBitmap(image, holder.ivCover3);
         }
 
         String series = "";
@@ -401,16 +381,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 return false;
             }
         });
-
-        if (holder.itemView.isSelected()) {
-            holder.itemView.findViewById(R.id.delete)
-                    .setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            deleteContent(content);
-                        }
-                    });
-        }
     }
 
     private void downloadAgain(final Content item) {
