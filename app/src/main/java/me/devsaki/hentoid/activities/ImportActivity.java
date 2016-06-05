@@ -43,13 +43,13 @@ import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.model.DoujinBuilder;
+import me.devsaki.hentoid.model.URLBuilder;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
-import me.devsaki.hentoid.v2.bean.DoujinBean;
-import me.devsaki.hentoid.v2.bean.URLBean;
 
 /**
  * Created by avluis on 04/02/2016.
@@ -116,7 +116,7 @@ public class ImportActivity extends BaseActivity implements
                 LogHelper.d(TAG, "Default Directory Found.");
                 currentRootDirectory = file;
             } else {
-                currentRootDirectory = AndroidHelper.getDefaultDir(this, "");
+                currentRootDirectory = Helper.getDefaultDir(this, "");
             }
             pickDownloadDirectory();
         } else {
@@ -133,7 +133,7 @@ public class ImportActivity extends BaseActivity implements
 
     // Validate permissions
     private boolean checkPermissions() {
-        if (AndroidHelper.permissionsCheck(
+        if (Helper.permissionsCheck(
                 ImportActivity.this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
             return true;
@@ -217,7 +217,7 @@ public class ImportActivity extends BaseActivity implements
         File file = new File(hentoidFolder);
         if (!file.exists() && !file.isDirectory()) {
             if (!file.mkdirs()) {
-                AndroidHelper.toast(this, R.string.error_creating_folder);
+                Helper.toast(this, R.string.error_creating_folder);
                 return;
             }
         }
@@ -241,7 +241,7 @@ public class ImportActivity extends BaseActivity implements
         }
 
         if (!hasPermission) {
-            AndroidHelper.toast(this, R.string.error_write_permission);
+            Helper.toast(this, R.string.error_write_permission);
             return;
         }
 
@@ -249,13 +249,13 @@ public class ImportActivity extends BaseActivity implements
 
         boolean directorySaved = editor.commit();
         if (!directorySaved) {
-            AndroidHelper.toast(this, R.string.error_creating_folder);
+            Helper.toast(this, R.string.error_creating_folder);
             return;
         }
 
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(AndroidHelper.getSiteDownloadDir(this, s));
+            downloadDirs.add(Helper.getSiteDownloadDir(this, s));
         }
 
         List<File> files = new ArrayList<>();
@@ -280,7 +280,7 @@ public class ImportActivity extends BaseActivity implements
                                 cleanUpDB();
 
                                 // Send results to scan
-                                AndroidHelper.executeAsyncTask(new ImportAsyncTask());
+                                Helper.executeAsyncTask(new ImportAsyncTask());
                             }
 
                         })
@@ -362,16 +362,15 @@ public class ImportActivity extends BaseActivity implements
         }
     }
 
-    @SuppressWarnings("SameParameterValue")
-    private List<Attribute> from(List<URLBean> urlBeans, AttributeType type) {
+    private List<Attribute> from(List<URLBuilder> urlBuilders, AttributeType type) {
         List<Attribute> attributes = null;
-        if (urlBeans == null) {
+        if (urlBuilders == null) {
             return null;
         }
-        if (urlBeans.size() > 0) {
+        if (urlBuilders.size() > 0) {
             attributes = new ArrayList<>();
-            for (URLBean urlBean : urlBeans) {
-                Attribute attribute = from(urlBean, type);
+            for (URLBuilder urlBuilder : urlBuilders) {
+                Attribute attribute = from(urlBuilder, type);
                 if (attribute != null) {
                     attributes.add(attribute);
                 }
@@ -381,21 +380,21 @@ public class ImportActivity extends BaseActivity implements
         return attributes;
     }
 
-    private Attribute from(URLBean urlBean, AttributeType type) {
-        if (urlBean == null) {
+    private Attribute from(URLBuilder urlBuilder, AttributeType type) {
+        if (urlBuilder == null) {
             return null;
         }
         try {
-            if (urlBean.getDescription() == null) {
+            if (urlBuilder.getDescription() == null) {
                 throw new RuntimeException("Problems loading attribute v2.");
             }
 
             return new Attribute()
-                    .setName(urlBean.getDescription())
-                    .setUrl(urlBean.getId())
+                    .setName(urlBuilder.getDescription())
+                    .setUrl(urlBuilder.getId())
                     .setType(type);
         } catch (Exception e) {
-            LogHelper.e(TAG, "Parsing urlBean to attribute: ", e);
+            LogHelper.e(TAG, "Parsing URL to attribute: ", e);
             return null;
         }
     }
@@ -429,7 +428,7 @@ public class ImportActivity extends BaseActivity implements
             downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {
                 // Grab all folders in site folders in storage directory
-                downloadDirs.add(AndroidHelper.getSiteDownloadDir(ImportActivity.this, site));
+                downloadDirs.add(Helper.getSiteDownloadDir(ImportActivity.this, site));
             }
 
             files = new ArrayList<>();
@@ -469,7 +468,7 @@ public class ImportActivity extends BaseActivity implements
                         File json = new File(file, Consts.JSON_FILE_NAME_V2);
                         if (json.exists()) {
                             try {
-                                Content content = Helper.jsonToObject(json, Content.class);
+                                Content content = JsonHelper.jsonToObject(json, Content.class);
                                 if (content.getStatus() != StatusContent.DOWNLOADED
                                         && content.getStatus() != StatusContent.ERROR) {
                                     content.setStatus(StatusContent.MIGRATED);
@@ -484,14 +483,14 @@ public class ImportActivity extends BaseActivity implements
                             if (json.exists()) {
                                 try {
                                     //noinspection deprecation
-                                    ContentV1 content = Helper.jsonToObject(json, ContentV1.class);
+                                    ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
                                     if (content.getStatus() != StatusContent.DOWNLOADED
                                             && content.getStatus() != StatusContent.ERROR) {
                                         content.setMigratedStatus();
                                     }
                                     Content contentV2 = content.toV2Content();
                                     try {
-                                        Helper.saveJson(contentV2, file);
+                                        JsonHelper.saveJson(contentV2, file);
                                     } catch (IOException e) {
                                         LogHelper.e(TAG, "Error converting JSON (v1) to JSON (v2): "
                                                 + content.getTitle(), e);
@@ -506,16 +505,16 @@ public class ImportActivity extends BaseActivity implements
                                 Date importedDate = new Date();
                                 if (json.exists()) {
                                     try {
-                                        DoujinBean doujinBean =
-                                                Helper.jsonToObject(json, DoujinBean.class);
+                                        DoujinBuilder doujinBuilder =
+                                                JsonHelper.jsonToObject(json, DoujinBuilder.class);
                                         //noinspection deprecation
                                         ContentV1 content = new ContentV1();
-                                        content.setUrl(doujinBean.getId());
-                                        content.setHtmlDescription(doujinBean.getDescription());
-                                        content.setTitle(doujinBean.getTitle());
-                                        content.setSeries(from(doujinBean.getSeries(),
+                                        content.setUrl(doujinBuilder.getId());
+                                        content.setHtmlDescription(doujinBuilder.getDescription());
+                                        content.setTitle(doujinBuilder.getTitle());
+                                        content.setSeries(from(doujinBuilder.getSeries(),
                                                 AttributeType.SERIE));
-                                        Attribute artist = from(doujinBean.getArtist(),
+                                        Attribute artist = from(doujinBuilder.getArtist(),
                                                 AttributeType.ARTIST);
                                         List<Attribute> artists = null;
                                         if (artist != null) {
@@ -523,9 +522,9 @@ public class ImportActivity extends BaseActivity implements
                                             artists.add(artist);
                                         }
                                         content.setArtists(artists);
-                                        content.setCoverImageUrl(doujinBean.getUrlImageTitle());
-                                        content.setQtyPages(doujinBean.getQtyPages());
-                                        Attribute translator = from(doujinBean.getTranslator(),
+                                        content.setCoverImageUrl(doujinBuilder.getUrlImageTitle());
+                                        content.setQtyPages(doujinBuilder.getQtyPages());
+                                        Attribute translator = from(doujinBuilder.getTranslator(),
                                                 AttributeType.TRANSLATOR);
                                         List<Attribute> translators = null;
                                         if (translator != null) {
@@ -533,16 +532,16 @@ public class ImportActivity extends BaseActivity implements
                                             translators.add(translator);
                                         }
                                         content.setTranslators(translators);
-                                        content.setTags(from(doujinBean.getLstTags(),
+                                        content.setTags(from(doujinBuilder.getLstTags(),
                                                 AttributeType.TAG));
-                                        content.setLanguage(from(doujinBean.getLanguage(),
+                                        content.setLanguage(from(doujinBuilder.getLanguage(),
                                                 AttributeType.LANGUAGE));
 
                                         content.setMigratedStatus();
                                         content.setDownloadDate(importedDate.getTime());
                                         Content contentV2 = content.toV2Content();
                                         try {
-                                            Helper.saveJson(contentV2, file);
+                                            JsonHelper.saveJson(contentV2, file);
                                         } catch (IOException e) {
                                             LogHelper.e(TAG,
                                                     "Error converting JSON (old) to JSON (v2): "

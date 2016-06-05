@@ -8,7 +8,7 @@ import android.support.annotation.Nullable;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -56,9 +56,9 @@ public class IntentActivity extends BaseActivity {
             content.setSite(site);
             content.setUrl(parsedString);
 
-            AndroidHelper.viewContent(this, content);
+            Helper.viewContent(this, content);
         } else {
-            AndroidHelper.toast(this, "Can't do anything with this, sorry!");
+            Helper.toast(this, "Can't do anything with this, sorry!");
         }
 
         finish();

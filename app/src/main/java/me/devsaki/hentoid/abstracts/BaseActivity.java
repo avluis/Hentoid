@@ -5,7 +5,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by avluis on 04/13/2016.
@@ -17,7 +17,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        AndroidHelper.setNavBarColor(this, R.color.primary_dark);
+        Helper.setNavBarColor(this, R.color.primary_dark);
     }
 
     @Override
@@ -31,6 +31,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        AndroidHelper.cancelToast();
+        Helper.cancelToast();
     }
 }

@@ -1,9 +1,9 @@
-package me.devsaki.hentoid.v2.bean;
+package me.devsaki.hentoid.model;
 
 /**
  * General builder for URLs
  */
-public class URLBean {
+public class URLBuilder {
 
     private String url;
     private String description;

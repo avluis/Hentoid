@@ -10,8 +10,8 @@ import java.io.OutputStream;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -40,7 +40,7 @@ final class ImageDownloadBatch {
     void newTask(final File dir, final String filename, final String url) {
         String cookies = cookieManager.getCookie(url);
         if (cookies.isEmpty()) {
-            cookies = AndroidHelper.getSessionCookie();
+            cookies = Helper.getSessionCookie();
         }
 
         Request request = new Request.Builder()

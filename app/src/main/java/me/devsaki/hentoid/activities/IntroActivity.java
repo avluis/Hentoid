@@ -17,8 +17,8 @@ import com.github.paolorotolo.appintro.AppIntro2;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.BaseSlide;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -88,7 +88,7 @@ public class IntroActivity extends AppIntro2 {
     @Override
     public void onDonePressed(Fragment currentFragment) {
         HentoidApp.setDonePressed(true);
-        AndroidHelper.commitFirstRun(false);
+        Helper.commitFirstRun(false);
         Intent intent = new Intent(this, DownloadsActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                 | Intent.FLAG_ACTIVITY_NEW_TASK

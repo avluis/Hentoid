@@ -23,7 +23,7 @@ import android.widget.ListView;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CompoundAdapter;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -82,7 +82,7 @@ public abstract class DrawerActivity extends BaseActivity {
     protected abstract Fragment buildFragment();
 
     protected String getToolbarTitle() {
-        return AndroidHelper.getActivityName(mContext, R.string.app_name);
+        return Helper.getActivityName(mContext, R.string.app_name);
     }
 
     private String getFragmentTag() {
@@ -153,9 +153,9 @@ public abstract class DrawerActivity extends BaseActivity {
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
-        if (!AndroidHelper.isFirstRunProcessComplete(this)) {
+        if (!Helper.isFirstRunProcessComplete(this)) {
             // first run of the app starts with the nav drawer open
-            AndroidHelper.markFirstRunProcessesDone(this, true);
+            Helper.markFirstRunProcessesDone(this, true);
             mDrawerLayout.openDrawer(GravityCompat.START);
         }
     }

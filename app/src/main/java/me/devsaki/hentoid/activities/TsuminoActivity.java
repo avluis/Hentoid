@@ -20,7 +20,6 @@ import java.util.Locale;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -33,6 +32,15 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private boolean downloadFabPressed = false;
     private int historyIndex;
+
+    private static int ordinalIndexOf(String str, char delimiter, int n) {
+        int pos = str.indexOf(delimiter, 0);
+        while (n-- > 0 && pos != -1) {
+            pos = str.indexOf(delimiter, pos + 1);
+        }
+
+        return pos;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,7 +71,7 @@ public class TsuminoActivity extends BaseWebActivity {
         historyIndex = webView.copyBackForwardList().getCurrentIndex();
 
         String newUrl = webView.getUrl().replace("Book/Info", "Read/View");
-        final int index = Helper.ordinalIndexOf(newUrl, '/', 5);
+        final int index = ordinalIndexOf(newUrl, '/', 5);
         if (index > 0) newUrl = newUrl.substring(0, index);
         webView.loadUrl(newUrl);
     }
@@ -99,7 +107,7 @@ public class TsuminoActivity extends BaseWebActivity {
             super.onPageFinished(view, url);
 
             if (url.contains("//www.tsumino.com/Book/Info/")) {
-                AndroidHelper.executeAsyncTask(new HtmlLoader(), url);
+                Helper.executeAsyncTask(new HtmlLoader(), url);
             } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;
                 int currentIndex = webView.copyBackForwardList().getCurrentIndex();

@@ -53,10 +53,10 @@ import me.devsaki.hentoid.database.SearchContent.ContentListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.DownloadService;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.ConstsPrefs;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -181,7 +181,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
     // Validate permissions
     private void checkPermissions() {
-        if (AndroidHelper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
+        if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
             queryPrefs();
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
@@ -213,8 +213,8 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
     private void reset() {
         // We have asked for permissions, but still denied.
-        AndroidHelper.toast(R.string.reset);
-        AndroidHelper.commitFirstRun(true);
+        Helper.toast(R.string.reset);
+        Helper.commitFirstRun(true);
         Intent intent = new Intent(getActivity(), IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
@@ -601,7 +601,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                     currentPage--;
                     update();
                 } else if (qtyPages > 0 && isLoaded) {
-                    AndroidHelper.toast(mContext, R.string.not_previous_page);
+                    Helper.toast(mContext, R.string.not_previous_page);
                 } else {
                     LogHelper.d(TAG, R.string.not_limit_per_page);
                 }
@@ -618,7 +618,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                         currentPage++;
                         update();
                     } else if (isLastPage) {
-                        AndroidHelper.toast(mContext, R.string.not_next_page);
+                        Helper.toast(mContext, R.string.not_next_page);
                     }
                 }
             }
@@ -638,12 +638,12 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             public boolean onLongClick(View v) {
                 if (!endlessScroll) {
                     if (currentPage != 1 && isLoaded) {
-                        AndroidHelper.toast(mContext, R.string.moving_to_first_page);
+                        Helper.toast(mContext, R.string.moving_to_first_page);
                         clearQuery(1);
 
                         return true;
                     } else if (currentPage == 1 && isLoaded) {
-                        AndroidHelper.toast(mContext, R.string.on_first_page);
+                        Helper.toast(mContext, R.string.on_first_page);
                         update();
 
                         return true;
@@ -693,7 +693,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             return true;
         } else {
             backButtonPressed = System.currentTimeMillis();
-            AndroidHelper.toast(mContext, R.string.press_back_again);
+            Helper.toast(mContext, R.string.press_back_again);
         }
 
         if (!query.isEmpty()) {

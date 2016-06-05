@@ -33,8 +33,8 @@ import javax.net.ssl.HttpsURLConnection;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstsUpdater;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -377,7 +377,7 @@ public class UpdateCheck {
                 JSONObject jsonObject = downloadURL(params[0]);
                 if (jsonObject != null) {
                     int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
-                    if (AndroidHelper.getAppVersionCode(cxt) < updateVersionCode) {
+                    if (Helper.getAppVersionCode(cxt) < updateVersionCode) {
                         if (updateCheckResult != null) {
                             updateCheckResult.onUpdateAvailable();
                         }
@@ -390,7 +390,7 @@ public class UpdateCheck {
                                 mHandler.post(new Runnable() {
                                     @Override
                                     public void run() {
-                                        AndroidHelper.toast(cxt, R.string.update_check_no_update);
+                                        Helper.toast(cxt, R.string.update_check_no_update);
                                     }
                                 });
                             }
@@ -407,7 +407,7 @@ public class UpdateCheck {
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
-                            AndroidHelper.toast(cxt, R.string.error_dependency);
+                            Helper.toast(cxt, R.string.error_dependency);
 
                         }
                     });
@@ -418,7 +418,7 @@ public class UpdateCheck {
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
-                        AndroidHelper.toast(cxt, R.string.error_dependency);
+                        Helper.toast(cxt, R.string.error_dependency);
                     }
                 });
             } catch (PackageManager.NameNotFoundException e) {

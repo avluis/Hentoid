@@ -18,9 +18,9 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -101,14 +101,14 @@ public class DownloadService extends IntentService {
                     "Download Content: Start.");
 
             // Initialize
-            File dir = AndroidHelper.getContentDownloadDir(this, currentContent);
+            File dir = Helper.getContentDownloadDir(this, currentContent);
 
             // If the download directory already has files,
             // then we simply delete them, since this points to a failed download
             // This includes in progress downloads, that were paused, then resumed.
             // So technically, we are downloading everything once again.
             // This is required for ImageDownloadBatch to not hang on a download.
-            AndroidHelper.cleanDir(dir);
+            Helper.cleanDir(dir);
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
 
@@ -166,7 +166,7 @@ public class DownloadService extends IntentService {
 
             // Save JSON file
             try {
-                Helper.saveJson(currentContent, dir);
+                JsonHelper.saveJson(currentContent, dir);
             } catch (IOException e) {
                 LogHelper.e(TAG, "Error saving JSON: " + currentContent.getTitle(), e);
             }

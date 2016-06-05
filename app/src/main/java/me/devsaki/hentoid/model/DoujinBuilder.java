@@ -1,22 +1,22 @@
-package me.devsaki.hentoid.v2.bean;
+package me.devsaki.hentoid.model;
 
 import java.util.List;
 
 /**
  * General builder for works.
  */
-public class DoujinBean {
+public class DoujinBuilder {
 
     private String title;
-    private URLBean serie;
-    private URLBean artist;
+    private URLBuilder serie;
+    private URLBuilder artist;
     private String description;
     private String urlImageTitle;
     private String url;
     private int qtyPages;
-    private URLBean language;
-    private URLBean translator;
-    private List<URLBean> lstTags;
+    private URLBuilder language;
+    private URLBuilder translator;
+    private List<URLBuilder> lstTags;
 
     public String getId() {
         int idxStart = url.lastIndexOf("/");
@@ -35,19 +35,19 @@ public class DoujinBean {
         this.title = title;
     }
 
-    public URLBean getSeries() {
+    public URLBuilder getSeries() {
         return serie;
     }
 
-    public void setSerie(URLBean serie) {
+    public void setSerie(URLBuilder serie) {
         this.serie = serie;
     }
 
-    public URLBean getArtist() {
+    public URLBuilder getArtist() {
         return artist;
     }
 
-    public void setArtist(URLBean artist) {
+    public void setArtist(URLBuilder artist) {
         this.artist = artist;
     }
 
@@ -83,27 +83,27 @@ public class DoujinBean {
         this.description = description;
     }
 
-    public URLBean getLanguage() {
+    public URLBuilder getLanguage() {
         return language;
     }
 
-    public void setLanguage(URLBean language) {
+    public void setLanguage(URLBuilder language) {
         this.language = language;
     }
 
-    public URLBean getTranslator() {
+    public URLBuilder getTranslator() {
         return translator;
     }
 
-    public void setTranslator(URLBean translator) {
+    public void setTranslator(URLBuilder translator) {
         this.translator = translator;
     }
 
-    public List<URLBean> getLstTags() {
+    public List<URLBuilder> getLstTags() {
         return lstTags;
     }
 
-    public void setLstTags(List<URLBean> lstTags) {
+    public void setLstTags(List<URLBuilder> lstTags) {
         this.lstTags = lstTags;
     }
 }

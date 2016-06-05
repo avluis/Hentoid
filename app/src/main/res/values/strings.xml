@@ -60,7 +60,6 @@
     <string name="on_first_page">Already on the first page.</string>
     <string name="moving_to_first_page">Moving to first page.</string>
     <string name="press_back_again">Press back twice (quickly) to exit.</string>
-    <string name="back_exit">Come back soon!</string>
 
     <string name="queue_empty">Why am I empty?</string>
     <string name="downloads_empty">Go ahead, download something.</string>

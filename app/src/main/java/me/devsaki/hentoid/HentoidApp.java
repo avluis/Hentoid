@@ -17,7 +17,7 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -71,6 +71,7 @@ public class HentoidApp extends Application {
         HentoidApp.beginImport = started;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isDonePressed() {
         return donePressed;
     }
@@ -95,7 +96,7 @@ public class HentoidApp extends Application {
                 .into(imageView);
     }
 
-    public synchronized Tracker getGoogleAnalyticsTracker() {
+    private synchronized Tracker getGoogleAnalyticsTracker() {
         AnalyticsTrackers trackers = AnalyticsTrackers.getInstance();
         return trackers.get(AnalyticsTrackers.Target.APP);
     }
@@ -161,13 +162,13 @@ public class HentoidApp extends Application {
         AnalyticsTrackers.initialize(this);
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
 
-        AndroidHelper.queryPrefsKey(getAppContext());
-        AndroidHelper.ignoreSslErrors();
+        Helper.queryPrefsKey(getAppContext());
+        Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
-        if (AndroidHelper.getMobileUpdatePrefs()) {
+        if (Helper.getMobileUpdatePrefs()) {
             LogHelper.d(TAG, "Mobile Updates: ON");
             UpdateCheck(false);
         } else {

@@ -25,9 +25,9 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.services.DownloadService;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
@@ -95,7 +95,7 @@ public class BaseWebActivity extends BaseActivity {
 
     // Validate permissions
     private void checkPermissions() {
-        if (AndroidHelper.permissionsCheck(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
+        if (Helper.permissionsCheck(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             LogHelper.d(TAG, "Storage permission allowed!");
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
@@ -127,8 +127,8 @@ public class BaseWebActivity extends BaseActivity {
 
     private void reset() {
         // We have asked for permissions, but still denied.
-        AndroidHelper.toast(R.string.reset);
-        AndroidHelper.commitFirstRun(true);
+        Helper.toast(R.string.reset);
+        Helper.commitFirstRun(true);
         Intent intent = new Intent(this, IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
@@ -252,7 +252,7 @@ public class BaseWebActivity extends BaseActivity {
             currentContent = db.selectContentById(currentContent.getId());
             if (StatusContent.DOWNLOADED == currentContent.getStatus()
                     || StatusContent.ERROR == currentContent.getStatus()) {
-                AndroidHelper.openContent(this, currentContent);
+                Helper.openContent(this, currentContent);
             } else {
                 hideFab(fabRead);
             }
@@ -267,12 +267,12 @@ public class BaseWebActivity extends BaseActivity {
     void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
         if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
-            AndroidHelper.toast(this, R.string.already_downloaded);
+            Helper.toast(this, R.string.already_downloaded);
             hideFab(fabDownload);
 
             return;
         }
-        AndroidHelper.toast(this, R.string.add_to_queue);
+        Helper.toast(this, R.string.add_to_queue);
         currentContent.setDownloadDate(new Date().getTime())
                 .setStatus(StatusContent.DOWNLOADING);
 

@@ -19,7 +19,7 @@ import java.util.Locale;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.NhentaiParser;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -99,7 +99,7 @@ public class NhentaiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("//nhentai.net/g/")) {
-                AndroidHelper.executeAsyncTask(new JsonLoader(), url + "json");
+                Helper.executeAsyncTask(new JsonLoader(), url + "json");
             }
         }
 

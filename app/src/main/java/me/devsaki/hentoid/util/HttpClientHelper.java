@@ -16,7 +16,7 @@ public class HttpClientHelper {
     private static final String TAG = LogHelper.makeLogTag(HttpClientHelper.class);
 
     public static String call(String urlString) throws Exception {
-        String sessionCookie = AndroidHelper.getSessionCookie();
+        String sessionCookie = Helper.getSessionCookie();
         HttpURLConnection urlConnection = null;
         InputStream is = null;
 

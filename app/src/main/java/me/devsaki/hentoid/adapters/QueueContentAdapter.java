@@ -27,7 +27,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.QueueFragment;
 import me.devsaki.hentoid.services.DownloadService;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -136,7 +136,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
             holder.tvTags.setText(Html.fromHtml(tags));
 
-            File coverFile = AndroidHelper.getThumb(cxt, content);
+            File coverFile = Helper.getThumb(cxt, content);
             String image = coverFile != null ?
                     coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
@@ -227,7 +227,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void clearDownload(Content content) {
         if (content.getStatus() == StatusContent.CANCELED) {
-            File dir = AndroidHelper.getContentDownloadDir(cxt, content);
+            File dir = Helper.getContentDownloadDir(cxt, content);
 
             // This loves to fail
             try {
@@ -239,7 +239,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             // Run this as well
             // Log will state if directory was deleted (deleteDirectory failed)
             // or if it was not (deleteDirectory success)
-            AndroidHelper.deleteDir(dir);
+            Helper.deleteDir(dir);
         }
     }
 

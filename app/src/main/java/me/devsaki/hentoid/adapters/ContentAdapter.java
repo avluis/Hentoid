@@ -38,7 +38,7 @@ import me.devsaki.hentoid.holders.ContentHolder;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.DownloadService;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -200,7 +200,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         }
 
-        File coverFile = AndroidHelper.getThumb(cxt, content);
+        File coverFile = Helper.getThumb(cxt, content);
         String image = coverFile != null ?
                 coverFile.getAbsolutePath() : content.getCoverImageUrl();
 
@@ -272,7 +272,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                         clearSelections();
                         listener.onItemClear(0, -1);
                     }
-                    AndroidHelper.viewContent(cxt, content);
+                    Helper.viewContent(cxt, content);
                 }
             });
         } else {
@@ -415,7 +415,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                                         DownloadService.class);
                                 cxt.startService(intent);
 
-                                AndroidHelper.toast(cxt, R.string.add_to_queue);
+                                Helper.toast(cxt, R.string.add_to_queue);
                                 removeItem(item);
                                 notifyDataSetChanged();
                             }
@@ -554,7 +554,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private void deleteItem(Content item) {
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from db and file system" + ".");
 
-        final File dir = AndroidHelper.getContentDownloadDir(cxt, item);
+        final File dir = Helper.getContentDownloadDir(cxt, item);
         HentoidDB db = HentoidDB.getInstance(cxt);
 
         try {
@@ -569,7 +569,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         removeItem(item);
         notifyDataSetChanged();
 
-        AndroidHelper.toast(cxt, cxt.getString(R.string.deleted).replace("@content",
+        Helper.toast(cxt, cxt.getString(R.string.deleted).replace("@content",
                 item.getTitle()));
     }
 
@@ -582,7 +582,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         for (int i = 0; i < items.size(); i++) {
-            dir = AndroidHelper.getContentDownloadDir(cxt, items.get(i));
+            dir = Helper.getContentDownloadDir(cxt, items.get(i));
             LogHelper.d(TAG, "Removing item: " + items.get(i).getTitle()
                     + " from db and file system" + ".");
 
@@ -599,7 +599,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         listener.onItemClear(0, -1);
         notifyDataSetChanged();
 
-        AndroidHelper.toast(cxt, "Selected items have been deleted.");
+        Helper.toast(cxt, "Selected items have been deleted.");
     }
 
     public interface EndlessScrollListener {

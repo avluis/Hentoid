@@ -27,9 +27,9 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.updater.UpdateCheck;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsPrefs;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -98,11 +98,11 @@ public class PrefsActivity extends BaseActivity {
                             boolean createFile = nomedia.createNewFile();
                             LogHelper.d(TAG, createFile);
                         } catch (IOException e) {
-                            AndroidHelper.toast(getActivity(), R.string.error_creating_nomedia_file);
+                            Helper.toast(getActivity(), R.string.error_creating_nomedia_file);
                             return true;
                         }
                     }
-                    AndroidHelper.toast(getActivity(), R.string.nomedia_file_created);
+                    Helper.toast(getActivity(), R.string.nomedia_file_created);
 
                     return true;
                 }
@@ -157,7 +157,7 @@ public class PrefsActivity extends BaseActivity {
             mUpdateCheck.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    AndroidHelper.toast("Checking for updates...");
+                    Helper.toast("Checking for updates...");
                     UpdateCheck.getInstance().checkForUpdate(HentoidApp.getAppContext(),
                             false, true,
                             new UpdateCheck.UpdateCheckCallback() {
@@ -183,9 +183,9 @@ public class PrefsActivity extends BaseActivity {
             editor.putString(ConstsPrefs.PREF_APP_LOCK, lock);
             editor.apply();
             if (lock.isEmpty()) {
-                AndroidHelper.toast(getActivity(), R.string.app_lock_disabled);
+                Helper.toast(getActivity(), R.string.app_lock_disabled);
             } else {
-                AndroidHelper.toast(getActivity(), R.string.app_lock_enable);
+                Helper.toast(getActivity(), R.string.app_lock_enable);
             }
             dialog.cancel();
         }

@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by avluis on 1/9/16.
@@ -18,13 +18,13 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (AndroidHelper.isFirstRun()) {
+        if (Helper.isFirstRun()) {
             Intent intent = new Intent(this, IntroActivity.class);
             startActivity(intent);
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         } else {
-            AndroidHelper.launchMainActivity(this);
+            Helper.launchMainActivity(this);
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         }

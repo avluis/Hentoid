@@ -19,8 +19,8 @@ import java.util.Locale;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.ConstsPrefs;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -37,8 +37,8 @@ public class HitomiActivity extends BaseWebActivity {
 
         webView.setWebViewClient(new HitomiWebViewClient());
 
-        boolean bWebViewOverview = AndroidHelper.getWebViewOverviewPrefs();
-        int webViewInitialZoom = AndroidHelper.getWebViewInitialZoomPrefs();
+        boolean bWebViewOverview = Helper.getWebViewOverviewPrefs();
+        int webViewInitialZoom = Helper.getWebViewInitialZoomPrefs();
 
         if (bWebViewOverview) {
             webView.getSettings().setLoadWithOverviewMode(false);
@@ -113,7 +113,7 @@ public class HitomiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("//hitomi.la/galleries/")) {
-                AndroidHelper.executeAsyncTask(new HtmlLoader(), url);
+                Helper.executeAsyncTask(new HtmlLoader(), url);
             }
         }
     }
