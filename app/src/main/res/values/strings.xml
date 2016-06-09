@@ -37,7 +37,6 @@
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
     <string name="add_dialog">Adding files to DB</string>
-    <string name="cleaning_up_db">Cleaning up DB</string>
     <string name="please_wait">Please wait…</string>
     <string name="scanning_files">Scanning files…</string>
     <string name="adding_to_db">Adding files to database…</string>
@@ -113,7 +112,6 @@
         <p>New look! New navigation drawer!<br>
         Android 6.0 runtime permissions support.<br>
         Improved browsing and navigation UI.<br>
-        Improved download service back-end.<br>
         Improved search and result handling.<br>
         Improved import routine & preference changes.<br>
         Reduced chances of intrusive pop-ups on nhentai, hitomi and tsumino.<br>

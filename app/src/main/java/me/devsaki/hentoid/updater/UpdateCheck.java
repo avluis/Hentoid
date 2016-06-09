@@ -398,17 +398,16 @@ public class UpdateCheck {
                     }
                 }
             } catch (IOException e) {
-                HentoidApp.getInstance().trackException(e);
-                LogHelper.e(TAG, "IO ERROR: ", e);
-
                 if (retryCount == 0) {
                     runAsyncTask(true);
                 } else {
+                    LogHelper.e(TAG, "IO ERROR: ", e);
+                    HentoidApp.getInstance().trackException(e);
+
                     mHandler.post(new Runnable() {
                         @Override
                         public void run() {
                             Helper.toast(cxt, R.string.error_dependency);
-
                         }
                     });
                 }
@@ -455,6 +454,7 @@ public class UpdateCheck {
             } finally {
                 if (inputStream != null) {
                     inputStream.close();
+                    retryCount = 0;
                 }
             }
             return null;

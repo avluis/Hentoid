@@ -146,8 +146,7 @@ public class ImportActivity extends BaseActivity implements
     // Present Directory Picker
     private void pickDownloadDirectory() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        mDirectoryDialog = DirectoryChooserFragment.
-                newInstance(currentRootDirectory);
+        mDirectoryDialog = DirectoryChooserFragment.newInstance(currentRootDirectory);
         mDirectoryDialog.show(transaction, "RDC");
     }
 
@@ -278,7 +277,6 @@ public class ImportActivity extends BaseActivity implements
                                 dialog.dismiss();
                                 // Prior Library found, drop and recreate db
                                 cleanUpDB();
-
                                 // Send results to scan
                                 Helper.executeAsyncTask(new ImportAsyncTask());
                             }
@@ -325,9 +323,9 @@ public class ImportActivity extends BaseActivity implements
     }
 
     private void cleanUpDB() {
+        LogHelper.d(TAG, "Cleaning up DB.");
         Context context = HentoidApp.getAppContext();
         context.deleteDatabase(Consts.DATABASE_NAME);
-        LogHelper.d(TAG, R.string.cleaning_up_db);
     }
 
     private void cleanUp(AlertDialog mAddDialog) {

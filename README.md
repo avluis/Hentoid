@@ -6,7 +6,7 @@
 [![CircleCI](https://circleci.com/gh/AVnetWS/Hentoid.svg?style=shield&circle-token=62f6f71ba9dd3c419c10ee4e0beea3098ebdb168)](https://circleci.com/gh/AVnetWS/Hentoid)
 ___
 
-[![Hentoid App Icon](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/AVnetWS/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-debug.apk?branch=alpha&filter=successful)
+[![Hentoid App Icon](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/AVnetWS/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-debug.apk?branch=beta&filter=successful)
 
 ##### `Hentoid` is a Doujinshi & H-Manga archiving app originally designed to work with:
 ###### [FAKKU](http://fakku.net/), [Pururin](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/pururin.jpg) and [Hitomi](https://hitomi.la/).

@@ -11,7 +11,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 38
-        versionName '1.2.0-alpha'
+        versionName '1.2.0-beta'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -105,9 +105,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:23.4.0'
     compile 'com.android.support:support-v4:23.4.0'
     // Material Dialogs
-    compile('com.github.afollestad.material-dialogs:core:0.8.5.7@aar') {
-        transitive = true
-    }
+    compile'com.afollestad.material-dialogs:core:0.8.5.9'
     // Image loader
     compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
     // Integrate with OkHttp
@@ -117,21 +115,21 @@ dependencies {
     // Intro screens or slides
     compile 'com.github.paolorotolo:appintro:4.0.0'
     // Google Play Services Analytics
-    compile('com.google.android.gms:play-services-analytics:9.0.1') {
+    compile('com.google.android.gms:play-services-analytics:9.0.2') {
         exclude module: 'play-services-ads'
     }
     // Java serialization/deserialization (Java Objects into JSON and back)
-    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.google.code.gson:gson:2.6.2'
     // Download app updates (without user prompts)
-    compile 'com.mani:ThinDownloadManager:1.2.4'
+    compile 'com.mani:ThinDownloadManager:1.2.5'
     compile('com.turhanoz.android:reactivedirectorychooser:0.0.13@aar') {
         transitive = true
     }
     // Additional Support Libraries
     // HTTP & HTTP/2 client
-    compile 'com.squareup.okhttp3:okhttp:3.2.0'
+    compile 'com.squareup.okhttp3:okhttp:3.3.1'
     // IO functionality
-    compile 'commons-io:commons-io:2.4'
+    compile 'commons-io:commons-io:2.5'
     // JSOUP HTML parser
-    compile 'org.jsoup:jsoup:1.8.3'
+    compile 'org.jsoup:jsoup:1.9.2'
 }
