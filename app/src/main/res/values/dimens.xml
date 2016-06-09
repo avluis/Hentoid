@@ -17,11 +17,19 @@
     <dimen name="toolbar_layout_elevation">6dp</dimen>
 
     <!-- browser -->
-    <dimen name="activity_base_web_padding">10dp</dimen>
+    <dimen name="activity_base_web_padding">6dp</dimen>
 
-    <dimen name="download_fab_margin">16dp</dimen>
-    <dimen name="downloads_fab_margin">6dp</dimen>
-    <dimen name="refresh_fab_margin">6dp</dimen>
+    <dimen name="download_fab_margin">8dp</dimen>
+
+    <dimen name="refresh_fab_margin_bottom">0dp</dimen>
+    <dimen name="refresh_fab_margin_left">2dp</dimen>
+    <dimen name="refresh_fab_margin_right">0dp</dimen>
+    <dimen name="refresh_fab_margin_top">0dp</dimen>
+
+    <dimen name="downloads_fab_margin_bottom">2dp</dimen>
+    <dimen name="downloads_fab_margin_left">2dp</dimen>
+    <dimen name="downloads_fab_margin_right">0dp</dimen>
+    <dimen name="downloads_fab_margin_top">0dp</dimen>
 
     <!-- about -->
     <dimen name="about_ic_group_layout_margin_top">5dp</dimen>
