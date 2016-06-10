@@ -55,8 +55,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
  */
-public class ImportActivity extends BaseActivity implements
-        OnDirectoryChooserFragmentInteraction {
+public class ImportActivity extends BaseActivity implements OnDirectoryChooserFragmentInteraction {
     private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 
     private static final String DIR_KEY = "currentDir";
@@ -166,7 +165,7 @@ public class ImportActivity extends BaseActivity implements
         currentRootDirectory = event.getFile();
         LogHelper.d(TAG, "Storage Path: " + currentRootDirectory);
         mDirectoryDialog.dismiss();
-        validateFolder(currentRootDirectory);
+        importFolder(currentRootDirectory);
     }
 
     @Override
@@ -207,50 +206,8 @@ public class ImportActivity extends BaseActivity implements
         }
     }
 
-    private void validateFolder(File folder) {
-        String hentoidFolder = folder.getAbsolutePath();
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
-
-        // Validate folder
-        File file = new File(hentoidFolder);
-        if (!file.exists() && !file.isDirectory()) {
-            if (!file.mkdirs()) {
-                Helper.toast(this, R.string.error_creating_folder);
-                return;
-            }
-        }
-
-        File nomedia = new File(hentoidFolder, ".nomedia");
-        boolean hasPermission;
-        // Clean up (if any) nomedia file
-        try {
-            if (nomedia.exists()) {
-                boolean deleted = nomedia.delete();
-                if (deleted) {
-                    LogHelper.d(TAG, ".nomedia file deleted");
-                }
-            }
-            // Re-create nomedia file to confirm write permissions
-            hasPermission = nomedia.createNewFile();
-        } catch (IOException e) {
-            hasPermission = false;
-            HentoidApp.getInstance().trackException(e);
-            LogHelper.e(TAG, "We couldn't confirm write permissions to this location: ", e);
-        }
-
-        if (!hasPermission) {
-            Helper.toast(this, R.string.error_write_permission);
-            return;
-        }
-
-        editor.putString(Consts.SETTINGS_FOLDER, hentoidFolder);
-
-        boolean directorySaved = editor.commit();
-        if (!directorySaved) {
-            Helper.toast(this, R.string.error_creating_folder);
-            return;
-        }
+    private void importFolder(File folder) {
+        validateFolder(folder.getAbsolutePath());
 
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
@@ -319,6 +276,47 @@ public class ImportActivity extends BaseActivity implements
                     finish();
                 }
             }, 100);
+        }
+    }
+
+    private void validateFolder(String folder) {
+        SharedPreferences prefs = HentoidApp.getSharedPrefs();
+        SharedPreferences.Editor editor = prefs.edit();
+        // Validate folder
+        File file = new File(folder);
+        if (!file.exists() && !file.isDirectory() && !file.mkdirs()) {
+            Helper.toast(this, R.string.error_creating_folder);
+            return;
+        }
+
+        File nomedia = new File(folder, ".nomedia");
+        boolean hasPermission;
+        // Clean up (if any) nomedia file
+        try {
+            if (nomedia.exists()) {
+                boolean deleted = nomedia.delete();
+                if (deleted) {
+                    LogHelper.d(TAG, ".nomedia file deleted");
+                }
+            }
+            // Re-create nomedia file to confirm write permissions
+            hasPermission = nomedia.createNewFile();
+        } catch (IOException e) {
+            hasPermission = false;
+            HentoidApp.getInstance().trackException(e);
+            LogHelper.e(TAG, "We couldn't confirm write permissions to this location: ", e);
+        }
+
+        if (!hasPermission) {
+            Helper.toast(this, R.string.error_write_permission);
+            return;
+        }
+
+        editor.putString(Consts.SETTINGS_FOLDER, folder);
+
+        boolean directorySaved = editor.commit();
+        if (!directorySaved) {
+            Helper.toast(this, R.string.error_creating_folder);
         }
     }
 
@@ -465,90 +463,18 @@ public class ImportActivity extends BaseActivity implements
                         // (v2) JSON file format
                         File json = new File(file, Consts.JSON_FILE_NAME_V2);
                         if (json.exists()) {
-                            try {
-                                Content content = JsonHelper.jsonToObject(json, Content.class);
-                                if (content.getStatus() != StatusContent.DOWNLOADED
-                                        && content.getStatus() != StatusContent.ERROR) {
-                                    content.setStatus(StatusContent.MIGRATED);
-                                }
-                                contents.add(content);
-                            } catch (Exception e) {
-                                LogHelper.e(TAG, "Error reading JSON (v2) file: ", e);
-                            }
+                            importJsonV2(json);
                         } else {
                             // (v1) JSON file format
                             json = new File(file, Consts.JSON_FILE_NAME);
                             if (json.exists()) {
-                                try {
-                                    //noinspection deprecation
-                                    ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
-                                    if (content.getStatus() != StatusContent.DOWNLOADED
-                                            && content.getStatus() != StatusContent.ERROR) {
-                                        content.setMigratedStatus();
-                                    }
-                                    Content contentV2 = content.toV2Content();
-                                    try {
-                                        JsonHelper.saveJson(contentV2, file);
-                                    } catch (IOException e) {
-                                        LogHelper.e(TAG, "Error converting JSON (v1) to JSON (v2): "
-                                                + content.getTitle(), e);
-                                    }
-                                    contents.add(contentV2);
-                                } catch (Exception e) {
-                                    LogHelper.e(TAG, "Error reading JSON (v1) file: ", e);
-                                }
+                                importJsonV1(json, file);
                             } else {
                                 // (old) JSON file format (legacy and/or FAKKUDroid App)
                                 json = new File(file, Consts.OLD_JSON_FILE_NAME);
                                 Date importedDate = new Date();
                                 if (json.exists()) {
-                                    try {
-                                        DoujinBuilder doujinBuilder =
-                                                JsonHelper.jsonToObject(json, DoujinBuilder.class);
-                                        //noinspection deprecation
-                                        ContentV1 content = new ContentV1();
-                                        content.setUrl(doujinBuilder.getId());
-                                        content.setHtmlDescription(doujinBuilder.getDescription());
-                                        content.setTitle(doujinBuilder.getTitle());
-                                        content.setSeries(from(doujinBuilder.getSeries(),
-                                                AttributeType.SERIE));
-                                        Attribute artist = from(doujinBuilder.getArtist(),
-                                                AttributeType.ARTIST);
-                                        List<Attribute> artists = null;
-                                        if (artist != null) {
-                                            artists = new ArrayList<>(1);
-                                            artists.add(artist);
-                                        }
-                                        content.setArtists(artists);
-                                        content.setCoverImageUrl(doujinBuilder.getUrlImageTitle());
-                                        content.setQtyPages(doujinBuilder.getQtyPages());
-                                        Attribute translator = from(doujinBuilder.getTranslator(),
-                                                AttributeType.TRANSLATOR);
-                                        List<Attribute> translators = null;
-                                        if (translator != null) {
-                                            translators = new ArrayList<>(1);
-                                            translators.add(translator);
-                                        }
-                                        content.setTranslators(translators);
-                                        content.setTags(from(doujinBuilder.getLstTags(),
-                                                AttributeType.TAG));
-                                        content.setLanguage(from(doujinBuilder.getLanguage(),
-                                                AttributeType.LANGUAGE));
-
-                                        content.setMigratedStatus();
-                                        content.setDownloadDate(importedDate.getTime());
-                                        Content contentV2 = content.toV2Content();
-                                        try {
-                                            JsonHelper.saveJson(contentV2, file);
-                                        } catch (IOException e) {
-                                            LogHelper.e(TAG,
-                                                    "Error converting JSON (old) to JSON (v2): "
-                                                            + content.getTitle(), e);
-                                        }
-                                        contents.add(contentV2);
-                                    } catch (Exception e) {
-                                        LogHelper.e(TAG, "Error reading JSON (old) file: ", e);
-                                    }
+                                    importJsonLegacy(json, file, importedDate);
                                 }
                             }
                         }
@@ -560,6 +486,90 @@ public class ImportActivity extends BaseActivity implements
             }
 
             return contents;
+        }
+
+        private void importJsonLegacy(File json, File file, Date importedDate) {
+            try {
+                DoujinBuilder doujinBuilder =
+                        JsonHelper.jsonToObject(json, DoujinBuilder.class);
+                //noinspection deprecation
+                ContentV1 content = new ContentV1();
+                content.setUrl(doujinBuilder.getId());
+                content.setHtmlDescription(doujinBuilder.getDescription());
+                content.setTitle(doujinBuilder.getTitle());
+                content.setSeries(from(doujinBuilder.getSeries(),
+                        AttributeType.SERIE));
+                Attribute artist = from(doujinBuilder.getArtist(),
+                        AttributeType.ARTIST);
+                List<Attribute> artists = null;
+                if (artist != null) {
+                    artists = new ArrayList<>(1);
+                    artists.add(artist);
+                }
+                content.setArtists(artists);
+                content.setCoverImageUrl(doujinBuilder.getUrlImageTitle());
+                content.setQtyPages(doujinBuilder.getQtyPages());
+                Attribute translator = from(doujinBuilder.getTranslator(),
+                        AttributeType.TRANSLATOR);
+                List<Attribute> translators = null;
+                if (translator != null) {
+                    translators = new ArrayList<>(1);
+                    translators.add(translator);
+                }
+                content.setTranslators(translators);
+                content.setTags(from(doujinBuilder.getLstTags(),
+                        AttributeType.TAG));
+                content.setLanguage(from(doujinBuilder.getLanguage(),
+                        AttributeType.LANGUAGE));
+
+                content.setMigratedStatus();
+                content.setDownloadDate(importedDate.getTime());
+                Content contentV2 = content.toV2Content();
+                try {
+                    JsonHelper.saveJson(contentV2, file);
+                } catch (IOException e) {
+                    LogHelper.e(TAG,
+                            "Error converting JSON (old) to JSON (v2): "
+                                    + content.getTitle(), e);
+                }
+                contents.add(contentV2);
+            } catch (Exception e) {
+                LogHelper.e(TAG, "Error reading JSON (old) file: ", e);
+            }
+        }
+
+        private void importJsonV1(File json, File file) {
+            try {
+                //noinspection deprecation
+                ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
+                if (content.getStatus() != StatusContent.DOWNLOADED
+                        && content.getStatus() != StatusContent.ERROR) {
+                    content.setMigratedStatus();
+                }
+                Content contentV2 = content.toV2Content();
+                try {
+                    JsonHelper.saveJson(contentV2, file);
+                } catch (IOException e) {
+                    LogHelper.e(TAG, "Error converting JSON (v1) to JSON (v2): "
+                            + content.getTitle(), e);
+                }
+                contents.add(contentV2);
+            } catch (Exception e) {
+                LogHelper.e(TAG, "Error reading JSON (v1) file: ", e);
+            }
+        }
+
+        private void importJsonV2(File json) {
+            try {
+                Content content = JsonHelper.jsonToObject(json, Content.class);
+                if (content.getStatus() != StatusContent.DOWNLOADED
+                        && content.getStatus() != StatusContent.ERROR) {
+                    content.setStatus(StatusContent.MIGRATED);
+                }
+                contents.add(content);
+            } catch (Exception e) {
+                LogHelper.e(TAG, "Error reading JSON (v2) file: ", e);
+            }
         }
     }
 }

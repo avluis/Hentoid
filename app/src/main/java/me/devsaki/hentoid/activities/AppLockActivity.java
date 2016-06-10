@@ -71,7 +71,7 @@ public class AppLockActivity extends BaseActivity {
             etPin.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
+                    // We don't care about this event.
                 }
 
                 @Override

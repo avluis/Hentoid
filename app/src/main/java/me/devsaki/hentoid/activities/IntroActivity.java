@@ -141,94 +141,10 @@ public class IntroActivity extends AppIntro2 {
                 if (data.getStringExtra(ConstsImport.RESULT_KEY) != null) {
                     String result = data.getStringExtra(ConstsImport.RESULT_KEY);
                     if (resultCode == RESULT_OK) {
-
-                        // If we get RESULT_OK, then:
-                        LogHelper.d(TAG, "RESULT_OK: ");
-                        LogHelper.d(TAG, result);
-
-                        if (result.equals(ConstsImport.PERMISSION_GRANTED)) {
-                            LogHelper.d(TAG, "Permission Allowed, resetting.");
-
-                            HentoidApp.setBeginImport(false);
-                            setProgressButtonEnabled(false);
-                            pager.setCurrentItem(IMPORT_SLIDE - 1);
-
-                            Snackbar.make(pager, R.string.permission_granted,
-                                    Snackbar.LENGTH_SHORT).show();
-
-                            Handler handler = new Handler();
-                            handler.postDelayed(new Runnable() {
-
-                                public void run() {
-                                    pager.setCurrentItem(IMPORT_SLIDE);
-                                }
-                            }, 2000);
-                        } else {
-                            // Disallow swiping back
-                            setSwipeLock(true);
-                            // If result passes validation, then we move to next slide
-                            pager.setCurrentItem(IMPORT_SLIDE + 1);
-                            setProgressButtonEnabled(true);
-
-                            // Auto push to DownloadActivity after 10 seconds
-                            Handler doneHandler = new Handler();
-                            doneHandler.postDelayed(new Runnable() {
-
-                                public void run() {
-                                    if (!HentoidApp.isDonePressed()) {
-                                        if (doneFragment != null) {
-                                            onDonePressed(doneFragment);
-                                        }
-                                    }
-                                }
-                            }, 10000);
-                            doneHandler.removeCallbacks(null);
-                        }
+                        resultHandler(true, result);
                     }
                     if (resultCode == RESULT_CANCELED) {
-                        switch (result) {
-                            case ConstsImport.PERMISSION_DENIED:
-                                LogHelper.d(TAG, "Permission Denied by User");
-
-                                pager.setCurrentItem(IMPORT_SLIDE - 3);
-                                Snackbar.make(pager, R.string.permission_denied,
-                                        Snackbar.LENGTH_LONG).show();
-                                setProgressButtonEnabled(true);
-                                break;
-                            case ConstsImport.PERMISSION_DENIED_FORCED:
-                                LogHelper.d(TAG, "Permission Denied (Forced) by User/Policy");
-
-                                setProgressButtonEnabled(false);
-                                setSwipeLock(true);
-                                pager.setCurrentItem(IMPORT_SLIDE - 3);
-
-                                Snackbar.make(pager, R.string.permission_denied_forced,
-                                        Snackbar.LENGTH_INDEFINITE)
-                                        .setAction(R.string.open_app_settings,
-                                                new View.OnClickListener() {
-                                                    @Override
-                                                    public void onClick(View v) {
-                                                        openAppSettings();
-                                                    }
-                                                })
-                                        .show();
-                                break;
-                            case ConstsImport.EXISTING_LIBRARY_FOUND:
-                                LogHelper.d(TAG, "Existing Library Found");
-
-                                pager.setCurrentItem(IMPORT_SLIDE - 2);
-                                Snackbar.make(pager, R.string.existing_library_error,
-                                        Snackbar.LENGTH_LONG).show();
-                                setProgressButtonEnabled(true);
-                                break;
-                            default:
-                                LogHelper.d(TAG, "RESULT_CANCELED");
-
-                                pager.setCurrentItem(IMPORT_SLIDE - 2);
-                                setProgressButtonEnabled(true);
-                                break;
-                        }
-                        HentoidApp.setBeginImport(false);
+                        resultHandler(false, result);
                     }
                 } else {
                     LogHelper.d(TAG, "Error: Data not received! Bad resultKey.");
@@ -256,6 +172,95 @@ public class IntroActivity extends AppIntro2 {
             handler.removeCallbacks(null);
         } else {
             LogHelper.d(TAG, "Unknown result code!");
+        }
+    }
+
+    private void resultHandler(boolean success, String result) {
+        if (success) {
+            // If we get RESULT_OK, then:
+            LogHelper.d(TAG, "RESULT_OK: ");
+            LogHelper.d(TAG, result);
+
+            if (result.equals(ConstsImport.PERMISSION_GRANTED)) {
+                LogHelper.d(TAG, "Permission Allowed, resetting.");
+
+                HentoidApp.setBeginImport(false);
+                setProgressButtonEnabled(false);
+                pager.setCurrentItem(IMPORT_SLIDE - 1);
+
+                Snackbar.make(pager, R.string.permission_granted,
+                        Snackbar.LENGTH_SHORT).show();
+
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+
+                    public void run() {
+                        pager.setCurrentItem(IMPORT_SLIDE);
+                    }
+                }, 2000);
+            } else {
+                // Disallow swiping back
+                setSwipeLock(true);
+                // If result passes validation, then we move to next slide
+                pager.setCurrentItem(IMPORT_SLIDE + 1);
+                setProgressButtonEnabled(true);
+
+                // Auto push to DownloadActivity after 10 seconds
+                Handler doneHandler = new Handler();
+                doneHandler.postDelayed(new Runnable() {
+
+                    public void run() {
+                        if (!HentoidApp.isDonePressed() && doneFragment != null) {
+                            onDonePressed(doneFragment);
+                        }
+                    }
+                }, 10000);
+                doneHandler.removeCallbacks(null);
+            }
+        } else {
+            switch (result) {
+                case ConstsImport.PERMISSION_DENIED:
+                    LogHelper.d(TAG, "Permission Denied by User");
+
+                    pager.setCurrentItem(IMPORT_SLIDE - 3);
+                    Snackbar.make(pager, R.string.permission_denied,
+                            Snackbar.LENGTH_LONG).show();
+                    setProgressButtonEnabled(true);
+                    break;
+                case ConstsImport.PERMISSION_DENIED_FORCED:
+                    LogHelper.d(TAG, "Permission Denied (Forced) by User/Policy");
+
+                    setProgressButtonEnabled(false);
+                    setSwipeLock(true);
+                    pager.setCurrentItem(IMPORT_SLIDE - 3);
+
+                    Snackbar.make(pager, R.string.permission_denied_forced,
+                            Snackbar.LENGTH_INDEFINITE)
+                            .setAction(R.string.open_app_settings,
+                                    new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            openAppSettings();
+                                        }
+                                    })
+                            .show();
+                    break;
+                case ConstsImport.EXISTING_LIBRARY_FOUND:
+                    LogHelper.d(TAG, "Existing Library Found");
+
+                    pager.setCurrentItem(IMPORT_SLIDE - 2);
+                    Snackbar.make(pager, R.string.existing_library_error,
+                            Snackbar.LENGTH_LONG).show();
+                    setProgressButtonEnabled(true);
+                    break;
+                default:
+                    LogHelper.d(TAG, "RESULT_CANCELED");
+
+                    pager.setCurrentItem(IMPORT_SLIDE - 2);
+                    setProgressButtonEnabled(true);
+                    break;
+            }
+            HentoidApp.setBeginImport(false);
         }
     }
 }
