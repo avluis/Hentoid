@@ -69,6 +69,10 @@ final class NotificationPresenter {
         updateNotification(0);
     }
 
+    public void onEvent(Double percent) {
+        updateNotification(percent == -1 ? 0 : percent);
+    }
+
     void updateNotification(double percent) {
         currentBuilder.setContentIntent(getIntent());
 

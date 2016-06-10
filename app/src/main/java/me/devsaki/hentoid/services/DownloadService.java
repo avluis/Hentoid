@@ -10,6 +10,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import de.greenrobot.event.EventBus;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -31,9 +32,6 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * 1 image = 1 task, n images = 1 chapter = 1 job = 1 bundled task.
  */
 public class DownloadService extends IntentService {
-    public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
-    public static final String DOWNLOAD_NOTIFICATION =
-            "me.devsaki.hentoid.services.DOWNLOAD_NOTIFICATION";
 
     private static final String TAG = LogHelper.makeLogTag(DownloadService.class);
 
@@ -50,7 +48,9 @@ public class DownloadService extends IntentService {
     public void onCreate() {
         super.onCreate();
         db = HentoidDB.getInstance(this);
+
         notificationPresenter = new NotificationPresenter();
+        EventBus.getDefault().register(notificationPresenter);
 
         LogHelper.d(TAG, "Download service created");
     }
@@ -58,6 +58,9 @@ public class DownloadService extends IntentService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
+        EventBus.getDefault().unregister(notificationPresenter);
+        notificationPresenter = null;
 
         LogHelper.d(TAG, "Download service destroyed");
     }
@@ -81,7 +84,6 @@ public class DownloadService extends IntentService {
                 parseImageFiles();
             } catch (Exception e) {
                 currentContent.setStatus(StatusContent.UNHANDLED_ERROR);
-                notificationPresenter.updateNotification(0);
                 currentContent.setStatus(StatusContent.PAUSED);
                 db.updateContentStatus(currentContent);
                 updateActivity(-1);
@@ -139,7 +141,6 @@ public class DownloadService extends IntentService {
 
                 downloadBatch.waitForOneCompletedTask();
                 double percent = i * 100.0 / qtyPages;
-                notificationPresenter.updateNotification(percent);
                 updateActivity(percent);
             }
 
@@ -172,7 +173,6 @@ public class DownloadService extends IntentService {
             }
 
             HentoidApp.downloadComplete();
-            notificationPresenter.updateNotification(0);
             updateActivity(-1);
             LogHelper.d(TAG, "Content download finished: " + currentContent.getTitle());
 
@@ -194,9 +194,7 @@ public class DownloadService extends IntentService {
     }
 
     private void updateActivity(double percent) {
-        Intent intent = new Intent(DOWNLOAD_NOTIFICATION);
-        intent.putExtra(INTENT_PERCENT_BROADCAST, percent);
-        sendBroadcast(intent);
+        EventBus.getDefault().post(new Double(percent));
     }
 
     private void parseImageFiles() throws Exception {
