@@ -4,10 +4,8 @@ import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.NotificationManager;
 import android.app.SearchManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
@@ -40,6 +38,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.greenrobot.event.EventBus;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
@@ -52,7 +51,6 @@ import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.SearchContent.ContentListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
-import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.ConstsPrefs;
@@ -109,21 +107,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     private boolean permissionChecked;
     private boolean isLastPage;
     private boolean isLoaded;
-    private final BroadcastReceiver receiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            Bundle bundle = intent.getExtras();
-            if (bundle != null) {
-                double percent = bundle.getDouble(DownloadService.INTENT_PERCENT_BROADCAST);
-                if (percent >= 0) {
-                    LogHelper.d(TAG, "Download Progress: " + percent);
-                } else if (isLoaded) {
-                    showReloadToolTip();
-                }
-            }
-        }
-    };
     private boolean isSelected;
     private boolean selectTrigger = false;
     // Called when the action mode is created; startActionMode() was called
@@ -445,11 +428,8 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     @Override
     public void onResume() {
         super.onResume();
-
         checkPermissions();
-
-        getContext().registerReceiver(receiver, new IntentFilter(
-                DownloadService.DOWNLOAD_NOTIFICATION));
+        EventBus.getDefault().register(this);
 
         if (mListState != null) {
             llm.onRestoreInstanceState(mListState);
@@ -461,10 +441,17 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     @Override
     public void onPause() {
         super.onPause();
-
-        getContext().unregisterReceiver(receiver);
+        EventBus.getDefault().unregister(this);
 
         clearSelection();
+    }
+
+    public void onEventMainThread(Double percent) {
+        if (percent >= 0) {
+            LogHelper.d(TAG, "Download Progress: " + percent);
+        } else if (isLoaded) {
+            showReloadToolTip();
+        }
     }
 
     @Override
