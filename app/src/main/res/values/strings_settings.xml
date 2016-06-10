@@ -1,30 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Downloads List -->
+    <string name="pref_downloads_category">Downloads List</string>
+    <string name="pref_endless_scroll_title">Endless Scroll</string>
+    <string name="pref_endless_scroll_summary_off">Enable endless scrolling in download list.\nDisables paging.</string>
+    <string name="pref_endless_scroll_summary_on">Scroll away to your heart\'s content.</string>
+    <string name="pref_endless_scroll_default" translatable="false">true</string>
     <!-- Performance -->
     <string name="pref_performance_category">Performance</string>
-    <string name="pref_image_quality_title">Image Quality</string>
-    <string name="pref_image_quality_summary">Tune cover image quality in the download list.</string>
-    <string name="pref_image_quality_default">Medium</string>
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
-    <string name="pref_quantity_per_page_summary">Quantity of downloaded items per page in the lists.</string>
-    <string name="pref_quantity_per_page_default">20</string>
+    <string name="pref_quantity_per_page_summary">Number of items per page in download list.\nCurrently: %s items.</string>
+    <string name="pref_quantity_per_page_default" translatable="false">20</string>
     <!-- Library -->
     <string name="pref_library_category">Library</string>
     <string name="pref_read_content_title">Read Content Action</string>
-    <string name="pref_read_content_summary">Enable Perfect Viewer as your image viewer by default.</string>
-    <string name="pref_read_content_default">0</string>
+    <string name="pref_read_content_summary">Image reader to open by default:\n%s</string>
+    <string name="pref_read_content_default" translatable="false">0</string>
     <string name="pref_select_folder_title">Select Downloads Folder</string>
-    <string name="pref_select_folder_summary">Select the folder where Hentoid will store your downloads.</string>
+    <string name="pref_select_folder_summary">Select where Hentoid will store your downloads.</string>
     <string name="pref_add_no_media_file_title">Hide Downloaded Images</string>
-    <string name="pref_add_no_media_file_summary">This will prevent downloaded images from showing up in the Gallery App.</string>
+    <string name="pref_add_no_media_file_summary">Prevents downloaded images from showing up in gallery apps.</string>
     <!-- Browser -->
     <string name="pref_webview_category">Browser</string>
     <string name="pref_webview_override_overview_title">Disable Page Overview</string>
-    <string name="pref_webview_override_overview_summary">Use the checkbox to disable page overview and to set your preferred initial zoom level below.\nThis setting only applies to Hitomi.</string>
-    <string name="pref_webview_override_overview_default">false</string>
+    <string name="pref_webview_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
+    <string name="pref_webview_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi.</string>
+    <string name="pref_webview_override_overview_default" translatable="false">false</string>
     <string name="pref_webview_initial_zoom_title">Initial Zoom Level</string>
-    <string name="pref_webview_initial_zoom_summary">Zoom level of browser page on initial load.\nThis setting only applies to Hitomi.</string>
-    <string name="pref_webview_initial_zoom_default">20</string>
+    <string name="pref_webview_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>
+    <string name="pref_webview_initial_zoom_default" translatable="false">20</string>
     <!-- .nomedia -->
     <string name="nomedia_file_created">.nomedia file created.</string>
     <!-- App Lock -->
@@ -36,6 +40,7 @@
     <string name="pref_check_updates_manual_title">Manual Update Check</string>
     <string name="pref_check_updates_manual_summary">Manually check for updates now.</string>
     <string name="pref_check_updates_title">Automatic Updates</string>
-    <string name="pref_check_updates_summary">Enable automatic update checks over mobile data.</string>
-    <string name="pref_check_updates_default">true</string>
+    <string name="pref_check_updates_summary_off">Enable automatic update checks over mobile data.</string>
+    <string name="pref_check_updates_summary_on">Note: Does not override manual update checks.</string>
+    <string name="pref_check_updates_default" translatable="false">true</string>
 </resources>

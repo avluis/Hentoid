@@ -4,12 +4,13 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import me.devsaki.hentoid.HentoidApplication;
-import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by avluis on 1/9/16.
  * Displays a Splash while starting up.
+ * Nothing but a splash/activity selection should be defined here.
  */
 public class SplashActivity extends AppCompatActivity {
 
@@ -17,16 +18,14 @@ public class SplashActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        final String appLock = HentoidApplication.getAppPreferences()
-                .getString(ConstantsPreferences.PREF_APP_LOCK, "");
-
-        if (appLock.isEmpty()) {
-            Intent intent = new Intent(this, DownloadsActivity.class);
+        if (Helper.isFirstRun()) {
+            Intent intent = new Intent(this, IntroActivity.class);
             startActivity(intent);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         } else {
-            Intent intent = new Intent(this, AppLockActivity.class);
-            startActivity(intent);
+            Helper.launchMainActivity(this);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         }
     }

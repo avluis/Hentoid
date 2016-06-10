@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.services;
 
-import android.util.Log;
 import android.webkit.CookieManager;
 
 import java.io.File;
@@ -9,9 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
-import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.LogHelper;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -21,14 +22,17 @@ import okhttp3.Response;
  * Created by Shiro on 3/28/2016.
  * Handles image download tasks and batch operations
  * Intended to have default access level for use with DownloadService class only
+ * <p/>
+ * TODO: Test timeout handling:
+ * {@link ImageDownloadBatch#newTask}
+ * Ref: https://goo.gl/OF86un
  */
 final class ImageDownloadBatch {
 
-    private static final String TAG = ImageDownloadBatch.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(ImageDownloadBatch.class);
     private static final int BUFFER_SIZE = 10 * 1024;
-    private static final OkHttpClient client = new OkHttpClient();
     private static final CookieManager cookieManager = CookieManager.getInstance();
-
+    private static OkHttpClient client = new OkHttpClient();
     private final Semaphore semaphore = new Semaphore(0);
     private boolean hasError = false;
     private short errorCount = 0;
@@ -36,13 +40,19 @@ final class ImageDownloadBatch {
     void newTask(final File dir, final String filename, final String url) {
         String cookies = cookieManager.getCookie(url);
         if (cookies.isEmpty()) {
-            cookies = AndroidHelper.getSessionCookie();
+            cookies = Helper.getSessionCookie();
         }
 
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", Constants.USER_AGENT)
+                .addHeader("User-Agent", Consts.USER_AGENT)
                 .addHeader("Cookie", cookies)
+                .build();
+
+        client = new OkHttpClient.Builder()
+                .connectTimeout(10, TimeUnit.SECONDS)
+                .writeTimeout(10, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
                 .build();
 
         client.newCall(request)
@@ -53,7 +63,7 @@ final class ImageDownloadBatch {
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
-            Log.e(TAG, "Interrupted while waiting for download task to complete", e);
+            LogHelper.e(TAG, "Interrupt while waiting on download task completion: ", e);
         }
     }
 
@@ -80,19 +90,20 @@ final class ImageDownloadBatch {
 
         @Override
         public void onFailure(Call call, IOException e) {
-            Log.e(TAG, "Error downloading image: " + call.request().url(), e);
+            LogHelper.e(TAG, "Error downloading image: " + call.request().url(), e);
             hasError = true;
             synchronized (ImageDownloadBatch.this) {
                 errorCount++;
             }
         }
 
+        @SuppressWarnings("TryFinallyCanBeTryWithResources")
         @Override
         public void onResponse(Call call, Response response) throws IOException {
-            Log.i(TAG, "Start downloading image: " + call.request().url());
+            LogHelper.d(TAG, "Start downloading image: " + call.request().url());
 
             if (!response.isSuccessful()) {
-                Log.e(TAG, "Unexpected http status code: " + response.code());
+                LogHelper.w(TAG, "Unexpected http status code: " + response.code());
             }
 
             final File file;
@@ -124,7 +135,7 @@ final class ImageDownloadBatch {
                 output.flush();
             } catch (IOException e) {
                 if (!file.delete()) {
-                    Log.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
+                    LogHelper.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
                 }
                 throw e;
             } finally {
@@ -135,7 +146,7 @@ final class ImageDownloadBatch {
             }
 
             semaphore.release();
-            Log.i(TAG, "Done downloading image: " + call.request().url());
+            LogHelper.d(TAG, "Done downloading image: " + call.request().url());
         }
     }
-} 
+}

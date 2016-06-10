@@ -5,7 +5,7 @@ import com.google.gson.annotations.Expose;
 import java.io.Serializable;
 import java.util.List;
 
-import me.devsaki.hentoid.abstracts.BaseWebActivity;
+import me.devsaki.hentoid.activities.BaseWebActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;

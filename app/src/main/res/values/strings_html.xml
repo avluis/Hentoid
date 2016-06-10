@@ -1,8 +1,0 @@
-<resources>
-    <string name="grab_html_from_webview">
-        <![CDATA[
-            javascript:
-            window.HTMLOUT.processHTML(\'<html>\'+document.getElementsByTagName(\'html\')[0].innerHTML+\'</html>\');
-        ]]>
-    </string>
-</resources>

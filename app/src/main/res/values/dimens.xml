@@ -3,12 +3,35 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
 
-    <dimen name="nav_menu_padding">16dp</dimen>
+    <!-- navigation drawer -->
+    <dimen name="drawer_item_padding_start">16dp</dimen>
+    <dimen name="drawer_item_drawable_padding_start">16dp</dimen>
+    <dimen name="drawer_item_height">48dp</dimen>
+    <dimen name="drawer_image_height">160dp</dimen>
+    <dimen name="drawer_header_icon_padding">12dp</dimen>
 
-    <dimen name="download_fab_margin">16dp</dimen>
-    <dimen name="downloads_fab_margin">6dp</dimen>
-    <dimen name="refresh_fab_margin">6dp</dimen>
+    <!-- Elevation (V21+ API) -->
+    <dimen name="default_elevation">2dp</dimen>
+    <dimen name="drawer_layout_elevation">4dp</dimen>
+    <dimen name="drawer_layout_header_elevation">6dp</dimen>
+    <dimen name="toolbar_layout_elevation">6dp</dimen>
 
+    <!-- browser -->
+    <dimen name="activity_base_web_padding">6dp</dimen>
+
+    <dimen name="download_fab_margin">8dp</dimen>
+
+    <dimen name="refresh_fab_margin_bottom">0dp</dimen>
+    <dimen name="refresh_fab_margin_left">2dp</dimen>
+    <dimen name="refresh_fab_margin_right">0dp</dimen>
+    <dimen name="refresh_fab_margin_top">0dp</dimen>
+
+    <dimen name="downloads_fab_margin_bottom">2dp</dimen>
+    <dimen name="downloads_fab_margin_left">2dp</dimen>
+    <dimen name="downloads_fab_margin_right">0dp</dimen>
+    <dimen name="downloads_fab_margin_top">0dp</dimen>
+
+    <!-- about -->
     <dimen name="about_ic_group_layout_margin_top">5dp</dimen>
     <dimen name="about_ic_hentoid_width">120dp</dimen>
     <dimen name="about_ic_hentoid_height">120dp</dimen>
@@ -16,4 +39,7 @@
     <dimen name="about_ic_icons_height">30dp</dimen>
     <dimen name="about_ic_icons_textSize">12sp</dimen>
     <dimen name="about_textSize">12sp</dimen>
+
+    <!-- card view -->
+    <dimen name="ic_clear_margin">16dp</dimen>
 </resources>

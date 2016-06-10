@@ -2,9 +2,6 @@ package me.devsaki.hentoid.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.util.Log;
-
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,7 +10,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import me.devsaki.hentoid.HentoidApplication;
+import de.greenrobot.event.EventBus;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -21,19 +19,21 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.AndroidHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
 /**
  * Download Manager implemented as a service
+ * <p/>
+ * TODO: Implement download job tracking:
+ * 1 image = 1 task, n images = 1 chapter = 1 job = 1 bundled task.
  */
 public class DownloadService extends IntentService {
-    public static final String INTENT_PERCENT_BROADCAST = "broadcast_percent";
-    public static final String NOTIFICATION = "me.devsaki.hentoid.services";
 
-    private static final String TAG = DownloadService.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(DownloadService.class);
 
     public static boolean paused;
     private NotificationPresenter notificationPresenter;
@@ -47,23 +47,28 @@ public class DownloadService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        db = new HentoidDB(this);
-        notificationPresenter = new NotificationPresenter();
+        db = HentoidDB.getInstance(this);
 
-        Log.i(TAG, "Download service created");
+        notificationPresenter = new NotificationPresenter();
+        EventBus.getDefault().register(notificationPresenter);
+
+        LogHelper.d(TAG, "Download service created");
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        Log.i(TAG, "Download service destroyed");
+        EventBus.getDefault().unregister(notificationPresenter);
+        notificationPresenter = null;
+
+        LogHelper.d(TAG, "Download service destroyed");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
         if (!NetworkStatus.isOnline(this)) {
-            Log.e(TAG, "No connection");
+            LogHelper.w(TAG, "No connection!");
             return;
         }
 
@@ -79,7 +84,6 @@ public class DownloadService extends IntentService {
                 parseImageFiles();
             } catch (Exception e) {
                 currentContent.setStatus(StatusContent.UNHANDLED_ERROR);
-                notificationPresenter.updateNotification(0);
                 currentContent.setStatus(StatusContent.PAUSED);
                 db.updateContentStatus(currentContent);
                 updateActivity(-1);
@@ -92,35 +96,44 @@ public class DownloadService extends IntentService {
                 return;
             }
 
-            Log.i(TAG, "Content download started: " + currentContent.getTitle());
+            LogHelper.d(TAG, "Content download started: " + currentContent.getTitle());
 
             // Tracking Event (Download Added)
-            HentoidApplication.getInstance().trackEvent("Download Service", "Download",
+            HentoidApp.getInstance().trackEvent("Download Service", "Download",
                     "Download Content: Start.");
 
             // Initialize
-            File dir = AndroidHelper.getDownloadDir(currentContent, this);
+            File dir = Helper.getContentDownloadDir(this, currentContent);
+
+            // If the download directory already has files,
+            // then we simply delete them, since this points to a failed download
+            // This includes in progress downloads, that were paused, then resumed.
+            // So technically, we are downloading everything once again.
+            // This is required for ImageDownloadBatch to not hang on a download.
+            Helper.cleanDir(dir);
+
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
 
-            //add download tasks
+            // Add download tasks
             downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());
-            for (ImageFile imageFile : currentContent.getImageFiles()) {
-                downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
-            }
+            do {
+                for (ImageFile imageFile : currentContent.getImageFiles()) {
+                    downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
+                }
+            } while (false);
 
-            //Track and wait for download to complete
+            // Track and wait for download to complete
             final int qtyPages = currentContent.getQtyPages();
             for (int i = 0; i <= qtyPages; ++i) {
 
                 if (paused) {
+                    LogHelper.d(TAG, "Interrupt!!");
                     interruptDownload();
                     downloadBatch.cancelAllTasks();
+
                     if (currentContent.getStatus() == StatusContent.CANCELED) {
-                        try {
-                            FileUtils.deleteDirectory(dir);
-                        } catch (IOException e) {
-                            Log.e(TAG, "error deleting content directory", e);
-                        }
+                        // Update notification
+                        notificationPresenter.downloadInterrupted(currentContent);
                     }
 
                     return;
@@ -128,11 +141,10 @@ public class DownloadService extends IntentService {
 
                 downloadBatch.waitForOneCompletedTask();
                 double percent = i * 100.0 / qtyPages;
-                notificationPresenter.updateNotification(percent);
                 updateActivity(percent);
             }
 
-            //assign status tag to ImageFile(s)
+            // Assign status tag to ImageFile(s)
             short errorCount = downloadBatch.getErrorCount();
             for (ImageFile imageFile : currentContent.getImageFiles()) {
                 if (errorCount > 0) {
@@ -144,7 +156,7 @@ public class DownloadService extends IntentService {
                 db.updateImageFileStatus(imageFile);
             }
 
-            //assign status tag to Content, add timestamp, and save to db
+            // Assign status tag to Content, add timestamp, and save to db
             if (downloadBatch.hasError()) {
                 currentContent.setStatus(StatusContent.ERROR);
             } else {
@@ -155,16 +167,16 @@ public class DownloadService extends IntentService {
 
             // Save JSON file
             try {
-                Helper.saveJson(currentContent, dir);
+                JsonHelper.saveJson(currentContent, dir);
             } catch (IOException e) {
-                Log.e(TAG, "Error Save JSON " + currentContent.getTitle(), e);
+                LogHelper.e(TAG, "Error saving JSON: " + currentContent.getTitle(), e);
             }
 
-            notificationPresenter.updateNotification(0);
+            HentoidApp.downloadComplete();
             updateActivity(-1);
-            Log.i(TAG, "Content download finished: " + currentContent.getTitle());
+            LogHelper.d(TAG, "Content download finished: " + currentContent.getTitle());
 
-            //Search for queued content download tasks and fire intent
+            // Search for queued content download tasks and fire intent
             currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
             if (currentContent != null) {
                 Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
@@ -182,9 +194,7 @@ public class DownloadService extends IntentService {
     }
 
     private void updateActivity(double percent) {
-        Intent intent = new Intent(NOTIFICATION);
-        intent.putExtra(INTENT_PERCENT_BROADCAST, percent);
-        sendBroadcast(intent);
+        EventBus.getDefault().post(new Double(percent));
     }
 
     private void parseImageFiles() throws Exception {
@@ -204,7 +214,7 @@ public class DownloadService extends IntentService {
                     break;
             }
         } catch (Exception e) {
-            Log.e(TAG, "Error getting image urls", e);
+            LogHelper.e(TAG, "Error getting image urls: ", e);
             throw e;
         }
 

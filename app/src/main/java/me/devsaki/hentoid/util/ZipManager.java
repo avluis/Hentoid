@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.util.Log;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -14,8 +12,12 @@ import java.util.zip.ZipOutputStream;
 /**
  * Created by avluis on 8/25/15.
  * General Compression/Extraction utility.
+ * <p/>
+ * TODO: For future use
  */
 public class ZipManager {
+    private static final String TAG = LogHelper.makeLogTag(ZipManager.class);
+
     private static final int BUFFER = 20480;
 
     public void zipFiles(String[] files, String zipFileName) {
@@ -27,7 +29,7 @@ public class ZipManager {
             byte data[] = new byte[BUFFER];
 
             for (String file : files) {
-                Log.v("Compressing", "File: " + file);
+                LogHelper.d(TAG, "Compressing File: " + file);
 
                 FileInputStream inputStream = new FileInputStream(file);
                 input = new BufferedInputStream(inputStream, BUFFER);
@@ -42,7 +44,7 @@ public class ZipManager {
             }
             zipOut.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.e(TAG, "Compression Failed: ", e);
         }
     }
 
@@ -54,7 +56,7 @@ public class ZipManager {
             ZipInputStream zipInput = new ZipInputStream(fileInput);
             ZipEntry zipEntry;
             while ((zipEntry = zipInput.getNextEntry()) != null) {
-                Log.v("Extracting", "File: " + zipEntry.getName());
+                LogHelper.d(TAG, "Extracting File: " + zipEntry.getName());
 
                 if (zipEntry.isDirectory()) {
                     dirChecker(zipEntry.getName());
@@ -70,7 +72,7 @@ public class ZipManager {
             }
             zipInput.close();
         } catch (Exception e) {
-            Log.e("Extraction", "failed: ", e);
+            LogHelper.e(TAG, "Extraction Failed: ", e);
         }
     }
 
@@ -79,7 +81,7 @@ public class ZipManager {
         if (!file.isDirectory()) {
             final boolean mkdirs = file.mkdirs();
             if (mkdirs) {
-                Log.v("Directory", "created");
+                LogHelper.d(TAG, "Directory Created.");
             }
         }
     }

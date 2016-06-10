@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.util.Log;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -15,20 +14,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Locale;
 
-import me.devsaki.hentoid.abstracts.BaseWebActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.NhentaiParser;
-import me.devsaki.hentoid.util.AndroidHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by Shiro on 1/20/2016.
  * Implements nhentai source
  */
 public class NhentaiActivity extends BaseWebActivity {
-    private static final String TAG = NhentaiActivity.class.getName();
+    private static final String TAG = LogHelper.makeLogTag(NhentaiActivity.class);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +39,7 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private WebResourceResponse getJSWebResourceResponseFromAsset() {
-        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "main_js.js";
         try {
             return getUtf8EncodedJSWebResourceResponse(getAssets().open(file));
@@ -49,7 +49,7 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private WebResourceResponse getDomainWebResourceResponseFromAsset() {
-        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "ads2";
         try {
             return getUtf8EncodedHtmlWebResourceResponse(getAssets().open(file));
@@ -59,7 +59,7 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private WebResourceResponse getCssWebResourceResponseFromAsset() {
-        String pathPrefix = getSite().getDescription().toLowerCase() + "/";
+        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "main_style.css";
         try {
             return getUtf8EncodedCssWebResourceResponse(getAssets().open(file));
@@ -81,6 +81,27 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private class NhentaiWebViewClient extends CustomWebViewClient {
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            try {
+                URL u = new URL(url);
+                return !(u.getHost().endsWith("nhentai.net"));
+            } catch (MalformedURLException e) {
+                LogHelper.d(TAG, "Malformed URL");
+            }
+
+            return false;
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+
+            if (url.contains("//nhentai.net/g/")) {
+                Helper.executeAsyncTask(new JsonLoader(), url + "json");
+            }
+        }
 
         @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
@@ -111,37 +132,16 @@ public class NhentaiActivity extends BaseWebActivity {
                 return super.shouldInterceptRequest(view, request);
             }
         }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            try {
-                URL u = new URL(url);
-                return !(u.getHost().endsWith("nhentai.net"));
-            } catch (MalformedURLException e) {
-                Log.d(TAG, "Malformed URL");
-            }
-
-            return false;
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains("//nhentai.net/g/")) {
-                AndroidHelper.executeAsyncTask(new LoaderJson(), url + "json");
-            }
-        }
     }
 
-    private class LoaderJson extends AsyncTask<String, Integer, Content> {
+    private class JsonLoader extends AsyncTask<String, Integer, Content> {
         @Override
         protected Content doInBackground(String... params) {
             String url = params[0];
             try {
                 processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
             } catch (Exception e) {
-                Log.e(TAG, "Error parsing nhentai json: " + url, e);
+                LogHelper.e(TAG, "Error parsing JSON: " + url + "\n", e);
             }
 
             return null;

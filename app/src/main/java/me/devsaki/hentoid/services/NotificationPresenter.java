@@ -12,24 +12,25 @@ import android.support.v4.content.ContextCompat;
 
 import java.util.Locale;
 
-import me.devsaki.hentoid.HentoidApplication;
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.util.Constants;
+import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by Shiro on 3/18/2016.
  * Responsible for handling download service notifications
  * Methods are intended to have default level accessors for use with DownloadService class only
- * TODO: Reset notification when a download is paused (when there are multiple downloads).
  */
 final class NotificationPresenter {
+    private static final String TAG = LogHelper.makeLogTag(NotificationPresenter.class);
 
-    private final static int notificationId = 0;
-    private final HentoidApplication appInstance;
+    private static final int NOTIFICATION_ID = 0;
+    private final HentoidApp appInstance;
     private final Resources resources;
     private final NotificationManager notificationManager;
 
@@ -38,11 +39,14 @@ final class NotificationPresenter {
     private NotificationCompat.Builder currentBuilder = null;
 
     NotificationPresenter() {
-        appInstance = HentoidApplication.getInstance();
+        appInstance = HentoidApp.getInstance();
+        downloadCount = HentoidApp.getDownloadCount();
         resources = appInstance.getResources();
         notificationManager = (NotificationManager) appInstance
                 .getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.cancelAll();
+
+        LogHelper.d(TAG, "Download Counter: " + downloadCount);
     }
 
     void downloadStarted(final Content content) {
@@ -55,12 +59,18 @@ final class NotificationPresenter {
                         R.color.accent))
                 .setLocalOnly(true);
 
+        LogHelper.d(TAG, "Download Counter: " + downloadCount);
+
         updateNotification(0);
     }
 
     void downloadInterrupted(final Content content) {
         currentContent = content;
         updateNotification(0);
+    }
+
+    public void onEvent(Double percent) {
+        updateNotification(percent == -1 ? 0 : percent);
     }
 
     void updateNotification(double percent) {
@@ -80,16 +90,17 @@ final class NotificationPresenter {
                     .setDefaults(Notification.DEFAULT_LIGHTS);
         }
 
-        if (contentStatus == StatusContent.DOWNLOADED && downloadCount > 1) {
+        if (contentStatus == StatusContent.DOWNLOADED && downloadCount >= 1) {
             currentBuilder
                     .setSmallIcon(R.drawable.ic_stat_hentoid)
                     .setColor(ContextCompat.getColor(appInstance.getApplicationContext(),
                             R.color.accent))
                     .setContentText("")
-                    .setContentTitle(resources.getString(R.string.download_completed_multiple)
-                            .replace("%d", String.valueOf(downloadCount))
+                    .setDeleteIntent(getDeleteIntent())
+                    .setContentTitle(resources.getQuantityString(R.plurals.download_completed,
+                            downloadCount).replace("%d", String.valueOf(downloadCount))
                     );
-            notificationManager.notify(notificationId, currentBuilder.build());
+            notificationManager.notify(NOTIFICATION_ID, currentBuilder.build());
 
             return;
         }
@@ -98,7 +109,8 @@ final class NotificationPresenter {
                 currentBuilder.setContentTitle(resources.getString(R.string.downloading));
                 break;
             case DOWNLOADED:
-                currentBuilder.setContentTitle(resources.getString(R.string.download_completed));
+                currentBuilder.setContentTitle(resources.getQuantityString(
+                        R.plurals.download_completed, downloadCount));
                 // Tracking Event (Download Completed)
                 appInstance.trackEvent("Download Service", "Download",
                         "Download Content: Success.");
@@ -126,7 +138,7 @@ final class NotificationPresenter {
                         "Download Content: Unhandled Error.");
                 break;
         }
-        notificationManager.notify(notificationId, currentBuilder.build());
+        notificationManager.notify(NOTIFICATION_ID, currentBuilder.build());
     }
 
     private PendingIntent getIntent() {
@@ -136,9 +148,14 @@ final class NotificationPresenter {
             case ERROR:
             case UNHANDLED_ERROR:
                 resultIntent = new Intent(appInstance, DownloadsActivity.class);
-                resultIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                break;
+                resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
+                        Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                Bundle bundle = new Bundle();
+                bundle.putInt(Consts.DOWNLOAD_COUNT, HentoidApp.getDownloadCount());
+                resultIntent.putExtras(bundle);
+
+                return PendingIntent.getActivity(appInstance, 0, resultIntent,
+                        PendingIntent.FLAG_UPDATE_CURRENT);
             case DOWNLOADING:
             case PAUSED:
                 resultIntent = new Intent(appInstance, QueueActivity.class);
@@ -147,12 +164,18 @@ final class NotificationPresenter {
                 resultIntent = new Intent(appInstance, currentContent.getWebActivityClass());
                 resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 Bundle cancelBundle = new Bundle();
-                cancelBundle.putString(Constants.INTENT_URL, currentContent.getGalleryUrl());
+                cancelBundle.putString(Consts.INTENT_URL, currentContent.getGalleryUrl());
                 resultIntent.putExtras(cancelBundle);
                 break;
         }
 
-        return PendingIntent.getActivity(appInstance,
-                0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
+        return PendingIntent.getActivity(appInstance, 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
+    }
+
+    private PendingIntent getDeleteIntent() {
+        Intent clearIntent = new Intent(appInstance, NotificationHelper.class);
+        clearIntent.setAction(NotificationHelper.NOTIFICATION_DELETED);
+        clearIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        return PendingIntent.getBroadcast(appInstance, 0, clearIntent, PendingIntent.FLAG_CANCEL_CURRENT);
     }
 }

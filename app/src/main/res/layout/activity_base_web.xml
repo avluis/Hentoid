@@ -3,7 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".abstracts.BaseWebActivity">
+    android:padding="@dimen/activity_base_web_padding"
+    tools:context=".activities.BaseWebActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
@@ -27,6 +28,7 @@
         android:onClick="onReadFabClick"
         android:src="@drawable/ic_action_play"
         app:backgroundTint="@color/primary"
+        app:elevation="@dimen/default_elevation"
         app:rippleColor="@color/ripple"
         tools:ignore="RelativeOverlap" />
 
@@ -41,6 +43,7 @@
         android:onClick="onDownloadFabClick"
         android:src="@drawable/ic_action_download"
         app:backgroundTint="@color/primary"
+        app:elevation="@dimen/default_elevation"
         app:rippleColor="@color/ripple"
         tools:ignore="RelativeOverlap" />
 
@@ -51,10 +54,16 @@
         android:layout_above="@+id/fabDownloads"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_margin="@dimen/refresh_fab_margin"
+        android:layout_marginBottom="@dimen/refresh_fab_margin_bottom"
+        android:layout_marginEnd="@dimen/refresh_fab_margin_right"
+        android:layout_marginLeft="@dimen/refresh_fab_margin_left"
+        android:layout_marginRight="@dimen/refresh_fab_margin_right"
+        android:layout_marginStart="@dimen/refresh_fab_margin_left"
+        android:layout_marginTop="@dimen/refresh_fab_margin_top"
         android:onClick="onRefreshStopFabClick"
         android:src="@drawable/ic_action_refresh"
         app:backgroundTint="@color/primary"
+        app:elevation="@dimen/default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple" />
 
@@ -65,10 +74,16 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_margin="@dimen/downloads_fab_margin"
+        android:layout_marginBottom="@dimen/downloads_fab_margin_bottom"
+        android:layout_marginEnd="@dimen/downloads_fab_margin_right"
+        android:layout_marginLeft="@dimen/downloads_fab_margin_left"
+        android:layout_marginRight="@dimen/downloads_fab_margin_right"
+        android:layout_marginStart="@dimen/downloads_fab_margin_left"
+        android:layout_marginTop="@dimen/downloads_fab_margin_top"
         android:onClick="onHomeFabClick"
         android:src="@drawable/ic_action_sd_storage"
         app:backgroundTint="@color/primary"
+        app:elevation="@dimen/default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple" />
 

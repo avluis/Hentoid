@@ -4,28 +4,24 @@
     package="me.devsaki.hentoid">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Get permission for reliable local dispatching on non-Google Play devices. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-    <uses-permission
-        android:name="android.permission.VIBRATE"
-        android:maxSdkVersion="18" />
 
     <application
-        android:name=".HentoidApplication"
+        android:name=".HentoidApp"
         android:allowBackup="false"
-        android:configChanges="orientation|screenSize"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:logo="@drawable/ic_hentoid"
         android:supportsRtl="false"
-        android:theme="@style/AppTheme"
-        tools:ignore="GoogleAppIndexingWarning">
+        tools:replace="android:allowBackup">
         <activity
             android:name=".activities.SplashActivity"
+            android:noHistory="true"
             android:theme="@style/SplashTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,28 +30,31 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activities.IntroActivity"
+            android:label="@string/app_intro"
+            android:theme="@style/AppTheme" />
+        <activity
             android:name=".activities.HitomiActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.NhentaiActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.TsuminoActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".abstracts.BaseWebActivity"
+            android:name=".activities.BaseWebActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="standard"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/BrowserTheme" />
         <activity
             android:name=".activities.DownloadsActivity"
-            android:launchMode="singleTask">
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_downloads"
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.DarkBackgroundNoActionBar">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -64,19 +63,19 @@
             android:name=".activities.QueueActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_queue"
-            android:launchMode="singleTask"
             android:parentActivityName=".activities.DownloadsActivity"
+            android:theme="@style/AppTheme.DarkBackground"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.DownloadsActivity" />
         </activity>
         <activity
-            android:name=".activities.PreferencesActivity"
+            android:name=".activities.PrefsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
-            android:launchMode="standard"
             android:parentActivityName=".activities.DownloadsActivity"
+            android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -86,43 +85,86 @@
             android:name=".activities.AboutActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_about"
-            android:launchMode="standard"
             android:parentActivityName=".activities.DownloadsActivity"
+            android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.DownloadsActivity" />
         </activity>
         <activity
-            android:name=".activities.SelectFolderActivity"
+            android:name=".activities.ImportActivity"
             android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
-        <activity
-            android:name=".activities.ImporterActivity"
-            android:configChanges="orientation|screenSize"
-            android:launchMode="singleTask"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar" />
+            android:theme="@style/ImportTheme" />
         <activity
             android:name=".activities.AppLockActivity"
             android:launchMode="singleTask"
+            android:theme="@style/AppTheme.DarkBackgroundNoActionBar"
             android:windowSoftInputMode="stateAlwaysVisible" />
+        <activity
+            android:name=".activities.IntentActivity"
+            android:theme="@style/BrowserTheme">
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://hitomi.la/galleries" -->
+                <data
+                    android:host="hitomi.la"
+                    android:pathPrefix="/galleries"
+                    android:scheme="https" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://nhentai.net/g" -->
+                <data
+                    android:host="nhentai.net"
+                    android:pathPrefix="/g"
+                    android:scheme="https" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://www.tsumino.com/Book/Info" -->
+                <data
+                    android:host="www.tsumino.com"
+                    android:pathPrefix="/Book/Info"
+                    android:scheme="http" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".services.DownloadService"
-            android:configChanges="orientation|screenSize"
             android:enabled="true"
             android:exported="false" />
 
         <receiver
-            android:name=".updater.UpdateNotificationReceiver"
+            android:name=".updater.UpdateReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
-                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED" />
+                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_UPDATE" />
                 <action android:name="me.devsaki.hentoid.updater.NOTIFICATION_REMOVED" />
+                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED" />
                 <action android:name="me.devsaki.hentoid.updater.INSTALL_UPDATE" />
-                <action android:name="me.devsaki.hentoid.updater.UPDATE_DOWNLOADED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".services.NotificationHelper"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="me.devsaki.hentoid.services.NOTIFICATION_DELETED" />
             </intent-filter>
         </receiver>
 

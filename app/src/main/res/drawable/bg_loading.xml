@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/ic_hentoid_no_heart"
+            android:tileMode="disabled" />
+    </item>
+    <item>
+        <rotate
+            android:drawable="@drawable/ic_hentoid_heart"
+            android:fromDegrees="0"
+            android:pivotX="50%"
+            android:pivotY="50%"
+            android:toDegrees="360" />
+    </item>
+</layer-list>

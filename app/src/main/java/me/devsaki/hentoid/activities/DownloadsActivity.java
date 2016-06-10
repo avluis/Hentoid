@@ -1,380 +1,78 @@
 package me.devsaki.hentoid.activities;
 
-import android.app.ListFragment;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.widget.SearchView;
-import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.Toast;
+import android.support.v4.app.Fragment;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import me.devsaki.hentoid.HentoidApplication;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.adapters.ContentAdapter;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.AndroidHelper;
-import me.devsaki.hentoid.util.Constants;
-import me.devsaki.hentoid.util.ConstantsPreferences;
+import me.devsaki.hentoid.abstracts.BaseFragment;
+import me.devsaki.hentoid.abstracts.DrawerActivity;
+import me.devsaki.hentoid.fragments.DownloadsFragment;
+import me.devsaki.hentoid.ui.DrawerMenuContents;
+import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
- * Presents the list of downloaded works to the user.
+ * Handles hosting of DownloadsFragment for single screen.
  */
-public class DownloadsActivity extends BaseActivity<DownloadsActivity.DownloadsFragment> {
-    private static final String TAG = DownloadsActivity.class.getName();
+public class DownloadsActivity extends DrawerActivity implements BaseFragment.BackInterface {
+    private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
-    private static SharedPreferences preferences;
-    private static String settingDir;
-    private static int order;
-    private MenuItem searchMenuItem;
-    private SearchView searchView;
-    private DrawerLayout mDrawerLayout;
-    private boolean orderUpdated;
-    private final Handler searchHandler = new Handler();
-    private long backButtonPressed;
-
-    // DO NOT use this in onCreateOptionsMenu
-    private void clearQuery() {
-        if (searchView.isShown()) {
-            searchView.setIconified(true);
-            searchMenuItem.collapseActionView();
-        }
-        searchView.setQuery("", false);
-    }
-
-    private void clearSearchQuery(int option) {
-        if (option == 1) {
-            searchView.clearFocus();
-        }
-        getFragment().setQuery("");
-        getFragment().searchContent();
-    }
-
-    private void submitSearchQuery(String s) {
-        submitSearchQuery(s, 0);
-    }
-
-    private void submitSearchQuery(final String s, long delay) {
-        searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                getFragment().setQuery(s.trim());
-                getFragment().searchContent();
-            }
-        }, delay);
-    }
+    private BaseFragment baseFragment;
+    private Context mContext;
 
     @Override
-    protected DownloadsFragment buildFragment() {
-        return new DownloadsFragment();
+    protected Fragment buildFragment() {
+        return DownloadsFragment.newInstance();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(getLayoutResId());
 
-        preferences = HentoidApplication.getAppPreferences();
-        settingDir = preferences.getString(Constants.SETTINGS_FOLDER, "");
+        mContext = getApplicationContext();
 
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        initializeToolbar();
+        setTitle(getToolbarTitle());
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            clearQuery();
-            menu.findItem(R.id.action_search).setVisible(false);
-
-            if (order == 0) {
-                menu.findItem(R.id.action_order_by_date).setVisible(false);
-            } else {
-                menu.findItem(R.id.action_order_alphabetic).setVisible(false);
-            }
-        }
-
-        return super.onPrepareOptionsMenu(menu);
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_content_list, menu);
-
-        // Associate searchable configuration with the SearchView
-        final SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-
-        searchMenuItem = menu.findItem(R.id.action_search);
-        searchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.action_search));
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
-        searchView.setIconifiedByDefault(true);
-        searchView.setQueryHint(getString(R.string.search_hint));
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String s) {
-                submitSearchQuery(s);
-                searchView.clearFocus();
-
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String s) {
-                if ((!mDrawerLayout.isDrawerOpen(GravityCompat.START)) && (!s.isEmpty())) {
-                    submitSearchQuery(s, 1000);
-                } else if ((s.isEmpty()) && (orderUpdated)) {
-                    clearSearchQuery(1);
-                    orderUpdated = false;
-                } else {
-                    clearSearchQuery(0);
-                }
-
-                return true;
-            }
-        });
-        SharedPreferences.Editor editor = HentoidApplication.getAppPreferences().edit();
-        if (order == 0) {
-            menu.findItem(R.id.action_order_alphabetic).setVisible(false);
-            menu.findItem(R.id.action_order_by_date).setVisible(true);
-
-            // Save current sort order
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
-            orderUpdated = true;
-        } else {
-            menu.findItem(R.id.action_order_alphabetic).setVisible(true);
-            menu.findItem(R.id.action_order_by_date).setVisible(false);
-
-            // Save current sort order
-            editor.putInt(ConstantsPreferences.PREF_ORDER_CONTENT_LISTS, order).apply();
-            orderUpdated = true;
-        }
-
-        return true;
-    }
-
-    // Close nav drawer if open
-    // Clear search query onBackPressed (go back to first page if not already)
-    // Double-Back (press back twice) to exit (after clearing searchView)
     @Override
     public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawer(GravityCompat.START);
-            clearQuery();
-        } else if (backButtonPressed + 2000 > System.currentTimeMillis()) {
+        if (baseFragment == null || baseFragment.onBackPressed()) {
+            // Fragment did not consume onBackPressed.
             super.onBackPressed();
-        } else {
-            AndroidHelper.singleToast(
-                    getApplicationContext(), getString(R.string.press_back_again),
-                    Toast.LENGTH_SHORT);
         }
-        backButtonPressed = System.currentTimeMillis();
-        clearSearchQuery(1);
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_order_alphabetic:
-                clearQuery();
-                order = ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC;
-                invalidateOptionsMenu();
+    protected void onResume() {
+        super.onResume();
 
-                return true;
-            case R.id.action_order_by_date:
-                clearQuery();
-                order = ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE;
-                invalidateOptionsMenu();
-
-                return true;
-            default:
-
-                return super.onOptionsItemSelected(item);
-        }
+        updateDrawerPosition();
     }
 
-    public static class DownloadsFragment extends ListFragment {
-        private static String query = "";
-        private static int currentPage = 1;
-        private static int qtyPages;
-        private static int index = -1;
-        private static int top;
-        private int prevPage;
-        private Button btnPage;
-        private Context mContext;
-        private List<Content> contents;
+    @Override
+    protected String getToolbarTitle() {
+        return Helper.getActivityName(mContext, R.string.title_activity_downloads);
+    }
 
-        public void setQuery(String query) {
-            DownloadsFragment.query = query;
-            currentPage = 1;
-        }
+    @Override
+    protected void updateDrawerPosition() {
+        DrawerMenuContents mDrawerMenuContents = new DrawerMenuContents(this);
+        mDrawerMenuContents.getPosition(this.getClass());
+        super.updateDrawerPosition();
+    }
 
-        @Override
-        public void onResume() {
-            super.onResume();
-
-            queryPrefs();
-            searchContent();
-
-            // Retrieve list position
-            ListView list = getListView();
-            list.setSelectionFromTop(index, top);
-        }
-
-        @Override
-        public void onPause() {
-            // Get & save current list position
-            ListView list = getListView();
-            index = list.getFirstVisiblePosition();
-            View view = list.getChildAt(0);
-            top = (view == null) ? 0 : (view.getTop() - list.getPaddingTop());
-
-            super.onPause();
-        }
-
-        private void queryPrefs() {
-            if (settingDir.isEmpty()) {
-                Intent intent = new Intent(getActivity(), SelectFolderActivity.class);
-                startActivity(intent);
-                getActivity().finish();
-            }
-
-            int newQtyPages = Integer.parseInt(preferences.getString(
-                    ConstantsPreferences.PREF_QUANTITY_PER_PAGE_LISTS,
-                    ConstantsPreferences.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
-
-            if (qtyPages != newQtyPages) {
-                setQuery("");
-                qtyPages = newQtyPages;
-
-                order = preferences.getInt(
-                        ConstantsPreferences.PREF_ORDER_CONTENT_LISTS,
-                        ConstantsPreferences.PREF_ORDER_CONTENT_BY_DATE);
-            }
-        }
-
-        @Override
-        public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
-
-            mContext = getActivity().getApplicationContext();
-
-            btnPage = (Button) rootView.findViewById(R.id.btnPage);
-            ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
-            ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
-            ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
-
-            btnRefresh.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    searchContent();
-                }
-            });
-
-            btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (currentPage != 1) {
-                        setQuery("");
-                        searchContent();
-                        AndroidHelper.singleToast(
-                                mContext, getString(R.string.on_first_page), Toast.LENGTH_SHORT);
-
-                        return true;
-                    } else {
-                        searchContent();
-
-                        return true;
-                    }
-                }
-            });
-
-            btnNext.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (qtyPages <= 0) {
-                        AndroidHelper.singleToast(
-                                mContext, getString(R.string.not_limit_per_page),
-                                Toast.LENGTH_SHORT);
-                    } else {
-                        currentPage++;
-                        if (!searchContent()) {
-                            btnPage.setText(String.valueOf(--currentPage));
-                            AndroidHelper.singleToast(
-                                    mContext, getString(R.string.not_next_page),
-                                    Toast.LENGTH_SHORT);
-                        }
-                    }
-                }
-            });
-
-            btnPrevious.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (currentPage > 1) {
-                        currentPage--;
-                        searchContent();
-                    } else if (qtyPages > 0) {
-                        AndroidHelper.singleToast(
-                                mContext, getString(R.string.not_previous_page),
-                                Toast.LENGTH_SHORT);
-                    } else {
-                        AndroidHelper.singleToast(
-                                mContext, getString(R.string.not_limit_per_page),
-                                Toast.LENGTH_SHORT);
-                    }
-                }
-            });
-
-            return rootView;
-        }
-
-        // TODO: Rewrite with non-blocking code - AsyncTask could be a good replacement
-        private boolean searchContent() {
-            List<Content> result = getDB()
-                    .selectContentByQuery(query, currentPage, qtyPages,
-                            order == ConstantsPreferences.PREF_ORDER_CONTENT_ALPHABETIC);
-
-            if (query.isEmpty()) {
-                getActivity().setTitle(R.string.title_activity_downloads);
-            } else {
-                getActivity().setTitle(getResources()
-                        .getString(R.string.title_activity_search)
-                        .replace("@search", query));
-            }
-            if (result != null && !result.isEmpty()) {
-                contents = result;
-            } else if (contents == null) { // TODO: Possible entry point for no content match?
-                contents = new ArrayList<>(0);
-            }
-            if (contents == result || contents.isEmpty()) {
-                ContentAdapter adapter = new ContentAdapter(getActivity(), contents);
-                setListAdapter(adapter);
-            }
-            if (prevPage != currentPage) {
-                btnPage.setText(String.valueOf(currentPage));
-            }
-            prevPage = currentPage;
-
-            return result != null && !result.isEmpty();
-        }
+    @Override
+    public void setSelectedFragment(BaseFragment baseFragment) {
+        this.baseFragment = baseFragment;
     }
 }

@@ -123,7 +123,7 @@ public class ContentV1 {
         this.site = site;
     }
 
-    public Content toContent() {
+    public Content toV2Content() {
         AttributeMap attributes = new AttributeMap();
         attributes.add(artists);
         attributes.add(publishers);

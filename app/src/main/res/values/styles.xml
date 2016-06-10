@@ -1,24 +1,11 @@
 <resources>
-
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
+    <!-- Progress Bar -->
+    <style name="LinearProgress" parent="Theme.AppCompat.Light">
         <item name="colorAccent">@color/accent</item>
     </style>
 
-    <style name="SplashTheme" parent="Theme.AppCompat.NoActionBar">
-        <item name="android:windowBackground">@drawable/background_splash</item>
+    <!-- Toolbar -->
+    <style name="Toolbar" parent="AppTheme.NoActionBar">
+        <item name="android:background">@color/primary</item>
     </style>
-
-    <style name="NavDrawerButtonStyle">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:padding">@dimen/nav_menu_padding</item>
-        <item name="android:gravity">left|center_vertical</item>
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:background">@drawable/image_button</item>
-    </style>
-
 </resources>

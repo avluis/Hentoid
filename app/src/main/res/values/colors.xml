@@ -1,11 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">#9D0A0A</color>
-    <color name="primary_dark">#6d0707</color>
-    <color name="ripple">#F06292</color>
-    <color name="accent">@color/button_action_bar</color>
-    <color name="accent_pressed">#C2185B</color>
-    <color name="button_action_bar">@android:color/holo_red_dark</color>
-    <color name="background_list">#E6E6E6</color>
-    <color name="white">#ffffff</color>
+    <color name="primary">@color/very_dark_red</color>
+    <color name="primary_dark">@color/very_dark_mostly_black_red</color>
+    <color name="ripple">@color/material_pink_300</color>
+    <color name="accent">@color/red_accent_700</color>
+
+    <!-- Useful Colors -->
+    <!-- White -->
+    <color name="white">#FFFFFF</color>
+
+    <!-- Red -->
+    <color name="red_accent_700">#d50000</color>
+    <color name="very_dark_red">#400404</color>
+    <color name="very_dark_red_2">#400000</color>
+    <color name="very_dark_mostly_black_red">#2b0202</color>
+    <color name="very_pale_red">#ffd2d8</color>
+    <color name="material_red_50">#ffebee</color>
+    <color name="material_red_100">#FFFFCDD2</color>
+
+    <!-- Pink -->
+    <color name="material_pink_300">#F06292</color>
+    <color name="very_dark_pink">#6d0721</color>
+
+    <!-- Derived Colors (e.g.; with alpha, etc.) -->
+    <color name="transparent">#00000000</color>
+
+    <!-- Drawer Layout -->
+    <color name="drawer_list_background">@color/very_dark_red_2</color>
+    <color name="drawer_item_selected_background">@color/very_dark_mostly_black_red</color>
+    <color name="drawer_item_unselected_background">@color/very_dark_red</color>
+    <color name="drawer_item_tint_color">@color/white</color>
+
+    <!-- App Intro -->
+    <color name="app_intro_text">@color/material_red_50</color>
+
+    <!-- Card View -->
+    <color name="card_item_src_normal">@color/very_dark_red</color>
+    <color name="card_item_src_migrated">@color/material_pink_300</color>
+    <color name="card_item_src_other">@color/red_accent_700</color>
 </resources>

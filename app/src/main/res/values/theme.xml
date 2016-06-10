@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+    </style>
+
+    <!-- Activities with Toolbar as ActionBar -->
+    <style name="AppTheme.NoActionBar" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+    </style>
+
+    <!-- AppIntro Activity & Slides -->
+    <style name="AppTheme.AppIntro" parent="AppTheme.DarkBackground">
+        <item name="android:background">@color/primary_dark</item>
+    </style>
+
+    <!-- Splash Activity -->
+    <style name="SplashTheme" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@drawable/bg_splash</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+
+    <!-- Import Activity -->
+    <style name="ImportTheme" parent="AppTheme.NoActionBar">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+
+    <!-- Browser Activity -->
+    <style name="BrowserTheme" parent="ImportTheme">
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowAnimationStyle">@android:style/Animation</item>
+        <item name="android:windowIsFloating">false</item>
+    </style>
+
+    <!-- Backgrounds -->
+    <style name="AppTheme.DarkBackground" parent="AppTheme">
+        <item name="android:windowBackground">@color/primary_dark</item>
+    </style>
+
+    <style name="AppTheme.DarkBackgroundNoActionBar" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@color/primary_dark</item>
+        <item name="windowActionModeOverlay">true</item>
+    </style>
+</resources>

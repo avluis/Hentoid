@@ -1,84 +1,120 @@
 <resources>
     <string name="app_name">Hentoid</string>
+    <string name="app_intro">Welcome</string>
     <!-- Activities -->
-    <string name="title_activity_search">Search : @search</string>
+    <string name="title_activity_search">Search: @search</string>
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
+    <string name="title_activity_app_lock">App Lock</string>
     <!-- Menu -->
     <string name="menu_search">Search</string>
     <string name="menu_order_alphabetically">order alphabetic</string>
     <string name="menu_order_date">order by date</string>
+    <string name="menu_delete">Delete</string>
+    <string name="search_hint">Title, Tag, Series or Artist</string>
     <!-- Floating Action Buttons -->
     <string name="read">Read</string>
     <string name="view_browser">View</string>
     <string name="delete">Delete</string>
     <string name="download_again">Download Again</string>
-    <!-- Download -->
+    <!-- Queue -->
     <string name="cancel">Cancel</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
     <!-- TextViews -->
-    <string name="tvTitleEmpty">[No data]</string>
+    <string name="tvEmpty" translatable="false">[No data]</string>
     <string name="tvSeries"><![CDATA[<b>Series:</b> @series@]]></string>
     <string name="tvArtists"><![CDATA[<b>Artist:</b> @artist@]]></string>
-    <string name="tvTags"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>
+    <string name="tvTags" translatable="false"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>
     <!-- Import Activity -->
-    <string name="default_folder">Default</string>
-    <string name="explore">Explore</string>
-    <string name="tutorial_select_folder">Select the app download folder.\nIf you don\'t know what are you doing, select default folder.</string>
-    <string name="save">Save</string>
+    <string name="open_app_settings">Open App Settings</string>
+    <string name="permission_granted">Permission set, restarting library import.</string>
+    <string name="permission_denied">Hentoid requires write access to device storage.</string>
+    <string name="permission_denied_forced">Write storage permission denied!\nManually grant storage permission.</string>
+    <string name="existing_library_error">Please select a different folder.</string>
+    <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
+    <string name="import_dialog">Importing Library</string>
+    <string name="add_dialog">Adding files to DB</string>
+    <string name="please_wait">Please wait…</string>
+    <string name="scanning_files">Scanning files…</string>
+    <string name="adding_to_db">Adding files to database…</string>
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
-    <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it by Google Play.</string>
+    <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it from Google Play.</string>
 
-    <string name="contents_detected">The app detected that you have contents in your folder.\nDo you want to import them?</string>
-    <string name="search_hint">Title, Tag, Series or Artist</string>
-
-    <string name="download_again_dialog">Total images : @total\nImage Error: @error</string>
-    <string name="ask_delete">Are you sure you wish to delete this content?</string>
-    <string name="deleted">Content @content deleted.</string>
-
+    <string name="download_date">Downloaded on:\n@date</string>
+    <string name="download_again_dialog_title">Try downloading again?</string>
+    <string name="download_again_dialog_message">Total images in download: @total\nImages with error: @error</string>
+    <string name="ask_delete">Are you sure you wish to delete this?</string>
+    <string name="ask_delete_multiple">Are you sure you wish to delete the selected items?</string>
+    <string name="deleted">\@content deleted.</string>
+    <string name="new_content">New Content!</string>
     <string name="not_limit_per_page">Not limit per page.</string>
     <string name="not_previous_page">First page - can\'t proceed any further.</string>
     <string name="not_next_page">Last page - download more!</string>
-    <string name="on_first_page">Moved to first page.</string>
-    <string name="press_back_again">Press back key once more to exit!</string>
+    <string name="on_first_page">Already on the first page.</string>
+    <string name="moving_to_first_page">Moving to first page.</string>
+    <string name="press_back_again">Press back twice (quickly) to exit.</string>
 
-    <string name="queue_empty">Download queue is empty.</string>
-    <string name="downloads_library_empty">Your downloads library is empty.</string>
-    <string name="no_data">No data.</string>
+    <string name="queue_empty">Why am I empty?</string>
+    <string name="downloads_empty">Go ahead, download something.</string>
+    <string name="downloads_loading">Loading up~</string>
+    <string name="search_entry_not_found">That\'s not in here, go download it.</string>
+
+    <string name="reset">Permissions has been reset.\nResetting app.</string>
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>
-    <string name="downloading_update">Your update is being downloaded.</string>
+    <string name="downloading_update">Downloading update:</string>
     <string name="install_update">Tap to install the update!</string>
     <string name="error_network">Network Error!</string>
-    <string name="error">Connection timed out, please try again later.</string>
-    <string name="update_failed">Cannot find update file on Server.</string>
+    <string name="error_dependency">Error parsing update dependency.\nPlease try again later.</string>
+    <string name="error">Network error, please try again later.</string>
+    <string name="error_file">Update not found on server.</string>
+    <string name="update_failed">Cannot find update file on server.</string>
+    <string name="update_check_no_update">Update Check: No new updates.</string>
     <!-- Image Viewer -->
-    <string name="select_the_action">Select how to open the content.\nYou can configure the default action in preferences.</string>
+    <string name="select_the_action">How will we open this?\nYou can configure the default action in preferences.</string>
     <string name="open_default_image_viewer">Default image viewer</string>
     <string name="open_perfect_viewer">Perfect Viewer</string>
-    <string name="not_image_file_found">File not found in @dir</string>
+    <string name="image_file_not_found">File not found in @dir</string>
     <!-- App Lock -->
     <string name="app_lock_pin">Type PIN to unlock</string>
     <string name="app_lock_pin_prefs">App Lock PIN</string>
     <string name="app_lock_enable">App Lock Enabled</string>
-    <string name="app_lock_disable">App Lock Disabled</string>
+    <string name="app_lock_disabled">App Lock Disabled</string>
     <string name="pin_invalid">PIN Invalid!</string>
-    <string name="title_activity_app_lock">App Lock</string>
-    <string name="button_ok">OK</string>
+    <string name="pin_ok">PIN OK!</string>
     <!-- About Activity -->
-    <string name="about"><![CDATA[<p><b>Hentoid</b> is a Hentai Manga reader & archiving app.<br />Hentoid was originally created by <b>Cesar Arasaki</b>.</p><p>Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.<br />Hentoid was previously known as FakkuDroid, before support was added for Pururin and Hitomi.</p><br /><p>While initially designed to work with <b>FAKKU</b>, <b>Pururin</b> and <b>Hitomi</b>, support for <b>nhentai</b> and <b>tsumino</b> has also been added after FAKKU going legit and Pururin getting abandoned.</p><p><b>Notes:</b><ul"><li>In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</li><li>FAKKU has dropped support for free content, and while support for FAKKU Books or Subscriptions is not currently planned, this may change in the future.</li></ul>]]></string>
-    <string name="about_blog"><![CDATA[<u>FakkuDroid</u>]]></string>
-    <string name="about_blog_url">http://fakkudroid.blogspot.com/</string>
-    <string name="about_community"><![CDATA[<u>Google+</u>]]></string>
-    <string name="about_community_url">https://plus.google.com/communities/110496467189870321840</string>
-    <string name="about_github"><![CDATA[<u>GitHub</u>]]></string>
-    <string name="about_github_url">https://github.com/AVnetWS/Hentoid</string>
-    <string name="about_notes"><![CDATA[<p>General stability fixes and UI tweaks.<br />Improved download experience/quicker downloads.<br />Less Hitomi/nhentai/tsumino Ads/Pop-Ups!<br />Fixed nhentai parser (due to site changes).</p>]]></string>
+    <string name="about">
+        <![CDATA[
+        <p><b>Hentoid</b> is a Doujinshi & H-Manga archiving app.<br>
+        Hentoid was originally created by <b>Cesar Arasaki</b>.</p>
+        <p>Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.<br>
+        Hentoid was previously known as FakkuDroid, before it was relaunched as an entirely new app.</p>
+        <p>While initially designed to work with <b>FAKKU</b>, <b>Pururin</b> and <b>Hitomi</b> - support for <b>nhentai</b> and <b>tsumino</b> has also been added.</p>
+        <p>Unfortunately, FAKKU has gone legit soon after this and Pururin was left to die as their domain expired.</p>
+        <p><b>Notes:</b><br>
+        In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.<br>
+        FAKKU has dropped support for free content, and while support for FAKKU Books or Subscriptions is not currently planned, this may change in the future.</p>]]></string>
+    <string name="about_blog" translatable="false"><![CDATA[<u>FakkuDroid</u>]]></string>
+    <string name="about_blog_url" translatable="false">http://fakkudroid.blogspot.com/</string>
+    <string name="about_community" translatable="false"><![CDATA[<u>Google+</u>]]></string>
+    <string name="about_community_url" translatable="false">https://plus.google.com/communities/110496467189870321840</string>
+    <string name="about_github" translatable="false"><![CDATA[<u>GitHub</u>]]></string>
+    <string name="about_github_url" translatable="false">https://github.com/AVnetWS/Hentoid</string>
+    <string name="about_notes">
+        <![CDATA[
+        <p>New look! New navigation drawer!<br>
+        Android 6.0 runtime permissions support.<br>
+        Improved browsing and navigation UI.<br>
+        Improved search and result handling.<br>
+        Improved import routine & preference changes.<br>
+        Reduced chances of intrusive pop-ups on nhentai, hitomi and tsumino.<br>
+        Support for browsable intent on supported sources (use your own browser).<br>
+        SD Storage on Android 6.0 (when SD card is used as internal storage).</p>]]></string>
 </resources>

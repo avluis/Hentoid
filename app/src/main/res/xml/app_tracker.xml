@@ -16,20 +16,22 @@
     <bool name="ga_reportUncaughtExceptions">true</bool>
 
     <!-- Manually defined screen names -->
-    <screenName name="me.devsaki.hentoid.abstracts.BaseWebActivity">Legacy WebView</screenName>
+    <screenName name="me.devsaki.hentoid.activities.DownloadsActivity">Home: Downloads</screenName>
+    <screenName name="me.devsaki.hentoid.activities.QueueActivity">Home: Queue</screenName>
 
-    <screenName name="me.devsaki.hentoid.activities.HitomiActivity">Hitomi</screenName>
-    <screenName name="me.devsaki.hentoid.activities.NhentaiActivity">NHentai</screenName>
-    <screenName name="me.devsaki.hentoid.activities.TsuminoActivity">Tsumino</screenName>
+    <screenName name="me.devsaki.hentoid.activities.BaseWebActivity">Source: Legacy</screenName>
+    <screenName name="me.devsaki.hentoid.activities.HitomiActivity">Source: hitomi</screenName>
+    <screenName name="me.devsaki.hentoid.activities.NhentaiActivity">Source: nhentai</screenName>
+    <screenName name="me.devsaki.hentoid.activities.TsuminoActivity">Source: tsumino</screenName>
 
-    <screenName name="me.devsaki.hentoid.activities.AboutActivity">About</screenName>
-    <screenName name="me.devsaki.hentoid.activities.AppLockActivity">App Lock</screenName>
-    <screenName name="me.devsaki.hentoid.activities.DownloadsActivity">Downloads</screenName>
-    <screenName name="me.devsaki.hentoid.activities.QueueActivity">Queue</screenName>
-    <screenName name="me.devsaki.hentoid.activities.SelectFolderActivity">Folder Select</screenName>
-    <screenName name="me.devsaki.hentoid.activities.SplashActivity">Splash</screenName>
-    <screenName name="me.devsaki.hentoid.activities.ImporterActivity">Import</screenName>
-    <screenName name="me.devsaki.hentoid.activities.PreferencesActivity">Preferences</screenName>
+    <screenName name="me.devsaki.hentoid.activities.IntentActivity">Launch: Intent</screenName>
+    <screenName name="me.devsaki.hentoid.activities.SplashActivity">Launch: Splash</screenName>
+    <screenName name="me.devsaki.hentoid.activities.IntroActivity">Launch: Intro</screenName>
+    <screenName name="me.devsaki.hentoid.activities.AppLockActivity">Launch: App Lock</screenName>
+
+    <screenName name="me.devsaki.hentoid.activities.AboutActivity">Misc: About</screenName>
+    <screenName name="me.devsaki.hentoid.activities.ImportActivity">Misc: Import</screenName>
+    <screenName name="me.devsaki.hentoid.activities.PrefsActivity">Misc: Prefs</screenName>
 
     <!-- See Project Structure -> Analytics -> Google Analytics -> Learn More
       to learn more about configuring this file. -->
