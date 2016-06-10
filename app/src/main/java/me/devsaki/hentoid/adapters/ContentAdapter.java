@@ -20,11 +20,9 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -50,7 +48,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private static final int VISIBLE_THRESHOLD = 6;
     private final Context cxt;
-    private final SimpleDateFormat sdf;
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
     private ContentsWipedListener contentsWipedListener;
@@ -62,7 +59,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         this.contents = contents;
         this.listener = listener;
 
-        sdf = new SimpleDateFormat("MM/dd/yy HH:mm", Locale.US);
         selectedItems = new SparseBooleanArray();
     }
 
@@ -134,10 +130,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     public void onBindViewHolder(final ContentHolder holder, final int pos) {
         final Content content = contents.get(pos);
 
-        if (pos == getItemCount() - VISIBLE_THRESHOLD) {
-            if (endlessScrollListener != null) {
-                endlessScrollListener.onLoadMore(pos);
-            }
+        updateLayoutVisibility(holder, content, pos);
+        populateLayout(holder, content, pos);
+        attachOnClickListeners(holder, content, pos);
+    }
+
+    private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
+        if (pos == getItemCount() - VISIBLE_THRESHOLD && endlessScrollListener != null) {
+            endlessScrollListener.onLoadMore(pos);
         }
 
         if (getSelectedItems() != null) {
@@ -166,7 +166,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             items.setVisibility(View.VISIBLE);
             minimal.setVisibility(View.GONE);
         }
+    }
 
+    private void populateLayout(ContentHolder holder, final Content content, int pos) {
         String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
         String templateTvArtist = cxt.getResources().getString(R.string.tvArtists);
         String templateTvTags = cxt.getResources().getString(R.string.tvTags);
@@ -315,7 +317,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         } else {
             holder.ivSite.setVisibility(View.GONE);
         }
+    }
 
+    private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
         holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, pos, listener) {
 
             @Override

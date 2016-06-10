@@ -122,6 +122,8 @@ dependencies {
     compile 'com.google.code.gson:gson:2.6.2'
     // Download app updates (without user prompts)
     compile 'com.mani:ThinDownloadManager:1.2.5'
+    // Directory Browser (no built-in permission support/simplistic)
+    // TODO: Modify library to make use of EventBus 3
     compile('com.turhanoz.android:reactivedirectorychooser:0.0.13@aar') {
         transitive = true
     }
@@ -130,6 +132,8 @@ dependencies {
     compile 'com.squareup.okhttp3:okhttp:3.3.1'
     // IO functionality
     compile 'commons-io:commons-io:2.5'
+    // EventBus
+    compile 'org.greenrobot:eventbus:3.0.0'
     // JSOUP HTML parser
     compile 'org.jsoup:jsoup:1.9.2'
 }

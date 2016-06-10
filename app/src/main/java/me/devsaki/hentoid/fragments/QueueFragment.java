@@ -11,15 +11,18 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import de.greenrobot.event.EventBus;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.listener.DownloadEvent;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -43,16 +46,16 @@ public class QueueFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         update();
-        EventBus.getDefault().register(this);
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        EventBus.getDefault().unregister(this);
     }
 
-    public void onEventMainThread(Double percent) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDownloadEvent(DownloadEvent event) {
+        Double percent = event.percent;
         if (percent >= 0) {
             updatePercent(percent);
         } else {

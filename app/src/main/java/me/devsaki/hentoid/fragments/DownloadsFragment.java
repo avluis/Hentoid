@@ -35,10 +35,12 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import de.greenrobot.event.EventBus;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
@@ -50,6 +52,7 @@ import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.SearchContent.ContentListener;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.listener.DownloadEvent;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -428,8 +431,8 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     @Override
     public void onResume() {
         super.onResume();
+
         checkPermissions();
-        EventBus.getDefault().register(this);
 
         if (mListState != null) {
             llm.onRestoreInstanceState(mListState);
@@ -441,12 +444,13 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     @Override
     public void onPause() {
         super.onPause();
-        EventBus.getDefault().unregister(this);
 
         clearSelection();
     }
 
-    public void onEventMainThread(Double percent) {
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDownloadEvent(DownloadEvent event) {
+        Double percent = event.percent;
         if (percent >= 0) {
             LogHelper.d(TAG, "Download Progress: " + percent);
         } else if (isLoaded) {
@@ -1024,14 +1028,17 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
     @Override
     public void onDrawerSlide(View drawerView, float slideOffset) {
+        // We don't care about this event.
     }
 
     @Override
     public void onDrawerOpened(View drawerView) {
+        // We don't care about this event.
     }
 
     @Override
     public void onDrawerClosed(View drawerView) {
+        // We don't care about this event.
     }
 
     @Override

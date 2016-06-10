@@ -3,6 +3,8 @@ package me.devsaki.hentoid.services;
 import android.app.IntentService;
 import android.content.Intent;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -10,12 +12,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import de.greenrobot.event.EventBus;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.listener.DownloadEvent;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
@@ -32,7 +34,6 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * 1 image = 1 task, n images = 1 chapter = 1 job = 1 bundled task.
  */
 public class DownloadService extends IntentService {
-
     private static final String TAG = LogHelper.makeLogTag(DownloadService.class);
 
     public static boolean paused;
@@ -194,7 +195,7 @@ public class DownloadService extends IntentService {
     }
 
     private void updateActivity(double percent) {
-        EventBus.getDefault().post(new Double(percent));
+        EventBus.getDefault().post(new DownloadEvent(percent));
     }
 
     private void parseImageFiles() throws Exception {

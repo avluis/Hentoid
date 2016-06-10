@@ -10,6 +10,8 @@ import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 
+import org.greenrobot.eventbus.Subscribe;
+
 import java.util.Locale;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -18,6 +20,7 @@ import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.listener.DownloadEvent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -69,7 +72,9 @@ final class NotificationPresenter {
         updateNotification(0);
     }
 
-    public void onEvent(Double percent) {
+    @Subscribe
+    public void onDownloadEvent(DownloadEvent event) {
+        Double percent = event.percent;
         updateNotification(percent == -1 ? 0 : percent);
     }
 
