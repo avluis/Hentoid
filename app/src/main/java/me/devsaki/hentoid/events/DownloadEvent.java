@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.listener;
+package me.devsaki.hentoid.events;
 
 /**
  * Created by avluis on 06/10/2016.

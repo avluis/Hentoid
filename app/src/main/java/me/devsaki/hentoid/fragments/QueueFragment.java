@@ -22,7 +22,7 @@ import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.listener.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.LogHelper;
 

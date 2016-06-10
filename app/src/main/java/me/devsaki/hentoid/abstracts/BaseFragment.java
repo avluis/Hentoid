@@ -2,13 +2,15 @@ package me.devsaki.hentoid.abstracts;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.listener.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadEvent;
 
 /**
  * Created by avluis on 04/10/2016.
@@ -44,20 +46,25 @@ public abstract class BaseFragment extends Fragment {
     }
 
     @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
 
-        EventBus.getDefault().register(this);
         backInterface.setSelectedFragment(this);
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-
+    public void onDestroy() {
         EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 
+    @Subscribe
     public abstract void onDownloadEvent(DownloadEvent event);
 
     public interface BackInterface {

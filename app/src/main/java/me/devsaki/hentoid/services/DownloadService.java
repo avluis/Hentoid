@@ -17,7 +17,7 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.listener.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
@@ -37,9 +37,9 @@ public class DownloadService extends IntentService {
     private static final String TAG = LogHelper.makeLogTag(DownloadService.class);
 
     public static boolean paused;
-    private NotificationPresenter notificationPresenter;
-    private HentoidDB db;
     private Content currentContent;
+    private HentoidDB db;
+    private NotificationPresenter notificationPresenter;
 
     public DownloadService() {
         super(DownloadService.class.getName());
