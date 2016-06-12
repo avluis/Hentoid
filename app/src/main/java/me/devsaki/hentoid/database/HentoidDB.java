@@ -164,16 +164,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 statementImages.bindLong(1, content.getId());
                 statementImages.execute();
 
-                for (ImageFile row : content.getImageFiles()) {
-                    statement.clearBindings();
-                    statement.bindLong(1, row.getId());
-                    statement.bindLong(2, content.getId());
-                    statement.bindLong(3, row.getOrder());
-                    statement.bindString(4, row.getUrl());
-                    statement.bindString(5, row.getName());
-                    statement.bindLong(6, row.getStatus().getCode());
-                    statement.execute();
-                }
+                insertImageFiles(statement, content);
                 db.setTransactionSuccessful();
                 db.endTransaction();
 
@@ -228,21 +219,24 @@ public class HentoidDB extends SQLiteOpenHelper {
         SQLiteStatement statement = null;
         try {
             statement = db.compileStatement(ImageFileTable.INSERT_STATEMENT);
-
-            for (ImageFile row : content.getImageFiles()) {
-                statement.clearBindings();
-                statement.bindLong(1, row.getId());
-                statement.bindLong(2, content.getId());
-                statement.bindLong(3, row.getOrder());
-                statement.bindString(4, row.getUrl());
-                statement.bindString(5, row.getName());
-                statement.bindLong(6, row.getStatus().getCode());
-                statement.execute();
-            }
+            insertImageFiles(statement, content);
         } finally {
             if (statement != null) {
                 statement.close();
             }
+        }
+    }
+
+    private void insertImageFiles(SQLiteStatement statement, Content content) {
+        for (ImageFile row : content.getImageFiles()) {
+            statement.clearBindings();
+            statement.bindLong(1, row.getId());
+            statement.bindLong(2, content.getId());
+            statement.bindLong(3, row.getOrder());
+            statement.bindString(4, row.getUrl());
+            statement.bindString(5, row.getName());
+            statement.bindLong(6, row.getStatus().getCode());
+            statement.execute();
         }
     }
 
@@ -319,21 +313,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                         new String[]{StatusContent.DOWNLOADING.getCode() + "",
                                 StatusContent.PAUSED.getCode() + ""});
 
-                if (cursorContent.moveToFirst()) {
-                    result = new ArrayList<>();
-                    do {
-                        result.add(populateContent(cursorContent, db));
-                    } while (cursorContent.moveToNext());
-                }
+                result = populateResult(cursorContent, db);
             } finally {
-                if (cursorContent != null) {
-                    cursorContent.close();
-                }
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                closeCursor(cursorContent, db);
             }
         }
 
@@ -377,25 +359,36 @@ public class HentoidDB extends SQLiteOpenHelper {
                                     AttributeType.TAG.getCode() + "",
                                     AttributeType.SERIE.getCode() + "", start + "", qty + ""});
                 }
-                if (cursorContent.moveToFirst()) {
-                    result = new ArrayList<>();
-                    do {
-                        result.add(populateContent(cursorContent, db));
-                    } while (cursorContent.moveToNext());
-                }
+                result = populateResult(cursorContent, db);
             } finally {
-                if (cursorContent != null) {
-                    cursorContent.close();
-                }
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                closeCursor(cursorContent, db);
             }
         }
 
         return result;
+    }
+
+    private List<Content> populateResult(Cursor cursorContent, SQLiteDatabase db) {
+        List<Content> result = null;
+        if (cursorContent.moveToFirst()) {
+            result = new ArrayList<>();
+            do {
+                result.add(populateContent(cursorContent, db));
+            } while (cursorContent.moveToNext());
+        }
+
+        return result;
+    }
+
+    private void closeCursor(Cursor cursorContent, SQLiteDatabase db) {
+        if (cursorContent != null) {
+            cursorContent.close();
+        }
+        LogHelper.d(TAG, "Closing db connection. Condition: "
+                + (db != null && db.isOpen()));
+        if (db != null && db.isOpen()) {
+            db.close(); // Closing database connection
+        }
     }
 
     private Content populateContent(Cursor cursorContent, SQLiteDatabase db) {
