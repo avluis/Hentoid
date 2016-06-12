@@ -131,13 +131,11 @@ public final class Helper {
             return getDefaultDir(context, folderDir);
         }
         file = new File(settingDir, folderDir);
-        if (!file.exists()) {
-            if (!file.mkdirs()) {
-                file = new File(settingDir + folderDir);
-                if (!file.exists()) {
-                    boolean mkdirs = file.mkdirs();
-                    LogHelper.d(TAG, mkdirs);
-                }
+        if (!file.exists() && !file.mkdirs()) {
+            file = new File(settingDir + folderDir);
+            if (!file.exists()) {
+                boolean mkdirs = file.mkdirs();
+                LogHelper.d(TAG, mkdirs);
             }
         }
 

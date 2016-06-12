@@ -2,7 +2,7 @@
 <lint>
     <issue id="GoogleAppIndexingWarning" severity="ignore" />
     <issue id="InvalidPackage">
-        <ignore regexp="okio-1.6.0.jar" />
+        <ignore regexp="okio-1.8.0.jar" />
     </issue>
     <issue id="MissingTranslation" severity="ignore" />
     <issue id="UnusedResources" severity="informational">

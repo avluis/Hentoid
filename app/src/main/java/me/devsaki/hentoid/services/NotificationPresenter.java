@@ -78,7 +78,7 @@ final class NotificationPresenter {
         updateNotification(percent == -1 ? 0 : percent);
     }
 
-    void updateNotification(double percent) {
+    private void updateNotification(double percent) {
         currentBuilder.setContentIntent(getIntent());
 
         final StatusContent contentStatus = currentContent.getStatus();

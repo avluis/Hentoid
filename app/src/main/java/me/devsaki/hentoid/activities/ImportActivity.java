@@ -21,10 +21,8 @@ import android.widget.RelativeLayout;
 
 import com.afollestad.materialdialogs.GravityEnum;
 import com.afollestad.materialdialogs.MaterialDialog;
-import com.turhanoz.android.reactivedirectorychooser.event.OnDirectoryCancelEvent;
-import com.turhanoz.android.reactivedirectorychooser.event.OnDirectoryChosenEvent;
-import com.turhanoz.android.reactivedirectorychooser.ui.DirectoryChooserFragment;
-import com.turhanoz.android.reactivedirectorychooser.ui.OnDirectoryChooserFragmentInteraction;
+
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,6 +38,9 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ContentV1;
+import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
+import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
+import me.devsaki.hentoid.dirpicker.ui.DirChooserFragment;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -55,24 +56,24 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
  */
-public class ImportActivity extends BaseActivity implements OnDirectoryChooserFragmentInteraction {
+public class ImportActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 
     private static final String DIR_KEY = "currentDir";
-    private AlertDialog mAddDialog;
+    private AlertDialog addDialog;
     private String result;
-    private final Handler mImportHandler = new Handler(new Handler.Callback() {
+    private final Handler importHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == 0) {
-                cleanUp(mAddDialog);
+                cleanUp(addDialog);
             }
-            mImportHandler.removeCallbacksAndMessages(null);
+            importHandler.removeCallbacksAndMessages(null);
             return false;
         }
     });
-    private File currentRootDirectory;
-    private DirectoryChooserFragment mDirectoryDialog;
+    private File currentRootDir;
+    private DirChooserFragment dirChooserFragment;
     private HentoidDB db;
 
     @Override
@@ -87,7 +88,7 @@ public class ImportActivity extends BaseActivity implements OnDirectoryChooserFr
 
         db = HentoidDB.getInstance(this);
 
-        mAddDialog = new AlertDialog.Builder(this)
+        addDialog = new AlertDialog.Builder(this)
                 .setIcon(R.drawable.ic_dialog_warning)
                 .setTitle(R.string.add_dialog)
                 .setMessage(R.string.please_wait)
@@ -101,7 +102,7 @@ public class ImportActivity extends BaseActivity implements OnDirectoryChooserFr
         if (savedState == null) {
             result = ConstsImport.RESULT_EMPTY;
         } else {
-            currentRootDirectory = (File) savedState.getSerializable(DIR_KEY);
+            currentRootDir = (File) savedState.getSerializable(DIR_KEY);
             result = savedState.getString(ConstsImport.RESULT_KEY);
         }
         checkForDefaultDirectory();
@@ -113,9 +114,9 @@ public class ImportActivity extends BaseActivity implements OnDirectoryChooserFr
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
             if (file.exists() && file.isDirectory()) {
                 LogHelper.d(TAG, "Default Directory Found.");
-                currentRootDirectory = file;
+                currentRootDir = file;
             } else {
-                currentRootDirectory = Helper.getDefaultDir(this, "");
+                currentRootDir = Helper.getDefaultDir(this, "");
             }
             pickDownloadDirectory();
         } else {
@@ -125,7 +126,7 @@ public class ImportActivity extends BaseActivity implements OnDirectoryChooserFr
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(DIR_KEY, currentRootDirectory);
+        outState.putSerializable(DIR_KEY, currentRootDir);
         outState.putString(ConstsImport.RESULT_KEY, result);
         super.onSaveInstanceState(outState);
     }
@@ -145,8 +146,8 @@ public class ImportActivity extends BaseActivity implements OnDirectoryChooserFr
     // Present Directory Picker
     private void pickDownloadDirectory() {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        mDirectoryDialog = DirectoryChooserFragment.newInstance(currentRootDirectory);
-        mDirectoryDialog.show(transaction, "RDC");
+        dirChooserFragment = DirChooserFragment.newInstance(currentRootDir);
+        dirChooserFragment.show(transaction, "DirectoryChooserFragment");
     }
 
     @Override
@@ -160,17 +161,17 @@ public class ImportActivity extends BaseActivity implements OnDirectoryChooserFr
         finish();
     }
 
-    @Override
-    public void onEvent(OnDirectoryChosenEvent event) {
-        currentRootDirectory = event.getFile();
-        LogHelper.d(TAG, "Storage Path: " + currentRootDirectory);
-        mDirectoryDialog.dismiss();
-        importFolder(currentRootDirectory);
+    @Subscribe
+    public void onDirCancel(OnDirCancelEvent event) {
+        onBackPressed();
     }
 
-    @Override
-    public void onEvent(OnDirectoryCancelEvent event) {
-        onBackPressed();
+    @Subscribe
+    public void onDirChosen(OnDirChosenEvent event) {
+        currentRootDir = event.getDir();
+        LogHelper.d(TAG, "Storage Path: " + currentRootDir);
+        dirChooserFragment.dismiss();
+        importFolder(currentRootDir);
     }
 
     @Override
@@ -339,14 +340,14 @@ public class ImportActivity extends BaseActivity implements OnDirectoryChooserFr
     private void finishImport(final List<Content> contents) {
         if (contents != null && contents.size() > 0) {
             LogHelper.d(TAG, "Adding contents to db.");
-            mAddDialog.show();
+            addDialog.show();
 
             Thread thread = new Thread() {
                 @Override
                 public void run() {
                     // Grab all parsed content and add to database
                     db.insertContents(contents.toArray(new Content[contents.size()]));
-                    mImportHandler.sendEmptyMessage(0);
+                    importHandler.sendEmptyMessage(0);
                 }
             };
             thread.start();
@@ -354,7 +355,7 @@ public class ImportActivity extends BaseActivity implements OnDirectoryChooserFr
             result = ConstsImport.EXISTING_LIBRARY_IMPORTED;
         } else {
             result = ConstsImport.NEW_LIBRARY_CREATED;
-            cleanUp(mAddDialog);
+            cleanUp(addDialog);
         }
     }
 

@@ -48,11 +48,6 @@ public class QueueFragment extends BaseFragment {
         update();
     }
 
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
         Double percent = event.percent;

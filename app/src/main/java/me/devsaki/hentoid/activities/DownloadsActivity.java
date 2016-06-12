@@ -36,6 +36,8 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
 
         initializeToolbar();
         setTitle(getToolbarTitle());
+
+        LogHelper.d(TAG, "onCreate");
     }
 
     @Override

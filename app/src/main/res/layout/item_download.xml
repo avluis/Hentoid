@@ -33,7 +33,7 @@
 
                 <include
                     android:id="@+id/tvTitle"
-                    layout="@layout/include_row_title"
+                    layout="@layout/include_item_title"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
@@ -42,7 +42,7 @@
 
             </FrameLayout>
 
-            <include layout="@layout/include_row_details" />
+            <include layout="@layout/include_item_details" />
 
         </LinearLayout>
 
@@ -110,7 +110,7 @@
 
         <include
             android:id="@+id/tvTitle2"
-            layout="@layout/include_row_title"
+            layout="@layout/include_item_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"

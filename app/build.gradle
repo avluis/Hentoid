@@ -122,11 +122,6 @@ dependencies {
     compile 'com.google.code.gson:gson:2.6.2'
     // Download app updates (without user prompts)
     compile 'com.mani:ThinDownloadManager:1.2.5'
-    // Directory Browser (no built-in permission support/simplistic)
-    // TODO: Modify library to make use of EventBus 3
-    compile('com.turhanoz.android:reactivedirectorychooser:0.0.13@aar') {
-        transitive = true
-    }
     // Additional Support Libraries
     // HTTP & HTTP/2 client
     compile 'com.squareup.okhttp3:okhttp:3.3.1'
@@ -136,4 +131,9 @@ dependencies {
     compile 'org.greenrobot:eventbus:3.0.0'
     // JSOUP HTML parser
     compile 'org.jsoup:jsoup:1.9.2'
+    // RxAndroid (RxJava bindings for Android)
+    compile 'io.reactivex:rxandroid:1.2.0'
+    // Because RxAndroid releases are few and far between, it is recommended you also
+    // explicitly depend on RxJava's latest version for bug fixes and new features.
+    compile 'io.reactivex:rxjava:1.1.5'
 }

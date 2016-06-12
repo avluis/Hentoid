@@ -9,7 +9,7 @@ import me.devsaki.hentoid.R;
 
 /**
  * Created by avluis on 04/23/2016.
- * Content Holder for Downloads Content Adapter
+ * Content View Holder for Downloads Content Adapter
  * <p/>
  * TODO: Research if possible to re-use widget id (to eliminate duplication)
  */

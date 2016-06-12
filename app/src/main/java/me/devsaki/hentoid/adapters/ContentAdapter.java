@@ -121,7 +121,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     @Override
     public ContentHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.row_downloads, parent, false);
+                R.layout.item_download, parent, false);
 
         return new ContentHolder(view);
     }
@@ -137,7 +137,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
         if (pos == getItemCount() - VISIBLE_THRESHOLD && endlessScrollListener != null) {
-            endlessScrollListener.onLoadMore(pos);
+            endlessScrollListener.onLoadMore();
         }
 
         if (getSelectedItems() != null) {
@@ -169,10 +169,15 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     private void populateLayout(ContentHolder holder, final Content content, int pos) {
-        String templateTvSeries = cxt.getResources().getString(R.string.tvSeries);
-        String templateTvArtist = cxt.getResources().getString(R.string.tvArtists);
-        String templateTvTags = cxt.getResources().getString(R.string.tvTags);
+        attachTitle(holder, content);
+        attachCover(holder, content);
+        attachSeries(holder, content);
+        attachArtist(holder, content);
+        attachTags(holder, content);
+        attachSite(holder, content, pos);
+    }
 
+    private void attachTitle(ContentHolder holder, Content content) {
         if (content.getTitle() == null) {
             holder.tvTitle.setText(R.string.tvEmpty);
             if (holder.itemView.isSelected()) {
@@ -201,7 +206,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 holder.tvTitle2.setSelected(true);
             }
         }
+    }
 
+    private void attachCover(ContentHolder holder, Content content) {
         File coverFile = Helper.getThumb(cxt, content);
         String image = coverFile != null ?
                 coverFile.getAbsolutePath() : content.getCoverImageUrl();
@@ -211,7 +218,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         if (holder.itemView.isSelected()) {
             HentoidApp.getInstance().loadBitmap(image, holder.ivCover2);
         }
+    }
 
+    private void attachSeries(ContentHolder holder, Content content) {
+        String templateSeries = cxt.getResources().getString(R.string.tvSeries);
         String series = "";
         List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
@@ -226,8 +236,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
-        holder.tvSeries.setText(Html.fromHtml(templateTvSeries.replace("@series@", series)));
+        holder.tvSeries.setText(Html.fromHtml(templateSeries.replace("@series@", series)));
 
+        if (seriesAttributes == null) {
+            holder.tvSeries.setText(Html.fromHtml(templateSeries.replace("@series@",
+                    cxt.getResources().getString(R.string.tvEmpty))));
+            holder.tvSeries.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void attachArtist(ContentHolder holder, Content content) {
+        String templateArtist = cxt.getResources().getString(R.string.tvArtists);
         String artists = "";
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
         if (artistAttributes == null) {
@@ -242,20 +261,24 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
-        holder.tvArtist.setText(Html.fromHtml(templateTvArtist.replace("@artist@", artists)));
+        holder.tvArtist.setText(Html.fromHtml(templateArtist.replace("@artist@", artists)));
 
-        if (seriesAttributes == null && artistAttributes == null) {
-            holder.tvSeries.setText(R.string.tvEmpty);
-            holder.tvSeries.setVisibility(View.VISIBLE);
+        if (artistAttributes == null) {
+            holder.tvArtist.setText(Html.fromHtml(templateArtist.replace("@artist@",
+                    cxt.getResources().getString(R.string.tvEmpty))));
+            holder.tvArtist.setVisibility(View.VISIBLE);
         }
+    }
 
+    private void attachTags(ContentHolder holder, Content content) {
+        String templateTags = cxt.getResources().getString(R.string.tvTags);
         String tags = "";
         List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
                 if (attribute.getName() != null) {
-                    tags += templateTvTags.replace("@tag@", attribute.getName());
+                    tags += templateTags.replace("@tag@", attribute.getName());
                     if (i != tagsAttributes.size() - 1) {
                         tags += ", ";
                     }
@@ -263,7 +286,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         }
         holder.tvTags.setText(Html.fromHtml(tags));
+    }
 
+    private void attachSite(ContentHolder holder, final Content content, int pos) {
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             holder.ivSite.setImageResource(img);
@@ -272,7 +297,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 public void onClick(View v) {
                     if (getSelectedItemCount() >= 1) {
                         clearSelections();
-                        listener.onItemClear(0, -1);
+                        listener.onItemClear(0);
                     }
                     Helper.viewContent(cxt, content);
                 }
@@ -305,7 +330,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                     public void onClick(View v) {
                         if (getSelectedItemCount() >= 1) {
                             clearSelections();
-                            listener.onItemClear(0, -1);
+                            listener.onItemClear(0);
                         }
                         downloadAgain(content);
                     }
@@ -444,7 +469,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 clearSelections();
-                                listener.onItemClear(0, -1);
+                                listener.onItemClear(0);
                             }
                         })
                 .create().show();
@@ -466,7 +491,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 clearSelections();
-                                listener.onItemClear(0, -1);
+                                listener.onItemClear(0);
                             }
                         })
                 .create().show();
@@ -482,11 +507,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         return (null != contents ? contents.size() : 0);
     }
 
-    public void addItem(int position, Content item) {
-        contents.add(position, item);
-        notifyItemInserted(position);
-    }
-
     public void purgeSelectedItems() {
         int itemCount = getSelectedItemCount();
         if (itemCount > 0) {
@@ -499,7 +519,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 if (!items.isEmpty()) {
                     deleteContent(items.get(0));
                 } else {
-                    listener.onItemClear(0, -1);
+                    listener.onItemClear(0);
                     LogHelper.d(TAG, "Nothing to delete!!");
                 }
             } else {
@@ -511,12 +531,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 if (!items.isEmpty()) {
                     deleteContents(items);
                 } else {
-                    listener.onItemClear(0, -1);
+                    listener.onItemClear(0);
                     LogHelper.d(TAG, "No items to delete!!");
                 }
             }
         } else {
-            listener.onItemClear(0, -1);
+            listener.onItemClear(0);
             LogHelper.d(TAG, "No items to delete!!");
         }
     }
@@ -550,7 +570,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 contentsWipedListener.onContentsWiped();
             }
             if (broadcast) {
-                listener.onItemClear(0, position);
+                listener.onItemClear(0);
             }
         }
     }
@@ -600,14 +620,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         }
 
-        listener.onItemClear(0, -1);
+        listener.onItemClear(0);
         notifyDataSetChanged();
 
         Helper.toast(cxt, "Selected items have been deleted.");
     }
 
     public interface EndlessScrollListener {
-        void onLoadMore(int position);
+        void onLoadMore();
     }
 
     public interface ContentsWipedListener {

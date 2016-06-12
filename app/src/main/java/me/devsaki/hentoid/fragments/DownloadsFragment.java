@@ -514,6 +514,14 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
+        initUI(rootView);
+        attachScrollListener();
+        attachOnClickListeners(rootView);
+
+        return rootView;
+    }
+
+    private void initUI(View rootView) {
         mListView = (RecyclerView) rootView.findViewById(R.id.list);
         loadingText = (TextView) rootView.findViewById(R.id.loading);
         emptyText = (TextView) rootView.findViewById(R.id.empty);
@@ -537,54 +545,74 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         toolbar = (Toolbar) rootView.findViewById(R.id.downloads_toolbar);
         toolTip = (LinearLayout) rootView.findViewById(R.id.tooltip);
         refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+    }
 
+    private void attachScrollListener() {
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
-                if (!override) {
-                    // Show toolbar:
-                    if (result != null && result.size() > 0) {
-                        // At top of list
-                        if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
-                                .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
+                // Show toolbar:
+                if (!override && result != null && result.size() > 0) {
+                    // At top of list
+                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
+                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
+                        showToolbar(true, false);
+                        if (newContent) {
+                            toolTip.setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    // Last item in list
+                    if (llm.findLastVisibleItemPosition() == result.size() - 1) {
+                        showToolbar(true, false);
+                        if (newContent && !endlessScroll) {
+                            toolTip.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        // When scrolling up
+                        if (dy < -10) {
                             showToolbar(true, false);
                             if (newContent) {
                                 toolTip.setVisibility(View.VISIBLE);
                             }
-                        }
-
-                        // Last item in list
-                        if (llm.findLastVisibleItemPosition() == result.size() - 1) {
-                            showToolbar(true, false);
-                            if (newContent && !endlessScroll) {
-                                toolTip.setVisibility(View.VISIBLE);
-                            }
-                        } else {
-                            // When scrolling up
-                            if (dy < -10) {
-                                showToolbar(true, false);
-                                if (newContent) {
-                                    toolTip.setVisibility(View.VISIBLE);
-                                }
-                                // When scrolling down
-                            } else if (dy > 100) {
-                                showToolbar(false, false);
-                                if (newContent) {
-                                    toolTip.setVisibility(View.GONE);
-                                }
+                            // When scrolling down
+                        } else if (dy > 100) {
+                            showToolbar(false, false);
+                            if (newContent) {
+                                toolTip.setVisibility(View.GONE);
                             }
                         }
                     }
                 }
             }
         });
+    }
 
+    private void attachOnClickListeners(View rootView) {
+        attachPrevious(rootView);
+        attachNext(rootView);
+        attachRefresh(rootView);
+
+        toolTip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                commitRefresh();
+            }
+        });
+
+        refreshLayout.setEnabled(false);
+        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                commitRefresh();
+            }
+        });
+    }
+
+    private void attachPrevious(View rootView) {
         ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
-        ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
-        ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
-
         btnPrevious.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -598,7 +626,10 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 }
             }
         });
+    }
 
+    private void attachNext(View rootView) {
+        ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -614,7 +645,10 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 }
             }
         });
+    }
 
+    private void attachRefresh(View rootView) {
+        ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
         btnRefresh.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -644,23 +678,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 return false;
             }
         });
-
-        toolTip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                commitRefresh();
-            }
-        });
-
-        refreshLayout.setEnabled(false);
-        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                commitRefresh();
-            }
-        });
-
-        return rootView;
     }
 
     @Override
@@ -952,7 +969,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     @Override
-    public void onItemSelected(int selectedCount, int position) {
+    public void onItemSelected(int selectedCount) {
         isSelected = true;
         showToolbar(false, true);
 
@@ -976,7 +993,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     @Override
-    public void onItemClear(int itemCount, int position) {
+    public void onItemClear(int itemCount) {
         if (mActionMode != null) {
             if (itemCount >= 1) {
                 mActionMode.setTitle(
@@ -1014,7 +1031,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     @Override
-    public void onLoadMore(int position) {
+    public void onLoadMore() {
         if (endlessScroll && query.isEmpty()) {
             LogHelper.d(TAG, "Load more data now~");
             if (!isLastPage) {

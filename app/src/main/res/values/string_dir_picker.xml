@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="dir_name">Create a new directory</string>
+    <string name="dir_name_inst">Please enter the name of the directory you wish to create:</string>
+    <string name="op_not_allowed">Operation not allowed/Permission Error.</string>
+    <string name="select">Select</string>
+</resources>

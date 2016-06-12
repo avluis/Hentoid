@@ -1,7 +1,9 @@
-package me.devsaki.hentoid.util;
+package me.devsaki.hentoid.dirpicker.util;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.EventBusException;
+
+import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Created by avluis on 06/10/2016.

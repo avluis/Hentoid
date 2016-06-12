@@ -36,11 +36,11 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
         this.selectedItemCount = selectedItemCount;
     }
 
-    private void updateSelector(int position) {
+    private void updateSelector() {
         if (selected) {
-            listener.onItemSelected(selectedItemCount, position);
+            listener.onItemSelected(selectedItemCount);
         } else {
-            listener.onItemClear(selectedItemCount, position);
+            listener.onItemClear(selectedItemCount);
         }
     }
 
@@ -54,7 +54,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
 
     @Override
     public boolean onLongClick(View v) {
-        updateSelector(position);
+        updateSelector();
 
         LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle() +
                 " has been" + (selected ? " selected." : " unselected."));
@@ -63,8 +63,8 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     }
 
     public interface ItemSelectListener {
-        void onItemSelected(int selectedCount, int position);
+        void onItemSelected(int selectedCount);
 
-        void onItemClear(int itemCount, int position);
+        void onItemClear(int itemCount);
     }
 }

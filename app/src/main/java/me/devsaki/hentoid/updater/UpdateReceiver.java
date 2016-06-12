@@ -25,19 +25,20 @@ public class UpdateReceiver extends BroadcastReceiver {
         }
         try {
             String action = intent.getAction();
-            if (action.equals(UpdateCheck.ACTION_DOWNLOAD_CANCELLED)) {
+            if (action.equals(UpdateCheck.ACTION_DOWNLOAD_CANCELLED) ||
+                    (action.equals(UpdateCheck.ACTION_NOTIFICATION_REMOVED))) {
                 instance.cancelDownload();
-            }
-            if (action.equalsIgnoreCase(UpdateCheck.ACTION_NOTIFICATION_REMOVED)) {
-                instance.cancelDownload();
+                LogHelper.d(TAG, "Cancel Update Download");
             }
             if (action.equals(UpdateCheck.ACTION_DOWNLOAD_UPDATE)) {
                 instance.downloadUpdate();
                 instance.downloadingUpdateNotification();
+                LogHelper.d(TAG, "Download Update");
             }
             if (action.equals(UpdateCheck.ACTION_INSTALL_UPDATE)) {
                 instance.cancelNotificationAndUpdateRunnable();
                 instance.installUpdate();
+                LogHelper.d(TAG, "Install Update");
             }
         } catch (Exception e) {
             e.printStackTrace();

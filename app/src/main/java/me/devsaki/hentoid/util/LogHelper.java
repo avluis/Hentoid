@@ -19,6 +19,7 @@ import android.util.Log;
 
 import me.devsaki.hentoid.BuildConfig;
 
+@SuppressWarnings("ALL")
 public class LogHelper {
     private static final String LOG_PREFIX = "Log: ";
     private static final int LOG_PREFIX_LENGTH = LOG_PREFIX.length();

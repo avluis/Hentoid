@@ -1,0 +1,75 @@
+package me.devsaki.hentoid.dirpicker.ops;
+
+import org.greenrobot.eventbus.EventBus;
+
+import java.io.File;
+
+import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
+import me.devsaki.hentoid.dirpicker.model.DirTree;
+import me.devsaki.hentoid.dirpicker.model.FileBuilder;
+import me.devsaki.hentoid.dirpicker.observable.ListDirObservable;
+import me.devsaki.hentoid.dirpicker.observers.ListDirObserver;
+import me.devsaki.hentoid.util.LogHelper;
+import rx.Observable;
+import rx.Observer;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
+
+/**
+ * Created by avluis on 06/12/2016.
+ * List Directory Operation
+ */
+class ListDir {
+    private static final String TAG = LogHelper.makeLogTag(ListDir.class);
+
+    private final DirTree dirTree;
+    private final EventBus bus;
+    private Subscription subscription;
+
+    public ListDir(DirTree dirTree, EventBus bus) {
+        this.dirTree = dirTree;
+        this.bus = bus;
+    }
+
+    public void process(File rootDir) {
+        if (rootDir.canRead()) {
+            cancelPrevOp();
+            updateDirList(rootDir);
+
+            Observable<File> observable = new ListDirObservable().create(rootDir);
+            Observer<File> observer = new ListDirObserver(dirTree, bus);
+
+            subscription = observable.subscribeOn(Schedulers.io())
+                    .onBackpressureDrop()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(observer);
+        } else {
+            LogHelper.d(TAG, "Failed to process directory list.");
+            bus.post(new OpFailedEvent());
+        }
+    }
+
+    private void cancelPrevOp() {
+        if (subscription != null && !subscription.isUnsubscribed()) {
+            subscription.unsubscribe();
+        }
+        subscription = null;
+    }
+
+    private void updateDirList(File rootDir) {
+        dirTree.setRootDir(rootDir);
+        updateParentDir(rootDir);
+    }
+
+    private void updateParentDir(File rootDir) {
+        File parentDir = rootDir.getParentFile();
+        dirTree.setParentDir(parentDir);
+
+        if (parentDir != null) {
+            FileBuilder parent = new FileBuilder(parentDir.getPath());
+            parent.setName("../");
+            dirTree.setParentDir(parent);
+        }
+    }
+}
