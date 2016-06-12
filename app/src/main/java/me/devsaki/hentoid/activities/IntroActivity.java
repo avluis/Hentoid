@@ -33,6 +33,11 @@ public class IntroActivity extends AppIntro2 {
     private static final int IMPORT_SLIDE = 4;
     private Fragment doneFragment;
 
+    private void showSkipButton(boolean showButton) {
+        this.skipButtonEnabled = showButton;
+        setButtonState(skipButton, showButton);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,6 +63,7 @@ public class IntroActivity extends AppIntro2 {
         setNavBarColor("#2b0202");
         setVibrate(true);
         setVibrateIntensity(30);
+        showSkipButton(false);
         pager.setPagingEnabled(false);
     }
 
