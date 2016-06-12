@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
@@ -20,7 +21,7 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
     private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
     private BaseFragment baseFragment;
-    private Context mContext;
+    private Context cxt;
 
     @Override
     protected Fragment buildFragment() {
@@ -32,8 +33,7 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
         super.onCreate(savedInstanceState);
         setContentView(getLayoutResId());
 
-        mContext = getApplicationContext();
-
+        cxt = HentoidApp.getAppContext();
         initializeToolbar();
         setTitle(getToolbarTitle());
 
@@ -63,7 +63,7 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
 
     @Override
     protected String getToolbarTitle() {
-        return Helper.getActivityName(mContext, R.string.title_activity_downloads);
+        return Helper.getActivityName(cxt, R.string.title_activity_downloads);
     }
 
     @Override

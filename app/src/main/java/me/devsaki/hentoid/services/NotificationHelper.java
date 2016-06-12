@@ -19,9 +19,6 @@ public class NotificationHelper extends BroadcastReceiver {
 
     private HentoidApp instance;
 
-    public NotificationHelper() {
-    }
-
     @Override
     public void onReceive(Context context, Intent intent) {
         if (instance == null) {

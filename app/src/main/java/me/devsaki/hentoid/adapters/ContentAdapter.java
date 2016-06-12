@@ -320,6 +320,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                     LogHelper.d(TAG, "Position: " + pos + ": " + content.getTitle() +
                             " - Status: " + status);
                     bg = R.color.card_item_src_other;
+                    break;
             }
             holder.ivSite.setBackgroundColor(ContextCompat.getColor(cxt, bg));
 

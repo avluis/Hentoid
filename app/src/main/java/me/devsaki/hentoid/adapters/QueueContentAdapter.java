@@ -52,35 +52,36 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     @Override
     public View getView(int pos, View view, ViewGroup parent) {
+        View v = view;
         // Get the data item for this position
         final Content content = contents.get(pos);
         ViewHolder holder;
         // Check if an existing view is being reused, otherwise inflate the view
-        if (view == null) {
+        if (v == null) {
             holder = new ViewHolder();
             LayoutInflater inflater = LayoutInflater.from(cxt);
-            view = inflater.inflate(R.layout.item_queue, parent, false);
+            v = inflater.inflate(R.layout.item_queue, parent, false);
 
-            holder.tvTitle = (TextView) view.findViewById(R.id.tvTitle);
-            holder.ivCover = (ImageView) view.findViewById(R.id.ivCover);
-            holder.tvSeries = (TextView) view.findViewById(R.id.tvSeries);
-            holder.tvArtist = (TextView) view.findViewById(R.id.tvArtist);
-            holder.tvTags = (TextView) view.findViewById(R.id.tvTags);
-            holder.tvSite = (TextView) view.findViewById(R.id.tvSite);
+            holder.tvTitle = (TextView) v.findViewById(R.id.tvTitle);
+            holder.ivCover = (ImageView) v.findViewById(R.id.ivCover);
+            holder.tvSeries = (TextView) v.findViewById(R.id.tvSeries);
+            holder.tvArtist = (TextView) v.findViewById(R.id.tvArtist);
+            holder.tvTags = (TextView) v.findViewById(R.id.tvTags);
+            holder.tvSite = (TextView) v.findViewById(R.id.tvSite);
 
-            view.setTag(holder);
+            v.setTag(holder);
         } else {
-            holder = (ViewHolder) view.getTag();
+            holder = (ViewHolder) v.getTag();
         }
 
         // Populate the data into the template view using the data object
         if (content != null) {
             populateLayout(holder, content);
-            attachButtons(view, content);
-            updateProgress(view, content);
+            attachButtons(v, content);
+            updateProgress(v, content);
         }
         // Return the completed view to render on screen
-        return view;
+        return v;
     }
 
     private void populateLayout(ViewHolder holder, Content content) {

@@ -49,6 +49,7 @@ public class IntentActivity extends BaseActivity {
             default:
                 LogHelper.d(TAG, "Unknown host!");
                 site = null;
+                break;
         }
 
         if (site != null) {
@@ -60,7 +61,6 @@ public class IntentActivity extends BaseActivity {
         } else {
             Helper.toast(this, "Can't do anything with this, sorry!");
         }
-
         finish();
     }
 }

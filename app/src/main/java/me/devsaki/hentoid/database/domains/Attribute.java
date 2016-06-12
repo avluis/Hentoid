@@ -17,9 +17,6 @@ public class Attribute {
     @Expose
     private AttributeType type;
 
-    public Attribute() {
-    }
-
     public Integer getId() {
         return url.hashCode();
     }

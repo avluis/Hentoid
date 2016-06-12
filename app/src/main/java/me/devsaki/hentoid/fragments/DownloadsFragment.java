@@ -825,6 +825,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             default:
                 stopAnimation();
                 loadingText.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -919,7 +920,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     private void displayNoResults() {
-        if (!query.equals("") && isLoaded) {
+        if (isLoaded && !query.equals("")) {
             emptyText.setText(R.string.search_entry_not_found);
             toggleUI(SHOW_BLANK);
         } else if (isLoaded) {

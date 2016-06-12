@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -27,6 +26,7 @@ import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
 import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
 import me.devsaki.hentoid.dirpicker.util.Bus;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -111,8 +111,7 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
     @Subscribe
     public void onOpFailedEvent(OpFailedEvent event) {
         LogHelper.d(TAG, getString(R.string.op_not_allowed));
-        Toast.makeText(
-                getActivity(), getString(R.string.op_not_allowed), Toast.LENGTH_SHORT).show();
+        Helper.toast(getActivity(), R.string.op_not_allowed);
     }
 
     @Subscribe
@@ -146,14 +145,14 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-        if (v == fab) {
-            fabClicked();
-        } else if (v == selectDirBtn) {
+        if (v.equals(fab)) {
+            createDirBtnClicked();
+        } else if (v.equals(selectDirBtn)) {
             selectDirBtnClicked();
         }
     }
 
-    private void fabClicked() {
+    private void createDirBtnClicked() {
         new CreateDirDialog(getActivity(), bus,
                 getActivity().getString(R.string.app_name)).dialog(currentRootDir);
     }

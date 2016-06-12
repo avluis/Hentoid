@@ -47,10 +47,6 @@ public class ContentV1 {
     private StatusContent status;
     @Expose
     private List<ImageFile> imageFiles;
-    @Expose(serialize = false, deserialize = false)
-    private boolean downloadable;
-    @Expose(serialize = false, deserialize = false)
-    private double percent;
     @Expose
     private Site site;
 
@@ -64,10 +60,6 @@ public class ContentV1 {
 
     public void setTitle(String title) {
         this.title = title;
-    }
-
-    public void setHtmlDescription(String htmlDescription) {
-        this.htmlDescription = htmlDescription;
     }
 
     public void setSeries(Attribute serie) {
@@ -144,5 +136,13 @@ public class ContentV1 {
                 .setQtyPages(qtyPages)
                 .setDownloadDate(downloadDate)
                 .setStatus(status);
+    }
+
+    public String getHtmlDescription() {
+        return htmlDescription;
+    }
+
+    public void setHtmlDescription(String htmlDescription) {
+        this.htmlDescription = htmlDescription;
     }
 }

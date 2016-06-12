@@ -42,7 +42,7 @@ public class MakeDirObserver implements Observer<File> {
         if (isNewDirInCurrentDir()) {
             bus.post(new UpdateDirTreeEvent(dirTree.getRoot()));
         }
-        LogHelper.d(TAG, "Make directory/update directory list completed.");
+        LogHelper.d(TAG, "Make directory completed.");
     }
 
     @Override

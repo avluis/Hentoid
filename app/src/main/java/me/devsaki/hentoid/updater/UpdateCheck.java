@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 import android.text.format.Formatter;
 import android.widget.RemoteViews;
@@ -88,16 +89,10 @@ public class UpdateCheck {
         return instance;
     }
 
-    public void checkForUpdate(Context context,
-                               final boolean onlyWifi,
-                               final boolean showToast,
-                               final UpdateCheckCallback updateCheckResult) {
-        if (context == null) {
-            throw new NullPointerException("Context or UpdateURL is null!");
-        }
-
+    public void checkForUpdate(@NonNull Context context, final boolean onlyWifi,
+                               final boolean showToast, final UpdateCheckCallback callback) {
         this.cxt = context;
-        this.updateCheckResult = updateCheckResult;
+        this.updateCheckResult = callback;
         mHandler = new Handler(context.getMainLooper());
 
         if ((onlyWifi && NetworkStatus.isWifi(context)) ||
@@ -274,9 +269,8 @@ public class UpdateCheck {
                             cancelNotificationAndUpdateRunnable();
                             LogHelper.d(TAG, "Error Code: " + errorCode + ". Error Message: " +
                                     errorMessage);
-                            if (errorCode ==
-                                    DownloadManager.ERROR_UNHANDLED_HTTP_CODE && errorMessage
-                                    .equals("Unhandled HTTP response:404 message:Not Found")) {
+                            if (errorMessage.equals("Unhandled HTTP response:404 message:Not Found")
+                                    && errorCode == DownloadManager.ERROR_UNHANDLED_HTTP_CODE) {
                                 try {
                                     notificationView.setProgressBar(R.id.pb_notification, 100, 0,
                                             true);

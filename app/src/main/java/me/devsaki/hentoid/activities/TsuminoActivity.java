@@ -34,8 +34,9 @@ public class TsuminoActivity extends BaseWebActivity {
     private int historyIndex;
 
     private static int ordinalIndexOf(String str, char delimiter, int n) {
+        int i = n;
         int pos = str.indexOf(delimiter, 0);
-        while (n-- > 0 && pos != -1) {
+        while (i-- > 0 && pos != -1) {
             pos = str.indexOf(delimiter, pos + 1);
         }
 

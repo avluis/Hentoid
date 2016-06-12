@@ -15,9 +15,6 @@ public class UpdateReceiver extends BroadcastReceiver {
 
     private UpdateCheck instance;
 
-    public UpdateReceiver() {
-    }
-
     @Override
     public void onReceive(Context context, Intent intent) {
         if (instance == null) {

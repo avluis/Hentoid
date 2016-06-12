@@ -22,10 +22,6 @@ import okhttp3.Response;
  * Created by Shiro on 3/28/2016.
  * Handles image download tasks and batch operations
  * Intended to have default access level for use with DownloadService class only
- * <p/>
- * TODO: Test timeout handling:
- * {@link ImageDownloadBatch#newTask}
- * Ref: https://goo.gl/OF86un
  */
 final class ImageDownloadBatch {
 
@@ -97,7 +93,6 @@ final class ImageDownloadBatch {
             }
         }
 
-        @SuppressWarnings("TryFinallyCanBeTryWithResources")
         @Override
         public void onResponse(Call call, Response response) throws IOException {
             LogHelper.d(TAG, "Start downloading image: " + call.request().url());

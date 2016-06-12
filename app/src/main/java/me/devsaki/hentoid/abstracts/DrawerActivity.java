@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CompoundAdapter;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
@@ -40,7 +41,7 @@ import me.devsaki.hentoid.util.LogHelper;
 public abstract class DrawerActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(DrawerActivity.class);
 
-    private Context mContext;
+    private Context cxt;
     private Fragment fragment;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
@@ -65,7 +66,7 @@ public abstract class DrawerActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(getLayoutResId());
-        mContext = getApplicationContext();
+        cxt = HentoidApp.getAppContext();
 
         FragmentManager manager = getSupportFragmentManager();
         fragment = manager.findFragmentById(R.id.content_frame);
@@ -82,7 +83,7 @@ public abstract class DrawerActivity extends BaseActivity {
     protected abstract Fragment buildFragment();
 
     protected String getToolbarTitle() {
-        return Helper.getActivityName(mContext, R.string.app_name);
+        return Helper.getActivityName(cxt, R.string.app_name);
     }
 
     private String getFragmentTag() {

@@ -20,6 +20,8 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
@@ -56,7 +58,6 @@ public final class Helper {
     public static void openContent(final Context context, Content content) {
         SharedPreferences sp = HentoidApp.getSharedPrefs();
         File dir = getContentDownloadDir(context, content);
-
         File imageFile = null;
         File[] files = dir.listFiles();
         Arrays.sort(files);
@@ -109,7 +110,6 @@ public final class Helper {
 
     public static File getThumb(Context context, Content content) {
         File dir = getContentDownloadDir(context, content);
-
         File[] fileList = dir.listFiles(
                 new FileFilter() {
                     @Override
@@ -130,6 +130,7 @@ public final class Helper {
         if (settingDir.isEmpty()) {
             return getDefaultDir(context, folderDir);
         }
+
         file = new File(settingDir, folderDir);
         if (!file.exists() && !file.mkdirs()) {
             file = new File(settingDir + folderDir);
@@ -151,13 +152,11 @@ public final class Helper {
             return getDefaultDir(context, folderDir);
         }
         file = new File(settingDir, folderDir);
-        if (!file.exists()) {
-            if (!file.mkdirs()) {
-                file = new File(settingDir + folderDir);
-                if (!file.exists()) {
-                    boolean mkdirs = file.mkdirs();
-                    LogHelper.d(TAG, mkdirs);
-                }
+        if (!file.exists() && !file.mkdirs()) {
+            file = new File(settingDir + folderDir);
+            if (!file.exists()) {
+                boolean mkdirs = file.mkdirs();
+                LogHelper.d(TAG, mkdirs);
             }
         }
 
@@ -174,14 +173,12 @@ public final class Helper {
             file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
         }
 
-        if (!file.exists()) {
-            if (!file.mkdirs()) {
-                file = context.getDir("", Context.MODE_PRIVATE);
-                file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
-                if (!file.exists()) {
-                    boolean mkdirs = file.mkdirs();
-                    LogHelper.d(TAG, mkdirs);
-                }
+        if (!file.exists() && !file.mkdirs()) {
+            file = context.getDir("", Context.MODE_PRIVATE);
+            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+            if (!file.exists()) {
+                boolean mkdirs = file.mkdirs();
+                LogHelper.d(TAG, mkdirs);
             }
         }
 
@@ -246,13 +243,6 @@ public final class Helper {
 
     private static void clearSharedPreferences() {
         SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
-        editor.clear();
-        editor.apply();
-    }
-
-    private static void clearSharedPreferences(Context cxt, String prefsName) {
-        SharedPreferences sp = cxt.getSharedPreferences(prefsName, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
         editor.clear();
         editor.apply();
     }
@@ -357,20 +347,20 @@ public final class Helper {
         toast(cxt, resource, 0);
     }
 
-    public static void toast(Context cxt, String text, int duration) {
+    private static void toast(Context cxt, String text, int duration) {
         toast(cxt, text, -1, duration);
     }
 
-    public static void toast(Context cxt, int resource, int duration) {
+    private static void toast(Context cxt, int resource, int duration) {
         toast(cxt, null, resource, duration);
     }
 
-    private static void toast(Context cxt, String text, int resource, int duration) {
+    private static void toast(@NonNull Context cxt, @Nullable String text, int res, int duration) {
         String message = null;
         if (text != null) {
             message = text;
-        } else if (resource != -1) {
-            message = cxt.getString(resource);
+        } else if (res != -1) {
+            message = cxt.getString(res);
         } else {
             Throwable noResource = new Throwable("You must provide a String or Resource ID!");
             try {
@@ -380,12 +370,13 @@ public final class Helper {
             }
         }
 
-        switch (duration) {
+        int time = duration;
+        switch (time) {
             case 1:
-                duration = Toast.LENGTH_LONG;
+                time = Toast.LENGTH_LONG;
                 break;
             default:
-                duration = Toast.LENGTH_SHORT;
+                time = Toast.LENGTH_SHORT;
                 break;
         }
 
@@ -394,7 +385,7 @@ public final class Helper {
             toast.setText(message);
         } catch (Exception e) {
             LogHelper.d(TAG, "toast is null, creating one instead;");
-            toast = Toast.makeText(cxt, message, duration);
+            toast = Toast.makeText(cxt, message, time);
         }
 
         toast.show();
@@ -559,12 +550,10 @@ public final class Helper {
         }
     }
 
-    public static int getAppVersionCode(Context context) throws NameNotFoundException {
-        if (context != null) {
-            return context.getPackageManager().getPackageInfo(
-                    context.getPackageName(), 0).versionCode;
-        } else {
-            throw new NullPointerException("context is null");
+    public static int getAppVersionCode(Context cxt) throws NameNotFoundException {
+        if (cxt != null) {
+            return cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionCode;
         }
+        return 0;
     }
 }

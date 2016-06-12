@@ -36,7 +36,6 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
  * Browser activity which allows the user to navigate a supported source.
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
- * TODO: Add additional layout dimensions for alternative screen sizes to layout
  */
 public class BaseWebActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
@@ -285,18 +284,18 @@ public class BaseWebActivity extends BaseActivity {
 
     private void hideFab(FloatingActionButton fab) {
         fab.hide();
-        if (fab == fabDownload) {
+        if (fab.equals(fabDownload)) {
             fabDownloadEnabled = false;
-        } else if (fab == fabRead) {
+        } else if (fab.equals(fabRead)) {
             fabReadEnabled = false;
         }
     }
 
     private void showFab(FloatingActionButton fab) {
         fab.show();
-        if (fab == fabDownload) {
+        if (fab.equals(fabDownload)) {
             fabDownloadEnabled = true;
-        } else if (fab == fabRead) {
+        } else if (fab.equals(fabRead)) {
             fabReadEnabled = true;
         }
     }

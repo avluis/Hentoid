@@ -86,6 +86,8 @@ public class NhentaiParser {
                 case "category":
                     attribute.setType(AttributeType.CATEGORY);
                     break;
+                default: // do nothing
+                    break;
             }
             attributes.add(attribute);
         }

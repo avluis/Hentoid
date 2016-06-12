@@ -342,6 +342,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     // This is a long running task, execute with AsyncTask or similar
     public List<Content> selectContentByQuery(String query, int page, int qty, boolean order) {
+        String q = query;
         List<Content> result = null;
 
         synchronized (locker) {
@@ -351,7 +352,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             Cursor cursorContent = null;
             int start = (page - 1) * qty;
             try {
-                query = "%" + query + "%";
+                q = "%" + q + "%";
                 db = getReadableDatabase();
                 String sql = ContentTable.SELECT_DOWNLOADS;
                 if (order) {
@@ -363,7 +364,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     cursorContent = db.rawQuery(sql,
                             new String[]{StatusContent.DOWNLOADED.getCode() + "",
                                     StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + "", query, query,
+                                    StatusContent.MIGRATED.getCode() + "", q, q,
                                     AttributeType.ARTIST.getCode() + "",
                                     AttributeType.TAG.getCode() + "",
                                     AttributeType.SERIE.getCode() + ""});
@@ -371,7 +372,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE,
                             new String[]{StatusContent.DOWNLOADED.getCode() + "",
                                     StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + "", query, query,
+                                    StatusContent.MIGRATED.getCode() + "", q, q,
                                     AttributeType.ARTIST.getCode() + "",
                                     AttributeType.TAG.getCode() + "",
                                     AttributeType.SERIE.getCode() + "", start + "", qty + ""});

@@ -16,9 +16,6 @@ public class BaseSlide extends Fragment {
     private static final String ARG_LAYOUT_RES_ID = "layoutResId";
     private int layoutResId;
 
-    public BaseSlide() {
-    }
-
     public static BaseSlide newInstance(int layoutResId) {
         BaseSlide baseSlide = new BaseSlide();
 

@@ -142,6 +142,8 @@ final class NotificationPresenter {
                 appInstance.trackEvent("Download Service", "Download",
                         "Download Content: Unhandled Error.");
                 break;
+            default: // do nothing
+                break;
         }
         notificationManager.notify(NOTIFICATION_ID, currentBuilder.build());
     }
@@ -171,6 +173,8 @@ final class NotificationPresenter {
                 Bundle cancelBundle = new Bundle();
                 cancelBundle.putString(Consts.INTENT_URL, currentContent.getGalleryUrl());
                 resultIntent.putExtras(cancelBundle);
+                break;
+            default: // do nothing
                 break;
         }
 

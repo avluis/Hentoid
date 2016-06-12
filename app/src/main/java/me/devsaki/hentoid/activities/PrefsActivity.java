@@ -70,6 +70,8 @@ public class PrefsActivity extends BaseActivity {
                     return new AppCompatRadioButton(this, attrs);
                 case "CheckedTextView":
                     return new AppCompatCheckedTextView(this, attrs);
+                default: // do nothing
+                    break;
             }
         }
 

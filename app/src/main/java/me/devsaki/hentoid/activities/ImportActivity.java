@@ -46,6 +46,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
+import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Helper;
@@ -383,7 +384,7 @@ public class ImportActivity extends BaseActivity {
         }
         try {
             if (urlBuilder.getDescription() == null) {
-                throw new RuntimeException("Problems loading attribute v2.");
+                throw new AttributeException("Problems loading attribute v2.");
             }
 
             return new Attribute()
