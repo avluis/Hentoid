@@ -269,8 +269,9 @@ public class UpdateCheck {
                             cancelNotificationAndUpdateRunnable();
                             LogHelper.d(TAG, "Error Code: " + errorCode + ". Error Message: " +
                                     errorMessage);
-                            if (errorMessage.equals("Unhandled HTTP response:404 message:Not Found")
-                                    && errorCode == DownloadManager.ERROR_UNHANDLED_HTTP_CODE) {
+                            if (errorCode == DownloadManager.ERROR_UNHANDLED_HTTP_CODE &&
+                                    "Unhandled HTTP response:404 message:Not Found"
+                                            .equals(errorMessage)) {
                                 try {
                                     notificationView.setProgressBar(R.id.pb_notification, 100, 0,
                                             true);

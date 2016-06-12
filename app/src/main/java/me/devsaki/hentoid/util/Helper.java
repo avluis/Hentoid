@@ -545,15 +545,22 @@ public final class Helper {
             Field idField = c.getDeclaredField(resourceName);
             return idField.getInt(idField);
         } catch (Exception e) {
-            throw new RuntimeException("No resource ID found for: "
-                    + resourceName + " / " + c, e);
+            try {
+                throw new ResourceException("No resource ID found for: " + resourceName +
+                        " / " + c, e);
+            } catch (ResourceException rEx) {
+                LogHelper.w(TAG, rEx);
+            }
         }
+
+        return 0;
     }
 
     public static int getAppVersionCode(Context cxt) throws NameNotFoundException {
         if (cxt != null) {
             return cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionCode;
         }
+
         return 0;
     }
 }

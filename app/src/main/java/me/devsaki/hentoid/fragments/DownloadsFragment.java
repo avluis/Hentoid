@@ -229,7 +229,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                     public boolean onMenuItemActionCollapse(MenuItem item) {
                         toggleSortMenuItem(menu, true);
 
-                        if (!query.equals("")) {
+                        if (!("").equals(query)) {
                             query = "";
                             submitSearchQuery(query, 300);
                         }
@@ -920,7 +920,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     private void displayNoResults() {
-        if (isLoaded && !query.equals("")) {
+        if (isLoaded && !("").equals(query)) {
             emptyText.setText(R.string.search_entry_not_found);
             toggleUI(SHOW_BLANK);
         } else if (isLoaded) {
