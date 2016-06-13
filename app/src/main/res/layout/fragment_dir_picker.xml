@@ -58,10 +58,10 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_margin="24dp"
         android:src="@drawable/ic_create_new_folder"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/default_elevation"
-        app:rippleColor="@color/ripple" />
+        app:rippleColor="@color/ripple"
+        app:useCompatPadding="true" />
 
 </RelativeLayout>
