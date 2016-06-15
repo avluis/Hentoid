@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.holders;
+package me.devsaki.hentoid.adapters;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
