@@ -914,7 +914,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     private void updatePager() {
-        // TODO: if result.size == qtyPages (meaning; last page, exact size)
+        // TODO: Test if result.size == qtyPages (meaning; last page, exact size)
         isLastPage = result.size() < qtyPages;
         LogHelper.d(TAG, "Results: " + result.size());
     }
@@ -963,7 +963,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     @Override
     public void onContentFailed(boolean failure) {
         if (failure) {
-            // TODO: Log to Analytics
             LogHelper.d(TAG, "Content results failed to load.");
             isLoaded = false;
         }

@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.View;
 import android.webkit.WebResourceRequest;
@@ -22,6 +21,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.views.ObservableWebView;
 
 /**
  * Created by Shiro on 1/22/2016.
@@ -44,11 +44,15 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setSite(Site.TSUMINO);
-        super.onCreate(savedInstanceState);
+    void setSite(Site site) {
+        super.setSite(Site.TSUMINO);
+    }
 
+    @Override
+    void setWebView(ObservableWebView webView) {
         webView.setWebViewClient(new TsuminoWebViewClient());
+
+        super.setWebView(webView);
     }
 
     private WebResourceResponse getJSWebResourceResponseFromAsset() {
@@ -69,12 +73,12 @@ public class TsuminoActivity extends BaseWebActivity {
     @Override
     public void onDownloadFabClick(View view) {
         downloadFabPressed = true;
-        historyIndex = webView.copyBackForwardList().getCurrentIndex();
+        historyIndex = getWebView().copyBackForwardList().getCurrentIndex();
 
-        String newUrl = webView.getUrl().replace("Book/Info", "Read/View");
+        String newUrl = getWebView().getUrl().replace("Book/Info", "Read/View");
         final int index = ordinalIndexOf(newUrl, '/', 5);
         if (index > 0) newUrl = newUrl.substring(0, index);
-        webView.loadUrl(newUrl);
+        getWebView().loadUrl(newUrl);
     }
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
@@ -111,8 +115,8 @@ public class TsuminoActivity extends BaseWebActivity {
                 Helper.executeAsyncTask(new HtmlLoader(), url);
             } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;
-                int currentIndex = webView.copyBackForwardList().getCurrentIndex();
-                webView.goBackOrForward(historyIndex - currentIndex);
+                int currentIndex = getWebView().copyBackForwardList().getCurrentIndex();
+                getWebView().goBackOrForward(historyIndex - currentIndex);
                 processDownload();
             }
         }

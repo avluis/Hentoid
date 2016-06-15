@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -22,6 +21,7 @@ import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.views.ObservableWebView;
 
 /**
  * Created by Shiro on 1/20/2016.
@@ -31,11 +31,15 @@ public class NhentaiActivity extends BaseWebActivity {
     private static final String TAG = LogHelper.makeLogTag(NhentaiActivity.class);
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setSite(Site.NHENTAI);
-        super.onCreate(savedInstanceState);
+    void setSite(Site site) {
+        super.setSite(Site.NHENTAI);
+    }
 
+    @Override
+    void setWebView(ObservableWebView webView) {
         webView.setWebViewClient(new NhentaiWebViewClient());
+
+        super.setWebView(webView);
     }
 
     private WebResourceResponse getJSWebResourceResponseFromAsset() {

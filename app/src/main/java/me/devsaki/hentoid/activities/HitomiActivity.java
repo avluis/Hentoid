@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -22,6 +21,7 @@ import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.views.ObservableWebView;
 
 /**
  * Created by Shiro on 1/20/2016.
@@ -31,10 +31,12 @@ public class HitomiActivity extends BaseWebActivity {
     private static final String TAG = LogHelper.makeLogTag(HitomiActivity.class);
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        setSite(Site.HITOMI);
-        super.onCreate(savedInstanceState);
+    void setSite(Site site) {
+        super.setSite(Site.HITOMI);
+    }
 
+    @Override
+    void setWebView(ObservableWebView webView) {
         webView.setWebViewClient(new HitomiWebViewClient());
 
         boolean bWebViewOverview = Helper.getWebViewOverviewPrefs();
@@ -48,6 +50,8 @@ public class HitomiActivity extends BaseWebActivity {
             webView.setInitialScale(ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);
         }
+
+        super.setWebView(webView);
     }
 
     private WebResourceResponse getJSWebResourceResponseFromAsset(String file) {

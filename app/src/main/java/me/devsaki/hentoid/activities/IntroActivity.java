@@ -154,13 +154,11 @@ public class IntroActivity extends AppIntro2 {
                     }
                 } else {
                     LogHelper.d(TAG, "Error: Data not received! Bad resultKey.");
-                    // TODO: Log to Analytics
                     // Try again!
                     initImport();
                 }
             } else {
                 LogHelper.d(TAG, "Data is null!");
-                // TODO: Log to Analytics
                 // Try again!
                 initImport();
             }

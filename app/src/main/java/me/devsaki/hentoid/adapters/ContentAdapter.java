@@ -438,7 +438,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                                 item.setStatus(StatusContent.DOWNLOADING);
                                 item.setDownloadDate(new Date().getTime());
 
-                                // TODO: Make Asynchronous
                                 db.updateContentStatus(item);
 
                                 Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
@@ -588,7 +587,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             LogHelper.e(TAG, "Error deleting directory: ", e);
         }
 
-        // TODO: Make Asynchronous
         db.deleteContent(item);
 
         removeItem(item);
@@ -616,7 +614,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             } catch (IOException e) {
                 LogHelper.d(TAG, "Error deleting directory: ", e);
             } finally {
-                // TODO: Make Asynchronous
                 db.deleteContent(items.get(i));
             }
         }

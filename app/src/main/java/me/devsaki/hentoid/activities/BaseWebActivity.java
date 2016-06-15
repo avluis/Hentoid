@@ -40,9 +40,9 @@ import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 public class BaseWebActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
-    ObservableWebView webView;
-    private HentoidDB db;
     private Content currentContent;
+    private HentoidDB db;
+    private ObservableWebView webView;
     private Site site;
     private boolean webViewIsLoading;
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
@@ -58,16 +58,27 @@ public class BaseWebActivity extends BaseActivity {
         this.site = site;
     }
 
+    ObservableWebView getWebView() {
+        return webView;
+    }
+
+    void setWebView(ObservableWebView webView) {
+        this.webView = webView;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        db = HentoidDB.getInstance(this);
-
         setContentView(R.layout.activity_base_web);
 
+        db = HentoidDB.getInstance(this);
+
+        setSite(getSite());
         if (site == null) {
             LogHelper.w(TAG, "Site is null!");
+        } else {
+            LogHelper.d(TAG, "Loading site: " + site);
         }
 
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
@@ -80,6 +91,8 @@ public class BaseWebActivity extends BaseActivity {
 
         initWebView();
         initSwipeLayout();
+
+        setWebView(getWebView());
 
         String intentVar = getIntent().getStringExtra(Consts.INTENT_URL);
         webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
