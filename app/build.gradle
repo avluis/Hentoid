@@ -37,7 +37,7 @@ dependencies {
     compile 'com.android.support:support-v4:23.4.0'
     compile 'com.github.bumptech.glide:glide:3.6.1'
     compile 'com.github.lzyzsd:circleprogress:1.1.0'
-    compile 'com.google.android.gms:play-services-analytics:9.0.1'
+    compile 'com.google.android.gms:play-services-analytics:9.0.2'
     compile 'com.google.code.gson:gson:2.4'
     compile 'com.mani:ThinDownloadManager:1.2.0'
     compile 'commons-io:commons-io:2.4'
