@@ -16,7 +16,7 @@
 ##### Visit our [Google+ Community](https://plus.google.com/communities/110496467189870321840) for Announcements, and Updates.
 ___
 ###### Help us shape Hentoid into the best H-Manga App for you.
-[![CircleCI](https://circleci.com/gh/AVnetWS/Hentoid.svg?style=shield&circle-token=62f6f71ba9dd3c419c10ee4e0beea3098ebdb168)](https://circleci.com/gh/AVnetWS/Hentoid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae76428c8f7b4b0eb17a2faca9175eb3)](https://www.codacy.com/app/AVnetWS/Hentoid?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AVnetWS/Hentoid&amp;utm_campaign=Badge_Grade)
+[![CircleCI](https://circleci.com/gh/AVnetWS/Hentoid.svg?style=shield&circle-token=62f6f71ba9dd3c419c10ee4e0beea3098ebdb168)](https://circleci.com/gh/AVnetWS/Hentoid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae76428c8f7b4b0eb17a2faca9175eb3?branch=master)](https://www.codacy.com/app/AVnetWS/Hentoid/dashboard?bid=3349264&utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AVnetWS/Hentoid&amp;utm_campaign=Badge_Grade)
 ___
 
 <meta name='keywords' content='doujin, doujinshi, download doujinshi, android app, doujin android app, doujinshi android app, doujin android download, doujinshi android download'>
