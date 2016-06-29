@@ -28,7 +28,7 @@
         android:onClick="onReadFabClick"
         android:src="@drawable/ic_action_play"
         app:backgroundTint="@color/primary"
-        app:elevation="@dimen/default_elevation"
+        app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
         tools:ignore="RelativeOverlap" />
 
@@ -43,7 +43,7 @@
         android:onClick="onDownloadFabClick"
         android:src="@drawable/ic_action_download"
         app:backgroundTint="@color/primary"
-        app:elevation="@dimen/default_elevation"
+        app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
         tools:ignore="RelativeOverlap" />
 
@@ -63,7 +63,7 @@
         android:onClick="onRefreshStopFabClick"
         android:src="@drawable/ic_action_refresh"
         app:backgroundTint="@color/primary"
-        app:elevation="@dimen/default_elevation"
+        app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple" />
 
@@ -83,7 +83,7 @@
         android:onClick="onHomeFabClick"
         android:src="@drawable/ic_action_sd_storage"
         app:backgroundTint="@color/primary"
-        app:elevation="@dimen/default_elevation"
+        app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple" />
 

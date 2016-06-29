@@ -60,7 +60,7 @@
         android:layout_alignParentRight="true"
         android:src="@drawable/ic_create_new_folder"
         app:backgroundTint="@color/primary"
-        app:elevation="@dimen/default_elevation"
+        app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
         app:useCompatPadding="true" />
 

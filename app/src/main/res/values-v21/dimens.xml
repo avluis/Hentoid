@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Elevation (V21+ API) -->
-    <dimen name="default_elevation">4dp</dimen>
+    <dimen name="drawer_menu_elevation">4dp</dimen>
 
     <!-- browser -->
     <dimen name="download_fab_margin">16dp</dimen>

@@ -25,6 +25,11 @@
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:paddingEnd="0dp"
+                android:paddingLeft="@dimen/default_cardview_margin"
+                android:paddingRight="0dp"
+                android:paddingStart="@dimen/default_cardview_margin"
+                android:paddingTop="@dimen/default_cardview_margin"
                 tools:background="@color/white" />
 
             <LinearLayout

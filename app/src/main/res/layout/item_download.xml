@@ -4,11 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/default_cardview_margin"
+    android:layout_marginEnd="@dimen/default_cardview_margin"
+    android:layout_marginRight="@dimen/default_cardview_margin"
     android:clickable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardCornerRadius="2dp"
-    app:cardElevation="5dp"
-    app:cardUseCompatPadding="true">
+    app:cardElevation="@dimen/cardview_default_elevation">
 
     <RelativeLayout
         android:id="@+id/item"

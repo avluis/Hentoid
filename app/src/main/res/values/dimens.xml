@@ -4,16 +4,18 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
 
     <!-- navigation drawer -->
-    <dimen name="drawer_item_padding_start">16dp</dimen>
-    <dimen name="drawer_item_drawable_padding_start">16dp</dimen>
+    <dimen name="drawer_layout_width">320dp</dimen>
+    <dimen name="drawer_item_padding_start">24dp</dimen>
+    <dimen name="drawer_item_drawable_padding_start">24dp</dimen>
     <dimen name="drawer_item_height">48dp</dimen>
     <dimen name="drawer_image_height">160dp</dimen>
     <dimen name="drawer_header_icon_padding">12dp</dimen>
 
     <!-- Elevation (V21+ API) -->
-    <dimen name="default_elevation">2dp</dimen>
+    <dimen name="fab_default_elevation">2dp</dimen>
     <dimen name="drawer_layout_elevation">4dp</dimen>
     <dimen name="drawer_layout_header_elevation">6dp</dimen>
+    <dimen name="drawer_menu_elevation">2dp</dimen>
     <dimen name="toolbar_layout_elevation">6dp</dimen>
 
     <!-- browser -->
@@ -41,5 +43,5 @@
     <dimen name="about_textSize">12sp</dimen>
 
     <!-- card view -->
-    <dimen name="ic_clear_margin">16dp</dimen>
+    <dimen name="default_cardview_margin">8dp</dimen>
 </resources>
