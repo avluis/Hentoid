@@ -12,15 +12,10 @@ machine:
 dependencies:
   pre:
     - chmod +x gradlew
-    - wget -c -O $ANDROID_HOME/android-sdk_r24.4.1-linux.tgz http://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
-    - tar xzf $ANDROID_HOME/android-sdk_r24.4.1-linux.tgz --directory $ANDROID_HOME
-    - cd /usr/local/android-sdk-linux/android-sdk-linux/tools
-    - export ANDROID_HOME=$ANDROID_HOME/android-sdk-linux/
-    - export PATH=$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$PATH
     - echo y | android update sdk --no-ui --all --filter platform-tools
     - echo y | android update sdk --no-ui --all --filter tools
-    - echo y | android update sdk --no-ui --all --filter build-tools-23.0.3
-    - echo y | android update sdk --no-ui --all --filter android-23
+    - echo y | android update sdk --no-ui --all --filter build-tools-24
+    - echo y | android update sdk --no-ui --all --filter android-24
     - echo y | android update sdk --no-ui --all --filter extra-google-m2repository,extra-google-google_play_services,extra-android-support,extra-android-m2repository
 
 ## Customize test commands
