@@ -15,19 +15,19 @@
     <string name="menu_delete">Delete</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
     <!-- Floating Action Buttons -->
-    <string name="read">Read</string>
-    <string name="view_browser">View</string>
-    <string name="delete">Delete</string>
-    <string name="download_again">Download Again</string>
+    <string name="fab_read">Read</string>
+    <string name="fab_view">View</string>
+    <string name="fab_delete">Delete</string>
+    <string name="fab_retry">Download Again</string>
     <!-- Queue -->
     <string name="cancel">Cancel</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
     <!-- TextViews -->
-    <string name="tvEmpty" translatable="false">[No data]</string>
-    <string name="tvSeries"><![CDATA[<b>Series:</b> @series@]]></string>
-    <string name="tvArtists"><![CDATA[<b>Artist:</b> @artist@]]></string>
-    <string name="tvTags" translatable="false"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>
+    <string name="work_untitled" translatable="false">[No data]</string>
+    <string name="work_series"><![CDATA[<b>Series:</b> @series@]]></string>
+    <string name="work_artist"><![CDATA[<b>Artist:</b> @artist@]]></string>
+    <string name="work_tags" translatable="false"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
     <string name="permission_granted">Permission set, restarting library import.</string>
@@ -116,5 +116,5 @@
         Improved import routine & preference changes.<br>
         Reduced chances of intrusive pop-ups on nhentai, hitomi and tsumino.<br>
         Support for browsable intent on supported sources (use your own browser).<br>
-        SD Storage on Android 6.0 (when SD card is used as internal storage).</p>]]></string>
+        SD Storage support on Android 6.0 (when SD card is used as adopted storage).</p>]]></string>
 </resources>

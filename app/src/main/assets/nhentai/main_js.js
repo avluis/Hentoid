@@ -31,7 +31,10 @@
                 sampleRate: 5
             }), window.ga("send", "pageview")
         }, e.patch_safari_touch_hover = function() {
-            e.bind(document, "touchstart", function() {}, !0)
+            e.bind(document, "touchstart", function() {}, {
+                capture: !0,
+                passive: !0
+            })
         }, e.patch_no_console = function() {
             if (window.console) return;
             window.console = {
@@ -78,24 +81,36 @@
         }, "use strict", e.bind = function() {
             return typeof arguments[2] == "string" ? e.bind_dynamic.apply(null, arguments) : e.bind_regular.apply(null, arguments)
         }, e.bind_dynamic = function(t, n, r, i) {
-            var s = function(r) {
-                var s = e.find_parent(r.target, n, !0);
-                if (s) return i.apply(s, arguments)
-            };
-            return e.bind_regular(t, r, s, !0), s
-        }, e.bind_regular = function(e, t, n, r) {
-            typeof e == "string" ? e = document.querySelectorAll(e) : !(e instanceof NodeList) && e.constructor !== Array && (e = [e]);
-            var t = t.split(/\s+/);
-            for (var i = 0; i < e.length; i++) {
-                var s = e[i];
-                for (var o = 0; o < t.length; o++) s.addEventListener(t[o], n, !!r)
+            var s = arguments.length <= 4 || arguments[4] === undefined ? {
+                    capture: !0
+                } : arguments[4],
+                o = function(r) {
+                    var o = e.find_parent(r.target, n, s);
+                    if (o) return i.apply(o, arguments)
+                };
+            return e.bind_regular(t, r, o, s), o
+        }, e.bind_regular = function(t, n, r) {
+            var i = arguments.length <= 3 || arguments[3] === undefined ? {
+                capture: !0
+            } : arguments[3];
+            typeof t == "string" ? t = document.querySelectorAll(t) : !(t instanceof NodeList) && t.constructor !== Array && (t = [t]);
+            var n = n.split(/\s+/);
+            for (var s = 0; s < t.length; s++) {
+                var o = t[s];
+                for (var u = 0; u < n.length; u++) o.addEventListener(n[u], r, e.browser.supports_passive_events ? i : i.capture || !1)
             }
-        }, e.unbind = function(e, t, n, r) {
-            typeof e == "string" ? e = document.querySelectorAll(e) : !(e instanceof NodeList) && e.constructor !== Array && (e = [e]);
-            var t = t.split(/\s+/);
-            for (var i = 0; i < e.length; i++) {
-                var s = e[i];
-                for (var o = 0; o < t.length; o++) s.removeEventListener(t[o], n, !!r)
+            return r
+        }, e.ready = function(t) {
+            return e.bind_regular(document, "DOMContentLoaded", t)
+        }, e.unbind = function(t, n, r) {
+            var i = arguments.length <= 3 || arguments[3] === undefined ? {
+                capture: !0
+            } : arguments[3];
+            typeof t == "string" ? t = document.querySelectorAll(t) : !(t instanceof NodeList) && t.constructor !== Array && (t = [t]);
+            var n = n.split(/\s+/);
+            for (var s = 0; s < t.length; s++) {
+                var o = t[s];
+                for (var u = 0; u < n.length; u++) o.removeEventListener(n[u], r, e.browser.supports_passive_events ? i : i.capture || !1)
             }
         },
         function() {
@@ -184,6 +199,9 @@
             this.is_ready() && (this.last_hit = +(new Date))
         }, e.debouncer.prototype.is_ready = function() {
             return this.last_hit ? +(new Date) - this.last_hit > this.delay : !0
+        }, e.show_message = function(e, t) {
+            var n = document.createElement("div");
+            n.classList.add("alert"), n.classList.add("alert-" + t), n.textContent = e, document.querySelector("#messages").appendChild(n)
         }, "use strict", e.encode_params = function(t) {
             var n = [],
                 r = e.keys(t);
@@ -209,22 +227,32 @@
             var r = new XMLHttpRequest;
             r.open(t.method, t.url, !0);
             var i = e.keys(t.headers);
-            for (var s = 0; s <
-                i.length; s++) {
+            for (var s = 0; s < i.length; s++) {
                 var o = i[s];
                 r.setRequestHeader(o, t.headers[o])
             }
             e.bind(r, "load", t.success), e.bind(r, "error", t.failure);
             var u = null;
             return t.params !== null ? (u = e.encode_params(t.params), r.setRequestHeader("Content-Type", "application/x-www-form-urlencoded")) : t.json !== null && (u = JSON.stringify(t.json), r.setRequestHeader("Content-Type", "application/json")), e.extend(r, t.xhr_properties), r.send(u), r
-        }, "use strict", e.session_storage = {}, e.session_storage.set = function(e, t) {
-            sessionStorage.setItem(e, JSON.stringify(t))
-        }, e.session_storage.has = function(e) {
-            return sessionStorage.getItem(e) !== null
-        }, e.session_storage.get = function(t, n) {
-            return e.session_storage.has(t) ? JSON.parse(sessionStorage.getItem(t)) : n
-        }, e.session_storage["delete"] = function(e) {
-            sessionStorage.removeItem(e)
+        }, "use strict", e.browser = {}, e.browser.supports_passive_events = function() {
+            var e = !1;
+            try {
+                var t = Object.defineProperty({}, "passive", {
+                    get: function() {
+                        e = !0
+                    }
+                });
+                window.addEventListener("test", null, t)
+            } catch (n) {}
+            return e
+        }, "use strict", e.local_storage = {}, e.local_storage.set = function(e, t) {
+            localStorage.setItem(e, JSON.stringify(t))
+        }, e.local_storage.has = function(e) {
+            return localStorage.getItem(e) !== null
+        }, e.local_storage.get = function(t, n) {
+            return e.local_storage.has(t) ? JSON.parse(localStorage.getItem(t)) : n
+        }, e.local_storage["delete"] = function(e) {
+            localStorage.removeItem(e)
         }, e.cookie_storage = {}, e.cookie_storage.set = function(t, n) {
             e.cookies.set(t, JSON.stringify(n), 28800)
         }, e.cookie_storage.has = function(t) {
@@ -243,9 +271,9 @@
             delete e.memory_storage.data[t]
         }, e.storage = function() {
             try {
-                sessionStorage.setItem("_storage_test", "test");
-                if (sessionStorage.getItem("_storage_test") !== "test") throw new Error("Storage does not actually work");
-                return sessionStorage.removeItem("_storage_test"), e.session_storage
+                localStorage.setItem("_storage_test", "test");
+                if (localStorage.getItem("_storage_test") !== "test") throw new Error("Storage does not actually work");
+                return localStorage.removeItem("_storage_test"), e.local_storage
             } catch (t) {}
             try {
                 document.cookie = "_cookie_test=test";
@@ -254,13 +282,13 @@
             } catch (t) {}
             return Raven.captureException(new Error("Browser defaulting to in memory storage!")), e.memory_storage
         }(), "use strict", e.install_theme_previewer = function() {
-            e.bind(document, "DOMContentLoaded", function() {
+            e.ready(function() {
                 var t = document.querySelector("html"),
                     n = document.querySelector("#id_theme");
                 if (!n) return;
                 e.bind(n, "change", function() {
                     var e = t.classList;
-                    for (var n = 0; n < e.length; n++) e.remove(e[n]);
+                    for (var n = 0; n < e.length; n++) e[n].indexOf("theme-") !== -1 && e.remove(e[n]);
                     e.add("theme-" + this.value.toLowerCase())
                 })
             })
@@ -437,7 +465,7 @@
             }
             return t
         }, e.install_relative_time = function() {
-            e.bind(document, "DOMContentLoaded", function() {
+            e.ready(function() {
                 var t = function n() {
                     var t = e.update_times();
                     setTimeout(n, t)
@@ -469,8 +497,7 @@
                 i;
             t instanceof ArrayBuffer ? i = t.byteLength : i = t.length;
             for (var s = 0; s < i; s++) n = n >>> 8 ^ r[(n ^ t[s]) & 255];
-            return ~
-                n
+            return ~n
         }, "use strict", t.prototype.resize_to_fit = function(e) {
             if (e <= this.length) return;
             if (e > this.array.length) {
@@ -525,7 +552,8 @@
         }, e.zipfile.prototype.download = function() {
             var e = this.save_blob(),
                 t = URL.createObjectURL(e);
-            if (window.saveAs) saveAs(e, this.filename);
+            if (window.saveAs)
+                saveAs(e, this.filename);
             else if (navigator.msSaveOrOpenBlob) navigator.msSaveOrOpenBlob(e, this.filename);
             else {
                 if (!this.has_download_attribute) throw new Error("Your browser can't handle JS downloads");
@@ -555,7 +583,8 @@
         }, e.zipfile.prototype.send_progress = function() {
             this.progress(this.total_requests - this.request_count, this.total_requests)
         }, e.zipfile.prototype.error = function(e) {}, "use strict", e.tag = function(e, t, n, r, i) {
-            this.id = e, this.name = t, this.type = n, this.url = r, this.count = i
+            var s = arguments.length <= 5 || arguments[5] === undefined ? !1 : arguments[5];
+            this.id = e, this.name = t, this.type = n, this.url = r, this.count = i, this.created = s
         }, e.tag.prototype.as_object = function() {
             return {
                 id: this.id,
@@ -568,13 +597,13 @@
             var n = document.createElement("span");
             n.textContent = this.name, t.appendChild(n), t.appendChild(document.createTextNode(" "));
             var r = document.createElement("span");
-            return r.classList.add("count"), r.textContent = "(" + e.pretty_integer(this.count) + ")", t.appendChild(r), t.tag = this, t
+            return r.classList.add("count"), this.created ? (r.textContent = "(create)", t.classList.add("tag-created")) : r.textContent = "(" + e.pretty_integer(this.count) + ")", t.appendChild(r), t.tag = this, t
         }, e.gallery = function(t) {
             for (var n = 0; n < t.tags.length; n++) {
                 var r = t.tags[n];
                 t.tags[n] = new e.tag(r.id, r.name, r.type, r.url, r.count)
             }
-            e.extend(this, t)
+            e.extend(this, t), this.editing = !1
         }, e.gallery.prototype.get_url = function(t) {
             return e.format("/g/{0}/{1}", this.id, t)
         }, e.gallery.prototype.toggle_favorite = function() {
@@ -608,6 +637,75 @@
             u.progress = function(t, n) {
                 a.textContent = e.format("Downloaded {0} of {1}: {2}%", t, n, (100 * t / n).toFixed(2))
             }
+        }, e.gallery.prototype.toggle_edit = function() {
+            this.editing ? (this.editing = !1, document.querySelector("#edit .text").textContent = "Edit", document.querySelector("#edit").disabled = !0, this.end_edit()) : (this.editing = !0, document.querySelector("#edit .text").textContent = "Save", this.begin_edit())
+        }, e.gallery.prototype.begin_edit = function() {
+            var t = ["parody", "character", "tag", "artist", "group", "language", "category"],
+                n = {
+                    tag: [],
+                    artist: [],
+                    parody: [],
+                    character: [],
+                    group: [],
+                    language: [],
+                    category: []
+                },
+                r = {
+                    tag: "Tags",
+                    artist: "Artists",
+                    parody: "Parodies",
+                    character: "Characters",
+                    group: "Groups",
+                    language: "Languages",
+                    category: "Categories"
+                };
+            for (var i = 0; i < this.tags.length; i++) {
+                var s = this.tags[i];
+                n[s.type].push(s)
+            }
+            this.editors = [], document.querySelector("#tags").innerHTML = "";
+            for (var i = 0; i < t.length; i++) {
+                var o = new e.tag_editor(t[i], n[t[i]], !0);
+                this.editors.push(o), o.$wrapper.querySelector(".name").textContent = r[t[i]] + ":", document.querySelector("#tags").appendChild(o.$wrapper), o.begin_edit()
+            }
+        }, e.gallery.prototype.end_edit = function() {
+            var t = [],
+                n = [],
+                r = [];
+            for (var i = 0; i < this.editors.length; i++) {
+                var s = this.editors[i];
+                s.end_edit();
+                var o = s.state();
+                for (var u = 0; u < o.added.length; u++) {
+                    var a = o.added[u];
+                    a.id.toString().indexOf("new-") !== -1 ? n.push({
+                        name: a.name,
+                        type: a.type
+                    }) : t.push(a.id)
+                }
+                for (var u = 0; u < o.removed.length; u++) {
+                    var a = o.removed[u];
+                    a.id.toString().indexOf("new-") === -1 && r.push(a.id)
+                }
+            }
+            e.http({
+                url: this.get_url("edit"),
+                method: "POST",
+                json: {
+                    added_tags: t,
+                    removed_tags: r,
+                    created_tags: n
+                },
+                success: function() {
+                    debugger;
+                    var n = JSON.parse(this.response);
+                    n.error ? e.show_message("An error has occured: " + n.error, "danger") : e.show_message("Your edit has been saved and will be approved shortly", "success")
+                },
+                failure: function(n) {
+                    var r = JSON.parse(this.response);
+                    e.show_message("An error has occured: " + r.error, "danger")
+                }
+            })
         }, "use strict", e.tag_autocomplete = function(t, n, r) {
             var i = arguments.length <= 3 || arguments[3] === undefined ? {} : arguments[3];
             this.tag = t, this.type = n, this.editor = r, this.exclude = i, this.$wrapper = e.create_element('\n		<div class="tag-autocomplete">\n			<div class="autocomplete-wrapper">\n				<input type="text" class="tag tag-input" placeholder="enter a tag name" autocapitalize="none" />\n				<ul class="dropdown"></ul>\n			</div>\n\n			<div class="tag-wrapper"></div>\n		</div>\n	'), this.$autocomplete_wrapper = this.$wrapper.querySelector(".autocomplete-wrapper"), this.$tag_wrapper = this.$wrapper.querySelector(".tag-wrapper"), this.$input = this.$autocomplete_wrapper.querySelector("input"), this.$dropdown = this.$autocomplete_wrapper.querySelector("ul"), this.install_handlers()
@@ -637,10 +735,21 @@
             }), e.bind(this.$tag_wrapper, ".tag", "click", function(e) {
                 var n = t.$tag_wrapper.children[0],
                     r = "";
-                n && (r = n.tag.name), t.$autocomplete_wrapper.classList.remove("hidden"), t.$tag_wrapper.innerHTML = "", t.$input.value = r, t.$input.focus(), e.preventDefault()
-            }, !0), this.old_value = "", e.bind(this.$input, "keyup", function(e) {
+                n && (r = n.tag.name), t.$autocomplete_wrapper.classList.remove("hidden"), t.$tag_wrapper.innerHTML = "", t.$input.value = r, t.$input.focus(), e.preventDefault(), e.stopPropagation()
+            }, {
+                capture: !0
+            }), this.old_value = "", e.bind(this.$input, "keyup", function(e) {
                 this.value !== t.old_value && (t.show_autocomplete(this.value), t.old_value = this.value)
-            })
+            }), setTimeout(function() {
+                e.bind(document, "click", function(e) {
+                    if (t.$autocomplete_wrapper.classList.contains("hidden")) return;
+                    if (t.$wrapper.contains(e.target)) return;
+                    if (t.$wrapper === e.target) return;
+                    t.remove()
+                }, {
+                    capture: !1
+                })
+            }, 100)
         }, e.tag_autocomplete.prototype.remove = function() {
             this.editor.added_tags.splice(this.editor.added_tags.indexOf(this.tag), 1), this.$wrapper.parentNode.removeChild(this.$wrapper)
         }, e.tag_autocomplete.prototype.select_tag = function(t) {
@@ -666,18 +775,19 @@
                             f = document.createElement("li");
                         f.appendChild(a.as_element()), n.$dropdown.appendChild(f)
                     }
-                    if (!s && e.strip(t)) {
+                    if (e.strip(t)) {
                         var f = document.createElement("li");
-                        f.classList.add("disabled"), f.appendChild(document.createTextNode("no results")), n.$dropdown.appendChild(f)
+                        n.editor.create ? (n.tag.name = e.strip(t), n.tag.created = !0, f.appendChild(n.tag.as_element())) : s || (f.classList.add("disabled"), f.appendChild(document.createTextNode("no results"))), n.$dropdown.appendChild(f)
                     }
                 }
             })
         }, e.tag_editor = function(t) {
-            var n = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-            this.type = t, this.tags = {}, this.removed_tags = {}, this.added_tags = [], this.autocomplete_excluded_tags = {}, this.new_tag_counter = 0, this.$wrapper = e.create_element('\n		<div class="tag-container field-name">\n			<span class="name"></span>\n			<span class="tags"></span>\n		</div>\n	', {
+            var n = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1],
+                r = arguments.length <= 2 || arguments[2] === undefined ? !1 : arguments[2];
+            this.type = t, this.tags = {}, this.create = r, this.removed_tags = {}, this.added_tags = [], this.autocomplete_excluded_tags = {}, this.new_tag_counter = 0, this.$wrapper = e.create_element('\n		<div class="tag-container field-name">\n			<span class="name"></span>\n			<span class="tags"></span>\n		</div>\n	', {
                 type: this.type
             });
-            for (var r = 0; r < n.length; r++) this.tags[n[r].id] = n[r], this.$wrapper.appendChild(n[r].as_element());
+            for (var i = 0; i < n.length; i++) this.tags[n[i].id] = n[i], this.$wrapper.appendChild(n[i].as_element());
             this.editing = !1, this.recompute_excluded_tags()
         }, e.tag_editor.prototype.recompute_excluded_tags = function() {
             var t = e.keys(this.autocomplete_excluded_tags);
@@ -704,7 +814,9 @@
             }), this.$wrapper.appendChild(n)
         }, e.tag_editor.prototype.end_edit = function() {
             if (!this.editing) throw new Error("Not editing");
-            this.editing = !1
+            this.editing = !1;
+            var e = this.$wrapper.querySelectorAll(".tag-new");
+            for (var t = 0; t < e.length; t++) e[t].parentNode.removeChild(e[t])
         }, e.tag_editor.prototype.state = function() {
             var t = [];
             for (var n = 0, r = e.keys(this.removed_tags); n < r.length; n++) t.push(this.removed_tags[r[n]]);
@@ -712,5 +824,46 @@
                 added: this.added_tags,
                 removed: t
             }
+        }, "use strict", e.install_menu_events = function() {
+            function r() {
+                t.classList.toggle("open"), n.querySelector("i").classList.toggle("fa-chevron-down"), n.querySelector("i").classList.toggle("fa-chevron-up")
+            }
+            var t = document.querySelector(".dropdown-menu"),
+                n = document.querySelector("#dropdown");
+            e.bind(n, "click", function() {
+                r(), n.querySelector("i").classList.contains("fa-chevron-up") && setTimeout(function() {
+                    var i = e.bind(document, "click", function(s) {
+                        e.unbind(document, "click", i, {
+                            capture: !1
+                        }), !t.contains(s.target) && !n.contains(s.target) && r()
+                    }, {
+                        capture: !1
+                    })
+                }, 100)
+            }), e.bind(document.querySelector("#hamburger"), "click", function() {
+                document.querySelector(".collapse").classList.toggle("open")
+            })
+        }, "use strict", e.install_favorites_events = function() {
+            e.bind("#favcontainer", ".gallery-favorite .remove-button", "click", function() {
+                var t = this,
+                    n = e.find_parent(this, ".gallery-favorite"),
+                    r = parseInt(n.dataset.id, 10),
+                    i = new e.gallery({
+                        id: r,
+                        tags: []
+                    }),
+                    s = setTimeout(function() {
+                        t.querySelector(".text").textContent = "Loading..."
+                    }, 200);
+                e.http({
+                    url: i.get_url("favorite"),
+                    method: "POST",
+                    success: function() {
+                        clearTimeout(s);
+                        var r = JSON.parse(this.response);
+                        r.favorited ? (n.classList.remove("removed"), t.querySelector(".text").textContent = "Remove", t.querySelector(".fa").classList.add("fa-minus"), t.querySelector(".fa").classList.remove("fa-undo")) : (n.classList.add("removed"), t.querySelector(".text").textContent = "Undo", t.querySelector(".fa").classList.remove("fa-minus"), t.querySelector(".fa").classList.add("fa-undo"))
+                    }
+                })
+            })
         }
 }).call(this);

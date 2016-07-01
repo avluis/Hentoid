@@ -96,7 +96,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void attachTitle(ViewHolder holder, Content content) {
         if (content.getTitle() == null) {
-            holder.tvTitle.setText(R.string.tvEmpty);
+            holder.tvTitle.setText(R.string.work_untitled);
         } else {
             holder.tvTitle.setText(content.getTitle());
             holder.tvTitle.setSelected(true);
@@ -112,7 +112,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachSeries(ViewHolder holder, Content content) {
-        String templateSeries = cxt.getString(R.string.tvSeries);
+        String templateSeries = cxt.getString(R.string.work_series);
         String series = "";
         List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
@@ -131,13 +131,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
         if (seriesAttributes == null) {
             holder.tvSeries.setText(Html.fromHtml(templateSeries.replace("@series@",
-                    cxt.getResources().getString(R.string.tvEmpty))));
+                    cxt.getResources().getString(R.string.work_untitled))));
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
     }
 
     private void attachArtist(ViewHolder holder, Content content) {
-        String templateArtist = cxt.getString(R.string.tvArtists);
+        String templateArtist = cxt.getString(R.string.work_artist);
         String artists = "";
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
         if (artistAttributes != null) {
@@ -153,13 +153,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
         if (artistAttributes == null) {
             holder.tvArtist.setText(Html.fromHtml(templateArtist.replace("@artist@",
-                    cxt.getResources().getString(R.string.tvEmpty))));
+                    cxt.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
     }
 
     private void attachTags(ViewHolder holder, Content content) {
-        String templateTags = cxt.getString(R.string.tvTags);
+        String templateTags = cxt.getString(R.string.work_tags);
         String tags = "";
         List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
         if (tagsAttributes != null) {
