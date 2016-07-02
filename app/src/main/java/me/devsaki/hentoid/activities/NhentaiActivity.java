@@ -103,9 +103,9 @@ public class NhentaiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("nhentai.net/g/")) {
-                url = url.replace("/g", "/api/gallery");
-                url = url.substring(0, url.length() - 1);
-                Helper.executeAsyncTask(new JsonLoader(), url);
+                String newURL = url.replace("/g", "/api/gallery");
+                newURL = newURL.substring(0, newURL.length() - 1);
+                Helper.executeAsyncTask(new JsonLoader(), newURL);
             }
         }
 

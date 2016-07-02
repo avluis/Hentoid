@@ -190,7 +190,7 @@ public class ImportActivity extends BaseActivity {
         File chosenDir = event.getDir();
         prevRootDir = currentRootDir;
 
-        if (currentRootDir != chosenDir) {
+        if (!currentRootDir.equals(chosenDir)) {
             restartFlag = true;
             currentRootDir = chosenDir;
         }
