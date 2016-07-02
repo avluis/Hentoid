@@ -383,6 +383,15 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             getActivity().finish();
         }
 
+        String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+
+        if (!this.settingDir.equals(settingDir)) {
+            LogHelper.d(TAG, "Library directory has changed!");
+            this.settingDir = settingDir;
+            cleanResults();
+            shouldUpdate = true;
+        }
+
         boolean endlessScroll = prefs.getBoolean(
                 ConstsPrefs.PREF_ENDLESS_SCROLL, ConstsPrefs.PREF_ENDLESS_SCROLL_DEFAULT);
 
