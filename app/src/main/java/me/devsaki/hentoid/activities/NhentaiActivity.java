@@ -102,8 +102,10 @@ public class NhentaiActivity extends BaseWebActivity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
-            if (url.contains("//nhentai.net/g/")) {
-                Helper.executeAsyncTask(new JsonLoader(), url + "json");
+            if (url.contains("nhentai.net/g/")) {
+                url = url.replace("/g", "/api/gallery");
+                url = url.substring(0, url.length() - 1);
+                Helper.executeAsyncTask(new JsonLoader(), url);
             }
         }
 

@@ -216,7 +216,10 @@ public class DownloadService extends IntentService {
                     aUrls = HitomiParser.parseImageList(html);
                     break;
                 case NHENTAI:
-                    String json = HttpClientHelper.call(currentContent.getGalleryUrl() + "/json");
+                    String url = currentContent.getGalleryUrl();
+                    url = url.replace("/g", "/api/gallery");
+                    url = url.substring(0, url.length() - 1);
+                    String json = HttpClientHelper.call(url);
                     aUrls = NhentaiParser.parseImageList(json);
                     break;
                 case TSUMINO:
