@@ -60,9 +60,15 @@ import me.devsaki.hentoid.util.LogHelper;
 public class ImportActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 
-    private static final String DIR_KEY = "currentDir";
+    private static final String CURRENT_DIR = "currentDir";
+    private static final String PREV_DIR = "prevDir";
     private AlertDialog addDialog;
     private String result;
+    private File currentRootDir;
+    private File prevRootDir;
+    private DirChooserFragment dirChooserFragment;
+    private HentoidDB db;
+    private boolean restartFlag;
     private final Handler importHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -73,9 +79,6 @@ public class ImportActivity extends BaseActivity {
             return false;
         }
     });
-    private File currentRootDir;
-    private DirChooserFragment dirChooserFragment;
-    private HentoidDB db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +106,8 @@ public class ImportActivity extends BaseActivity {
         if (savedState == null) {
             result = ConstsImport.RESULT_EMPTY;
         } else {
-            currentRootDir = (File) savedState.getSerializable(DIR_KEY);
+            currentRootDir = (File) savedState.getSerializable(CURRENT_DIR);
+            prevRootDir = (File) savedState.getSerializable(PREV_DIR);
             result = savedState.getString(ConstsImport.RESULT_KEY);
         }
         checkForDefaultDirectory();
@@ -111,13 +115,26 @@ public class ImportActivity extends BaseActivity {
 
     private void checkForDefaultDirectory() {
         if (checkPermissions()) {
-            File file = new File(Environment.getExternalStorageDirectory() +
-                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+
+            SharedPreferences sp = HentoidApp.getSharedPrefs();
+            String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
+
+            LogHelper.d(TAG, settingDir);
+
+            File file;
+
+            if (!settingDir.isEmpty()) {
+                file = new File(settingDir);
+            } else {
+                file = new File(Environment.getExternalStorageDirectory() +
+                        "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+            }
+
             if (file.exists() && file.isDirectory()) {
-                LogHelper.d(TAG, "Default Directory Found.");
                 currentRootDir = file;
             } else {
                 currentRootDir = Helper.getDefaultDir(this, "");
+                LogHelper.d(TAG, "Creating new storage directory.");
             }
             pickDownloadDirectory();
         } else {
@@ -127,7 +144,8 @@ public class ImportActivity extends BaseActivity {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putSerializable(DIR_KEY, currentRootDir);
+        outState.putSerializable(CURRENT_DIR, currentRootDir);
+        outState.putSerializable(PREV_DIR, prevRootDir);
         outState.putString(ConstsImport.RESULT_KEY, result);
         super.onSaveInstanceState(outState);
     }
@@ -169,7 +187,13 @@ public class ImportActivity extends BaseActivity {
 
     @Subscribe
     public void onDirChosen(OnDirChosenEvent event) {
-        currentRootDir = event.getDir();
+        File chosenDir = event.getDir();
+        prevRootDir = currentRootDir;
+
+        if (currentRootDir != chosenDir) {
+            restartFlag = true;
+            currentRootDir = chosenDir;
+        }
         LogHelper.d(TAG, "Storage Path: " + currentRootDir);
         dirChooserFragment.dismiss();
         importFolder(currentRootDir);
@@ -248,6 +272,11 @@ public class ImportActivity extends BaseActivity {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                                 // Prior Library found, but user chose to cancel
+                                restartFlag = false;
+                                currentRootDir = prevRootDir;
+                                validateFolder(currentRootDir.getAbsolutePath());
+                                LogHelper.d(TAG, "Restart needed: " + false);
+
                                 result = ConstsImport.EXISTING_LIBRARY_FOUND;
                                 Intent returnIntent = new Intent();
                                 returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
@@ -332,6 +361,8 @@ public class ImportActivity extends BaseActivity {
         if (mAddDialog != null) {
             mAddDialog.dismiss();
         }
+        LogHelper.d(TAG, "Restart needed: " + restartFlag);
+
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
         setResult(RESULT_OK, returnIntent);
