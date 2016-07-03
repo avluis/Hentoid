@@ -24,14 +24,13 @@ public class HitomiParser {
 
     public static Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
-
         Elements content = doc.select(".content");
         if (content.size() > 0) {
-            String coverImageUrlTEMP = "https:" + content.select(".cover img").attr("src");
+            String coverImageUrl = "https:" + content.select(".cover img").attr("src");
             Element info = content.select(".gallery").first();
-            Element title = info.select("h1").first();
-            String urlTEMP = title.select("a").first().attr("href").replace("/reader", "");
-            String titleTEMP = title.text();
+            Element titleElement = info.select("h1").first();
+            String url = titleElement.select("a").first().attr("href").replace("/reader", "");
+            String title = titleElement.text();
 
             AttributeMap attributes = new AttributeMap();
             parseAttributes(attributes, AttributeType.ARTIST, info.select("h2").select("a"));
@@ -57,9 +56,9 @@ public class HitomiParser {
             int pages = doc.select(".thumbnail-container").size();
 
             return new Content()
-                    .setTitle(titleTEMP)
-                    .setUrl(urlTEMP)
-                    .setCoverImageUrl(coverImageUrlTEMP)
+                    .setTitle(title)
+                    .setUrl(url)
+                    .setCoverImageUrl(coverImageUrl)
                     .setAttributes(attributes)
                     .setQtyPages(pages)
                     .setStatus(StatusContent.SAVED)
@@ -80,9 +79,9 @@ public class HitomiParser {
 
     public static List<String> parseImageList(String html) {
         Document doc = Jsoup.parse(html);
-        Elements imgs = doc.select(".img-url");
-        List<String> imagesUrl = new ArrayList<>(imgs.size());
-        for (Element element : imgs) {
+        Elements imgElements = doc.select(".img-url");
+        List<String> imagesUrl = new ArrayList<>(imgElements.size());
+        for (Element element : imgElements) {
             imagesUrl.add("https:" + element.text());
         }
 

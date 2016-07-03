@@ -24,9 +24,9 @@ public class NhentaiParser {
 
     public static Content parseContent(String json) throws JSONException {
         JSONObject jsonContent = new JSONObject(json);
-        String titleTEMP = jsonContent.getJSONObject("title").getString("english");
-        String urlTEMP = "/" + jsonContent.getInt("id") + '/';
-        int qtyPagesTEMP = jsonContent.getInt("num_pages");
+        String title = jsonContent.getJSONObject("title").getString("pretty");
+        String url = "/" + jsonContent.getInt("id") + '/';
+        int qtyPages = jsonContent.getInt("num_pages");
 
         String mediaId = jsonContent.getString("media_id");
         String extension = jsonContent.getJSONObject("images").getJSONObject("cover").getString("t");
@@ -93,11 +93,11 @@ public class NhentaiParser {
         }
 
         return new Content()
-                .setTitle(titleTEMP)
-                .setUrl(urlTEMP)
+                .setTitle(title)
+                .setUrl(url)
                 .setCoverImageUrl(coverImageUrl)
                 .setAttributes(attributes)
-                .setQtyPages(qtyPagesTEMP)
+                .setQtyPages(qtyPages)
                 .setStatus(StatusContent.SAVED)
                 .setSite(Site.NHENTAI);
     }

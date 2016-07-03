@@ -730,6 +730,11 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             update();
             checkContent(true);
         }
+
+        if (!query.isEmpty()) {
+            LogHelper.d(TAG, "Saved Query: " + query);
+            update();
+        }
     }
 
     private void checkContent(boolean clear) {
