@@ -2,7 +2,9 @@ package me.devsaki.hentoid.activities;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -59,6 +61,27 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
         super.onResume();
 
         updateDrawerPosition();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission Granted
+                LogHelper.d(TAG, "Permissions granted.");
+                // In order to apply changes, activity/task restart is needed
+                Helper.doRestart(this);
+            } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                // Permission Denied
+                LogHelper.d(TAG, "Permissions denied.");
+            }
+        } else {
+            // Permissions cannot be set, either via policy or forced by user.
+            finish();
+        }
     }
 
     @Override

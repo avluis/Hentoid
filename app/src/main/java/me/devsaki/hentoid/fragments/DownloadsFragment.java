@@ -7,7 +7,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
@@ -45,7 +44,6 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.activities.ImportActivity;
-import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
@@ -167,8 +165,9 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
     // Validate permissions
     private void checkPermissions() {
-        if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
+        if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
             queryPrefs();
+            checkResults();
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
             if (permissionChecked) {
@@ -178,33 +177,8 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (grantResults.length > 0) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission Granted
-                LogHelper.d(TAG, "Permissions granted.");
-            } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                // Permission Denied
-                permissionChecked = true;
-            }
-        } else {
-            // Permissions cannot be set, either via policy or forced by user.
-            getActivity().finish();
-        }
-    }
-
     private void reset() {
-        // We have asked for permissions, but still denied.
-        Helper.toast(R.string.reset);
-        Helper.commitFirstRun(true);
-        Intent intent = new Intent(getActivity(), IntroActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
-        getActivity().finish();
+        Helper.reset(HentoidApp.getAppContext(), getActivity());
     }
 
     @Override
@@ -446,8 +420,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         if (mListState != null) {
             llm.onRestoreInstanceState(mListState);
         }
-
-        checkResults();
     }
 
     @Override

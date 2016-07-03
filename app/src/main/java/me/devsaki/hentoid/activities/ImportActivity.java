@@ -153,13 +153,46 @@ public class ImportActivity extends BaseActivity {
     // Validate permissions
     private boolean checkPermissions() {
         if (Helper.permissionsCheck(
-                ImportActivity.this, ConstsImport.RQST_STORAGE_PERMISSION)) {
+                ImportActivity.this, ConstsImport.RQST_STORAGE_PERMISSION, true)) {
             LogHelper.d(TAG, "Storage permission allowed!");
             return true;
         } else {
             LogHelper.d(TAG, "Storage permission denied!");
         }
         return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (grantResults.length > 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission Granted
+                result = ConstsImport.PERMISSION_GRANTED;
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                setResult(RESULT_OK, returnIntent);
+                finish();
+            } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                // Permission Denied
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    result = ConstsImport.PERMISSION_DENIED;
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                    setResult(RESULT_CANCELED, returnIntent);
+                    finish();
+                } else {
+                    result = ConstsImport.PERMISSION_DENIED_FORCED;
+                    Intent returnIntent = new Intent();
+                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                    setResult(RESULT_CANCELED, returnIntent);
+                    finish();
+                }
+            }
+        }
     }
 
     // Present Directory Picker
@@ -197,39 +230,6 @@ public class ImportActivity extends BaseActivity {
         LogHelper.d(TAG, "Storage Path: " + currentRootDir);
         dirChooserFragment.dismiss();
         importFolder(currentRootDir);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (grantResults.length > 0) {
-            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission Granted
-                result = ConstsImport.PERMISSION_GRANTED;
-                Intent returnIntent = new Intent();
-                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                setResult(RESULT_OK, returnIntent);
-                finish();
-            } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                // Permission Denied
-                if (ActivityCompat.shouldShowRequestPermissionRationale(this,
-                        Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                    result = ConstsImport.PERMISSION_DENIED;
-                    Intent returnIntent = new Intent();
-                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                    setResult(RESULT_CANCELED, returnIntent);
-                    finish();
-                } else {
-                    result = ConstsImport.PERMISSION_DENIED_FORCED;
-                    Intent returnIntent = new Intent();
-                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                    setResult(RESULT_CANCELED, returnIntent);
-                    finish();
-                }
-            }
-        }
     }
 
     private void importFolder(File folder) {

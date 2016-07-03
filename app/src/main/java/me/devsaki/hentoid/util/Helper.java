@@ -4,11 +4,13 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -24,6 +26,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.IntentCompat;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.AbsListView;
@@ -39,6 +42,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AppLockActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 
@@ -447,16 +451,54 @@ public final class Helper {
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public static boolean permissionsCheck(Activity activity, int permissionRequestCode) {
+    public static boolean permissionsCheck(Activity activity, int permissionRequestCode,
+                                           boolean request) {
         if (ActivityCompat.checkSelfPermission(activity,
                 Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
 
             return true;
         } else {
-            ActivityCompat.requestPermissions(activity, new String[]{
-                    Manifest.permission.READ_EXTERNAL_STORAGE}, permissionRequestCode);
+            if (request) {
+                ActivityCompat.requestPermissions(activity, new String[]{
+                        Manifest.permission.READ_EXTERNAL_STORAGE}, permissionRequestCode);
+            }
 
             return false;
+        }
+    }
+
+    public static void reset(Context cxt, Activity activity) {
+        // We have asked for permissions, but still denied.
+        Helper.toast(R.string.reset);
+        Helper.commitFirstRun(true);
+        Intent intent = new Intent(activity, IntroActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        cxt.startActivity(intent);
+        activity.finish();
+    }
+
+    public static void doRestart(@NonNull Context cxt) {
+        try {
+            PackageManager pm = cxt.getPackageManager();
+            if (pm != null) {
+                Intent intent = pm.getLaunchIntentForPackage(cxt.getPackageName());
+                if (intent != null) {
+                    ComponentName componentName = intent.getComponent();
+                    Intent mainIntent = IntentCompat.makeRestartActivityTask(componentName);
+                    mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            | Intent.FLAG_ACTIVITY_NEW_TASK
+                            | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    cxt.startActivity(mainIntent);
+
+                    System.exit(0);
+                } else {
+                    LogHelper.e(TAG, "Was not able to restart application, intent null");
+                }
+            } else {
+                LogHelper.e(TAG, "Was not able to restart application, PM null");
+            }
+        } catch (Exception ex) {
+            LogHelper.e(TAG, "Was not able to restart application", ex);
         }
     }
 

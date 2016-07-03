@@ -10,8 +10,8 @@ android {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 38
-        versionName '1.2.0-beta'
+        versionCode 39
+        versionName '1.2.0r1'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
