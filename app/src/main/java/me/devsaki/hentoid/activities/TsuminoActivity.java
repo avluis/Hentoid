@@ -33,11 +33,11 @@ public class TsuminoActivity extends BaseWebActivity {
     private boolean downloadFabPressed = false;
     private int historyIndex;
 
-    private static int ordinalIndexOf(String str, char delimiter, int n) {
-        int i = n;
-        int pos = str.indexOf(delimiter, 0);
+    private static int ordinalIndexOf(String str) {
+        int i = 5;
+        int pos = str.indexOf('/', 0);
         while (i-- > 0 && pos != -1) {
-            pos = str.indexOf(delimiter, pos + 1);
+            pos = str.indexOf('/', pos + 1);
         }
 
         return pos;
@@ -76,7 +76,7 @@ public class TsuminoActivity extends BaseWebActivity {
         historyIndex = getWebView().copyBackForwardList().getCurrentIndex();
 
         String newUrl = getWebView().getUrl().replace("Book/Info", "Read/View");
-        final int index = ordinalIndexOf(newUrl, '/', 5);
+        final int index = ordinalIndexOf(newUrl);
         if (index > 0) newUrl = newUrl.substring(0, index);
         getWebView().loadUrl(newUrl);
     }

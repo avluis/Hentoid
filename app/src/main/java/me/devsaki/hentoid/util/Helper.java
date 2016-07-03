@@ -336,7 +336,7 @@ public final class Helper {
         }
     }
 
-    public static void toast(int resource) {
+    private static void toast(int resource) {
         Context cxt = HentoidApp.getAppContext();
         if (cxt != null) {
             toast(cxt, cxt.getResources().getString(resource));
@@ -490,7 +490,7 @@ public final class Helper {
                             | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     cxt.startActivity(mainIntent);
 
-                    System.exit(0);
+                    Runtime.getRuntime().exit(0);
                 } else {
                     LogHelper.e(TAG, "Was not able to restart application, intent null");
                 }
@@ -604,5 +604,35 @@ public final class Helper {
         }
 
         return 0;
+    }
+
+    /**
+     * Created by avluis on 06/12/2016.
+     * Resource ID Exception
+     */
+    public static class ResourceException extends Exception {
+        private String result;
+        private Exception code;
+
+        public ResourceException(String result, Exception code) {
+            this.result = result;
+            this.code = code;
+        }
+
+        public String getResult() {
+            return result;
+        }
+
+        public void setResult(String result) {
+            this.result = result;
+        }
+
+        public Exception getCode() {
+            return code;
+        }
+
+        public void setCode(Exception code) {
+            this.code = code;
+        }
     }
 }

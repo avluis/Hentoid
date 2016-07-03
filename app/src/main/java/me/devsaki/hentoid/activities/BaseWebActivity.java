@@ -47,7 +47,6 @@ public class BaseWebActivity extends BaseActivity {
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
-    private boolean permissionChecked;
 
     Site getSite() {
         return site;
