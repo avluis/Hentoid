@@ -467,8 +467,8 @@ public final class Helper {
         }
     }
 
+    // We have asked for permissions, but still denied.
     public static void reset(Context cxt, Activity activity) {
-        // We have asked for permissions, but still denied.
         Helper.toast(R.string.reset);
         Helper.commitFirstRun(true);
         Intent intent = new Intent(activity, IntroActivity.class);
@@ -477,6 +477,7 @@ public final class Helper {
         activity.finish();
     }
 
+    // Note that this is a last resort method -- for use only when ALL else fails.
     public static void doRestart(@NonNull Context cxt) {
         try {
             PackageManager pm = cxt.getPackageManager();
