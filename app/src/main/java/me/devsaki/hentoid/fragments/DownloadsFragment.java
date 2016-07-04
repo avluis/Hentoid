@@ -810,6 +810,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 break;
             default:
                 stopAnimation();
+                emptyText.setVisibility(View.GONE);
                 loadingText.setVisibility(View.GONE);
                 break;
         }
@@ -853,7 +854,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     private void displayResults() {
-        clearSelection();
+        //clearSelection();
         toggleUI(0);
         result = search.getContent();
 
@@ -877,8 +878,10 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 toggleUI(SHOW_RESULT);
                 updatePager();
             } else {
-                LogHelper.d(TAG, "Result: Nothing to match.");
-                displayNoResults();
+                if (isLoaded) {
+                    LogHelper.d(TAG, "Result: Nothing to match.");
+                    displayNoResults();
+                }
             }
         } else {
             LogHelper.d(TAG, "Query: " + query);
@@ -1024,9 +1027,10 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 currentPage++;
                 searchContent();
             }
+        } else {
+            LogHelper.d(TAG, "Endless Scrolling disabled.");
+            mAdapter.enableFooter(false);
         }
-
-        LogHelper.d(TAG, "Endless Scrolling disabled.");
     }
 
     @Override

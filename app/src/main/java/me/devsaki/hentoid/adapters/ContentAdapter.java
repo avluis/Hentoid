@@ -7,6 +7,7 @@ import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.Html;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
@@ -14,6 +15,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import org.apache.commons.io.FileUtils;
@@ -42,13 +44,16 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
  */
-public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
+public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
-    private static final int VISIBLE_THRESHOLD = 6;
+    private static final int VISIBLE_THRESHOLD = 10;
+    private static final int VIEW_TYPE_LOADING = 0;
+    private static final int VIEW_TYPE_ITEM = 1;
     private final Context cxt;
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
+    private boolean isFooterEnabled = true;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
     private List<Content> contents = new ArrayList<>();
@@ -118,25 +123,44 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     @Override
-    public ContentHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        final View view = LayoutInflater.from(parent.getContext()).inflate(
-                R.layout.item_download, parent, false);
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        ViewHolder viewHolder;
 
-        return new ContentHolder(view);
+        if (viewType == VIEW_TYPE_LOADING) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(
+                    R.layout.progress, parent, false);
+
+            viewHolder = new ProgressViewHolder(view);
+        } else {
+            View view = LayoutInflater.from(parent.getContext()).inflate(
+                    R.layout.item_download, parent, false);
+
+            viewHolder = new ContentHolder(view);
+        }
+
+        return viewHolder;
     }
 
     @Override
-    public void onBindViewHolder(final ContentHolder holder, final int pos) {
-        final Content content = contents.get(pos);
+    public void onBindViewHolder(final ViewHolder holder, final int pos) {
+        if (holder instanceof ProgressViewHolder) {
+            ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
+        } else if (contents.size() > 0 && pos < contents.size()) {
+            final Content content = contents.get(pos);
 
-        updateLayoutVisibility(holder, content, pos);
-        populateLayout(holder, content, pos);
-        attachOnClickListeners(holder, content, pos);
+            updateLayoutVisibility((ContentHolder) holder, content, pos);
+            populateLayout((ContentHolder) holder, content, pos);
+            attachOnClickListeners((ContentHolder) holder, content, pos);
+        }
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
         if (pos == getItemCount() - VISIBLE_THRESHOLD && endlessScrollListener != null) {
             endlessScrollListener.onLoadMore();
+        }
+
+        if (endlessScrollListener == null) {
+            enableFooter(false);
         }
 
         if (getSelectedItems() != null) {
@@ -503,7 +527,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     @Override
     public int getItemCount() {
-        return (null != contents ? contents.size() : 0);
+        return (isFooterEnabled) ? contents.size() + 1 : contents.size();
+    }
+
+    @Override
+    public int getItemViewType(int pos) {
+        return (isFooterEnabled && pos >= contents.size()) ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+    }
+
+    public void enableFooter(boolean isEnabled) {
+        this.isFooterEnabled = isEnabled;
     }
 
     public void purgeSelectedItems() {
@@ -629,5 +662,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     public interface ContentsWipedListener {
         void onContentsWiped();
+    }
+
+    private static class ProgressViewHolder extends RecyclerView.ViewHolder {
+        public final ProgressBar progressBar;
+
+        public ProgressViewHolder(View itemView) {
+            super(itemView);
+            progressBar = (ProgressBar) itemView.findViewById(R.id.loadingProgress);
+        }
     }
 }
