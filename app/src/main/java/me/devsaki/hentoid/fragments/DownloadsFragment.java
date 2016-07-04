@@ -683,6 +683,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         } else {
             backButtonPressed = System.currentTimeMillis();
             Helper.toast(mContext, R.string.press_back_again);
+            scrollToTop();
         }
 
         if (!query.isEmpty()) {
@@ -773,6 +774,12 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         resetCount();
     }
 
+    private void scrollToTop() {
+        if (llm != null) {
+            llm.scrollToPositionWithOffset(0, 0);
+        }
+    }
+
     private void resetCount() {
         LogHelper.d(TAG, "Download Count: " + HentoidApp.getDownloadCount());
         HentoidApp.setDownloadCount(0);
@@ -810,8 +817,8 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 break;
             default:
                 stopAnimation();
+                mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.GONE);
-                loadingText.setVisibility(View.GONE);
                 break;
         }
     }
@@ -878,7 +885,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 toggleUI(SHOW_RESULT);
                 updatePager();
             } else {
-                if (isLoaded) {
+                if (isLoaded && contents != null && result != null) {
                     LogHelper.d(TAG, "Result: Nothing to match.");
                     displayNoResults();
                 }
@@ -905,6 +912,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     private void updatePager() {
         // TODO: Test if result.size == qtyPages (meaning; last page, exact size)
         isLastPage = result.size() < qtyPages;
+        mAdapter.enableFooter(!isLastPage);
         LogHelper.d(TAG, "Results: " + result.size());
     }
 
@@ -1016,6 +1024,9 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     @Override
     public void onContentsWiped() {
         LogHelper.d(TAG, "All items cleared!");
+        displayNoResults();
+        clearSelection();
+        cleanResults();
         update();
     }
 
@@ -1023,6 +1034,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     public void onLoadMore() {
         if (endlessScroll && query.isEmpty()) {
             LogHelper.d(TAG, "Load more data now~");
+            isLoaded = false;
             if (!isLastPage) {
                 currentPage++;
                 searchContent();
