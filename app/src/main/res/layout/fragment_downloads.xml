@@ -56,7 +56,6 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="end|bottom"
                 android:layout_margin="@dimen/scrolling_fab_margin"
-                android:onClick="onScrollToTop"
                 android:src="@drawable/ic_arrow_upward"
                 android:visibility="gone"
                 app:backgroundTint="@color/primary"

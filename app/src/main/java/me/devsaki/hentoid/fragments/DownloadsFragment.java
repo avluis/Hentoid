@@ -13,6 +13,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -86,6 +87,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     private TextView loadingText;
     private TextView emptyText;
     private Toolbar toolbar;
+    private FloatingActionButton scrollToTop;
     private LinearLayout toolTip;
     private SwipeRefreshLayout refreshLayout;
     private boolean newContent;
@@ -523,6 +525,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         mDrawerLayout.addDrawerListener(this);
 
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
+        scrollToTop = (FloatingActionButton) rootView.findViewById(R.id.fabScrollTop);
         toolbar = (Toolbar) rootView.findViewById(R.id.downloads_toolbar);
         toolTip = (LinearLayout) rootView.findViewById(R.id.tooltip);
         refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
@@ -588,6 +591,13 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             @Override
             public void onRefresh() {
                 commitRefresh();
+            }
+        });
+
+        scrollToTop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                scrollToTop();
             }
         });
     }
@@ -762,6 +772,14 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         }
     }
 
+    private void showScrollTopFAB(boolean show) {
+        if (scrollToTop.getVisibility() == View.GONE && show) {
+            scrollToTop.setVisibility(View.VISIBLE);
+        } else if (scrollToTop.getVisibility() == View.VISIBLE && !show) {
+            scrollToTop.setVisibility(View.GONE);
+        }
+    }
+
     private void commitRefresh() {
         toolTip.setVisibility(View.GONE);
         refreshLayout.setRefreshing(false);
@@ -771,6 +789,11 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         cleanResults();
         update();
         resetCount();
+    }
+
+    private void scrollToTop() {
+        // TODO: Make me scroll~
+        LogHelper.d(TAG, "Yep, I'm being tapped on~");
     }
 
     private void resetCount() {
@@ -905,6 +928,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     private void updatePager() {
         // TODO: Test if result.size == qtyPages (meaning; last page, exact size)
         isLastPage = result.size() < qtyPages;
+        mAdapter.enableFooter(!isLastPage);
         LogHelper.d(TAG, "Results: " + result.size());
     }
 
@@ -1016,6 +1040,9 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     @Override
     public void onContentsWiped() {
         LogHelper.d(TAG, "All items cleared!");
+        displayNoResults();
+        clearSelection();
+        cleanResults();
         update();
     }
 
@@ -1025,6 +1052,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             LogHelper.d(TAG, "Load more data now~");
             if (!isLastPage) {
                 currentPage++;
+                isLoaded = false;
                 searchContent();
             }
         } else {
