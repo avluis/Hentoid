@@ -13,7 +13,6 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -87,7 +86,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     private TextView loadingText;
     private TextView emptyText;
     private Toolbar toolbar;
-    private FloatingActionButton scrollToTop;
     private LinearLayout toolTip;
     private SwipeRefreshLayout refreshLayout;
     private boolean newContent;
@@ -525,7 +523,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         mDrawerLayout.addDrawerListener(this);
 
         btnPage = (Button) rootView.findViewById(R.id.btnPage);
-        scrollToTop = (FloatingActionButton) rootView.findViewById(R.id.fabScrollTop);
         toolbar = (Toolbar) rootView.findViewById(R.id.downloads_toolbar);
         toolTip = (LinearLayout) rootView.findViewById(R.id.tooltip);
         refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
@@ -591,13 +588,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             @Override
             public void onRefresh() {
                 commitRefresh();
-            }
-        });
-
-        scrollToTop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                scrollToTop();
             }
         });
     }
@@ -693,6 +683,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         } else {
             backButtonPressed = System.currentTimeMillis();
             Helper.toast(mContext, R.string.press_back_again);
+            scrollToTop();
         }
 
         if (!query.isEmpty()) {
@@ -772,14 +763,6 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         }
     }
 
-    private void showScrollTopFAB(boolean show) {
-        if (scrollToTop.getVisibility() == View.GONE && show) {
-            scrollToTop.setVisibility(View.VISIBLE);
-        } else if (scrollToTop.getVisibility() == View.VISIBLE && !show) {
-            scrollToTop.setVisibility(View.GONE);
-        }
-    }
-
     private void commitRefresh() {
         toolTip.setVisibility(View.GONE);
         refreshLayout.setRefreshing(false);
@@ -792,8 +775,9 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     }
 
     private void scrollToTop() {
-        // TODO: Make me scroll~
-        LogHelper.d(TAG, "Yep, I'm being tapped on~");
+        if (llm != null) {
+            llm.scrollToPositionWithOffset(0, 0);
+        }
     }
 
     private void resetCount() {
@@ -833,8 +817,8 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 break;
             default:
                 stopAnimation();
+                mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.GONE);
-                loadingText.setVisibility(View.GONE);
                 break;
         }
     }
@@ -901,7 +885,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 toggleUI(SHOW_RESULT);
                 updatePager();
             } else {
-                if (isLoaded) {
+                if (isLoaded && contents != null && result != null) {
                     LogHelper.d(TAG, "Result: Nothing to match.");
                     displayNoResults();
                 }
@@ -1050,9 +1034,9 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
     public void onLoadMore() {
         if (endlessScroll && query.isEmpty()) {
             LogHelper.d(TAG, "Load more data now~");
+            isLoaded = false;
             if (!isLastPage) {
                 currentPage++;
-                isLoaded = false;
                 searchContent();
             }
         } else {

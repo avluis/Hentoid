@@ -18,9 +18,6 @@
     <dimen name="drawer_menu_elevation">2dp</dimen>
     <dimen name="toolbar_layout_elevation">6dp</dimen>
 
-    <!-- downloads -->
-    <dimen name="scrolling_fab_margin">8dp</dimen>
-
     <!-- browser -->
     <dimen name="activity_base_web_padding">6dp</dimen>
 
