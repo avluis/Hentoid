@@ -3,6 +3,9 @@
     <!-- Elevation (V21+ API) -->
     <dimen name="drawer_menu_elevation">4dp</dimen>
 
+    <!-- downloads -->
+    <dimen name="scrolling_fab_margin">16dp</dimen>
+
     <!-- browser -->
     <dimen name="download_fab_margin">16dp</dimen>
 
