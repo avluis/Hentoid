@@ -61,9 +61,8 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
- * <p/>
- * TODO: Allow user to (instantly) scroll to top when on last item/page (endless scroll)
- * TODO: Consider showing load progress after last item (endless scroll)
+ * </p>
+ * TODO: Separate endless scrolling and paging into their own fragments
  */
 public class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, DrawerListener, EndlessScrollListener, ItemSelectListener {
@@ -704,6 +703,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         }
     }
 
+    // TODO: Needs improvement
     private void checkResults() {
         if (endlessScroll) {
             if (contents != null) {
@@ -817,8 +817,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 break;
             default:
                 stopAnimation();
-                mListView.setVisibility(View.GONE);
-                emptyText.setVisibility(View.GONE);
+                loadingText.setVisibility(View.GONE);
                 break;
         }
     }
@@ -862,8 +861,11 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
 
     private void displayResults() {
         //clearSelection();
-        toggleUI(0);
         result = search.getContent();
+
+        if (isLoaded) {
+            toggleUI(0);
+        }
 
         if (query.isEmpty()) {
             if (result != null && !result.isEmpty()) {
@@ -885,10 +887,8 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
                 toggleUI(SHOW_RESULT);
                 updatePager();
             } else {
-                if (isLoaded && contents != null && result != null) {
-                    LogHelper.d(TAG, "Result: Nothing to match.");
-                    displayNoResults();
-                }
+                LogHelper.d(TAG, "Result: Nothing to match.");
+                displayNoResults();
             }
         } else {
             LogHelper.d(TAG, "Query: " + query);

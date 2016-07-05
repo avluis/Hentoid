@@ -16,8 +16,6 @@ import me.devsaki.hentoid.util.Helper;
 /**
  * Created by avluis on 8/22/15.
  * Presents an About Screen for the user to inquire more about the app.
- * <p/>
- * TODO: Replace blog url with subreddit, add discord links
  */
 public class AboutActivity extends BaseActivity {
     private String verName = "Hentoid ver: ";
@@ -59,15 +57,29 @@ public class AboutActivity extends BaseActivity {
             });
         }
 
-        Spanned spBlog = Html.fromHtml(getString(R.string.about_blog));
-        TextView tvBlog = (TextView) findViewById(R.id.tv_blog);
-        final String urlBlog = getString(R.string.about_blog_url);
-        if (tvBlog != null) {
-            tvBlog.setText(spBlog);
-            tvBlog.setOnClickListener(new View.OnClickListener() {
+        Spanned spDiscord = Html.fromHtml(getString(R.string.about_discord));
+        TextView tvDiscord = (TextView) findViewById(R.id.tv_discord);
+        final String urlBlog = getString(R.string.about_discord_url);
+        if (tvDiscord != null) {
+            tvDiscord.setText(spDiscord);
+            tvDiscord.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     intent.setData(Uri.parse(urlBlog));
+                    startActivity(intent);
+                }
+            });
+        }
+
+        Spanned spReddit = Html.fromHtml(getString(R.string.about_reddit));
+        TextView tvReddit = (TextView) findViewById(R.id.tv_reddit);
+        final String urlReddit = getString(R.string.about_reddit_url);
+        if (tvReddit != null) {
+            tvReddit.setText(spReddit);
+            tvReddit.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    intent.setData(Uri.parse(urlReddit));
                     startActivity(intent);
                 }
             });

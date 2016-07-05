@@ -97,12 +97,14 @@
         <p><b>Notes:</b><br>
         In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.<br>
         FAKKU has dropped support for free content, and while support for FAKKU Books or Subscriptions is not currently planned, this may change in the future.</p>]]></string>
-    <string name="about_blog" translatable="false"><![CDATA[<u>FakkuDroid</u>]]></string>
-    <string name="about_blog_url" translatable="false">http://fakkudroid.blogspot.com/</string>
     <string name="about_community" translatable="false"><![CDATA[<u>Google+</u>]]></string>
     <string name="about_community_url" translatable="false">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github" translatable="false"><![CDATA[<u>GitHub</u>]]></string>
     <string name="about_github_url" translatable="false">https://github.com/AVnetWS/Hentoid</string>
+    <string name="about_discord" translatable="false"><![CDATA[<u>Discord</u>]]></string>
+    <string name="about_discord_url" translatable="false">https://discord.gg/0yFzSPtXehJmFqOM</string>
+    <string name="about_reddit" translatable="false"><![CDATA[<u>Reddit</u>]]></string>
+    <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
     <string name="about_notes">
         <![CDATA[
         <p>New look! New navigation drawer!<br>

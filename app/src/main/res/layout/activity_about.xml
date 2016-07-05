@@ -27,7 +27,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:columnCount="2"
-                android:rowCount="3">
+                android:rowCount="4">
 
                 <ImageView
                     android:layout_width="@dimen/about_ic_icons_width"
@@ -51,7 +51,7 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_favicon_googleplus"
+                    android:src="@drawable/ic_favicon_gplus"
                     tools:ignore="ContentDescription" />
 
                 <TextView
@@ -69,17 +69,35 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_favicon_fakku"
+                    android:src="@drawable/ic_favicon_discord"
                     tools:ignore="ContentDescription" />
 
                 <TextView
-                    android:id="@+id/tv_blog"
+                    android:id="@+id/tv_discord"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:layout_marginLeft="5dp"
                     android:layout_marginStart="5dp"
-                    android:text="@string/about_blog"
+                    android:text="@string/about_discord"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textSize="@dimen/about_ic_icons_textSize" />
+
+                <ImageView
+                    android:layout_width="@dimen/about_ic_icons_width"
+                    android:layout_height="@dimen/about_ic_icons_height"
+                    android:cropToPadding="true"
+                    android:src="@drawable/ic_favicon_reddit"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/tv_reddit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginLeft="5dp"
+                    android:layout_marginStart="5dp"
+                    android:text="@string/about_reddit"
                     android:textAppearance="?android:attr/textAppearanceLarge"
                     android:textSize="@dimen/about_ic_icons_textSize" />
             </GridLayout>

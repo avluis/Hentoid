@@ -39,7 +39,7 @@ public class SearchContent {
     public void retrieveResults(final ContentListener listener) {
         LogHelper.d(TAG, "Retrieving results.");
 
-        if (mCurrentState == State.INITIALIZED) {
+        if (mCurrentState == State.READY) {
             listener.onContentReady(true);
             listener.onContentFailed(false);
             return;
@@ -48,6 +48,8 @@ public class SearchContent {
             listener.onContentFailed(true);
             return;
         }
+
+        mCurrentState = State.INITIALIZING;
 
         new AsyncTask<Void, Void, State>() {
 
@@ -60,7 +62,7 @@ public class SearchContent {
             @Override
             protected void onPostExecute(State current) {
                 if (listener != null) {
-                    listener.onContentReady(current == State.INITIALIZED);
+                    listener.onContentReady(current == State.READY);
                     listener.onContentFailed(current == State.FAILED);
                 }
             }
@@ -68,18 +70,18 @@ public class SearchContent {
     }
 
     private synchronized void retrieveContent() {
+        LogHelper.d(TAG, "Retrieving content.");
         try {
-            if (mCurrentState == State.NON_INITIALIZED) {
-                mCurrentState = State.INITIALIZING;
+            if (mCurrentState == State.INITIALIZING) {
+                mCurrentState = State.INITIALIZED;
 
                 contentList = db.selectContentByQuery(mQuery, mPage, mQty, mOrder);
+                mCurrentState = State.READY;
             }
-
-            mCurrentState = State.INITIALIZED;
         } catch (Exception e) {
             LogHelper.e(TAG, "Could not load data from db: ", e);
         } finally {
-            if (mCurrentState != State.INITIALIZED) {
+            if (mCurrentState != State.READY) {
                 // Something bad happened!
                 LogHelper.w(TAG, "Failed...");
                 mCurrentState = State.FAILED;
@@ -88,7 +90,7 @@ public class SearchContent {
     }
 
     enum State {
-        NON_INITIALIZED, INITIALIZING, INITIALIZED, FAILED
+        NON_INITIALIZED, INITIALIZING, INITIALIZED, READY, FAILED
     }
 
     public interface ContentListener {
