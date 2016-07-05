@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.services;
 
+import android.content.pm.PackageManager;
 import android.webkit.CookieManager;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.OutputStream;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -39,9 +41,16 @@ final class ImageDownloadBatch {
             cookies = Helper.getSessionCookie();
         }
 
+        String userAgent;
+        try {
+            userAgent = Helper.getAppUserAgent(HentoidApp.getAppContext());
+        } catch (PackageManager.NameNotFoundException e) {
+            userAgent = Consts.USER_AGENT;
+        }
+
         Request request = new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", Consts.USER_AGENT)
+                .addHeader("User-Agent", userAgent)
                 .addHeader("Cookie", cookies)
                 .build();
 

@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -173,7 +174,15 @@ public class BaseWebActivity extends BaseActivity {
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
-        webSettings.setUserAgentString(Consts.USER_AGENT);
+
+        String userAgent;
+        try {
+            userAgent = Helper.getAppUserAgent(this);
+        } catch (PackageManager.NameNotFoundException e) {
+            userAgent = Consts.USER_AGENT;
+        }
+        webSettings.setUserAgentString(userAgent);
+
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
         webSettings.setJavaScriptEnabled(true);

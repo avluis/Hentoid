@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -12,6 +11,7 @@ import android.widget.TextView;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by avluis on 8/22/15.
@@ -79,7 +79,11 @@ public class AboutActivity extends BaseActivity {
             tvAbout.setText(spAbout);
         }
 
-        getVersionInfo();
+        try {
+            verName += Helper.getAppVersionInfo(this);
+        } catch (PackageManager.NameNotFoundException e) {
+            verName += "Unknown";
+        }
 
         TextView tvVersionName = (TextView) findViewById(R.id.tv_version_name);
         if (tvVersionName != null) {
@@ -90,19 +94,6 @@ public class AboutActivity extends BaseActivity {
         TextView tvAboutNotes = (TextView) findViewById(R.id.tv_about_notes);
         if (tvAboutNotes != null) {
             tvAboutNotes.setText(spAboutNotes);
-        }
-    }
-
-    private void getVersionInfo() {
-        PackageInfo packageInfo;
-        try {
-            packageInfo = getApplicationContext()
-                    .getPackageManager()
-                    .getPackageInfo(
-                            getApplicationContext().getPackageName(), 0);
-            verName += packageInfo.versionName;
-        } catch (PackageManager.NameNotFoundException e) {
-            verName += "Unknown";
         }
     }
 }

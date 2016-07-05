@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import android.content.pm.PackageManager;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -7,6 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import me.devsaki.hentoid.HentoidApp;
 
 /**
  * Created by DevSaki on 14/05/2015.
@@ -20,13 +24,20 @@ public class HttpClientHelper {
         HttpURLConnection urlConnection = null;
         InputStream is = null;
 
+        String userAgent;
+        try {
+            userAgent = Helper.getAppUserAgent(HentoidApp.getAppContext());
+        } catch (PackageManager.NameNotFoundException e) {
+            userAgent = Consts.USER_AGENT;
+        }
+
         try {
             URL url = new URL(urlString);
             urlConnection = (HttpURLConnection) url.openConnection();
 
             urlConnection.setConnectTimeout(10000);
             urlConnection.setRequestMethod("GET");
-            urlConnection.setRequestProperty("User-Agent", Consts.USER_AGENT);
+            urlConnection.setRequestProperty("User-Agent", userAgent);
 
             if (!sessionCookie.isEmpty()) {
                 urlConnection.setRequestProperty("Cookie", sessionCookie);

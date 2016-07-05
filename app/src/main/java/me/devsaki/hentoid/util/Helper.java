@@ -599,12 +599,17 @@ public final class Helper {
         return 0;
     }
 
-    public static int getAppVersionCode(Context cxt) throws NameNotFoundException {
-        if (cxt != null) {
-            return cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionCode;
-        }
+    public static int getAppVersionCode(@NonNull Context cxt) throws NameNotFoundException {
+        return cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionCode;
+    }
 
-        return 0;
+    public static String getAppVersionInfo(@NonNull Context cxt) throws NameNotFoundException {
+        return cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionName;
+    }
+
+    public static String getAppUserAgent(@NonNull Context cxt) throws NameNotFoundException {
+        return Consts.USER_AGENT + " Hentoid/v" +
+                cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionName;
     }
 
     /**
