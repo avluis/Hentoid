@@ -18,7 +18,6 @@ import me.devsaki.hentoid.util.Helper;
  * Presents an About Screen for the user to inquire more about the app.
  */
 public class AboutActivity extends BaseActivity {
-    private String verName = "Hentoid ver: ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,7 +27,11 @@ public class AboutActivity extends BaseActivity {
         setTitle(R.string.title_activity_about);
 
         final Intent intent = new Intent(Intent.ACTION_VIEW);
+        populateLinks(intent);
+        attachBuildNotes();
+    }
 
+    private void populateLinks(final Intent intent) {
         Spanned spGitHub = Html.fromHtml(getString(R.string.about_github));
         TextView tvGitHub = (TextView) findViewById(R.id.tv_github);
         final String urlGitHub = getString(R.string.about_github_url);
@@ -84,13 +87,16 @@ public class AboutActivity extends BaseActivity {
                 }
             });
         }
+    }
 
+    private void attachBuildNotes() {
         Spanned spAbout = Html.fromHtml(getString(R.string.about));
         TextView tvAbout = (TextView) findViewById(R.id.tv_about);
         if (tvAbout != null) {
             tvAbout.setText(spAbout);
         }
 
+        String verName = "Hentoid ver: ";
         try {
             verName += Helper.getAppVersionInfo(this);
         } catch (PackageManager.NameNotFoundException e) {
