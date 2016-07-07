@@ -61,7 +61,7 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of downloaded works to the user.
- * </p>
+ * <p/>
  * TODO: Separate endless scrolling and paging into their own fragments
  */
 public class DownloadsFragment extends BaseFragment implements ContentListener,
