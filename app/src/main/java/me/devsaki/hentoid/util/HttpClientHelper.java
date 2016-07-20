@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.content.pm.PackageManager;
+import android.webkit.CookieManager;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -19,8 +20,14 @@ import me.devsaki.hentoid.HentoidApp;
 public class HttpClientHelper {
     private static final String TAG = LogHelper.makeLogTag(HttpClientHelper.class);
 
+    private static final CookieManager cookieManager = CookieManager.getInstance();
+
     public static String call(String urlString) throws Exception {
-        String sessionCookie = Helper.getSessionCookie();
+        String cookie = cookieManager.getCookie(urlString);
+        if (cookie == null || cookie.isEmpty()) {
+            cookie = Helper.getSessionCookie();
+        }
+
         HttpURLConnection urlConnection = null;
         InputStream is = null;
 
@@ -38,10 +45,7 @@ public class HttpClientHelper {
             urlConnection.setConnectTimeout(10000);
             urlConnection.setRequestMethod("GET");
             urlConnection.setRequestProperty("User-Agent", userAgent);
-
-            if (!sessionCookie.isEmpty()) {
-                urlConnection.setRequestProperty("Cookie", sessionCookie);
-            }
+            urlConnection.setRequestProperty("Cookie", cookie);
 
             is = new BufferedInputStream(urlConnection.getInputStream());
             BufferedReader reader = new BufferedReader(new InputStreamReader(is));

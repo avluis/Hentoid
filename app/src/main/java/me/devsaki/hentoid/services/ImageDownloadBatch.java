@@ -36,9 +36,9 @@ final class ImageDownloadBatch {
     private short errorCount = 0;
 
     void newTask(final File dir, final String filename, final String url) {
-        String cookies = cookieManager.getCookie(url);
-        if (cookies.isEmpty()) {
-            cookies = Helper.getSessionCookie();
+        String cookie = cookieManager.getCookie(url);
+        if (cookie == null || cookie.isEmpty()) {
+            cookie = Helper.getSessionCookie();
         }
 
         String userAgent;
@@ -51,7 +51,7 @@ final class ImageDownloadBatch {
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", userAgent)
-                .addHeader("Cookie", cookies)
+                .addHeader("Cookie", cookie)
                 .build();
 
         client = new OkHttpClient.Builder()

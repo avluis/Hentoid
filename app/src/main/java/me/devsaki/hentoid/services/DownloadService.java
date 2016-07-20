@@ -82,7 +82,7 @@ public class DownloadService extends IntentService {
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
-            postDownloadCompleted(dir);
+
             queryForAdditionalDownloads();
         }
     }
@@ -90,31 +90,26 @@ public class DownloadService extends IntentService {
     private void addTask(File dir, ImageDownloadBatch downloadBatch) {
         // Add download tasks
         downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());
-        do {
-            for (ImageFile imageFile : currentContent.getImageFiles()) {
-                downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
-            }
-        } while (false);
-
-        // Track and wait for download to complete
-        final int qtyPages = currentContent.getQtyPages();
-        for (int i = 0; i <= qtyPages; ++i) {
-            if (paused) {
-                LogHelper.d(TAG, "Interrupt!!");
-                interruptDownload();
-                downloadBatch.cancelAllTasks();
-
-                if (currentContent.getStatus() == StatusContent.CANCELED) {
-                    // Update notification
-                    notificationPresenter.downloadInterrupted(currentContent);
-                }
-
-                return;
-            }
+        List<ImageFile> imageFiles = currentContent.getImageFiles();
+        for (int i = 0, imageFilesSize = imageFiles.size(); i < imageFilesSize && !paused; i++) {
+            ImageFile imageFile = imageFiles.get(i);
+            downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
             downloadBatch.waitForOneCompletedTask();
-            double percent = i * 100.0 / qtyPages;
+            double percent = (i + 1) * 100.0 / imageFilesSize;
             updateActivity(percent);
         }
+
+        if (paused) {
+            LogHelper.d(TAG, "Pause requested");
+            interruptDownload();
+            downloadBatch.cancelAllTasks();
+            if (currentContent.getStatus() == StatusContent.CANCELED) {
+                notificationPresenter.downloadInterrupted(currentContent);
+            }
+
+            return;
+        }
+
         // Assign status tag to ImageFile(s)
         short errorCount = downloadBatch.getErrorCount();
         for (ImageFile imageFile : currentContent.getImageFiles()) {
@@ -134,6 +129,8 @@ public class DownloadService extends IntentService {
         }
         currentContent.setDownloadDate(new Date().getTime());
         db.updateContentStatus(currentContent);
+
+        postDownloadCompleted(dir);
     }
 
     private void initDownload() {
