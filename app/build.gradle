@@ -11,7 +11,7 @@ android {
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 40
-        versionName '1.2.0r2'
+        versionName '1.2.0r3_dev'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -98,6 +98,8 @@ if (propFile.canRead()) {
 dependencies {
     // Compile any included libraries
     compile fileTree(include: ['*jar'], dir: 'libs')
+    // Tests
+    testCompile 'junit:junit:4.12'
     // Support libraries
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:cardview-v7:23.4.0'
@@ -115,9 +117,7 @@ dependencies {
     // Intro screens or slides
     compile 'com.github.paolorotolo:appintro:4.0.0'
     // Google Play Services Analytics
-    compile('com.google.android.gms:play-services-analytics:9.0.2') {
-        exclude module: 'play-services-ads'
-    }
+    compile 'com.google.android.gms:play-services-analytics:9.2.1'
     // Java serialization/deserialization (Java Objects into JSON and back)
     compile 'com.google.code.gson:gson:2.6.2'
     // Download app updates (without user prompts)
@@ -137,3 +137,5 @@ dependencies {
     // explicitly depend on RxJava's latest version for bug fixes and new features.
     compile 'io.reactivex:rxjava:1.1.5'
 }
+
+apply plugin: 'com.google.gms.google-services'

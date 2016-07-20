@@ -10,7 +10,8 @@
     <string name="ga_trackingId">UA-12419409-5</string>
 
     <!-- Additional metrics -->
-    <string name="ga_sampleFrequency">100.0</string>
+    <!-- Sampling Rate -->
+    <string name="ga_sampleFrequency">50.0</string>
 
     <!-- Track app crashes -->
     <bool name="ga_reportUncaughtExceptions">true</bool>
