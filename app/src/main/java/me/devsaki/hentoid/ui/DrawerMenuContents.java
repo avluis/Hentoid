@@ -19,7 +19,7 @@ import me.devsaki.hentoid.util.LogHelper;
  * This includes generation the required class names, menu item title
  * and menu item icon.
  * This class is expecting a list of activities named like so:
- * '[activity_name]' - it then builds the actual Activity class as so:
+ * '[activity_name]' - it then builds the actual Activity class:
  * '[activity_name]Activity.class'.
  * From this list, it will also build the activity title and corresponding
  * activity drawable with the following resource id:
@@ -28,29 +28,37 @@ import me.devsaki.hentoid.util.LogHelper;
 public class DrawerMenuContents {
     public static final String FIELD_TITLE = "title";
     public static final String FIELD_ICON = "icon";
-    private static final String TAG = LogHelper.makeLogTag(DrawerMenuContents.class);
-    private final String[] mActivityList;
-    private ArrayList<Map<String, ?>> items;
-    private Class[] activities;
 
-    public DrawerMenuContents(Context context) {
-        mActivityList = context.getResources().getStringArray(R.array.nav_drawer_entries);
+    private static final String TAG = LogHelper.makeLogTag(DrawerMenuContents.class);
+
+    private String[] activityName;
+    private String[] activityCode;
+    private Class[] activities;
+    private ArrayList<Map<String, ?>> items;
+
+    public DrawerMenuContents(Context cxt) {
+        setActivityList(
+                cxt.getResources().getStringArray(R.array.nav_drawer_names),
+                cxt.getResources().getStringArray(R.array.nav_drawer_codes));
         populateActivities();
     }
 
-    private void populateActivities() {
-        activities = new Class[mActivityList.length];
-        items = new ArrayList<>(mActivityList.length);
+    private void setActivityList(String[] names, String[] codes) {
+        this.activityName = names;
+        this.activityCode = codes;
+    }
 
-        String activity;
-        String title;
+    private void populateActivities() {
+        activities = new Class[activityCode.length];
+        items = new ArrayList<>(activityCode.length);
+
+        String activity, title, resourcePrefix = "ic_menu_";
         int resource;
-        String resourcePrefix = "ic_menu_";
         Class<?> cls = null;
-        for (int i = 0; i < mActivityList.length; i++) {
-            activity = mActivityList[i];
-            title = mActivityList[i].toUpperCase(Locale.US);
-            resource = Helper.getId(resourcePrefix + mActivityList[i].toLowerCase(Locale.US),
+        for (int i = 0; i < activityCode.length; i++) {
+            activity = activityCode[i];
+            title = activityName[i].toUpperCase(Locale.US);
+            resource = Helper.getId(resourcePrefix + activityCode[i].toLowerCase(Locale.US),
                     R.drawable.class);
             try {
                 cls = Class.forName("me.devsaki.hentoid.activities." + activity + "Activity");
@@ -64,12 +72,19 @@ public class DrawerMenuContents {
         }
     }
 
-    public List<Map<String, ?>> getItems() {
-        return items;
+    private Map<String, ?> populateDrawerItem(String title, int icon) {
+        HashMap<String, Object> item = new HashMap<>();
+        item.put(FIELD_TITLE, title);
+        item.put(FIELD_ICON, icon);
+        return item;
     }
 
     public Class getActivity(int position) {
         return activities[position];
+    }
+
+    public List<Map<String, ?>> getItems() {
+        return items;
     }
 
     public int getPosition(Class activityClass) {
@@ -79,12 +94,5 @@ public class DrawerMenuContents {
             }
         }
         return -1;
-    }
-
-    private Map<String, ?> populateDrawerItem(String title, int icon) {
-        HashMap<String, Object> item = new HashMap<>();
-        item.put(FIELD_TITLE, title);
-        item.put(FIELD_ICON, icon);
-        return item;
     }
 }
