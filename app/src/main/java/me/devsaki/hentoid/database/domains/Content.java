@@ -8,7 +8,6 @@ import java.util.List;
 import me.devsaki.hentoid.activities.BaseWebActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
-import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -68,6 +67,7 @@ public class Content implements Serializable {
                 paths = url.split("/");
                 return paths[1].replace(".html", "") + "-" +
                         title.replaceAll("[^a-zA-Z0-9.-]", "_");
+            case ASMHENTAI:
             case NHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
@@ -82,10 +82,9 @@ public class Content implements Serializable {
                 return HitomiActivity.class;
             case NHENTAI:
                 return NhentaiActivity.class;
-            case TSUMINO:
-                return TsuminoActivity.class;
             default:
-                return BaseWebActivity.class; // Fallback for Pururin and FAKKU
+                /*Pururin, FAKKU, Tsumino*/
+                return BaseWebActivity.class;
         }
     }
 
@@ -120,6 +119,7 @@ public class Content implements Serializable {
             case HITOMI:
                 galleryConst = "/galleries";
                 break;
+            case ASMHENTAI:
             case NHENTAI:
                 galleryConst = "/g";
                 break;
@@ -142,6 +142,11 @@ public class Content implements Serializable {
                 return getGalleryUrl() + "1/";
             case TSUMINO:
                 return site.getUrl() + "/Read/View" + url;
+            case ASMHENTAI:
+                return site.getUrl() + "/gallery" + url + "1/";
+            case HENTAICAFE:
+                String title = getTitle().replaceAll(" ", "_").toLowerCase();
+                return site.getUrl() + "/manga/read/" + title + "/en/0/1/";
             default:
                 return null;
         }

@@ -596,7 +596,7 @@ public final class Helper {
             }
         }
 
-        return 0;
+        return R.drawable.ic_menu_unknown;
     }
 
     public static int getAppVersionCode(@NonNull Context cxt) throws NameNotFoundException {

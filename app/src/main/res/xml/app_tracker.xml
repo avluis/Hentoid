@@ -23,7 +23,6 @@
     <screenName name="me.devsaki.hentoid.activities.BaseWebActivity">Source: Legacy</screenName>
     <screenName name="me.devsaki.hentoid.activities.HitomiActivity">Source: hitomi</screenName>
     <screenName name="me.devsaki.hentoid.activities.NhentaiActivity">Source: nhentai</screenName>
-    <screenName name="me.devsaki.hentoid.activities.TsuminoActivity">Source: tsumino</screenName>
 
     <screenName name="me.devsaki.hentoid.activities.IntentActivity">Launch: Intent</screenName>
     <screenName name="me.devsaki.hentoid.activities.SplashActivity">Launch: Splash</screenName>
