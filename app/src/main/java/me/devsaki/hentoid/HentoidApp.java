@@ -17,6 +17,7 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
+import me.devsaki.hentoid.util.AssetsCache;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -162,7 +163,7 @@ public class HentoidApp extends Application {
         AnalyticsTrackers.initialize(this);
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
 
-        Helper.queryPrefsKey(getAppContext());
+        Helper.queryPrefsKey(this);
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
@@ -175,6 +176,8 @@ public class HentoidApp extends Application {
             LogHelper.d(TAG, "Mobile Updates; OFF");
             UpdateCheck(true);
         }
+
+        LogHelper.d(TAG, AssetsCache.init(this) ? "Cache INIT" : "Cache Failure");
     }
 
     private void UpdateCheck(boolean onlyWifi) {

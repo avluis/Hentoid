@@ -108,7 +108,6 @@
         <activity
             android:name=".activities.IntentActivity"
             android:theme="@style/BrowserTheme">
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -120,7 +119,6 @@
                     android:pathPrefix="/galleries"
                     android:scheme="https" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -132,7 +130,6 @@
                     android:pathPrefix="/g"
                     android:scheme="https" />
             </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -162,7 +159,6 @@
                 <action android:name="me.devsaki.hentoid.updater.INSTALL_UPDATE" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".services.NotificationHelper"
             android:enabled="true"
