@@ -49,10 +49,8 @@ public class AssetsCache {
     private static final int BUNDLED_CACHE_VERSION = 1;
     private static AssetManager assetManager;
     private static File cacheDir;
-    private static State state = State.NON_INIT;
 
     public static void init(Context cxt) {
-        state = State.INIT;
         assetManager = cxt.getAssets();
         cacheDir = cxt.getExternalCacheDir();
         if (cacheDir != null) {
@@ -69,7 +67,6 @@ public class AssetsCache {
         } else {
             // TODO: Handle inaccessible cache dir
             LogHelper.d(TAG, "Cache INIT Failed!");
-            state = State.FAILED;
         }
     }
 
@@ -142,12 +139,6 @@ public class AssetsCache {
 
         new UnZipTask().execute(zipFile, destinationPath);
     }
-
-    public State getState() {
-        return state;
-    }
-
-    enum State {NON_INIT, INIT, READY, FAILED}
 
     private static class UpdateCheckTask extends AsyncTask<String, Void, Void> {
         int remoteCacheVersion = -1;
@@ -271,7 +262,6 @@ public class AssetsCache {
         @Override
         protected void onPostExecute(Boolean aBoolean) {
             LogHelper.d(TAG, "All files extracted: " + aBoolean);
-            state = State.READY;
         }
 
         private void unzipEntry(ZipFile zipfile, ZipEntry entry,

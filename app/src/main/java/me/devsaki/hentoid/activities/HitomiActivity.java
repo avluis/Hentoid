@@ -9,6 +9,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -54,7 +56,7 @@ public class HitomiActivity extends BaseWebActivity {
         super.setWebView(webView);
     }
 
-    private WebResourceResponse getJSWebResourceResponseFromAsset(String file) {
+    private WebResourceResponse getJSWebResourceResponseFromCache(String file) {
         String[] jsFiles = {"hitomi.js", "hitomi-horizontal.js", "hitomi-vertical.js"};
         String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
 
@@ -62,7 +64,10 @@ public class HitomiActivity extends BaseWebActivity {
             if (file.contains(jsFile)) {
                 String assetPath = pathPrefix + jsFile;
                 try {
-                    return getUtf8EncodedJSWebResourceResponse(getAssets().open(assetPath));
+                    File asset = new File(getExternalCacheDir() + "/" + assetPath);
+                    LogHelper.d(TAG, "File: " + asset);
+                    FileInputStream stream = new FileInputStream(asset);
+                    return getUtf8EncodedJSWebResourceResponse(stream);
                 } catch (IOException e) {
                     return null;
                 }
@@ -83,7 +88,7 @@ public class HitomiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
             if (url.contains(".js")) {
-                return getJSWebResourceResponseFromAsset(url);
+                return getJSWebResourceResponseFromCache(url);
             } else {
                 return super.shouldInterceptRequest(view, url);
             }
@@ -94,7 +99,7 @@ public class HitomiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             if (request.getUrl().toString().contains(".js")) {
-                return getJSWebResourceResponseFromAsset(request.getUrl().toString());
+                return getJSWebResourceResponseFromCache(request.getUrl().toString());
             } else {
                 return super.shouldInterceptRequest(view, request);
             }

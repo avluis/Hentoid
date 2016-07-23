@@ -9,6 +9,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -42,46 +44,54 @@ public class NhentaiActivity extends BaseWebActivity {
         super.setWebView(webView);
     }
 
-    private WebResourceResponse getJSWebResourceResponseFromAsset() {
+    private WebResourceResponse getJSWebResourceResponseFromCache() {
         String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "main_js.js";
         try {
-            return getUtf8EncodedJSWebResourceResponse(getAssets().open(file));
+            File asset = new File(getExternalCacheDir() + "/" + file);
+            LogHelper.d(TAG, "File: " + asset);
+            FileInputStream stream = new FileInputStream(asset);
+            return getUtf8EncodedWebResourceResponse(stream, 1);
         } catch (IOException e) {
             return null;
         }
     }
 
-    private WebResourceResponse getDomainWebResourceResponseFromAsset() {
+    private WebResourceResponse getDomainWebResourceResponseFromCache() {
         String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "ads2";
         try {
-            return getUtf8EncodedHtmlWebResourceResponse(getAssets().open(file));
+            File asset = new File(getExternalCacheDir() + "/" + file);
+            LogHelper.d(TAG, "File: " + asset);
+            FileInputStream stream = new FileInputStream(asset);
+            return getUtf8EncodedWebResourceResponse(stream, 0);
         } catch (IOException e) {
             return null;
         }
     }
 
-    private WebResourceResponse getCssWebResourceResponseFromAsset() {
+    private WebResourceResponse getCssWebResourceResponseFromCache() {
         String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "main_style.css";
         try {
-            return getUtf8EncodedCssWebResourceResponse(getAssets().open(file));
+            File asset = new File(getExternalCacheDir() + "/" + file);
+            LogHelper.d(TAG, "File: " + asset);
+            FileInputStream stream = new FileInputStream(asset);
+            return getUtf8EncodedWebResourceResponse(stream, 2);
         } catch (IOException e) {
             return null;
         }
     }
 
-    private WebResourceResponse getUtf8EncodedJSWebResourceResponse(InputStream open) {
-        return new WebResourceResponse("text/js", "UTF-8", open);
-    }
-
-    private WebResourceResponse getUtf8EncodedHtmlWebResourceResponse(InputStream open) {
-        return new WebResourceResponse("text/html", "UTF-8", open);
-    }
-
-    private WebResourceResponse getUtf8EncodedCssWebResourceResponse(InputStream open) {
-        return new WebResourceResponse("text/css", "UTF-8", open);
+    private WebResourceResponse getUtf8EncodedWebResourceResponse(InputStream open, int type) {
+        switch (type) {
+            case 1:
+                return new WebResourceResponse("text/js", "UTF-8", open);
+            case 2:
+                return new WebResourceResponse("text/css", "UTF-8", open);
+            default:
+                return new WebResourceResponse("text/html", "UTF-8", open);
+        }
     }
 
     private class NhentaiWebViewClient extends CustomWebViewClient {
@@ -114,11 +124,11 @@ public class NhentaiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
             if (url.contains("//static.nhentai.net/js/")) {
-                return getJSWebResourceResponseFromAsset();
+                return getJSWebResourceResponseFromCache();
             } else if (url.contains("ads.contentabc.com")) {
-                return getDomainWebResourceResponseFromAsset();
+                return getDomainWebResourceResponseFromCache();
             } else if (url.contains("//static.nhentai.net/css/")) {
-                return getCssWebResourceResponseFromAsset();
+                return getCssWebResourceResponseFromCache();
             } else {
                 return super.shouldInterceptRequest(view, url);
             }
@@ -129,11 +139,11 @@ public class NhentaiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             if (request.getUrl().toString().contains("//static.nhentai.net/js/")) {
-                return getJSWebResourceResponseFromAsset();
+                return getJSWebResourceResponseFromCache();
             } else if (request.getUrl().toString().contains("ads2.contentabc.com")) {
-                return getDomainWebResourceResponseFromAsset();
+                return getDomainWebResourceResponseFromCache();
             } else if (request.getUrl().toString().contains("//static.nhentai.net/css/")) {
-                return getCssWebResourceResponseFromAsset();
+                return getCssWebResourceResponseFromCache();
             } else {
                 return super.shouldInterceptRequest(view, request);
             }
