@@ -2,8 +2,14 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.res.AssetManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+
+import com.thin.downloadmanager.DownloadManager;
+import com.thin.downloadmanager.DownloadRequest;
+import com.thin.downloadmanager.DownloadStatusListenerV1;
+import com.thin.downloadmanager.ThinDownloadManager;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -31,8 +37,6 @@ import me.devsaki.hentoid.HentoidApp;
 /**
  * Created by avluis on 07/22/2016.
  * Assets Cache Management Util
- * <p/>
- * Note: UnZip code taken from: http://stackoverflow.com/a/6728732/1615876 (with some modifications)
  */
 public class AssetsCache {
     private static final String TAG = LogHelper.makeLogTag(AssetsCache.class);
@@ -43,10 +47,12 @@ public class AssetsCache {
     private static final String KEY_PACK_URL = "packURL";
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final int BUNDLED_CACHE_VERSION = 1;
-    private static File cacheDir;
     private static AssetManager assetManager;
+    private static File cacheDir;
+    private static State state = State.NON_INIT;
 
     public static void init(Context cxt) {
+        state = State.INIT;
         assetManager = cxt.getAssets();
         cacheDir = cxt.getExternalCacheDir();
         if (cacheDir != null) {
@@ -63,7 +69,44 @@ public class AssetsCache {
         } else {
             // TODO: Handle inaccessible cache dir
             LogHelper.d(TAG, "Cache INIT Failed!");
+            state = State.FAILED;
         }
+    }
+
+    private static void downloadCachePack(String downloadURL) {
+        // Clean up cache directory
+        Helper.cleanDir(cacheDir);
+        // Download cache pack
+        Uri downloadUri = Uri.parse(downloadURL);
+        final Uri destinationUri = Uri.parse(cacheDir + "/" + CACHE_PACK);
+
+        DownloadRequest request = new DownloadRequest(downloadUri)
+                .setDestinationURI(destinationUri)
+                .setPriority(DownloadRequest.Priority.HIGH)
+                .setStatusListener(new DownloadStatusListenerV1() {
+                    @Override
+                    public void onDownloadComplete(DownloadRequest downloadRequest) {
+                        // Unpack cache file
+                        File file = new File(String.valueOf(destinationUri));
+                        LogHelper.d(TAG, "Downloaded cache file: " + file.getAbsolutePath());
+                        extractFile(file);
+                    }
+
+                    @Override
+                    public void onDownloadFailed(DownloadRequest downloadRequest, int errorCode,
+                                                 String errorMessage) {
+                        unpackBundle();
+                    }
+
+                    @Override
+                    public void onProgress(DownloadRequest downloadRequest, long totalBytes,
+                                           long downloadedBytes, int progress) {
+                        // Not listening
+                    }
+                });
+
+        DownloadManager downloadManager = new ThinDownloadManager();
+        LogHelper.d(TAG, "Download Request ID: " + downloadManager.add(request));
     }
 
     private static void unpackBundle() {
@@ -100,72 +143,11 @@ public class AssetsCache {
         new UnZipTask().execute(zipFile, destinationPath);
     }
 
-    private static class UnZipTask extends AsyncTask<String, Void, Boolean> {
-
-        @Override
-        protected Boolean doInBackground(String... params) {
-            String filePath = params[0];
-            String destinationPath = params[1];
-
-            File archive = new File(filePath);
-            try {
-                ZipFile zipfile = new ZipFile(archive);
-                for (Enumeration e = zipfile.entries(); e.hasMoreElements(); ) {
-                    ZipEntry entry = (ZipEntry) e.nextElement();
-                    unzipEntry(zipfile, entry, destinationPath);
-                }
-                zipfile.close();
-            } catch (Exception e) {
-                LogHelper.e(TAG, "Error while extracting file " + archive, e);
-                return false;
-            }
-
-            return true;
-        }
-
-        @Override
-        protected void onPostExecute(Boolean aBoolean) {
-            LogHelper.d(TAG, "All files extracted: " + aBoolean);
-        }
-
-        private void unzipEntry(ZipFile zipfile, ZipEntry entry,
-                                String outputDir) throws IOException {
-
-            if (entry.isDirectory()) {
-                createDir(new File(outputDir, entry.getName()));
-                return;
-            }
-
-            File outputFile = new File(outputDir, entry.getName());
-            if (!outputFile.getParentFile().exists()) {
-                createDir(outputFile.getParentFile());
-            }
-
-            LogHelper.v(TAG, "Extracting: " + entry);
-            BufferedInputStream inputStream = new BufferedInputStream(
-                    zipfile.getInputStream(entry));
-            BufferedOutputStream outputStream = new BufferedOutputStream(
-                    new FileOutputStream(outputFile));
-
-            //noinspection TryFinallyCanBeTryWithResources
-            try {
-                IOUtils.copy(inputStream, outputStream);
-            } finally {
-                outputStream.close();
-                inputStream.close();
-            }
-        }
-
-        private void createDir(File dir) {
-            if (dir.exists()) {
-                return;
-            }
-            LogHelper.v(TAG, "Creating dir " + dir.getName());
-            if (!dir.mkdirs()) {
-                throw new RuntimeException("Can not create dir " + dir);
-            }
-        }
+    public State getState() {
+        return state;
     }
+
+    enum State {NON_INIT, INIT, READY, FAILED}
 
     private static class UpdateCheckTask extends AsyncTask<String, Void, Void> {
         int remoteCacheVersion = -1;
@@ -178,14 +160,17 @@ public class AssetsCache {
                 if (jsonObject != null) {
                     remoteCacheVersion = jsonObject.getInt(KEY_VERSION_CODE);
                     downloadURL = jsonObject.getString(KEY_PACK_URL);
+                } else {
+                    LogHelper.w(TAG, "JSON response was null!");
+                    unpackBundle();
                 }
             } catch (IOException e) {
                 LogHelper.e(TAG, "IO ERROR: ", e);
                 HentoidApp.getInstance().trackException(e);
                 unpackBundle();
             } catch (JSONException e) {
-                HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Error with JSON File: ", e);
+                HentoidApp.getInstance().trackException(e);
                 unpackBundle();
             }
 
@@ -195,13 +180,15 @@ public class AssetsCache {
         @Override
         protected void onPostExecute(Void aVoid) {
             LogHelper.d(TAG, "Remote Cache Version: " + remoteCacheVersion);
-            if (BUNDLED_CACHE_VERSION < remoteCacheVersion) {
-                LogHelper.d(TAG, "Bundled Cache is outdated.");
-                // TODO: If bundledCacheVersion < remoteCacheVersion: Download cache pack
-                LogHelper.d(TAG, "Cache Pack URL: " + downloadURL);
-            } else {
-                LogHelper.d(TAG, "Bundled Cache is same as current.");
-                unpackBundle();
+            if (remoteCacheVersion >= 1) {
+                if (BUNDLED_CACHE_VERSION < remoteCacheVersion) {
+                    LogHelper.d(TAG, "Bundled Cache is outdated.");
+                    LogHelper.d(TAG, "Cache Pack URL: " + downloadURL);
+                    downloadCachePack(downloadURL);
+                } else {
+                    LogHelper.d(TAG, "Bundled Cache is same as current.");
+                    unpackBundle();
+                }
             }
         }
 
@@ -233,6 +220,7 @@ public class AssetsCache {
                     inputStream.close();
                 }
             }
+
             return null;
         }
 
@@ -254,6 +242,74 @@ public class AssetsCache {
             }
 
             return stringBuilder.toString();
+        }
+    }
+
+    private static class UnZipTask extends AsyncTask<String, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String filePath = params[0];
+            String destinationPath = params[1];
+
+            File archive = new File(filePath);
+            try {
+                ZipFile zipfile = new ZipFile(archive);
+                for (Enumeration e = zipfile.entries(); e.hasMoreElements(); ) {
+                    ZipEntry entry = (ZipEntry) e.nextElement();
+                    unzipEntry(zipfile, entry, destinationPath);
+                }
+                zipfile.close();
+            } catch (Exception e) {
+                LogHelper.e(TAG, "Error while extracting file " + archive, e);
+                return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            LogHelper.d(TAG, "All files extracted: " + aBoolean);
+            state = State.READY;
+        }
+
+        private void unzipEntry(ZipFile zipfile, ZipEntry entry,
+                                String outputDir) throws IOException {
+
+            if (entry.isDirectory()) {
+                createDir(new File(outputDir, entry.getName()));
+                return;
+            }
+
+            File outputFile = new File(outputDir, entry.getName());
+            if (!outputFile.getParentFile().exists()) {
+                createDir(outputFile.getParentFile());
+            }
+
+            LogHelper.d(TAG, "Extracting: " + entry);
+            BufferedInputStream inputStream = new BufferedInputStream(
+                    zipfile.getInputStream(entry));
+            BufferedOutputStream outputStream = new BufferedOutputStream(
+                    new FileOutputStream(outputFile));
+
+            //noinspection TryFinallyCanBeTryWithResources
+            try {
+                IOUtils.copy(inputStream, outputStream);
+            } finally {
+                outputStream.close();
+                inputStream.close();
+            }
+        }
+
+        private void createDir(File dir) {
+            if (dir.exists()) {
+                return;
+            }
+            LogHelper.d(TAG, "Creating dir " + dir.getName());
+            if (!dir.mkdirs()) {
+                throw new RuntimeException("Can not create dir " + dir);
+            }
         }
     }
 }

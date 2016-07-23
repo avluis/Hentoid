@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -95,7 +96,13 @@ final class ImageDownloadBatch {
 
         @Override
         public void onFailure(Call call, IOException e) {
-            LogHelper.e(TAG, "Error downloading image: " + call.request().url(), e);
+            LogHelper.e(TAG, "Error downloading image: " + call.request().url() + " ", e);
+
+            if (e instanceof SocketTimeoutException) {
+                LogHelper.w(TAG, "Socket Timeout Exception!", e);
+                // TODO: Handle this somehow
+            }
+
             hasError = true;
             synchronized (ImageDownloadBatch.this) {
                 errorCount++;
