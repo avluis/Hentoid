@@ -177,7 +177,7 @@ public class HentoidApp extends Application {
             UpdateCheck(true);
         }
 
-        LogHelper.d(TAG, AssetsCache.init(this) ? "Cache INIT" : "Cache Failure");
+        AssetsCache.init(this);
     }
 
     private void UpdateCheck(boolean onlyWifi) {
