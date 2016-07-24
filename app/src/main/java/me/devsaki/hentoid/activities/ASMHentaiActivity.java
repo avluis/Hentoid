@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -51,27 +52,19 @@ public class ASMHentaiActivity extends BaseWebActivity {
         }
     }
 
-    private WebResourceResponse getDomainWebResourceResponseFromCache() {
+    private WebResourceResponse getDomainWebResourceResponseFromCache(@Nullable String page) {
         String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
-        String file = pathPrefix + "ads.html";
+        String file;
+        if (page != null) {
+            file = pathPrefix + page;
+        } else {
+            file = pathPrefix + "ads.html";
+        }
         try {
             File asset = new File(getExternalCacheDir() + "/" + file);
             LogHelper.d(TAG, "File: " + asset);
             FileInputStream stream = new FileInputStream(asset);
             return Helper.getUtf8EncodedWebResourceResponse(stream, 0);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
-    private WebResourceResponse getCssWebResourceResponseFromCache() {
-        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
-        String file = pathPrefix + "style.min.css";
-        try {
-            File asset = new File(getExternalCacheDir() + "/" + file);
-            LogHelper.d(TAG, "File: " + asset);
-            FileInputStream stream = new FileInputStream(asset);
-            return Helper.getUtf8EncodedWebResourceResponse(stream, 2);
         } catch (IOException e) {
             return null;
         }
@@ -95,15 +88,13 @@ public class ASMHentaiActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("ads.js") || url.contains("f.js") ||
-                    url.contains("syndication.exoclick.com")) {
+            if (url.contains("ads.js") || url.contains("f.js") || url.contains("pop.js") ||
+                    url.contains("ads.php") || url.contains("syndication.exoclick.com")) {
                 return getJSWebResourceResponseFromAsset("no.js");
             } else if (url.contains("main.js")) {
                 return getJSWebResourceResponseFromAsset("main.js");
             } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")) {
-                return getDomainWebResourceResponseFromCache();
-            } else if (url.contains("style.min.css")) {
-                return getCssWebResourceResponseFromCache();
+                return getDomainWebResourceResponseFromCache(null);
             } else {
                 return super.shouldInterceptRequest(view, url);
             }
@@ -115,15 +106,14 @@ public class ASMHentaiActivity extends BaseWebActivity {
                                                           @NonNull WebResourceRequest request) {
             if (request.getUrl().toString().contains("ads.js") ||
                     request.getUrl().toString().contains("f.js") ||
+                    request.getUrl().toString().contains("pop.js") ||
                     request.getUrl().toString().contains("syndication.exoclick.com")) {
                 return getJSWebResourceResponseFromAsset("no.js");
             } else if (request.getUrl().toString().contains("main.js")) {
                 return getJSWebResourceResponseFromAsset("main.js");
             } else if (request.getUrl().toString().contains("exoclick.com") ||
                     request.getUrl().toString().contains("juicyadultads.com")) {
-                return getDomainWebResourceResponseFromCache();
-            } else if (request.getUrl().toString().contains("style.min.css")) {
-                return getCssWebResourceResponseFromCache();
+                return getDomainWebResourceResponseFromCache(null);
             } else {
                 return super.shouldInterceptRequest(view, request);
             }
