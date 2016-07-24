@@ -12,7 +12,6 @@ import android.webkit.WebView;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
@@ -67,7 +66,7 @@ public class HitomiActivity extends BaseWebActivity {
                     File asset = new File(getExternalCacheDir() + "/" + assetPath);
                     LogHelper.d(TAG, "File: " + asset);
                     FileInputStream stream = new FileInputStream(asset);
-                    return getUtf8EncodedJSWebResourceResponse(stream);
+                    return Helper.getUtf8EncodedWebResourceResponse(stream, 1);
                 } catch (IOException e) {
                     return null;
                 }
@@ -75,10 +74,6 @@ public class HitomiActivity extends BaseWebActivity {
         }
 
         return null;
-    }
-
-    private WebResourceResponse getUtf8EncodedJSWebResourceResponse(InputStream open) {
-        return new WebResourceResponse("text/js", "UTF-8", open);
     }
 
     private class HitomiWebViewClient extends CustomWebViewClient {

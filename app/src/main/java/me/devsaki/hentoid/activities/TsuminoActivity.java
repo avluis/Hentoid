@@ -10,8 +10,9 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
@@ -59,14 +60,13 @@ public class TsuminoActivity extends BaseWebActivity {
         String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + "no.js";
         try {
-            return getUtf8EncodedJSWebResourceResponse(getAssets().open(file));
+            File asset = new File(getExternalCacheDir() + "/" + file);
+            LogHelper.d(TAG, "File: " + asset);
+            FileInputStream stream = new FileInputStream(asset);
+            return Helper.getUtf8EncodedWebResourceResponse(stream, 1);
         } catch (IOException e) {
             return null;
         }
-    }
-
-    private WebResourceResponse getUtf8EncodedJSWebResourceResponse(InputStream open) {
-        return new WebResourceResponse("text/js", "UTF-8", open);
     }
 
     @SuppressWarnings("UnusedParameters")

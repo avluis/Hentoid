@@ -29,12 +29,14 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.IntentCompat;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.webkit.WebResourceResponse;
 import android.widget.AbsListView;
 import android.widget.EdgeEffect;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -287,6 +289,17 @@ public final class Helper {
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         myIntent.setDataAndType(Uri.fromFile(file), mimeType);
         context.startActivity(myIntent);
+    }
+
+    public static WebResourceResponse getUtf8EncodedWebResourceResponse(InputStream open, int type) {
+        switch (type) {
+            case 1:
+                return new WebResourceResponse("text/js", "UTF-8", open);
+            case 2:
+                return new WebResourceResponse("text/css", "UTF-8", open);
+            default:
+                return new WebResourceResponse("text/html", "UTF-8", open);
+        }
     }
 
     public static boolean getWebViewOverviewPrefs() {

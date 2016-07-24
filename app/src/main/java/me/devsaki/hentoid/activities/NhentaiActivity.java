@@ -12,7 +12,6 @@ import android.webkit.WebView;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
@@ -51,7 +50,7 @@ public class NhentaiActivity extends BaseWebActivity {
             File asset = new File(getExternalCacheDir() + "/" + file);
             LogHelper.d(TAG, "File: " + asset);
             FileInputStream stream = new FileInputStream(asset);
-            return getUtf8EncodedWebResourceResponse(stream, 1);
+            return Helper.getUtf8EncodedWebResourceResponse(stream, 1);
         } catch (IOException e) {
             return null;
         }
@@ -64,7 +63,7 @@ public class NhentaiActivity extends BaseWebActivity {
             File asset = new File(getExternalCacheDir() + "/" + file);
             LogHelper.d(TAG, "File: " + asset);
             FileInputStream stream = new FileInputStream(asset);
-            return getUtf8EncodedWebResourceResponse(stream, 0);
+            return Helper.getUtf8EncodedWebResourceResponse(stream, 0);
         } catch (IOException e) {
             return null;
         }
@@ -77,20 +76,9 @@ public class NhentaiActivity extends BaseWebActivity {
             File asset = new File(getExternalCacheDir() + "/" + file);
             LogHelper.d(TAG, "File: " + asset);
             FileInputStream stream = new FileInputStream(asset);
-            return getUtf8EncodedWebResourceResponse(stream, 2);
+            return Helper.getUtf8EncodedWebResourceResponse(stream, 2);
         } catch (IOException e) {
             return null;
-        }
-    }
-
-    private WebResourceResponse getUtf8EncodedWebResourceResponse(InputStream open, int type) {
-        switch (type) {
-            case 1:
-                return new WebResourceResponse("text/js", "UTF-8", open);
-            case 2:
-                return new WebResourceResponse("text/css", "UTF-8", open);
-            default:
-                return new WebResourceResponse("text/html", "UTF-8", open);
         }
     }
 
