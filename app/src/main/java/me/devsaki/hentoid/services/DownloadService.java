@@ -18,6 +18,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.parsers.ASMHentaiParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.util.Helper;
@@ -217,6 +218,10 @@ public class DownloadService extends IntentService {
                     url = url.substring(0, url.length() - 1);
                     String json = HttpClientHelper.call(url);
                     aUrls = NhentaiParser.parseImageList(json);
+                    break;
+                case ASMHENTAI:
+                    String asmHtml = HttpClientHelper.call(currentContent.getReaderUrl());
+                    aUrls = ASMHentaiParser.parseImageList(asmHtml);
                     break;
                 default: // do nothing
                     break;

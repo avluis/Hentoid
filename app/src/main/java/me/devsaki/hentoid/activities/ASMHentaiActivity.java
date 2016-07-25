@@ -1,6 +1,8 @@
 package me.devsaki.hentoid.activities;
 
 import android.annotation.TargetApi;
+import android.graphics.Bitmap;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,7 +17,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.parsers.ASMHentaiParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -84,6 +88,15 @@ public class ASMHentaiActivity extends BaseWebActivity {
             return false;
         }
 
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            super.onPageStarted(view, url, favicon);
+
+            if (url.contains("//asmhentai.com/g/")) {
+                Helper.executeAsyncTask(new HtmlLoader(), url);
+            }
+        }
+
         @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
@@ -117,6 +130,20 @@ public class ASMHentaiActivity extends BaseWebActivity {
             } else {
                 return super.shouldInterceptRequest(view, request);
             }
+        }
+    }
+
+    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
+        @Override
+        protected Content doInBackground(String... params) {
+            String url = params[0];
+            try {
+                processContent(ASMHentaiParser.parseContent(url));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
         }
     }
 }
