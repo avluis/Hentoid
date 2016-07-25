@@ -220,8 +220,7 @@ public class DownloadService extends IntentService {
                     aUrls = NhentaiParser.parseImageList(json);
                     break;
                 case ASMHENTAI:
-                    String asmHtml = HttpClientHelper.call(currentContent.getReaderUrl());
-                    aUrls = ASMHentaiParser.parseImageList(asmHtml);
+                    aUrls = ASMHentaiParser.parseImageList(currentContent);
                     break;
                 default: // do nothing
                     break;

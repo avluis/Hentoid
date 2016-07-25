@@ -34,26 +34,22 @@ public class ASMHentaiParser {
                     .attr("href")
                     .replace("/gallery", "");
             url = url.substring(0, url.length() - 2);
-            LogHelper.d(TAG, url);
 
             String coverUrl = "http:"
                     + doc.select("div.cover")
                     .select("a")
                     .select("img")
                     .attr("src");
-            LogHelper.d(TAG, coverUrl);
 
             String title = doc.select("div.info")
                     .select("h1")
                     .first()
                     .text();
-            LogHelper.d(TAG, title);
 
             int pages = Integer.parseInt(doc.select("div.pages")
                     .select("h3")
                     .text()
                     .replace("Pages: ", ""));
-            LogHelper.d(TAG, pages);
 
             AttributeMap attributes = new AttributeMap();
 
@@ -81,8 +77,6 @@ public class ASMHentaiParser {
                     .select("a");
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
 
-            LogHelper.d(TAG, attributes);
-
             return new Content()
                     .setTitle(title)
                     .setUrl(url)
@@ -106,12 +100,31 @@ public class ASMHentaiParser {
         }
     }
 
-    // TODO: WIP
-    public static List<String> parseImageList(String html) {
+    // TODO: Test against different works
+    public static List<String> parseImageList(Content content) {
+        int pages = content.getQtyPages();
+        String readerUrl = content.getReaderUrl();
         List<String> imgUrls = new ArrayList<>();
 
-        Document doc = Jsoup.parse(html);
-        LogHelper.d(TAG, doc);
+        Document doc;
+        String ext;
+        try {
+            doc = Jsoup.connect(readerUrl).get();
+            String imgUrl = "http:" +
+                    doc.select("div.full_gallery")
+                            .select("a")
+                            .select("img")
+                            .attr("src");
+            ext = imgUrl.substring(imgUrl.length() - 4);
+
+            for (int i = 0; i < pages; i++) {
+                String img = imgUrl.substring(0, imgUrl.length() - 4) + (i + 1) + ext;
+                imgUrls.add(img);
+            }
+
+        } catch (IOException e) {
+            LogHelper.e(TAG, "Error while attempting to connect to: " + readerUrl + ": ", e);
+        }
 
         return imgUrls;
     }

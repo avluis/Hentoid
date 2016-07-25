@@ -143,7 +143,7 @@ public class Content implements Serializable {
             case TSUMINO:
                 return site.getUrl() + "/Read/View" + url;
             case ASMHENTAI:
-                return site.getUrl() + "/gallery" + url + "1/";
+                return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
                 String title = getTitle().replaceAll(" ", "_").toLowerCase();
                 return site.getUrl() + "/manga/read/" + title + "/en/0/1/";
