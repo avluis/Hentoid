@@ -5,6 +5,7 @@ import com.google.gson.annotations.Expose;
 import java.io.Serializable;
 import java.util.List;
 
+import me.devsaki.hentoid.activities.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.BaseWebActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
@@ -82,6 +83,8 @@ public class Content implements Serializable {
                 return HitomiActivity.class;
             case NHENTAI:
                 return NhentaiActivity.class;
+            case ASMHENTAI:
+                return ASMHentaiActivity.class;
             default:
                 /*Pururin, FAKKU, Tsumino*/
                 return BaseWebActivity.class;
