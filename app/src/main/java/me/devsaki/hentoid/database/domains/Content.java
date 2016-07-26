@@ -7,6 +7,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.activities.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.BaseWebActivity;
+import me.devsaki.hentoid.activities.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -72,6 +73,8 @@ public class Content implements Serializable {
             case NHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
+            case HENTAICAFE:
+                return url.replace("/?p=", "") + "-" + site.getDescription();
             default:
                 return null;
         }
@@ -85,6 +88,8 @@ public class Content implements Serializable {
                 return NhentaiActivity.class;
             case ASMHENTAI:
                 return ASMHentaiActivity.class;
+            case HENTAICAFE:
+                return HentaiCafeActivity.class;
             default:
                 /*Pururin, FAKKU, Tsumino*/
                 return BaseWebActivity.class;
@@ -129,6 +134,9 @@ public class Content implements Serializable {
             case TSUMINO:
                 galleryConst = "/Book/Info";
                 break;
+            case HENTAICAFE:
+                galleryConst = "/?p=";
+                break;
             default:
                 galleryConst = "";
                 break; // Includes FAKKU
@@ -148,7 +156,8 @@ public class Content implements Serializable {
             case ASMHENTAI:
                 return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
-                String title = getTitle().replaceAll(" ", "_").toLowerCase();
+                String title = getTitle().replaceAll("[^A-Za-z0-9 ]", "");
+                title = title.replaceAll(" ", "_").toLowerCase();
                 return site.getUrl() + "/manga/read/" + title + "/en/0/1/";
             default:
                 return null;

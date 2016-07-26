@@ -19,6 +19,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.parsers.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.util.Helper;
@@ -221,6 +222,9 @@ public class DownloadService extends IntentService {
                     break;
                 case ASMHENTAI:
                     aUrls = ASMHentaiParser.parseImageList(currentContent);
+                    break;
+                case HENTAICAFE:
+                    aUrls = HentaiCafeParser.parseImageList(currentContent);
                     break;
                 default: // do nothing
                     break;

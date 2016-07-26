@@ -115,6 +115,7 @@ public class ASMHentaiParser {
                             .select("a")
                             .select("img")
                             .attr("src");
+            // TODO: Verify extension types on this source
             ext = imgUrl.substring(imgUrl.length() - 4);
 
             for (int i = 0; i < pages; i++) {

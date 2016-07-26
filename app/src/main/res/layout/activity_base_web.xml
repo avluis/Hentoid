@@ -51,7 +51,7 @@
         android:id="@+id/fabRefreshStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/fabDownloads"
+        android:layout_above="@+id/fabHome"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_marginBottom="@dimen/refresh_fab_margin_bottom"
@@ -68,7 +68,7 @@
         app:rippleColor="@color/ripple" />
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fabDownloads"
+        android:id="@+id/fabHome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
