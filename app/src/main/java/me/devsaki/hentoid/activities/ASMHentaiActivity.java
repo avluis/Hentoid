@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -48,7 +49,6 @@ public class ASMHentaiActivity extends BaseWebActivity {
         String file = pathPrefix + script;
         try {
             File asset = new File(getExternalCacheDir() + "/" + file);
-            LogHelper.d(TAG, "File: " + asset);
             FileInputStream stream = new FileInputStream(asset);
             return Helper.getUtf8EncodedWebResourceResponse(stream, 1);
         } catch (IOException e) {
@@ -66,7 +66,6 @@ public class ASMHentaiActivity extends BaseWebActivity {
         }
         try {
             File asset = new File(getExternalCacheDir() + "/" + file);
-            LogHelper.d(TAG, "File: " + asset);
             FileInputStream stream = new FileInputStream(asset);
             return Helper.getUtf8EncodedWebResourceResponse(stream, 0);
         } catch (IOException e) {
@@ -86,6 +85,13 @@ public class ASMHentaiActivity extends BaseWebActivity {
             }
 
             return false;
+        }
+
+        @Override
+        public void onReceivedError(WebView view, WebResourceRequest request,
+                                    WebResourceError error) {
+            /*Workaround for cache miss when re-submitting data to search form*/
+            view.loadUrl(view.getOriginalUrl());
         }
 
         @Override
