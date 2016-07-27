@@ -28,6 +28,12 @@ public class HentaiCafeParser {
         Document doc = Jsoup.connect(urlString).get();
 
         Elements content = doc.select("div.entry-content.content");
+
+        if (urlString.contains(Site.HENTAICAFE.getUrl() + "/78-2/") ||
+                urlString.contains(Site.HENTAICAFE.getUrl() + "/artists/") ||
+                urlString.contains(Site.HENTAICAFE.getUrl() + "/category/book/")) {
+            return null;
+        }
         if (content.size() > 0) {
             String url = doc.select("div.x-main.full")
                     .select("article")
