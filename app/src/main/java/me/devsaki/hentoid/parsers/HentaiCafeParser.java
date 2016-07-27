@@ -84,12 +84,37 @@ public class HentaiCafeParser {
         }
     }
 
-    // TODO: WIP
+    // TODO: Optimize?
     public static List<String> parseImageList(Content content) {
         String readerUrl = content.getReaderUrl();
-        LogHelper.d(TAG, readerUrl);
         List<String> imgUrls = new ArrayList<>();
-        LogHelper.d(TAG, imgUrls);
+
+        Document doc;
+        Elements contents;
+        int pages;
+        String imgUrl;
+        try {
+            doc = Jsoup.connect(readerUrl).get();
+            contents = doc.select("article#content");
+            if (contents.size() > 0) {
+                pages = Integer.parseInt(doc.select("div.text").first().text().replace(" ⤵", ""));
+                content.setQtyPages(pages);
+
+                for (int i = 0; i < pages; i++) {
+                    // TODO: Is the CDN url the same?
+                    String newReaderUrl = readerUrl + "page/" + (i + 1);
+                    imgUrl = Jsoup.connect(newReaderUrl).get()
+                            .select("div.inner")
+                            .select("a")
+                            .select("img")
+                            .attr("src");
+                    imgUrls.add(imgUrl);
+                }
+            }
+
+        } catch (IOException e) {
+            LogHelper.e(TAG, "Could not grab image urls: ", e);
+        }
 
         return imgUrls;
     }
