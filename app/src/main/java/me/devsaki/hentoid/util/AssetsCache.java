@@ -54,7 +54,6 @@ public class AssetsCache {
         assetManager = cxt.getAssets();
         cacheDir = cxt.getExternalCacheDir();
         if (cacheDir != null) {
-            LogHelper.d(TAG, "Cache Dir: " + cacheDir);
 
             // Check remote cache version
             if (NetworkStatus.isOnline(cxt)) {
@@ -131,12 +130,9 @@ public class AssetsCache {
     }
 
     private static void extractFile(File file) {
-        LogHelper.d(TAG, "Extracting files.");
+        LogHelper.d(TAG, "Extracting cache files.");
         String zipFile = file.getAbsolutePath();
-        LogHelper.d(TAG, "File: " + zipFile);
         String destinationPath = cacheDir.getPath();
-        LogHelper.d(TAG, "Path: " + destinationPath);
-
         new UnZipTask().execute(zipFile, destinationPath);
     }
 
@@ -170,14 +166,13 @@ public class AssetsCache {
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            LogHelper.d(TAG, "Remote Cache Version: " + remoteCacheVersion);
+            LogHelper.d(TAG, "Remote cache version: " + remoteCacheVersion);
             if (remoteCacheVersion >= 1) {
                 if (BUNDLED_CACHE_VERSION < remoteCacheVersion) {
-                    LogHelper.d(TAG, "Bundled Cache is outdated.");
-                    LogHelper.d(TAG, "Cache Pack URL: " + downloadURL);
+                    LogHelper.d(TAG, "Bundled cache is outdated.");
                     downloadCachePack(downloadURL);
                 } else {
-                    LogHelper.d(TAG, "Bundled Cache is same as current.");
+                    LogHelper.d(TAG, "Bundled cache is current.");
                     unpackBundle();
                 }
             }
@@ -252,7 +247,7 @@ public class AssetsCache {
                 }
                 zipfile.close();
             } catch (Exception e) {
-                LogHelper.e(TAG, "Error while extracting file " + archive, e);
+                LogHelper.e(TAG, "Error while extracting file: " + archive, e);
                 return false;
             }
 
@@ -261,7 +256,7 @@ public class AssetsCache {
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
-            LogHelper.d(TAG, "All files extracted: " + aBoolean);
+            LogHelper.d(TAG, "All files extracted without error: " + aBoolean);
         }
 
         private void unzipEntry(ZipFile zipfile, ZipEntry entry,
@@ -277,7 +272,6 @@ public class AssetsCache {
                 createDir(outputFile.getParentFile());
             }
 
-            LogHelper.d(TAG, "Extracting: " + entry);
             BufferedInputStream inputStream = new BufferedInputStream(
                     zipfile.getInputStream(entry));
             BufferedOutputStream outputStream = new BufferedOutputStream(

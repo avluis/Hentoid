@@ -156,8 +156,11 @@ public class Content implements Serializable {
             case ASMHENTAI:
                 return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
-                String title = getTitle().replaceAll("[^A-Za-z0-9 ]", "");
-                title = title.replaceAll(" ", "_").toLowerCase();
+                String title = getTitle()
+                        .replaceAll("\\[.*?\\]", "") /*Remove everything enclosed in brackets*/
+                        .replaceAll("^\\s+", "") /*Remove leading space (after remove brackets)*/
+                        .replaceAll("[^A-Za-z0-9 ]", "") /*Remove all non-ASCII characters*/
+                        .replaceAll(" ", "_").toLowerCase(); /*Replace spaces with underscores*/
                 return site.getUrl() + "/manga/read/" + title + "/en/0/1/";
             default:
                 return null;

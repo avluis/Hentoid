@@ -10,12 +10,10 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Locale;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -56,19 +54,6 @@ public class TsuminoActivity extends BaseWebActivity {
         super.setWebView(webView);
     }
 
-    private WebResourceResponse getJSWebResourceResponseFromAsset() {
-        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
-        String file = pathPrefix + "no.js";
-        try {
-            File asset = new File(getExternalCacheDir() + "/" + file);
-            LogHelper.d(TAG, "File: " + asset);
-            FileInputStream stream = new FileInputStream(asset);
-            return Helper.getUtf8EncodedWebResourceResponse(stream, 1);
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
     @SuppressWarnings("UnusedParameters")
     @Override
     public void onDownloadFabClick(View view) {
@@ -82,6 +67,7 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
+        ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -126,7 +112,7 @@ public class TsuminoActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
             if (url.contains("pop.js")) {
-                return getJSWebResourceResponseFromAsset();
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
             }
@@ -136,8 +122,9 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
-            if (request.getUrl().toString().contains("pop.js")) {
-                return getJSWebResourceResponseFromAsset();
+            String url = request.getUrl().toString();
+            if (url.contains("pop.js")) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
             }

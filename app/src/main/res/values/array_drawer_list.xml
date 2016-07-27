@@ -10,9 +10,9 @@
     IN ADDITION TO DRAWABLES THAT MATCH THE FOLLOWING RULES:
     'res/drawable/ic_menu_[activity_name]' (minus 'Activity') -->
     <string-array name="nav_drawer_names">
-        <item>Hitomi</item>
         <item>nHentai</item>
         <item>Hentai Cafe</item>
+        <item>Hitomi</item>
         <item>ASMHentai</item>
         <item>Home</item>
         <item>Queue</item>
@@ -20,9 +20,9 @@
         <item>About</item>
     </string-array>
     <string-array name="nav_drawer_codes">
-        <item>Hitomi</item>
         <item>Nhentai</item>
         <item>HentaiCafe</item>
+        <item>Hitomi</item>
         <item>ASMHentai</item>
         <item>Downloads</item>
         <item>Queue</item>

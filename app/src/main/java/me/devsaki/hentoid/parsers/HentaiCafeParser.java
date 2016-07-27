@@ -33,37 +33,31 @@ public class HentaiCafeParser {
                     .select("article")
                     .attr("id")
                     .replace("post-", "/?p=");
-            LogHelper.d(TAG, "URL (post-id): " + Site.HENTAICAFE.getUrl() + url);
 
             String coverUrl = doc.select("div.x-column.x-sm.x-1-2")
                     .select("img")
                     .attr("src");
-            LogHelper.d(TAG, "Cover URL: " + coverUrl);
 
             String title = doc.select("div.x-column.x-sm.x-1-2.last")
                     .select("h3")
                     .first()
-                    .text()
-                    .replaceAll("\\[.*?\\]", "")
-                    .replaceAll("^\\s+", "");
-            LogHelper.d(TAG, "Title: " + title);
+                    .text();
 
-            // TODO: WIP
             AttributeMap attributes = new AttributeMap();
 
             String info = content.select("div.x-column.x-sm.x-1-2.last")
                     .select("p").html();
 
-            String tags = info.substring(0, info.indexOf("<br>"));
+            String tags = info.substring(0, info.indexOf("<br>"))
+                    .replace(Site.HENTAICAFE.getUrl(), "");
 
             String artists = info.substring(info.indexOf("Artists: "));
-            artists = artists.substring(0, artists.indexOf("<br>"));
+            artists = artists.substring(0, artists.indexOf("<br>"))
+                    .replace(Site.HENTAICAFE.getUrl(), "");
 
             Elements tagElements = Jsoup.parse(tags).select("a");
-            LogHelper.d(TAG, tagElements);
 
             Elements artistElements = Jsoup.parse(artists).select("a");
-            LogHelper.d(TAG, artistElements);
 
             parseAttributes(attributes, AttributeType.TAG, tagElements);
             parseAttributes(attributes, AttributeType.ARTIST, artistElements);

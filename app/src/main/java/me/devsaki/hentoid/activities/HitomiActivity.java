@@ -9,20 +9,23 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Locale;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.ConstsPrefs;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+
+import static me.devsaki.hentoid.util.Helper.TYPE;
+import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
+import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
+import static me.devsaki.hentoid.util.Helper.getWebViewInitialZoomPrefs;
+import static me.devsaki.hentoid.util.Helper.getWebViewOverviewPrefs;
 
 /**
  * Created by Shiro on 1/20/2016.
@@ -40,8 +43,8 @@ public class HitomiActivity extends BaseWebActivity {
     void setWebView(ObservableWebView webView) {
         webView.setWebViewClient(new HitomiWebViewClient());
 
-        boolean bWebViewOverview = Helper.getWebViewOverviewPrefs();
-        int webViewInitialZoom = Helper.getWebViewInitialZoomPrefs();
+        boolean bWebViewOverview = getWebViewOverviewPrefs();
+        int webViewInitialZoom = getWebViewInitialZoomPrefs();
 
         if (bWebViewOverview) {
             webView.getSettings().setLoadWithOverviewMode(false);
@@ -55,50 +58,8 @@ public class HitomiActivity extends BaseWebActivity {
         super.setWebView(webView);
     }
 
-    private WebResourceResponse getJSWebResourceResponseFromCache(String file) {
-        String[] jsFiles = {"hitomi.js", "hitomi-horizontal.js", "hitomi-vertical.js"};
-        String pathPrefix = getSite().getDescription().toLowerCase(Locale.US) + "/";
-
-        for (String jsFile : jsFiles) {
-            if (file.contains(jsFile)) {
-                String assetPath = pathPrefix + jsFile;
-                try {
-                    File asset = new File(getExternalCacheDir() + "/" + assetPath);
-                    LogHelper.d(TAG, "File: " + asset);
-                    FileInputStream stream = new FileInputStream(asset);
-                    return Helper.getUtf8EncodedWebResourceResponse(stream, 1);
-                } catch (IOException e) {
-                    return null;
-                }
-            }
-        }
-
-        return null;
-    }
-
     private class HitomiWebViewClient extends CustomWebViewClient {
-
-        @SuppressWarnings("deprecation") // From API 21 we should use another overload
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull String url) {
-            if (url.contains(".js")) {
-                return getJSWebResourceResponseFromCache(url);
-            } else {
-                return super.shouldInterceptRequest(view, url);
-            }
-        }
-
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull WebResourceRequest request) {
-            if (request.getUrl().toString().contains(".js")) {
-                return getJSWebResourceResponseFromCache(request.getUrl().toString());
-            } else {
-                return super.shouldInterceptRequest(view, request);
-            }
-        }
+        ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -117,7 +78,34 @@ public class HitomiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("//hitomi.la/galleries/")) {
-                Helper.executeAsyncTask(new HtmlLoader(), url);
+                executeAsyncTask(new HtmlLoader(), url);
+            }
+        }
+
+        @SuppressWarnings("deprecation") // From API 21 we should use another overload
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull String url) {
+            if (url.contains("hitomi.js")) {
+                return getWebResourceResponseFromAsset(getSite(), "hitomi.js", TYPE.JS);
+            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js")) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
+            } else {
+                return super.shouldInterceptRequest(view, url);
+            }
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull WebResourceRequest request) {
+            String url = request.getUrl().toString();
+            if (url.contains("hitomi.js")) {
+                return getWebResourceResponseFromAsset(getSite(), "hitomi.js", TYPE.JS);
+            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js")) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
+            } else {
+                return super.shouldInterceptRequest(view, request);
             }
         }
     }
