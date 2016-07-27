@@ -115,6 +115,7 @@ public class HentaiCafeParser {
         } catch (IOException e) {
             LogHelper.e(TAG, "Could not grab image urls: ", e);
         }
+        LogHelper.d(TAG, imgUrls);
 
         return imgUrls;
     }
