@@ -290,9 +290,9 @@ public class AssetsCache {
             if (dir.exists()) {
                 return;
             }
-            LogHelper.d(TAG, "Creating dir " + dir.getName());
+            LogHelper.d(TAG, "Creating dir: " + dir.getName());
             if (!dir.mkdirs()) {
-                throw new RuntimeException("Can not create dir " + dir);
+                LogHelper.w(TAG, "Could not create dir: " + dir);
             }
         }
     }

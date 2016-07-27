@@ -92,11 +92,11 @@ public class DownloadService extends IntentService {
         // Add download tasks
         downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());
         List<ImageFile> imageFiles = currentContent.getImageFiles();
-        for (int i = 0, imageFilesSize = imageFiles.size(); i < imageFilesSize && !paused; i++) {
+        for (int i = 0; i < imageFiles.size() && !paused; i++) {
             ImageFile imageFile = imageFiles.get(i);
             downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
             downloadBatch.waitForOneCompletedTask();
-            double percent = (i + 1) * 100.0 / imageFilesSize;
+            double percent = (i + 1) * 100.0 / imageFiles.size();
             updateActivity(percent);
         }
 

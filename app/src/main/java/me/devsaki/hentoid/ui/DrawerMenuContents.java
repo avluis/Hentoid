@@ -52,7 +52,9 @@ public class DrawerMenuContents {
         activities = new Class[activityCode.length];
         items = new ArrayList<>(activityCode.length);
 
-        String activity, title, resourcePrefix = "ic_menu_";
+        String activity,
+                title,
+                resourcePrefix = "ic_menu_";
         int resource;
         Class<?> cls = null;
         for (int i = 0; i < activityCode.length; i++) {
