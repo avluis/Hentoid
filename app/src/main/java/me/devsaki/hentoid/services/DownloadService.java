@@ -23,7 +23,6 @@ import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -205,33 +204,23 @@ public class DownloadService extends IntentService {
         EventBus.getDefault().post(new DownloadEvent(percent));
     }
 
-    private void parseImageFiles() throws Exception {
+    private void parseImageFiles() {
         List<String> aUrls = new ArrayList<>();
-        try {
-            switch (currentContent.getSite()) {
-                case HITOMI:
-                    String html = HttpClientHelper.call(currentContent.getReaderUrl());
-                    aUrls = HitomiParser.parseImageList(html);
-                    break;
-                case NHENTAI:
-                    String url = currentContent.getGalleryUrl();
-                    url = url.replace("/g", "/api/gallery");
-                    url = url.substring(0, url.length() - 1);
-                    String json = HttpClientHelper.call(url);
-                    aUrls = NhentaiParser.parseImageList(json);
-                    break;
-                case ASMHENTAI:
-                    aUrls = ASMHentaiParser.parseImageList(currentContent);
-                    break;
-                case HENTAICAFE:
-                    aUrls = HentaiCafeParser.parseImageList(currentContent);
-                    break;
-                default: // do nothing
-                    break;
-            }
-        } catch (Exception e) {
-            LogHelper.e(TAG, "Error getting image urls: ", e);
-            throw e;
+        switch (currentContent.getSite()) {
+            case ASMHENTAI:
+                aUrls = ASMHentaiParser.parseImageList(currentContent);
+                break;
+            case HENTAICAFE:
+                aUrls = HentaiCafeParser.parseImageList(currentContent);
+                break;
+            case HITOMI:
+                aUrls = HitomiParser.parseImageList(currentContent);
+                break;
+            case NHENTAI:
+                aUrls = NhentaiParser.parseImageList(currentContent);
+                break;
+            default:
+                break;
         }
 
         int i = 1;

@@ -116,7 +116,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
             try {
                 processContent(ASMHentaiParser.parseContent(url));
             } catch (IOException e) {
-                e.printStackTrace();
+                LogHelper.e(TAG, "Error parsing content: ", e);
             }
 
             return null;

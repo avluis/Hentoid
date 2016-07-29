@@ -13,6 +13,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -102,10 +103,14 @@ public class NhentaiParser {
                 .setSite(Site.NHENTAI);
     }
 
-    public static List<String> parseImageList(String json) {
+    public static List<String> parseImageList(Content content) {
+        String url = content.getGalleryUrl();
+        url = url.replace("/g", "/api/gallery");
+        url = url.substring(0, url.length() - 1);
         List<String> imagesUrl = new ArrayList<>();
 
         try {
+            String json = HttpClientHelper.call(url);
             JSONObject gallery = new JSONObject(json);
             String mediaId = gallery.getString("media_id");
             JSONArray images = gallery.getJSONObject("images").getJSONArray("pages");
@@ -130,6 +135,8 @@ public class NhentaiParser {
             }
         } catch (JSONException e) {
             LogHelper.e(TAG, "Error parsing content: ", e);
+        } catch (Exception e) {
+            LogHelper.e(TAG, "Couldn't connect to resource: " + e);
         }
 
         return imagesUrl;

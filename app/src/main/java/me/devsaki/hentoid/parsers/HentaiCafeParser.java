@@ -107,7 +107,6 @@ public class HentaiCafeParser {
                 content.setQtyPages(pages);
 
                 for (int i = 0; i < pages; i++) {
-                    // TODO: Is the CDN url the same?
                     String newReaderUrl = readerUrl + "page/" + (i + 1);
                     imgUrl = Jsoup.connect(newReaderUrl).get()
                             .select("div.inner")

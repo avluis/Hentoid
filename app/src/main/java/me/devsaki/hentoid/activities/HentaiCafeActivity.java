@@ -65,7 +65,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
             try {
                 processContent(HentaiCafeParser.parseContent(url));
             } catch (IOException e) {
-                e.printStackTrace();
+                LogHelper.e(TAG, "Error parsing content: ", e);
             }
 
             return null;

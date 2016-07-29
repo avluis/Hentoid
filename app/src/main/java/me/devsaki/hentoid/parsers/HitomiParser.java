@@ -15,6 +15,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.HttpClientHelper;
 
 /**
  * Created by neko on 08/07/2015.
@@ -77,12 +78,20 @@ public class HitomiParser {
         }
     }
 
-    public static List<String> parseImageList(String html) {
-        Document doc = Jsoup.parse(html);
-        Elements imgElements = doc.select(".img-url");
-        List<String> imagesUrl = new ArrayList<>(imgElements.size());
-        for (Element element : imgElements) {
-            imagesUrl.add("https:" + element.text());
+    public static List<String> parseImageList(Content content) {
+        String html;
+        List<String> imagesUrl = null;
+        try {
+            html = HttpClientHelper.call(content.getReaderUrl());
+            Document doc = Jsoup.parse(html);
+            Elements imgElements = doc.select(".img-url");
+            imagesUrl = new ArrayList<>(imgElements.size());
+
+            for (Element element : imgElements) {
+                imagesUrl.add("https:" + element.text());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return imagesUrl;
