@@ -14,8 +14,8 @@ public enum Site {
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_menu_hitomi),
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_menu_nhentai),
     TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_favicon_tsumino),
-    HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", R.drawable.ic_menu_unknown),
-    ASMHENTAI(6, "asmhentai", "http://asmhentai.com", R.drawable.ic_menu_unknown);
+    HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", R.drawable.ic_menu_hentaicafe),
+    ASMHENTAI(6, "asmhentai", "http://asmhentai.com", R.drawable.ic_menu_asmhentai);
 
     private static final String TAG = LogHelper.makeLogTag(Site.class);
 

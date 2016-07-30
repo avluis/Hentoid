@@ -227,9 +227,9 @@ public class BaseWebActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-
-        goHome();
+        if (!getWebView().canGoBack()) {
+            goHome();
+        }
     }
 
     @SuppressWarnings("UnusedParameters")

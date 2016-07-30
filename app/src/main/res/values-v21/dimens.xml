@@ -11,8 +11,8 @@
     <dimen name="refresh_fab_margin_right">6dp</dimen>
     <dimen name="refresh_fab_margin_top">6dp</dimen>
 
-    <dimen name="downloads_fab_margin_bottom">6dp</dimen>
-    <dimen name="downloads_fab_margin_left">6dp</dimen>
-    <dimen name="downloads_fab_margin_right">6dp</dimen>
-    <dimen name="downloads_fab_margin_top">6dp</dimen>
+    <dimen name="home_fab_margin_bottom">6dp</dimen>
+    <dimen name="home_fab_margin_left">6dp</dimen>
+    <dimen name="home_fab_margin_right">6dp</dimen>
+    <dimen name="home_fab_margin_top">6dp</dimen>
 </resources>

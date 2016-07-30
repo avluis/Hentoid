@@ -2,7 +2,6 @@
     <string name="app_name">Hentoid</string>
     <string name="app_intro">Welcome</string>
     <!-- Activities -->
-    <string name="title_activity_search">Search: @search</string>
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
     <string name="title_activity_preferences">Preferences</string>
@@ -42,7 +41,6 @@
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it from Google Play.</string>
 
-    <string name="download_date">Downloaded on:\n@date</string>
     <string name="download_again_dialog_title">Try downloading again?</string>
     <string name="download_again_dialog_message">Total images in download: @total\nImages with error: @error</string>
     <string name="ask_delete">Are you sure you wish to delete this?</string>

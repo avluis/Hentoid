@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Locale;
 
 import me.devsaki.hentoid.activities.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.BaseWebActivity;
@@ -135,11 +136,9 @@ public class Content implements Serializable {
                 galleryConst = "/Book/Info";
                 break;
             case HENTAICAFE:
-                galleryConst = "/?p=";
-                break;
             default:
                 galleryConst = "";
-                break; // Includes FAKKU
+                break; // Includes FAKKU & Hentai Cafe
         }
 
         return site.getUrl() + galleryConst + url;
@@ -160,7 +159,7 @@ public class Content implements Serializable {
                         .replaceAll("\\[.*?\\]", "") /*Remove everything enclosed in brackets*/
                         .replaceAll("^\\s+", "") /*Remove leading space (after remove brackets)*/
                         .replaceAll("[^A-Za-z0-9 ]", "") /*Remove all non-ASCII characters*/
-                        .replaceAll(" ", "_").toLowerCase(); /*Replace spaces with underscores*/
+                        .replaceAll(" ", "_").toLowerCase(Locale.US); /*Replace spaces with underscores*/
                 return site.getUrl() + "/manga/read/" + title + "/en/0/1/";
             default:
                 return null;

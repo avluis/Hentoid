@@ -232,6 +232,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void attachCover(ContentHolder holder, Content content) {
+        /*Initially set to null to speed up image view rendering*/
+        holder.ivCover.setImageDrawable(null);
+        holder.ivCover2.setImageDrawable(null);
+
         File coverFile = Helper.getThumb(cxt, content);
         String image = coverFile != null ?
                 coverFile.getAbsolutePath() : content.getCoverImageUrl();
