@@ -12,10 +12,11 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.LogHelper;
+
+import static me.devsaki.hentoid.enums.Site.ASMHENTAI;
 
 /**
  * Created by avluis on 07/24/2016.
@@ -84,7 +85,7 @@ public class ASMHentaiParser {
                     .setAttributes(attributes)
                     .setQtyPages(pages)
                     .setStatus(StatusContent.SAVED)
-                    .setSite(Site.ASMHENTAI);
+                    .setSite(ASMHENTAI);
         }
 
         return null;

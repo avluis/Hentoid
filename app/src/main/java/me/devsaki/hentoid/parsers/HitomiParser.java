@@ -12,16 +12,19 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.LogHelper;
+
+import static me.devsaki.hentoid.enums.Site.HITOMI;
 
 /**
  * Created by neko on 08/07/2015.
  * Handles parsing of content from hitomi.la
  */
 public class HitomiParser {
+    private static final String TAG = LogHelper.makeLogTag(HitomiParser.class);
 
     public static Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
@@ -63,7 +66,7 @@ public class HitomiParser {
                     .setAttributes(attributes)
                     .setQtyPages(pages)
                     .setStatus(StatusContent.SAVED)
-                    .setSite(Site.HITOMI);
+                    .setSite(HITOMI);
         }
 
         return null;
@@ -80,20 +83,21 @@ public class HitomiParser {
 
     public static List<String> parseImageList(Content content) {
         String html;
-        List<String> imagesUrl = null;
+        List<String> imgUrls = null;
         try {
             html = HttpClientHelper.call(content.getReaderUrl());
             Document doc = Jsoup.parse(html);
             Elements imgElements = doc.select(".img-url");
-            imagesUrl = new ArrayList<>(imgElements.size());
+            imgUrls = new ArrayList<>(imgElements.size());
 
             for (Element element : imgElements) {
-                imagesUrl.add("https:" + element.text());
+                imgUrls.add("https:" + element.text());
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.e(TAG, "Could not connect to the requested resource: ", e);
         }
+        LogHelper.d(TAG, imgUrls);
 
-        return imagesUrl;
+        return imgUrls;
     }
 }

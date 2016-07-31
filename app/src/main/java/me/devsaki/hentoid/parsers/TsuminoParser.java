@@ -1,9 +1,11 @@
 package me.devsaki.hentoid.parsers;
 
-import com.google.gson.GsonBuilder;
+import android.webkit.CookieManager;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -18,6 +20,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,11 +29,13 @@ import java.util.Map;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.LogHelper;
+
+import static me.devsaki.hentoid.enums.Site.TSUMINO;
 
 /**
  * Created by Shiro on 1/22/2016.
@@ -49,7 +54,7 @@ public class TsuminoParser {
                     .attr("href")
                     .replace("/Read/View", "");
 
-            String coverUrl = Site.TSUMINO.getUrl()
+            String coverUrl = TSUMINO.getUrl()
                     + doc.select("img.book-page-image").attr("src");
 
             String title = content
@@ -93,7 +98,7 @@ public class TsuminoParser {
                     .setAttributes(attributes)
                     .setQtyPages(qtyPages)
                     .setStatus(StatusContent.SAVED)
-                    .setSite(Site.TSUMINO);
+                    .setSite(TSUMINO);
         }
 
         return null;
@@ -111,7 +116,6 @@ public class TsuminoParser {
 
     public static List<String> parseImageList(Content content) {
         List<String> imgUrls = new ArrayList<>();
-        String baseUrl = Site.TSUMINO.getUrl() + '/';
 
         Document doc;
         Elements contents;
@@ -127,34 +131,39 @@ public class TsuminoParser {
             dataOpt = contents.attr("data-opt");
             dataObj = contents.attr("data-obj");
 
-            LogHelper.d(TAG, "Data URL: " + Site.TSUMINO.getUrl() + dataUrl + ", Data Opt: " +
-                    dataOpt + ", Data Obj: " + dataObj);
+            LogHelper.d(TAG, "Data URL: " + TSUMINO.getUrl() + dataUrl + ", Data Opt: " + dataOpt +
+                    ", Data Obj: " + dataObj);
 
-            JSONObject jsonObject = sendPostRequest(dataUrl, dataOpt);
-            LogHelper.d(TAG, jsonObject);
-
-            imgUrls = buildImageUrls(baseUrl, dataObj, jsonObject);
-
+            String request = sendPostRequest(dataUrl, dataOpt);
+            imgUrls = buildImageUrls(dataObj, request);
         } catch (Exception e) {
-            LogHelper.d(TAG, "Couldn't complete html/parse request: ", e);
+            LogHelper.e(TAG, "Couldn't complete html/parse request: ", e);
         }
+        LogHelper.d(TAG, imgUrls);
 
         return imgUrls;
     }
 
-    private static JSONObject sendPostRequest(String dataUrl, String dataOpt) {
-        String url = Site.TSUMINO.getUrl() + dataUrl;
-        HttpURLConnection http;
+    private static String sendPostRequest(String dataUrl, String dataOpt) {
+        final CookieManager cookieManager = CookieManager.getInstance();
+        String url = TSUMINO.getUrl() + dataUrl;
+        HttpURLConnection http = null;
         Map<String, String> data = new HashMap<>();
 
         data.put("q", dataOpt);
         String dataJson = new GsonBuilder().create().toJson(data, Map.class);
+
+        String cookie = cookieManager.getCookie(url);
+        if (cookie == null || cookie.isEmpty()) {
+            cookie = Helper.getSessionCookie();
+        }
 
         try {
             http = (HttpURLConnection) ((new URL(url).openConnection()));
             http.setDoOutput(true);
             http.setRequestProperty("Content-Type", "application/json");
             http.setRequestProperty("Accept", "application/json");
+            http.setRequestProperty("Cookie", cookie);
             http.setRequestMethod("POST");
             http.connect();
 
@@ -176,21 +185,36 @@ public class TsuminoParser {
             }
             br.close();
 
-            return new JSONObject(builder.toString());
+            return builder.toString();
         } catch (UnsupportedEncodingException e) {
-            LogHelper.d(TAG, "Encoding option is not supported for this URL: ", e);
+            LogHelper.e(TAG, "Encoding option is not supported for this URL: ", e);
         } catch (IOException e) {
-            LogHelper.d(TAG, "IO Exception while attempting request: ", e);
-        } catch (JSONException e) {
-            LogHelper.d(TAG, "Could not build JSON from String response: ", e);
+            LogHelper.e(TAG, "IO Exception while attempting request: ", e);
+        } finally {
+            if (http != null) {
+                http.disconnect();
+            }
         }
 
         return null;
     }
 
-    // TODO: WIP: Parse JSON response
-    private static List<String> buildImageUrls(String url, String data, JSONObject json) {
-        LogHelper.d(TAG, "URL: " + url, ", Data: " + data, ", JSON: " + json);
-        return null;
+    private static List<String> buildImageUrls(String data, String request) {
+        List<String> imgUrls = new ArrayList<>();
+        String imgUrl = TSUMINO.getUrl() + data + "?name=";
+
+        JsonElement parser = new JsonParser().parse(request);
+        JsonElement urls = parser.getAsJsonObject().get("reader_page_urls");
+
+        for (int i = 0; i < urls.getAsJsonArray().size(); i++) {
+            try {
+                imgUrls.add(imgUrl + URLEncoder.encode(
+                        urls.getAsJsonArray().get(i).getAsString(), "UTF-8"));
+            } catch (UnsupportedEncodingException e) {
+                LogHelper.e(TAG, "Failed to encode URL: ", e);
+            }
+        }
+
+        return imgUrls;
     }
 }

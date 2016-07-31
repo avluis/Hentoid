@@ -12,10 +12,11 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.LogHelper;
+
+import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
 
 /**
  * Created by avluis on 07/26/2016.
@@ -29,11 +30,12 @@ public class HentaiCafeParser {
 
         Elements content = doc.select("div.entry-content.content");
 
-        if (urlString.contains(Site.HENTAICAFE.getUrl() + "/78-2/") ||
-                urlString.contains(Site.HENTAICAFE.getUrl() + "/artists/") ||
-                urlString.contains(Site.HENTAICAFE.getUrl() + "/category/book/")) {
+        if (urlString.contains(HENTAICAFE.getUrl() + "/78-2/") ||
+                urlString.contains(HENTAICAFE.getUrl() + "/artists/")) {
+
             return null;
         }
+
         if (content.size() > 0) {
             String url = doc.select("div.x-main.full")
                     .select("article")
@@ -54,12 +56,10 @@ public class HentaiCafeParser {
             String info = content.select("div.x-column.x-sm.x-1-2.last")
                     .select("p").html();
 
-            String tags = info.substring(0, info.indexOf("<br>"))
-                    .replace(Site.HENTAICAFE.getUrl(), "");
+            String tags = info.substring(0, info.indexOf("<br>")).replace(HENTAICAFE.getUrl(), "");
 
             String artists = info.substring(info.indexOf("Artists: "));
-            artists = artists.substring(0, artists.indexOf("<br>"))
-                    .replace(Site.HENTAICAFE.getUrl(), "");
+            artists = artists.substring(0, artists.indexOf("<br>")).replace(HENTAICAFE.getUrl(), "");
 
             Elements tagElements = Jsoup.parse(tags).select("a");
 
@@ -75,7 +75,7 @@ public class HentaiCafeParser {
                     .setAttributes(attributes)
                     .setQtyPages(-1)
                     .setStatus(StatusContent.SAVED)
-                    .setSite(Site.HENTAICAFE);
+                    .setSite(HENTAICAFE);
         }
 
         return null;

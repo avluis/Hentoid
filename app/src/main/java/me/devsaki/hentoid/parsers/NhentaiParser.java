@@ -10,11 +10,12 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.LogHelper;
+
+import static me.devsaki.hentoid.enums.Site.NHENTAI;
 
 /**
  * Created by Shiro on 1/5/2016.
@@ -100,14 +101,14 @@ public class NhentaiParser {
                 .setAttributes(attributes)
                 .setQtyPages(qtyPages)
                 .setStatus(StatusContent.SAVED)
-                .setSite(Site.NHENTAI);
+                .setSite(NHENTAI);
     }
 
     public static List<String> parseImageList(Content content) {
         String url = content.getGalleryUrl();
         url = url.replace("/g", "/api/gallery");
         url = url.substring(0, url.length() - 1);
-        List<String> imagesUrl = new ArrayList<>();
+        List<String> imgUrls = new ArrayList<>();
 
         try {
             String json = HttpClientHelper.call(url);
@@ -131,15 +132,16 @@ public class NhentaiParser {
                         break;
                 }
                 String urlImage = serverUrl + (i + 1) + extension;
-                imagesUrl.add(urlImage);
+                imgUrls.add(urlImage);
             }
         } catch (JSONException e) {
             LogHelper.e(TAG, "Error parsing content: ", e);
         } catch (Exception e) {
             LogHelper.e(TAG, "Couldn't connect to resource: " + e);
         }
+        LogHelper.d(TAG, imgUrls);
 
-        return imagesUrl;
+        return imgUrls;
     }
 
     private static class Tag {
