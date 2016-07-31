@@ -11,6 +11,7 @@ import me.devsaki.hentoid.activities.BaseWebActivity;
 import me.devsaki.hentoid.activities.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
+import me.devsaki.hentoid.activities.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -91,6 +92,8 @@ public class Content implements Serializable {
                 return ASMHentaiActivity.class;
             case HENTAICAFE:
                 return HentaiCafeActivity.class;
+            case TSUMINO:
+                return TsuminoActivity.class;
             default:
                 /*Pururin, FAKKU, Tsumino*/
                 return BaseWebActivity.class;

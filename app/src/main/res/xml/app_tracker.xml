@@ -23,6 +23,7 @@
     <screenName name="me.devsaki.hentoid.activities.BaseWebActivity">Source: Legacy</screenName>
     <screenName name="me.devsaki.hentoid.activities.HitomiActivity">Source: hitomi</screenName>
     <screenName name="me.devsaki.hentoid.activities.NhentaiActivity">Source: nhentai</screenName>
+    <screenName name="me.devsaki.hentoid.activities.TsuminoActivity">Source: tsumino</screenName>
     <screenName name="me.devsaki.hentoid.activities.ASMHentaiActivity">Source: ASMHentai</screenName>
     <screenName name="me.devsaki.hentoid.activities.HentaiCafeActivity">Source: Hentai Cafe</screenName>
 

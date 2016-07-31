@@ -18,9 +18,10 @@ import java.net.URL;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+
+import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
 /**
  * Created by Shiro on 1/22/2016.
@@ -98,7 +99,7 @@ public class TsuminoActivity extends BaseWebActivity {
             super.onPageFinished(view, url);
 
             if (url.contains("//www.tsumino.com/Book/Info/")) {
-                Helper.executeAsyncTask(new HtmlLoader(), url);
+                executeAsyncTask(new HtmlLoader(), url);
             } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;
                 int currentIndex = getWebView().copyBackForwardList().getCurrentIndex();

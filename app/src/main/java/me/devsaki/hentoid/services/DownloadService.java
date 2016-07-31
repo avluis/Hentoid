@@ -22,6 +22,7 @@ import me.devsaki.hentoid.parsers.ASMHentaiParser;
 import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
+import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -218,6 +219,9 @@ public class DownloadService extends IntentService {
                 break;
             case NHENTAI:
                 aUrls = NhentaiParser.parseImageList(currentContent);
+                break;
+            case TSUMINO:
+                aUrls = TsuminoParser.parseImageList(currentContent);
                 break;
             default:
                 break;

@@ -13,7 +13,7 @@ public enum Site {
     PURURIN(1, "Pururin", "http://pururin.com", R.drawable.ic_favicon_pururin),
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_menu_hitomi),
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_menu_nhentai),
-    TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_favicon_tsumino),
+    TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_menu_tsumino),
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", R.drawable.ic_menu_hentaicafe),
     ASMHENTAI(6, "asmhentai", "http://asmhentai.com", R.drawable.ic_menu_asmhentai);
 
