@@ -95,8 +95,7 @@ public class Content implements Serializable {
             case TSUMINO:
                 return TsuminoActivity.class;
             default:
-                /*Pururin, FAKKU, Tsumino*/
-                return BaseWebActivity.class;
+                return BaseWebActivity.class; // Fallback for Pururin and FAKKU
         }
     }
 
