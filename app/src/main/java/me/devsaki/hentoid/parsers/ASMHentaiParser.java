@@ -101,7 +101,6 @@ public class ASMHentaiParser {
         }
     }
 
-    // TODO: Test against different works
     public static List<String> parseImageList(Content content) {
         int pages = content.getQtyPages();
         String readerUrl = content.getReaderUrl();

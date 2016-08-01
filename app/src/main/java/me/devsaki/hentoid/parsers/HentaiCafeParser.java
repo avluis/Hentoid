@@ -90,7 +90,6 @@ public class HentaiCafeParser {
         }
     }
 
-    // TODO: Optimize?
     public static List<String> parseImageList(Content content) {
         String readerUrl = content.getReaderUrl();
         List<String> imgUrls = new ArrayList<>();
@@ -108,6 +107,7 @@ public class HentaiCafeParser {
 
                 for (int i = 0; i < pages; i++) {
                     String newReaderUrl = readerUrl + "page/" + (i + 1);
+                    // TODO: Find another way to gather urls
                     imgUrl = Jsoup.connect(newReaderUrl).get()
                             .select("div.inner")
                             .select("a")

@@ -106,6 +106,8 @@ public class AppLockActivity extends BaseActivity {
     public void checkPin(View view) {
         String pin = etPin.getText().toString();
         String appLock = HentoidApp.getSharedPrefs().getString(ConstsPrefs.PREF_APP_LOCK, "");
+        boolean appLockVibrate = HentoidApp.getSharedPrefs().getBoolean(
+                ConstsPrefs.PREF_APP_LOCK_VIBRATE, ConstsPrefs.PREF_APP_LOCK_VIBRATE_DEFAULT);
 
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
@@ -117,7 +119,7 @@ public class AppLockActivity extends BaseActivity {
             tvAppLock.setText(R.string.pin_ok);
             ivLock.setImageResource(imageMap.get("Open"));
 
-            if (vibrator.hasVibrator()) {
+            if (vibrator.hasVibrator() & appLockVibrate) {
                 vibrator.vibrate(goodPinPattern, -1);
             }
 
@@ -129,7 +131,7 @@ public class AppLockActivity extends BaseActivity {
             ivLock.setImageResource(imageMap.get("Locked"));
             tvAppLock.setText(R.string.pin_invalid);
 
-            if (vibrator.hasVibrator()) {
+            if (vibrator.hasVibrator() & appLockVibrate) {
                 vibrator.vibrate(wrongPinPattern, -1);
             }
         }

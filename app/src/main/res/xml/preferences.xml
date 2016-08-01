@@ -86,6 +86,12 @@
             android:key="pref_app_lock"
             android:summary="@string/pref_app_lock_summary"
             android:title="@string/pref_app_lock_title" />
+        <CheckBoxPreference
+            android:defaultValue="@string/pref_app_lock_vibrate_default"
+            android:icon="@null"
+            android:key="pref_app_lock_vibrate"
+            android:summary="@string/pref_app_lock_vibrate_summary"
+            android:title="@string/pref_app_lock_vibrate_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_update_settings"

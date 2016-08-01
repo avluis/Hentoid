@@ -35,6 +35,9 @@
     <string name="pref_applock_category">App Lock</string>
     <string name="pref_app_lock_title">Application Lock</string>
     <string name="pref_app_lock_summary">Set a PIN password to open the app.\nLeave empty if you don\'t want to be asked.</string>
+    <string name="pref_app_lock_vibrate_title">Unlock Feedback</string>
+    <string name="pref_app_lock_vibrate_summary">Enable haptic feedback on app lock screen.</string>
+    <string name="pref_app_lock_vibrate_default" translatable="false">true</string>
     <!-- Updates -->
     <string name="pref_updates_category">Updates</string>
     <string name="pref_check_updates_manual_title">Manual Update Check</string>

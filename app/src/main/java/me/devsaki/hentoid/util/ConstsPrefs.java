@@ -26,6 +26,8 @@ public abstract class ConstsPrefs {
     public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
     public static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
     public static final String PREF_APP_LOCK = "pref_app_lock";
+    public static final boolean PREF_APP_LOCK_VIBRATE_DEFAULT = true;
+    public static final String PREF_APP_LOCK_VIBRATE = "pref_app_lock_vibrate";
     public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
     public static final String PREF_FIRST_RUN = "pref_first_run";
     public static final boolean PREF_FIRST_RUN_DEFAULT = true;
