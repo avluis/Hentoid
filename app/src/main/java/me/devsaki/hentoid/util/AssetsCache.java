@@ -35,7 +35,7 @@ public class AssetsCache {
     private static final String TAG = LogHelper.makeLogTag(AssetsCache.class);
 
     private static final String CACHE_JSON =
-            "https://raw.githubusercontent.com/AVnetWS/Hentoid/new-sources/.cache/cache.json";
+            "https://raw.githubusercontent.com/AVnetWS/Hentoid/master/.cache/cache.json";
     private static final String CACHE_PACK = "cache.zip";
     private static final String KEY_PACK_URL = "packURL";
     private static final String KEY_VERSION_CODE = "versionCode";
