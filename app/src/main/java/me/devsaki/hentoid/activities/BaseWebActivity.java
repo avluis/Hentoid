@@ -45,7 +45,7 @@ public class BaseWebActivity extends BaseActivity {
     private ObservableWebView webView;
     private Site site;
     private boolean webViewIsLoading;
-    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabDownloads;
+    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
 
@@ -83,7 +83,7 @@ public class BaseWebActivity extends BaseActivity {
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
         fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
         fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshStop);
-        fabDownloads = (FloatingActionButton) findViewById(R.id.fabDownloads);
+        fabHome = (FloatingActionButton) findViewById(R.id.fabHome);
 
         hideFab(fabRead);
         hideFab(fabDownload);
@@ -156,7 +156,7 @@ public class BaseWebActivity extends BaseActivity {
                 if (!webViewIsLoading) {
                     if (webView.canScrollVertically(1) || t == 0) {
                         fabRefreshOrStop.show();
-                        fabDownloads.show();
+                        fabHome.show();
                         if (fabReadEnabled) {
                             fabRead.show();
                         } else if (fabDownloadEnabled) {
@@ -164,7 +164,7 @@ public class BaseWebActivity extends BaseActivity {
                         }
                     } else {
                         fabRefreshOrStop.hide();
-                        fabDownloads.hide();
+                        fabHome.hide();
                         fabRead.hide();
                         fabDownload.hide();
                     }
@@ -227,9 +227,9 @@ public class BaseWebActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-
-        goHome();
+        if (!getWebView().canGoBack()) {
+            goHome();
+        }
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -371,7 +371,7 @@ public class BaseWebActivity extends BaseActivity {
             webViewIsLoading = true;
             fabRefreshOrStop.setImageResource(R.drawable.ic_action_clear);
             fabRefreshOrStop.show();
-            fabDownloads.show();
+            fabHome.show();
             hideFab(fabDownload);
             hideFab(fabRead);
         }

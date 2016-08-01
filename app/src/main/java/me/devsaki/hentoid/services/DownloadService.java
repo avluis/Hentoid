@@ -18,11 +18,12 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.parsers.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -82,7 +83,7 @@ public class DownloadService extends IntentService {
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
-            postDownloadCompleted(dir);
+
             queryForAdditionalDownloads();
         }
     }
@@ -90,31 +91,26 @@ public class DownloadService extends IntentService {
     private void addTask(File dir, ImageDownloadBatch downloadBatch) {
         // Add download tasks
         downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());
-        do {
-            for (ImageFile imageFile : currentContent.getImageFiles()) {
-                downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
-            }
-        } while (false);
-
-        // Track and wait for download to complete
-        final int qtyPages = currentContent.getQtyPages();
-        for (int i = 0; i <= qtyPages; ++i) {
-            if (paused) {
-                LogHelper.d(TAG, "Interrupt!!");
-                interruptDownload();
-                downloadBatch.cancelAllTasks();
-
-                if (currentContent.getStatus() == StatusContent.CANCELED) {
-                    // Update notification
-                    notificationPresenter.downloadInterrupted(currentContent);
-                }
-
-                return;
-            }
+        List<ImageFile> imageFiles = currentContent.getImageFiles();
+        for (int i = 0; i < imageFiles.size() && !paused; i++) {
+            ImageFile imageFile = imageFiles.get(i);
+            downloadBatch.newTask(dir, imageFile.getName(), imageFile.getUrl());
             downloadBatch.waitForOneCompletedTask();
-            double percent = i * 100.0 / qtyPages;
+            double percent = (i + 1) * 100.0 / imageFiles.size();
             updateActivity(percent);
         }
+
+        if (paused) {
+            LogHelper.d(TAG, "Pause requested");
+            interruptDownload();
+            downloadBatch.cancelAllTasks();
+            if (currentContent.getStatus() == StatusContent.CANCELED) {
+                notificationPresenter.downloadInterrupted(currentContent);
+            }
+
+            return;
+        }
+
         // Assign status tag to ImageFile(s)
         short errorCount = downloadBatch.getErrorCount();
         for (ImageFile imageFile : currentContent.getImageFiles()) {
@@ -134,6 +130,8 @@ public class DownloadService extends IntentService {
         }
         currentContent.setDownloadDate(new Date().getTime());
         db.updateContentStatus(currentContent);
+
+        postDownloadCompleted(dir);
     }
 
     private void initDownload() {
@@ -207,30 +205,26 @@ public class DownloadService extends IntentService {
         EventBus.getDefault().post(new DownloadEvent(percent));
     }
 
-    private void parseImageFiles() throws Exception {
+    private void parseImageFiles() {
         List<String> aUrls = new ArrayList<>();
-        try {
-            switch (currentContent.getSite()) {
-                case HITOMI:
-                    String html = HttpClientHelper.call(currentContent.getReaderUrl());
-                    aUrls = HitomiParser.parseImageList(html);
-                    break;
-                case NHENTAI:
-                    String url = currentContent.getGalleryUrl();
-                    url = url.replace("/g", "/api/gallery");
-                    url = url.substring(0, url.length() - 1);
-                    String json = HttpClientHelper.call(url);
-                    aUrls = NhentaiParser.parseImageList(json);
-                    break;
-                case TSUMINO:
-                    aUrls = TsuminoParser.parseImageList(currentContent);
-                    break;
-                default: // do nothing
-                    break;
-            }
-        } catch (Exception e) {
-            LogHelper.e(TAG, "Error getting image urls: ", e);
-            throw e;
+        switch (currentContent.getSite()) {
+            case ASMHENTAI:
+                aUrls = ASMHentaiParser.parseImageList(currentContent);
+                break;
+            case HENTAICAFE:
+                aUrls = HentaiCafeParser.parseImageList(currentContent);
+                break;
+            case HITOMI:
+                aUrls = HitomiParser.parseImageList(currentContent);
+                break;
+            case NHENTAI:
+                aUrls = NhentaiParser.parseImageList(currentContent);
+                break;
+            case TSUMINO:
+                aUrls = TsuminoParser.parseImageList(currentContent);
+                break;
+            default:
+                break;
         }
 
         int i = 1;

@@ -11,7 +11,7 @@ import android.net.NetworkInfo;
 public final class NetworkStatus {
     private static final String TAG = LogHelper.makeLogTag(NetworkStatus.class);
 
-    private static NetworkInfo initialize(Context cxt) {
+    private static NetworkInfo init(Context cxt) {
         Context context = cxt.getApplicationContext();
         ConnectivityManager connMgr = (ConnectivityManager) context
                 .getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -19,10 +19,10 @@ public final class NetworkStatus {
         return connMgr.getActiveNetworkInfo();
     }
 
-    public static boolean isOnline(Context context) {
+    public static boolean isOnline(Context cxt) {
         boolean connected;
         try {
-            NetworkInfo netInfo = initialize(context);
+            NetworkInfo netInfo = init(cxt);
             connected = netInfo != null && netInfo.isAvailable() &&
                     netInfo.isConnected();
 
@@ -34,10 +34,10 @@ public final class NetworkStatus {
         return false;
     }
 
-    public static boolean isWifi(Context context) {
+    public static boolean isWifi(Context cxt) {
         boolean wifi;
         try {
-            NetworkInfo netInfo = initialize(context);
+            NetworkInfo netInfo = init(cxt);
             wifi = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
                     ConnectivityManager.TYPE_WIFI;
 
@@ -49,10 +49,10 @@ public final class NetworkStatus {
         return false;
     }
 
-    public boolean isMobile(Context context) {
+    public static boolean isMobile(Context cxt) {
         boolean mobile;
         try {
-            NetworkInfo netInfo = initialize(context);
+            NetworkInfo netInfo = init(cxt);
             mobile = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
                     ConnectivityManager.TYPE_MOBILE;
 

@@ -4,8 +4,11 @@ import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Locale;
 
+import me.devsaki.hentoid.activities.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.BaseWebActivity;
+import me.devsaki.hentoid.activities.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
@@ -68,9 +71,12 @@ public class Content implements Serializable {
                 paths = url.split("/");
                 return paths[1].replace(".html", "") + "-" +
                         title.replaceAll("[^a-zA-Z0-9.-]", "_");
+            case ASMHENTAI:
             case NHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
+            case HENTAICAFE:
+                return url.replace("/?p=", "") + "-" + site.getDescription();
             default:
                 return null;
         }
@@ -82,6 +88,10 @@ public class Content implements Serializable {
                 return HitomiActivity.class;
             case NHENTAI:
                 return NhentaiActivity.class;
+            case ASMHENTAI:
+                return ASMHentaiActivity.class;
+            case HENTAICAFE:
+                return HentaiCafeActivity.class;
             case TSUMINO:
                 return TsuminoActivity.class;
             default:
@@ -120,15 +130,17 @@ public class Content implements Serializable {
             case HITOMI:
                 galleryConst = "/galleries";
                 break;
+            case ASMHENTAI:
             case NHENTAI:
                 galleryConst = "/g";
                 break;
             case TSUMINO:
                 galleryConst = "/Book/Info";
                 break;
+            case HENTAICAFE:
             default:
                 galleryConst = "";
-                break; // Includes FAKKU
+                break; // Includes FAKKU & Hentai Cafe
         }
 
         return site.getUrl() + galleryConst + url;
@@ -142,6 +154,15 @@ public class Content implements Serializable {
                 return getGalleryUrl() + "1/";
             case TSUMINO:
                 return site.getUrl() + "/Read/View" + url;
+            case ASMHENTAI:
+                return site.getUrl() + "/gallery" + url;
+            case HENTAICAFE:
+                String title = getTitle()
+                        .replaceAll("\\[.*?\\]", "") /*Remove everything enclosed in brackets*/
+                        .replaceAll("^\\s+", "") /*Remove leading space (after remove brackets)*/
+                        .replaceAll("[^A-Za-z0-9 ]", "") /*Remove all non-ASCII characters*/
+                        .replaceAll(" ", "_").toLowerCase(Locale.US); /*Replace spaces with underscores*/
+                return site.getUrl() + "/manga/read/" + title + "/en/0/1/";
             default:
                 return null;
         }

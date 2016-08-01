@@ -21,6 +21,8 @@ public class IntentActivity extends BaseActivity {
     private static final String HITOMI = "hitomi.la";
     private static final String NHENTAI = "nhentai.net";
     private static final String TSUMINO = "www.tsumino.com";
+    private static final String ASMHENTAI = "asmhentai.com";
+    private static final String HENTAICAFE = "hentai.cafe";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -45,6 +47,14 @@ public class IntentActivity extends BaseActivity {
             case TSUMINO:
                 site = Site.TSUMINO;
                 parsedString = stringToParse.replace("/Book/Info", "");
+                break;
+            case ASMHENTAI:
+                site = Site.ASMHENTAI;
+                parsedString = stringToParse.replace("/g", "").concat("/");
+                break;
+            case HENTAICAFE:
+                site = Site.HENTAICAFE;
+                parsedString = stringToParse;
                 break;
             default:
                 LogHelper.d(TAG, "Unknown host!");

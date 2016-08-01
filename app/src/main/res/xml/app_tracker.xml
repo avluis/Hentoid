@@ -10,7 +10,8 @@
     <string name="ga_trackingId">UA-12419409-5</string>
 
     <!-- Additional metrics -->
-    <string name="ga_sampleFrequency">100.0</string>
+    <!-- Sampling Rate -->
+    <string name="ga_sampleFrequency">50.0</string>
 
     <!-- Track app crashes -->
     <bool name="ga_reportUncaughtExceptions">true</bool>
@@ -23,6 +24,8 @@
     <screenName name="me.devsaki.hentoid.activities.HitomiActivity">Source: hitomi</screenName>
     <screenName name="me.devsaki.hentoid.activities.NhentaiActivity">Source: nhentai</screenName>
     <screenName name="me.devsaki.hentoid.activities.TsuminoActivity">Source: tsumino</screenName>
+    <screenName name="me.devsaki.hentoid.activities.ASMHentaiActivity">Source: ASMHentai</screenName>
+    <screenName name="me.devsaki.hentoid.activities.HentaiCafeActivity">Source: Hentai Cafe</screenName>
 
     <screenName name="me.devsaki.hentoid.activities.IntentActivity">Launch: Intent</screenName>
     <screenName name="me.devsaki.hentoid.activities.SplashActivity">Launch: Splash</screenName>

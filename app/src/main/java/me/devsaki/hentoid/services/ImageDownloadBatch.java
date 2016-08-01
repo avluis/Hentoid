@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -36,9 +37,9 @@ final class ImageDownloadBatch {
     private short errorCount = 0;
 
     void newTask(final File dir, final String filename, final String url) {
-        String cookies = cookieManager.getCookie(url);
-        if (cookies.isEmpty()) {
-            cookies = Helper.getSessionCookie();
+        String cookie = cookieManager.getCookie(url);
+        if (cookie == null || cookie.isEmpty()) {
+            cookie = Helper.getSessionCookie();
         }
 
         String userAgent;
@@ -51,7 +52,7 @@ final class ImageDownloadBatch {
         Request request = new Request.Builder()
                 .url(url)
                 .addHeader("User-Agent", userAgent)
-                .addHeader("Cookie", cookies)
+                .addHeader("Cookie", cookie)
                 .build();
 
         client = new OkHttpClient.Builder()
@@ -95,7 +96,13 @@ final class ImageDownloadBatch {
 
         @Override
         public void onFailure(Call call, IOException e) {
-            LogHelper.e(TAG, "Error downloading image: " + call.request().url(), e);
+            LogHelper.e(TAG, "Error downloading image: " + call.request().url() + " ", e);
+
+            if (e instanceof SocketTimeoutException) {
+                LogHelper.w(TAG, "Socket Timeout Exception!", e);
+                // TODO: Handle this somehow
+            }
+
             hasError = true;
             synchronized (ImageDownloadBatch.this) {
                 errorCount++;

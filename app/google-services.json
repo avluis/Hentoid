@@ -1,21 +1,22 @@
 {
   "project_info": {
-    "project_id": "hentoid-c90cc",
     "project_number": "327123173705",
-    "name": "Hentoid"
+    "project_id": "hentoid-c90cc"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:327123173705:android:127d811a9e9e0178",
-        "client_id": "android:me.devsaki.hentoid",
-        "client_type": 1,
         "android_client_info": {
           "package_name": "me.devsaki.hentoid"
         }
       },
       "oauth_client": [],
-      "api_key": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcJ0CYV9zKu85NOiYEF-24XdO5SPq-iv4"
+        }
+      ],
       "services": {
         "analytics_service": {
           "status": 2,
@@ -23,16 +24,9 @@
             "tracking_id": "UA-12419409-5"
           }
         },
-        "cloud_messaging_service": {
-          "status": 1,
-          "apns_config": []
-        },
         "appinvite_service": {
           "status": 1,
           "other_platform_oauth_client": []
-        },
-        "google_signin_service": {
-          "status": 1
         },
         "ads_service": {
           "status": 1
@@ -40,6 +34,5 @@
       }
     }
   ],
-  "client_info": [],
-  "ARTIFACT_VERSION": "1"
+  "configuration_version": "1"
 }

@@ -29,14 +29,19 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.IntentCompat;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.webkit.WebResourceResponse;
 import android.widget.AbsListView;
 import android.widget.EdgeEffect;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Locale;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -56,7 +61,6 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
  */
 public final class Helper {
     private static final String TAG = LogHelper.makeLogTag(Helper.class);
-
     private static Toast toast;
 
     public static void openContent(final Context context, Content content) {
@@ -434,8 +438,8 @@ public final class Helper {
      * @param context Context to be used to lookup the {@link SharedPreferences}.
      */
     public static boolean isFirstRunProcessComplete(final Context context) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        return sp.getBoolean(ConstsPrefs.PREF_WELCOME_DONE, false);
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
+                ConstsPrefs.PREF_WELCOME_DONE, false);
     }
 
     /**
@@ -596,7 +600,7 @@ public final class Helper {
             }
         }
 
-        return 0;
+        return R.drawable.ic_menu_unknown;
     }
 
     public static int getAppVersionCode(@NonNull Context cxt) throws NameNotFoundException {
@@ -611,6 +615,37 @@ public final class Helper {
         return Consts.USER_AGENT + " Hentoid/v" +
                 cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionName;
     }
+
+    public static WebResourceResponse getWebResourceResponseFromAsset(Site site, String filename,
+                                                                      TYPE type) {
+        Context cxt = HentoidApp.getAppContext();
+        String pathPrefix = site.getDescription().toLowerCase(Locale.US) + "/";
+        String file = pathPrefix + filename;
+        try {
+            File asset = new File(cxt.getExternalCacheDir() + "/" + file);
+            FileInputStream stream = new FileInputStream(asset);
+            return Helper.getUtf8EncodedWebResourceResponse(stream, type);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static WebResourceResponse getUtf8EncodedWebResourceResponse(InputStream open,
+                                                                         TYPE type) {
+        switch (type) {
+            case JS:
+                return new WebResourceResponse("text/js", "UTF-8", open);
+            case CSS:
+                return new WebResourceResponse("text/css", "UTF-8", open);
+            case HTML:
+                return new WebResourceResponse("text/html", "UTF-8", open);
+            case PLAIN:
+            default:
+                return new WebResourceResponse("text/plain", "UTF-8", open);
+        }
+    }
+
+    public enum TYPE {JS, CSS, HTML, PLAIN}
 
     /**
      * Created by avluis on 06/12/2016.
