@@ -22,20 +22,14 @@ import com.thin.downloadmanager.ThinDownloadManager;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.charset.Charset;
-
-import javax.net.ssl.HttpsURLConnection;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.ConstsUpdater;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -365,11 +359,11 @@ public class UpdateCheck {
         void onUpdateAvailable();
     }
 
-    public class UpdateCheckTask extends AsyncTask<String, Void, Void> {
+    private class UpdateCheckTask extends AsyncTask<String, Void, Void> {
         @Override
         protected Void doInBackground(String... params) {
             try {
-                JSONObject jsonObject = downloadURL(params[0]);
+                JSONObject jsonObject = new JsonHelper().jsonReader(params[0]);
                 if (jsonObject != null) {
                     int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
                     if (Helper.getAppVersionCode(cxt) < updateVersionCode) {
@@ -421,58 +415,6 @@ public class UpdateCheck {
             }
 
             return null;
-        }
-
-        JSONObject downloadURL(String updateURL) throws IOException {
-            InputStream inputStream = null;
-            try {
-                disableConnectionReuse();
-                URL url = new URL(updateURL);
-                HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-                connection.setReadTimeout(10000);
-                connection.setConnectTimeout(15000);
-                connection.setRequestMethod("GET");
-                connection.setDoInput(true);
-
-                connection.connect();
-                int response = connection.getResponseCode();
-
-                LogHelper.d(TAG, "HTTP Response: " + response);
-
-                inputStream = connection.getInputStream();
-                String contentString = readInputStream(inputStream);
-
-                return new JSONObject(contentString);
-            } catch (JSONException e) {
-                HentoidApp.getInstance().trackException(e);
-                LogHelper.e(TAG, "JSON file not properly formatted: ", e);
-            } finally {
-                if (inputStream != null) {
-                    inputStream.close();
-                    retryCount = 0;
-                }
-            }
-            return null;
-        }
-
-        private void disableConnectionReuse() {
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) {
-                System.setProperty("http.keepAlive", "false");
-            }
-        }
-
-        private String readInputStream(InputStream inputStream) throws IOException {
-            StringBuilder stringBuilder = new StringBuilder(inputStream.available());
-            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream,
-                    Charset.forName("UTF-8")));
-            String line = reader.readLine();
-
-            while (line != null) {
-                stringBuilder.append(line);
-                line = reader.readLine();
-            }
-
-            return stringBuilder.toString();
         }
     }
 
