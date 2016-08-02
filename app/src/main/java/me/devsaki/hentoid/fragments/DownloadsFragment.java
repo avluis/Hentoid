@@ -125,6 +125,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         @Override
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             menu.findItem(R.id.action_delete).setVisible(!selectTrigger);
+            menu.findItem(R.id.action_share).setVisible(!selectTrigger);
             menu.findItem(R.id.action_delete_sweep).setVisible(selectTrigger);
 
             return true;
@@ -134,6 +135,11 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
         @Override
         public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
             switch (item.getItemId()) {
+                case R.id.action_share:
+                    mAdapter.sharedSelectedItems();
+                    mode.finish();
+
+                    return true;
                 case R.id.action_delete:
                     mAdapter.purgeSelectedItems();
                     mode.finish();

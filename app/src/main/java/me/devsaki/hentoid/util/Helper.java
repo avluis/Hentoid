@@ -348,22 +348,23 @@ public final class Helper {
     }
 
     public static void toast(Context cxt, String text) {
-        toast(cxt, text, 0);
+        toast(cxt, text, DURATION.SHORT);
     }
 
     public static void toast(Context cxt, int resource) {
-        toast(cxt, resource, 0);
+        toast(cxt, resource, DURATION.SHORT);
     }
 
-    private static void toast(Context cxt, String text, int duration) {
+    public static void toast(Context cxt, String text, DURATION duration) {
         toast(cxt, text, -1, duration);
     }
 
-    private static void toast(Context cxt, int resource, int duration) {
+    private static void toast(Context cxt, int resource, DURATION duration) {
         toast(cxt, null, resource, duration);
     }
 
-    private static void toast(@NonNull Context cxt, @Nullable String text, int res, int duration) {
+    private static void toast(@NonNull Context cxt, @Nullable String text, int res,
+                              DURATION duration) {
         String message = null;
         if (text != null) {
             message = text;
@@ -378,11 +379,12 @@ public final class Helper {
             }
         }
 
-        int time = duration;
-        switch (time) {
-            case 1:
+        int time;
+        switch (duration) {
+            case LONG:
                 time = Toast.LENGTH_LONG;
                 break;
+            case SHORT:
             default:
                 time = Toast.LENGTH_SHORT;
                 break;
@@ -644,6 +646,8 @@ public final class Helper {
                 return new WebResourceResponse("text/plain", "UTF-8", open);
         }
     }
+
+    public enum DURATION {SHORT, LONG}
 
     public enum TYPE {JS, CSS, HTML, PLAIN}
 

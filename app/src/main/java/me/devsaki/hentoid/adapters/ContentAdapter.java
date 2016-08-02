@@ -3,6 +3,7 @@ package me.devsaki.hentoid.adapters;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -480,6 +481,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                 .create().show();
     }
 
+    private void shareContent(final Content item) {
+        String url = item.getGalleryUrl();
+
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        intent.setData(Uri.parse(url));
+        intent.putExtra(Intent.EXTRA_SUBJECT, item.getTitle());
+        intent.putExtra(Intent.EXTRA_TEXT, url);
+        intent.setType("text/plain");
+
+        cxt.startActivity(Intent.createChooser(intent, cxt.getString(R.string.send_to)));
+    }
+
     private void deleteContent(final Content item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
@@ -543,6 +557,32 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         this.isFooterEnabled = isEnabled;
     }
 
+    public void sharedSelectedItems() {
+        int itemCount = getSelectedItemCount();
+        if (itemCount > 0) {
+            if (itemCount == 1) {
+                LogHelper.d(TAG, "Preparing to share selected item...");
+
+                List<Content> items;
+                items = processSelection();
+
+                if (!items.isEmpty()) {
+                    shareContent(items.get(0));
+                } else {
+                    listener.onItemClear(0);
+                    LogHelper.d(TAG, "Nothing to share!!");
+                }
+            } else {
+                // TODO: Implement multi-item share
+                LogHelper.d(TAG, "How even?");
+                Helper.toast("Not yet implemented!!");
+            }
+        } else {
+            listener.onItemClear(0);
+            LogHelper.d(TAG, "No items to share!!");
+        }
+    }
+
     public void purgeSelectedItems() {
         int itemCount = getSelectedItemCount();
         if (itemCount > 0) {
@@ -585,7 +625,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         for (int i = 0; i < selection.size(); i++) {
             selectionList.add(i, contents.get(selection.get(i)));
             LogHelper.d(TAG, "Added: " + contents.get(selection.get(i)).getTitle()
-                    + " to removal list.");
+                    + " to list.");
         }
 
         return selectionList;
