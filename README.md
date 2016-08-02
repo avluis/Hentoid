@@ -15,6 +15,7 @@ ___
 ##### Check out the [Getting Started with Hentoid](https://github.com/AVnetWS/Hentoid/wiki/Getting-Started-with-Hentoid) guide if you need assistance installing `Hentoid` on your device.
 ##### For the latest release, click [here](https://github.com/AVnetWS/Hentoid/releases/latest).
 
+##### Visit our [Discord Server](https://discord.gg/0yFzSPtXehJmFqOM) to chat with other users, support, or to hang out with the devs.
 ##### Visit our [Google+ Community](https://plus.google.com/communities/110496467189870321840) for Announcements, and Updates.
 ___
 ###### Help us shape Hentoid into the best H-Manga App for you.
