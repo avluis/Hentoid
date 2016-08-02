@@ -11,7 +11,7 @@
 
     <!-- Additional metrics -->
     <!-- Sampling Rate -->
-    <string name="ga_sampleFrequency">50.0</string>
+    <string name="ga_sampleFrequency">100.0</string>
 
     <!-- Track app crashes -->
     <bool name="ga_reportUncaughtExceptions">true</bool>
