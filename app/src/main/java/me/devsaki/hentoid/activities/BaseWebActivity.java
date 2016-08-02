@@ -126,7 +126,9 @@ public class BaseWebActivity extends BaseActivity {
             public boolean onLongClick(View v) {
                 WebView.HitTestResult result = webView.getHitTestResult();
                 if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
-                    backgroundRequest(result.getExtra());
+                    if (result.getExtra().contains(site.getUrl())) {
+                        backgroundRequest(result.getExtra());
+                    }
                 } else {
                     return true;
                 }
