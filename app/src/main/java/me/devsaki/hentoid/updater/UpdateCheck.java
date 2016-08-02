@@ -96,7 +96,7 @@ public class UpdateCheck {
             LogHelper.w(TAG, "Network is not connected!");
         }
         if (connected) {
-            runAsyncTask(false);
+            runAsyncTask(retryCount != 0);
         }
         this.showToast = showToast;
     }
@@ -412,6 +412,8 @@ public class UpdateCheck {
             } catch (PackageManager.NameNotFoundException e) {
                 HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Package Name NOT Found! ", e);
+            } finally {
+                retryCount = 0;
             }
 
             return null;
