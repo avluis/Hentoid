@@ -124,10 +124,16 @@ public class BaseWebActivity extends BaseActivity {
         webView.setOnLongClickListener(new View.OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
-                return true;
+                WebView.HitTestResult result = webView.getHitTestResult();
+                if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
+                    backgroundRequest(result.getExtra());
+                } else {
+                    return true;
+                }
+
+                return false;
             }
         });
-        webView.setLongClickable(false);
         webView.setHapticFeedbackEnabled(false);
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -362,6 +368,10 @@ public class BaseWebActivity extends BaseActivity {
                 }
             });
         }
+    }
+
+    void backgroundRequest(String extra) {
+        LogHelper.d(TAG, "Extras: " + extra);
     }
 
     class CustomWebViewClient extends WebViewClient {

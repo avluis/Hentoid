@@ -15,6 +15,8 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 
+import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
+
 /**
  * Created by avluis on 07/21/2016.
  * Implements Hentai Cafe source
@@ -32,6 +34,13 @@ public class HentaiCafeActivity extends BaseWebActivity {
         webView.setWebViewClient(new HentaiCafeWebViewClient());
 
         super.setWebView(webView);
+    }
+
+    @Override
+    void backgroundRequest(String extra) {
+        LogHelper.d(TAG, extra);
+        Helper.toast("Processing...");
+        executeAsyncTask(new HtmlLoader(), extra);
     }
 
     private class HentaiCafeWebViewClient extends CustomWebViewClient {
