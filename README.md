@@ -8,17 +8,17 @@ ___
 
 [![Hentoid App Icon](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/AVnetWS/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-debug.apk?branch=master&filter=successful)
 
-##### `Hentoid` is a Doujinshi & H-Manga archiving app originally designed to work with:
-###### [FAKKU](http://fakku.net/), [Pururin](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/pururin.jpg) and [Hitomi](https://hitomi.la/).
-###### [nhentai](https://nhentai.net/) support was recently added after FAKKU going legit, and Pururin getting abandoned.
-###### [tsumino](http://www.tsumino.com/) support is in as well, after many requests from the community.
-##### Check out the [Getting Started with Hentoid](https://github.com/AVnetWS/Hentoid/wiki/Getting-Started-with-Hentoid) guide if you need assistance installing `Hentoid` on your device.
+##### `Hentoid` is a Doujinshi & H-Manga archiving app.
+###### `Hentoid` currently supports:
+###### [nhentai](https://nhentai.net/), [hentai cafe](https://hentai.cafe/), [hitomi](https://hitomi.la/), [asmhentai](http://asmhentai.com/) and [tsumino](http://www.tsumino.com/).
+###### Note: `Hentoid` can still import downloads from [FAKKU](https://www.fakku.net/) and [Pururin](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/pururin.jpg).
+##### Check out the [Hentoid wiki](https://github.com/AVnetWS/Hentoid/wiki) if you need assistance installing `Hentoid` on your device.
 ##### For the latest release, click [here](https://github.com/AVnetWS/Hentoid/releases/latest).
 
 ##### Visit our [Discord Server](https://discord.gg/0yFzSPtXehJmFqOM) to chat with other users, support, or to hang out with the devs.
 ##### Visit our [Google+ Community](https://plus.google.com/communities/110496467189870321840) for Announcements, and Updates.
 ___
-###### Help us shape Hentoid into the best H-Manga App for you.
+###### [Help us](https://github.com/AVnetWS/Hentoid/wiki/Contributing) shape `Hentoid` into the best H-Manga App for you.
 ___
 
 <meta name='keywords' content='doujin, doujinshi, download doujinshi, android app, doujin android app, doujinshi android app, doujin android download, doujinshi android download'>
