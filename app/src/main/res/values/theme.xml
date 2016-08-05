@@ -36,6 +36,11 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
+    <!-- Import Dialog -->
+    <style name="ImportDialogTheme" parent="ImportTheme">
+        <item name="android:windowBackground">@color/white</item>
+    </style>
+
     <!-- Browser Activity -->
     <style name="BrowserTheme" parent="ImportTheme">
         <item name="android:colorBackgroundCacheHint">@null</item>

@@ -22,5 +22,4 @@ public class ConstsImport {
     public static final int RQST_IMPORT_RESULTS = 1;
     public static final int RQST_APP_SETTINGS = 2;
     public static final int RQST_STORAGE_PERMISSION = 3;
-
 }

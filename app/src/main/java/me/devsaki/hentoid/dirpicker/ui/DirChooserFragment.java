@@ -22,6 +22,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.dirpicker.events.CurrentRootDirChangedEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
+import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
 import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
@@ -40,7 +41,8 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
 
     private RecyclerView recyclerView;
     private TextView textView;
-    private FloatingActionButton fab;
+    private FloatingActionButton fabCreateDir,
+            fabRequestSD;
     private Button selectDirBtn;
     private EventBus bus;
     private File currentRootDir;
@@ -59,7 +61,7 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setCurrentRootDir(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NORMAL, 0);
+        setStyle(DialogFragment.STYLE_NO_FRAME, R.style.ImportDialogTheme);
     }
 
     @Override
@@ -101,10 +103,12 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
     private void initUI(View rootView) {
         recyclerView = (RecyclerView) rootView.findViewById(R.id.dir_list);
         textView = (TextView) rootView.findViewById(R.id.current_dir);
-        fab = (FloatingActionButton) rootView.findViewById(R.id.create_dir);
+        fabCreateDir = (FloatingActionButton) rootView.findViewById(R.id.create_dir);
+        fabRequestSD = (FloatingActionButton) rootView.findViewById(R.id.request_sd);
         selectDirBtn = (Button) rootView.findViewById(R.id.select_dir);
 
-        fab.setOnClickListener(this);
+        fabCreateDir.setOnClickListener(this);
+        fabRequestSD.setOnClickListener(this);
         selectDirBtn.setOnClickListener(this);
     }
 
@@ -145,8 +149,10 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-        if (v.equals(fab)) {
+        if (v.equals(fabCreateDir)) {
             createDirBtnClicked();
+        } else if (v.equals(fabRequestSD)) {
+            requestSDBtnClicked();
         } else if (v.equals(selectDirBtn)) {
             selectDirBtnClicked();
         }
@@ -155,6 +161,11 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
     private void createDirBtnClicked() {
         new CreateDirDialog(getActivity(), bus,
                 getActivity().getString(R.string.app_name)).dialog(currentRootDir);
+    }
+
+    private void requestSDBtnClicked() {
+        LogHelper.d(TAG, "SAF Request Event");
+        bus.post(new OnSAFRequestEvent());
     }
 
     private void selectDirBtnClicked() {

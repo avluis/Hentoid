@@ -35,8 +35,8 @@ public abstract class DocumentActivity extends AppCompatActivity
     private static final String TAG = DocumentActivity.class.getSimpleName();
 
     private static final int REQUEST_PREFIX = 256;  // Permissions have 8-bit limit
-    protected static final int REQUEST_CODE_WRITE_PERMISSION = REQUEST_PREFIX - 1;
-    private static final int REQUEST_STORAGE_PERMISSION = REQUEST_PREFIX - 2;
+    protected static final int RQST_CODE_WRITE_PERMISSION = REQUEST_PREFIX - 1;
+    private static final int RQST_STORAGE_PERMISSION = REQUEST_PREFIX - 2;
     /**
      * The name of the primary volume (LOLLIPOP).
      */
@@ -124,13 +124,13 @@ public abstract class DocumentActivity extends AppCompatActivity
                         @Override
                         public void onClick(View view) {
                             ActivityCompat.requestPermissions(DocumentActivity.this,
-                                    PERMISSIONS_STORAGE, REQUEST_STORAGE_PERMISSION);
+                                    PERMISSIONS_STORAGE, RQST_STORAGE_PERMISSION);
                         }
                     })
                     .show();
         } else {
             // Storage permission has not been request yet. Request for first time.
-            ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, REQUEST_STORAGE_PERMISSION);
+            ActivityCompat.requestPermissions(this, PERMISSIONS_STORAGE, RQST_STORAGE_PERMISSION);
         }
     }
 
@@ -703,7 +703,7 @@ public abstract class DocumentActivity extends AppCompatActivity
                         public void onClick(View v) {
                             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                             intent.putExtra(DocumentsContract.EXTRA_PROMPT, getString(R.string.allowWrite));
-                            startActivityForResult(intent, REQUEST_CODE_WRITE_PERMISSION);
+                            startActivityForResult(intent, RQST_CODE_WRITE_PERMISSION);
                             dialog.dismiss();
                         }
                     });
@@ -718,7 +718,7 @@ public abstract class DocumentActivity extends AppCompatActivity
     protected void onActivityResult(final int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            case REQUEST_CODE_WRITE_PERMISSION:
+            case RQST_CODE_WRITE_PERMISSION:
                 if (resultCode == RESULT_OK && data != null) {
                     Uri treeUri = data.getData();
                     getContentResolver().takePersistableUriPermission(treeUri,

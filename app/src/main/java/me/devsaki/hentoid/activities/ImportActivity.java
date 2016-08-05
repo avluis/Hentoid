@@ -40,6 +40,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
+import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
 import me.devsaki.hentoid.dirpicker.ui.DirChooserFragment;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -230,6 +231,13 @@ public class ImportActivity extends BaseActivity {
         LogHelper.d(TAG, "Storage Path: " + currentRootDir);
         dirChooserFragment.dismiss();
         importFolder(currentRootDir);
+    }
+
+    @Subscribe
+    public void onSAFRequest(OnSAFRequestEvent event) {
+        LogHelper.d(TAG, currentRootDir.getName());
+        // TODO: New SAF Request -- get SD Permission
+        // TODO: Update currentRootDir with SD Path
     }
 
     private void importFolder(File folder) {

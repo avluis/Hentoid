@@ -3,11 +3,12 @@ package me.devsaki.hentoid.util;
 /**
  * Created by DevSaki on 19/05/2015.
  * Common app preference constants.
+ * TODO: Move to resource file
  */
 public abstract class ConstsPrefs {
 
     public static final String PREFS_VERSION_KEY = "prefs_version";
-    public static final int PREFS_VERSION = 3;
+    public static final int PREFS_VERSION = 4;
 
     public static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
     public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
@@ -19,7 +20,7 @@ public abstract class ConstsPrefs {
     public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
     public static final int PREF_ORDER_CONTENT_BY_DATE = 1;
     public static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
-    public static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "prefs_webview_override_overview_lists";
+    public static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
     public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
     public static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
     public static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
@@ -34,4 +35,7 @@ public abstract class ConstsPrefs {
     public static final String PREF_WELCOME_DONE = "pref_welcome_done";
     public static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
     public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
+    public static final boolean PREF_SD_STORAGE_DEFAULT = false;
+    public static final String PREF_SD_STORAGE = "pref_sd_storage";
+    public static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
 }
