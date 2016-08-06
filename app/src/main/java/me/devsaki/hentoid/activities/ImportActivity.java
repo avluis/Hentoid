@@ -235,6 +235,7 @@ public class ImportActivity extends BaseActivity {
 
     @Subscribe
     public void onSAFRequest(OnSAFRequestEvent event) {
+        LogHelper.d(TAG, currentRootDir.getAbsolutePath());
         LogHelper.d(TAG, currentRootDir.getName());
         // TODO: New SAF Request -- get SD Permission
         // TODO: Update currentRootDir with SD Path
