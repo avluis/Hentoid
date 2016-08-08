@@ -1,7 +1,6 @@
 package ws.avnet.storage.framework;
 
 import android.Manifest.permission;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.UriPermission;
@@ -521,7 +520,6 @@ public abstract class DocumentActivity extends AppCompatActivity
      *
      * @return A list of external SD card paths.
      */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     protected String[] getExtSdCardPaths() {
         List<String> paths = new ArrayList<>();
         for (File file : getExternalFilesDirs("external")) {
@@ -684,7 +682,6 @@ public abstract class DocumentActivity extends AppCompatActivity
         return Collections.unmodifiableList(mRootPermissions);
     }
 
-    @TargetApi(21)
     protected void requestWritePermission() {
         if (Util.hasLollipop()) {
             runOnUiThread(new Runnable() {
@@ -698,11 +695,13 @@ public abstract class DocumentActivity extends AppCompatActivity
                                     .setView(image);
                     final AlertDialog dialog = builder.create();
                     image.setOnClickListener(new View.OnClickListener() {
-                        @TargetApi(Build.VERSION_CODES.M)
                         @Override
                         public void onClick(View v) {
                             Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                            intent.putExtra(DocumentsContract.EXTRA_PROMPT, getString(R.string.allowWrite));
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                intent.putExtra(DocumentsContract.EXTRA_PROMPT,
+                                        getString(R.string.allowWrite));
+                            }
                             startActivityForResult(intent, RQST_CODE_WRITE_PERMISSION);
                             dialog.dismiss();
                         }
@@ -713,7 +712,6 @@ public abstract class DocumentActivity extends AppCompatActivity
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     protected void onActivityResult(final int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

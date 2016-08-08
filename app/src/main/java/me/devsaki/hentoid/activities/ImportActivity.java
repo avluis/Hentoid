@@ -15,8 +15,10 @@ import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
+import android.text.Editable;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.EditText;
 import android.widget.RelativeLayout;
 
 import com.afollestad.materialdialogs.GravityEnum;
@@ -41,7 +43,10 @@ import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
 import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
+import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
+import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.ui.DirChooserFragment;
+import me.devsaki.hentoid.dirpicker.util.Convert;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -137,7 +142,7 @@ public class ImportActivity extends BaseActivity {
                 currentRootDir = Helper.getDefaultDir(this, "");
                 LogHelper.d(TAG, "Creating new storage directory.");
             }
-            pickDownloadDirectory();
+            pickDownloadDirectory(currentRootDir);
         } else {
             LogHelper.d(TAG, "Do we have permission?");
         }
@@ -197,9 +202,9 @@ public class ImportActivity extends BaseActivity {
     }
 
     // Present Directory Picker
-    private void pickDownloadDirectory() {
+    private void pickDownloadDirectory(File dir) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        dirChooserFragment = DirChooserFragment.newInstance(currentRootDir);
+        dirChooserFragment = DirChooserFragment.newInstance(dir);
         dirChooserFragment.show(transaction, "DirectoryChooserFragment");
     }
 
@@ -231,6 +236,58 @@ public class ImportActivity extends BaseActivity {
         LogHelper.d(TAG, "Storage Path: " + currentRootDir);
         dirChooserFragment.dismiss();
         importFolder(currentRootDir);
+    }
+
+    @Subscribe
+    public void onOpFailed(OpFailedEvent event) {
+        dirChooserFragment.dismiss();
+        initImport(null);
+    }
+
+    @Subscribe
+    public void onManualInput(OnTextViewClickedEvent event) {
+        if (event.getClickType()) {
+            LogHelper.d(TAG, "Resetting directory back to default.");
+            dirChooserFragment.dismiss();
+            initImport(null);
+        } else {
+            LogHelper.d(TAG, "Click~");
+            final EditText text = new EditText(this);
+            int paddingPx = Convert.dpToPixel(this, 16);
+            text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
+            text.setText(currentRootDir.toString());
+
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.dir_path)
+                    .setMessage(R.string.dir_path_inst)
+                    .setView(text)
+                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Editable value = text.getText();
+                            processManualInput(value);
+                        }
+                    }).setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        }
+    }
+
+    private void processManualInput(@NonNull Editable value) {
+        // TODO: Set path as currentDir/Update directory picker
+        String path = String.valueOf(value);
+        if (!path.equals("")) {
+            File file = new File(path);
+            if (file.exists() && file.isDirectory() && file.canWrite()) {
+                LogHelper.d(TAG, "Got a valid directory!");
+                currentRootDir = file;
+                dirChooserFragment.dismiss();
+                pickDownloadDirectory(currentRootDir);
+            } else {
+                dirChooserFragment.dismiss();
+                initImport(null);
+            }
+        }
+        LogHelper.d(TAG, path);
     }
 
     @Subscribe

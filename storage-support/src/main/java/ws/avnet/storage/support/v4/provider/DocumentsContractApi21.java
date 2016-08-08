@@ -16,7 +16,6 @@
 
 package ws.avnet.storage.support.v4.provider;
 
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.database.Cursor;
@@ -29,7 +28,6 @@ import java.util.ArrayList;
 /**
  * This is a direct copy of android.support.v4.provider.DocumentsContractApi21
  */
-@TargetApi(21)
 public class DocumentsContractApi21 {
     private static final String TAG = "DocumentFile";
 

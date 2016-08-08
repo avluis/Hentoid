@@ -81,16 +81,20 @@ public class UsefulDocumentFile {
     }
 
     public static UsefulDocumentFile fromUri(@NonNull Context c, @NonNull Uri uri) {
-/*        if (FileUtil.isFileScheme(uri) && Util.hasKitkat())
-        {
-                *//*  Although not documented file-based DocumentFiles are entirely unsupported
-                    in 4.4+.  They are there solely for backwards compatibility.  To avoid
-                    any confusion on the matter we throw an exception here. *//*
-                 throw new IllegalArgumentException("File-based DocumentFile is unsupported in 4.4+.");
-        }
-        else */
-        if (DocumentUtil.isTreeUri(uri)) { // A tree uri is not useful by itself
-            uri = DocumentsContractApi21.prepareTreeUri(uri); // Generate the document portion of uri
+        if (FileUtil.isFileScheme(uri) && Util.hasKitkat()) {
+            /*  Although not documented, file-based DocumentFiles are entirely unsupported
+                in 4.4+.
+                They are there solely for backwards compatibility.
+                To avoid any confusion on the matter we throw an exception here. */
+            throw new IllegalArgumentException("File-based DocumentFile is unsupported in 4.4+.");
+        } else if (DocumentUtil.isTreeUri(uri)) { // A tree uri is not useful by itself
+            if (Util.hasKitkat()) {
+                if (DocumentsContractApi19.isDocumentUri(c, uri)) {
+                    return new UsefulDocumentFile(null, c, uri);
+                }
+            } else {
+                uri = DocumentsContractApi21.prepareTreeUri(uri); // Generate the document portion of uri
+            }
         }
 
         return new UsefulDocumentFile(null, c, uri);

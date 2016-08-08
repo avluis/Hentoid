@@ -1,1 +1,5 @@
-<manifest package="ws.avnet.storage.framework" />
+<manifest package="ws.avnet.storage.framework">
+
+    <application />
+
+</manifest>

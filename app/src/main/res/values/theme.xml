@@ -38,7 +38,7 @@
 
     <!-- Import Dialog -->
     <style name="ImportDialogTheme" parent="ImportTheme">
-        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowIsFloating">false</item>
     </style>
 
     <!-- Browser Activity -->

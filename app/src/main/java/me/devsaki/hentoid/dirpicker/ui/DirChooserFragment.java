@@ -23,6 +23,7 @@ import me.devsaki.hentoid.dirpicker.events.CurrentRootDirChangedEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
 import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
+import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
 import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
@@ -34,7 +35,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by avluis on 06/12/2016.
  * Directory Chooser (Picker) Fragment Dialog
  */
-public class DirChooserFragment extends DialogFragment implements View.OnClickListener {
+public class DirChooserFragment extends DialogFragment implements
+        View.OnClickListener, View.OnLongClickListener {
     private static final String TAG = LogHelper.makeLogTag(DirChooserFragment.class);
     private static final String CURRENT_ROOT_DIR = "currentRootDir";
     private static final String ROOT_DIR = "rootDir";
@@ -107,9 +109,13 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
         fabRequestSD = (FloatingActionButton) rootView.findViewById(R.id.request_sd);
         selectDirBtn = (Button) rootView.findViewById(R.id.select_dir);
 
+        textView.setOnClickListener(this);
+        textView.setOnLongClickListener(this);
         fabCreateDir.setOnClickListener(this);
-        fabRequestSD.setOnClickListener(this);
         selectDirBtn.setOnClickListener(this);
+
+        // TODO: Hide FAB when SD location(s) not available
+        fabRequestSD.setOnClickListener(this);
     }
 
     @Subscribe
@@ -149,13 +155,30 @@ public class DirChooserFragment extends DialogFragment implements View.OnClickLi
 
     @Override
     public void onClick(View v) {
-        if (v.equals(fabCreateDir)) {
+        if (v.equals(textView)) {
+            onTextViewClicked(false);
+        } else if (v.equals(fabCreateDir)) {
             createDirBtnClicked();
         } else if (v.equals(fabRequestSD)) {
             requestSDBtnClicked();
         } else if (v.equals(selectDirBtn)) {
             selectDirBtnClicked();
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        if (v.equals(textView)) {
+            onTextViewClicked(true);
+            return true;
+        }
+
+        return false;
+    }
+
+    private void onTextViewClicked(boolean longClick) {
+        LogHelper.d(TAG, "On TextView Clicked Event");
+        bus.post(new OnTextViewClickedEvent(longClick));
     }
 
     private void createDirBtnClicked() {

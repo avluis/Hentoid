@@ -16,7 +16,6 @@
 
 package ws.avnet.storage.support.v4.provider;
 
-import android.annotation.TargetApi;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,7 +30,6 @@ import android.util.Log;
 /**
  * This is a direct copy of android.support.v4.provider.DocumentsContractApi19
  */
-@TargetApi(19)
 public class DocumentsContractApi19 {
     private static final String TAG = "DocumentFile";
 
