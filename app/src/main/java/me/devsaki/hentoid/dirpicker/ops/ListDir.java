@@ -41,7 +41,7 @@ class ListDir {
             Observer<File> observer = new ListDirObserver(dirTree, bus);
 
             subscription = observable.subscribeOn(Schedulers.io())
-                    .onBackpressureDrop()
+                    .onBackpressureBuffer()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(observer);
         } else {

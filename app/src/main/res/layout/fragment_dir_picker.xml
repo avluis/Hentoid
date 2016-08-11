@@ -76,6 +76,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:src="@drawable/ic_action_sd_storage"
+        android:visibility="gone"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"

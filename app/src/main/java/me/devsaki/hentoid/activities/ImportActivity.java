@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -16,6 +18,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.text.Editable;
+import android.text.InputType;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -55,6 +58,7 @@ import me.devsaki.hentoid.model.URLBuilder;
 import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -75,6 +79,7 @@ public class ImportActivity extends BaseActivity {
     private DirChooserFragment dirChooserFragment;
     private HentoidDB db;
     private boolean restartFlag;
+    private boolean prefInit;
     private final Handler importHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -104,6 +109,11 @@ public class ImportActivity extends BaseActivity {
                 .setMessage(R.string.please_wait)
                 .setCancelable(false)
                 .create();
+
+        Intent intent = getIntent();
+        if (intent != null && intent.getAction() != null) {
+            prefInit = true;
+        }
 
         initImport(savedInstanceState);
     }
@@ -254,6 +264,7 @@ public class ImportActivity extends BaseActivity {
             LogHelper.d(TAG, "Click~");
             final EditText text = new EditText(this);
             int paddingPx = Convert.dpToPixel(this, 16);
+            text.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
             text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
             text.setText(currentRootDir.toString());
 
@@ -273,7 +284,6 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void processManualInput(@NonNull Editable value) {
-        // TODO: Set path as currentDir/Update directory picker
         String path = String.valueOf(value);
         if (!path.equals("")) {
             File file = new File(path);
@@ -291,11 +301,42 @@ public class ImportActivity extends BaseActivity {
     }
 
     @Subscribe
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void onSAFRequest(OnSAFRequestEvent event) {
         LogHelper.d(TAG, currentRootDir.getAbsolutePath());
         LogHelper.d(TAG, currentRootDir.getName());
-        // TODO: New SAF Request -- get SD Permission
-        // TODO: Update currentRootDir with SD Path
+
+        String[] externalDirs = FileHelper.getExtSdCardPaths(this);
+        List<File> writeableDirs = new ArrayList<>();
+        if (externalDirs.length > 0) {
+            LogHelper.d(TAG, "External Directory(ies): " + Arrays.toString(externalDirs));
+            for (String externalDir : externalDirs) {
+                File file = new File(externalDir);
+                LogHelper.d(TAG, "Is " + externalDir + " write-able? " + file.canWrite());
+                if (file.canWrite()) {
+                    writeableDirs.add(file);
+                }
+            }
+        } else {
+            // TODO: Attempt to grab permissions to SD card via Content Resolver
+            LogHelper.d(TAG, "No accessible external directories on device.");
+            Helper.toast("Your device is not currently supported,\nplease join our Discord Server " +
+                    "if you wish to help us add support for your device.");
+        }
+
+        if (writeableDirs.isEmpty()) {
+            LogHelper.d(TAG, "No write-able directories :(");
+        } else {
+            if (writeableDirs.size() == 1) {
+                currentRootDir = writeableDirs.get(0);
+                dirChooserFragment.dismiss();
+                pickDownloadDirectory(currentRootDir);
+            } else {
+                // TODO: Present user with directory selection if > 1
+                LogHelper.d(TAG, "We got a fancy device here.");
+                LogHelper.d(TAG, "Available storage locations: " + writeableDirs);
+            }
+        }
     }
 
     private void importFolder(File folder) {
@@ -433,6 +474,10 @@ public class ImportActivity extends BaseActivity {
         returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
         setResult(RESULT_OK, returnIntent);
         finish();
+
+        if (restartFlag && prefInit) {
+            Helper.doRestart(this);
+        }
     }
 
     private void finishImport(final List<Content> contents) {

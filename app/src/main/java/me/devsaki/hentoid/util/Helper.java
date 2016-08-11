@@ -505,7 +505,7 @@ public final class Helper {
                 LogHelper.e(TAG, "Was not able to restart application, PM null");
             }
         } catch (Exception ex) {
-            LogHelper.e(TAG, "Was not able to restart application", ex);
+            LogHelper.e(TAG, "Was not able to restart application: ", ex);
         }
     }
 

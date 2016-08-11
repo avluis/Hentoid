@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.dirpicker.ui;
 
 import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.Nullable;
@@ -114,8 +115,10 @@ public class DirChooserFragment extends DialogFragment implements
         fabCreateDir.setOnClickListener(this);
         selectDirBtn.setOnClickListener(this);
 
-        // TODO: Hide FAB when SD location(s) not available
-        fabRequestSD.setOnClickListener(this);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            fabRequestSD.setOnClickListener(this);
+            fabRequestSD.setVisibility(View.VISIBLE);
+        }
     }
 
     @Subscribe

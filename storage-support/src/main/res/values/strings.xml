@@ -1,7 +1,0 @@
-<resources>
-    <string name="permissionStorageRationale">This app requires Storage permission.</string>
-
-    <!-- Dialogs -->
-    <string name="dialogWriteRequestTitle">Write Permission Guide</string>
-    <string name="allowWrite">Allow Write Permission</string>
-</resources>
