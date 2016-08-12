@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,7 +8,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -301,7 +299,6 @@ public class ImportActivity extends BaseActivity {
     }
 
     @Subscribe
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     public void onSAFRequest(OnSAFRequestEvent event) {
         LogHelper.d(TAG, currentRootDir.getAbsolutePath());
         LogHelper.d(TAG, currentRootDir.getName());
@@ -318,17 +315,24 @@ public class ImportActivity extends BaseActivity {
                 }
             }
         } else {
-            // TODO: Attempt to grab permissions to SD card via Content Resolver
             LogHelper.d(TAG, "No accessible external directories on device.");
             Helper.toast("Your device is not currently supported,\nplease join our Discord Server " +
                     "if you wish to help us add support for your device.");
         }
 
         if (writeableDirs.isEmpty()) {
-            LogHelper.d(TAG, "No write-able directories :(");
+            if (externalDirs.length > 0) {
+                // TODO: Attempt to grab permissions to SD card via Content Resolver
+                LogHelper.d(TAG, "Attempting to grab permissions via Content Resolver.");
+            } else {
+                LogHelper.d(TAG, "No write-able directories :(");
+            }
         } else {
             if (writeableDirs.size() == 1) {
-                currentRootDir = writeableDirs.get(0);
+                String sdDir = writeableDirs.get(0) +
+                        "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
+                validateFolder(sdDir);
+                currentRootDir = new File(sdDir);
                 dirChooserFragment.dismiss();
                 pickDownloadDirectory(currentRootDir);
             } else {
