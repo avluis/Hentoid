@@ -1,25 +1,34 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.UriPermission;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputType;
+import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.afollestad.materialdialogs.GravityEnum;
@@ -88,6 +97,11 @@ public class ImportActivity extends BaseActivity {
             return false;
         }
     });
+
+    /**
+     * All roots for which this app has permission
+     */
+    private List<UriPermission> mRootPermissions = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -300,10 +314,7 @@ public class ImportActivity extends BaseActivity {
 
     @Subscribe
     public void onSAFRequest(OnSAFRequestEvent event) {
-        LogHelper.d(TAG, currentRootDir.getAbsolutePath());
-        LogHelper.d(TAG, currentRootDir.getName());
-
-        String[] externalDirs = FileHelper.getExtSdCardPaths(this);
+        String[] externalDirs = FileHelper.getExtSdCardPaths();
         List<File> writeableDirs = new ArrayList<>();
         if (externalDirs.length > 0) {
             LogHelper.d(TAG, "External Directory(ies): " + Arrays.toString(externalDirs));
@@ -314,27 +325,64 @@ public class ImportActivity extends BaseActivity {
                     writeableDirs.add(file);
                 }
             }
-        } else {
-            LogHelper.d(TAG, "No accessible external directories on device.");
-            Helper.toast("Your device is not currently supported,\nplease join our Discord Server " +
-                    "if you wish to help us add support for your device.");
         }
 
         if (writeableDirs.isEmpty()) {
+            LogHelper.d(TAG, "Received no write-able external directories.");
             if (externalDirs.length > 0) {
-                // TODO: Attempt to grab permissions to SD card via Content Resolver
-                LogHelper.d(TAG, "Attempting to grab permissions via Content Resolver.");
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    Helper.toast("Attempting SAF");
+                    requestWritePermission();
+                } else {
+                    LogHelper.d(TAG, "What can be done here?");
+                }
             } else {
-                LogHelper.d(TAG, "No write-able directories :(");
+                noSDSupport();
             }
         } else {
             if (writeableDirs.size() == 1) {
+                // If we get exactly one write-able path returned,
+                // attempt to make use of it - this should hopefully cover API 19 devices
                 String sdDir = writeableDirs.get(0) +
                         "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
-                validateFolder(sdDir);
-                currentRootDir = new File(sdDir);
-                dirChooserFragment.dismiss();
-                pickDownloadDirectory(currentRootDir);
+                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                    if (FileHelper.validateFolder(sdDir)) {
+                        LogHelper.d(TAG, "Got access to SD Card.");
+                        currentRootDir = new File(sdDir);
+                        dirChooserFragment.dismiss();
+                        pickDownloadDirectory(currentRootDir);
+                    } else {
+                        LogHelper.d(TAG, "Unable to write to SD Card.");
+                        new AlertDialog.Builder(this)
+                                .setMessage("Unable to modify contents of the SD Card. " +
+                                        "This is caused by the external storage policy by Google " +
+                                        "in Android 4.4.\nTo bypass this limitation, you can try " +
+                                        "using one of the 'sd fix' tools available in the Google " +
+                                        "Play Store (Root Required).")
+                                .setTitle("Error!")
+                                .setPositiveButton(android.R.string.ok, null)
+                                .show();
+                    }
+                } else {
+                    if (FileHelper.validateFolder(sdDir)) {
+                        currentRootDir = new File(sdDir);
+                        dirChooserFragment.dismiss();
+                        pickDownloadDirectory(currentRootDir);
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        PackageManager manager = this.getPackageManager();
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                        List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
+                        if (handlers != null && handlers.size() > 0) {
+                            LogHelper.d(TAG, "This device should be able to handle the SAF request.");
+                            Helper.toast("Attempting SAF");
+                            requestWritePermission();
+                        } else {
+                            LogHelper.d(TAG, "No apps can handle the requested intent.");
+                        }
+                    } else {
+                        noSDSupport();
+                    }
+                }
             } else {
                 // TODO: Present user with directory selection if > 1
                 LogHelper.d(TAG, "We got a fancy device here.");
@@ -343,8 +391,67 @@ public class ImportActivity extends BaseActivity {
         }
     }
 
+    private void noSDSupport() {
+        LogHelper.d(TAG, "No write-able directories :(");
+        Helper.toast("Your device is not currently supported.\n" +
+                "Please join our Discord Server if you wish to help " +
+                "us add support for your device.");
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void requestWritePermission() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ImageView instImage = new ImageView(ImportActivity.this);
+                instImage.setImageDrawable(ContextCompat.getDrawable(ImportActivity.this,
+                        R.drawable.document_api_guide));
+                AlertDialog.Builder builder =
+                        new AlertDialog.Builder(ImportActivity.this)
+                                .setTitle("Requesting Write Permissions")
+                                .setView(instImage);
+                final AlertDialog dialog = builder.create();
+                instImage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow write Permission");
+                        }
+                        // http://stackoverflow.com/a/31334967/1615876
+                        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+                        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+            }
+        });
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
+            // Get Uri from Storage Access Framework
+            Uri treeUri = data.getData();
+
+            // Persist URI in shared preference so that you can use it later
+            FileHelper.setSharedPreferenceUri(treeUri);
+
+            // Persist access permissions
+            getContentResolver().takePersistableUriPermission(treeUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+    }
+
     private void importFolder(File folder) {
-        validateFolder(folder.getAbsolutePath());
+        if (!FileHelper.validateFolder(folder.getAbsolutePath(), true)) {
+            initImport(null);
+            return;
+        }
 
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
@@ -385,7 +492,7 @@ public class ImportActivity extends BaseActivity {
                                 // Prior Library found, but user chose to cancel
                                 restartFlag = false;
                                 currentRootDir = prevRootDir;
-                                validateFolder(currentRootDir.getAbsolutePath());
+                                FileHelper.validateFolder(currentRootDir.getAbsolutePath());
                                 LogHelper.d(TAG, "Restart needed: " + false);
 
                                 result = ConstsImport.EXISTING_LIBRARY_FOUND;
@@ -418,47 +525,6 @@ public class ImportActivity extends BaseActivity {
                     finish();
                 }
             }, 100);
-        }
-    }
-
-    private void validateFolder(String folder) {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
-        // Validate folder
-        File file = new File(folder);
-        if (!file.exists() && !file.isDirectory() && !file.mkdirs()) {
-            Helper.toast(this, R.string.error_creating_folder);
-            return;
-        }
-
-        File nomedia = new File(folder, ".nomedia");
-        boolean hasPermission;
-        // Clean up (if any) nomedia file
-        try {
-            if (nomedia.exists()) {
-                boolean deleted = nomedia.delete();
-                if (deleted) {
-                    LogHelper.d(TAG, ".nomedia file deleted");
-                }
-            }
-            // Re-create nomedia file to confirm write permissions
-            hasPermission = nomedia.createNewFile();
-        } catch (IOException e) {
-            hasPermission = false;
-            HentoidApp.getInstance().trackException(e);
-            LogHelper.e(TAG, "We couldn't confirm write permissions to this location: ", e);
-        }
-
-        if (!hasPermission) {
-            Helper.toast(this, R.string.error_write_permission);
-            return;
-        }
-
-        editor.putString(Consts.SETTINGS_FOLDER, folder);
-
-        boolean directorySaved = editor.commit();
-        if (!directorySaved) {
-            Helper.toast(this, R.string.error_creating_folder);
         }
     }
 
