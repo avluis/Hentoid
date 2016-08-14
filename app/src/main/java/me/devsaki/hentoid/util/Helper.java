@@ -116,18 +116,33 @@ public final class Helper {
         context.startActivity(intent);
     }
 
-    public static File getThumb(Context context, Content content) {
+    /*Method is used by onBindViewHolder(), speed is key*/
+    public static String getThumb(Context context, Content content) {
         File dir = getContentDownloadDir(context, content);
-        File[] fileList = dir.listFiles(
-                new FileFilter() {
-                    @Override
-                    public boolean accept(File pathname) {
-                        return pathname.getName().contains("thumb");
-                    }
-                }
-        );
+        String coverUrl = content.getCoverImageUrl();
+        String thumbExt = coverUrl.substring(coverUrl.length() - 3);
+        String thumb;
 
-        return fileList.length > 0 ? fileList[0] : null;
+        switch (thumbExt) {
+            case "jpg":
+            case "png":
+            case "gif":
+                thumb = new File(dir, "thumb" + "." + thumbExt).getAbsolutePath();
+                break;
+            default:
+                File[] fileList = dir.listFiles(
+                        new FileFilter() {
+                            @Override
+                            public boolean accept(File pathname) {
+                                return pathname.getName().contains("thumb");
+                            }
+                        }
+                );
+                thumb = fileList.length > 0 ? fileList[0].getAbsolutePath() : coverUrl;
+                break;
+        }
+
+        return thumb;
     }
 
     public static File getContentDownloadDir(Context context, Content content) {

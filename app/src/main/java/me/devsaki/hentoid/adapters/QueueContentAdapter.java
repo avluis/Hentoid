@@ -104,11 +104,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachCover(ViewHolder holder, Content content) {
-        File coverFile = Helper.getThumb(cxt, content);
-        String image = coverFile != null ?
-                coverFile.getAbsolutePath() : content.getCoverImageUrl();
-
-        HentoidApp.getInstance().loadBitmap(image, holder.ivCover);
+        String coverFile = Helper.getThumb(cxt, content);
+        HentoidApp.getInstance().loadBitmap(coverFile, holder.ivCover);
     }
 
     private void attachSeries(ViewHolder holder, Content content) {

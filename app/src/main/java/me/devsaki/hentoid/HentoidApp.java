@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.widget.ImageView;
 
 import com.bumptech.glide.Glide;
@@ -25,8 +26,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Created by DevSaki on 20/05/2015.
  * Initializes required components:
  * Database, Bitmap Cache, Update checks, etc.
- * <p/>
- * TODO: Cache the number of items in db
  */
 public class HentoidApp extends Application {
     private static final String TAG = LogHelper.makeLogTag(HentoidApp.class);
@@ -81,7 +80,7 @@ public class HentoidApp extends Application {
         HentoidApp.donePressed = pressed;
     }
 
-    public void loadBitmap(String image, ImageView imageView) {
+    public void loadBitmap(@NonNull String image, ImageView imageView) {
         // The following is needed due to RecyclerView recycling layouts and Glide not considering
         // the layout invalid for the current image:
         // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
@@ -167,6 +166,7 @@ public class HentoidApp extends Application {
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
+        LogHelper.d(TAG, "Content item(s) count: " + db.getContentCount());
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         if (Helper.getMobileUpdatePrefs()) {

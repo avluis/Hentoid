@@ -237,14 +237,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         holder.ivCover.setImageDrawable(null);
         holder.ivCover2.setImageDrawable(null);
 
-        File coverFile = Helper.getThumb(cxt, content);
-        String image = coverFile != null ?
-                coverFile.getAbsolutePath() : content.getCoverImageUrl();
-
-        HentoidApp.getInstance().loadBitmap(image, holder.ivCover);
+        String coverFile = Helper.getThumb(cxt, content);
+        HentoidApp.getInstance().loadBitmap(coverFile, holder.ivCover);
 
         if (holder.itemView.isSelected()) {
-            HentoidApp.getInstance().loadBitmap(image, holder.ivCover2);
+            HentoidApp.getInstance().loadBitmap(coverFile, holder.ivCover2);
         }
     }
 

@@ -2,6 +2,7 @@ package me.devsaki.hentoid.database;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
@@ -67,6 +68,14 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         // Create tables again
         onCreate(db);
+    }
+
+    public long getContentCount() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        long count = DatabaseUtils.queryNumEntries(db, ContentTable.TABLE_NAME);
+        db.close();
+
+        return count;
     }
 
     public void insertContent(Content row) {
