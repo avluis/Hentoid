@@ -255,6 +255,11 @@ public class ImportActivity extends BaseActivity {
             restartFlag = true;
             currentRootDir = chosenDir;
         }
+
+        LogHelper.d(TAG, "Clearing SAF");
+        FileHelper.clearSharedPrefsUri();
+        revokePermission();
+
         LogHelper.d(TAG, "Storage Path: " + currentRootDir);
         dirChooserFragment.dismiss();
         importFolder(currentRootDir);
@@ -326,54 +331,37 @@ public class ImportActivity extends BaseActivity {
                 }
             }
         }
+        resolveDirs(externalDirs, writeableDirs);
+    }
 
+    private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {
         if (writeableDirs.isEmpty()) {
             LogHelper.d(TAG, "Received no write-able external directories.");
-            if (externalDirs.length > 0) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    Helper.toast("Attempting SAF");
-                    requestWritePermission();
-                } else {
-                    LogHelper.d(TAG, "What can be done here?");
-                }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && externalDirs.length > 0) {
+                Helper.toast("Attempting SAF");
+                requestWritePermission();
             } else {
                 noSDSupport();
             }
         } else {
             if (writeableDirs.size() == 1) {
-                // If we get exactly one write-able path returned,
-                // attempt to make use of it - this should hopefully cover API 19 devices
-                String sdDir = writeableDirs.get(0) +
-                        "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
-                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
-                    if (FileHelper.validateFolder(sdDir)) {
-                        LogHelper.d(TAG, "Got access to SD Card.");
-                        currentRootDir = new File(sdDir);
-                        dirChooserFragment.dismiss();
-                        pickDownloadDirectory(currentRootDir);
-                    } else {
-                        LogHelper.d(TAG, "Unable to write to SD Card.");
-                        new AlertDialog.Builder(this)
-                                .setMessage("Unable to modify contents of the SD Card. " +
-                                        "This is caused by the external storage policy by Google " +
-                                        "in Android 4.4.\nTo bypass this limitation, you can try " +
-                                        "using one of the 'sd fix' tools available in the Google " +
-                                        "Play Store (Root Required).")
-                                .setTitle("Error!")
-                                .setPositiveButton(android.R.string.ok, null)
-                                .show();
-                    }
+                // If we get exactly one write-able path returned, attempt to make use of it
+                String sdDir = writeableDirs.get(0) + "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
+                if (FileHelper.validateFolder(sdDir)) {
+                    LogHelper.d(TAG, "Got access to SD Card.");
+                    currentRootDir = new File(sdDir);
+                    dirChooserFragment.dismiss();
+                    pickDownloadDirectory(currentRootDir);
                 } else {
-                    if (FileHelper.validateFolder(sdDir)) {
-                        currentRootDir = new File(sdDir);
-                        dirChooserFragment.dismiss();
-                        pickDownloadDirectory(currentRootDir);
+                    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                        LogHelper.d(TAG, "Unable to write to SD Card.");
+                        showKitkatRationale();
                     } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         PackageManager manager = this.getPackageManager();
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
                         if (handlers != null && handlers.size() > 0) {
-                            LogHelper.d(TAG, "This device should be able to handle the SAF request.");
+                            LogHelper.d(TAG, "Device should be able to handle the SAF request");
                             Helper.toast("Attempting SAF");
                             requestWritePermission();
                         } else {
@@ -389,6 +377,18 @@ public class ImportActivity extends BaseActivity {
                 LogHelper.d(TAG, "Available storage locations: " + writeableDirs);
             }
         }
+    }
+
+    private void showKitkatRationale() {
+        new AlertDialog.Builder(this)
+                .setMessage("Unable to modify contents of the SD Card. " +
+                        "This is caused by the external storage policy by Google " +
+                        "in Android 4.4.\nTo bypass this limitation, you can try " +
+                        "using one of the 'sd fix' tools available in the Google " +
+                        "Play Store (Root Required).")
+                .setTitle("Error!")
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
     }
 
     private void noSDSupport() {
@@ -430,6 +430,19 @@ public class ImportActivity extends BaseActivity {
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void revokePermission() {
+        for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
+            getContentResolver().releasePersistableUriPermission(p.getUri(),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+        if (getContentResolver().getPersistedUriPermissions().size() == 0) {
+            LogHelper.d(TAG, "Permissions revoked successfully.");
+        } else {
+            LogHelper.d(TAG, "Permissions failed to be revoked.");
+        }
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -439,7 +452,9 @@ public class ImportActivity extends BaseActivity {
             Uri treeUri = data.getData();
 
             // Persist URI in shared preference so that you can use it later
-            FileHelper.setSharedPreferenceUri(treeUri);
+            // IMPORTANT: We rely on this to determine which File wrapper to use,
+            // make sure to clear this value when switching back to traditional File
+            FileHelper.setSharedPrefsUri(treeUri);
 
             // Persist access permissions
             getContentResolver().takePersistableUriPermission(treeUri,

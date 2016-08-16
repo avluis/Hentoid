@@ -116,7 +116,7 @@ public final class Helper {
         context.startActivity(intent);
     }
 
-    /*Method is used by onBindViewHolder(), speed is key*/
+    // Method is used by onBindViewHolder(), speed is key
     public static String getThumb(Context context, Content content) {
         File dir = getContentDownloadDir(context, content);
         String coverUrl = content.getCoverImageUrl();
@@ -128,7 +128,12 @@ public final class Helper {
             case "png":
             case "gif":
                 thumb = new File(dir, "thumb" + "." + thumbExt).getAbsolutePath();
-                break;
+                // Some thumbs from nhentai were saved as jpg instead of png
+                // Follow through to scan the directory instead
+                // TODO: Rename the file instead
+                if (!content.getSite().equals(Site.NHENTAI)) {
+                    break;
+                }
             default:
                 File[] fileList = dir.listFiles(
                         new FileFilter() {

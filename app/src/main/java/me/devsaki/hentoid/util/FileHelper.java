@@ -3,6 +3,7 @@ package me.devsaki.hentoid.util;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
@@ -10,6 +11,7 @@ import android.util.Log;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -21,6 +23,11 @@ import me.devsaki.hentoid.R;
  */
 public class FileHelper {
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
+
+    /**
+     * All roots for which this app has permission
+     */
+    private List<UriPermission> uriPermissions = new ArrayList<>();
 
     /**
      * Get a list of external SD card paths. (Kitkat+)
@@ -106,9 +113,34 @@ public class FileHelper {
         return true;
     }
 
-    public static void setSharedPreferenceUri(Uri uri) {
+    public static void setSharedPrefsUri(Uri uri) {
+        LogHelper.d(TAG, "Saving Uri: " + uri);
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, uri.toString()).apply();
+    }
+
+    public static void clearSharedPrefsUri() {
+        SharedPreferences prefs = HentoidApp.getSharedPrefs();
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, "").apply();
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    public List<UriPermission> getRootPermissions() {
+        updatePermissions();
+        return Collections.unmodifiableList(uriPermissions);
+    }
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void updatePermissions() {
+        uriPermissions = HentoidApp.getAppContext()
+                .getContentResolver().getPersistedUriPermissions();
+    }
+
+    public class WritePermissionException extends IOException {
+        public WritePermissionException(String message) {
+            super(message);
+        }
     }
 }
