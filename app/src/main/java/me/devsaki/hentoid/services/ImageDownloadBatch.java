@@ -36,6 +36,7 @@ final class ImageDownloadBatch {
     private boolean hasError = false;
     private short errorCount = 0;
 
+    // TODO: Link with FileHelper for SAF safe method
     void newTask(final File dir, final String filename, final String url) {
         String cookie = cookieManager.getCookie(url);
         if (cookie == null || cookie.isEmpty()) {
@@ -85,6 +86,7 @@ final class ImageDownloadBatch {
         return errorCount;
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private class Callback implements okhttp3.Callback {
         private final File dir;
         private final String filename;

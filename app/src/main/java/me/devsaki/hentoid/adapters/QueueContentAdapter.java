@@ -256,6 +256,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private void clearDownload(Content content) {
         if (content.getStatus() == StatusContent.CANCELED) {
             File dir = Helper.getContentDownloadDir(cxt, content);

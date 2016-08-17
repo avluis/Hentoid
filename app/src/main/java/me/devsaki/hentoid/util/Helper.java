@@ -63,6 +63,7 @@ public final class Helper {
     private static final String TAG = LogHelper.makeLogTag(Helper.class);
     private static Toast toast;
 
+    // TODO: Link with FileHelper for SAF safe method
     public static void openContent(final Context context, Content content) {
         SharedPreferences sp = HentoidApp.getSharedPrefs();
         File dir = getContentDownloadDir(context, content);
@@ -116,6 +117,7 @@ public final class Helper {
         context.startActivity(intent);
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     // Method is used by onBindViewHolder(), speed is key
     public static String getThumb(Context context, Content content) {
         File dir = getContentDownloadDir(context, content);
@@ -150,6 +152,7 @@ public final class Helper {
         return thumb;
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     public static File getContentDownloadDir(Context context, Content content) {
         File file;
         SharedPreferences sp = HentoidApp.getSharedPrefs();
@@ -171,6 +174,7 @@ public final class Helper {
         return file;
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     public static File getSiteDownloadDir(Context context, Site site) {
         File file;
         SharedPreferences sp = HentoidApp.getSharedPrefs();
@@ -191,6 +195,7 @@ public final class Helper {
         return file;
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     public static File getDefaultDir(Context context, String dir) {
         File file;
         try {
@@ -213,6 +218,7 @@ public final class Helper {
         return file;
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     // Is the target directory empty or not
     private static boolean isDirEmpty(File directory) {
         if (directory.isDirectory()) {
@@ -230,6 +236,7 @@ public final class Helper {
         return false;
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     // Gathers list of files in a directory and deletes them
     // but only if the directory is NOT empty - it does NOT delete the target directory
     public static void cleanDir(File directory) {
@@ -245,6 +252,7 @@ public final class Helper {
         }
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     // As long as there are files in a directory it will recursively delete them -
     // finally, once there are no files, it deletes the target directory
     public static boolean deleteDir(File directory) {
@@ -304,6 +312,7 @@ public final class Helper {
         }
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private static void openFile(Context context, File aFile) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
@@ -332,6 +341,7 @@ public final class Helper {
                 ConstsPrefs.PREF_CHECK_UPDATES_DEFAULT);
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private static void openPerfectViewer(Context cxt, File firstImage) {
         try {
             Intent intent = cxt

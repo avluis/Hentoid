@@ -98,11 +98,6 @@ public class ImportActivity extends BaseActivity {
         }
     });
 
-    /**
-     * All roots for which this app has permission
-     */
-    private List<UriPermission> mRootPermissions = new ArrayList<>();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

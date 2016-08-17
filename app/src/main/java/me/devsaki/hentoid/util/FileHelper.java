@@ -138,6 +138,14 @@ public class FileHelper {
                 .getContentResolver().getPersistedUriPermissions();
     }
 
+    private FILE_MODE getFileMode() {
+        LogHelper.d(TAG, "Permission list: " + (
+                getRootPermissions().isEmpty() ? getRootPermissions() : "empty"));
+        return getRootPermissions().isEmpty() ? FILE_MODE.SAF : FILE_MODE.BASIC;
+    }
+
+    private enum FILE_MODE {BASIC, SAF}
+
     public class WritePermissionException extends IOException {
         public WritePermissionException(String message) {
             super(message);

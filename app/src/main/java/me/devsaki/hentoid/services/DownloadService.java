@@ -74,6 +74,7 @@ public class DownloadService extends IntentService {
             return;
         }
 
+        // TODO: Link with FileHelper for SAF safe method
         currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
         if (currentContent != null && currentContent.getStatus() != StatusContent.DOWNLOADED) {
             initDownload();
@@ -88,6 +89,7 @@ public class DownloadService extends IntentService {
         }
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private void addTask(File dir, ImageDownloadBatch downloadBatch) {
         // Add download tasks
         downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());
@@ -162,6 +164,7 @@ public class DownloadService extends IntentService {
                 "Download Content: Start.");
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private void prepDownloadDir(File dir) {
         // If the download directory already has files,
         // then we simply delete them, since this points to a failed download
@@ -171,6 +174,7 @@ public class DownloadService extends IntentService {
         Helper.cleanDir(dir);
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private void postDownloadCompleted(File dir) {
         // Save JSON file
         try {

@@ -648,6 +648,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         }
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private void deleteItem(Content item) {
         LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from db and file system" + ".");
 
@@ -669,6 +670,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                 item.getTitle()));
     }
 
+    // TODO: Link with FileHelper for SAF safe method
     private void deleteItems(List<Content> items) {
         File dir;
         HentoidDB db = HentoidDB.getInstance(cxt);

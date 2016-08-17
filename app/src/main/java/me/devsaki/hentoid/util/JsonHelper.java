@@ -27,6 +27,7 @@ import me.devsaki.hentoid.HentoidApp;
 public class JsonHelper {
     private static final String TAG = LogHelper.makeLogTag(JsonHelper.class);
 
+    // TODO: Link with FileHelper for SAF safe method
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();

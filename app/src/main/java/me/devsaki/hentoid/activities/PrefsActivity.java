@@ -86,6 +86,7 @@ public class PrefsActivity extends BaseActivity {
 
             addPreferencesFromResource(R.xml.preferences);
 
+            // TODO: Link with FileHelper for SAF safe method
             Preference addNoMediaFile = getPreferenceScreen()
                     .findPreference(ConstsPrefs.PREF_ADD_NO_MEDIA_FILE);
             addNoMediaFile.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
