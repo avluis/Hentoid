@@ -20,15 +20,12 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 
-import java.io.File;
-import java.io.IOException;
-
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.updater.UpdateCheck;
-import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsPrefs;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -86,28 +83,13 @@ public class PrefsActivity extends BaseActivity {
 
             addPreferencesFromResource(R.xml.preferences);
 
-            // TODO: Link with FileHelper for SAF safe method
             Preference addNoMediaFile = getPreferenceScreen()
                     .findPreference(ConstsPrefs.PREF_ADD_NO_MEDIA_FILE);
             addNoMediaFile.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
 
                 @Override
                 public boolean onPreferenceClick(Preference preference) {
-                    SharedPreferences prefs = HentoidApp.getSharedPrefs();
-                    String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
-                    File nomedia = new File(settingDir, ".nomedia");
-                    if (!nomedia.exists()) {
-                        try {
-                            boolean createFile = nomedia.createNewFile();
-                            LogHelper.d(TAG, createFile);
-                        } catch (IOException e) {
-                            Helper.toast(getActivity(), R.string.error_creating_nomedia_file);
-                            return true;
-                        }
-                    }
-                    Helper.toast(getActivity(), R.string.nomedia_file_created);
-
-                    return true;
+                    return FileHelper.createNoMedia();
                 }
             });
 

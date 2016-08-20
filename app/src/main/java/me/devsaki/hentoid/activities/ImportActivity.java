@@ -332,7 +332,7 @@ public class ImportActivity extends BaseActivity {
     private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {
         if (writeableDirs.isEmpty()) {
             LogHelper.d(TAG, "Received no write-able external directories.");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && externalDirs.length > 0) {
+            if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP) && externalDirs.length > 0) {
                 Helper.toast("Attempting SAF");
                 requestWritePermission();
             } else {
@@ -351,7 +351,7 @@ public class ImportActivity extends BaseActivity {
                     if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
                         LogHelper.d(TAG, "Unable to write to SD Card.");
                         showKitkatRationale();
-                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    } else if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
                         PackageManager manager = this.getPackageManager();
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
@@ -410,7 +410,7 @@ public class ImportActivity extends BaseActivity {
                     @Override
                     public void onClick(View v) {
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
                             intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow write Permission");
                         }
                         // http://stackoverflow.com/a/31334967/1615876

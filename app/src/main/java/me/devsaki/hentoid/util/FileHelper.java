@@ -126,6 +126,41 @@ public class FileHelper {
         editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, "").apply();
     }
 
+    public static boolean createNoMedia() {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.KITKAT)) {
+            FILE_MODE mode = new FileHelper().getFileMode();
+
+            switch (mode) {
+                case SAF:
+                    // TODO: Add SAF
+                    return true;
+                case BASIC:
+                default:
+                    return noMediaHelper();
+            }
+        } else {
+            return noMediaHelper();
+        }
+    }
+
+    // !SAF
+    private static boolean noMediaHelper() {
+        SharedPreferences prefs = HentoidApp.getSharedPrefs();
+        String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+        File nomedia = new File(settingDir, ".nomedia");
+        if (!nomedia.exists()) {
+            try {
+                boolean createFile = nomedia.createNewFile();
+                LogHelper.d(TAG, createFile);
+            } catch (IOException e) {
+                Helper.toast(R.string.error_creating_nomedia_file);
+                return true;
+            }
+        }
+        Helper.toast(R.string.nomedia_file_created);
+        return true;
+    }
+
     @TargetApi(Build.VERSION_CODES.KITKAT)
     public List<UriPermission> getRootPermissions() {
         updatePermissions();
@@ -138,10 +173,11 @@ public class FileHelper {
                 .getContentResolver().getPersistedUriPermissions();
     }
 
+    @TargetApi(Build.VERSION_CODES.KITKAT)
     private FILE_MODE getFileMode() {
         LogHelper.d(TAG, "Permission list: " + (
-                getRootPermissions().isEmpty() ? getRootPermissions() : "empty"));
-        return getRootPermissions().isEmpty() ? FILE_MODE.SAF : FILE_MODE.BASIC;
+                getRootPermissions().isEmpty() ? "empty" : getRootPermissions()));
+        return getRootPermissions().isEmpty() ? FILE_MODE.BASIC : FILE_MODE.SAF;
     }
 
     private enum FILE_MODE {BASIC, SAF}

@@ -183,7 +183,7 @@ public abstract class DrawerActivity extends BaseActivity {
                 int position = itemToOpen;
                 if (position >= 0 && itemTapped) {
                     itemTapped = false;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                    if (Helper.isAtLeastAPI(Build.VERSION_CODES.JELLY_BEAN)) {
                         Class activityClass = mDrawerMenuContents.getActivity(position);
                         Intent intent = new Intent(DrawerActivity.this, activityClass);
                         Bundle bundle = ActivityOptions.makeCustomAnimation(

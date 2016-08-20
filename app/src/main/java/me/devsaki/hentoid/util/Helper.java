@@ -63,6 +63,14 @@ public final class Helper {
     private static final String TAG = LogHelper.makeLogTag(Helper.class);
     private static Toast toast;
 
+    /**
+     * @param apiLevel minimum API level version that has to support the device
+     * @return true when the caller API version is at least apiLevel
+     */
+    public static boolean isAtLeastAPI(int apiLevel) {
+        return Build.VERSION.SDK_INT >= apiLevel;
+    }
+
     // TODO: Link with FileHelper for SAF safe method
     public static void openContent(final Context context, Content content) {
         SharedPreferences sp = HentoidApp.getSharedPrefs();
@@ -370,7 +378,7 @@ public final class Helper {
         }
     }
 
-    private static void toast(int resource) {
+    public static void toast(int resource) {
         Context cxt = HentoidApp.getAppContext();
         if (cxt != null) {
             toast(cxt, cxt.getResources().getString(resource));
@@ -541,7 +549,7 @@ public final class Helper {
 
     // Sets navigation bar background color
     public static void setNavBarColor(Activity activity, int color) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
             Context context = activity.getApplicationContext();
             int navColor = ContextCompat.getColor(context, color);
             activity.getWindow().setNavigationBarColor(navColor);
@@ -550,7 +558,7 @@ public final class Helper {
 
     // Mainly for use with Android < 5.0 - sets OverScroll Glow and Edge Line
     public static void changeEdgeEffect(Context cxt, View list, int glowColor, int lineColor) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
             EdgeEffect edgeEffectTop = new EdgeEffect(cxt);
             edgeEffectTop.setColor(glowColor);
             EdgeEffect edgeEffectBottom = new EdgeEffect(cxt);

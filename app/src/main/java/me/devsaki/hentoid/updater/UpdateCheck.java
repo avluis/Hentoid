@@ -117,7 +117,7 @@ public class UpdateCheck {
         }
 
         LogHelper.d(TAG, "Update URL: " + updateURL);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.HONEYCOMB)) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
             new UpdateCheckTask().execute(updateURL);
@@ -221,7 +221,7 @@ public class UpdateCheck {
     public void installUpdate() {
         Intent intent;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.JELLY_BEAN)) {
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
         } else {
             intent = new Intent(Intent.ACTION_VIEW);
