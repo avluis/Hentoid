@@ -19,10 +19,6 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +34,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -237,7 +234,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         holder.ivCover.setImageDrawable(null);
         holder.ivCover2.setImageDrawable(null);
 
-        String coverFile = Helper.getThumb(cxt, content);
+        String coverFile = FileHelper.getThumb(cxt, content);
         HentoidApp.getInstance().loadBitmap(coverFile, holder.ivCover);
 
         if (holder.itemView.isSelected()) {
@@ -634,7 +631,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     private void removeItem(Content item, boolean broadcast) {
         int position = contents.indexOf(item);
-        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" + ".");
+        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter.");
         contents.remove(position);
         notifyItemRemoved(position);
 
@@ -648,49 +645,30 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         }
     }
 
-    // TODO: Link with FileHelper for SAF safe method
     private void deleteItem(Content item) {
-        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from db and file system" + ".");
-
-        final File dir = Helper.getContentDownloadDir(cxt, item);
         HentoidDB db = HentoidDB.getInstance(cxt);
-
-        try {
-            FileUtils.deleteDirectory(dir);
-        } catch (IOException e) {
-            LogHelper.e(TAG, "Error deleting directory: ", e);
-        }
-
-        db.deleteContent(item);
-
         removeItem(item);
+
+        FileHelper.removeContent(cxt, item);
+        db.deleteContent(item);
+        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from db and file system.");
+
         notifyDataSetChanged();
 
-        Helper.toast(cxt, cxt.getString(R.string.deleted).replace("@content",
-                item.getTitle()));
+        Helper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
     }
 
-    // TODO: Link with FileHelper for SAF safe method
     private void deleteItems(List<Content> items) {
-        File dir;
         HentoidDB db = HentoidDB.getInstance(cxt);
-
         for (int i = 0; i < items.size(); i++) {
             removeItem(items.get(i), false);
         }
 
         for (int i = 0; i < items.size(); i++) {
-            dir = Helper.getContentDownloadDir(cxt, items.get(i));
+            FileHelper.removeContent(cxt, items.get(i));
+            db.deleteContent(items.get(i));
             LogHelper.d(TAG, "Removing item: " + items.get(i).getTitle()
-                    + " from db and file system" + ".");
-
-            try {
-                FileUtils.deleteDirectory(dir);
-            } catch (IOException e) {
-                LogHelper.d(TAG, "Error deleting directory: ", e);
-            } finally {
-                db.deleteContent(items.get(i));
-            }
+                    + " from db and file system.");
         }
 
         listener.onItemClear(0);

@@ -23,7 +23,7 @@ import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -79,7 +79,7 @@ public class DownloadService extends IntentService {
         if (currentContent != null && currentContent.getStatus() != StatusContent.DOWNLOADED) {
             initDownload();
 
-            File dir = Helper.getContentDownloadDir(this, currentContent);
+            File dir = FileHelper.getContentDownloadDir(this, currentContent);
             prepDownloadDir(dir);
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
@@ -171,7 +171,7 @@ public class DownloadService extends IntentService {
         // This includes in progress downloads, that were paused, then resumed.
         // So technically, we are downloading everything once again.
         // This is required for ImageDownloadBatch to not hang on a download.
-        Helper.cleanDir(dir);
+        FileHelper.cleanDir(dir);
     }
 
     // TODO: Link with FileHelper for SAF safe method

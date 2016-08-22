@@ -12,10 +12,6 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -27,7 +23,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.QueueFragment;
 import me.devsaki.hentoid.services.DownloadService;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -104,7 +100,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachCover(ViewHolder holder, Content content) {
-        String coverFile = Helper.getThumb(cxt, content);
+        String coverFile = FileHelper.getThumb(cxt, content);
         HentoidApp.getInstance().loadBitmap(coverFile, holder.ivCover);
     }
 
@@ -256,22 +252,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
     }
 
-    // TODO: Link with FileHelper for SAF safe method
     private void clearDownload(Content content) {
         if (content.getStatus() == StatusContent.CANCELED) {
-            File dir = Helper.getContentDownloadDir(cxt, content);
-
-            // This loves to fail
-            try {
-                FileUtils.deleteDirectory(dir);
-            } catch (IOException e) {
-                LogHelper.e(TAG, "Error deleting content directory: ", e);
-            }
-
-            // Run this as well
-            // Log will state if directory was deleted (deleteDirectory failed)
-            // or if it was not (deleteDirectory success)
-            Helper.deleteDir(dir);
+            FileHelper.removeContent(cxt, content);
+        } else {
+            LogHelper.d(TAG, "Attempting to clear non-cancelled download: " + content.getTitle());
         }
     }
 

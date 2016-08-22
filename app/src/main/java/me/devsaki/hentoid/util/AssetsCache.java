@@ -64,7 +64,7 @@ public class AssetsCache {
 
     private static void downloadCachePack(String downloadURL) {
         // Clean up cache directory
-        Helper.cleanDir(cacheDir);
+        FileHelper.cleanDir(cacheDir);
         // Download cache pack
         Uri downloadUri = Uri.parse(downloadURL);
         final Uri destinationUri = Uri.parse(cacheDir + "/" + CACHE_PACK);

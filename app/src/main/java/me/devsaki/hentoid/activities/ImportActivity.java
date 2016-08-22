@@ -156,7 +156,7 @@ public class ImportActivity extends BaseActivity {
             if (file.exists() && file.isDirectory()) {
                 currentRootDir = file;
             } else {
-                currentRootDir = Helper.getDefaultDir(this, "");
+                currentRootDir = FileHelper.getDefaultDir(this, "");
                 LogHelper.d(TAG, "Creating new storage directory.");
             }
             pickDownloadDirectory(currentRootDir);
@@ -465,7 +465,7 @@ public class ImportActivity extends BaseActivity {
 
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(Helper.getSiteDownloadDir(this, s));
+            downloadDirs.add(FileHelper.getSiteDownloadDir(this, s));
         }
 
         List<File> files = new ArrayList<>();
@@ -648,7 +648,7 @@ public class ImportActivity extends BaseActivity {
             downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {
                 // Grab all folders in site folders in storage directory
-                downloadDirs.add(Helper.getSiteDownloadDir(ImportActivity.this, site));
+                downloadDirs.add(FileHelper.getSiteDownloadDir(ImportActivity.this, site));
             }
 
             files = new ArrayList<>();

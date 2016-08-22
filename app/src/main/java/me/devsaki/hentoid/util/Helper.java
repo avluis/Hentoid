@@ -3,10 +3,8 @@ package me.devsaki.hentoid.util;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
@@ -16,10 +14,8 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.Environment;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -28,19 +24,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.IntentCompat;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 import android.widget.AbsListView;
 import android.widget.EdgeEffect;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.Locale;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -71,207 +64,11 @@ public final class Helper {
         return Build.VERSION.SDK_INT >= apiLevel;
     }
 
-    // TODO: Link with FileHelper for SAF safe method
-    public static void openContent(final Context context, Content content) {
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
-        File dir = getContentDownloadDir(context, content);
-        File imageFile = null;
-        File[] files = dir.listFiles();
-        Arrays.sort(files);
-        for (File file : files) {
-            String filename = file.getName();
-            if (filename.endsWith(".jpg") ||
-                    filename.endsWith(".png") ||
-                    filename.endsWith(".gif")) {
-                imageFile = file;
-                break;
-            }
-        }
-        if (imageFile == null) {
-            String message = context.getString(
-                    R.string.image_file_not_found).replace("@dir", dir.getAbsolutePath());
-            toast(context, message);
-        } else {
-            int readContentPreference = Integer.parseInt(
-                    sp.getString(
-                            ConstsPrefs.PREF_READ_CONTENT_LISTS,
-                            ConstsPrefs.PREF_READ_CONTENT_DEFAULT + ""));
-            if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_ASK) {
-                final File file = imageFile;
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setMessage(R.string.select_the_action)
-                        .setPositiveButton(R.string.open_default_image_viewer,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        openFile(context, file);
-                                    }
-                                })
-                        .setNegativeButton(R.string.open_perfect_viewer,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        openPerfectViewer(context, file);
-                                    }
-                                }).create().show();
-            } else if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_PERFECT_VIEWER) {
-                openPerfectViewer(context, imageFile);
-            }
-        }
-    }
-
     public static void viewContent(final Context context, Content content) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Consts.INTENT_URL, content.getGalleryUrl());
         context.startActivity(intent);
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
-    // Method is used by onBindViewHolder(), speed is key
-    public static String getThumb(Context context, Content content) {
-        File dir = getContentDownloadDir(context, content);
-        String coverUrl = content.getCoverImageUrl();
-        String thumbExt = coverUrl.substring(coverUrl.length() - 3);
-        String thumb;
-
-        switch (thumbExt) {
-            case "jpg":
-            case "png":
-            case "gif":
-                thumb = new File(dir, "thumb" + "." + thumbExt).getAbsolutePath();
-                // Some thumbs from nhentai were saved as jpg instead of png
-                // Follow through to scan the directory instead
-                // TODO: Rename the file instead
-                if (!content.getSite().equals(Site.NHENTAI)) {
-                    break;
-                }
-            default:
-                File[] fileList = dir.listFiles(
-                        new FileFilter() {
-                            @Override
-                            public boolean accept(File pathname) {
-                                return pathname.getName().contains("thumb");
-                            }
-                        }
-                );
-                thumb = fileList.length > 0 ? fileList[0].getAbsolutePath() : coverUrl;
-                break;
-        }
-
-        return thumb;
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
-    public static File getContentDownloadDir(Context context, Content content) {
-        File file;
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
-        String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
-        String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
-        if (settingDir.isEmpty()) {
-            return getDefaultDir(context, folderDir);
-        }
-
-        file = new File(settingDir, folderDir);
-        if (!file.exists() && !file.mkdirs()) {
-            file = new File(settingDir + folderDir);
-            if (!file.exists()) {
-                boolean mkdirs = file.mkdirs();
-                LogHelper.d(TAG, mkdirs);
-            }
-        }
-
-        return file;
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
-    public static File getSiteDownloadDir(Context context, Site site) {
-        File file;
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
-        String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
-        String folderDir = site.getFolder();
-        if (settingDir.isEmpty()) {
-            return getDefaultDir(context, folderDir);
-        }
-        file = new File(settingDir, folderDir);
-        if (!file.exists() && !file.mkdirs()) {
-            file = new File(settingDir + folderDir);
-            if (!file.exists()) {
-                boolean mkdirs = file.mkdirs();
-                LogHelper.d(TAG, mkdirs);
-            }
-        }
-
-        return file;
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
-    public static File getDefaultDir(Context context, String dir) {
-        File file;
-        try {
-            file = new File(Environment.getExternalStorageDirectory() + "/"
-                    + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
-        } catch (Exception e) {
-            file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
-        }
-
-        if (!file.exists() && !file.mkdirs()) {
-            file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
-            if (!file.exists()) {
-                boolean mkdirs = file.mkdirs();
-                LogHelper.d(TAG, mkdirs);
-            }
-        }
-
-        return file;
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
-    // Is the target directory empty or not
-    private static boolean isDirEmpty(File directory) {
-        if (directory.isDirectory()) {
-            String[] files = directory.list();
-            if (files.length == 0) {
-                LogHelper.d(TAG, "Directory is empty!");
-                return true;
-            } else {
-                LogHelper.d(TAG, "Directory is NOT empty!");
-                return false;
-            }
-        } else {
-            LogHelper.d(TAG, "This is not a directory!");
-        }
-        return false;
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
-    // Gathers list of files in a directory and deletes them
-    // but only if the directory is NOT empty - it does NOT delete the target directory
-    public static void cleanDir(File directory) {
-        boolean isDirEmpty = isDirEmpty(directory);
-
-        if (!isDirEmpty) {
-            boolean delete = false;
-            String[] children = directory.list();
-            for (String child : children) {
-                delete = new File(directory, child).delete();
-            }
-            LogHelper.d(TAG, "Directory cleaned: " + delete);
-        }
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
-    // As long as there are files in a directory it will recursively delete them -
-    // finally, once there are no files, it deletes the target directory
-    public static boolean deleteDir(File directory) {
-        if (directory.isDirectory())
-            for (File child : directory.listFiles()) {
-                deleteDir(child);
-            }
-
-        boolean delete = directory.delete();
-        LogHelper.d(TAG, "File/directory deleted: " + delete);
-        return delete;
     }
 
     public static String getSessionCookie() {
@@ -320,16 +117,6 @@ public final class Helper {
         }
     }
 
-    // TODO: Link with FileHelper for SAF safe method
-    private static void openFile(Context context, File aFile) {
-        Intent myIntent = new Intent(Intent.ACTION_VIEW);
-        File file = new File(aFile.getAbsolutePath());
-        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-        myIntent.setDataAndType(Uri.fromFile(file), mimeType);
-        context.startActivity(myIntent);
-    }
-
     public static boolean getWebViewOverviewPrefs() {
         return HentoidApp.getSharedPrefs().getBoolean(
                 ConstsPrefs.PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS,
@@ -347,20 +134,6 @@ public final class Helper {
         return HentoidApp.getSharedPrefs().getBoolean(
                 ConstsPrefs.PREF_CHECK_UPDATES_LISTS,
                 ConstsPrefs.PREF_CHECK_UPDATES_DEFAULT);
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
-    private static void openPerfectViewer(Context cxt, File firstImage) {
-        try {
-            Intent intent = cxt
-                    .getPackageManager()
-                    .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
-            intent.setAction(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
-            cxt.startActivity(intent);
-        } catch (Exception e) {
-            toast(cxt, R.string.error_open_perfect_viewer);
-        }
     }
 
     public static void cancelToast() {
