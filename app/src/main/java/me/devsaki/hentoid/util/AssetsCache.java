@@ -47,19 +47,28 @@ public class AssetsCache {
         assetManager = cxt.getAssets();
         cacheDir = cxt.getExternalCacheDir();
         if (cacheDir != null) {
-
             // Check remote cache version
-            if (NetworkStatus.isOnline(cxt)) {
-                LogHelper.d(TAG, "Checking remote cache version.");
-                new UpdateCheckTask().execute(CACHE_JSON);
-            } else {
-                LogHelper.w(TAG, "Network is not connected!");
-                unpackBundle();
-            }
+            checkNetworkConnectivity();
         } else {
-            // TODO: Handle inaccessible cache dir
             LogHelper.d(TAG, "Cache INIT Failed!");
         }
+    }
+
+    private static void checkNetworkConnectivity() {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                boolean connected = NetworkStatus.hasInternetAccess(HentoidApp.getAppContext());
+
+                if (connected) {
+                    LogHelper.d(TAG, "Checking remote cache version.");
+                    new UpdateCheckTask().execute(CACHE_JSON);
+                } else {
+                    LogHelper.w(TAG, "Network is not connected!");
+                    unpackBundle();
+                }
+            }
+        });
     }
 
     private static void downloadCachePack(String downloadURL) {
