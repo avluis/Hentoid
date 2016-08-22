@@ -69,7 +69,6 @@ public class UpdateCheck {
     private long total;
     private long done;
     private boolean showToast;
-    private boolean connected;
     private int retryCount = 0;
 
     private UpdateCheck() {
@@ -91,14 +90,24 @@ public class UpdateCheck {
 
         if ((onlyWifi && NetworkStatus.isWifi(context)) ||
                 (!onlyWifi && NetworkStatus.isOnline(context))) {
-            connected = true;
+            checkNetworkConnectivity();
         } else {
             LogHelper.w(TAG, "Network is not connected!");
         }
-        if (connected) {
-            runAsyncTask(retryCount != 0);
-        }
         this.showToast = showToast;
+    }
+
+    private void checkNetworkConnectivity() {
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                boolean connected = NetworkStatus.hasInternetAccess(HentoidApp.getAppContext());
+
+                if (connected) {
+                    runAsyncTask(retryCount != 0);
+                }
+            }
+        });
     }
 
     private void runAsyncTask(boolean retry) {

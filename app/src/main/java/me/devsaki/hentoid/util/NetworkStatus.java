@@ -4,6 +4,11 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.UnknownHostException;
+
 /**
  * Created by avluis on 7/6/15.
  * General wrapper for network status query.
@@ -59,6 +64,29 @@ public final class NetworkStatus {
             return mobile;
         } catch (Exception e) {
             LogHelper.v(TAG, "Connectivity: ", e);
+        }
+
+        return false;
+    }
+
+    // Must be run on a background thread!!
+    public static boolean hasInternetAccess(Context cxt) {
+        if (isOnline(cxt)) {
+            try {
+                HttpURLConnection url = (HttpURLConnection)
+                        (new URL("http://clients3.google.com/generate_204").openConnection());
+                url.setRequestProperty("User-Agent", "Android");
+                url.setRequestProperty("Connection", "close");
+                url.setConnectTimeout(100);
+                url.setReadTimeout(100);
+                url.connect();
+
+                return (url.getResponseCode() == 204 && url.getContentLength() == 0);
+            } catch (IOException e) {
+                LogHelper.e(TAG, "Error checking internet connection: ", e);
+            }
+        } else {
+            LogHelper.d(TAG, "No network available!");
         }
 
         return false;

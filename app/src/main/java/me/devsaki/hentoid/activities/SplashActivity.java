@@ -4,7 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.AssetsCache;
 import me.devsaki.hentoid.util.Helper;
 
 /**
@@ -17,6 +19,9 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        AssetsCache.init(HentoidApp.getAppContext());
+
         if (Helper.isFirstRun()) {
             Intent intent = new Intent(this, IntroActivity.class);
             startActivity(intent);

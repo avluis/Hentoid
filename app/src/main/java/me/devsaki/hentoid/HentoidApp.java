@@ -16,8 +16,6 @@ import com.google.android.gms.analytics.Tracker;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
-import me.devsaki.hentoid.updater.UpdateCheck.UpdateCheckCallback;
-import me.devsaki.hentoid.util.AssetsCache;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -169,20 +167,12 @@ public class HentoidApp extends Application {
         HentoidDB db = HentoidDB.getInstance(this);
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
-        if (Helper.getMobileUpdatePrefs()) {
-            LogHelper.d(TAG, "Mobile Updates: ON");
-            UpdateCheck(false);
-        } else {
-            LogHelper.d(TAG, "Mobile Updates; OFF");
-            UpdateCheck(true);
-        }
-
-        AssetsCache.init(this);
+        UpdateCheck(!Helper.getMobileUpdatePrefs());
     }
 
     private void UpdateCheck(boolean onlyWifi) {
-        UpdateCheck.getInstance().checkForUpdate(getAppContext(),
-                onlyWifi, false, new UpdateCheckCallback() {
+        UpdateCheck.getInstance().checkForUpdate(this,
+                onlyWifi, false, new UpdateCheck.UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {
                         LogHelper.d(TAG, "Update Check: No update.");
