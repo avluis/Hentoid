@@ -620,24 +620,12 @@ public class FileHelper {
     }
 
     public static boolean createNoMedia() {
-        MODE mode = new FileHelper().getFileMode();
-
-        switch (mode) {
-            case SAF:
-                // TODO: Add SAF
-                return true;
-            case BASIC:
-            default:
-                return noMediaLegacy();
-        }
-    }
-
-    // !SAF
-    private static boolean noMediaLegacy() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+        LogHelper.d(TAG, "Settings Dir: " + settingDir);
+
         try {
-            if (createFileLegacy(settingDir, ".nomedia")) {
+            if (mkFile(new File(settingDir, ".nomedia"))) {
                 Helper.toast(R.string.nomedia_file_created);
             } else {
                 LogHelper.d(TAG, ".nomedia file already exists.");
@@ -647,20 +635,6 @@ public class FileHelper {
         }
 
         return true;
-    }
-
-    // !SAF
-    private static boolean createFileLegacy(String dir, String name) throws IOException {
-        File file = new File(dir, name);
-        if (!file.exists()) {
-            boolean createFile = file.createNewFile();
-            LogHelper.d(TAG, "File created successfully? " + createFile);
-
-            return createFile;
-        } else {
-            LogHelper.d(TAG, "File: " + name + " already exists.");
-            return true;
-        }
     }
 
     public static void removeContent(Context cxt, Content content) {
