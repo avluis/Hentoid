@@ -74,18 +74,19 @@ public class DownloadService extends IntentService {
             return;
         }
 
-        // TODO: Link with FileHelper for SAF safe method
         currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
         if (currentContent != null && currentContent.getStatus() != StatusContent.DOWNLOADED) {
             initDownload();
 
             File dir = FileHelper.getContentDownloadDir(this, currentContent);
+            LogHelper.d(TAG, "Content Download Dir; " + dir);
             // If the download directory already has files,
             // then we simply delete them, since this points to a failed download
             // This includes in progress downloads, that were paused, then resumed.
             // So technically, we are downloading everything once again.
             // This is required for ImageDownloadBatch to not hang on a download.
             FileHelper.rmDir(dir);
+            FileHelper.mkDir(dir);
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
@@ -94,7 +95,6 @@ public class DownloadService extends IntentService {
         }
     }
 
-    // TODO: Link with FileHelper for SAF safe method
     private void addTask(File dir, ImageDownloadBatch downloadBatch) {
         // Add download tasks
         downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());

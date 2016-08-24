@@ -9,10 +9,10 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 
@@ -27,16 +27,27 @@ import me.devsaki.hentoid.HentoidApp;
 public class JsonHelper {
     private static final String TAG = LogHelper.makeLogTag(JsonHelper.class);
 
-    // TODO: Link with FileHelper for SAF safe method
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
 
         // convert java object to JSON format, and return as a JSON formatted string
         String json = gson.toJson(object);
-        FileWriter writer = new FileWriter(file, false);
-        writer.write(json);
-        writer.close();
+
+        OutputStream output = null;
+        try {
+            output = FileHelper.getOutputStream(file);
+            // build
+            byte[] bytes = json.getBytes();
+            // write
+            output.write(bytes);
+            output.flush();
+        } finally {
+            // finished
+            if (output != null) {
+                output.close();
+            }
+        }
     }
 
     public static <T> T jsonToObject(File f, Class<T> type) throws IOException {

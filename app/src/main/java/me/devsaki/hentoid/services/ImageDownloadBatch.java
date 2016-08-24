@@ -4,7 +4,6 @@ import android.content.pm.PackageManager;
 import android.webkit.CookieManager;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import okhttp3.Call;
@@ -36,7 +36,6 @@ final class ImageDownloadBatch {
     private boolean hasError = false;
     private short errorCount = 0;
 
-    // TODO: Link with FileHelper for SAF safe method
     void newTask(final File dir, final String filename, final String url) {
         String cookie = cookieManager.getCookie(url);
         if (cookie == null || cookie.isEmpty()) {
@@ -86,7 +85,6 @@ final class ImageDownloadBatch {
         return errorCount;
     }
 
-    // TODO: Link with FileHelper for SAF safe method
     private class Callback implements okhttp3.Callback {
         private final File dir;
         private final String filename;
@@ -140,7 +138,7 @@ final class ImageDownloadBatch {
             final InputStream input = response.body().byteStream();
             final byte[] buffer = new byte[BUFFER_SIZE];
             try {
-                output = new FileOutputStream(file);
+                output = FileHelper.getOutputStream(file);
                 int dataLength;
                 while ((dataLength = input.read(buffer, 0, BUFFER_SIZE)) != -1) {
                     output.write(buffer, 0, dataLength);
