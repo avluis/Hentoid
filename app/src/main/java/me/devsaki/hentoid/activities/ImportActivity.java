@@ -220,6 +220,12 @@ public class ImportActivity extends BaseActivity {
 
     // Present Directory Picker
     private void pickDownloadDirectory(File dir) {
+        if (FileHelper.isOnExtSdCard(dir)) {
+            LogHelper.d(TAG, "Resetting directory back to default.");
+            dir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
+                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+        }
+
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         dirChooserFragment = DirChooserFragment.newInstance(dir);
         dirChooserFragment.show(transaction, "DirectoryChooserFragment");
@@ -270,8 +276,10 @@ public class ImportActivity extends BaseActivity {
     public void onManualInput(OnTextViewClickedEvent event) {
         if (event.getClickType()) {
             LogHelper.d(TAG, "Resetting directory back to default.");
+            currentRootDir = new File(Environment.getExternalStorageDirectory() +
+                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
             dirChooserFragment.dismiss();
-            initImport(null);
+            pickDownloadDirectory(currentRootDir);
         } else {
             LogHelper.d(TAG, "Click~");
             final EditText text = new EditText(this);
@@ -454,6 +462,16 @@ public class ImportActivity extends BaseActivity {
             // Persist access permissions
             getContentResolver().takePersistableUriPermission(treeUri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            dirChooserFragment.dismiss();
+
+            if (FileHelper.getExtSdCardPaths().length > 0) {
+                String[] paths = FileHelper.getExtSdCardPaths();
+                File folder = new File(paths[0] + "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
+                LogHelper.d(TAG, "Folder created? " + FileHelper.mkDir(folder));
+
+                importFolder(folder);
+            }
         }
     }
 
@@ -501,8 +519,12 @@ public class ImportActivity extends BaseActivity {
                                 dialog.dismiss();
                                 // Prior Library found, but user chose to cancel
                                 restartFlag = false;
-                                currentRootDir = prevRootDir;
-                                FileHelper.validateFolder(currentRootDir.getAbsolutePath());
+                                if (prevRootDir != null) {
+                                    currentRootDir = prevRootDir;
+                                }
+                                if (currentRootDir != null) {
+                                    FileHelper.validateFolder(currentRootDir.getAbsolutePath());
+                                }
                                 LogHelper.d(TAG, "Restart needed: " + false);
 
                                 result = ConstsImport.EXISTING_LIBRARY_FOUND;
