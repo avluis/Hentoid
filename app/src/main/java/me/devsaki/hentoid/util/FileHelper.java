@@ -35,6 +35,8 @@ import me.devsaki.hentoid.enums.Site;
 public class FileHelper {
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
 
+    private static final int KITKAT = Build.VERSION_CODES.KITKAT;
+
     /**
      * All roots for which this app has permission
      */
@@ -45,7 +47,7 @@ public class FileHelper {
      *
      * @return A list of external SD card paths.
      */
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(KITKAT)
     public static String[] getExtSdCardPaths() {
         Context cxt = HentoidApp.getAppContext();
         List<String> paths = new ArrayList<>();
@@ -124,42 +126,45 @@ public class FileHelper {
         return true;
     }
 
-    public static void setSharedPrefsUri(Uri uri) {
+    public static void saveUri(Uri uri) {
         LogHelper.d(TAG, "Saving Uri: " + uri);
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, uri.toString()).apply();
     }
 
-    public static void clearSharedPrefsUri() {
+    public static void clearUri() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, "").apply();
     }
 
-    public static boolean createNoMedia() {
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.KITKAT)) {
-            FILE_MODE mode = new FileHelper().getFileMode();
+    private static Uri getUri() {
+        SharedPreferences prefs = HentoidApp.getSharedPrefs();
+        String uri = prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, "");
+        LogHelper.d(TAG, "Tree Uri: " + uri);
+        return Uri.parse(uri);
+    }
 
-            switch (mode) {
-                case SAF:
-                    // TODO: Add SAF
-                    return true;
-                case BASIC:
-                default:
-                    return noMediaHelper();
-            }
-        } else {
-            return noMediaHelper();
+    public static boolean createNoMedia() {
+        MODE mode = new FileHelper().getFileMode();
+
+        switch (mode) {
+            case SAF:
+                // TODO: Add SAF
+                return true;
+            case BASIC:
+            default:
+                return noMediaLegacy();
         }
     }
 
     // !SAF
-    private static boolean noMediaHelper() {
+    private static boolean noMediaLegacy() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
         try {
-            if (createFile(settingDir, ".nomedia")) {
+            if (createFileLegacy(settingDir, ".nomedia")) {
                 Helper.toast(R.string.nomedia_file_created);
             } else {
                 LogHelper.d(TAG, ".nomedia file already exists.");
@@ -172,7 +177,7 @@ public class FileHelper {
     }
 
     // !SAF
-    private static boolean createFile(String dir, String name) throws IOException {
+    private static boolean createFileLegacy(String dir, String name) throws IOException {
         File file = new File(dir, name);
         if (!file.exists()) {
             boolean createFile = file.createNewFile();
@@ -185,28 +190,73 @@ public class FileHelper {
         }
     }
 
-    // !SAF
-    // TODO: Make helper function for non-SAF/SAF use
     public static void removeContent(Context cxt, Content content) {
+        MODE mode = new FileHelper().getFileMode();
+
+        switch (mode) {
+            case SAF:
+                // TODO: Add SAF
+                break;
+            case BASIC:
+            default:
+                removeContentLegacy(cxt, content);
+        }
+    }
+
+    // !SAF
+    private static void removeContentLegacy(Context cxt, Content content) {
         File dir = getContentDownloadDir(cxt, content);
 
         try {
             FileUtils.deleteDirectory(dir);
         } catch (IOException e) {
-            deleteDir(dir);
+            deleteDirLegacy(dir);
         } finally {
             LogHelper.d(TAG, "Directory removed: " + dir);
         }
     }
 
     // !SAF
-    public static File getContentDownloadDir(Context context, Content content) {
+    // Gathers list of files in a directory and deletes them
+    // but only if the directory is NOT empty - it does NOT delete the target directory
+    public static void cleanDir(File directory) {
+        if (!isDirEmpty(directory)) {
+            boolean delete = false;
+            String[] children = directory.list();
+            for (String child : children) {
+                delete = new File(directory, child).delete();
+            }
+            LogHelper.d(TAG, "Directory cleaned: " + delete);
+        }
+    }
+
+    // !SAF
+    // Is the target directory empty or not
+    private static boolean isDirEmpty(File directory) {
+        if (directory.isDirectory()) {
+            String[] files = directory.list();
+            if (files.length == 0) {
+                LogHelper.d(TAG, "Directory is empty!");
+                return true;
+            } else {
+                LogHelper.d(TAG, "Directory is NOT empty!");
+                return false;
+            }
+        } else {
+            LogHelper.d(TAG, "This is not a directory!");
+        }
+
+        return false;
+    }
+
+    // !SAF
+    public static File getContentDownloadDir(Context cxt, Content content) {
         File file;
         SharedPreferences sp = HentoidApp.getSharedPrefs();
         String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
         String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(context, folderDir);
+            return getDefaultDir(cxt, folderDir);
         }
 
         file = new File(settingDir, folderDir);
@@ -222,18 +272,18 @@ public class FileHelper {
     }
 
     // !SAF
-    public static File getDefaultDir(Context context, String dir) {
+    public static File getDefaultDir(Context cxt, String dir) {
         File file;
         try {
             file = new File(Environment.getExternalStorageDirectory() + "/"
                     + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
         } catch (Exception e) {
-            file = context.getDir("", Context.MODE_PRIVATE);
+            file = cxt.getDir("", Context.MODE_PRIVATE);
             file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
         }
 
         if (!file.exists() && !file.mkdirs()) {
-            file = context.getDir("", Context.MODE_PRIVATE);
+            file = cxt.getDir("", Context.MODE_PRIVATE);
             file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
             if (!file.exists()) {
                 boolean mkdirs = file.mkdirs();
@@ -245,13 +295,13 @@ public class FileHelper {
     }
 
     // !SAF
-    public static File getSiteDownloadDir(Context context, Site site) {
+    public static File getSiteDownloadDir(Context cxt, Site site) {
         File file;
         SharedPreferences sp = HentoidApp.getSharedPrefs();
         String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(context, folderDir);
+            return getDefaultDir(cxt, folderDir);
         }
         file = new File(settingDir, folderDir);
         if (!file.exists() && !file.mkdirs()) {
@@ -267,8 +317,8 @@ public class FileHelper {
 
     // !SAF
     // Method is used by onBindViewHolder(), speed is key
-    public static String getThumb(Context context, Content content) {
-        File dir = getContentDownloadDir(context, content);
+    public static String getThumb(Context cxt, Content content) {
+        File dir = getContentDownloadDir(cxt, content);
         String coverUrl = content.getCoverImageUrl();
         String thumbExt = coverUrl.substring(coverUrl.length() - 3);
         String thumb;
@@ -301,9 +351,9 @@ public class FileHelper {
     }
 
     // !SAF
-    public static void openContent(final Context context, Content content) {
+    public static void openContent(final Context cxt, Content content) {
         SharedPreferences sp = HentoidApp.getSharedPrefs();
-        File dir = getContentDownloadDir(context, content);
+        File dir = getContentDownloadDir(cxt, content);
         File imageFile = null;
         File[] files = dir.listFiles();
         Arrays.sort(files);
@@ -317,9 +367,9 @@ public class FileHelper {
             }
         }
         if (imageFile == null) {
-            String message = context.getString(
-                    R.string.image_file_not_found).replace("@dir", dir.getAbsolutePath());
-            Helper.toast(context, message);
+            String message = cxt.getString(R.string.image_file_not_found)
+                    .replace("@dir", dir.getAbsolutePath());
+            Helper.toast(cxt, message);
         } else {
             int readContentPreference = Integer.parseInt(
                     sp.getString(
@@ -327,34 +377,34 @@ public class FileHelper {
                             ConstsPrefs.PREF_READ_CONTENT_DEFAULT + ""));
             if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_ASK) {
                 final File file = imageFile;
-                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
                 builder.setMessage(R.string.select_the_action)
                         .setPositiveButton(R.string.open_default_image_viewer,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        openFile(context, file);
+                                        openFile(cxt, file);
                                     }
                                 })
                         .setNegativeButton(R.string.open_perfect_viewer,
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog, int id) {
-                                        openPerfectViewer(context, file);
+                                        openPerfectViewer(cxt, file);
                                     }
                                 }).create().show();
             } else if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_PERFECT_VIEWER) {
-                openPerfectViewer(context, imageFile);
+                openPerfectViewer(cxt, imageFile);
             }
         }
     }
 
     // !SAF
-    private static void openFile(Context context, File aFile) {
+    private static void openFile(Context cxt, File aFile) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         myIntent.setDataAndType(Uri.fromFile(file), mimeType);
-        context.startActivity(myIntent);
+        cxt.startActivity(myIntent);
     }
 
     // !SAF
@@ -372,47 +422,12 @@ public class FileHelper {
     }
 
     // !SAF
-    // Gathers list of files in a directory and deletes them
-    // but only if the directory is NOT empty - it does NOT delete the target directory
-    public static void cleanDir(File directory) {
-        boolean isDirEmpty = isDirEmpty(directory);
-
-        if (!isDirEmpty) {
-            boolean delete = false;
-            String[] children = directory.list();
-            for (String child : children) {
-                delete = new File(directory, child).delete();
-            }
-            LogHelper.d(TAG, "Directory cleaned: " + delete);
-        }
-    }
-
-    // !SAF
-    // Is the target directory empty or not
-    private static boolean isDirEmpty(File directory) {
-        if (directory.isDirectory()) {
-            String[] files = directory.list();
-            if (files.length == 0) {
-                LogHelper.d(TAG, "Directory is empty!");
-                return true;
-            } else {
-                LogHelper.d(TAG, "Directory is NOT empty!");
-                return false;
-            }
-        } else {
-            LogHelper.d(TAG, "This is not a directory!");
-        }
-
-        return false;
-    }
-
-    // !SAF
     // As long as there are files in a directory it will recursively delete them -
     // finally, once there are no files, it deletes the target directory
-    public static boolean deleteDir(File directory) {
+    public static boolean deleteDirLegacy(File directory) {
         if (directory.isDirectory())
             for (File child : directory.listFiles()) {
-                deleteDir(child);
+                deleteDirLegacy(child);
             }
 
         boolean delete = directory.delete();
@@ -420,30 +435,25 @@ public class FileHelper {
         return delete;
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(KITKAT)
     public List<UriPermission> getRootPermissions() {
         updatePermissions();
         return Collections.unmodifiableList(uriPermissions);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(KITKAT)
     private void updatePermissions() {
         uriPermissions = HentoidApp.getAppContext()
                 .getContentResolver().getPersistedUriPermissions();
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    private FILE_MODE getFileMode() {
-        LogHelper.d(TAG, "Permission list: " + (
-                getRootPermissions().isEmpty() ? "empty" : getRootPermissions()));
-        return getRootPermissions().isEmpty() ? FILE_MODE.BASIC : FILE_MODE.SAF;
-    }
-
-    private enum FILE_MODE {BASIC, SAF}
-
-    public class WritePermissionException extends IOException {
-        public WritePermissionException(String message) {
-            super(message);
+    private MODE getFileMode() {
+        if (Helper.isAtLeastAPI(KITKAT)) {
+            return getRootPermissions().isEmpty() ? MODE.BASIC : MODE.SAF;
+        } else {
+            return MODE.BASIC;
         }
     }
+
+    private enum MODE {BASIC, SAF}
 }

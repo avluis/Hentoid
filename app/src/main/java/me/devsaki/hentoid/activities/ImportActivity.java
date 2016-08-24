@@ -252,7 +252,7 @@ public class ImportActivity extends BaseActivity {
         }
 
         LogHelper.d(TAG, "Clearing SAF");
-        FileHelper.clearSharedPrefsUri();
+        FileHelper.clearUri();
         revokePermission();
 
         LogHelper.d(TAG, "Storage Path: " + currentRootDir);
@@ -449,7 +449,7 @@ public class ImportActivity extends BaseActivity {
             // Persist URI in shared preference so that you can use it later
             // IMPORTANT: We rely on this to determine which File wrapper to use,
             // make sure to clear this value when switching back to traditional File
-            FileHelper.setSharedPrefsUri(treeUri);
+            FileHelper.saveUri(treeUri);
 
             // Persist access permissions
             getContentResolver().takePersistableUriPermission(treeUri,

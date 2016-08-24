@@ -80,7 +80,12 @@ public class DownloadService extends IntentService {
             initDownload();
 
             File dir = FileHelper.getContentDownloadDir(this, currentContent);
-            prepDownloadDir(dir);
+            // If the download directory already has files,
+            // then we simply delete them, since this points to a failed download
+            // This includes in progress downloads, that were paused, then resumed.
+            // So technically, we are downloading everything once again.
+            // This is required for ImageDownloadBatch to not hang on a download.
+            FileHelper.cleanDir(dir);
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
@@ -164,17 +169,6 @@ public class DownloadService extends IntentService {
                 "Download Content: Start.");
     }
 
-    // TODO: Link with FileHelper for SAF safe method
-    private void prepDownloadDir(File dir) {
-        // If the download directory already has files,
-        // then we simply delete them, since this points to a failed download
-        // This includes in progress downloads, that were paused, then resumed.
-        // So technically, we are downloading everything once again.
-        // This is required for ImageDownloadBatch to not hang on a download.
-        FileHelper.cleanDir(dir);
-    }
-
-    // TODO: Link with FileHelper for SAF safe method
     private void postDownloadCompleted(File dir) {
         // Save JSON file
         try {
