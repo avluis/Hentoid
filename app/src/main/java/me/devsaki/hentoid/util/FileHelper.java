@@ -10,14 +10,20 @@ import android.content.UriPermission;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
-import android.util.Log;
+import android.support.annotation.NonNull;
+import android.support.v4.provider.DocumentFile;
 import android.webkit.MimeTypeMap;
 
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -36,11 +42,46 @@ public class FileHelper {
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
 
     private static final int KITKAT = Build.VERSION_CODES.KITKAT;
+    private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
 
     /**
-     * All roots for which this app has permission
+     * All roots for which this app has permission.
      */
     private List<UriPermission> uriPermissions = new ArrayList<>();
+
+    /**
+     * Determine if a file is on external sd card. (Kitkat+)
+     *
+     * @param file The file.
+     * @return true if on external sd card.
+     */
+    @TargetApi(KITKAT)
+    public static boolean isOnExtSdCard(final File file) {
+        return getExtSdCardFolder(file) != null;
+    }
+
+    /**
+     * Determine the main folder of the external SD card containing the given file. (Kitkat+)
+     *
+     * @param file The file.
+     * @return The main folder of the external SD card containing this file,
+     * if the file is on an SD card. Otherwise, null is returned.
+     */
+    @TargetApi(KITKAT)
+    public static String getExtSdCardFolder(final File file) {
+        String[] extSdPaths = getExtSdCardPaths();
+        try {
+            for (String extSdPath : extSdPaths) {
+                if (file.getCanonicalPath().startsWith(extSdPath)) {
+                    return extSdPath;
+                }
+            }
+        } catch (IOException e) {
+            return null;
+        }
+
+        return null;
+    }
 
     /**
      * Get a list of external SD card paths. (Kitkat+)
@@ -55,7 +96,7 @@ public class FileHelper {
             if (file != null && !file.equals(cxt.getExternalFilesDir("external"))) {
                 int index = file.getAbsolutePath().lastIndexOf("/Android/data");
                 if (index < 0) {
-                    Log.w(TAG, "Unexpected external file dir: " + file.getAbsolutePath());
+                    LogHelper.w(TAG, "Unexpected external file dir: " + file.getAbsolutePath());
                 } else {
                     String path = file.getAbsolutePath().substring(0, index);
                     try {
@@ -69,6 +110,440 @@ public class FileHelper {
         }
 
         return paths.toArray(new String[paths.size()]);
+    }
+
+    /**
+     * Get a DocumentFile corresponding to the given file.
+     * If the file does not exist, it is created.
+     *
+     * @param file        The file.
+     * @param isDirectory flag indicating if the file should be a directory.
+     * @return The DocumentFile.
+     */
+    public static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
+        String baseFolder = getExtSdCardFolder(file);
+        boolean originalDirectory = false;
+        if (baseFolder == null) {
+            return null;
+        }
+
+        String relativePath = null;
+        try {
+            String fullPath = file.getCanonicalPath();
+            if (!baseFolder.equals(fullPath)) {
+                relativePath = fullPath.substring(baseFolder.length() + 1);
+            } else {
+                originalDirectory = true;
+            }
+        } catch (IOException e) {
+            return null;
+        } catch (Exception f) {
+            originalDirectory = true;
+            //continue
+        }
+
+        String as = getUri();
+        Uri treeUri = null;
+        if (as != null) {
+            treeUri = Uri.parse(as);
+        }
+        if (treeUri == null) {
+            return null;
+        }
+
+        // start with root of SD card and then parse through document tree.
+        Context cxt = HentoidApp.getAppContext();
+        DocumentFile document = DocumentFile.fromTreeUri(cxt, treeUri);
+        if (originalDirectory) {
+            return document;
+        }
+        String[] parts = relativePath.split("/");
+        for (int i = 0; i < parts.length; i++) {
+            DocumentFile nextDocument = document.findFile(parts[i]);
+            if (nextDocument == null) {
+                if ((i < parts.length - 1) || isDirectory) {
+                    nextDocument = document.createDirectory(parts[i]);
+                } else {
+                    nextDocument = document.createFile("image", parts[i]);
+                }
+            }
+            document = nextDocument;
+        }
+
+        return document;
+    }
+
+    /**
+     * Check is a file is writable.
+     * Detects write issues on external SD card.
+     *
+     * @param file The file.
+     * @return true if the file is writable.
+     */
+    public static boolean isWritable(@NonNull final File file) {
+        boolean isExisting = file.exists();
+
+        try {
+            FileOutputStream output = new FileOutputStream(file, true);
+            try {
+                output.close();
+            } catch (IOException e) {
+                // do nothing.
+            }
+        } catch (FileNotFoundException e) {
+            return false;
+        }
+        boolean result = file.canWrite();
+
+        // Ensure that file is not created during this process.
+        if (!isExisting) {
+            //noinspection ResultOfMethodCallIgnored
+            file.delete();
+        }
+
+        return result;
+    }
+
+    /**
+     * Copy a file.
+     *
+     * @param source The source file.
+     * @param target The target file.
+     * @return true if copying was successful.
+     */
+    public static boolean copyFile(final File source, final File target) {
+        FileInputStream inStream = null;
+        OutputStream outStream = null;
+        FileChannel inChannel = null;
+        FileChannel outChannel = null;
+        try {
+            inStream = new FileInputStream(source);
+            // First try the normal way
+            if (isWritable(target)) {
+                // standard way
+                outStream = new FileOutputStream(target);
+                inChannel = inStream.getChannel();
+                outChannel = ((FileOutputStream) outStream).getChannel();
+                inChannel.transferTo(0, inChannel.size(), outChannel);
+            } else {
+                if (Helper.isAtLeastAPI(LOLLIPOP)) {
+                    // Storage Access Framework
+                    DocumentFile targetDocument = getDocumentFile(target, false);
+                    if (targetDocument != null) {
+                        Context cxt = HentoidApp.getAppContext();
+                        outStream = cxt.getContentResolver().openOutputStream(
+                                targetDocument.getUri());
+                    }
+                } else {
+                    return false;
+                }
+
+                if (outStream != null) {
+                    // Both for SAF and for Kitkat, write to output stream.
+                    byte[] buffer = new byte[16384]; // MAGIC_NUMBER
+                    int bytesRead;
+                    while ((bytesRead = inStream.read(buffer)) != -1) {
+                        outStream.write(buffer, 0, bytesRead);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogHelper.e(TAG, "Error while copying file from " + source.getAbsolutePath() + " to "
+                    + target.getAbsolutePath() + ": ", e);
+            return false;
+        } finally {
+            try {
+                if (inStream != null) {
+                    inStream.close();
+                }
+                if (outStream != null) {
+                    outStream.close();
+                }
+                if (inChannel != null) {
+                    inChannel.close();
+                }
+                if (outChannel != null) {
+                    outChannel.close();
+                }
+            } catch (Exception e) {
+                // ignore exception
+            }
+        }
+
+        return true;
+    }
+
+    public static OutputStream getOutputStream(@NonNull final File target) {
+        OutputStream outStream = null;
+        try {
+            // First try the normal way
+            if (isWritable(target)) {
+                // standard way
+                outStream = new FileOutputStream(target);
+            } else {
+                if (Helper.isAtLeastAPI(LOLLIPOP)) {
+                    // Storage Access Framework
+                    DocumentFile targetDocument = getDocumentFile(target, false);
+                    if (targetDocument != null) {
+                        Context cxt = HentoidApp.getAppContext();
+                        outStream = cxt.getContentResolver().openOutputStream(
+                                targetDocument.getUri());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogHelper.e(TAG, "Error while copying file from " + target.getAbsolutePath() + ": ", e);
+        }
+
+        return outStream;
+    }
+
+    /**
+     * Delete a file.
+     * May be even on external SD card.
+     *
+     * @param file The file to be deleted.
+     * @return true if successfully deleted.
+     */
+    public static boolean deleteFile(@NonNull final File file) {
+        // First try the normal deletion
+        boolean fileDelete = deleteFilesInFolder(file);
+        if (file.delete() || fileDelete) {
+            return true;
+        }
+        // Try with Storage Access Framework
+        if (Helper.isAtLeastAPI(LOLLIPOP) && isOnExtSdCard(file)) {
+            DocumentFile document = getDocumentFile(file, false);
+            if (document != null) {
+                return document.delete();
+            }
+        }
+
+        return !file.exists();
+    }
+
+    /**
+     * Delete all files in a folder.
+     *
+     * @param folder The folder.
+     * @return true if successful.
+     */
+    public static boolean deleteFilesInFolder(@NonNull final File folder) {
+        boolean totalSuccess = true;
+        if (folder.isDirectory()) {
+            for (File child : folder.listFiles()) {
+                deleteFilesInFolder(child);
+            }
+            if (!folder.delete())
+                totalSuccess = false;
+        } else {
+            if (!folder.delete())
+                totalSuccess = false;
+        }
+
+        return totalSuccess;
+    }
+
+    /**
+     * Move a file.
+     * The target file may even be on external SD card.
+     *
+     * @param source The source file.
+     * @param target The target file.
+     * @return true if the copying was successful.
+     */
+    public static boolean moveFile(@NonNull final File source, @NonNull final File target) {
+        // First try the normal rename
+        if (source.renameTo(target)) {
+            return true;
+        }
+
+        boolean success = copyFile(source, target);
+        if (success) {
+            success = deleteFile(source);
+        }
+
+        return success;
+    }
+
+    /**
+     * Rename a folder.
+     * In case of extSdCard in Kitkat, the old folder stays in place, but files are moved.
+     *
+     * @param source The source folder.
+     * @param target The target folder.
+     * @return true if the renaming was successful.
+     */
+    public static boolean renameFolder(@NonNull final File source, @NonNull final File target) {
+        // First try the normal rename.
+        if (rename(source, target.getName())) {
+            return true;
+        }
+        if (target.exists()) {
+            return false;
+        }
+
+        // Try the Storage Access Framework if it is just a rename within the same parent folder.
+        if (Helper.isAtLeastAPI(LOLLIPOP) &&
+                source.getParent().equals(target.getParent()) && isOnExtSdCard(source)) {
+            DocumentFile document = getDocumentFile(source, true);
+            if (document != null && document.renameTo(target.getName())) {
+                return true;
+            }
+        }
+
+        // Try the manual way, moving files individually.
+        if (!mkDir(target)) {
+            return false;
+        }
+
+        File[] sourceFiles = source.listFiles();
+        if (sourceFiles == null) {
+            return true;
+        }
+
+        for (File sourceFile : sourceFiles) {
+            String fileName = sourceFile.getName();
+            File targetFile = new File(target, fileName);
+            if (!copyFile(sourceFile, targetFile)) {
+                // stop on first error
+                return false;
+            }
+        }
+        // Only after successfully copying all files, delete files on source folder.
+        for (File sourceFile : sourceFiles) {
+            if (!deleteFile(sourceFile)) {
+                // stop on first error
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static boolean rename(File f, String name) {
+        String newName = f.getParent() + "/" + name;
+        return !f.getParentFile().canWrite() || f.renameTo(new File(newName));
+    }
+
+    /**
+     * Create a folder.
+     *
+     * @param file The folder to be created.
+     * @return true if creation was successful.
+     */
+    public static boolean mkDir(@NonNull final File file) {
+        if (file.exists()) {
+            // nothing to create.
+            return file.isDirectory();
+        }
+
+        // Try the normal way
+        if (file.mkdirs()) {
+            return true;
+        }
+
+        // Try with Storage Access Framework.
+        if (Helper.isAtLeastAPI(LOLLIPOP) && isOnExtSdCard(file)) {
+            DocumentFile document = getDocumentFile(file, true);
+            // getDocumentFile implicitly creates the directory.
+            if (document != null) {
+                return document.exists();
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Create a file.
+     *
+     * @param file The file to be created.
+     * @return true if creation was successful.
+     */
+    public static boolean mkFile(@NonNull final File file) throws IOException {
+        if (file.exists()) {
+            // nothing to create.
+            return !file.isDirectory();
+        }
+
+        // Try the normal way
+        try {
+            if (file.createNewFile()) {
+                return true;
+            }
+        } catch (IOException e) {
+            // Fail silently
+        }
+        // Try with Storage Access Framework.
+        if (Helper.isAtLeastAPI(LOLLIPOP) && isOnExtSdCard(file)) {
+            DocumentFile document = getDocumentFile(file.getParentFile(), true);
+            // getDocumentFile implicitly creates the directory.
+            try {
+                if (document != null) {
+                    return document.createFile(MimeTypes.getMimeType(file), file.getName()) != null;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Delete a folder.
+     *
+     * @param file The folder name.
+     * @return true if successful.
+     */
+    public static boolean rmDir(@NonNull final File file) {
+        if (!file.exists()) {
+            return true;
+        }
+        if (!file.isDirectory()) {
+            return false;
+        }
+        String[] fileList = file.list();
+        if (fileList != null && fileList.length > 0) {
+            //  empty the folder.
+            rmDirHelper(file);
+        }
+        String[] fileList1 = file.list();
+        if (fileList1 != null && fileList1.length > 0) {
+            // Delete only empty folder.
+            return false;
+        }
+        // Try the normal way
+        if (file.delete()) {
+            return true;
+        }
+
+        // Try with Storage Access Framework.
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            DocumentFile document = getDocumentFile(file, true);
+            if (document != null) {
+                return document.delete();
+            }
+        }
+
+        return !file.exists();
+    }
+
+    private static boolean rmDirHelper(@NonNull final File file) {
+        for (File file1 : file.listFiles()) {
+            if (file1.isDirectory()) {
+                if (!rmDirHelper(file1)) {
+                    return false;
+                }
+            } else {
+                if (!deleteFile(file1)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 
     public static boolean validateFolder(String folder) {
@@ -139,11 +614,9 @@ public class FileHelper {
         editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, "").apply();
     }
 
-    private static Uri getUri() {
+    private static String getUri() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        String uri = prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, "");
-        LogHelper.d(TAG, "Tree Uri: " + uri);
-        return Uri.parse(uri);
+        return prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, null);
     }
 
     public static boolean createNoMedia() {
