@@ -328,8 +328,9 @@ public class ImportActivity extends BaseActivity {
             LogHelper.d(TAG, "External Directory(ies): " + Arrays.toString(externalDirs));
             for (String externalDir : externalDirs) {
                 File file = new File(externalDir);
-                LogHelper.d(TAG, "Is " + externalDir + " write-able? " + file.canWrite());
-                if (file.canWrite()) {
+                LogHelper.d(TAG, "Is " + externalDir + " write-able? " +
+                        FileHelper.isWritable(file));
+                if (FileHelper.isWritable(file)) {
                     writeableDirs.add(file);
                 }
             }
