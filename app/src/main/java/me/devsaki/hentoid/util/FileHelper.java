@@ -57,9 +57,13 @@ public class FileHelper {
         editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, "").apply();
     }
 
-    public static String getUri() {
+    public static String getStringUri() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         return prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, null);
+    }
+
+    public static boolean isSAF() {
+        return getStringUri() != null && !getStringUri().equals("");
     }
 
     /**
@@ -155,7 +159,7 @@ public class FileHelper {
             //continue
         }
 
-        String as = getUri();
+        String as = getStringUri();
         Uri treeUri = null;
         if (as != null) {
             treeUri = Uri.parse(as);
@@ -187,6 +191,35 @@ public class FileHelper {
     }
 
     /**
+     * Method ensures about file creation from stream.
+     * For Samsung like devices
+     *
+     * @param stream - OutputStream
+     * @return true if all OK.
+     */
+    public static boolean sync(@NonNull final OutputStream stream) {
+        return (stream instanceof FileOutputStream) && sync((FileOutputStream) stream);
+    }
+
+    /**
+     * Method ensures about file creation from stream.
+     * For Samsung like devices
+     *
+     * @param stream - FileOutputStream
+     * @return true if all OK.
+     */
+    public static boolean sync(@NonNull final FileOutputStream stream) {
+        try {
+            stream.getFD().sync();
+            return true;
+        } catch (IOException e) {
+            LogHelper.e(TAG, "IO Error: " + e);
+        }
+
+        return false;
+    }
+
+    /**
      * Check is a file is writable.
      * Detects write issues on external SD card.
      *
@@ -215,6 +248,31 @@ public class FileHelper {
         }
 
         return result;
+    }
+
+    /**
+     * Checks if file could be read or created
+     *
+     * @param file - The file.
+     * @return true if file's is writable.
+     */
+    public static boolean isReadable(@NonNull final String file) {
+        return isReadable(new File(file));
+    }
+
+    /**
+     * Checks if file could be read or created
+     *
+     * @param file - The file.
+     * @return true if file's is writable.
+     */
+    public static boolean isReadable(@NonNull final File file) {
+        if (!file.isFile()) {
+            LogHelper.e(TAG, "isReadable(): Not a File");
+            return false;
+        }
+
+        return file.exists() && file.canRead();
     }
 
     /**
@@ -617,7 +675,6 @@ public class FileHelper {
     public static boolean createNoMedia() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
-        LogHelper.d(TAG, "Settings Dir: " + settingDir);
 
         try {
             if (mkFile(new File(settingDir, ".nomedia"))) {

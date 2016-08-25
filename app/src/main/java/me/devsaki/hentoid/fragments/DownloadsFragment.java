@@ -375,7 +375,7 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             shouldUpdate = true;
         }
 
-        if (FileHelper.getUri() != null && !FileHelper.getUri().equals("")) {
+        if (FileHelper.isSAF()) {
             File storage = new File(settingDir);
             if (FileHelper.getExtSdCardFolder(storage) == null) {
                 LogHelper.d(TAG, "Where are my files?!");
