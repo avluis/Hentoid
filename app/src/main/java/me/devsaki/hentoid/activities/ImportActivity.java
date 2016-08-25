@@ -464,7 +464,8 @@ public class ImportActivity extends BaseActivity {
             if (FileHelper.getExtSdCardPaths().length > 0) {
                 String[] paths = FileHelper.getExtSdCardPaths();
                 File folder = new File(paths[0] + "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
-                LogHelper.d(TAG, "Folder created? " + FileHelper.mkDir(folder));
+                LogHelper.d(TAG, "Directory created successfully: " +
+                        FileHelper.createDirectory(folder));
 
                 importFolder(folder);
             }

@@ -85,8 +85,7 @@ public class DownloadService extends IntentService {
             // This includes in progress downloads, that were paused, then resumed.
             // So technically, we are downloading everything once again.
             // This is required for ImageDownloadBatch to not hang on a download.
-            FileHelper.rmDir(dir);
-            FileHelper.mkDir(dir);
+            LogHelper.d(TAG, "Directory cleaned successfully: " + FileHelper.cleanDirectory(dir));
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);

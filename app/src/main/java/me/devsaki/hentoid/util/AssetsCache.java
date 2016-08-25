@@ -73,7 +73,7 @@ public class AssetsCache {
 
     private static void downloadCachePack(String downloadURL) {
         // Clean up cache directory
-        FileHelper.rmDir(cacheDir);
+        LogHelper.d(TAG, "Directory cleaned successfully: " + FileHelper.cleanDirectory(cacheDir));
         // Download cache pack
         Uri downloadUri = Uri.parse(downloadURL);
         final Uri destinationUri = Uri.parse(cacheDir + "/" + CACHE_PACK);
