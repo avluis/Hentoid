@@ -40,6 +40,10 @@ public class FileHelper {
     private static final int KITKAT = Build.VERSION_CODES.KITKAT;
     private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
 
+    // Note that many devices will report true (there are no guarantees of this being 'external')
+    public static boolean isSDPresent = android.os.Environment.getExternalStorageState()
+            .equals(android.os.Environment.MEDIA_MOUNTED);
+
     public static void saveUri(Uri uri) {
         LogHelper.d(TAG, "Saving Uri: " + uri);
         SharedPreferences prefs = HentoidApp.getSharedPrefs();

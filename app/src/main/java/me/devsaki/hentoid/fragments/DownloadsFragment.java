@@ -37,6 +37,7 @@ import android.widget.TextView;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,8 +56,11 @@ import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.ConstsPrefs;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
+
+import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 
 /**
  * Created by avluis on 04/10/2016.
@@ -369,6 +373,24 @@ public class DownloadsFragment extends BaseFragment implements ContentListener,
             this.settingDir = settingDir;
             cleanResults();
             shouldUpdate = true;
+        }
+
+        if (FileHelper.getUri() != null && !FileHelper.getUri().equals("")) {
+            File storage = new File(settingDir);
+            if (FileHelper.getExtSdCardFolder(storage) == null) {
+                LogHelper.d(TAG, "Where are my files?!");
+                Helper.toast(getActivity(),
+                        "Could not find library!\nPlease check your storage device.", LONG);
+                setQuery("      ");
+
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    public void run() {
+                        getActivity().finish();
+                        Runtime.getRuntime().exit(0);
+                    }
+                }, 3000);
+            }
         }
 
         boolean endlessScroll = prefs.getBoolean(

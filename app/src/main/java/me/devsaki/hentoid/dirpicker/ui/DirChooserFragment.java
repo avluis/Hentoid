@@ -29,6 +29,7 @@ import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
 import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
 import me.devsaki.hentoid.dirpicker.util.Bus;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -115,7 +116,7 @@ public class DirChooserFragment extends DialogFragment implements
         fabCreateDir.setOnClickListener(this);
         selectDirBtn.setOnClickListener(this);
 
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.KITKAT)) {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.KITKAT) && FileHelper.isSDPresent) {
             fabRequestSD.setOnClickListener(this);
             fabRequestSD.setVisibility(View.VISIBLE);
         }
