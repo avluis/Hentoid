@@ -37,6 +37,9 @@
     <string name="please_wait">Please wait…</string>
     <string name="scanning_files">Scanning files…</string>
     <string name="adding_to_db">Adding files to database…</string>
+    <string name="kitkat_rationale">Unable to modify contents of the SD Card. This is caused by the external storage policy by Google in Android 4.4.\nTo bypass this limitation, you can try using one of the \'sd fix\' tools available in the Google Play Store (Root Required).</string>
+    <string name="no_sd_support">Your device is not currently supported.\nPlease join our Discord Server if you wish to help us add support for your device.</string>
+
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>

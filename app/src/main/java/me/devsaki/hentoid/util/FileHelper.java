@@ -133,7 +133,7 @@ public class FileHelper {
      * @param isDirectory flag indicating if the file should be a directory.
      * @return The DocumentFile.
      */
-    public static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
+    private static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
         String baseFolder = getExtSdCardFolder(file);
         boolean originalDirectory = false;
         if (baseFolder == null) {
@@ -627,6 +627,7 @@ public class FileHelper {
             }
         } catch (IOException io) {
             LogHelper.e("Failed to create file: " + io);
+            return false;
         }
 
         return true;

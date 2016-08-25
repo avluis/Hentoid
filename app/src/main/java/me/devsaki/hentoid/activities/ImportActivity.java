@@ -281,7 +281,6 @@ public class ImportActivity extends BaseActivity {
             dirChooserFragment.dismiss();
             pickDownloadDirectory(currentRootDir);
         } else {
-            LogHelper.d(TAG, "Click~");
             final EditText text = new EditText(this);
             int paddingPx = Convert.dpToPixel(this, 16);
             text.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
@@ -376,20 +375,16 @@ public class ImportActivity extends BaseActivity {
                     }
                 }
             } else {
-                // TODO: Present user with directory selection if > 1
                 LogHelper.d(TAG, "We got a fancy device here.");
                 LogHelper.d(TAG, "Available storage locations: " + writeableDirs);
+                noSDSupport();
             }
         }
     }
 
     private void showKitkatRationale() {
         new AlertDialog.Builder(this)
-                .setMessage("Unable to modify contents of the SD Card. " +
-                        "This is caused by the external storage policy by Google " +
-                        "in Android 4.4.\nTo bypass this limitation, you can try " +
-                        "using one of the 'sd fix' tools available in the Google " +
-                        "Play Store (Root Required).")
+                .setMessage(R.string.kitkat_rationale)
                 .setTitle("Error!")
                 .setPositiveButton(android.R.string.ok, null)
                 .show();
@@ -397,9 +392,7 @@ public class ImportActivity extends BaseActivity {
 
     private void noSDSupport() {
         LogHelper.d(TAG, "No write-able directories :(");
-        Helper.toast("Your device is not currently supported.\n" +
-                "Please join our Discord Server if you wish to help " +
-                "us add support for your device.");
+        Helper.toast(R.string.no_sd_support);
     }
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -413,6 +406,7 @@ public class ImportActivity extends BaseActivity {
                 AlertDialog.Builder builder =
                         new AlertDialog.Builder(ImportActivity.this)
                                 .setTitle("Requesting Write Permissions")
+                                .setMessage("Tap to continue")
                                 .setView(instImage);
                 final AlertDialog dialog = builder.create();
                 instImage.setOnClickListener(new View.OnClickListener() {
@@ -420,7 +414,8 @@ public class ImportActivity extends BaseActivity {
                     public void onClick(View v) {
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
-                            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow write Permission");
+                            intent.putExtra(DocumentsContract.EXTRA_PROMPT,
+                                    "Allow Write Permission");
                         }
                         // http://stackoverflow.com/a/31334967/1615876
                         intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
