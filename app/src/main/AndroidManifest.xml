@@ -175,17 +175,6 @@
                     android:scheme="https" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".activities.GalleryActivity"
-            android:configChanges="orientation|screenSize"
-            android:label="@string/title_activity_queue"
-            android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/AppTheme.DarkBackgroundNoActionBar"
-            tools:ignore="UnusedAttribute">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
-        </activity>
 
         <service
             android:name=".services.DownloadService"
@@ -219,7 +208,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/file_paths"/>
+                android:resource="@xml/file_paths" />
         </provider>
 
         <meta-data
