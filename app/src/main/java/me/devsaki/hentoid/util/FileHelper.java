@@ -23,6 +23,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.GalleryActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 
@@ -35,10 +36,12 @@ import static android.os.Environment.getExternalStorageState;
  * File related utility class
  */
 public class FileHelper {
+    public static final String IMAGE_LIST = "IMAGE_LIST";
+
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
 
+    private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
     private static final int KITKAT = Build.VERSION_CODES.KITKAT;
-
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
@@ -454,7 +457,8 @@ public class FileHelper {
                                     }
                                 }).create().show();
             } else if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_PERFECT_VIEWER) {
-                openPerfectViewer(cxt, imageFile);
+                //openPerfectViewer(cxt, imageFile);
+                openImageViewer(cxt, content);
             }
         }
     }
@@ -479,5 +483,53 @@ public class FileHelper {
         } catch (Exception e) {
             Helper.toast(cxt, R.string.error_open_perfect_viewer);
         }
+    }
+
+    private static void openImageViewer(Context cxt, Content content) {
+//        String contentPath = content.getSite().getFolder() + content.getUniqueSiteId();
+//        File contentDir = new File(getRoot(), contentPath + "/");
+//        LogHelper.d(TAG, "Uri: " + FileProvider.getUriForFile(cxt, AUTHORITY, contentDir));
+//        Uri uri = FileProvider.getUriForFile(cxt, AUTHORITY, contentDir);
+//
+        File dir = getContentDownloadDir(cxt, content);
+        File[] files = dir.listFiles();
+        Arrays.sort(files);
+
+//        Intent intent = new Intent();
+        final ArrayList<String> images = new ArrayList<>();
+//            Intent intent = cxt
+//                    .getPackageManager()
+//                    .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
+
+//            intent.setAction(Intent.ACTION_VIEW);
+//            intent.setData(uri);
+//            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//            intent.setType(MimeTypes.getMimeType(contentDir));
+
+//        intent.setAction(Intent.ACTION_VIEW);
+//        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+        for (File file : files) {
+            String filename = file.getName();
+            if (filename.endsWith(".json") || filename.contains("thumb")) {
+                break;
+            }
+            images.add(file.getAbsolutePath());
+        }
+
+
+//        intent.setDataAndType(uri, "image/*");
+//        cxt.startActivity(intent);
+
+        Intent intent = new Intent(cxt, GalleryActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setAction(Intent.ACTION_VIEW);
+        intent.putExtra(IMAGE_LIST, images);
+        cxt.startActivity(intent);
+    }
+
+    public static String getRoot() {
+        SharedPreferences prefs = HentoidApp.getSharedPrefs();
+        return prefs.getString(Consts.SETTINGS_FOLDER, "");
     }
 }
