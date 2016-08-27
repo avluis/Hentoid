@@ -35,8 +35,6 @@ import static android.os.Environment.getExternalStorageState;
  * File related utility class
  */
 public class FileHelper {
-    public static final String IMAGE_LIST = "IMAGE_LIST";
-
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
 
     private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
