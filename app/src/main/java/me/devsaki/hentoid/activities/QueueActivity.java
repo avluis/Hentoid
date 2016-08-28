@@ -75,7 +75,7 @@ public class QueueActivity extends BaseActivity implements BaseFragment.BackInte
     }
 
     @Override
-    public void setSelectedFragment(BaseFragment baseFragment) {
-        this.baseFragment = baseFragment;
+    public void addBackInterface(BaseFragment fragment) {
+        this.baseFragment = fragment;
     }
 }

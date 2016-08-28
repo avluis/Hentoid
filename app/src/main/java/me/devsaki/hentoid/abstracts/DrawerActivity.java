@@ -41,8 +41,8 @@ import me.devsaki.hentoid.util.LogHelper;
 public abstract class DrawerActivity extends BaseActivity {
     private static final String TAG = LogHelper.makeLogTag(DrawerActivity.class);
 
+    protected Fragment fragment;
     private Context cxt;
-    private Fragment fragment;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private DrawerMenuContents mDrawerMenuContents;
