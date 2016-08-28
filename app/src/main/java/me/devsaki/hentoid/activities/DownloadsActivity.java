@@ -98,13 +98,12 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
         fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment != null) {
-            LogHelper.d(TAG, "Fragment Tag: " + fragment.getTag());
-            LogHelper.d(TAG, "Selected Fragment: " + buildFragment().getClass().getSimpleName());
+            Fragment selectedFragment = buildFragment();
+            String selectedFragmentTag = selectedFragment.getClass().getSimpleName();
 
-            if (!buildFragment().getClass().getSimpleName().equals(fragment.getTag())) {
-                manager.beginTransaction().replace(
-                        R.id.content_frame, buildFragment(),
-                        buildFragment().getClass().getSimpleName())
+            if (!selectedFragmentTag.equals(fragment.getTag())) {
+                manager.beginTransaction()
+                        .replace(R.id.content_frame, selectedFragment, selectedFragmentTag)
                         .commit();
             }
         }
