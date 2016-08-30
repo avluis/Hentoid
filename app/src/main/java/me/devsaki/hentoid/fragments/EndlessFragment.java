@@ -5,9 +5,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
 
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -15,7 +12,6 @@ import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -98,17 +94,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 return false;
             }
         });
-    }
-
-    @Override
-    public boolean onBackPressed() {
-        // Let the activity handle it.
-        return true;
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDownloadEvent(DownloadEvent event) {
-        // Ignore
     }
 
     @Override
@@ -212,11 +197,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 displayNoResults();
             }
         }
-    }
-
-    @Override
-    public void onContentsWiped() {
-
     }
 
     @Override

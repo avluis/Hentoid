@@ -17,7 +17,6 @@ import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.StrictMode;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -243,28 +242,6 @@ public final class Helper {
         SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
         editor.putBoolean(ConstsPrefs.PREF_FIRST_RUN, commit);
         editor.apply();
-    }
-
-    /**
-     * Return true if the first-app-run-activities have already been executed.
-     *
-     * @param context Context to be used to lookup the {@link SharedPreferences}.
-     */
-    public static boolean isFirstRunProcessComplete(final Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
-                ConstsPrefs.PREF_WELCOME_DONE, false);
-    }
-
-    /**
-     * Mark {@code newValue whether} this is the first time the first-app-run-processes have run.
-     * Managed by {@link me.devsaki.hentoid.abstracts.DrawerActivity} the base activity.
-     *
-     * @param context  Context to be used to edit the {@link SharedPreferences}.
-     * @param newValue New value that will be set.
-     */
-    public static void markFirstRunProcessesDone(final Context context, boolean newValue) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        sp.edit().putBoolean(ConstsPrefs.PREF_WELCOME_DONE, newValue).apply();
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)

@@ -12,6 +12,7 @@ import android.support.v4.app.FragmentManager;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
+import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.EndlessFragment;
 import me.devsaki.hentoid.fragments.PagerFragment;
@@ -25,18 +26,16 @@ import me.devsaki.hentoid.util.LogHelper;
  * DownloadsActivity: In charge of hosting EndlessFragment & PagerFragment
  * in accordance to Shared Prefs Setting Key: PREF_ENDLESS_SCROLL
  */
-public class DownloadsActivity extends DrawerActivity implements BaseFragment.BackInterface {
+public class DownloadsActivity extends DrawerActivity implements BackInterface {
     private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
     private BaseFragment baseFragment;
-    private Class<? extends BaseFragment> selectedFragment;
     private Context cxt;
 
     @Override
     protected Fragment buildFragment() {
-        setFragment();
         try {
-            return selectedFragment.newInstance();
+            return getFragment().newInstance();
         } catch (InstantiationException e) {
             LogHelper.e(TAG, "Error: Could not access constructor: ", e);
         } catch (IllegalAccessException e) {
@@ -45,11 +44,11 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
         return null;
     }
 
-    private void setFragment() {
+    private Class<? extends BaseFragment> getFragment() {
         if (getEndlessPref()) {
-            selectedFragment = EndlessFragment.class;
+            return EndlessFragment.class;
         } else {
-            selectedFragment = PagerFragment.class;
+            return PagerFragment.class;
         }
     }
 
@@ -102,9 +101,11 @@ public class DownloadsActivity extends DrawerActivity implements BaseFragment.Ba
             String selectedFragmentTag = selectedFragment.getClass().getSimpleName();
 
             if (!selectedFragmentTag.equals(fragment.getTag())) {
-                manager.beginTransaction()
-                        .replace(R.id.content_frame, selectedFragment, selectedFragmentTag)
-                        .commit();
+                // TODO: Activity needs to be restarted as well
+//                manager.beginTransaction()
+//                        .replace(R.id.content_frame, selectedFragment, selectedFragmentTag)
+//                        .commit();
+                Helper.doRestart(cxt);
             }
         }
     }

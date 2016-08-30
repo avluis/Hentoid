@@ -5,16 +5,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
 
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
-
 import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -137,17 +133,6 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
         }
     }
 
-    @Override
-    public boolean onBackPressed() {
-        // Let the activity handle it.
-        return true;
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDownloadEvent(DownloadEvent event) {
-        // Ignore
-    }
-
 
     @Override
     protected void showToolbar(boolean show, boolean override) {
@@ -207,10 +192,5 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
                 displayNoResults();
             }
         }
-    }
-
-    @Override
-    public void onContentsWiped() {
-
     }
 }
