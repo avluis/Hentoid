@@ -110,10 +110,12 @@ dependencies {
     // Material Dialogs: github.com/afollestad/material-dialogs
     compile 'com.afollestad.material-dialogs:core:0.9.0.1'
     // Image loader: github.com/bumptech/glide
-    // https://github.com/bumptech/glide/wiki/Snapshots#gradle
-    compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
+    // github.com/bumptech/glide/wiki/Snapshots#gradle
+    compile 'com.github.bumptech.glide:glide:4.0.0-SNAPSHOT'
     // Integrate with OkHttp: github.com/bumptech/glide/wiki/Integration-Libraries#okhttp-3
-    compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0-SNAPSHOT'
+    compile 'com.github.bumptech.glide:okhttp3-integration:2.0.0-SNAPSHOT'
+    // Integrate with RecyclerView
+    compile 'com.github.bumptech.glide:recyclerview-integration:2.0.0-SNAPSHOT@aar'
     // Intro screens or slides: github.com/PaoloRotolo/AppIntro
     compile 'com.github.paolorotolo:appintro:4.0.0'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
