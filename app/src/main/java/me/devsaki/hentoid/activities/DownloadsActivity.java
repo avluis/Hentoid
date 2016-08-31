@@ -105,7 +105,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 //                manager.beginTransaction()
 //                        .replace(R.id.content_frame, selectedFragment, selectedFragmentTag)
 //                        .commit();
-                Helper.doRestart(cxt);
+                Helper.doRestart(this);
             }
         }
     }
