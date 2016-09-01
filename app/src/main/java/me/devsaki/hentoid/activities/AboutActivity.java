@@ -1,12 +1,16 @@
 package me.devsaki.hentoid.activities;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
+import android.webkit.WebView;
+import android.widget.Button;
 import android.widget.TextView;
 
 import me.devsaki.hentoid.R;
@@ -29,6 +33,7 @@ public class AboutActivity extends BaseActivity {
         final Intent intent = new Intent(Intent.ACTION_VIEW);
         populateLinks(intent);
         attachBuildNotes();
+        attachLicenseNotes();
     }
 
     private void populateLinks(final Intent intent) {
@@ -113,5 +118,31 @@ public class AboutActivity extends BaseActivity {
         if (tvAboutNotes != null) {
             tvAboutNotes.setText(spAboutNotes);
         }
+    }
+
+    private void attachLicenseNotes() {
+        Button btnLicenses = (Button) findViewById(R.id.btn_about_licenses);
+
+        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        alert.setTitle("Licenses");
+
+        WebView wv = new WebView(this);
+        wv.loadUrl("file:///android_asset/licenses.html");
+        wv.setInitialScale(95);
+
+        alert.setView(wv);
+        alert.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int id) {
+                dialog.dismiss();
+            }
+        });
+
+        btnLicenses.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alert.show();
+            }
+        });
     }
 }

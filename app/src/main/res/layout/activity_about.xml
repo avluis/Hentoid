@@ -140,5 +140,15 @@
             android:text="@string/about_notes"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textSize="@dimen/about_textSize" />
+
+        <Button
+            android:id="@+id/btn_about_licenses"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="5dp"
+            android:text="@string/about_licenses"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="@dimen/about_textSize" />
     </LinearLayout>
 </ScrollView>

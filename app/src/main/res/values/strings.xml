@@ -115,4 +115,5 @@
         Added: Share Intent on item selection<br>
         Added: Receive Shared Intent (links must be valid!)<br>
         Fixed: Tsumino</p>]]></string>
+    <string name="about_licenses">Display Licenses</string>
 </resources>
