@@ -122,25 +122,23 @@ public class AboutActivity extends BaseActivity {
 
     private void attachLicenseNotes() {
         Button btnLicenses = (Button) findViewById(R.id.btn_about_licenses);
-
-        final AlertDialog.Builder alert = new AlertDialog.Builder(this);
-        alert.setTitle("Licenses");
-
-        WebView wv = new WebView(this);
-        wv.loadUrl("file:///android_asset/licenses.html");
-        wv.setInitialScale(95);
-
-        alert.setView(wv);
-        alert.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int id) {
-                dialog.dismiss();
-            }
-        });
-
         btnLicenses.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
+            public void onClick(final View view) {
+                final AlertDialog.Builder alert = new AlertDialog.Builder(AboutActivity.this);
+                alert.setTitle("Licenses");
+
+                final WebView wv = new WebView(AboutActivity.this);
+                wv.loadUrl("file:///android_asset/licenses.html");
+                wv.setInitialScale(95);
+
+                alert.setView(wv);
+                alert.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.dismiss();
+                    }
+                });
                 alert.show();
             }
         });
