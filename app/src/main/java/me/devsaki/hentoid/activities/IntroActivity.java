@@ -2,23 +2,18 @@ package me.devsaki.hentoid.activities;
 
 import android.Manifest;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.view.View;
-import android.widget.Button;
+import android.widget.TextView;
 
 import com.github.paolorotolo.appintro.AppIntro2;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.BaseSlide;
-import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -85,17 +80,17 @@ public class IntroActivity extends AppIntro2 {
         if (pager.getCurrentItem() == IMPORT_SLIDE) {
             setProgressButtonEnabled(false);
 
-            Button defaultBtn = (Button) findViewById(R.id.btn_library_default);
-            Button customBtn = (Button) findViewById(R.id.btn_library_custom);
+            TextView defaultTv = (TextView) findViewById(R.id.tv_library_default);
+            TextView customTv = (TextView) findViewById(R.id.tv_library_custom);
 
-            defaultBtn.setOnClickListener(new View.OnClickListener() {
+            defaultTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     LogHelper.d(TAG, "Default Library Button Clicked.");
                 }
             });
 
-            customBtn.setOnClickListener(new View.OnClickListener() {
+            customTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
                     LogHelper.d(TAG, "Custom Library Button Clicked.");

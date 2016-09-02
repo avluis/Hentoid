@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     style="@style/AppTheme.AppIntro"
     android:layout_width="match_parent"
@@ -32,23 +33,42 @@
         android:textSize="16sp" />
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="5"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:layout_weight="3"
+        android:minHeight="48dp"
+        android:orientation="vertical"
+        tools:ignore="RtlSymmetry">
 
-        <Button
-            android:id="@+id/btn_library_default"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tv_library_default"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/slide_05_library_default" />
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:drawableLeft="@drawable/ic_action_sd_storage"
+            android:drawablePadding="10dp"
+            android:drawableStart="@drawable/ic_action_sd_storage"
+            android:gravity="center_vertical"
+            android:padding="20dp"
+            android:text="@string/slide_05_library_default"
+            android:textColor="@color/white"
+            tools:ignore="RtlSymmetry" />
 
-        <Button
-            android:id="@+id/btn_library_custom"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tv_library_custom"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/slide_05_library_custom" />
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:drawableLeft="@drawable/ic_action_sd_storage"
+            android:drawablePadding="10dp"
+            android:drawableStart="@drawable/ic_action_sd_storage"
+            android:gravity="center_vertical"
+            android:padding="20dp"
+            android:text="@string/slide_05_library_custom"
+            android:textColor="@color/white"
+            tools:ignore="RtlSymmetry" />
     </LinearLayout>
 
     <TextView
