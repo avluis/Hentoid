@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.UriPermission;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -85,6 +86,7 @@ public class ImportActivity extends BaseActivity {
     private File prevRootDir;
     private DirChooserFragment dirChooserFragment;
     private HentoidDB db;
+    private ImageView instImage;
     private boolean restartFlag;
     private boolean prefInit;
     private final Handler importHandler = new Handler(new Handler.Callback() {
@@ -395,37 +397,62 @@ public class ImportActivity extends BaseActivity {
         Helper.toast(R.string.no_sd_support);
     }
 
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        attachInstImage();
+    }
+
+    private void attachInstImage() {
+        // A list of known devices can be used here to present instructions relevant to that device
+        instImage.setImageDrawable(ContextCompat.getDrawable(ImportActivity.this,
+                R.drawable.bg_sd_instructions));
+    }
+
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void requestWritePermission() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                ImageView instImage = new ImageView(ImportActivity.this);
-                instImage.setImageDrawable(ContextCompat.getDrawable(ImportActivity.this,
-                        R.drawable.document_api_guide));
+                instImage = new ImageView(ImportActivity.this);
+                attachInstImage();
+
                 AlertDialog.Builder builder =
                         new AlertDialog.Builder(ImportActivity.this)
                                 .setTitle("Requesting Write Permissions")
-                                .setMessage("Tap to continue")
-                                .setView(instImage);
+                                .setView(instImage)
+                                .setPositiveButton(android.R.string.ok,
+                                        new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface,
+                                                                int i) {
+                                                dialogInterface.dismiss();
+                                                newSAFIntent();
+                                            }
+                                        });
                 final AlertDialog dialog = builder.create();
                 instImage.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                        if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
-                            intent.putExtra(DocumentsContract.EXTRA_PROMPT,
-                                    "Allow Write Permission");
-                        }
-                        // http://stackoverflow.com/a/31334967/1615876
-                        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
-                        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
                         dialog.dismiss();
+                        newSAFIntent();
                     }
                 });
                 dialog.show();
             }
         });
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void newSAFIntent() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
+            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
+        }
+        // http://stackoverflow.com/a/31334967/1615876
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
     }
 
     @TargetApi(Build.VERSION_CODES.KITKAT)
