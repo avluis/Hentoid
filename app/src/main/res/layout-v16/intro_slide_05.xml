@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     style="@style/AppTheme.AppIntro"
     android:layout_width="match_parent"
@@ -40,14 +39,17 @@
         android:gravity="center"
         android:orientation="vertical">
 
-        <ImageView
+        <Button
+            android:id="@+id/btn_library_default"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:src="@drawable/ic_intro_open_book"
-            tools:ignore="ContentDescription" />
+            android:text="@string/slide_05_library_default" />
+
+        <Button
+            android:id="@+id/btn_library_custom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/slide_05_library_custom" />
     </LinearLayout>
 
     <TextView

@@ -17,7 +17,9 @@
     <string name="slide_04_text">Do you have an existing library?\nMake sure to set that as your storage folder.</string>
     <!-- Slide 05 -->
     <string name="slide_05_header">Library</string>
-    <string name="slide_05_text">Initializing Library…</string>
+    <string name="slide_05_text">Choose a storage location for your downloads.</string>
+    <string name="slide_05_library_default">Default</string>
+    <string name="slide_05_library_custom">Custom</string>
     <!-- Slide 06 -->
     <string name="slide_06_header">All set up!</string>
     <string name="slide_06_text">We are set!\nEnjoy the app.</string>
