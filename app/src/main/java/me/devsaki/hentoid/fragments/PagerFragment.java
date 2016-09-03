@@ -21,11 +21,6 @@ import me.devsaki.hentoid.util.LogHelper;
 public class PagerFragment extends DownloadsFragment implements ContentsWipedListener {
     private static final String TAG = LogHelper.makeLogTag(PagerFragment.class);
 
-    @SuppressWarnings("unused")
-    public static PagerFragment newInstance() {
-        return new PagerFragment();
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

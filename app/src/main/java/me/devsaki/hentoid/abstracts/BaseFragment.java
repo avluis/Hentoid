@@ -69,7 +69,7 @@ public abstract class BaseFragment extends Fragment {
     }
 
     // Implementations must annotate method with:
-    @Subscribe(threadMode = ThreadMode.MAIN)
+    // @Subscribe(threadMode = ThreadMode.MAIN)
     public abstract void onDownloadEvent(DownloadEvent event);
 
     public interface BackInterface {

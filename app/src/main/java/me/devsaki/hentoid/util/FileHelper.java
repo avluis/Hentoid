@@ -307,6 +307,7 @@ public class FileHelper {
         return true;
     }
 
+    // Run method in background thread
     public static void removeContent(Context cxt, Content content) {
         File dir = getContentDownloadDir(cxt, content);
         if (FileUtil.rmDir(dir)) {

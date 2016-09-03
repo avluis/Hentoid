@@ -23,11 +23,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
         EndlessScrollListener {
     private static final String TAG = LogHelper.makeLogTag(EndlessFragment.class);
 
-    @SuppressWarnings("unused")
-    public static EndlessFragment newInstance() {
-        return new EndlessFragment();
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -202,11 +197,10 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
     @Override
     public void onLoadMore() {
         if (query.isEmpty()) {
-            LogHelper.d(TAG, "Load more data now~");
-            isLoaded = false;
             if (!isLastPage) {
                 currentPage++;
                 searchContent();
+                LogHelper.d(TAG, "Load more data now~");
             }
         } else {
             LogHelper.d(TAG, "Endless Scrolling disabled.");

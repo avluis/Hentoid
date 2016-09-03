@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -645,31 +646,41 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         }
     }
 
-    private void deleteItem(Content item) {
-        HentoidDB db = HentoidDB.getInstance(cxt);
+    private void deleteItem(final Content item) {
+        final HentoidDB db = HentoidDB.getInstance(cxt);
         removeItem(item);
 
-        FileHelper.removeContent(cxt, item);
-        db.deleteContent(item);
-        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from db and file system.");
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                FileHelper.removeContent(cxt, item);
+                db.deleteContent(item);
+                LogHelper.d(TAG, "Removed item: " + item.getTitle() + " from db and file system.");
+            }
+        });
 
         notifyDataSetChanged();
 
         Helper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
     }
 
-    private void deleteItems(List<Content> items) {
-        HentoidDB db = HentoidDB.getInstance(cxt);
+    private void deleteItems(final List<Content> items) {
+        final HentoidDB db = HentoidDB.getInstance(cxt);
         for (int i = 0; i < items.size(); i++) {
             removeItem(items.get(i), false);
         }
 
-        for (int i = 0; i < items.size(); i++) {
-            FileHelper.removeContent(cxt, items.get(i));
-            db.deleteContent(items.get(i));
-            LogHelper.d(TAG, "Removing item: " + items.get(i).getTitle()
-                    + " from db and file system.");
-        }
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < items.size(); i++) {
+                    FileHelper.removeContent(cxt, items.get(i));
+                    db.deleteContent(items.get(i));
+                    LogHelper.d(TAG, "Removed item: " + items.get(i).getTitle()
+                            + " from db and file system.");
+                }
+            }
+        });
 
         listener.onItemClear(0);
         notifyDataSetChanged();
