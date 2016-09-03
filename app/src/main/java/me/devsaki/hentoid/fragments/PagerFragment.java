@@ -79,7 +79,7 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
             @Override
             public void onClick(View v) {
                 if (isLoaded) {
-                    update();
+                    commitRefresh();
                 }
             }
         });
@@ -94,7 +94,7 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
                     return true;
                 } else if (currentPage == 1 && isLoaded) {
                     Helper.toast(mContext, R.string.on_first_page);
-                    update();
+                    commitRefresh();
 
                     return true;
                 }

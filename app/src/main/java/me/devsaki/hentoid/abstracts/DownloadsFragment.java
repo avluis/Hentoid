@@ -467,7 +467,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         update();
     }
 
-    private void commitRefresh() {
+    protected void commitRefresh() {
         toolTip.setVisibility(View.GONE);
         refreshLayout.setRefreshing(false);
         refreshLayout.setEnabled(false);
