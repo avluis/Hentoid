@@ -30,7 +30,7 @@
     <string name="permission_granted">Permission set, restarting library import.</string>
     <string name="permission_denied">Hentoid requires write access to device storage.</string>
     <string name="permission_denied_forced">Write storage permission denied!\nManually grant storage permission.</string>
-    <string name="existing_library_error">Please select a different folder.</string>
+    <string name="existing_library_error">Please select a custom location.</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
     <string name="add_dialog">Adding files to DB</string>

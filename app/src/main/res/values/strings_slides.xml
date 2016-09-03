@@ -19,7 +19,7 @@
     <string name="slide_05_header">Library</string>
     <string name="slide_05_text">Choose a storage location for your downloads.</string>
     <string name="slide_05_library_default">Default\nSave to internal device storage</string>
-    <string name="slide_05_library_custom">Custom\nCustom storage location</string>
+    <string name="slide_05_library_custom">Custom\nSave to a custom storage location</string>
     <!-- Slide 06 -->
     <string name="slide_06_header">All set up!</string>
     <string name="slide_06_text">We are set!\nEnjoy the app.</string>

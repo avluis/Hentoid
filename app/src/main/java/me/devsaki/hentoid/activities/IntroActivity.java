@@ -109,6 +109,7 @@ public class IntroActivity extends AppIntro2 {
                 @Override
                 public void onClick(View view) {
                     LogHelper.d(TAG, "Custom Library Button Clicked.");
+                    Helper.toast("Working on this ATM~");
                 }
             });
         }
