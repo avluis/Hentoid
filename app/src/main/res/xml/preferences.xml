@@ -45,7 +45,7 @@
             android:title="@string/pref_select_folder_title">
 
             <intent
-                android:action="android.intent.action.VIEW"
+                android:action="android.intent.action.APPLICATION_PREFERENCES"
                 android:targetClass="me.devsaki.hentoid.activities.ImportActivity"
                 android:targetPackage="me.devsaki.hentoid" />
         </Preference>

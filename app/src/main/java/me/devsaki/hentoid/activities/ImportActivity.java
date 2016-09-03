@@ -99,6 +99,7 @@ public class ImportActivity extends BaseActivity {
             return false;
         }
     });
+    private boolean defaultInit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,13 +122,21 @@ public class ImportActivity extends BaseActivity {
 
         Intent intent = getIntent();
         if (intent != null && intent.getAction() != null) {
-            prefInit = true;
+            if (intent.getAction().equals(Intent.ACTION_APPLICATION_PREFERENCES)) {
+                LogHelper.d(TAG, "Running from prefs screen.");
+                prefInit = true;
+            }
+            if (intent.getAction().equals(Intent.ACTION_GET_CONTENT)) {
+                LogHelper.d(TAG, "Importing default directory.");
+                defaultInit = true;
+            } else {
+                LogHelper.d(TAG, "Intent: " + intent + "Action: " + intent.getAction());
+            }
         }
-
-        initImport(savedInstanceState);
+        prepImport(savedInstanceState);
     }
 
-    private void initImport(Bundle savedState) {
+    private void prepImport(Bundle savedState) {
         if (savedState == null) {
             result = ConstsImport.RESULT_EMPTY;
         } else {
@@ -223,14 +232,19 @@ public class ImportActivity extends BaseActivity {
     // Present Directory Picker
     private void pickDownloadDirectory(File dir) {
         if (FileHelper.isOnExtSdCard(dir)) {
-            LogHelper.d(TAG, "Resetting directory back to default.");
+            LogHelper.d(TAG, "Inaccessible: moving back to default directory.");
             dir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
         }
 
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        dirChooserFragment = DirChooserFragment.newInstance(dir);
-        dirChooserFragment.show(transaction, "DirectoryChooserFragment");
+        if (defaultInit) {
+            prevRootDir = currentRootDir;
+            initImport();
+        } else {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            dirChooserFragment = DirChooserFragment.newInstance(dir);
+            dirChooserFragment.show(transaction, "DirectoryChooserFragment");
+        }
     }
 
     @Override
@@ -258,20 +272,23 @@ public class ImportActivity extends BaseActivity {
             restartFlag = true;
             currentRootDir = chosenDir;
         }
+        dirChooserFragment.dismiss();
+        initImport();
+    }
 
+    private void initImport() {
         LogHelper.d(TAG, "Clearing SAF");
         FileHelper.clearUri();
         revokePermission();
 
         LogHelper.d(TAG, "Storage Path: " + currentRootDir);
-        dirChooserFragment.dismiss();
         importFolder(currentRootDir);
     }
 
     @Subscribe
     public void onOpFailed(OpFailedEvent event) {
         dirChooserFragment.dismiss();
-        initImport(null);
+        prepImport(null);
     }
 
     @Subscribe
@@ -315,7 +332,7 @@ public class ImportActivity extends BaseActivity {
                 pickDownloadDirectory(currentRootDir);
             } else {
                 dirChooserFragment.dismiss();
-                initImport(null);
+                prepImport(null);
             }
         }
         LogHelper.d(TAG, path);
@@ -501,7 +518,7 @@ public class ImportActivity extends BaseActivity {
 
     private void importFolder(File folder) {
         if (!FileHelper.validateFolder(folder.getAbsolutePath(), true)) {
-            initImport(null);
+            prepImport(null);
             return;
         }
 
