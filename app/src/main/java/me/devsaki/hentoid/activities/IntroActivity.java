@@ -108,8 +108,14 @@ public class IntroActivity extends AppIntro2 {
             customTv.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    LogHelper.d(TAG, "Custom Library Button Clicked.");
-                    Helper.toast("Working on this ATM~");
+                    // TODO: Create activity listing possible storage locations
+                    if (!HentoidApp.hasImportStarted()) {
+
+                        Intent customDir = new Intent(
+                                getApplicationContext(), ImportActivity.class);
+                        startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
+                    }
+                    HentoidApp.setBeginImport(true);
                 }
             });
         }
