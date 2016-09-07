@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -8,6 +7,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.webkit.MimeTypeMap;
 
 import java.io.File;
@@ -58,6 +58,7 @@ public class FileHelper {
         return prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, null);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public static boolean isSAF() {
         return getStringUri() != null && !getStringUri().equals("");
     }
@@ -68,7 +69,7 @@ public class FileHelper {
      * @param file The file.
      * @return true if on external sd card.
      */
-    @TargetApi(KITKAT)
+    @RequiresApi(api = KITKAT)
     public static boolean isOnExtSdCard(final File file) {
         return getExtSdCardFolder(file) != null;
     }
@@ -80,7 +81,7 @@ public class FileHelper {
      * @return The main folder of the external SD card containing this file,
      * if the file is on an SD card. Otherwise, null is returned.
      */
-    @TargetApi(KITKAT)
+    @RequiresApi(api = KITKAT)
     public static String getExtSdCardFolder(final File file) {
         String[] extSdPaths = getExtSdCardPaths();
         try {
@@ -101,7 +102,7 @@ public class FileHelper {
      *
      * @return A list of external SD card paths.
      */
-    @TargetApi(KITKAT)
+    @RequiresApi(api = KITKAT)
     public static String[] getExtSdCardPaths() {
         Context cxt = HentoidApp.getAppContext();
         List<String> paths = new ArrayList<>();

@@ -60,6 +60,7 @@ public class HentoidApp extends Application {
         HentoidApp.downloadCount++;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean hasImportStarted() {
         return beginImport;
     }

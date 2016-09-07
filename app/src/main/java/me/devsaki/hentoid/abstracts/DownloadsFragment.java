@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -209,19 +210,21 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             shouldUpdate = true;
         }
 
-        if (FileHelper.isSAF()) {
-            File storage = new File(settingDir);
-            if (FileHelper.getExtSdCardFolder(storage) == null) {
-                LogHelper.d(TAG, "Where are my files?!");
-                Helper.toast(getActivity(),
-                        "Could not find library!\nPlease check your storage device.", LONG);
-                setQuery("      ");
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
+            if (FileHelper.isSAF()) {
+                File storage = new File(settingDir);
+                if (FileHelper.getExtSdCardFolder(storage) == null) {
+                    LogHelper.d(TAG, "Where are my files?!");
+                    Helper.toast(getActivity(),
+                            "Could not find library!\nPlease check your storage device.", LONG);
+                    setQuery("      ");
 
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
-                    getActivity().finish();
-                    Runtime.getRuntime().exit(0);
-                }, 3000);
+                    Handler handler = new Handler();
+                    handler.postDelayed(() -> {
+                        getActivity().finish();
+                        Runtime.getRuntime().exit(0);
+                    }, 3000);
+                }
             }
         }
 

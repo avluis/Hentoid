@@ -229,10 +229,12 @@ public class ImportActivity extends BaseActivity {
 
     // Present Directory Picker
     private void pickDownloadDirectory(File dir) {
-        if (FileHelper.isOnExtSdCard(dir)) {
-            LogHelper.d(TAG, "Inaccessible: moving back to default directory.");
-            dir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
-                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.KITKAT)) {
+            if (FileHelper.isOnExtSdCard(dir)) {
+                LogHelper.d(TAG, "Inaccessible: moving back to default directory.");
+                dir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
+                        "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+            }
         }
 
         if (defaultInit) {
@@ -335,20 +337,24 @@ public class ImportActivity extends BaseActivity {
 
     @Subscribe
     public void onSAFRequest(OnSAFRequestEvent event) {
-        String[] externalDirs = FileHelper.getExtSdCardPaths();
-        List<File> writeableDirs = new ArrayList<>();
-        if (externalDirs.length > 0) {
-            LogHelper.d(TAG, "External Directory(ies): " + Arrays.toString(externalDirs));
-            for (String externalDir : externalDirs) {
-                File file = new File(externalDir);
-                LogHelper.d(TAG, "Is " + externalDir + " write-able? " +
-                        FileHelper.isWritable(file));
-                if (FileHelper.isWritable(file)) {
-                    writeableDirs.add(file);
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.KITKAT)) {
+            String[] externalDirs = FileHelper.getExtSdCardPaths();
+            List<File> writeableDirs = new ArrayList<>();
+            if (externalDirs.length > 0) {
+                LogHelper.d(TAG, "External Directory(ies): " + Arrays.toString(externalDirs));
+                for (String externalDir : externalDirs) {
+                    File file = new File(externalDir);
+                    LogHelper.d(TAG, "Is " + externalDir + " write-able? " +
+                            FileHelper.isWritable(file));
+                    if (FileHelper.isWritable(file)) {
+                        writeableDirs.add(file);
+                    }
                 }
             }
+            resolveDirs(externalDirs, writeableDirs);
+        } else {
+            Helper.toast(this, "Device not supported!");
         }
-        resolveDirs(externalDirs, writeableDirs);
     }
 
     private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {

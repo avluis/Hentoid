@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.provider.DocumentFile;
 
 import java.io.File;
@@ -32,7 +33,8 @@ class FileUtil {
      * @param isDirectory flag indicating if the file should be a directory.
      * @return The DocumentFile.
      */
-    static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
+    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
+    private static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
         String baseFolder = FileHelper.getExtSdCardFolder(file);
         boolean originalDirectory = false;
         if (baseFolder == null) {
@@ -169,10 +171,12 @@ class FileUtil {
             return true;
         }
         // Try with Storage Access Framework
-        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
-            DocumentFile document = getDocumentFile(file, false);
-            if (document != null) {
-                return document.delete();
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            if (FileHelper.isOnExtSdCard(file)) {
+                DocumentFile document = getDocumentFile(file, false);
+                if (document != null) {
+                    return document.delete();
+                }
             }
         }
 
@@ -185,7 +189,7 @@ class FileUtil {
      * @param folder The folder.
      * @return true if successful.
      */
-    static boolean deleteFilesInFolder(@NonNull final File folder) {
+    private static boolean deleteFilesInFolder(@NonNull final File folder) {
         boolean totalSuccess = true;
         if (folder.isDirectory()) {
             for (File child : folder.listFiles()) {
@@ -295,11 +299,12 @@ class FileUtil {
         }
 
         // Try the Storage Access Framework if it is just a rename within the same parent folder.
-        if (Helper.isAtLeastAPI(LOLLIPOP) &&
-                source.getParent().equals(target.getParent()) && FileHelper.isOnExtSdCard(source)) {
-            DocumentFile document = getDocumentFile(source, true);
-            if (document != null && document.renameTo(target.getName())) {
-                return true;
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            if (source.getParent().equals(target.getParent()) && FileHelper.isOnExtSdCard(source)) {
+                DocumentFile document = getDocumentFile(source, true);
+                if (document != null && document.renameTo(target.getName())) {
+                    return true;
+                }
             }
         }
 
@@ -332,7 +337,7 @@ class FileUtil {
         return true;
     }
 
-    static boolean rename(File f, String name) {
+    private static boolean rename(File f, String name) {
         String newName = f.getParent() + "/" + name;
         return !f.getParentFile().canWrite() || f.renameTo(new File(newName));
     }
@@ -355,11 +360,13 @@ class FileUtil {
         }
 
         // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
-            DocumentFile document = getDocumentFile(file, true);
-            // getDocumentFile implicitly creates the directory.
-            if (document != null) {
-                return document.exists();
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            if (FileHelper.isOnExtSdCard(file)) {
+                DocumentFile document = getDocumentFile(file, true);
+                // getDocumentFile implicitly creates the directory.
+                if (document != null) {
+                    return document.exists();
+                }
             }
         }
 
@@ -387,15 +394,18 @@ class FileUtil {
             // Fail silently
         }
         // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
-            DocumentFile document = getDocumentFile(file.getParentFile(), true);
-            // getDocumentFile implicitly creates the directory.
-            try {
-                if (document != null) {
-                    return document.createFile(MimeTypes.getMimeType(file), file.getName()) != null;
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            if (FileHelper.isOnExtSdCard(file)) {
+                DocumentFile document = getDocumentFile(file.getParentFile(), true);
+                // getDocumentFile implicitly creates the directory.
+                try {
+                    if (document != null) {
+                        return document.createFile(
+                                MimeTypes.getMimeType(file), file.getName()) != null;
+                    }
+                } catch (Exception e) {
+                    return false;
                 }
-            } catch (Exception e) {
-                return false;
             }
         }
 
@@ -441,7 +451,7 @@ class FileUtil {
         return !file.exists();
     }
 
-    static boolean rmDirHelper(@NonNull final File file) {
+    private static boolean rmDirHelper(@NonNull final File file) {
         for (File file1 : file.listFiles()) {
             if (file1.isDirectory()) {
                 if (!rmDirHelper(file1)) {
