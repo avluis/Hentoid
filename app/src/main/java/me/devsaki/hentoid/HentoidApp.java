@@ -86,7 +86,6 @@ public class HentoidApp extends Application {
         Glide.with(this)
                 .load(image)
                 .fitCenter()
-                .crossFade()
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder)
                 .diskCacheStrategy(DiskCacheStrategy.RESULT)

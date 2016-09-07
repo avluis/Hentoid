@@ -40,9 +40,9 @@
                 android:ellipsize="start"
                 android:gravity="center_vertical"
                 android:lines="1"
+                android:maxLines="1"
                 android:minHeight="75dp"
                 android:padding="10dp"
-                android:singleLine="true"
                 android:textSize="18sp" />
         </RelativeLayout>
     </android.support.v7.widget.CardView>
