@@ -74,21 +74,13 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
     @Override
     protected void attachRefresh(View rootView) {
         ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
-        btnRefresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isLoaded) {
-                    update();
-                }
+        btnRefresh.setOnClickListener(v -> {
+            if (isLoaded) {
+                update();
             }
         });
 
-        btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                return false;
-            }
-        });
+        btnRefresh.setOnLongClickListener(v -> false);
     }
 
     @Override

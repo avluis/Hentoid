@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -315,15 +314,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             holder.ivSite.setImageResource(img);
-            holder.ivSite.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (getSelectedItemCount() >= 1) {
-                        clearSelections();
-                        listener.onItemClear(0);
-                    }
-                    Helper.viewContent(cxt, content);
+            holder.ivSite.setOnClickListener(v -> {
+                if (getSelectedItemCount() >= 1) {
+                    clearSelections();
+                    listener.onItemClear(0);
                 }
+                Helper.viewContent(cxt, content);
             });
         } else {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
@@ -349,15 +345,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
             if (status == StatusContent.ERROR) {
                 holder.ivError.setVisibility(View.VISIBLE);
-                holder.ivError.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (getSelectedItemCount() >= 1) {
-                            clearSelections();
-                            listener.onItemClear(0);
-                        }
-                        downloadAgain(content);
+                holder.ivError.setOnClickListener(v -> {
+                    if (getSelectedItemCount() >= 1) {
+                        clearSelections();
+                        listener.onItemClear(0);
                     }
+                    downloadAgain(content);
                 });
             } else {
                 holder.ivError.setVisibility(View.GONE);
@@ -453,24 +446,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         builder.setTitle(R.string.download_again_dialog_title)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                HentoidDB db = HentoidDB.getInstance(cxt);
+                        (dialog, which) -> {
+                            HentoidDB db = HentoidDB.getInstance(cxt);
 
-                                item.setStatus(StatusContent.DOWNLOADING);
-                                item.setDownloadDate(new Date().getTime());
+                            item.setStatus(StatusContent.DOWNLOADING);
+                            item.setDownloadDate(new Date().getTime());
 
-                                db.updateContentStatus(item);
+                            db.updateContentStatus(item);
 
-                                Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
-                                        DownloadService.class);
-                                cxt.startService(intent);
+                            Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
+                                    DownloadService.class);
+                            cxt.startService(intent);
 
-                                Helper.toast(cxt, R.string.add_to_queue);
-                                removeItem(item);
-                                notifyDataSetChanged();
-                            }
+                            Helper.toast(cxt, R.string.add_to_queue);
+                            removeItem(item);
+                            notifyDataSetChanged();
                         })
                 .setNegativeButton(android.R.string.no, null)
                 .create().show();
@@ -493,20 +483,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                clearSelections();
-                                deleteItem(item);
-                            }
+                        (dialog, which) -> {
+                            clearSelections();
+                            deleteItem(item);
                         })
                 .setNegativeButton(android.R.string.no,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                clearSelections();
-                                listener.onItemClear(0);
-                            }
+                        (dialog, which) -> {
+                            clearSelections();
+                            listener.onItemClear(0);
                         })
                 .create().show();
     }
@@ -515,20 +499,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete_multiple)
                 .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                clearSelections();
-                                deleteItems(items);
-                            }
+                        (dialog, which) -> {
+                            clearSelections();
+                            deleteItems(items);
                         })
                 .setNegativeButton(android.R.string.no,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                clearSelections();
-                                listener.onItemClear(0);
-                            }
+                        (dialog, which) -> {
+                            clearSelections();
+                            listener.onItemClear(0);
                         })
                 .create().show();
     }
@@ -650,13 +628,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         final HentoidDB db = HentoidDB.getInstance(cxt);
         removeItem(item);
 
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                FileHelper.removeContent(cxt, item);
-                db.deleteContent(item);
-                LogHelper.d(TAG, "Removed item: " + item.getTitle() + " from db and file system.");
-            }
+        AsyncTask.execute(() -> {
+            FileHelper.removeContent(cxt, item);
+            db.deleteContent(item);
+            LogHelper.d(TAG, "Removed item: " + item.getTitle() + " from db and file system.");
         });
 
         notifyDataSetChanged();
@@ -670,15 +645,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
             removeItem(items.get(i), false);
         }
 
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < items.size(); i++) {
-                    FileHelper.removeContent(cxt, items.get(i));
-                    db.deleteContent(items.get(i));
-                    LogHelper.d(TAG, "Removed item: " + items.get(i).getTitle()
-                            + " from db and file system.");
-                }
+        AsyncTask.execute(() -> {
+            for (int i = 0; i < items.size(); i++) {
+                FileHelper.removeContent(cxt, items.get(i));
+                db.deleteContent(items.get(i));
+                LogHelper.d(TAG, "Removed item: " + items.get(i).getTitle()
+                        + " from db and file system.");
             }
         });
 
@@ -697,9 +669,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private static class ProgressViewHolder extends RecyclerView.ViewHolder {
-        public final ProgressBar progressBar;
+        final ProgressBar progressBar;
 
-        public ProgressViewHolder(View itemView) {
+        ProgressViewHolder(View itemView) {
             super(itemView);
             progressBar = (ProgressBar) itemView.findViewById(R.id.loadingProgress);
         }

@@ -18,7 +18,7 @@ public class UpdateReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (instance == null) {
-            instance = UpdateCheck.getInstance();
+            instance = new UpdateCheck();
         }
         try {
             String action = intent.getAction();

@@ -11,11 +11,14 @@ android {
         minSdkVersion 15
         targetSdkVersion 23
         versionCode 41
-        versionName '1.2.0r4_dev_experimental'
+        versionName '1.2.1r0_alpha'
+        jackOptions {
+            enabled true
+        }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
     }
     packagingOptions {
         exclude 'README.md'
@@ -33,21 +36,8 @@ android {
     }
     buildTypes {
         debug {
-            debuggable true
-            minifyEnabled true
-            shrinkResources true
-
-            // Library specific proguard files
-            FileCollection proGuardFileCollection = files { file('../.proguard/').listFiles() }
-            proguardFiles(proGuardFileCollection)
-
-            // Default proguard files & project app specific rules
-            //noinspection GroovyAssignabilityCheck
-            proguardFile getDefaultProguardFile('proguard-android.txt')
-            proguardFile 'proguard-project-app.pro'
-
-            // As of Gradle Android plugin 1.1.0, the test APK has a separate config
-            testProguardFile 'proguard-project-test.pro'
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         release {
             debuggable false
@@ -110,12 +100,10 @@ dependencies {
     // Material Dialogs: github.com/afollestad/material-dialogs
     compile 'com.afollestad.material-dialogs:core:0.9.0.1'
     // Image loader: github.com/bumptech/glide
-    // github.com/bumptech/glide/wiki/Snapshots#gradle
-    compile 'com.github.bumptech.glide:glide:4.0.0-SNAPSHOT'
+    // https://github.com/bumptech/glide/wiki/Snapshots#gradle
+    compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
     // Integrate with OkHttp: github.com/bumptech/glide/wiki/Integration-Libraries#okhttp-3
-    compile 'com.github.bumptech.glide:okhttp3-integration:2.0.0-SNAPSHOT'
-    // Integrate with RecyclerView
-    compile 'com.github.bumptech.glide:recyclerview-integration:2.0.0-SNAPSHOT@aar'
+    compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0-SNAPSHOT'
     // Intro screens or slides: github.com/PaoloRotolo/AppIntro
     compile 'com.github.paolorotolo:appintro:4.0.0'
     // Google Play Services Analytics: developers.google.com/android/guides/setup

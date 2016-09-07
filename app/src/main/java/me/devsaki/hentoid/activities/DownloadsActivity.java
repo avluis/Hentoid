@@ -101,10 +101,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
             String selectedFragmentTag = selectedFragment.getClass().getSimpleName();
 
             if (!selectedFragmentTag.equals(fragment.getTag())) {
-                // TODO: Activity needs to be restarted as well
-//                manager.beginTransaction()
-//                        .replace(R.id.content_frame, selectedFragment, selectedFragmentTag)
-//                        .commit();
                 Helper.doRestart(this);
             }
         }

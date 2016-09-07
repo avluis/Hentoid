@@ -6,8 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
-import org.greenrobot.eventbus.ThreadMode;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -70,6 +68,7 @@ public abstract class BaseFragment extends Fragment {
 
     // Implementations must annotate method with:
     // @Subscribe(threadMode = ThreadMode.MAIN)
+    @SuppressWarnings("unused")
     public abstract void onDownloadEvent(DownloadEvent event);
 
     public interface BackInterface {

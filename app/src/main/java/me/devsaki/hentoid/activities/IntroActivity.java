@@ -10,7 +10,6 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.view.View;
 import android.widget.TextView;
 
 import com.github.paolorotolo.appintro.AppIntro2;
@@ -91,32 +90,26 @@ public class IntroActivity extends AppIntro2 {
             TextView defaultTv = (TextView) findViewById(R.id.tv_library_default);
             TextView customTv = (TextView) findViewById(R.id.tv_library_custom);
 
-            defaultTv.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    if (!HentoidApp.hasImportStarted()) {
+            defaultTv.setOnClickListener(view -> {
+                if (!HentoidApp.hasImportStarted()) {
 
-                        Intent defaultDir = new Intent(
-                                getApplicationContext(), ImportActivity.class);
-                        defaultDir.setAction(Intent.ACTION_GET_CONTENT);
-                        startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
-                    }
-                    HentoidApp.setBeginImport(true);
+                    Intent defaultDir = new Intent(
+                            getApplicationContext(), ImportActivity.class);
+                    defaultDir.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
                 }
+                HentoidApp.setBeginImport(true);
             });
 
-            customTv.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    // TODO: Create activity listing possible storage locations
-                    if (!HentoidApp.hasImportStarted()) {
+            customTv.setOnClickListener(view -> {
+                // TODO: Create activity listing possible storage locations
+                if (!HentoidApp.hasImportStarted()) {
 
-                        Intent customDir = new Intent(
-                                getApplicationContext(), ImportActivity.class);
-                        startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
-                    }
-                    HentoidApp.setBeginImport(true);
+                    Intent customDir = new Intent(
+                            getApplicationContext(), ImportActivity.class);
+                    startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
                 }
+                HentoidApp.setBeginImport(true);
             });
         }
     }
@@ -147,13 +140,10 @@ public class IntroActivity extends AppIntro2 {
     private void initImport() {
         if (!HentoidApp.hasImportStarted()) {
             Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-
-                public void run() {
-                    Intent selectFolder = new Intent(
-                            getApplicationContext(), ImportActivity.class);
-                    startActivityForResult(selectFolder, ConstsImport.RQST_IMPORT_RESULTS);
-                }
+            handler.postDelayed(() -> {
+                Intent selectFolder = new Intent(
+                        getApplicationContext(), ImportActivity.class);
+                startActivityForResult(selectFolder, ConstsImport.RQST_IMPORT_RESULTS);
             }, 200);
             handler.removeCallbacks(null);
         }
@@ -189,12 +179,9 @@ public class IntroActivity extends AppIntro2 {
             // Back from app settings
             HentoidApp.setBeginImport(false);
             Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-
-                public void run() {
-                    setProgressButtonEnabled(true);
-                    pager.setCurrentItem(IMPORT_SLIDE - 2);
-                }
+            handler.postDelayed(() -> {
+                setProgressButtonEnabled(true);
+                pager.setCurrentItem(IMPORT_SLIDE - 2);
             }, 100);
             handler.removeCallbacks(null);
         } else {
@@ -219,12 +206,7 @@ public class IntroActivity extends AppIntro2 {
                         Snackbar.LENGTH_SHORT).show();
 
                 Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-
-                    public void run() {
-                        pager.setCurrentItem(IMPORT_SLIDE);
-                    }
-                }, 2000);
+                handler.postDelayed(() -> pager.setCurrentItem(IMPORT_SLIDE), 2000);
             } else {
                 // Disallow swiping back
                 setSwipeLock(true);
@@ -234,12 +216,9 @@ public class IntroActivity extends AppIntro2 {
 
                 // Auto push to DownloadActivity after 10 seconds
                 Handler doneHandler = new Handler();
-                doneHandler.postDelayed(new Runnable() {
-
-                    public void run() {
-                        if (!HentoidApp.isDonePressed() && doneFragment != null) {
-                            onDonePressed(doneFragment);
-                        }
+                doneHandler.postDelayed(() -> {
+                    if (!HentoidApp.isDonePressed() && doneFragment != null) {
+                        onDonePressed(doneFragment);
                     }
                 }, 10000);
                 doneHandler.removeCallbacks(null);
@@ -264,12 +243,7 @@ public class IntroActivity extends AppIntro2 {
                     Snackbar.make(pager, R.string.permission_denied_forced,
                             Snackbar.LENGTH_INDEFINITE)
                             .setAction(R.string.open_app_settings,
-                                    new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            openAppSettings();
-                                        }
-                                    })
+                                    v -> openAppSettings())
                             .show();
                     break;
                 case ConstsImport.EXISTING_LIBRARY_FOUND:

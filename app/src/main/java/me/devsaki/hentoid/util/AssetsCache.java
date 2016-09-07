@@ -55,18 +55,15 @@ public class AssetsCache {
     }
 
     private static void checkNetworkConnectivity() {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                boolean connected = NetworkStatus.hasInternetAccess(HentoidApp.getAppContext());
+        AsyncTask.execute(() -> {
+            boolean connected = NetworkStatus.hasInternetAccess(HentoidApp.getAppContext());
 
-                if (connected) {
-                    LogHelper.d(TAG, "Checking remote cache version.");
-                    new UpdateCheckTask().execute(CACHE_JSON);
-                } else {
-                    LogHelper.w(TAG, "Network is not connected!");
-                    unpackBundle();
-                }
+            if (connected) {
+                LogHelper.d(TAG, "Checking remote cache version.");
+                new UpdateCheckTask().execute(CACHE_JSON);
+            } else {
+                LogHelper.w(TAG, "Network is not connected!");
+                unpackBundle();
             }
         });
     }
@@ -231,8 +228,12 @@ public class AssetsCache {
             try {
                 IOUtils.copy(inputStream, outputStream);
             } finally {
-                outputStream.close();
-                inputStream.close();
+                try {
+                    outputStream.close();
+                    inputStream.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
             }
         }
 

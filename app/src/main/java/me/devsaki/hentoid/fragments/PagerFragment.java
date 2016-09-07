@@ -75,32 +75,26 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
     @Override
     protected void attachRefresh(View rootView) {
         ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
-        btnRefresh.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (isLoaded) {
-                    commitRefresh();
-                }
+        btnRefresh.setOnClickListener(v -> {
+            if (isLoaded) {
+                commitRefresh();
             }
         });
 
-        btnRefresh.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (currentPage != 1 && isLoaded) {
-                    Helper.toast(mContext, R.string.moving_to_first_page);
-                    clearQuery(1);
+        btnRefresh.setOnLongClickListener(v -> {
+            if (currentPage != 1 && isLoaded) {
+                Helper.toast(mContext, R.string.moving_to_first_page);
+                clearQuery(1);
 
-                    return true;
-                } else if (currentPage == 1 && isLoaded) {
-                    Helper.toast(mContext, R.string.on_first_page);
-                    commitRefresh();
+                return true;
+            } else if (currentPage == 1 && isLoaded) {
+                Helper.toast(mContext, R.string.on_first_page);
+                commitRefresh();
 
-                    return true;
-                }
-
-                return false;
+                return true;
             }
+
+            return false;
         });
     }
 

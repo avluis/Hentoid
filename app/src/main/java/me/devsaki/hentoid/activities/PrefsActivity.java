@@ -85,80 +85,54 @@ public class PrefsActivity extends BaseActivity {
 
             Preference addNoMediaFile = getPreferenceScreen()
                     .findPreference(ConstsPrefs.PREF_ADD_NO_MEDIA_FILE);
-            addNoMediaFile.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    return FileHelper.createNoMedia();
-                }
-            });
+            addNoMediaFile.setOnPreferenceClickListener(preference -> FileHelper.createNoMedia());
 
             Preference appLock = getPreferenceScreen().findPreference(ConstsPrefs.PREF_APP_LOCK);
-            appLock.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            appLock.setOnPreferenceClickListener(preference -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle(R.string.app_lock_pin_prefs);
+                final EditText input = new EditText(getActivity());
+                input.setGravity(Gravity.CENTER);
+                input.setInputType(InputType.TYPE_CLASS_NUMBER);
+                builder.setView(input);
+                builder.setOnKeyListener((dialog, keyCode, event) -> {
+                    if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                            (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                        saveKey(dialog, input);
 
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setTitle(R.string.app_lock_pin_prefs);
-                    final EditText input = new EditText(getActivity());
-                    input.setGravity(Gravity.CENTER);
-                    input.setInputType(InputType.TYPE_CLASS_NUMBER);
-                    builder.setView(input);
-                    builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
-                        @Override
-                        public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                                saveKey(dialog, input);
+                        return true;
+                    }
 
-                                return true;
-                            }
+                    return false;
+                });
+                builder.setPositiveButton(android.R.string.ok,
+                        (dialog, which) -> saveKey(dialog, input));
+                builder.setNegativeButton(android.R.string.cancel,
+                        (dialog, which) -> dialog.cancel());
+                builder.show();
 
-                            return false;
-                        }
-                    });
-                    builder.setPositiveButton(android.R.string.ok,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    saveKey(dialog, input);
-                                }
-                            });
-                    builder.setNegativeButton(android.R.string.cancel,
-                            new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    dialog.cancel();
-                                }
-                            });
-                    builder.show();
-
-                    return true;
-                }
+                return true;
             });
 
             Preference mUpdateCheck = getPreferenceScreen()
                     .findPreference(ConstsPrefs.PREF_CHECK_UPDATE_MANUAL);
-            mUpdateCheck.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    Helper.toast("Checking for updates...");
-                    UpdateCheck.getInstance().checkForUpdate(HentoidApp.getAppContext(),
-                            false, true,
-                            new UpdateCheck.UpdateCheckCallback() {
-                                @Override
-                                public void noUpdateAvailable() {
-                                    LogHelper.d(TAG, "Update Check: No update.");
-                                }
+            mUpdateCheck.setOnPreferenceClickListener(preference -> {
+                Helper.toast("Checking for updates...");
+                new UpdateCheck().checkForUpdate(HentoidApp.getAppContext(),
+                        false, true,
+                        new UpdateCheck.UpdateCheckCallback() {
+                            @Override
+                            public void noUpdateAvailable() {
+                                LogHelper.d(TAG, "Update Check: No update.");
+                            }
 
-                                @Override
-                                public void onUpdateAvailable() {
-                                    LogHelper.d(TAG, "Update Check: Update!");
-                                }
-                            });
+                            @Override
+                            public void onUpdateAvailable() {
+                                LogHelper.d(TAG, "Update Check: Update!");
+                            }
+                        });
 
-                    return true;
-                }
+                return true;
             });
         }
 

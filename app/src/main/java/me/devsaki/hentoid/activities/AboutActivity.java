@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -8,7 +7,6 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.text.Html;
 import android.text.Spanned;
-import android.view.View;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
@@ -42,12 +40,9 @@ public class AboutActivity extends BaseActivity {
         final String urlGitHub = getString(R.string.about_github_url);
         if (tvGitHub != null) {
             tvGitHub.setText(spGitHub);
-            tvGitHub.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    intent.setData(Uri.parse(urlGitHub));
-                    startActivity(intent);
-                }
+            tvGitHub.setOnClickListener(v -> {
+                intent.setData(Uri.parse(urlGitHub));
+                startActivity(intent);
             });
         }
 
@@ -56,12 +51,9 @@ public class AboutActivity extends BaseActivity {
         final String urlCommunity = getString(R.string.about_community_url);
         if (tvCommunity != null) {
             tvCommunity.setText(spCommunity);
-            tvCommunity.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    intent.setData(Uri.parse(urlCommunity));
-                    startActivity(intent);
-                }
+            tvCommunity.setOnClickListener(v -> {
+                intent.setData(Uri.parse(urlCommunity));
+                startActivity(intent);
             });
         }
 
@@ -70,12 +62,9 @@ public class AboutActivity extends BaseActivity {
         final String urlBlog = getString(R.string.about_discord_url);
         if (tvDiscord != null) {
             tvDiscord.setText(spDiscord);
-            tvDiscord.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    intent.setData(Uri.parse(urlBlog));
-                    startActivity(intent);
-                }
+            tvDiscord.setOnClickListener(v -> {
+                intent.setData(Uri.parse(urlBlog));
+                startActivity(intent);
             });
         }
 
@@ -84,12 +73,9 @@ public class AboutActivity extends BaseActivity {
         final String urlReddit = getString(R.string.about_reddit_url);
         if (tvReddit != null) {
             tvReddit.setText(spReddit);
-            tvReddit.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    intent.setData(Uri.parse(urlReddit));
-                    startActivity(intent);
-                }
+            tvReddit.setOnClickListener(v -> {
+                intent.setData(Uri.parse(urlReddit));
+                startActivity(intent);
             });
         }
     }
@@ -122,25 +108,17 @@ public class AboutActivity extends BaseActivity {
 
     private void attachLicenseNotes() {
         Button btnLicenses = (Button) findViewById(R.id.btn_about_licenses);
-        btnLicenses.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(final View view) {
-                final AlertDialog.Builder alert = new AlertDialog.Builder(AboutActivity.this);
-                alert.setTitle("Licenses");
+        btnLicenses.setOnClickListener(view -> {
+            final AlertDialog.Builder alert = new AlertDialog.Builder(AboutActivity.this);
+            alert.setTitle("Licenses");
 
-                final WebView wv = new WebView(AboutActivity.this);
-                wv.loadUrl("file:///android_asset/licenses.html");
-                wv.setInitialScale(95);
+            final WebView wv = new WebView(AboutActivity.this);
+            wv.loadUrl("file:///android_asset/licenses.html");
+            wv.setInitialScale(95);
 
-                alert.setView(wv);
-                alert.setNegativeButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.dismiss();
-                    }
-                });
-                alert.show();
-            }
+            alert.setView(wv);
+            alert.setNegativeButton(android.R.string.ok, (dialog, id) -> dialog.dismiss());
+            alert.show();
         });
     }
 }

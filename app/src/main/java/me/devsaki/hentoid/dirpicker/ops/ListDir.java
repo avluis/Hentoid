@@ -27,12 +27,12 @@ class ListDir {
     private final EventBus bus;
     private Subscription subscription;
 
-    public ListDir(DirTree dirTree, EventBus bus) {
+    ListDir(DirTree dirTree, EventBus bus) {
         this.dirTree = dirTree;
         this.bus = bus;
     }
 
-    public void process(File rootDir) {
+    void process(File rootDir) {
         if (rootDir.canRead()) {
             cancelPrevOp();
             updateDirList(rootDir);

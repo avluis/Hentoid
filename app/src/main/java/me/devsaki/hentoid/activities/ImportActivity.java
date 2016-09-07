@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.UriPermission;
@@ -25,7 +24,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.InputType;
-import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.EditText;
@@ -310,12 +308,9 @@ public class ImportActivity extends BaseActivity {
                     .setTitle(R.string.dir_path)
                     .setMessage(R.string.dir_path_inst)
                     .setView(text)
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            Editable value = text.getText();
-                            processManualInput(value);
-                        }
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                        Editable value = text.getText();
+                        processManualInput(value);
                     }).setNegativeButton(android.R.string.cancel, null)
                     .show();
         }
@@ -429,35 +424,25 @@ public class ImportActivity extends BaseActivity {
 
     @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     private void requestWritePermission() {
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                instImage = new ImageView(ImportActivity.this);
-                attachInstImage();
+        runOnUiThread(() -> {
+            instImage = new ImageView(ImportActivity.this);
+            attachInstImage();
 
-                AlertDialog.Builder builder =
-                        new AlertDialog.Builder(ImportActivity.this)
-                                .setTitle("Requesting Write Permissions")
-                                .setView(instImage)
-                                .setPositiveButton(android.R.string.ok,
-                                        new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialogInterface,
-                                                                int i) {
-                                                dialogInterface.dismiss();
-                                                newSAFIntent();
-                                            }
-                                        });
-                final AlertDialog dialog = builder.create();
-                instImage.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        dialog.dismiss();
-                        newSAFIntent();
-                    }
-                });
-                dialog.show();
-            }
+            AlertDialog.Builder builder =
+                    new AlertDialog.Builder(ImportActivity.this)
+                            .setTitle("Requesting Write Permissions")
+                            .setView(instImage)
+                            .setPositiveButton(android.R.string.ok,
+                                    (dialogInterface, i) -> {
+                                        dialogInterface.dismiss();
+                                        newSAFIntent();
+                                    });
+            final AlertDialog dialog = builder.create();
+            instImage.setOnClickListener(v -> {
+                dialog.dismiss();
+                newSAFIntent();
+            });
+            dialog.show();
         });
     }
 
@@ -540,44 +525,37 @@ public class ImportActivity extends BaseActivity {
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.contents_detected)
                 .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                // Prior Library found, drop and recreate db
-                                cleanUpDB();
-                                // Send results to scan
-                                Helper.executeAsyncTask(new ImportAsyncTask());
-                            }
-
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            // Prior Library found, drop and recreate db
+                            cleanUpDB();
+                            // Send results to scan
+                            Helper.executeAsyncTask(new ImportAsyncTask());
                         })
                 .setNegativeButton(android.R.string.no,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                // Prior Library found, but user chose to cancel
-                                restartFlag = false;
-                                if (prevRootDir != null) {
-                                    currentRootDir = prevRootDir;
-                                }
-                                if (currentRootDir != null) {
-                                    FileHelper.validateFolder(currentRootDir.getAbsolutePath());
-                                }
-                                LogHelper.d(TAG, "Restart needed: " + false);
-
-                                result = ConstsImport.EXISTING_LIBRARY_FOUND;
-                                Intent returnIntent = new Intent();
-                                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                                setResult(RESULT_CANCELED, returnIntent);
-                                finish();
+                        (dialog12, which) -> {
+                            dialog12.dismiss();
+                            // Prior Library found, but user chose to cancel
+                            restartFlag = false;
+                            if (prevRootDir != null) {
+                                currentRootDir = prevRootDir;
                             }
+                            if (currentRootDir != null) {
+                                FileHelper.validateFolder(currentRootDir.getAbsolutePath());
+                            }
+                            LogHelper.d(TAG, "Restart needed: " + false);
 
+                            result = ConstsImport.EXISTING_LIBRARY_FOUND;
+                            Intent returnIntent = new Intent();
+                            returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                            setResult(RESULT_CANCELED, returnIntent);
+                            finish();
                         })
                 .create();
-        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        }
+
         if (files.size() > 0) {
             dialog.show();
         } else {
@@ -589,14 +567,11 @@ public class ImportActivity extends BaseActivity {
 
             LogHelper.d(TAG, result);
 
-            handler.postDelayed(new Runnable() {
-
-                public void run() {
-                    Intent returnIntent = new Intent();
-                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                    setResult(RESULT_OK, returnIntent);
-                    finish();
-                }
+            handler.postDelayed(() -> {
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                setResult(RESULT_OK, returnIntent);
+                finish();
             }, 100);
         }
     }
@@ -700,13 +675,11 @@ public class ImportActivity extends BaseActivity {
                             .contentGravity(GravityEnum.CENTER)
                             .progress(false, 100, false)
                             .cancelable(false)
-                            .showListener(new DialogInterface.OnShowListener() {
-                                @Override
-                                public void onShow(DialogInterface dialogInterface) {
-                                    mImportDialog = (MaterialDialog) dialogInterface;
-                                }
-                            }).build();
-            mScanDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                            .showListener(dialogInterface -> mImportDialog =
+                                    (MaterialDialog) dialogInterface).build();
+            if (mScanDialog.getWindow() != null) {
+                mScanDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            }
 
             downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {

@@ -19,7 +19,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ListView;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -52,12 +51,7 @@ public abstract class DrawerActivity extends BaseActivity {
     private Toolbar mToolbar;
     private ActionBarDrawerToggle mDrawerToggle;
     private final FragmentManager.OnBackStackChangedListener onBackStackChangedListener =
-            new FragmentManager.OnBackStackChangedListener() {
-                @Override
-                public void onBackStackChanged() {
-                    updateDrawerToggle();
-                }
-            };
+            this::updateDrawerToggle;
     private boolean isToolbarInitialized;
     private int itemToOpen = -1;
     private int currentPos = -1;
@@ -252,16 +246,13 @@ public abstract class DrawerActivity extends BaseActivity {
             }
         };
 
-        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if (position != selectedPosition) {
-                    mDrawerList.setItemChecked(position, true);
-                    itemToOpen = position;
-                    itemTapped = true;
-                }
-                mDrawerLayout.closeDrawers();
+        mDrawerList.setOnItemClickListener((parent, view, position, id) -> {
+            if (position != selectedPosition) {
+                mDrawerList.setItemChecked(position, true);
+                itemToOpen = position;
+                itemTapped = true;
             }
+            mDrawerLayout.closeDrawers();
         });
         mDrawerList.setAdapter(adapter);
     }

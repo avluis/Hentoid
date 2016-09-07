@@ -23,8 +23,8 @@ public class CompoundAdapter extends SimpleAdapter implements SimpleAdapter.View
     private final List<? extends Map<String, ?>> mData;
     private ViewBinder mViewBinder;
 
-    public CompoundAdapter(Context context, List<? extends Map<String, ?>> data, int resource,
-                           String[] from, int[] to) {
+    protected CompoundAdapter(Context context, List<? extends Map<String, ?>> data, int resource,
+                              String[] from, int[] to) {
         super(context, data, resource, from, to);
 
         mResource = resource;

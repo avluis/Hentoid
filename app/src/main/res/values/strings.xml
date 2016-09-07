@@ -110,10 +110,10 @@
     <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
     <string name="about_notes">
         <![CDATA[
-        <p>Added: ASMHentai & Hentai Café<br>
-        Added: Disable haptic feedback on app lock<br>
-        Added: Share Intent on item selection<br>
-        Added: Receive Shared Intent (links must be valid!)<br>
-        Fixed: Tsumino</p>]]></string>
+        <p>Initial support for SD Cards via SAF<br>
+        Improvements to endless scrolling<br>
+        Improvements to on-boarding experience<br>
+        Minor performance improvements<br>
+        Minor fixes</p>]]></string>
     <string name="about_licenses">Display Licenses</string>
 </resources>

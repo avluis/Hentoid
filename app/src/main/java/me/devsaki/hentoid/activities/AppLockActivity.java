@@ -55,18 +55,15 @@ public class AppLockActivity extends BaseActivity {
 
         if (etPin != null) {
             etPin.setGravity(Gravity.CENTER);
-            etPin.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                            (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                        checkPin(etPin);
+            etPin.setOnKeyListener((v, keyCode, event) -> {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    checkPin(etPin);
 
-                        return true;
-                    }
-
-                    return false;
+                    return true;
                 }
+
+                return false;
             });
             etPin.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -89,12 +86,9 @@ public class AppLockActivity extends BaseActivity {
 
                     if (s.length() >= 4) {
                         handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                etPin.setText(s.toString());
-                                checkPin(null);
-                            }
+                        handler.postDelayed(() -> {
+                            etPin.setText(s.toString());
+                            checkPin(null);
                         }, DELAY);
                     }
                 }

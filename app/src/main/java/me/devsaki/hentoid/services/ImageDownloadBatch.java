@@ -151,9 +151,17 @@ final class ImageDownloadBatch {
                 throw e;
             } finally {
                 if (output != null) {
-                    output.close();
+                    try {
+                        output.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
                 }
-                input.close();
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
             }
 
             semaphore.release();

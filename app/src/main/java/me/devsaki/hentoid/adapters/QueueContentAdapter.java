@@ -2,6 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,8 +47,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         this.fragment = fragment;
     }
 
+    @NonNull
     @Override
-    public View getView(int pos, View view, ViewGroup parent) {
+    public View getView(int pos, View view, @NonNull ViewGroup parent) {
         View v = view;
         // Get the data item for this position
         final Content content = contents.get(pos);
@@ -171,23 +173,17 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void attachButtons(View view, final Content content) {
         Button btnCancel = (Button) view.findViewById(R.id.btnCancel);
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cancel(content);
-                notifyDataSetChanged();
-            }
+        btnCancel.setOnClickListener(v -> {
+            cancel(content);
+            notifyDataSetChanged();
         });
         Button btnPause = (Button) view.findViewById(R.id.btnPause);
-        btnPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (content.getStatus() != StatusContent.DOWNLOADING) {
-                    resume(content);
-                } else {
-                    pause(content);
-                    notifyDataSetChanged();
-                }
+        btnPause.setOnClickListener(v -> {
+            if (content.getStatus() != StatusContent.DOWNLOADING) {
+                resume(content);
+            } else {
+                pause(content);
+                notifyDataSetChanged();
             }
         });
         if (content.getStatus() != StatusContent.DOWNLOADING) {

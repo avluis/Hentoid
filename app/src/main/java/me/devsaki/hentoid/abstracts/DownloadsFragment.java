@@ -218,11 +218,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 setQuery("      ");
 
                 Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-                    public void run() {
-                        getActivity().finish();
-                        Runtime.getRuntime().exit(0);
-                    }
+                handler.postDelayed(() -> {
+                    getActivity().finish();
+                    Runtime.getRuntime().exit(0);
                 }, 3000);
             }
         }
@@ -366,53 +364,37 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         attachNext(rootView);
         attachRefresh(rootView);
 
-        toolTip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                commitRefresh();
-            }
-        });
+        toolTip.setOnClickListener(v -> commitRefresh());
 
         refreshLayout.setEnabled(false);
-        refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                commitRefresh();
-            }
-        });
+        refreshLayout.setOnRefreshListener(this::commitRefresh);
     }
 
     private void attachPrevious(View rootView) {
         ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
-        btnPrevious.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (currentPage > 1 && isLoaded) {
-                    currentPage--;
-                    update();
-                } else if (qtyPages > 0 && isLoaded) {
-                    Helper.toast(mContext, R.string.not_previous_page);
-                } else {
-                    LogHelper.d(TAG, R.string.not_limit_per_page);
-                }
+        btnPrevious.setOnClickListener(v -> {
+            if (currentPage > 1 && isLoaded) {
+                currentPage--;
+                update();
+            } else if (qtyPages > 0 && isLoaded) {
+                Helper.toast(mContext, R.string.not_previous_page);
+            } else {
+                LogHelper.d(TAG, R.string.not_limit_per_page);
             }
         });
     }
 
     private void attachNext(View rootView) {
         ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
-        btnNext.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (qtyPages <= 0) {
-                    LogHelper.d(TAG, R.string.not_limit_per_page);
-                } else {
-                    if (!isLastPage && isLoaded) {
-                        currentPage++;
-                        update();
-                    } else if (isLastPage) {
-                        Helper.toast(mContext, R.string.not_next_page);
-                    }
+        btnNext.setOnClickListener(v -> {
+            if (qtyPages <= 0) {
+                LogHelper.d(TAG, R.string.not_limit_per_page);
+            } else {
+                if (!isLastPage && isLoaded) {
+                    currentPage++;
+                    update();
+                } else if (isLastPage) {
+                    Helper.toast(mContext, R.string.not_next_page);
                 }
             }
         });
@@ -624,13 +606,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void submitSearchQuery(final String s, long delay) {
         query = s;
         searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                setQuery(s);
-                cleanResults();
-                update();
-            }
+        searchHandler.postDelayed(() -> {
+            setQuery(s);
+            cleanResults();
+            update();
         }, delay);
     }
 

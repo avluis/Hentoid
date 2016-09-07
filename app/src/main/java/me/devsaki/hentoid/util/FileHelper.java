@@ -3,7 +3,6 @@ package me.devsaki.hentoid.util;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -12,7 +11,6 @@ import android.support.annotation.NonNull;
 import android.webkit.MimeTypeMap;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -55,7 +53,7 @@ public class FileHelper {
         editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, "").apply();
     }
 
-    public static String getStringUri() {
+    static String getStringUri() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         return prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, null);
     }
@@ -174,7 +172,7 @@ public class FileHelper {
      * @param file - The file.
      * @return true if file's is writable.
      */
-    public static boolean isReadable(@NonNull final File file) {
+    private static boolean isReadable(@NonNull final File file) {
         if (!file.isFile()) {
             LogHelper.e(TAG, "isReadable(): Not a File");
 
@@ -398,11 +396,8 @@ public class FileHelper {
                 }
             default:
                 File[] fileList = dir.listFiles(
-                        new FileFilter() {
-                            @Override
-                            public boolean accept(File pathname) {
-                                return pathname.getName().contains("thumb");
-                            }
+                        pathname -> {
+                            return pathname.getName().contains("thumb");
                         }
                 );
                 thumb = fileList.length > 0 ? fileList[0].getAbsolutePath() : coverUrl;
@@ -443,17 +438,9 @@ public class FileHelper {
                 AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
                 builder.setMessage(R.string.select_the_action)
                         .setPositiveButton(R.string.open_default_image_viewer,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        openFile(cxt, file);
-                                    }
-                                })
+                                (dialog, id) -> openFile(cxt, file))
                         .setNegativeButton(R.string.open_perfect_viewer,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
-                                        openPerfectViewer(cxt, file);
-                                    }
-                                }).create().show();
+                                (dialog, id) -> openPerfectViewer(cxt, file)).create().show();
             } else if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(cxt, imageFile);
             }

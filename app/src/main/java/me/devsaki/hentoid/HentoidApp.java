@@ -30,10 +30,9 @@ public class HentoidApp extends Application {
 
     private static boolean beginImport;
     private static boolean donePressed;
+    private static int downloadCount = 0;
     private static HentoidApp instance;
     private static SharedPreferences sharedPrefs;
-    private static Context context;
-    private static int downloadCount = 0;
 
     // Only for use when activity context cannot be passed or used e.g.;
     // Notification resources, Analytics, etc.
@@ -46,7 +45,7 @@ public class HentoidApp extends Application {
     }
 
     public static Context getAppContext() {
-        return context;
+        return instance.getApplicationContext();
     }
 
     public static int getDownloadCount() {
@@ -86,6 +85,11 @@ public class HentoidApp extends Application {
 
         Glide.with(this)
                 .load(image)
+                .fitCenter()
+                .crossFade()
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder)
+                .diskCacheStrategy(DiskCacheStrategy.RESULT)
                 .into(imageView);
     }
 
@@ -148,9 +152,8 @@ public class HentoidApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        HentoidApp.context = getApplicationContext();
-        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         instance = this;
+        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
         AnalyticsTrackers.initialize(this);
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
@@ -166,7 +169,7 @@ public class HentoidApp extends Application {
     }
 
     private void UpdateCheck(boolean onlyWifi) {
-        UpdateCheck.getInstance().checkForUpdate(this,
+        new UpdateCheck().checkForUpdate(this,
                 onlyWifi, false, new UpdateCheck.UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {

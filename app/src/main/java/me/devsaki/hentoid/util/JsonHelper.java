@@ -45,7 +45,11 @@ public class JsonHelper {
         } finally {
             // finished
             if (output != null) {
-                output.close();
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
             }
         }
     }
@@ -60,7 +64,13 @@ public class JsonHelper {
                 json += sCurrentLine;
             }
         } finally {
-            if (br != null) br.close();
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
 
         return new Gson().fromJson(json, type);
@@ -91,7 +101,11 @@ public class JsonHelper {
             LogHelper.e(TAG, "JSON file not properly formatted: ", e);
         } finally {
             if (stream != null) {
-                stream.close();
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
             }
             if (https != null) {
                 https.disconnect();

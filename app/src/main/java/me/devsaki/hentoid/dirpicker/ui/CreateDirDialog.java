@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.dirpicker.ui;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -24,7 +23,7 @@ class CreateDirDialog {
     private final Context ctx;
     private final EventBus bus;
 
-    public CreateDirDialog(Context ctx, EventBus bus, @Nullable String dirName) {
+    CreateDirDialog(Context ctx, EventBus bus, @Nullable String dirName) {
         this.ctx = ctx;
         this.bus = bus;
 
@@ -43,12 +42,9 @@ class CreateDirDialog {
                 .setTitle(R.string.dir_name)
                 .setMessage(R.string.dir_name_inst)
                 .setView(text)
-                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Editable value = text.getText();
-                        bus.post(new OnMakeDirEvent(currentDir, value.toString()));
-                    }
+                .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                    Editable value = text.getText();
+                    bus.post(new OnMakeDirEvent(currentDir, value.toString()));
                 }).setNegativeButton(android.R.string.cancel, null)
                 .show();
     }

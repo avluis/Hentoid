@@ -31,7 +31,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
-import me.devsaki.hentoid.views.ObservableWebView.OnScrollChangedCallback;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -122,20 +121,17 @@ public class BaseWebActivity extends BaseActivity {
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
         webView = (ObservableWebView) findViewById(R.id.wbMain);
-        webView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                WebView.HitTestResult result = webView.getHitTestResult();
-                if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
-                    if (result.getExtra().contains(site.getUrl())) {
-                        backgroundRequest(result.getExtra());
-                    }
-                } else {
-                    return true;
+        webView.setOnLongClickListener(v -> {
+            WebView.HitTestResult result = webView.getHitTestResult();
+            if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
+                if (result.getExtra().contains(site.getUrl())) {
+                    backgroundRequest(result.getExtra());
                 }
-
-                return false;
+            } else {
+                return true;
             }
+
+            return false;
         });
         webView.setHapticFeedbackEnabled(false);
         webView.setWebChromeClient(new WebChromeClient() {
@@ -143,40 +139,27 @@ public class BaseWebActivity extends BaseActivity {
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
                 if (newProgress == 100) {
-                    swipeLayout.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            swipeLayout.setRefreshing(false);
-                        }
-                    });
+                    swipeLayout.post(() -> swipeLayout.setRefreshing(false));
                 } else {
-                    swipeLayout.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            swipeLayout.setRefreshing(true);
-                        }
-                    });
+                    swipeLayout.post(() -> swipeLayout.setRefreshing(true));
                 }
             }
         });
-        webView.setOnScrollChangedCallback(new OnScrollChangedCallback() {
-            @Override
-            public void onScroll(int l, int t) {
-                if (!webViewIsLoading) {
-                    if (webView.canScrollVertically(1) || t == 0) {
-                        fabRefreshOrStop.show();
-                        fabHome.show();
-                        if (fabReadEnabled) {
-                            fabRead.show();
-                        } else if (fabDownloadEnabled) {
-                            fabDownload.show();
-                        }
-                    } else {
-                        fabRefreshOrStop.hide();
-                        fabHome.hide();
-                        fabRead.hide();
-                        fabDownload.hide();
+        webView.setOnScrollChangedCallback((l, t) -> {
+            if (!webViewIsLoading) {
+                if (webView.canScrollVertically(1) || t == 0) {
+                    fabRefreshOrStop.show();
+                    fabHome.show();
+                    if (fabReadEnabled) {
+                        fabRead.show();
+                    } else if (fabDownloadEnabled) {
+                        fabDownload.show();
                     }
+                } else {
+                    fabRefreshOrStop.hide();
+                    fabHome.hide();
+                    fabRead.hide();
+                    fabDownload.hide();
                 }
             }
         });
@@ -200,12 +183,9 @@ public class BaseWebActivity extends BaseActivity {
 
     private void initSwipeLayout() {
         swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
-        swipeLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                if (!swipeLayout.isRefreshing() || !webViewIsLoading) {
-                    webView.reload();
-                }
+        swipeLayout.setOnRefreshListener(() -> {
+            if (!swipeLayout.isRefreshing() || !webViewIsLoading) {
+                webView.reload();
             }
         });
         swipeLayout.setColorSchemeResources(
@@ -340,36 +320,16 @@ public class BaseWebActivity extends BaseActivity {
         if (contentStatus != StatusContent.DOWNLOADED
                 && contentStatus != StatusContent.DOWNLOADING) {
             currentContent = content;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    showFab(fabDownload);
-                }
-            });
+            runOnUiThread(() -> showFab(fabDownload));
         } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    hideFab(fabDownload);
-                }
-            });
+            runOnUiThread(() -> hideFab(fabDownload));
         }
         if (contentStatus == StatusContent.DOWNLOADED
                 || contentStatus == StatusContent.ERROR) {
             currentContent = content;
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    showFab(fabRead);
-                }
-            });
+            runOnUiThread(() -> showFab(fabRead));
         } else {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    hideFab(fabRead);
-                }
-            });
+            runOnUiThread(() -> hideFab(fabRead));
         }
     }
 

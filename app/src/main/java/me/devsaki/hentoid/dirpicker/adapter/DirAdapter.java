@@ -45,10 +45,10 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.ViewHolder> {
         return dirList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         final TextView textView;
 
-        public ViewHolder(View root) {
+        ViewHolder(View root) {
             super(root);
 
             textView = (TextView) root.findViewById(R.id.dir_name);

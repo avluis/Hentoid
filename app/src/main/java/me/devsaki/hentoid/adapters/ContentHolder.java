@@ -13,19 +13,19 @@ import me.devsaki.hentoid.R;
  * <p/>
  * TODO: Research if possible to re-use widget id (to eliminate duplication)
  */
-public class ContentHolder extends RecyclerView.ViewHolder {
+class ContentHolder extends RecyclerView.ViewHolder {
 
-    public final TextView tvTitle;
-    public final TextView tvTitle2;
-    public final ImageView ivCover;
-    public final ImageView ivCover2;
-    public final TextView tvSeries;
-    public final TextView tvArtist;
-    public final TextView tvTags;
-    public final ImageView ivSite;
-    public final ImageView ivError;
+    final TextView tvTitle;
+    final TextView tvTitle2;
+    final ImageView ivCover;
+    final ImageView ivCover2;
+    final TextView tvSeries;
+    final TextView tvArtist;
+    final TextView tvTags;
+    final ImageView ivSite;
+    final ImageView ivError;
 
-    public ContentHolder(final View itemView) {
+    ContentHolder(final View itemView) {
         super(itemView);
 
         tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);

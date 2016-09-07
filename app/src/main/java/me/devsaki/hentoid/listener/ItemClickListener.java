@@ -24,7 +24,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     private int selectedItemCount;
     private boolean selected;
 
-    public ItemClickListener(Context cxt, Content content, int pos, ItemSelectListener listener) {
+    protected ItemClickListener(Context cxt, Content content, int pos, ItemSelectListener listener) {
         this.context = cxt;
         this.content = content;
         this.position = pos;
@@ -32,7 +32,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
         this.listener = listener;
     }
 
-    public void setSelected(boolean selected, int selectedItemCount) {
+    protected void setSelected(boolean selected, int selectedItemCount) {
         this.selected = selected;
         this.selectedItemCount = selectedItemCount;
     }

@@ -443,11 +443,11 @@ public final class Helper {
      * Created by avluis on 06/12/2016.
      * Resource ID Exception
      */
-    public static class ResourceException extends Exception {
+    private static class ResourceException extends Exception {
         private String result;
         private Exception code;
 
-        public ResourceException(String result, Exception code) {
+        ResourceException(String result, Exception code) {
             this.result = result;
             this.code = code;
         }
