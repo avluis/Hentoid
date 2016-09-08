@@ -4,7 +4,6 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.provider.DocumentFile;
 
 import java.io.File;
@@ -33,7 +32,6 @@ class FileUtil {
      * @param isDirectory flag indicating if the file should be a directory.
      * @return The DocumentFile.
      */
-    @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
         String baseFolder = FileHelper.getExtSdCardFolder(file);
         boolean originalDirectory = false;

@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
 import android.webkit.MimeTypeMap;
 
 import java.io.File;
@@ -36,7 +37,6 @@ public class FileHelper {
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
 
     private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
-    private static final int KITKAT = Build.VERSION_CODES.KITKAT;
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
@@ -69,7 +69,6 @@ public class FileHelper {
      * @param file The file.
      * @return true if on external sd card.
      */
-    @RequiresApi(api = KITKAT)
     public static boolean isOnExtSdCard(final File file) {
         return getExtSdCardFolder(file) != null;
     }
@@ -81,7 +80,6 @@ public class FileHelper {
      * @return The main folder of the external SD card containing this file,
      * if the file is on an SD card. Otherwise, null is returned.
      */
-    @RequiresApi(api = KITKAT)
     public static String getExtSdCardFolder(final File file) {
         String[] extSdPaths = getExtSdCardPaths();
         try {
@@ -102,11 +100,10 @@ public class FileHelper {
      *
      * @return A list of external SD card paths.
      */
-    @RequiresApi(api = KITKAT)
     public static String[] getExtSdCardPaths() {
         Context cxt = HentoidApp.getAppContext();
         List<String> paths = new ArrayList<>();
-        for (File file : cxt.getExternalFilesDirs("external")) {
+        for (File file : ContextCompat.getExternalFilesDirs(cxt, "external")) {
             if (file != null && !file.equals(cxt.getExternalFilesDir("external"))) {
                 int index = file.getAbsolutePath().lastIndexOf("/Android/data");
                 if (index < 0) {
@@ -144,7 +141,10 @@ public class FileHelper {
                 // do nothing.
             }
         } catch (FileNotFoundException e) {
-            return false;
+            // Attempt a traditional file creation
+            if (!createDirectory(file)) {
+                return false;
+            }
         }
         boolean result = file.canWrite();
 
@@ -160,7 +160,7 @@ public class FileHelper {
     /**
      * Checks if file could be read or created
      *
-     * @param file - The file.
+     * @param file - The file (as a String).
      * @return true if file's is writable.
      */
     public static boolean isReadable(@NonNull final String file) {
@@ -173,7 +173,7 @@ public class FileHelper {
      * @param file - The file.
      * @return true if file's is writable.
      */
-    private static boolean isReadable(@NonNull final File file) {
+    public static boolean isReadable(@NonNull final File file) {
         if (!file.isFile()) {
             LogHelper.e(TAG, "isReadable(): Not a File");
 
