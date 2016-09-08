@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.view.WindowManager;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -31,6 +32,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     private BaseFragment baseFragment;
     private Context cxt;
+    private SharedPreferences prefs = HentoidApp.getSharedPrefs();
 
     @Override
     protected Fragment buildFragment() {
@@ -53,14 +55,22 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     }
 
     private boolean getEndlessPref() {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
         return prefs.getBoolean(
                 ConstsPrefs.PREF_ENDLESS_SCROLL, ConstsPrefs.PREF_ENDLESS_SCROLL_DEFAULT);
+    }
+
+    private boolean getRecentVisibilityPref() {
+        return prefs.getBoolean(
+                ConstsPrefs.PREF_HIDE_RECENT, ConstsPrefs.PREF_HIDE_RECENT_DEFAULT);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (getRecentVisibilityPref()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        }
         setContentView(getLayoutResId());
 
         cxt = HentoidApp.getAppContext();

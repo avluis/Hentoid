@@ -2,6 +2,10 @@
 <resources>
     <!-- Downloads List -->
     <string name="pref_downloads_category">Downloads List</string>
+    <string name="pref_hide_recent_title">Hide From Recent Apps</string>
+    <string name="pref_hide_recent_summary_off">Enable app preview in Recent Apps.</string>
+    <string name="pref_hide_recent_summary_on">Disable if you need to take a screen shot.</string>
+    <string name="pref_hide_recent_default" translatable="false">true</string>
     <string name="pref_endless_scroll_title">Endless Scroll</string>
     <string name="pref_endless_scroll_summary_off">Enable endless scrolling in download list.\nDisables paging.</string>
     <string name="pref_endless_scroll_summary_on">Scroll away to your heart\'s content.</string>

@@ -83,6 +83,23 @@ public class PrefsActivity extends BaseActivity {
 
             addPreferencesFromResource(R.xml.preferences);
 
+            Preference recentVisibility = getPreferenceScreen()
+                    .findPreference(ConstsPrefs.PREF_HIDE_RECENT);
+
+            SharedPreferences prefs = HentoidApp.getSharedPrefs();
+            boolean hideRecent = prefs.getBoolean(
+                    ConstsPrefs.PREF_HIDE_RECENT, ConstsPrefs.PREF_HIDE_RECENT_DEFAULT);
+
+            recentVisibility.setOnPreferenceChangeListener((preference, newValue) -> {
+                if (!newValue.equals(hideRecent)) {
+                    Helper.toast(R.string.restart_needed);
+
+                    return true;
+                } else {
+                    return true;
+                }
+            });
+
             Preference addNoMediaFile = getPreferenceScreen()
                     .findPreference(ConstsPrefs.PREF_ADD_NO_MEDIA_FILE);
             addNoMediaFile.setOnPreferenceClickListener(preference -> FileHelper.createNoMedia());

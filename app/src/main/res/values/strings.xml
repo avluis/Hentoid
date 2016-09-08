@@ -65,6 +65,7 @@
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
+    <string name="restart_needed">"App restart needed to apply changes."</string>
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>

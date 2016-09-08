@@ -36,4 +36,6 @@ public abstract class ConstsPrefs {
     public static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
     public static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
     static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
+    public static final boolean PREF_HIDE_RECENT_DEFAULT = true;
+    public static final String PREF_HIDE_RECENT = "pref_hide_recent";
 }

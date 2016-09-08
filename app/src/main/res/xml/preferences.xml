@@ -5,6 +5,14 @@
         android:title="@string/pref_downloads_category">
 
         <CheckBoxPreference
+            android:defaultValue="@string/pref_hide_recent_default"
+            android:disableDependentsState="true"
+            android:icon="@null"
+            android:key="pref_hide_recent"
+            android:summaryOff="@string/pref_hide_recent_summary_off"
+            android:summaryOn="@string/pref_hide_recent_summary_on"
+            android:title="@string/pref_hide_recent_title" />
+        <CheckBoxPreference
             android:defaultValue="@string/pref_endless_scroll_default"
             android:disableDependentsState="true"
             android:icon="@null"

@@ -271,7 +271,6 @@ public final class Helper {
         activity.finish();
     }
 
-    // Note that this is a last resort method -- for use only when ALL else fails.
     public static void doRestart(@NonNull Context cxt) {
         try {
             PackageManager pm = cxt.getPackageManager();
