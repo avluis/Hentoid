@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +18,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -78,6 +78,8 @@ public class ImportActivity extends BaseActivity {
 
     private static final String CURRENT_DIR = "currentDir";
     private static final String PREV_DIR = "prevDir";
+    private static final int KITKAT = Build.VERSION_CODES.KITKAT;
+    private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
     private AlertDialog addDialog;
     private String result;
     private File currentRootDir;
@@ -150,11 +152,9 @@ public class ImportActivity extends BaseActivity {
 
             SharedPreferences sp = HentoidApp.getSharedPrefs();
             String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
-
             LogHelper.d(TAG, settingDir);
 
             File file;
-
             if (!settingDir.isEmpty()) {
                 file = new File(settingDir);
             } else {
@@ -277,7 +277,10 @@ public class ImportActivity extends BaseActivity {
     private void initImport() {
         LogHelper.d(TAG, "Clearing SAF");
         FileHelper.clearUri();
-        revokePermission();
+
+        if (Build.VERSION.SDK_INT >= KITKAT) {
+            revokePermission();
+        }
 
         LogHelper.d(TAG, "Storage Path: " + currentRootDir);
         importFolder(currentRootDir);
@@ -354,9 +357,13 @@ public class ImportActivity extends BaseActivity {
     private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {
         if (writeableDirs.isEmpty()) {
             LogHelper.d(TAG, "Received no write-able external directories.");
-            if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP) && externalDirs.length > 0) {
-                Helper.toast("Attempting SAF");
-                requestWritePermission();
+            if (Helper.isAtLeastAPI(LOLLIPOP)) {
+                if (externalDirs.length > 0) {
+                    Helper.toast("Attempting SAF");
+                    requestWritePermission();
+                } else {
+                    noSDSupport();
+                }
             } else {
                 noSDSupport();
             }
@@ -370,10 +377,10 @@ public class ImportActivity extends BaseActivity {
                     dirChooserFragment.dismiss();
                     pickDownloadDirectory(currentRootDir);
                 } else {
-                    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.KITKAT) {
+                    if (Build.VERSION.SDK_INT == KITKAT) {
                         LogHelper.d(TAG, "Unable to write to SD Card.");
                         showKitkatRationale();
-                    } else if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
+                    } else if (Helper.isAtLeastAPI(LOLLIPOP)) {
                         PackageManager manager = this.getPackageManager();
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
@@ -422,7 +429,7 @@ public class ImportActivity extends BaseActivity {
                 R.drawable.bg_sd_instructions));
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(api = LOLLIPOP)
     private void requestWritePermission() {
         runOnUiThread(() -> {
             instImage = new ImageView(ImportActivity.this);
@@ -446,7 +453,7 @@ public class ImportActivity extends BaseActivity {
         });
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(api = LOLLIPOP)
     private void newSAFIntent() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
@@ -457,7 +464,7 @@ public class ImportActivity extends BaseActivity {
         startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = KITKAT)
     private void revokePermission() {
         for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
             getContentResolver().releasePersistableUriPermission(p.getUri(),
@@ -470,7 +477,7 @@ public class ImportActivity extends BaseActivity {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @RequiresApi(api = KITKAT)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -480,8 +487,6 @@ public class ImportActivity extends BaseActivity {
             Uri treeUri = data.getData();
 
             // Persist URI in shared preference so that you can use it later
-            // IMPORTANT: We rely on this to determine which File wrapper to use,
-            // make sure to clear this value when switching back to traditional File
             FileHelper.saveUri(treeUri);
 
             // Persist access permissions
