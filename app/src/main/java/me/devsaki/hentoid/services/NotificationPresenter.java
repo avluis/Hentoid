@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
@@ -22,6 +23,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -54,11 +56,16 @@ final class NotificationPresenter {
     void downloadStarted(final Content content) {
         count++;
         this.content = content;
+
+        int icon = R.drawable.ic_stat_hentoid;
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
+            icon = this.content.getSite().getIco();
+        }
+
         builder = new NotificationCompat.Builder(instance)
                 .setContentText(this.content.getTitle())
-                .setSmallIcon(this.content.getSite().getIco())
-                .setColor(ContextCompat.getColor(instance.getApplicationContext(),
-                        R.color.accent))
+                .setSmallIcon(icon)
+                .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.accent))
                 .setLocalOnly(true);
 
         LogHelper.d(TAG, "Download Counter: " + count);
