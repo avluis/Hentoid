@@ -23,7 +23,7 @@
             android:layout_height="?android:attr/actionBarSize"
             android:background="@drawable/btn_content_selector"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_previous_item"
+            app:srcCompat="@drawable/ic_action_previous_item"
             tools:ignore="ContentDescription" />
 
         <Button
@@ -40,7 +40,7 @@
             android:layout_height="?android:attr/actionBarSize"
             android:background="@drawable/btn_content_selector"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_next_item"
+            app:srcCompat="@drawable/ic_action_next_item"
             tools:ignore="ContentDescription" />
 
         <ImageButton
@@ -49,7 +49,7 @@
             android:layout_height="?android:attr/actionBarSize"
             android:background="@drawable/btn_content_selector"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_refresh"
+            app:srcCompat="@drawable/ic_action_refresh"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 

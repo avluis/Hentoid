@@ -12,8 +12,10 @@ import java.util.Map;
  * Created by avluis on 2/11/16.
  * A collection of Google Analytics trackers. Fetch the tracker you need using
  * {@code AnalyticsTrackers.getInstance().get(...)}
+ * </p>
+ * TODO: Avoid use of static context
  */
-public final class AnalyticsTrackers {
+final class AnalyticsTrackers {
 
     private static AnalyticsTrackers sInstance;
     private final Map<Target, Tracker> mTrackers = new HashMap<>();
@@ -26,7 +28,7 @@ public final class AnalyticsTrackers {
         mContext = context.getApplicationContext();
     }
 
-    public static synchronized void initialize(Context context) {
+    static synchronized void initialize(Context context) {
         if (sInstance != null) {
             throw new IllegalStateException("Extra call to initialize analytics trackers");
         }
@@ -57,8 +59,5 @@ public final class AnalyticsTrackers {
         return mTrackers.get(target);
     }
 
-    public enum Target {
-        APP,
-        // Add more trackers here if you need, and update the code in #get(Target) below
-    }
+    enum Target {APP}
 }

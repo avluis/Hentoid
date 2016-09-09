@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatDelegate;
 import android.widget.TextView;
 
 import com.github.paolorotolo.appintro.AppIntro2;
@@ -31,6 +32,11 @@ public class IntroActivity extends AppIntro2 {
     private static final String TAG = LogHelper.makeLogTag(IntroActivity.class);
 
     private static final int IMPORT_SLIDE = 4;
+
+    static {
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+    }
+
     private Fragment doneFragment;
 
     private void showSkipButton(boolean showButton) {
@@ -89,6 +95,13 @@ public class IntroActivity extends AppIntro2 {
 
             TextView defaultTv = (TextView) findViewById(R.id.tv_library_default);
             TextView customTv = (TextView) findViewById(R.id.tv_library_custom);
+
+            defaultTv.setCompoundDrawablesWithIntrinsicBounds(
+                    R.drawable.ic_action_sd_storage, 0, 0, 0);
+            defaultTv.setCompoundDrawablePadding(10);
+            customTv.setCompoundDrawablesWithIntrinsicBounds(
+                    R.drawable.ic_action_sd_storage, 0, 0, 0);
+            customTv.setCompoundDrawablePadding(10);
 
             defaultTv.setOnClickListener(view -> {
                 if (!HentoidApp.hasImportStarted()) {

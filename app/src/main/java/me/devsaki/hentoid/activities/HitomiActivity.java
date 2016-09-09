@@ -67,7 +67,7 @@ public class HitomiActivity extends BaseWebActivity {
     }
 
     private class HitomiWebViewClient extends CustomWebViewClient {
-        ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {

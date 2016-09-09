@@ -78,7 +78,7 @@
             android:background="@color/card_item_src_other"
             android:clickable="true"
             android:padding="8dp"
-            android:src="@drawable/ic_item_error_outline"
+            app:srcCompat="@drawable/ic_item_error_outline"
             tools:ignore="ContentDescription" />
     </RelativeLayout>
 

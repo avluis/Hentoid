@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.ui;
 
 import android.content.Context;
+import android.support.v7.app.AppCompatDelegate;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,10 @@ import java.util.Map;
  * Custom implementation of Simple Adapter for our TextView compound drawable.
  */
 public class CompoundAdapter extends SimpleAdapter implements SimpleAdapter.ViewBinder {
+
+    static {
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+    }
 
     private final LayoutInflater mInflater;
     private final int mResource;

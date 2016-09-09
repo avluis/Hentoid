@@ -23,7 +23,7 @@
             android:layout_height="?android:attr/actionBarSize"
             android:background="@drawable/btn_content_selector"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_pause"
+            app:srcCompat="@drawable/ic_action_pause"
             tools:ignore="ContentDescription" />
 
         <ImageButton
@@ -32,7 +32,7 @@
             android:layout_height="?android:attr/actionBarSize"
             android:background="@drawable/btn_content_selector"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_action_play"
+            app:srcCompat="@drawable/ic_action_play"
             tools:ignore="ContentDescription" />
     </LinearLayout>
 

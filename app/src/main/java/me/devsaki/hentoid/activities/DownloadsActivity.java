@@ -30,9 +30,9 @@ import me.devsaki.hentoid.util.LogHelper;
 public class DownloadsActivity extends DrawerActivity implements BackInterface {
     private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
+    private final SharedPreferences prefs = HentoidApp.getSharedPrefs();
     private BaseFragment baseFragment;
     private Context cxt;
-    private SharedPreferences prefs = HentoidApp.getSharedPrefs();
 
     @Override
     protected Fragment buildFragment() {

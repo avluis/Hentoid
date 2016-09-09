@@ -38,7 +38,7 @@ public class FileHelper {
 
     private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
     // Note that many devices will report true (there are no guarantees of this being 'external')
-    public static boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
+    public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
     public static void saveUri(Uri uri) {
         LogHelper.d(TAG, "Saving Uri: " + uri);
@@ -300,6 +300,7 @@ public class FileHelper {
             }
         } catch (IOException io) {
             LogHelper.e("Failed to create file: " + io);
+            Helper.toast(R.string.error_creating_nomedia_file);
             return false;
         }
 

@@ -76,7 +76,7 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
-        ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {

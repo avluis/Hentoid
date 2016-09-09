@@ -67,10 +67,10 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:src="@drawable/ic_create_new_folder"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
+        app:srcCompat="@drawable/ic_create_new_folder"
         app:useCompatPadding="true" />
 
     <android.support.design.widget.FloatingActionButton
@@ -80,12 +80,12 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:src="@drawable/ic_action_sd_storage"
         android:visibility="gone"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple"
+        app:srcCompat="@drawable/ic_action_sd_storage"
         app:useCompatPadding="true" />
 
 </RelativeLayout>

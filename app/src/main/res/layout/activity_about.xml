@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -33,7 +34,7 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_favicon_github"
+                    app:srcCompat="@drawable/ic_favicon_github"
                     tools:ignore="ContentDescription" />
 
                 <TextView
@@ -51,7 +52,7 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_favicon_gplus"
+                    app:srcCompat="@drawable/ic_favicon_gplus"
                     tools:ignore="ContentDescription" />
 
                 <TextView
@@ -69,7 +70,7 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_favicon_discord"
+                    app:srcCompat="@drawable/ic_favicon_discord"
                     tools:ignore="ContentDescription" />
 
                 <TextView
@@ -87,7 +88,7 @@
                     android:layout_width="@dimen/about_ic_icons_width"
                     android:layout_height="@dimen/about_ic_icons_height"
                     android:cropToPadding="true"
-                    android:src="@drawable/ic_favicon_reddit"
+                    app:srcCompat="@drawable/ic_favicon_reddit"
                     tools:ignore="ContentDescription" />
 
                 <TextView

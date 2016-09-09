@@ -73,7 +73,7 @@
     <string name="install_update">Tap to install the update!</string>
     <string name="error_network">Network Error!</string>
     <string name="error_dependency">Error parsing update dependency.\nPlease try again later.</string>
-    <string name="error">Network error, please try again later.</string>
+    <string name="error_network_summary">Network error, please try again later.</string>
     <string name="error_file">Update not found on server.</string>
     <string name="update_failed">Cannot find update file on server.</string>
     <string name="update_check_no_update">Update Check: No new updates.</string>

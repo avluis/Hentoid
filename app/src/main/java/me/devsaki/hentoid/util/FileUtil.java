@@ -384,12 +384,8 @@ class FileUtil {
         }
 
         // Try the normal way
-        try {
-            if (file.createNewFile()) {
-                return true;
-            }
-        } catch (IOException e) {
-            // Fail silently
+        if (file.createNewFile()) {
+            return true;
         }
         // Try with Storage Access Framework.
         if (Helper.isAtLeastAPI(LOLLIPOP)) {

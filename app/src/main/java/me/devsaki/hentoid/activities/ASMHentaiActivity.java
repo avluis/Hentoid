@@ -53,7 +53,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
     }
 
     private class ASMHentaiWebViewClient extends CustomWebViewClient {
-        ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
