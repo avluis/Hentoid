@@ -377,6 +377,7 @@ class FileUtil {
      * @param file The file to be created.
      * @return true if creation was successful.
      */
+    @SuppressWarnings("RedundantThrows")
     static boolean mkFile(@NonNull final File file) throws IOException {
         if (file.exists()) {
             // nothing to create.
@@ -384,8 +385,12 @@ class FileUtil {
         }
 
         // Try the normal way
-        if (file.createNewFile()) {
-            return true;
+        try {
+            if (file.createNewFile()) {
+                return true;
+            }
+        } catch (IOException e) {
+            // Fail silently
         }
         // Try with Storage Access Framework.
         if (Helper.isAtLeastAPI(LOLLIPOP)) {

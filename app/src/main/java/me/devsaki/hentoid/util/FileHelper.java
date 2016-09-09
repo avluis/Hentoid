@@ -291,17 +291,23 @@ public class FileHelper {
     public static boolean createNoMedia() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+        File noMedia = new File(settingDir, ".nomedia");
 
         try {
-            if (FileUtil.mkFile(new File(settingDir, ".nomedia"))) {
+            if (FileUtil.mkFile(noMedia)) {
                 Helper.toast(R.string.nomedia_file_created);
             } else {
                 LogHelper.d(TAG, ".nomedia file already exists.");
             }
         } catch (IOException io) {
-            LogHelper.e("Failed to create file: " + io);
-            Helper.toast(R.string.error_creating_nomedia_file);
-            return false;
+            if (!isReadable(noMedia)) {
+                LogHelper.e("Failed to create file: ", io);
+                Helper.toast(R.string.error_creating_nomedia_file);
+
+                return false;
+            } else {
+                Helper.toast(R.string.nomedia_file_created);
+            }
         }
 
         return true;
