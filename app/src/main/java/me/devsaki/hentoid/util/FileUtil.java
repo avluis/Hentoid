@@ -394,18 +394,16 @@ class FileUtil {
             // Fail silently
         }
         // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
-            if (FileHelper.isOnExtSdCard(file)) {
-                DocumentFile document = getDocumentFile(file.getParentFile(), true);
-                // getDocumentFile implicitly creates the directory.
-                try {
-                    if (document != null) {
-                        return document.createFile(
-                                MimeTypes.getMimeType(file), file.getName()) != null;
-                    }
-                } catch (Exception e) {
-                    return false;
+        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
+            DocumentFile document = getDocumentFile(file.getParentFile(), true);
+            // getDocumentFile implicitly creates the directory.
+            try {
+                if (document != null) {
+                    return document.createFile(
+                            MimeTypes.getMimeType(file), file.getName()) != null;
                 }
+            } catch (Exception e) {
+                return false;
             }
         }
 
