@@ -10,13 +10,12 @@ import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
 import me.devsaki.hentoid.fragments.QueueFragment;
-import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Handles hosting of QueueFragment for a single screen.
  */
 public class QueueActivity extends BaseActivity implements BackInterface {
-    private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
+    //private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
 
     private BaseFragment baseFragment;
     private Fragment fragment;

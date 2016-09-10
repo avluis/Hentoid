@@ -32,10 +32,8 @@ public class TextViewCompat extends TextView {
     }
 
     private void init() {
-        if (Build.VERSION.SDK_INT >= 16 && Build.VERSION.SDK_INT <= 19) {
-            if (getMaxLines() == 1) {
-                setSingleLine(true);
-            }
+        if (Build.VERSION.SDK_INT >= 16 && Build.VERSION.SDK_INT <= 19 && getMaxLines() == 1) {
+            setSingleLine(true);
         }
     }
 }

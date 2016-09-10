@@ -229,9 +229,10 @@ public class ImportActivity extends BaseActivity {
 
     // Present Directory Picker
     private void pickDownloadDirectory(File dir) {
+        File downloadDir = dir;
         if (FileHelper.isOnExtSdCard(dir) && !FileHelper.isWritable(dir)) {
             LogHelper.d(TAG, "Inaccessible: moving back to default directory.");
-            dir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
+            downloadDir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
         }
 
@@ -240,7 +241,7 @@ public class ImportActivity extends BaseActivity {
             initImport();
         } else {
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-            dirChooserFragment = DirChooserFragment.newInstance(dir);
+            dirChooserFragment = DirChooserFragment.newInstance(downloadDir);
             dirChooserFragment.show(transaction, "DirectoryChooserFragment");
         }
     }
@@ -321,7 +322,7 @@ public class ImportActivity extends BaseActivity {
 
     private void processManualInput(@NonNull Editable value) {
         String path = String.valueOf(value);
-        if (!path.equals("")) {
+        if (!("").equals(path)) {
             File file = new File(path);
             if (file.exists() && file.isDirectory() && file.canWrite()) {
                 LogHelper.d(TAG, "Got a valid directory!");

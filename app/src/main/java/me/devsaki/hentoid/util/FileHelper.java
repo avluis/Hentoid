@@ -36,7 +36,7 @@ import static android.os.Environment.getExternalStorageState;
 public class FileHelper {
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
 
-    private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
+    //private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 

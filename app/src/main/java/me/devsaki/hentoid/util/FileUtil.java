@@ -63,6 +63,11 @@ class FileUtil {
             return null;
         }
 
+        return documentFileHelper(treeUri, originalDirectory, relativePath, isDirectory);
+    }
+
+    private static DocumentFile documentFileHelper(Uri treeUri, boolean originalDirectory,
+                                                   String relativePath, boolean isDirectory) {
         // start with root of SD card and then parse through document tree.
         Context cxt = HentoidApp.getAppContext();
         DocumentFile document = DocumentFile.fromTreeUri(cxt, treeUri);
@@ -297,12 +302,11 @@ class FileUtil {
         }
 
         // Try the Storage Access Framework if it is just a rename within the same parent folder.
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
-            if (source.getParent().equals(target.getParent()) && FileHelper.isOnExtSdCard(source)) {
-                DocumentFile document = getDocumentFile(source, true);
-                if (document != null && document.renameTo(target.getName())) {
-                    return true;
-                }
+        if (Helper.isAtLeastAPI(LOLLIPOP) && source.getParent().equals(target.getParent()) &&
+                FileHelper.isOnExtSdCard(source)) {
+            DocumentFile document = getDocumentFile(source, true);
+            if (document != null && document.renameTo(target.getName())) {
+                return true;
             }
         }
 
@@ -358,13 +362,11 @@ class FileUtil {
         }
 
         // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
-            if (FileHelper.isOnExtSdCard(file)) {
-                DocumentFile document = getDocumentFile(file, true);
-                // getDocumentFile implicitly creates the directory.
-                if (document != null) {
-                    return document.exists();
-                }
+        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
+            DocumentFile document = getDocumentFile(file, true);
+            // getDocumentFile implicitly creates the directory.
+            if (document != null) {
+                return document.exists();
             }
         }
 

@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -211,21 +212,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
-            if (FileHelper.isSAF()) {
-                File storage = new File(settingDir);
-                if (FileHelper.getExtSdCardFolder(storage) == null) {
-                    LogHelper.d(TAG, "Where are my files?!");
-                    Helper.toast(getActivity(),
-                            "Could not find library!\nPlease check your storage device.", LONG);
-                    setQuery("      ");
-
-                    Handler handler = new Handler();
-                    handler.postDelayed(() -> {
-                        getActivity().finish();
-                        Runtime.getRuntime().exit(0);
-                    }, 3000);
-                }
-            }
+            checkStorage();
         }
 
         int qtyPages = Integer.parseInt(
@@ -251,6 +238,25 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (shouldUpdate) {
             update();
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void checkStorage() {
+        if (FileHelper.isSAF()) {
+            File storage = new File(settingDir);
+            if (FileHelper.getExtSdCardFolder(storage) == null) {
+                LogHelper.d(TAG, "Where are my files?!");
+                Helper.toast(getActivity(),
+                        "Could not find library!\nPlease check your storage device.", LONG);
+                setQuery("      ");
+
+                Handler handler = new Handler();
+                handler.postDelayed(() -> {
+                    getActivity().finish();
+                    Runtime.getRuntime().exit(0);
+                }, 3000);
+            }
         }
     }
 
@@ -442,11 +448,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected void clearQuery(int option) {
         LogHelper.d(TAG, "Clearing query with option: " + option);
-        if (option == 1) {
-            if (searchView != null) {
-                searchView.clearFocus();
-                searchView.setIconified(true);
-            }
+        if (searchView != null && option == 1) {
+            searchView.clearFocus();
+            searchView.setIconified(true);
         }
         setQuery(query = "");
         update();
