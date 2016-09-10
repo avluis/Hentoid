@@ -18,7 +18,6 @@ import java.net.URL;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 
@@ -66,13 +65,6 @@ public class TsuminoActivity extends BaseWebActivity {
         final int index = ordinalIndexOf(newUrl);
         if (index > 0) newUrl = newUrl.substring(0, index);
         getWebView().loadUrl(newUrl);
-    }
-
-    @Override
-    void backgroundRequest(String extra) {
-        LogHelper.d(TAG, extra);
-        Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(), extra);
     }
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
