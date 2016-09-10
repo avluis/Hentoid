@@ -13,6 +13,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bumptech.glide.DrawableRequestBuilder;
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -37,7 +40,6 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private final Context cxt;
     private final List<Content> contents;
-    private final HentoidDB db = HentoidDB.getInstance(getContext());
     private final QueueFragment fragment;
 
     public QueueContentAdapter(Context cxt, List<Content> contents, QueueFragment fragment) {
@@ -102,8 +104,18 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachCover(ViewHolder holder, Content content) {
+        DrawableRequestBuilder<String> thumb = Glide.with(cxt).load(content.getCoverImageUrl());
+
         String coverFile = FileHelper.getThumb(cxt, content);
-        HentoidApp.getInstance().loadBitmap(coverFile, holder.ivCover);
+        holder.ivCover.layout(0, 0, 0, 0);
+
+        Glide.with(cxt)
+                .load(coverFile)
+                .fitCenter()
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder)
+                .thumbnail(thumb)
+                .into(holder.ivCover);
     }
 
     private void attachSeries(ViewHolder holder, Content content) {
@@ -207,6 +219,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void cancel(Content content) {
+        HentoidDB db = HentoidDB.getInstance(cxt);
         // Quick hack as workaround if download is paused
         if (content.getStatus() == StatusContent.PAUSED) {
             resume(content);
@@ -222,6 +235,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void pause(Content content) {
+        HentoidDB db = HentoidDB.getInstance(cxt);
         content.setStatus(StatusContent.PAUSED);
         // Anytime a download status is set to downloading,
         // download count goes up by one.
@@ -237,6 +251,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void resume(Content content) {
         if (NetworkStatus.isOnline(cxt)) {
+            HentoidDB db = HentoidDB.getInstance(cxt);
             content.setStatus(StatusContent.DOWNLOADING);
             db.updateContentStatus(content);
             if (content.getId() == contents.get(0).getId()) {
@@ -245,6 +260,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 cxt.startService(intent);
             }
             fragment.update();
+        } else {
+            LogHelper.d(TAG, "Not connected on resume!");
         }
     }
 

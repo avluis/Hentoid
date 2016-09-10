@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments;
 
-import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
@@ -20,13 +19,6 @@ import me.devsaki.hentoid.util.LogHelper;
  */
 public class PagerFragment extends DownloadsFragment implements ContentsWipedListener {
     private static final String TAG = LogHelper.makeLogTag(PagerFragment.class);
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        LogHelper.d(TAG, "onCreate: pager");
-    }
 
     @Override
     protected void attachScrollListener() {

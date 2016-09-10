@@ -48,8 +48,10 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     private Class<? extends BaseFragment> getFragment() {
         if (getEndlessPref()) {
+            LogHelper.d(TAG, "getFragment: EndlessFragment.");
             return EndlessFragment.class;
         } else {
+            LogHelper.d(TAG, "getFragment: PagerFragment.");
             return PagerFragment.class;
         }
     }
@@ -76,8 +78,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         cxt = HentoidApp.getAppContext();
         initializeToolbar();
         setTitle(getToolbarTitle());
-
-        LogHelper.d(TAG, "onCreate");
     }
 
     @Override

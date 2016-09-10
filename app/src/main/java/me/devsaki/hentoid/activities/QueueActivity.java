@@ -27,6 +27,7 @@ public class QueueActivity extends BaseActivity implements BackInterface {
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_queue);
         setTitle(R.string.title_activity_queue);
 
@@ -44,8 +45,6 @@ public class QueueActivity extends BaseActivity implements BackInterface {
                     .add(R.id.content_frame, fragment, getFragmentTag())
                     .commit();
         }
-
-        LogHelper.d(TAG, "onCreate");
     }
 
     private String getFragmentTag() {

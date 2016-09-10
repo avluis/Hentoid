@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments;
 
-import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
@@ -22,13 +21,6 @@ import me.devsaki.hentoid.util.LogHelper;
 public class EndlessFragment extends DownloadsFragment implements ContentsWipedListener,
         EndlessScrollListener {
     private static final String TAG = LogHelper.makeLogTag(EndlessFragment.class);
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        LogHelper.d(TAG, "onCreate: endless");
-    }
 
     @Override
     protected void attachScrollListener() {

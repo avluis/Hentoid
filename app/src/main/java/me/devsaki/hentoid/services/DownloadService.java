@@ -164,8 +164,7 @@ public class DownloadService extends IntentService {
         LogHelper.d(TAG, "Content download started: " + currentContent.getTitle());
 
         // Tracking Event (Download Added)
-        HentoidApp.getInstance().trackEvent("Download Service", "Download",
-                "Download Content: Start.");
+        HentoidApp.getInstance().trackEvent(TAG, "Download", "Download Content: Start");
     }
 
     private void postDownloadCompleted(File dir) {
@@ -179,6 +178,9 @@ public class DownloadService extends IntentService {
         HentoidApp.downloadComplete();
         updateActivity(-1);
         LogHelper.d(TAG, "Content download finished: " + currentContent.getTitle());
+
+        // Tracking Event (Download Completed)
+        HentoidApp.getInstance().trackEvent(TAG, "Download", "Download Content: Complete");
     }
 
     private void queryForAdditionalDownloads() {

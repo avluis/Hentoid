@@ -32,9 +32,8 @@ public abstract class BaseFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Context mContext = HentoidApp.getAppContext();
-
-        db = HentoidDB.getInstance(mContext);
+        Context cxt = HentoidApp.getAppContext();
+        db = HentoidDB.getInstance(cxt);
 
         if (!(getActivity() instanceof BackInterface)) {
             throw new ClassCastException(

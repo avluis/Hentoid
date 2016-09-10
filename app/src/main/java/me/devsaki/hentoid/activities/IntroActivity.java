@@ -104,7 +104,7 @@ public class IntroActivity extends AppIntro2 {
             customTv.setCompoundDrawablePadding(10);
 
             defaultTv.setOnClickListener(view -> {
-                if (!HentoidApp.hasImportStarted()) {
+                if (HentoidApp.isImportComplete()) {
 
                     Intent defaultDir = new Intent(
                             getApplicationContext(), ImportActivity.class);
@@ -116,7 +116,7 @@ public class IntroActivity extends AppIntro2 {
 
             customTv.setOnClickListener(view -> {
                 // TODO: Create activity listing possible storage locations
-                if (!HentoidApp.hasImportStarted()) {
+                if (HentoidApp.isImportComplete()) {
 
                     Intent customDir = new Intent(
                             getApplicationContext(), ImportActivity.class);
@@ -151,7 +151,7 @@ public class IntroActivity extends AppIntro2 {
     }
 
     private void initImport() {
-        if (!HentoidApp.hasImportStarted()) {
+        if (HentoidApp.isImportComplete()) {
             Handler handler = new Handler();
             handler.postDelayed(() -> {
                 Intent selectFolder = new Intent(

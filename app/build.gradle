@@ -12,10 +12,10 @@ android {
         targetSdkVersion 23
         versionCode 41
         versionName '1.2.1r0_alpha'
+        resConfigs "en"
         jackOptions {
             enabled true
         }
-        resConfigs "en"
         vectorDrawables.useSupportLibrary = true
     }
     compileOptions {

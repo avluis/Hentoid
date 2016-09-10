@@ -19,11 +19,12 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
+import com.bumptech.glide.Glide;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -230,15 +231,26 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void attachCover(ContentHolder holder, Content content) {
-        /*Initially set to null to speed up image view rendering*/
-        holder.ivCover.setImageDrawable(null);
-        holder.ivCover2.setImageDrawable(null);
+        // The following is needed due to RecyclerView recycling layouts and
+        // Glide not considering the layout invalid for the current image:
+        // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
+        holder.ivCover.layout(0, 0, 0, 0);
+        holder.ivCover2.layout(0, 0, 0, 0);
 
-        String coverFile = FileHelper.getThumb(cxt, content);
-        HentoidApp.getInstance().loadBitmap(coverFile, holder.ivCover);
+        Glide.with(cxt)
+                .load(FileHelper.getThumb(cxt, content))
+                .fitCenter()
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder)
+                .into(holder.ivCover);
 
         if (holder.itemView.isSelected()) {
-            HentoidApp.getInstance().loadBitmap(coverFile, holder.ivCover2);
+            Glide.with(cxt)
+                    .load(FileHelper.getThumb(cxt, content))
+                    .fitCenter()
+                    .placeholder(R.drawable.ic_placeholder)
+                    .error(R.drawable.ic_placeholder)
+                    .into(holder.ivCover2);
         }
     }
 

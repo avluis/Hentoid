@@ -4,11 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.support.annotation.NonNull;
-import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
@@ -60,37 +56,20 @@ public class HentoidApp extends Application {
         HentoidApp.downloadCount++;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    public static boolean hasImportStarted() {
-        return beginImport;
+    public static boolean isImportComplete() {
+        return !beginImport;
     }
 
     public static void setBeginImport(boolean started) {
         HentoidApp.beginImport = started;
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean isDonePressed() {
         return donePressed;
     }
 
     public static void setDonePressed(boolean pressed) {
         HentoidApp.donePressed = pressed;
-    }
-
-    public void loadBitmap(@NonNull String image, ImageView imageView) {
-        // The following is needed due to RecyclerView recycling layouts and Glide not considering
-        // the layout invalid for the current image:
-        // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        imageView.layout(0, 0, 0, 0);
-
-        Glide.with(this)
-                .load(image)
-                .fitCenter()
-                .placeholder(R.drawable.ic_placeholder)
-                .error(R.drawable.ic_placeholder)
-                .diskCacheStrategy(DiskCacheStrategy.RESULT)
-                .into(imageView);
     }
 
     private synchronized Tracker getGoogleAnalyticsTracker() {
