@@ -173,13 +173,12 @@ class FileUtil {
         if (file.delete() || fileDelete) {
             return true;
         }
+
         // Try with Storage Access Framework
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
-            if (FileHelper.isOnExtSdCard(file)) {
-                DocumentFile document = getDocumentFile(file, false);
-                if (document != null) {
-                    return document.delete();
-                }
+        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
+            DocumentFile document = getDocumentFile(file, false);
+            if (document != null) {
+                return document.delete();
             }
         }
 
