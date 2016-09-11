@@ -26,7 +26,6 @@ public class HentoidApp extends Application {
 
     private static boolean beginImport;
     private static boolean donePressed;
-    private static long contentCount = 0;
     private static int downloadCount = 0;
     private static HentoidApp instance;
     private static SharedPreferences sharedPrefs;
