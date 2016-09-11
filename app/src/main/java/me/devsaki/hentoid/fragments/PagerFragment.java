@@ -136,7 +136,6 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
 
     @Override
     protected void displayResults() {
-        //clearSelection();
         result = search.getContent();
 
         if (isLoaded) {
@@ -152,9 +151,6 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
 
                 toggleUI(SHOW_RESULT);
                 updatePager();
-            } else {
-                LogHelper.d(TAG, "Result: Nothing to match.");
-                displayNoResults();
             }
         } else {
             LogHelper.d(TAG, "Query: " + query);

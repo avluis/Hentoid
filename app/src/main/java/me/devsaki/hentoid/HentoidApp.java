@@ -26,6 +26,7 @@ public class HentoidApp extends Application {
 
     private static boolean beginImport;
     private static boolean donePressed;
+    private static long contentCount = 0;
     private static int downloadCount = 0;
     private static HentoidApp instance;
     private static SharedPreferences sharedPrefs;
@@ -42,6 +43,10 @@ public class HentoidApp extends Application {
 
     public static Context getAppContext() {
         return instance.getApplicationContext();
+    }
+
+    public static long getContentCount() {
+        return contentCount;
     }
 
     public static int getDownloadCount() {
@@ -141,7 +146,8 @@ public class HentoidApp extends Application {
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
-        LogHelper.d(TAG, "Content item(s) count: " + db.getContentCount());
+        contentCount = db.getContentCount();
+        LogHelper.d(TAG, "Content item(s) count: " + contentCount);
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         UpdateCheck(!Helper.getMobileUpdatePrefs());

@@ -756,7 +756,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (success) {
             LogHelper.d(TAG, "Content results have loaded.");
             isLoaded = true;
-            displayResults();
+
+            if (HentoidApp.getContentCount() == 0) {
+                LogHelper.d(TAG, "Result: Nothing to match.");
+                displayNoResults();
+            } else {
+                displayResults();
+            }
         }
     }
 
@@ -765,7 +771,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void updatePager() {
         // TODO: Test if result.size == qtyPages (meaning; last page, exact size)
         isLastPage = result.size() < qtyPages;
-        mAdapter.enableFooter(!isLastPage);
         LogHelper.d(TAG, "Results: " + result.size());
     }
 

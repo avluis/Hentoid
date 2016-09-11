@@ -133,7 +133,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
     @Override
     protected void displayResults() {
-        //clearSelection();
         result = search.getContent();
 
         if (isLoaded) {
@@ -155,9 +154,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
                 toggleUI(SHOW_RESULT);
                 updatePager();
-            } else {
-                LogHelper.d(TAG, "Result: Nothing to match.");
-                displayNoResults();
+                mAdapter.enableFooter(false);
             }
         } else {
             LogHelper.d(TAG, "Query: " + query);
@@ -171,6 +168,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 toggleUI(SHOW_RESULT);
                 showToolbar(true, true);
                 updatePager();
+                mAdapter.enableFooter(false);
             } else {
                 LogHelper.d(TAG, "Result: Nothing to match.");
                 displayNoResults();
@@ -185,6 +183,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 currentPage++;
                 searchContent();
                 LogHelper.d(TAG, "Load more data now~");
+                mAdapter.enableFooter(true);
             }
         } else {
             LogHelper.d(TAG, "Endless Scrolling disabled.");
