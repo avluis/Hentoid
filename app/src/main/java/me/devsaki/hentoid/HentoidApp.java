@@ -45,10 +45,6 @@ public class HentoidApp extends Application {
         return instance.getApplicationContext();
     }
 
-    public static long getContentCount() {
-        return contentCount;
-    }
-
     public static int getDownloadCount() {
         return downloadCount;
     }
@@ -146,8 +142,7 @@ public class HentoidApp extends Application {
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
-        contentCount = db.getContentCount();
-        LogHelper.d(TAG, "Content item(s) count: " + contentCount);
+        LogHelper.d(TAG, "Content item(s) count: " + db.getContentCount());
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         UpdateCheck(!Helper.getMobileUpdatePrefs());

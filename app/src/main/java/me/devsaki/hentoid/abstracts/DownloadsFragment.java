@@ -757,7 +757,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             LogHelper.d(TAG, "Content results have loaded.");
             isLoaded = true;
 
-            if (HentoidApp.getContentCount() == 0) {
+            if (search.getContent() == null) {
                 LogHelper.d(TAG, "Result: Nothing to match.");
                 displayNoResults();
             } else {
@@ -856,6 +856,5 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         displayNoResults();
         clearSelection();
         cleanResults();
-        update();
     }
 }
