@@ -9,6 +9,7 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.webkit.MimeTypeMap;
 
 import java.io.File;
@@ -36,7 +37,7 @@ import static android.os.Environment.getExternalStorageState;
 public class FileHelper {
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
 
-    //private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
+    private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
@@ -289,8 +290,7 @@ public class FileHelper {
     }
 
     public static boolean createNoMedia() {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+        String settingDir = getRoot();
         File noMedia = new File(settingDir, ".nomedia");
 
         try {
@@ -325,8 +325,7 @@ public class FileHelper {
 
     public static File getContentDownloadDir(Context cxt, Content content) {
         File file;
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
-        String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
+        String settingDir = getRoot();
         String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
 
         if (settingDir.isEmpty()) {
@@ -367,8 +366,7 @@ public class FileHelper {
 
     public static File getSiteDownloadDir(Context cxt, Site site) {
         File file;
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
-        String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
+        String settingDir = getRoot();
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
             return getDefaultDir(cxt, folderDir);
@@ -477,8 +475,66 @@ public class FileHelper {
         }
     }
 
+    public static void archiveContent(final Context cxt, Content content) {
+        LogHelper.d(TAG, "Building file list for: " + content.getTitle());
+        // Build list of files
+        File dir = getContentDownloadDir(cxt, content);
+        File[] files = dir.listFiles();
+        Arrays.sort(files);
+        ArrayList<File> fileList = new ArrayList<>();
+        for (File file : files) {
+            String filename = file.getName();
+            if (filename.endsWith(".json") || filename.contains("thumb")) {
+                break;
+            }
+            fileList.add(file);
+        }
+
+        // Create folder to share from
+        File sharedDir = new File(cxt.getExternalCacheDir() + "/shared");
+        if (FileUtil.mkDir(sharedDir)) {
+            LogHelper.d(TAG, "Shared folder created.");
+        }
+
+        // Clean directory (in case of previous job)
+        if (FileHelper.cleanDirectory(sharedDir)) {
+            LogHelper.d(TAG, "Shared folder cleaned up.");
+        }
+
+        // Build destination file
+        File dest = new File(cxt.getExternalCacheDir() + "/shared/" + content.getTitle() + ".zip");
+        LogHelper.d(TAG, "Destination file: " + dest);
+
+        // Convert ArrayList to Array
+        File[] fileArray = fileList.toArray(new File[fileList.size()]);
+        // Compress files
+        new AsyncUnzip(cxt, dest).execute(fileArray, dest);
+    }
+
     public static String getRoot() {
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         return prefs.getString(Consts.SETTINGS_FOLDER, "");
+    }
+
+    private static class AsyncUnzip extends ZipUtil.ZipTask {
+        final Context cxt;
+        final File dest;
+
+        AsyncUnzip(Context cxt, File dest) {
+            this.cxt = cxt;
+            this.dest = dest;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            // Hentoid is FileProvider ready!!
+            sendIntent.putExtra(Intent.EXTRA_STREAM,
+                    FileProvider.getUriForFile(cxt, AUTHORITY, dest));
+            sendIntent.setType(MimeTypes.getMimeType(dest));
+
+            cxt.startActivity(sendIntent);
+        }
     }
 }

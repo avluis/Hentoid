@@ -10,7 +10,7 @@ public abstract class Consts {
 
     public static final String INTENT_URL = "url";
 
-    public static final String SETTINGS_FOLDER = "folder";
+    static final String SETTINGS_FOLDER = "folder";
     public static final String DEFAULT_LOCAL_DIRECTORY = "Hentoid";
 
     public static final String JSON_FILE_NAME = "content.json";

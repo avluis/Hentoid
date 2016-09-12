@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.UriPermission;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
@@ -149,9 +148,7 @@ public class ImportActivity extends BaseActivity {
 
     private void checkForDefaultDirectory() {
         if (checkPermissions()) {
-
-            SharedPreferences sp = HentoidApp.getSharedPrefs();
-            String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
+            String settingDir = FileHelper.getRoot();
             LogHelper.d(TAG, settingDir);
 
             File file;

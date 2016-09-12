@@ -491,6 +491,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         cxt.startActivity(Intent.createChooser(intent, cxt.getString(R.string.send_to)));
     }
 
+    private void archiveContent(final Content item) {
+        Helper.toast(R.string.packaging_content);
+        FileHelper.archiveContent(cxt, item);
+    }
+
     private void deleteContent(final Content item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
@@ -599,6 +604,32 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         } else {
             listener.onItemClear(0);
             LogHelper.d(TAG, "No items to delete!!");
+        }
+    }
+
+    public void archiveSelectedItems() {
+        int itemCount = getSelectedItemCount();
+        if (itemCount > 0) {
+            if (itemCount == 1) {
+                LogHelper.d(TAG, "Preparing to archive selected item...");
+
+                List<Content> items;
+                items = processSelection();
+
+                if (!items.isEmpty()) {
+                    archiveContent(items.get(0));
+                } else {
+                    listener.onItemClear(0);
+                    LogHelper.d(TAG, "Nothing to archive!!");
+                }
+            } else {
+                // TODO: Implement multi-item archival
+                LogHelper.d(TAG, "How even?");
+                Helper.toast("Not yet implemented!!");
+            }
+        } else {
+            listener.onItemClear(0);
+            LogHelper.d(TAG, "No items to archive!!");
         }
     }
 

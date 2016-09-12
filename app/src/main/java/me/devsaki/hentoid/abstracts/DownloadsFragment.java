@@ -52,7 +52,6 @@ import me.devsaki.hentoid.database.SearchContent.ContentListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
-import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.FileHelper;
@@ -121,6 +120,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             menu.findItem(R.id.action_delete).setVisible(!selectTrigger);
             menu.findItem(R.id.action_share).setVisible(!selectTrigger);
+            menu.findItem(R.id.action_archive).setVisible(!selectTrigger);
             menu.findItem(R.id.action_delete_sweep).setVisible(selectTrigger);
 
             return true;
@@ -137,6 +137,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     return true;
                 case R.id.action_delete:
                     mAdapter.purgeSelectedItems();
+                    mode.finish();
+
+                    return true;
+                case R.id.action_archive:
+                    mAdapter.archiveSelectedItems();
                     mode.finish();
 
                     return true;
@@ -202,7 +207,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             getActivity().finish();
         }
 
-        String settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+        String settingDir = FileHelper.getRoot();
 
         if (!this.settingDir.equals(settingDir)) {
             LogHelper.d(TAG, "Library directory has changed!");
@@ -310,7 +315,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         prefs = HentoidApp.getSharedPrefs();
 
-        settingDir = prefs.getString(Consts.SETTINGS_FOLDER, "");
+        settingDir = FileHelper.getRoot();
 
         order = prefs.getInt(
                 ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);
