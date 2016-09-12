@@ -35,11 +35,11 @@ import static android.os.Environment.getExternalStorageState;
  * File related utility class
  */
 public class FileHelper {
-    private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
-
-    private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
+
+    private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
+    private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
 
     public static void saveUri(Uri uri) {
         LogHelper.d(TAG, "Saving Uri: " + uri);
@@ -502,7 +502,11 @@ public class FileHelper {
         }
 
         // Build destination file
-        File dest = new File(cxt.getExternalCacheDir() + "/shared/" + content.getTitle() + ".zip");
+        File dest = new File(cxt.getExternalCacheDir() + "/shared/" +
+                content.getTitle()
+                        .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
+                        .replaceAll("\\s+", "_")  // white space as underscores
+                + ".zip");
         LogHelper.d(TAG, "Destination file: " + dest);
 
         // Convert ArrayList to Array
