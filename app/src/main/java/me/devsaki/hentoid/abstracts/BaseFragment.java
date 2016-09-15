@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
 import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -33,9 +32,8 @@ public abstract class BaseFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Context mContext = HentoidApp.getAppContext();
-
-        db = HentoidDB.getInstance(mContext);
+        Context cxt = HentoidApp.getAppContext();
+        db = HentoidDB.getInstance(cxt);
 
         if (!(getActivity() instanceof BackInterface)) {
             throw new ClassCastException(
@@ -58,7 +56,7 @@ public abstract class BaseFragment extends Fragment {
     public void onStart() {
         super.onStart();
 
-        backInterface.setSelectedFragment(this);
+        backInterface.addBackInterface(this);
     }
 
     @Override
@@ -67,10 +65,12 @@ public abstract class BaseFragment extends Fragment {
         super.onDestroy();
     }
 
-    @Subscribe
+    // Implementations must annotate method with:
+    // @Subscribe(threadMode = ThreadMode.MAIN)
+    @SuppressWarnings("unused")
     public abstract void onDownloadEvent(DownloadEvent event);
 
     public interface BackInterface {
-        void setSelectedFragment(BaseFragment baseFragment);
+        void addBackInterface(BaseFragment fragment);
     }
 }

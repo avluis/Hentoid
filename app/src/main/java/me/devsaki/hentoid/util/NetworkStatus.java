@@ -7,7 +7,6 @@ import android.net.NetworkInfo;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.UnknownHostException;
 
 /**
  * Created by avluis on 7/6/15.

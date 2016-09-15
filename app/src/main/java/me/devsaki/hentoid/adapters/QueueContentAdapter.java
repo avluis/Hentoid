@@ -2,6 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,10 +13,9 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import org.apache.commons.io.FileUtils;
+import com.bumptech.glide.DrawableRequestBuilder;
+import com.bumptech.glide.Glide;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -27,7 +27,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.QueueFragment;
 import me.devsaki.hentoid.services.DownloadService;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -40,7 +40,6 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private final Context cxt;
     private final List<Content> contents;
-    private final HentoidDB db = HentoidDB.getInstance(getContext());
     private final QueueFragment fragment;
 
     public QueueContentAdapter(Context cxt, List<Content> contents, QueueFragment fragment) {
@@ -50,8 +49,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         this.fragment = fragment;
     }
 
+    @NonNull
     @Override
-    public View getView(int pos, View view, ViewGroup parent) {
+    public View getView(int pos, View view, @NonNull ViewGroup parent) {
         View v = view;
         // Get the data item for this position
         final Content content = contents.get(pos);
@@ -104,11 +104,18 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachCover(ViewHolder holder, Content content) {
-        File coverFile = Helper.getThumb(cxt, content);
-        String image = coverFile != null ?
-                coverFile.getAbsolutePath() : content.getCoverImageUrl();
+        DrawableRequestBuilder<String> thumb = Glide.with(cxt).load(content.getCoverImageUrl());
 
-        HentoidApp.getInstance().loadBitmap(image, holder.ivCover);
+        String coverFile = FileHelper.getThumb(cxt, content);
+        holder.ivCover.layout(0, 0, 0, 0);
+
+        Glide.with(cxt)
+                .load(coverFile)
+                .fitCenter()
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder)
+                .thumbnail(thumb)
+                .into(holder.ivCover);
     }
 
     private void attachSeries(ViewHolder holder, Content content) {
@@ -178,23 +185,17 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void attachButtons(View view, final Content content) {
         Button btnCancel = (Button) view.findViewById(R.id.btnCancel);
-        btnCancel.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                cancel(content);
-                notifyDataSetChanged();
-            }
+        btnCancel.setOnClickListener(v -> {
+            cancel(content);
+            notifyDataSetChanged();
         });
         Button btnPause = (Button) view.findViewById(R.id.btnPause);
-        btnPause.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (content.getStatus() != StatusContent.DOWNLOADING) {
-                    resume(content);
-                } else {
-                    pause(content);
-                    notifyDataSetChanged();
-                }
+        btnPause.setOnClickListener(v -> {
+            if (content.getStatus() != StatusContent.DOWNLOADING) {
+                resume(content);
+            } else {
+                pause(content);
+                notifyDataSetChanged();
             }
         });
         if (content.getStatus() != StatusContent.DOWNLOADING) {
@@ -218,6 +219,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void cancel(Content content) {
+        HentoidDB db = HentoidDB.getInstance(cxt);
         // Quick hack as workaround if download is paused
         if (content.getStatus() == StatusContent.PAUSED) {
             resume(content);
@@ -233,6 +235,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void pause(Content content) {
+        HentoidDB db = HentoidDB.getInstance(cxt);
         content.setStatus(StatusContent.PAUSED);
         // Anytime a download status is set to downloading,
         // download count goes up by one.
@@ -248,6 +251,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void resume(Content content) {
         if (NetworkStatus.isOnline(cxt)) {
+            HentoidDB db = HentoidDB.getInstance(cxt);
             content.setStatus(StatusContent.DOWNLOADING);
             db.updateContentStatus(content);
             if (content.getId() == contents.get(0).getId()) {
@@ -256,24 +260,16 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 cxt.startService(intent);
             }
             fragment.update();
+        } else {
+            LogHelper.d(TAG, "Not connected on resume!");
         }
     }
 
     private void clearDownload(Content content) {
         if (content.getStatus() == StatusContent.CANCELED) {
-            File dir = Helper.getContentDownloadDir(cxt, content);
-
-            // This loves to fail
-            try {
-                FileUtils.deleteDirectory(dir);
-            } catch (IOException e) {
-                LogHelper.e(TAG, "Error deleting content directory: ", e);
-            }
-
-            // Run this as well
-            // Log will state if directory was deleted (deleteDirectory failed)
-            // or if it was not (deleteDirectory success)
-            Helper.deleteDir(dir);
+            FileHelper.removeContent(cxt, content);
+        } else {
+            LogHelper.d(TAG, "Attempting to clear non-cancelled download: " + content.getTitle());
         }
     }
 

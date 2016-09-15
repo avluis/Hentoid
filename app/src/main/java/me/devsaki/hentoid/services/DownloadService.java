@@ -23,7 +23,7 @@ import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -78,8 +78,14 @@ public class DownloadService extends IntentService {
         if (currentContent != null && currentContent.getStatus() != StatusContent.DOWNLOADED) {
             initDownload();
 
-            File dir = Helper.getContentDownloadDir(this, currentContent);
-            prepDownloadDir(dir);
+            File dir = FileHelper.getContentDownloadDir(this, currentContent);
+            LogHelper.d(TAG, "Content Download Dir; " + dir);
+            // If the download directory already has files,
+            // then we simply delete them, since this points to a failed download
+            // This includes in progress downloads, that were paused, then resumed.
+            // So technically, we are downloading everything once again.
+            // This is required for ImageDownloadBatch to not hang on a download.
+            LogHelper.d(TAG, "Directory cleaned successfully: " + FileHelper.cleanDirectory(dir));
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
@@ -158,17 +164,7 @@ public class DownloadService extends IntentService {
         LogHelper.d(TAG, "Content download started: " + currentContent.getTitle());
 
         // Tracking Event (Download Added)
-        HentoidApp.getInstance().trackEvent("Download Service", "Download",
-                "Download Content: Start.");
-    }
-
-    private void prepDownloadDir(File dir) {
-        // If the download directory already has files,
-        // then we simply delete them, since this points to a failed download
-        // This includes in progress downloads, that were paused, then resumed.
-        // So technically, we are downloading everything once again.
-        // This is required for ImageDownloadBatch to not hang on a download.
-        Helper.cleanDir(dir);
+        HentoidApp.getInstance().trackEvent(TAG, "Download", "Download Content: Start");
     }
 
     private void postDownloadCompleted(File dir) {
@@ -182,6 +178,9 @@ public class DownloadService extends IntentService {
         HentoidApp.downloadComplete();
         updateActivity(-1);
         LogHelper.d(TAG, "Content download finished: " + currentContent.getTitle());
+
+        // Tracking Event (Download Completed)
+        HentoidApp.getInstance().trackEvent(TAG, "Download", "Download Content: Complete");
     }
 
     private void queryForAdditionalDownloads() {

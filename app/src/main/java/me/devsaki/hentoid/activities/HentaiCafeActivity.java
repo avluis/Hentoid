@@ -62,7 +62,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("//hentai.cafe/")) {
-                Helper.executeAsyncTask(new HtmlLoader(), url);
+                executeAsyncTask(new HtmlLoader(), url);
             }
         }
     }

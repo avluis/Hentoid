@@ -1,9 +1,9 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -19,15 +19,12 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
-import org.apache.commons.io.FileUtils;
+import com.bumptech.glide.Glide;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -38,6 +35,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -233,18 +231,26 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void attachCover(ContentHolder holder, Content content) {
-        /*Initially set to null to speed up image view rendering*/
-        holder.ivCover.setImageDrawable(null);
-        holder.ivCover2.setImageDrawable(null);
+        // The following is needed due to RecyclerView recycling layouts and
+        // Glide not considering the layout invalid for the current image:
+        // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
+        holder.ivCover.layout(0, 0, 0, 0);
+        holder.ivCover2.layout(0, 0, 0, 0);
 
-        File coverFile = Helper.getThumb(cxt, content);
-        String image = coverFile != null ?
-                coverFile.getAbsolutePath() : content.getCoverImageUrl();
-
-        HentoidApp.getInstance().loadBitmap(image, holder.ivCover);
+        Glide.with(cxt)
+                .load(FileHelper.getThumb(cxt, content))
+                .fitCenter()
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder)
+                .into(holder.ivCover);
 
         if (holder.itemView.isSelected()) {
-            HentoidApp.getInstance().loadBitmap(image, holder.ivCover2);
+            Glide.with(cxt)
+                    .load(FileHelper.getThumb(cxt, content))
+                    .fitCenter()
+                    .placeholder(R.drawable.ic_placeholder)
+                    .error(R.drawable.ic_placeholder)
+                    .into(holder.ivCover2);
         }
     }
 
@@ -320,15 +326,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             holder.ivSite.setImageResource(img);
-            holder.ivSite.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (getSelectedItemCount() >= 1) {
-                        clearSelections();
-                        listener.onItemClear(0);
-                    }
-                    Helper.viewContent(cxt, content);
+            holder.ivSite.setOnClickListener(v -> {
+                if (getSelectedItemCount() >= 1) {
+                    clearSelections();
+                    listener.onItemClear(0);
                 }
+                Helper.viewContent(cxt, content);
             });
         } else {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
@@ -354,15 +357,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
             if (status == StatusContent.ERROR) {
                 holder.ivError.setVisibility(View.VISIBLE);
-                holder.ivError.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (getSelectedItemCount() >= 1) {
-                            clearSelections();
-                            listener.onItemClear(0);
-                        }
-                        downloadAgain(content);
+                holder.ivError.setOnClickListener(v -> {
+                    if (getSelectedItemCount() >= 1) {
+                        clearSelections();
+                        listener.onItemClear(0);
                     }
+                    downloadAgain(content);
                 });
             } else {
                 holder.ivError.setVisibility(View.GONE);
@@ -458,24 +458,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         builder.setTitle(R.string.download_again_dialog_title)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                HentoidDB db = HentoidDB.getInstance(cxt);
+                        (dialog, which) -> {
+                            HentoidDB db = HentoidDB.getInstance(cxt);
 
-                                item.setStatus(StatusContent.DOWNLOADING);
-                                item.setDownloadDate(new Date().getTime());
+                            item.setStatus(StatusContent.DOWNLOADING);
+                            item.setDownloadDate(new Date().getTime());
 
-                                db.updateContentStatus(item);
+                            db.updateContentStatus(item);
 
-                                Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
-                                        DownloadService.class);
-                                cxt.startService(intent);
+                            Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
+                                    DownloadService.class);
+                            cxt.startService(intent);
 
-                                Helper.toast(cxt, R.string.add_to_queue);
-                                removeItem(item);
-                                notifyDataSetChanged();
-                            }
+                            Helper.toast(cxt, R.string.add_to_queue);
+                            removeItem(item);
+                            notifyDataSetChanged();
                         })
                 .setNegativeButton(android.R.string.no, null)
                 .create().show();
@@ -494,24 +491,23 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         cxt.startActivity(Intent.createChooser(intent, cxt.getString(R.string.send_to)));
     }
 
+    private void archiveContent(final Content item) {
+        Helper.toast(R.string.packaging_content);
+        FileHelper.archiveContent(cxt, item);
+    }
+
     private void deleteContent(final Content item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                clearSelections();
-                                deleteItem(item);
-                            }
+                        (dialog, which) -> {
+                            clearSelections();
+                            deleteItem(item);
                         })
                 .setNegativeButton(android.R.string.no,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                clearSelections();
-                                listener.onItemClear(0);
-                            }
+                        (dialog, which) -> {
+                            clearSelections();
+                            listener.onItemClear(0);
                         })
                 .create().show();
     }
@@ -520,20 +516,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
         builder.setMessage(R.string.ask_delete_multiple)
                 .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                clearSelections();
-                                deleteItems(items);
-                            }
+                        (dialog, which) -> {
+                            clearSelections();
+                            deleteItems(items);
                         })
                 .setNegativeButton(android.R.string.no,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                clearSelections();
-                                listener.onItemClear(0);
-                            }
+                        (dialog, which) -> {
+                            clearSelections();
+                            listener.onItemClear(0);
                         })
                 .create().show();
     }
@@ -617,6 +607,32 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         }
     }
 
+    public void archiveSelectedItems() {
+        int itemCount = getSelectedItemCount();
+        if (itemCount > 0) {
+            if (itemCount == 1) {
+                LogHelper.d(TAG, "Preparing to archive selected item...");
+
+                List<Content> items;
+                items = processSelection();
+
+                if (!items.isEmpty()) {
+                    archiveContent(items.get(0));
+                } else {
+                    listener.onItemClear(0);
+                    LogHelper.d(TAG, "Nothing to archive!!");
+                }
+            } else {
+                // TODO: Implement multi-item archival
+                LogHelper.d(TAG, "How even?");
+                Helper.toast("Not yet implemented!!");
+            }
+        } else {
+            listener.onItemClear(0);
+            LogHelper.d(TAG, "No items to archive!!");
+        }
+    }
+
     private List<Content> processSelection() {
         List<Content> selectionList = new ArrayList<>();
         List<Integer> selection = getSelectedItems();
@@ -637,7 +653,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     private void removeItem(Content item, boolean broadcast) {
         int position = contents.indexOf(item);
-        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter" + ".");
+        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter.");
         contents.remove(position);
         notifyItemRemoved(position);
 
@@ -651,48 +667,35 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         }
     }
 
-    private void deleteItem(Content item) {
-        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from db and file system" + ".");
-
-        final File dir = Helper.getContentDownloadDir(cxt, item);
-        HentoidDB db = HentoidDB.getInstance(cxt);
-
-        try {
-            FileUtils.deleteDirectory(dir);
-        } catch (IOException e) {
-            LogHelper.e(TAG, "Error deleting directory: ", e);
-        }
-
-        db.deleteContent(item);
-
+    private void deleteItem(final Content item) {
+        final HentoidDB db = HentoidDB.getInstance(cxt);
         removeItem(item);
+
+        AsyncTask.execute(() -> {
+            FileHelper.removeContent(cxt, item);
+            db.deleteContent(item);
+            LogHelper.d(TAG, "Removed item: " + item.getTitle() + " from db and file system.");
+        });
+
         notifyDataSetChanged();
 
-        Helper.toast(cxt, cxt.getString(R.string.deleted).replace("@content",
-                item.getTitle()));
+        Helper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
     }
 
-    private void deleteItems(List<Content> items) {
-        File dir;
-        HentoidDB db = HentoidDB.getInstance(cxt);
-
+    private void deleteItems(final List<Content> items) {
+        final HentoidDB db = HentoidDB.getInstance(cxt);
         for (int i = 0; i < items.size(); i++) {
             removeItem(items.get(i), false);
         }
 
-        for (int i = 0; i < items.size(); i++) {
-            dir = Helper.getContentDownloadDir(cxt, items.get(i));
-            LogHelper.d(TAG, "Removing item: " + items.get(i).getTitle()
-                    + " from db and file system" + ".");
-
-            try {
-                FileUtils.deleteDirectory(dir);
-            } catch (IOException e) {
-                LogHelper.d(TAG, "Error deleting directory: ", e);
-            } finally {
+        AsyncTask.execute(() -> {
+            for (int i = 0; i < items.size(); i++) {
+                FileHelper.removeContent(cxt, items.get(i));
                 db.deleteContent(items.get(i));
+                LogHelper.d(TAG, "Removed item: " + items.get(i).getTitle()
+                        + " from db and file system.");
             }
-        }
+        });
 
         listener.onItemClear(0);
         notifyDataSetChanged();
@@ -709,9 +712,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private static class ProgressViewHolder extends RecyclerView.ViewHolder {
-        public final ProgressBar progressBar;
+        final ProgressBar progressBar;
 
-        public ProgressViewHolder(View itemView) {
+        ProgressViewHolder(View itemView) {
             super(itemView);
             progressBar = (ProgressBar) itemView.findViewById(R.id.loadingProgress);
         }

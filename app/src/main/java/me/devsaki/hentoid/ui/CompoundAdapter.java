@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.ui;
 
 import android.content.Context;
+import android.support.v7.app.AppCompatDelegate;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +17,10 @@ import java.util.Map;
  */
 public class CompoundAdapter extends SimpleAdapter implements SimpleAdapter.ViewBinder {
 
+    static {
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+    }
+
     private final LayoutInflater mInflater;
     private final int mResource;
     private final String[] mFrom;
@@ -23,8 +28,8 @@ public class CompoundAdapter extends SimpleAdapter implements SimpleAdapter.View
     private final List<? extends Map<String, ?>> mData;
     private ViewBinder mViewBinder;
 
-    public CompoundAdapter(Context context, List<? extends Map<String, ?>> data, int resource,
-                           String[] from, int[] to) {
+    protected CompoundAdapter(Context context, List<? extends Map<String, ?>> data, int resource,
+                              String[] from, int[] to) {
         super(context, data, resource, from, to);
 
         mResource = resource;

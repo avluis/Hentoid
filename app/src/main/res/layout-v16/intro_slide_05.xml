@@ -34,20 +34,36 @@
         android:textSize="16sp" />
 
     <LinearLayout
-        android:layout_width="fill_parent"
+        android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="5"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:layout_weight="3"
+        android:minHeight="48dp"
+        android:orientation="vertical"
+        tools:ignore="RtlSymmetry">
 
-        <ImageView
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/tv_library_default"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
-            android:src="@drawable/ic_intro_open_book"
-            tools:ignore="ContentDescription" />
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:gravity="center_vertical"
+            android:padding="20dp"
+            android:text="@string/slide_05_library_default"
+            android:textColor="@color/white"
+            tools:ignore="RtlSymmetry" />
+
+        <TextView
+            android:id="@+id/tv_library_custom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:gravity="center_vertical"
+            android:padding="20dp"
+            android:text="@string/slide_05_library_custom"
+            android:textColor="@color/white"
+            tools:ignore="RtlSymmetry" />
     </LinearLayout>
 
     <TextView

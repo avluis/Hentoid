@@ -8,14 +8,14 @@ import android.view.MenuItem;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.BaseFragment;
+import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
 import me.devsaki.hentoid.fragments.QueueFragment;
-import me.devsaki.hentoid.util.LogHelper;
 
 /**
  * Handles hosting of QueueFragment for a single screen.
  */
-public class QueueActivity extends BaseActivity implements BaseFragment.BackInterface {
-    private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
+public class QueueActivity extends BaseActivity implements BackInterface {
+    //private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
 
     private BaseFragment baseFragment;
     private Fragment fragment;
@@ -26,6 +26,7 @@ public class QueueActivity extends BaseActivity implements BaseFragment.BackInte
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_queue);
         setTitle(R.string.title_activity_queue);
 
@@ -43,8 +44,6 @@ public class QueueActivity extends BaseActivity implements BaseFragment.BackInte
                     .add(R.id.content_frame, fragment, getFragmentTag())
                     .commit();
         }
-
-        LogHelper.d(TAG, "onCreate");
     }
 
     private String getFragmentTag() {
@@ -75,7 +74,7 @@ public class QueueActivity extends BaseActivity implements BaseFragment.BackInte
     }
 
     @Override
-    public void setSelectedFragment(BaseFragment baseFragment) {
-        this.baseFragment = baseFragment;
+    public void addBackInterface(BaseFragment fragment) {
+        this.baseFragment = fragment;
     }
 }

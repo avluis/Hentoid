@@ -10,7 +10,8 @@ import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
-import android.view.View;
+import android.support.v7.app.AppCompatDelegate;
+import android.widget.TextView;
 
 import com.github.paolorotolo.appintro.AppIntro2;
 
@@ -31,6 +32,11 @@ public class IntroActivity extends AppIntro2 {
     private static final String TAG = LogHelper.makeLogTag(IntroActivity.class);
 
     private static final int IMPORT_SLIDE = 4;
+
+    static {
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+    }
+
     private Fragment doneFragment;
 
     private void showSkipButton(boolean showButton) {
@@ -43,7 +49,7 @@ public class IntroActivity extends AppIntro2 {
         super.onCreate(savedInstanceState);
 
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_01));
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
             addSlide(BaseSlide.newInstance(R.layout.intro_slide_02));
             // Ask Storage permission in the second slide,
             // but only for Android M+ users.
@@ -84,10 +90,40 @@ public class IntroActivity extends AppIntro2 {
             setTitle(R.string.app_name);
         }
 
-        // Show the import activity just prior to the last slide
         if (pager.getCurrentItem() == IMPORT_SLIDE) {
             setProgressButtonEnabled(false);
-            initImport();
+
+            TextView defaultTv = (TextView) findViewById(R.id.tv_library_default);
+            TextView customTv = (TextView) findViewById(R.id.tv_library_custom);
+
+            defaultTv.setCompoundDrawablesWithIntrinsicBounds(
+                    R.drawable.ic_action_sd_storage, 0, 0, 0);
+            defaultTv.setCompoundDrawablePadding(10);
+            customTv.setCompoundDrawablesWithIntrinsicBounds(
+                    R.drawable.ic_action_sd_storage, 0, 0, 0);
+            customTv.setCompoundDrawablePadding(10);
+
+            defaultTv.setOnClickListener(view -> {
+                if (HentoidApp.isImportComplete()) {
+
+                    Intent defaultDir = new Intent(
+                            getApplicationContext(), ImportActivity.class);
+                    defaultDir.setAction(Intent.ACTION_GET_CONTENT);
+                    startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
+                }
+                HentoidApp.setBeginImport(true);
+            });
+
+            customTv.setOnClickListener(view -> {
+                // TODO: Create activity listing possible storage locations
+                if (HentoidApp.isImportComplete()) {
+
+                    Intent customDir = new Intent(
+                            getApplicationContext(), ImportActivity.class);
+                    startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
+                }
+                HentoidApp.setBeginImport(true);
+            });
         }
     }
 
@@ -115,32 +151,22 @@ public class IntroActivity extends AppIntro2 {
     }
 
     private void initImport() {
-        if (!HentoidApp.hasImportStarted()) {
+        if (HentoidApp.isImportComplete()) {
             Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-
-                public void run() {
-                    Intent selectFolder = new Intent(
-                            getApplicationContext(), ImportActivity.class);
-                    startActivityForResult(selectFolder, ConstsImport.RQST_IMPORT_RESULTS);
-                }
+            handler.postDelayed(() -> {
+                Intent selectFolder = new Intent(
+                        getApplicationContext(), ImportActivity.class);
+                startActivityForResult(selectFolder, ConstsImport.RQST_IMPORT_RESULTS);
             }, 200);
             handler.removeCallbacks(null);
         }
         HentoidApp.setBeginImport(true);
     }
 
-    private void openAppSettings() {
-        Intent appSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.parse("package:" + getPackageName()));
-        appSettings.addCategory(Intent.CATEGORY_DEFAULT);
-        appSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivityForResult(appSettings, ConstsImport.RQST_APP_SETTINGS);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+
         if (requestCode == ConstsImport.RQST_IMPORT_RESULTS) {
             LogHelper.d(TAG, "REQUEST RESULT RECEIVED");
             if (data != null) {
@@ -166,12 +192,9 @@ public class IntroActivity extends AppIntro2 {
             // Back from app settings
             HentoidApp.setBeginImport(false);
             Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-
-                public void run() {
-                    setProgressButtonEnabled(true);
-                    pager.setCurrentItem(IMPORT_SLIDE - 2);
-                }
+            handler.postDelayed(() -> {
+                setProgressButtonEnabled(true);
+                pager.setCurrentItem(IMPORT_SLIDE - 2);
             }, 100);
             handler.removeCallbacks(null);
         } else {
@@ -196,12 +219,7 @@ public class IntroActivity extends AppIntro2 {
                         Snackbar.LENGTH_SHORT).show();
 
                 Handler handler = new Handler();
-                handler.postDelayed(new Runnable() {
-
-                    public void run() {
-                        pager.setCurrentItem(IMPORT_SLIDE);
-                    }
-                }, 2000);
+                handler.postDelayed(() -> pager.setCurrentItem(IMPORT_SLIDE), 2000);
             } else {
                 // Disallow swiping back
                 setSwipeLock(true);
@@ -211,12 +229,9 @@ public class IntroActivity extends AppIntro2 {
 
                 // Auto push to DownloadActivity after 10 seconds
                 Handler doneHandler = new Handler();
-                doneHandler.postDelayed(new Runnable() {
-
-                    public void run() {
-                        if (!HentoidApp.isDonePressed() && doneFragment != null) {
-                            onDonePressed(doneFragment);
-                        }
+                doneHandler.postDelayed(() -> {
+                    if (!HentoidApp.isDonePressed() && doneFragment != null) {
+                        onDonePressed(doneFragment);
                     }
                 }, 10000);
                 doneHandler.removeCallbacks(null);
@@ -241,12 +256,7 @@ public class IntroActivity extends AppIntro2 {
                     Snackbar.make(pager, R.string.permission_denied_forced,
                             Snackbar.LENGTH_INDEFINITE)
                             .setAction(R.string.open_app_settings,
-                                    new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View v) {
-                                            openAppSettings();
-                                        }
-                                    })
+                                    v -> openAppSettings())
                             .show();
                     break;
                 case ConstsImport.EXISTING_LIBRARY_FOUND:
@@ -266,5 +276,13 @@ public class IntroActivity extends AppIntro2 {
             }
             HentoidApp.setBeginImport(false);
         }
+    }
+
+    private void openAppSettings() {
+        Intent appSettings = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:" + getPackageName()));
+        appSettings.addCategory(Intent.CATEGORY_DEFAULT);
+        appSettings.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivityForResult(appSettings, ConstsImport.RQST_APP_SETTINGS);
     }
 }

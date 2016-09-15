@@ -2,16 +2,19 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:padding="6dp">
 
     <android.support.v7.widget.CardView
         android:id="@+id/dir_selection"
+        style="@style/ImportDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:cardCornerRadius="4dp"
+        app:cardCornerRadius="1dp"
         app:cardElevation="4dp">
 
         <RelativeLayout
+            style="@style/ImportDialog"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
@@ -28,7 +31,7 @@
                 android:text="@string/select"
                 android:textColor="@color/white" />
 
-            <TextView
+            <me.devsaki.hentoid.ui.TextViewCompat
                 android:id="@+id/current_dir"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -37,15 +40,21 @@
                 android:ellipsize="start"
                 android:gravity="center_vertical"
                 android:lines="1"
+                android:maxLines="1"
                 android:minHeight="75dp"
-                android:padding="10dp"
-                android:singleLine="true"
-                android:textSize="18sp" />
+                android:paddingBottom="5dp"
+                android:paddingEnd="2dp"
+                android:paddingLeft="5dp"
+                android:paddingRight="2dp"
+                android:paddingStart="5dp"
+                android:paddingTop="5dp"
+                android:textSize="16sp" />
         </RelativeLayout>
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/dir_list"
+        style="@style/ImportDialog"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/dir_selection"
@@ -58,10 +67,25 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:src="@drawable/ic_create_new_folder"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
+        app:srcCompat="@drawable/ic_create_new_folder"
+        app:useCompatPadding="true" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/request_sd"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:visibility="gone"
+        app:backgroundTint="@color/primary"
+        app:elevation="@dimen/fab_default_elevation"
+        app:fabSize="mini"
+        app:rippleColor="@color/ripple"
+        app:srcCompat="@drawable/ic_action_sd_storage"
         app:useCompatPadding="true" />
 
 </RelativeLayout>

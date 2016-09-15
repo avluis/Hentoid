@@ -9,10 +9,10 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 
@@ -33,9 +33,25 @@ public class JsonHelper {
 
         // convert java object to JSON format, and return as a JSON formatted string
         String json = gson.toJson(object);
-        FileWriter writer = new FileWriter(file, false);
-        writer.write(json);
-        writer.close();
+
+        OutputStream output = null;
+        try {
+            output = FileHelper.getOutputStream(file);
+            // build
+            byte[] bytes = json.getBytes();
+            // write
+            output.write(bytes);
+            output.flush();
+        } finally {
+            // finished
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+        }
     }
 
     public static <T> T jsonToObject(File f, Class<T> type) throws IOException {
@@ -48,7 +64,13 @@ public class JsonHelper {
                 json += sCurrentLine;
             }
         } finally {
-            if (br != null) br.close();
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
 
         return new Gson().fromJson(json, type);
@@ -79,7 +101,11 @@ public class JsonHelper {
             LogHelper.e(TAG, "JSON file not properly formatted: ", e);
         } finally {
             if (stream != null) {
-                stream.close();
+                try {
+                    stream.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
             }
             if (https != null) {
                 https.disconnect();

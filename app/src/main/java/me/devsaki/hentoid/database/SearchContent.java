@@ -21,7 +21,7 @@ public class SearchContent {
     private final int mPage;
     private final int mQty;
     private final boolean mOrder;
-    private volatile State mCurrentState = State.NON_INITIALIZED;
+    private volatile State mCurrentState = State.NON_INIT;
     private List<Content> contentList = new ArrayList<>();
 
     public SearchContent(final Context context, String query, int page, int qty, boolean order) {
@@ -49,7 +49,7 @@ public class SearchContent {
             return;
         }
 
-        mCurrentState = State.INITIALIZING;
+        mCurrentState = State.INIT;
 
         new AsyncTask<Void, Void, State>() {
 
@@ -72,8 +72,8 @@ public class SearchContent {
     private synchronized void retrieveContent() {
         LogHelper.d(TAG, "Retrieving content.");
         try {
-            if (mCurrentState == State.INITIALIZING) {
-                mCurrentState = State.INITIALIZED;
+            if (mCurrentState == State.INIT) {
+                mCurrentState = State.DONE;
 
                 contentList = db.selectContentByQuery(mQuery, mPage, mQty, mOrder);
                 mCurrentState = State.READY;
@@ -89,8 +89,8 @@ public class SearchContent {
         }
     }
 
-    enum State {
-        NON_INITIALIZED, INITIALIZING, INITIALIZED, READY, FAILED
+    private enum State {
+        NON_INIT, INIT, DONE, READY, FAILED
     }
 
     public interface ContentListener {

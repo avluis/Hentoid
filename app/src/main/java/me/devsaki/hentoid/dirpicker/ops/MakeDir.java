@@ -22,12 +22,12 @@ class MakeDir {
     private final EventBus bus;
     private Subscription subscription;
 
-    public MakeDir(DirTree dirTree, EventBus bus) {
+    MakeDir(DirTree dirTree, EventBus bus) {
         this.dirTree = dirTree;
         this.bus = bus;
     }
 
-    public void process(File rootDir, String name) {
+    void process(File rootDir, String name) {
         cancelPrevOp();
 
         Observable<File> observable = new MakeDirObservable().create(rootDir, name);

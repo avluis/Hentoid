@@ -38,20 +38,19 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * Takes care of notifying and download of app updates.
  */
 public class UpdateCheck {
-    public static final String ACTION_DOWNLOAD_UPDATE =
+    static final String ACTION_DOWNLOAD_UPDATE =
             "me.devsaki.hentoid.updater.DOWNLOAD_UPDATE";
-    public static final String ACTION_NOTIFICATION_REMOVED =
+    static final String ACTION_NOTIFICATION_REMOVED =
             "me.devsaki.hentoid.updater.NOTIFICATION_REMOVED";
-    public static final String ACTION_DOWNLOAD_CANCELLED =
+    static final String ACTION_DOWNLOAD_CANCELLED =
             "me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED";
-    public static final String ACTION_INSTALL_UPDATE =
+    static final String ACTION_INSTALL_UPDATE =
             "me.devsaki.hentoid.updater.INSTALL_UPDATE";
 
     private static final String TAG = LogHelper.makeLogTag(UpdateCheck.class);
 
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
-    private static UpdateCheck instance;
     private final int NOTIFICATION_ID = ConstsUpdater.UPDATE_NOTIFICATION_ID;
     private final UpdateNotificationRunnable updateNotificationRunnable =
             new UpdateNotificationRunnable();
@@ -71,17 +70,6 @@ public class UpdateCheck {
     private boolean showToast;
     private int retryCount = 0;
 
-    private UpdateCheck() {
-    }
-
-    public static UpdateCheck getInstance() {
-        if (instance == null) {
-            instance = new UpdateCheck();
-        }
-
-        return instance;
-    }
-
     public void checkForUpdate(@NonNull Context context, final boolean onlyWifi,
                                final boolean showToast, final UpdateCheckCallback callback) {
         this.cxt = context;
@@ -98,14 +86,11 @@ public class UpdateCheck {
     }
 
     private void checkNetworkConnectivity() {
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                boolean connected = NetworkStatus.hasInternetAccess(HentoidApp.getAppContext());
+        AsyncTask.execute(() -> {
+            boolean connected = NetworkStatus.hasInternetAccess(HentoidApp.getAppContext());
 
-                if (connected) {
-                    runAsyncTask(retryCount != 0);
-                }
+            if (connected) {
+                runAsyncTask(retryCount != 0);
             }
         });
     }
@@ -126,7 +111,7 @@ public class UpdateCheck {
         }
 
         LogHelper.d(TAG, "Update URL: " + updateURL);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.HONEYCOMB)) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
             new UpdateCheckTask().execute(updateURL);
@@ -168,7 +153,7 @@ public class UpdateCheck {
         }
     }
 
-    public void downloadingUpdateNotification() {
+    void downloadingUpdateNotification() {
         Intent stopIntent = new Intent(ACTION_DOWNLOAD_CANCELLED);
         stopIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent cancelIntent = PendingIntent.getBroadcast(cxt, 0, stopIntent, 0);
@@ -227,10 +212,10 @@ public class UpdateCheck {
         notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    public void installUpdate() {
+    void installUpdate() {
         Intent intent;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.JELLY_BEAN)) {
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
         } else {
             intent = new Intent(Intent.ACTION_VIEW);
@@ -242,7 +227,7 @@ public class UpdateCheck {
         cxt.startActivity(intent);
     }
 
-    public void downloadUpdate() {
+    void downloadUpdate() {
         if (downloadURL != null) {
 
             if (downloadID != -1) {
@@ -320,11 +305,11 @@ public class UpdateCheck {
             downloadID = downloadManager.add(downloadRequest);
             LogHelper.d(TAG, "DownloadID: " + downloadID);
         } else {
-            instance.cancelNotification();
+            this.cancelNotification();
         }
     }
 
-    public void cancelNotificationAndUpdateRunnable() {
+    void cancelNotificationAndUpdateRunnable() {
         cancelNotification();
         try {
             mHandler.removeCallbacks(updateNotificationRunnable);
@@ -349,7 +334,7 @@ public class UpdateCheck {
         }
     }
 
-    public void cancelDownload() {
+    void cancelDownload() {
         if (downloadManager != null) {
             try {
                 downloadManager.cancel(downloadID);
@@ -385,12 +370,8 @@ public class UpdateCheck {
                         if (updateCheckResult != null) {
                             updateCheckResult.noUpdateAvailable();
                             if (showToast) {
-                                mHandler.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Helper.toast(cxt, R.string.update_check_no_update);
-                                    }
-                                });
+                                mHandler.post(() -> Helper.toast(cxt,
+                                        R.string.update_check_no_update));
                             }
                         }
                     }
@@ -402,22 +383,12 @@ public class UpdateCheck {
                     LogHelper.e(TAG, "IO ERROR: ", e);
                     HentoidApp.getInstance().trackException(e);
 
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Helper.toast(cxt, R.string.error_dependency);
-                        }
-                    });
+                    mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
                 }
             } catch (JSONException e) {
                 HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Error with JSON File: ", e);
-                mHandler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Helper.toast(cxt, R.string.error_dependency);
-                    }
-                });
+                mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
             } catch (PackageManager.NameNotFoundException e) {
                 HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Package Name NOT Found! ", e);

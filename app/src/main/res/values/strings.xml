@@ -14,6 +14,7 @@
     <string name="menu_delete_single">Delete</string>
     <string name="menu_delete_multi">Delete Items</string>
     <string name="menu_share">Share</string>
+    <string name="menu_archive">Archive</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
     <string name="send_to">Share with:</string>
     <!-- Queue -->
@@ -30,13 +31,15 @@
     <string name="permission_granted">Permission set, restarting library import.</string>
     <string name="permission_denied">Hentoid requires write access to device storage.</string>
     <string name="permission_denied_forced">Write storage permission denied!\nManually grant storage permission.</string>
-    <string name="existing_library_error">Please select a different folder.</string>
+    <string name="existing_library_error">Please select a custom location.</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
     <string name="add_dialog">Adding files to DB</string>
     <string name="please_wait">Please wait…</string>
     <string name="scanning_files">Scanning files…</string>
     <string name="adding_to_db">Adding files to database…</string>
+    <string name="kitkat_rationale">Unable to modify contents of the SD Card. This is caused by the external storage policy by Google in Android 4.4.\nTo bypass this limitation, you can try using one of the \'sd fix\' tools available in the Google Play Store (Root Required).</string>
+    <string name="no_sd_support">Your device is not currently supported.\nPlease join our Discord Server if you wish to help us add support for your device.</string>
     <!-- Errors -->
     <string name="error_write_permission">You don\'t have permission to write in that folder, try in another folder.</string>
     <string name="error_creating_folder">Folder is not valid.</string>
@@ -60,8 +63,10 @@
     <string name="downloads_empty">Go ahead, download something.</string>
     <string name="downloads_loading">Loading up~</string>
     <string name="search_entry_not_found">That\'s not in here, go download it.</string>
+    <string name="packaging_content">Packaging files.\nPlease wait…</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
+    <string name="restart_needed">"App restart needed to apply changes."</string>
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>
@@ -69,7 +74,7 @@
     <string name="install_update">Tap to install the update!</string>
     <string name="error_network">Network Error!</string>
     <string name="error_dependency">Error parsing update dependency.\nPlease try again later.</string>
-    <string name="error">Network error, please try again later.</string>
+    <string name="error_network_summary">Network error, please try again later.</string>
     <string name="error_file">Update not found on server.</string>
     <string name="update_failed">Cannot find update file on server.</string>
     <string name="update_check_no_update">Update Check: No new updates.</string>
@@ -107,9 +112,10 @@
     <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
     <string name="about_notes">
         <![CDATA[
-        <p>Added: ASMHentai & Hentai Café<br>
-        Added: Disable haptic feedback on app lock<br>
-        Added: Share Intent on item selection<br>
-        Added: Receive Shared Intent (links must be valid!)<br>
-        Fixed: Tsumino</p>]]></string>
+        <p>Initial support for SD Cards via SAF<br>
+        Improvements to endless scrolling<br>
+        Improvements to on-boarding experience<br>
+        Minor performance improvements<br>
+        Minor fixes</p>]]></string>
+    <string name="about_licenses">Display Licenses</string>
 </resources>

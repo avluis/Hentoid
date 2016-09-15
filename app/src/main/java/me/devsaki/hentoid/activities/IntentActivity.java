@@ -35,9 +35,6 @@ public class IntentActivity extends BaseActivity {
         String type = intent.getType();
         Bundle extras = intent.getExtras() != null ? intent.getExtras() : null;
 
-        Site site = null;
-        String parsedString = null;
-        String toParse;
         Uri data = null;
 
         if (Intent.ACTION_VIEW.equals(action)) {
@@ -48,6 +45,15 @@ public class IntentActivity extends BaseActivity {
             data = Uri.parse(intent.getStringExtra(Intent.EXTRA_TEXT));
         }
 
+        processIntent(data);
+
+        finish();
+    }
+
+    private void processIntent(Uri data) {
+        Site site = null;
+        String parsedString = null;
+        String toParse;
         if (data != null) {
             LogHelper.d(TAG, "Uri: " + data);
             toParse = data.getPath();
@@ -90,7 +96,5 @@ public class IntentActivity extends BaseActivity {
         } else {
             Helper.toast(this, "Can't do anything with this, sorry!", LONG);
         }
-
-        finish();
     }
 }

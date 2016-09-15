@@ -8,4 +8,9 @@
     <style name="Toolbar" parent="AppTheme.NoActionBar">
         <item name="android:background">@color/primary</item>
     </style>
+
+    <!-- Import Dialog -->
+    <style name="ImportDialog" parent="ImportTheme">
+        <item name="android:background">@color/white</item>
+    </style>
 </resources>

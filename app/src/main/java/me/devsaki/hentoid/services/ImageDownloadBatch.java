@@ -4,7 +4,6 @@ import android.content.pm.PackageManager;
 import android.webkit.CookieManager;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,6 +13,7 @@ import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import okhttp3.Call;
@@ -138,7 +138,7 @@ final class ImageDownloadBatch {
             final InputStream input = response.body().byteStream();
             final byte[] buffer = new byte[BUFFER_SIZE];
             try {
-                output = new FileOutputStream(file);
+                output = FileHelper.getOutputStream(file);
                 int dataLength;
                 while ((dataLength = input.read(buffer, 0, BUFFER_SIZE)) != -1) {
                     output.write(buffer, 0, dataLength);
@@ -151,9 +151,17 @@ final class ImageDownloadBatch {
                 throw e;
             } finally {
                 if (output != null) {
-                    output.close();
+                    try {
+                        output.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
                 }
-                input.close();
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
             }
 
             semaphore.release();

@@ -6,6 +6,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -23,7 +24,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     private int selectedItemCount;
     private boolean selected;
 
-    public ItemClickListener(Context cxt, Content content, int pos, ItemSelectListener listener) {
+    protected ItemClickListener(Context cxt, Content content, int pos, ItemSelectListener listener) {
         this.context = cxt;
         this.content = content;
         this.position = pos;
@@ -31,7 +32,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
         this.listener = listener;
     }
 
-    public void setSelected(boolean selected, int selectedItemCount) {
+    protected void setSelected(boolean selected, int selectedItemCount) {
         this.selected = selected;
         this.selectedItemCount = selectedItemCount;
     }
@@ -48,7 +49,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     public void onClick(View v) {
         if (!selected) {
             Helper.toast(context, "Opening: " + content.getTitle());
-            Helper.openContent(context, content);
+            FileHelper.openContent(context, content);
         }
     }
 

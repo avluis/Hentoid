@@ -10,6 +10,7 @@ import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -33,6 +34,7 @@ public class AppLockActivity extends BaseActivity {
     private final long[] goodPinPattern = {0, 250, 100, 100};
     private final long[] wrongPinPattern = {0, 200, 200, 200};
     private final Map<String, Integer> imageMap = new HashMap<>();
+    private final String[] LOCK_STATE = {"Locked", "Open"};
     private TextView tvAppLock;
     private EditText etPin;
     private ImageView ivLock;
@@ -44,8 +46,8 @@ public class AppLockActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_app_lock);
 
-        imageMap.put("Locked", R.drawable.ic_lock_closed);
-        imageMap.put("Open", R.drawable.ic_lock_open);
+        imageMap.put(LOCK_STATE[0], R.drawable.ic_lock_closed);
+        imageMap.put(LOCK_STATE[1], R.drawable.ic_lock_open);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
@@ -55,18 +57,15 @@ public class AppLockActivity extends BaseActivity {
 
         if (etPin != null) {
             etPin.setGravity(Gravity.CENTER);
-            etPin.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                    if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                            (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                        checkPin(etPin);
+            etPin.setOnKeyListener((v, keyCode, event) -> {
+                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                    checkPin(etPin);
 
-                        return true;
-                    }
-
-                    return false;
+                    return true;
                 }
+
+                return false;
             });
             etPin.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -89,12 +88,9 @@ public class AppLockActivity extends BaseActivity {
 
                     if (s.length() >= 4) {
                         handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                etPin.setText(s.toString());
-                                checkPin(null);
-                            }
+                        handler.postDelayed(() -> {
+                            etPin.setText(s.toString());
+                            checkPin(null);
                         }, DELAY);
                     }
                 }
@@ -116,8 +112,12 @@ public class AppLockActivity extends BaseActivity {
             etPin.setText("");
             etPin.clearFocus();
 
+            InputMethodManager inputManager =
+                    (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+            inputManager.hideSoftInputFromWindow(etPin.getWindowToken(), 0);
+
             tvAppLock.setText(R.string.pin_ok);
-            ivLock.setImageResource(imageMap.get("Open"));
+            ivLock.setImageResource(imageMap.get(LOCK_STATE[1]));
 
             if (vibrator.hasVibrator() & appLockVibrate) {
                 vibrator.vibrate(goodPinPattern, -1);
@@ -128,7 +128,8 @@ public class AppLockActivity extends BaseActivity {
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             finish();
         } else {
-            ivLock.setImageResource(imageMap.get("Locked"));
+            etPin.selectAll();
+            ivLock.setImageResource(imageMap.get(LOCK_STATE[0]));
             tvAppLock.setText(R.string.pin_invalid);
 
             if (vibrator.hasVibrator() & appLockVibrate) {

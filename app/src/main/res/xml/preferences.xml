@@ -5,6 +5,14 @@
         android:title="@string/pref_downloads_category">
 
         <CheckBoxPreference
+            android:defaultValue="@string/pref_hide_recent_default"
+            android:disableDependentsState="true"
+            android:icon="@null"
+            android:key="pref_hide_recent"
+            android:summaryOff="@string/pref_hide_recent_summary_off"
+            android:summaryOn="@string/pref_hide_recent_summary_on"
+            android:title="@string/pref_hide_recent_title" />
+        <CheckBoxPreference
             android:defaultValue="@string/pref_endless_scroll_default"
             android:disableDependentsState="true"
             android:icon="@null"
@@ -45,7 +53,7 @@
             android:title="@string/pref_select_folder_title">
 
             <intent
-                android:action="android.intent.action.VIEW"
+                android:action="android.intent.action.APPLICATION_PREFERENCES"
                 android:targetClass="me.devsaki.hentoid.activities.ImportActivity"
                 android:targetPackage="me.devsaki.hentoid" />
         </Preference>
@@ -62,14 +70,14 @@
         <CheckBoxPreference
             android:defaultValue="@string/pref_webview_override_overview_default"
             android:icon="@null"
-            android:key="prefs_webview_override_overview_lists"
+            android:key="pref_webview_override_overview_lists"
             android:summaryOff="@string/pref_webview_override_overview_summary_off"
             android:summaryOn="@string/pref_webview_override_overview_summary_on"
             android:title="@string/pref_webview_override_overview_title" />
 
         <ListPreference
             android:defaultValue="@string/pref_webview_initial_zoom_default"
-            android:dependency="prefs_webview_override_overview_lists"
+            android:dependency="pref_webview_override_overview_lists"
             android:entries="@array/pref_webview_initial_zoom_entries"
             android:entryValues="@array/pref_webview_initial_zoom_values"
             android:icon="@null"

@@ -3,20 +3,30 @@ package me.devsaki.hentoid.activities;
 import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.UriPermission;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.text.Editable;
+import android.text.InputType;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
 import com.afollestad.materialdialogs.GravityEnum;
@@ -40,7 +50,11 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
+import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
+import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
+import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.ui.DirChooserFragment;
+import me.devsaki.hentoid.dirpicker.util.Convert;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -49,6 +63,7 @@ import me.devsaki.hentoid.model.URLBuilder;
 import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -62,13 +77,17 @@ public class ImportActivity extends BaseActivity {
 
     private static final String CURRENT_DIR = "currentDir";
     private static final String PREV_DIR = "prevDir";
+    private static final int KITKAT = Build.VERSION_CODES.KITKAT;
+    private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
     private AlertDialog addDialog;
     private String result;
     private File currentRootDir;
     private File prevRootDir;
     private DirChooserFragment dirChooserFragment;
     private HentoidDB db;
+    private ImageView instImage;
     private boolean restartFlag;
+    private boolean prefInit;
     private final Handler importHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -79,6 +98,7 @@ public class ImportActivity extends BaseActivity {
             return false;
         }
     });
+    private boolean defaultInit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,10 +119,23 @@ public class ImportActivity extends BaseActivity {
                 .setCancelable(false)
                 .create();
 
-        initImport(savedInstanceState);
+        Intent intent = getIntent();
+        if (intent != null && intent.getAction() != null) {
+            if (intent.getAction().equals(Intent.ACTION_APPLICATION_PREFERENCES)) {
+                LogHelper.d(TAG, "Running from prefs screen.");
+                prefInit = true;
+            }
+            if (intent.getAction().equals(Intent.ACTION_GET_CONTENT)) {
+                LogHelper.d(TAG, "Importing default directory.");
+                defaultInit = true;
+            } else {
+                LogHelper.d(TAG, "Intent: " + intent + "Action: " + intent.getAction());
+            }
+        }
+        prepImport(savedInstanceState);
     }
 
-    private void initImport(Bundle savedState) {
+    private void prepImport(Bundle savedState) {
         if (savedState == null) {
             result = ConstsImport.RESULT_EMPTY;
         } else {
@@ -115,14 +148,10 @@ public class ImportActivity extends BaseActivity {
 
     private void checkForDefaultDirectory() {
         if (checkPermissions()) {
-
-            SharedPreferences sp = HentoidApp.getSharedPrefs();
-            String settingDir = sp.getString(Consts.SETTINGS_FOLDER, "");
-
+            String settingDir = FileHelper.getRoot();
             LogHelper.d(TAG, settingDir);
 
             File file;
-
             if (!settingDir.isEmpty()) {
                 file = new File(settingDir);
             } else {
@@ -133,10 +162,10 @@ public class ImportActivity extends BaseActivity {
             if (file.exists() && file.isDirectory()) {
                 currentRootDir = file;
             } else {
-                currentRootDir = Helper.getDefaultDir(this, "");
+                currentRootDir = FileHelper.getDefaultDir(this, "");
                 LogHelper.d(TAG, "Creating new storage directory.");
             }
-            pickDownloadDirectory();
+            pickDownloadDirectory(currentRootDir);
         } else {
             LogHelper.d(TAG, "Do we have permission?");
         }
@@ -196,10 +225,22 @@ public class ImportActivity extends BaseActivity {
     }
 
     // Present Directory Picker
-    private void pickDownloadDirectory() {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        dirChooserFragment = DirChooserFragment.newInstance(currentRootDir);
-        dirChooserFragment.show(transaction, "DirectoryChooserFragment");
+    private void pickDownloadDirectory(File dir) {
+        File downloadDir = dir;
+        if (FileHelper.isOnExtSdCard(dir) && !FileHelper.isWritable(dir)) {
+            LogHelper.d(TAG, "Inaccessible: moving back to default directory.");
+            downloadDir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
+                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+        }
+
+        if (defaultInit) {
+            prevRootDir = currentRootDir;
+            initImport();
+        } else {
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            dirChooserFragment = DirChooserFragment.newInstance(downloadDir);
+            dirChooserFragment.show(transaction, "DirectoryChooserFragment");
+        }
     }
 
     @Override
@@ -227,17 +268,251 @@ public class ImportActivity extends BaseActivity {
             restartFlag = true;
             currentRootDir = chosenDir;
         }
-        LogHelper.d(TAG, "Storage Path: " + currentRootDir);
         dirChooserFragment.dismiss();
+        initImport();
+    }
+
+    private void initImport() {
+        LogHelper.d(TAG, "Clearing SAF");
+        FileHelper.clearUri();
+
+        if (Build.VERSION.SDK_INT >= KITKAT) {
+            revokePermission();
+        }
+
+        LogHelper.d(TAG, "Storage Path: " + currentRootDir);
         importFolder(currentRootDir);
     }
 
+    @Subscribe
+    public void onOpFailed(OpFailedEvent event) {
+        dirChooserFragment.dismiss();
+        prepImport(null);
+    }
+
+    @Subscribe
+    public void onManualInput(OnTextViewClickedEvent event) {
+        if (event.getClickType()) {
+            LogHelper.d(TAG, "Resetting directory back to default.");
+            currentRootDir = new File(Environment.getExternalStorageDirectory() +
+                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+            dirChooserFragment.dismiss();
+            pickDownloadDirectory(currentRootDir);
+        } else {
+            final EditText text = new EditText(this);
+            int paddingPx = Convert.dpToPixel(this, 16);
+            text.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+            text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
+            text.setText(currentRootDir.toString());
+
+            new AlertDialog.Builder(this)
+                    .setTitle(R.string.dir_path)
+                    .setMessage(R.string.dir_path_inst)
+                    .setView(text)
+                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                        Editable value = text.getText();
+                        processManualInput(value);
+                    }).setNegativeButton(android.R.string.cancel, null)
+                    .show();
+        }
+    }
+
+    private void processManualInput(@NonNull Editable value) {
+        String path = String.valueOf(value);
+        if (!("").equals(path)) {
+            File file = new File(path);
+            if (file.exists() && file.isDirectory() && file.canWrite()) {
+                LogHelper.d(TAG, "Got a valid directory!");
+                currentRootDir = file;
+                dirChooserFragment.dismiss();
+                pickDownloadDirectory(currentRootDir);
+            } else {
+                dirChooserFragment.dismiss();
+                prepImport(null);
+            }
+        }
+        LogHelper.d(TAG, path);
+    }
+
+    @Subscribe
+    public void onSAFRequest(OnSAFRequestEvent event) {
+        String[] externalDirs = FileHelper.getExtSdCardPaths();
+        List<File> writeableDirs = new ArrayList<>();
+        if (externalDirs.length > 0) {
+            LogHelper.d(TAG, "External Directory(ies): " + Arrays.toString(externalDirs));
+            for (String externalDir : externalDirs) {
+                File file = new File(externalDir);
+                LogHelper.d(TAG, "Is " + externalDir + " write-able? " +
+                        FileHelper.isWritable(file));
+                if (FileHelper.isWritable(file)) {
+                    writeableDirs.add(file);
+                }
+            }
+        }
+        resolveDirs(externalDirs, writeableDirs);
+    }
+
+    private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {
+        if (writeableDirs.isEmpty()) {
+            LogHelper.d(TAG, "Received no write-able external directories.");
+            if (Helper.isAtLeastAPI(LOLLIPOP)) {
+                if (externalDirs.length > 0) {
+                    Helper.toast("Attempting SAF");
+                    requestWritePermission();
+                } else {
+                    noSDSupport();
+                }
+            } else {
+                noSDSupport();
+            }
+        } else {
+            if (writeableDirs.size() == 1) {
+                // If we get exactly one write-able path returned, attempt to make use of it
+                String sdDir = writeableDirs.get(0) + "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
+                if (FileHelper.validateFolder(sdDir)) {
+                    LogHelper.d(TAG, "Got access to SD Card.");
+                    currentRootDir = new File(sdDir);
+                    dirChooserFragment.dismiss();
+                    pickDownloadDirectory(currentRootDir);
+                } else {
+                    if (Build.VERSION.SDK_INT == KITKAT) {
+                        LogHelper.d(TAG, "Unable to write to SD Card.");
+                        showKitkatRationale();
+                    } else if (Helper.isAtLeastAPI(LOLLIPOP)) {
+                        PackageManager manager = this.getPackageManager();
+                        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                        List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
+                        if (handlers != null && handlers.size() > 0) {
+                            LogHelper.d(TAG, "Device should be able to handle the SAF request");
+                            Helper.toast("Attempting SAF");
+                            requestWritePermission();
+                        } else {
+                            LogHelper.d(TAG, "No apps can handle the requested intent.");
+                        }
+                    } else {
+                        noSDSupport();
+                    }
+                }
+            } else {
+                LogHelper.d(TAG, "We got a fancy device here.");
+                LogHelper.d(TAG, "Available storage locations: " + writeableDirs);
+                noSDSupport();
+            }
+        }
+    }
+
+    private void showKitkatRationale() {
+        new AlertDialog.Builder(this)
+                .setMessage(R.string.kitkat_rationale)
+                .setTitle("Error!")
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+    }
+
+    private void noSDSupport() {
+        LogHelper.d(TAG, "No write-able directories :(");
+        Helper.toast(R.string.no_sd_support);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        attachInstImage();
+    }
+
+    private void attachInstImage() {
+        // A list of known devices can be used here to present instructions relevant to that device
+        instImage.setImageDrawable(ContextCompat.getDrawable(ImportActivity.this,
+                R.drawable.bg_sd_instructions));
+    }
+
+    @RequiresApi(api = LOLLIPOP)
+    private void requestWritePermission() {
+        runOnUiThread(() -> {
+            instImage = new ImageView(ImportActivity.this);
+            attachInstImage();
+
+            AlertDialog.Builder builder =
+                    new AlertDialog.Builder(ImportActivity.this)
+                            .setTitle("Requesting Write Permissions")
+                            .setView(instImage)
+                            .setPositiveButton(android.R.string.ok,
+                                    (dialogInterface, i) -> {
+                                        dialogInterface.dismiss();
+                                        newSAFIntent();
+                                    });
+            final AlertDialog dialog = builder.create();
+            instImage.setOnClickListener(v -> {
+                dialog.dismiss();
+                newSAFIntent();
+            });
+            dialog.show();
+        });
+    }
+
+    @RequiresApi(api = LOLLIPOP)
+    private void newSAFIntent() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
+            intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
+        }
+        // http://stackoverflow.com/a/31334967/1615876
+        intent.putExtra("android.content.extra.SHOW_ADVANCED", true);
+        startActivityForResult(intent, ConstsImport.RQST_STORAGE_PERMISSION);
+    }
+
+    @RequiresApi(api = KITKAT)
+    private void revokePermission() {
+        for (UriPermission p : getContentResolver().getPersistedUriPermissions()) {
+            getContentResolver().releasePersistableUriPermission(p.getUri(),
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+        }
+        if (getContentResolver().getPersistedUriPermissions().size() == 0) {
+            LogHelper.d(TAG, "Permissions revoked successfully.");
+        } else {
+            LogHelper.d(TAG, "Permissions failed to be revoked.");
+        }
+    }
+
+    @RequiresApi(api = KITKAT)
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
+            // Get Uri from Storage Access Framework
+            Uri treeUri = data.getData();
+
+            // Persist URI in shared preference so that you can use it later
+            FileHelper.saveUri(treeUri);
+
+            // Persist access permissions
+            getContentResolver().takePersistableUriPermission(treeUri,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+
+            dirChooserFragment.dismiss();
+
+            if (FileHelper.getExtSdCardPaths().length > 0) {
+                String[] paths = FileHelper.getExtSdCardPaths();
+                File folder = new File(paths[0] + "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
+                LogHelper.d(TAG, "Directory created successfully: " +
+                        FileHelper.createDirectory(folder));
+
+                importFolder(folder);
+            }
+        }
+    }
+
     private void importFolder(File folder) {
-        validateFolder(folder.getAbsolutePath());
+        if (!FileHelper.validateFolder(folder.getAbsolutePath(), true)) {
+            prepImport(null);
+            return;
+        }
 
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(Helper.getSiteDownloadDir(this, s));
+            downloadDirs.add(FileHelper.getSiteDownloadDir(this, s));
         }
 
         List<File> files = new ArrayList<>();
@@ -253,40 +528,37 @@ public class ImportActivity extends BaseActivity {
                 .setTitle(R.string.app_name)
                 .setMessage(R.string.contents_detected)
                 .setPositiveButton(android.R.string.yes,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                // Prior Library found, drop and recreate db
-                                cleanUpDB();
-                                // Send results to scan
-                                Helper.executeAsyncTask(new ImportAsyncTask());
-                            }
-
+                        (dialog1, which) -> {
+                            dialog1.dismiss();
+                            // Prior Library found, drop and recreate db
+                            cleanUpDB();
+                            // Send results to scan
+                            Helper.executeAsyncTask(new ImportAsyncTask());
                         })
                 .setNegativeButton(android.R.string.no,
-                        new DialogInterface.OnClickListener() {
-
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                // Prior Library found, but user chose to cancel
-                                restartFlag = false;
+                        (dialog12, which) -> {
+                            dialog12.dismiss();
+                            // Prior Library found, but user chose to cancel
+                            restartFlag = false;
+                            if (prevRootDir != null) {
                                 currentRootDir = prevRootDir;
-                                validateFolder(currentRootDir.getAbsolutePath());
-                                LogHelper.d(TAG, "Restart needed: " + false);
-
-                                result = ConstsImport.EXISTING_LIBRARY_FOUND;
-                                Intent returnIntent = new Intent();
-                                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                                setResult(RESULT_CANCELED, returnIntent);
-                                finish();
                             }
+                            if (currentRootDir != null) {
+                                FileHelper.validateFolder(currentRootDir.getAbsolutePath());
+                            }
+                            LogHelper.d(TAG, "Restart needed: " + false);
 
+                            result = ConstsImport.EXISTING_LIBRARY_FOUND;
+                            Intent returnIntent = new Intent();
+                            returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                            setResult(RESULT_CANCELED, returnIntent);
+                            finish();
                         })
                 .create();
-        dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        }
+
         if (files.size() > 0) {
             dialog.show();
         } else {
@@ -298,56 +570,12 @@ public class ImportActivity extends BaseActivity {
 
             LogHelper.d(TAG, result);
 
-            handler.postDelayed(new Runnable() {
-
-                public void run() {
-                    Intent returnIntent = new Intent();
-                    returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                    setResult(RESULT_OK, returnIntent);
-                    finish();
-                }
+            handler.postDelayed(() -> {
+                Intent returnIntent = new Intent();
+                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                setResult(RESULT_OK, returnIntent);
+                finish();
             }, 100);
-        }
-    }
-
-    private void validateFolder(String folder) {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
-        // Validate folder
-        File file = new File(folder);
-        if (!file.exists() && !file.isDirectory() && !file.mkdirs()) {
-            Helper.toast(this, R.string.error_creating_folder);
-            return;
-        }
-
-        File nomedia = new File(folder, ".nomedia");
-        boolean hasPermission;
-        // Clean up (if any) nomedia file
-        try {
-            if (nomedia.exists()) {
-                boolean deleted = nomedia.delete();
-                if (deleted) {
-                    LogHelper.d(TAG, ".nomedia file deleted");
-                }
-            }
-            // Re-create nomedia file to confirm write permissions
-            hasPermission = nomedia.createNewFile();
-        } catch (IOException e) {
-            hasPermission = false;
-            HentoidApp.getInstance().trackException(e);
-            LogHelper.e(TAG, "We couldn't confirm write permissions to this location: ", e);
-        }
-
-        if (!hasPermission) {
-            Helper.toast(this, R.string.error_write_permission);
-            return;
-        }
-
-        editor.putString(Consts.SETTINGS_FOLDER, folder);
-
-        boolean directorySaved = editor.commit();
-        if (!directorySaved) {
-            Helper.toast(this, R.string.error_creating_folder);
         }
     }
 
@@ -367,6 +595,10 @@ public class ImportActivity extends BaseActivity {
         returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
         setResult(RESULT_OK, returnIntent);
         finish();
+
+        if (restartFlag && prefInit) {
+            Helper.doRestart(this);
+        }
     }
 
     private void finishImport(final List<Content> contents) {
@@ -446,18 +678,16 @@ public class ImportActivity extends BaseActivity {
                             .contentGravity(GravityEnum.CENTER)
                             .progress(false, 100, false)
                             .cancelable(false)
-                            .showListener(new DialogInterface.OnShowListener() {
-                                @Override
-                                public void onShow(DialogInterface dialogInterface) {
-                                    mImportDialog = (MaterialDialog) dialogInterface;
-                                }
-                            }).build();
-            mScanDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+                            .showListener(dialogInterface -> mImportDialog =
+                                    (MaterialDialog) dialogInterface).build();
+            if (mScanDialog.getWindow() != null) {
+                mScanDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+            }
 
             downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {
                 // Grab all folders in site folders in storage directory
-                downloadDirs.add(Helper.getSiteDownloadDir(ImportActivity.this, site));
+                downloadDirs.add(FileHelper.getSiteDownloadDir(ImportActivity.this, site));
             }
 
             files = new ArrayList<>();

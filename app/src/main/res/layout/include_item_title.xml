@@ -6,7 +6,7 @@
     android:focusable="true"
     android:focusableInTouchMode="true"
     android:lines="1"
-    android:singleLine="true"
+    android:maxLines="1"
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:textColor="@android:color/holo_red_dark"
     android:textStyle="bold"

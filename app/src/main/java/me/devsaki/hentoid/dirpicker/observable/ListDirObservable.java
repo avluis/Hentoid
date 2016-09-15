@@ -16,11 +16,6 @@ public class ListDirObservable extends ListFileObservable {
     }
 
     private Func1<File, Boolean> isDir() {
-        return new Func1<File, Boolean>() {
-            @Override
-            public Boolean call(File file) {
-                return file.isDirectory();
-            }
-        };
+        return File::isDirectory;
     }
 }

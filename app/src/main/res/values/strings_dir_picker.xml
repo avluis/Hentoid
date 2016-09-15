@@ -4,4 +4,7 @@
     <string name="dir_name_inst">Please enter the name of the directory you wish to create:</string>
     <string name="op_not_allowed">Operation not allowed!</string>
     <string name="select">Select</string>
+
+    <string name="dir_path">Manual Input</string>
+    <string name="dir_path_inst">Please enter the path of the directory you wish to navigate to:</string>
 </resources>

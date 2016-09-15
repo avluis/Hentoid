@@ -26,10 +26,10 @@
         android:layout_alignParentRight="true"
         android:layout_margin="@dimen/download_fab_margin"
         android:onClick="onReadFabClick"
-        android:src="@drawable/ic_action_play"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
+        app:srcCompat="@drawable/ic_action_play"
         tools:ignore="RelativeOverlap" />
 
     <android.support.design.widget.FloatingActionButton
@@ -41,10 +41,10 @@
         android:layout_alignParentRight="true"
         android:layout_margin="@dimen/download_fab_margin"
         android:onClick="onDownloadFabClick"
-        android:src="@drawable/ic_action_download"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
+        app:srcCompat="@drawable/ic_action_download"
         tools:ignore="RelativeOverlap" />
 
     <android.support.design.widget.FloatingActionButton
@@ -61,11 +61,11 @@
         android:layout_marginStart="@dimen/refresh_fab_margin_left"
         android:layout_marginTop="@dimen/refresh_fab_margin_top"
         android:onClick="onRefreshStopFabClick"
-        android:src="@drawable/ic_action_refresh"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
-        app:rippleColor="@color/ripple" />
+        app:rippleColor="@color/ripple"
+        app:srcCompat="@drawable/ic_action_refresh" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabHome"
@@ -81,10 +81,10 @@
         android:layout_marginStart="@dimen/home_fab_margin_left"
         android:layout_marginTop="@dimen/home_fab_margin_top"
         android:onClick="onHomeFabClick"
-        android:src="@drawable/ic_action_sd_storage"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
-        app:rippleColor="@color/ripple" />
+        app:rippleColor="@color/ripple"
+        app:srcCompat="@drawable/ic_action_sd_storage" />
 
 </RelativeLayout>

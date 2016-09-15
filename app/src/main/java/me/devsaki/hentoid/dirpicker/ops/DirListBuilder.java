@@ -40,6 +40,7 @@ public class DirListBuilder {
     private void attachRecyclerView(Context cxt, RecyclerView recyclerView) {
         adapter = new DirAdapter(dirTree.dirList, bus);
         recyclerView.setLayoutManager(new LinearLayoutManager(cxt));
+        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
     }
 

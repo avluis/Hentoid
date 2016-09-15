@@ -36,6 +36,11 @@
         <item name="android:backgroundDimEnabled">false</item>
     </style>
 
+    <!-- Import Dialog -->
+    <style name="ImportDialogTheme" parent="ImportTheme">
+        <item name="android:windowIsFloating">false</item>
+    </style>
+
     <!-- Browser Activity -->
     <style name="BrowserTheme" parent="ImportTheme">
         <item name="android:colorBackgroundCacheHint">@null</item>
