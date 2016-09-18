@@ -99,7 +99,7 @@ public class UpdateCheck {
         String updateURL;
 
         if (retry) {
-            updateURL = ConstsUpdater.LEGACY_UPDATE_URL;
+            updateURL = ConstsUpdater.UPDATE_URL;
             retryCount++;
             LogHelper.d(TAG, "Retrying! Count: " + retryCount);
         } else {
