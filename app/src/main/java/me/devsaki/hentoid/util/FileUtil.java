@@ -208,19 +208,7 @@ class FileUtil {
     }
 
     /**
-     * Method ensures about file creation from stream.
-     * For Samsung like devices
-     *
-     * @param stream - OutputStream
-     * @return true if all OK.
-     */
-    static boolean sync(@NonNull final OutputStream stream) {
-        return (stream instanceof FileOutputStream) && sync((FileOutputStream) stream);
-    }
-
-    /**
-     * Method ensures about file creation from stream.
-     * For Samsung like devices
+     * Method ensures file creation from stream.
      *
      * @param stream - FileOutputStream
      * @return true if all OK.

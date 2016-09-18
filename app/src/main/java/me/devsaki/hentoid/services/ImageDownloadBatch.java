@@ -132,7 +132,7 @@ final class ImageDownloadBatch {
                     break;
             }
 
-            if (file.exists()) {
+            if (file.exists() && file.length() != 0) {
                 return;
             }
 
@@ -145,6 +145,7 @@ final class ImageDownloadBatch {
                 while ((dataLength = input.read(buffer, 0, BUFFER_SIZE)) != -1) {
                     output.write(buffer, 0, dataLength);
                 }
+                FileHelper.sync(output);
                 output.flush();
             } catch (NullPointerException npe) {
                 Helper.toast(R.string.sd_access_error);

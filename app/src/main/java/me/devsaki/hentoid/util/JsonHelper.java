@@ -41,6 +41,7 @@ public class JsonHelper {
             byte[] bytes = json.getBytes();
             // write
             output.write(bytes);
+            FileHelper.sync(output);
             output.flush();
         } finally {
             // finished

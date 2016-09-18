@@ -278,6 +278,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             byte[] bytes = "test".getBytes();
             // write
             output.write(bytes);
+            FileHelper.sync(output);
             output.flush();
         } catch (NullPointerException npe) {
             LogHelper.e(TAG, "Invalid Stream: ", npe);

@@ -183,6 +183,16 @@ public class FileHelper {
     }
 
     /**
+     * Method ensures file creation from stream.
+     *
+     * @param stream - OutputStream
+     * @return true if all OK.
+     */
+    public static boolean sync(@NonNull final OutputStream stream) {
+        return (stream instanceof FileOutputStream) && FileUtil.sync((FileOutputStream) stream);
+    }
+
+    /**
      * Get OutputStream from file.
      *
      * @param target The file.

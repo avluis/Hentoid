@@ -80,12 +80,7 @@ public class DownloadService extends IntentService {
 
             File dir = FileHelper.getContentDownloadDir(this, currentContent);
             LogHelper.d(TAG, "Content Download Dir; " + dir);
-            // If the download directory already has files,
-            // then we simply delete them, since this points to a failed download
-            // This includes in progress downloads, that were paused, then resumed.
-            // So technically, we are downloading everything once again.
-            // This is required for ImageDownloadBatch to not hang on a download.
-            LogHelper.d(TAG, "Directory cleaned successfully: " + FileHelper.cleanDirectory(dir));
+            LogHelper.d(TAG, "Directory created: " + FileHelper.createDirectory(dir));
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
