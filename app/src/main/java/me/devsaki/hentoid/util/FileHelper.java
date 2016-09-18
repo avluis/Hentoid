@@ -142,10 +142,7 @@ public class FileHelper {
                 // do nothing.
             }
         } catch (FileNotFoundException e) {
-            // Attempt a traditional file creation
-            if (!createDirectory(file)) {
-                return false;
-            }
+            return false;
         }
         boolean result = file.canWrite();
 
@@ -191,26 +188,17 @@ public class FileHelper {
      * @return FileOutputStream.
      */
     public static OutputStream getOutputStream(@NonNull final File target) {
-        if (isWritable(target)) {
-            if (!target.exists()) {
-                if (target.isFile()) {
-                    try {
-                        FileUtil.mkFile(target);
-                    } catch (IOException e) {
-                        LogHelper.d(TAG, "Unable to create file!", e);
-                    }
-                } else if (target.isDirectory()) {
-                    LogHelper.e(TAG, "Invalid target -- must be a file.");
-                }
+        return FileUtil.getOutputStream(target);
+    }
 
-                return FileUtil.getOutputStream(target);
-            } else {
-                return FileUtil.getOutputStream(target);
-            }
-        } else {
-            // Attempt anyways
-            return FileUtil.getOutputStream(target);
-        }
+    /**
+     * Create a file.
+     *
+     * @param file The file to be created.
+     * @return true if creation was successful.
+     */
+    public static boolean createFile(@NonNull File file) throws IOException {
+        return FileUtil.mkFile(file);
     }
 
     /**
@@ -221,6 +209,16 @@ public class FileHelper {
      */
     public static boolean createDirectory(@NonNull File file) {
         return FileUtil.mkDir(file);
+    }
+
+    /**
+     * Delete a file.
+     *
+     * @param target The file.
+     * @return true if deleted successfully.
+     */
+    public static boolean removeFile(File target) {
+        return FileUtil.deleteFile(target);
     }
 
     /**

@@ -255,7 +255,7 @@ class FileUtil {
                 }
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, "Error while copying file from " + target.getAbsolutePath() + ": ", e);
+            LogHelper.e(TAG, "Error while attempting to get file: " + target.getAbsolutePath(), e);
         }
 
         return outStream;

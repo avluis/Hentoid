@@ -39,6 +39,8 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -169,6 +171,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private TextView loadingText;
     private TextView emptyText;
     private boolean permissionChecked;
+    private boolean sdHealthAssessed;
     private ObjectAnimator animator;
 
     @Override
@@ -262,7 +265,42 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     Runtime.getRuntime().exit(0);
                 }, 3000);
             }
+            checkSDHealth();
         }
+    }
+
+    private void checkSDHealth() {
+        LogHelper.d(TAG, "SD State checked: " + sdHealthAssessed);
+        if (!sdHealthAssessed) {
+            File file = new File(settingDir, "test");
+            OutputStream output = null;
+            try {
+                output = FileHelper.getOutputStream(file);
+                // build
+                byte[] bytes = "test".getBytes();
+                // write
+                output.write(bytes);
+                output.flush();
+            } catch (NullPointerException npe) {
+                LogHelper.e(TAG, "Invalid Stream: ", npe);
+                Helper.toast(R.string.sd_access_error);
+            } catch (IOException e) {
+                LogHelper.e(TAG, "ERROR: ", e);
+            } finally {
+                // finished
+                if (output != null) {
+                    try {
+                        output.close();
+                    } catch (IOException e) {
+                        // Ignore
+                    }
+                }
+                if (file.exists()) {
+                    LogHelper.d(TAG, "Test file removed: " + FileHelper.removeFile(file));
+                }
+            }
+        }
+        sdHealthAssessed = true;
     }
 
     protected abstract void checkResults();

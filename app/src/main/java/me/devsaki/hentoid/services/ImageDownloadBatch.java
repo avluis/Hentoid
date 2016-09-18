@@ -12,6 +12,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -144,6 +145,9 @@ final class ImageDownloadBatch {
                     output.write(buffer, 0, dataLength);
                 }
                 output.flush();
+            } catch (NullPointerException npe) {
+                LogHelper.e(TAG, "Invalid Stream: ", npe);
+                Helper.toast(R.string.sd_access_error);
             } catch (IOException e) {
                 if (!file.delete()) {
                     LogHelper.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
