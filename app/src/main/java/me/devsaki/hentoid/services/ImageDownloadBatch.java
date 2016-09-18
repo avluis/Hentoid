@@ -112,6 +112,7 @@ final class ImageDownloadBatch {
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
+            boolean npeError = false;
             LogHelper.d(TAG, "Start downloading image: " + call.request().url());
 
             if (!response.isSuccessful()) {
@@ -146,8 +147,8 @@ final class ImageDownloadBatch {
                 }
                 output.flush();
             } catch (NullPointerException npe) {
-                LogHelper.e(TAG, "Invalid Stream: ", npe);
                 Helper.toast(R.string.sd_access_error);
+                npeError = true;
             } catch (IOException e) {
                 if (!file.delete()) {
                     LogHelper.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
@@ -165,6 +166,10 @@ final class ImageDownloadBatch {
                     input.close();
                 } catch (IOException e) {
                     // Ignore
+                }
+                if (npeError) {
+                    LogHelper.d(TAG, "NPE on file: " + file.getAbsolutePath());
+                    Helper.toast(R.string.sd_access_error);
                 }
             }
 

@@ -2,6 +2,7 @@ package me.devsaki.hentoid.abstracts;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.Context;
@@ -171,7 +172,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private TextView loadingText;
     private TextView emptyText;
     private boolean permissionChecked;
-    private boolean sdHealthAssessed;
     private ObjectAnimator animator;
 
     @Override
@@ -270,37 +270,38 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void checkSDHealth() {
-        LogHelper.d(TAG, "SD State checked: " + sdHealthAssessed);
-        if (!sdHealthAssessed) {
-            File file = new File(settingDir, "test");
-            OutputStream output = null;
-            try {
-                output = FileHelper.getOutputStream(file);
-                // build
-                byte[] bytes = "test".getBytes();
-                // write
-                output.write(bytes);
-                output.flush();
-            } catch (NullPointerException npe) {
-                LogHelper.e(TAG, "Invalid Stream: ", npe);
-                Helper.toast(R.string.sd_access_error);
-            } catch (IOException e) {
-                LogHelper.e(TAG, "ERROR: ", e);
-            } finally {
-                // finished
-                if (output != null) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                }
-                if (file.exists()) {
-                    LogHelper.d(TAG, "Test file removed: " + FileHelper.removeFile(file));
+        File file = new File(settingDir, "test");
+        OutputStream output = null;
+        try {
+            output = FileHelper.getOutputStream(file);
+            // build
+            byte[] bytes = "test".getBytes();
+            // write
+            output.write(bytes);
+            output.flush();
+        } catch (NullPointerException npe) {
+            LogHelper.e(TAG, "Invalid Stream: ", npe);
+            Helper.toast(R.string.sd_access_error);
+            new AlertDialog.Builder(getActivity())
+                    .setMessage(R.string.sd_access_fatal_error)
+                    .setTitle("Error!")
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show();
+        } catch (IOException e) {
+            LogHelper.e(TAG, "ERROR: ", e);
+        } finally {
+            // finished
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    // Ignore
                 }
             }
+            if (file.exists()) {
+                LogHelper.d(TAG, "Test file removed: " + FileHelper.removeFile(file));
+            }
         }
-        sdHealthAssessed = true;
     }
 
     protected abstract void checkResults();

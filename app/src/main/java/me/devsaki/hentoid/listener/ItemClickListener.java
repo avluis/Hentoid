@@ -7,7 +7,6 @@ import android.view.View.OnLongClickListener;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
 /**
@@ -48,7 +47,6 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     @Override
     public void onClick(View v) {
         if (!selected) {
-            Helper.toast(context, "Opening: " + content.getTitle());
             FileHelper.openContent(context, content);
         }
     }

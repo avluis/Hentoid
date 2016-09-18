@@ -40,6 +40,7 @@ public class FileHelper {
 
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
     private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
+    private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
 
     public static void saveUri(Uri uri) {
         LogHelper.d(TAG, "Saving Uri: " + uri);
@@ -59,7 +60,7 @@ public class FileHelper {
         return prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, null);
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @RequiresApi(api = LOLLIPOP)
     public static boolean isSAF() {
         return getStringUri() != null && !getStringUri().equals("");
     }
@@ -384,6 +385,14 @@ public class FileHelper {
     public static String getThumb(Context cxt, Content content) {
         File dir = getContentDownloadDir(cxt, content);
         String coverUrl = content.getCoverImageUrl();
+
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
+                LogHelper.d(TAG, "File not found!! Returning online resource.");
+                return coverUrl;
+            }
+        }
+
         String thumbExt = coverUrl.substring(coverUrl.length() - 3);
         String thumb;
 
@@ -414,6 +423,16 @@ public class FileHelper {
     public static void openContent(final Context cxt, Content content) {
         LogHelper.d(TAG, "Opening: " + content.getTitle() + " from: " +
                 getContentDownloadDir(cxt, content));
+
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
+                LogHelper.d(TAG, "File not found!! Exiting method.");
+                Helper.toast(R.string.sd_access_error);
+                return;
+            }
+        }
+
+        Helper.toast("Opening: " + content.getTitle());
         SharedPreferences sp = HentoidApp.getSharedPrefs();
         File dir = getContentDownloadDir(cxt, content);
         File imageFile = null;
@@ -495,7 +514,7 @@ public class FileHelper {
         }
 
         // Clean directory (in case of previous job)
-        if (FileHelper.cleanDirectory(sharedDir)) {
+        if (cleanDirectory(sharedDir)) {
             LogHelper.d(TAG, "Shared folder cleaned up.");
         }
 
