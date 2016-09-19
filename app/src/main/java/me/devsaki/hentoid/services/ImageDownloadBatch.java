@@ -133,6 +133,7 @@ final class ImageDownloadBatch {
             }
 
             if (file.exists() && file.length() != 0) {
+                response.close();
                 return;
             }
 

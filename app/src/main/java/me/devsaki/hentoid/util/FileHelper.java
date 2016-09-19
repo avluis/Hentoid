@@ -209,7 +209,7 @@ public class FileHelper {
      * @return true if creation was successful.
      */
     public static boolean createFile(@NonNull File file) throws IOException {
-        return FileUtil.mkFile(file);
+        return FileUtil.makeFile(file);
     }
 
     /**
@@ -219,7 +219,7 @@ public class FileHelper {
      * @return true if creation was successful.
      */
     public static boolean createDirectory(@NonNull File file) {
-        return FileUtil.mkDir(file);
+        return FileUtil.makeDir(file);
     }
 
     /**
@@ -240,7 +240,7 @@ public class FileHelper {
      */
     public static boolean cleanDirectory(@NonNull File target) {
         // Delete directory -- create directory
-        return FileUtil.rmDir(target) && FileUtil.mkDir(target);
+        return FileUtil.deleteDir(target) && FileUtil.makeDir(target);
     }
 
     public static boolean validateFolder(String folder) {
@@ -253,7 +253,7 @@ public class FileHelper {
         SharedPreferences.Editor editor = prefs.edit();
         // Validate folder
         File file = new File(folder);
-        if (!file.exists() && !file.isDirectory() && !FileUtil.mkDir(file)) {
+        if (!file.exists() && !file.isDirectory() && !FileUtil.makeDir(file)) {
             if (notify) {
                 Helper.toast(cxt, R.string.error_creating_folder);
             }
@@ -271,7 +271,7 @@ public class FileHelper {
                 }
             }
             // Re-create nomedia file to confirm write permissions
-            hasPermission = FileUtil.mkFile(nomedia);
+            hasPermission = FileUtil.makeFile(nomedia);
         } catch (IOException e) {
             hasPermission = false;
             HentoidApp.getInstance().trackException(e);
@@ -303,7 +303,7 @@ public class FileHelper {
         File noMedia = new File(settingDir, ".nomedia");
 
         try {
-            if (FileUtil.mkFile(noMedia)) {
+            if (FileUtil.makeFile(noMedia)) {
                 Helper.toast(R.string.nomedia_file_created);
             } else {
                 LogHelper.d(TAG, ".nomedia file already exists.");
@@ -325,7 +325,7 @@ public class FileHelper {
     // Run method in background thread
     public static void removeContent(Context cxt, Content content) {
         File dir = getContentDownloadDir(cxt, content);
-        if (FileUtil.rmDir(dir)) {
+        if (FileUtil.deleteDir(dir)) {
             LogHelper.d(TAG, "Directory " + dir + " removed.");
         } else {
             LogHelper.d(TAG, "Failed to delete directory: " + dir);
@@ -342,10 +342,10 @@ public class FileHelper {
         }
 
         file = new File(settingDir, folderDir);
-        if (!file.exists() && !FileUtil.mkDir(file)) {
+        if (!file.exists() && !FileUtil.makeDir(file)) {
             file = new File(settingDir + folderDir);
             if (!file.exists()) {
-                FileUtil.mkDir(file);
+                FileUtil.makeDir(file);
             }
         }
 
@@ -362,11 +362,11 @@ public class FileHelper {
             file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
         }
 
-        if (!file.exists() && !FileUtil.mkDir(file)) {
+        if (!file.exists() && !FileUtil.makeDir(file)) {
             file = cxt.getDir("", Context.MODE_PRIVATE);
             file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
             if (!file.exists()) {
-                FileUtil.mkDir(file);
+                FileUtil.makeDir(file);
             }
         }
 
@@ -381,10 +381,10 @@ public class FileHelper {
             return getDefaultDir(cxt, folderDir);
         }
         file = new File(settingDir, folderDir);
-        if (!file.exists() && !FileUtil.mkDir(file)) {
+        if (!file.exists() && !FileUtil.makeDir(file)) {
             file = new File(settingDir + folderDir);
             if (!file.exists()) {
-                FileUtil.mkDir(file);
+                FileUtil.makeDir(file);
             }
         }
 
@@ -519,7 +519,7 @@ public class FileHelper {
 
         // Create folder to share from
         File sharedDir = new File(cxt.getExternalCacheDir() + "/shared");
-        if (FileUtil.mkDir(sharedDir)) {
+        if (FileUtil.makeDir(sharedDir)) {
             LogHelper.d(TAG, "Shared folder created.");
         }
 

@@ -25,6 +25,23 @@ class FileUtil {
     private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
 
     /**
+     * Method ensures file creation from stream.
+     *
+     * @param stream - FileOutputStream.
+     * @return true if all OK.
+     */
+    static boolean sync(@NonNull final FileOutputStream stream) {
+        try {
+            stream.getFD().sync();
+            return true;
+        } catch (IOException e) {
+            LogHelper.e(TAG, "IO Error: ", e);
+        }
+
+        return false;
+    }
+
+    /**
      * Get a DocumentFile corresponding to the given file.
      * If the file does not exist, it is created.
      *
@@ -91,6 +108,201 @@ class FileUtil {
     }
 
     /**
+     * Get OutputStream from file.
+     *
+     * @param target The file.
+     * @return FileOutputStream.
+     */
+    static OutputStream getOutputStream(@NonNull final File target) {
+        OutputStream outStream = null;
+        try {
+            // First try the normal way
+            if (FileHelper.isWritable(target)) {
+                // standard way
+                outStream = new FileOutputStream(target);
+            } else {
+                if (Helper.isAtLeastAPI(LOLLIPOP)) {
+                    // Storage Access Framework
+                    DocumentFile targetDocument = getDocumentFile(target, false);
+                    if (targetDocument != null) {
+                        Context cxt = HentoidApp.getAppContext();
+                        outStream = cxt.getContentResolver().openOutputStream(
+                                targetDocument.getUri());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LogHelper.e(TAG, "Error while attempting to get file: " + target.getAbsolutePath(), e);
+        }
+
+        return outStream;
+    }
+
+    /**
+     * Create a file.
+     *
+     * @param file The file to be created.
+     * @return true if creation was successful.
+     */
+    @SuppressWarnings("RedundantThrows")
+    static boolean makeFile(@NonNull final File file) throws IOException {
+        if (file.exists()) {
+            // nothing to create.
+            return !file.isDirectory();
+        }
+
+        // Try the normal way
+        try {
+            if (file.createNewFile()) {
+                return true;
+            }
+        } catch (IOException e) {
+            // Fail silently
+        }
+        // Try with Storage Access Framework.
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            DocumentFile document = getDocumentFile(file.getParentFile(), true);
+            // getDocumentFile implicitly creates the directory.
+            try {
+                if (document != null) {
+                    return document.createFile(
+                            MimeTypes.getMimeType(file), file.getName()) != null;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Create a folder.
+     *
+     * @param file The folder to be created.
+     * @return true if creation was successful.
+     */
+    static boolean makeDir(@NonNull final File file) {
+        if (file.exists()) {
+            // nothing to create.
+            return file.isDirectory();
+        }
+
+        // Try the normal way
+        if (file.mkdirs()) {
+            return true;
+        }
+
+        // Try with Storage Access Framework.
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            DocumentFile document = getDocumentFile(file, true);
+            // getDocumentFile implicitly creates the directory.
+            if (document != null) {
+                return document.exists();
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Delete a file.
+     *
+     * @param file The file to be deleted.
+     * @return true if successfully deleted.
+     */
+    static boolean deleteFile(@NonNull final File file) {
+        // First try the normal deletion
+        boolean fileDelete = rmFile(file);
+        if (file.delete() || fileDelete) {
+            return true;
+        }
+
+        // Try with Storage Access Framework
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            DocumentFile document = getDocumentFile(file, false);
+            if (document != null) {
+                return document.delete();
+            }
+        }
+
+        return !file.exists();
+    }
+
+    private static boolean rmFile(@NonNull final File folder) {
+        boolean totalSuccess = true;
+        if (folder.isDirectory()) {
+            for (File child : folder.listFiles()) {
+                rmFile(child);
+            }
+            if (!folder.delete()) {
+                totalSuccess = false;
+            }
+        } else {
+            if (!folder.delete()) {
+                totalSuccess = false;
+            }
+        }
+
+        return totalSuccess;
+    }
+
+    /**
+     * Delete a folder.
+     *
+     * @param folder The folder.
+     * @return true if successful.
+     */
+    static boolean deleteDir(@NonNull final File folder) {
+        if (!folder.exists()) {
+            return true;
+        }
+        if (!folder.isDirectory()) {
+            return false;
+        }
+        String[] fileList = folder.list();
+        if (fileList != null && fileList.length > 0) {
+            //  empty the folder.
+            rmDir(folder);
+        }
+        String[] fileList1 = folder.list();
+        if (fileList1 != null && fileList1.length > 0) {
+            // Delete only empty folder.
+            return false;
+        }
+        // Try the normal way
+        if (folder.delete()) {
+            return true;
+        }
+
+        // Try with Storage Access Framework.
+        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            DocumentFile document = getDocumentFile(folder, true);
+            if (document != null) {
+                return document.delete();
+            }
+        }
+
+        return !folder.exists();
+    }
+
+    private static boolean rmDir(@NonNull final File folder) {
+        for (File dir : folder.listFiles()) {
+            if (dir.isDirectory()) {
+                if (!rmDir(dir)) {
+                    return false;
+                }
+            } else {
+                if (!deleteFile(dir)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Copy a file.
      *
      * @param source The source file.
@@ -98,6 +310,7 @@ class FileUtil {
      * @return true if copying was successful.
      */
     static boolean copyFile(final File source, final File target) {
+        final int BUFFER = 10 * 1024;
         FileInputStream inStream = null;
         OutputStream outStream = null;
         FileChannel inChannel = null;
@@ -125,8 +338,8 @@ class FileUtil {
                 }
 
                 if (outStream != null) {
-                    // Both for SAF and for Kitkat, write to output stream.
-                    byte[] buffer = new byte[16384]; // MAGIC_NUMBER
+                    // write to output stream
+                    byte[] buffer = new byte[BUFFER];
                     int bytesRead;
                     while ((bytesRead = inStream.read(buffer)) != -1) {
                         outStream.write(buffer, 0, bytesRead);
@@ -161,125 +374,13 @@ class FileUtil {
     }
 
     /**
-     * Delete a file.
-     * May be even on external SD card.
-     *
-     * @param file The file to be deleted.
-     * @return true if successfully deleted.
-     */
-    static boolean deleteFile(@NonNull final File file) {
-        // First try the normal deletion
-        boolean fileDelete = deleteFilesInFolder(file);
-        if (file.delete() || fileDelete) {
-            return true;
-        }
-
-        // Try with Storage Access Framework
-        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
-            DocumentFile document = getDocumentFile(file, false);
-            if (document != null) {
-                return document.delete();
-            }
-        }
-
-        return !file.exists();
-    }
-
-    /**
-     * Delete all files in a folder.
-     *
-     * @param folder The folder.
-     * @return true if successful.
-     */
-    private static boolean deleteFilesInFolder(@NonNull final File folder) {
-        boolean totalSuccess = true;
-        if (folder.isDirectory()) {
-            for (File child : folder.listFiles()) {
-                deleteFilesInFolder(child);
-            }
-            if (!folder.delete())
-                totalSuccess = false;
-        } else {
-            if (!folder.delete())
-                totalSuccess = false;
-        }
-
-        return totalSuccess;
-    }
-
-    /**
-     * Method ensures file creation from stream.
-     *
-     * @param stream - FileOutputStream
-     * @return true if all OK.
-     */
-    static boolean sync(@NonNull final FileOutputStream stream) {
-        try {
-            stream.getFD().sync();
-            return true;
-        } catch (IOException e) {
-            LogHelper.e(TAG, "IO Error: " + e);
-        }
-
-        return false;
-    }
-
-    static OutputStream getOutputStream(@NonNull final File target) {
-        OutputStream outStream = null;
-        try {
-            // First try the normal way
-            if (FileHelper.isWritable(target)) {
-                // standard way
-                outStream = new FileOutputStream(target);
-            } else {
-                if (Helper.isAtLeastAPI(LOLLIPOP)) {
-                    // Storage Access Framework
-                    DocumentFile targetDocument = getDocumentFile(target, false);
-                    if (targetDocument != null) {
-                        Context cxt = HentoidApp.getAppContext();
-                        outStream = cxt.getContentResolver().openOutputStream(
-                                targetDocument.getUri());
-                    }
-                }
-            }
-        } catch (Exception e) {
-            LogHelper.e(TAG, "Error while attempting to get file: " + target.getAbsolutePath(), e);
-        }
-
-        return outStream;
-    }
-
-    /**
-     * Move a file.
-     * The target file may even be on external SD card.
-     *
-     * @param source The source file.
-     * @param target The target file.
-     * @return true if the copying was successful.
-     */
-    static boolean moveFile(@NonNull final File source, @NonNull final File target) {
-        // First try the normal rename
-        if (source.renameTo(target)) {
-            return true;
-        }
-
-        boolean success = copyFile(source, target);
-        if (success) {
-            success = deleteFile(source);
-        }
-
-        return success;
-    }
-
-    /**
      * Rename a folder.
-     * In case of extSdCard in Kitkat, the old folder stays in place, but files are moved.
      *
      * @param source The source folder.
      * @param target The target folder.
      * @return true if the renaming was successful.
      */
-    static boolean renameFolder(@NonNull final File source, @NonNull final File target) {
+    static boolean renameDir(@NonNull final File source, @NonNull final File target) {
         // First try the normal rename.
         if (rename(source, target.getName())) {
             return true;
@@ -289,8 +390,7 @@ class FileUtil {
         }
 
         // Try the Storage Access Framework if it is just a rename within the same parent folder.
-        if (Helper.isAtLeastAPI(LOLLIPOP) && source.getParent().equals(target.getParent()) &&
-                FileHelper.isOnExtSdCard(source)) {
+        if (Helper.isAtLeastAPI(LOLLIPOP) && source.getParent().equals(target.getParent())) {
             DocumentFile document = getDocumentFile(source, true);
             if (document != null && document.renameTo(target.getName())) {
                 return true;
@@ -298,7 +398,7 @@ class FileUtil {
         }
 
         // Try the manual way, moving files individually.
-        if (!mkDir(target)) {
+        if (!makeDir(target)) {
             return false;
         }
 
@@ -326,130 +426,29 @@ class FileUtil {
         return true;
     }
 
-    private static boolean rename(File f, String name) {
-        String newName = f.getParent() + "/" + name;
-        return !f.getParentFile().canWrite() || f.renameTo(new File(newName));
+    private static boolean rename(File file, String name) {
+        String newName = file.getParent() + "/" + name;
+        return !file.getParentFile().canWrite() || file.renameTo(new File(newName));
     }
 
     /**
-     * Create a folder.
+     * Move a file.
      *
-     * @param file The folder to be created.
-     * @return true if creation was successful.
+     * @param source The source file.
+     * @param target The target file.
+     * @return true if the copying was successful.
      */
-    static boolean mkDir(@NonNull final File file) {
-        if (file.exists()) {
-            // nothing to create.
-            return file.isDirectory();
-        }
-
-        // Try the normal way
-        if (file.mkdirs()) {
+    static boolean moveFile(@NonNull final File source, @NonNull final File target) {
+        // First try the normal rename
+        if (source.renameTo(target)) {
             return true;
         }
 
-        // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
-            DocumentFile document = getDocumentFile(file, true);
-            // getDocumentFile implicitly creates the directory.
-            if (document != null) {
-                return document.exists();
-            }
+        boolean success = copyFile(source, target);
+        if (success) {
+            success = deleteFile(source);
         }
 
-        return false;
-    }
-
-    /**
-     * Create a file.
-     *
-     * @param file The file to be created.
-     * @return true if creation was successful.
-     */
-    @SuppressWarnings("RedundantThrows")
-    static boolean mkFile(@NonNull final File file) throws IOException {
-        if (file.exists()) {
-            // nothing to create.
-            return !file.isDirectory();
-        }
-
-        // Try the normal way
-        try {
-            if (file.createNewFile()) {
-                return true;
-            }
-        } catch (IOException e) {
-            // Fail silently
-        }
-        // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP) && FileHelper.isOnExtSdCard(file)) {
-            DocumentFile document = getDocumentFile(file.getParentFile(), true);
-            // getDocumentFile implicitly creates the directory.
-            try {
-                if (document != null) {
-                    return document.createFile(
-                            MimeTypes.getMimeType(file), file.getName()) != null;
-                }
-            } catch (Exception e) {
-                return false;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Delete a folder.
-     *
-     * @param file The folder name.
-     * @return true if successful.
-     */
-    static boolean rmDir(@NonNull final File file) {
-        if (!file.exists()) {
-            return true;
-        }
-        if (!file.isDirectory()) {
-            return false;
-        }
-        String[] fileList = file.list();
-        if (fileList != null && fileList.length > 0) {
-            //  empty the folder.
-            rmDirHelper(file);
-        }
-        String[] fileList1 = file.list();
-        if (fileList1 != null && fileList1.length > 0) {
-            // Delete only empty folder.
-            return false;
-        }
-        // Try the normal way
-        if (file.delete()) {
-            return true;
-        }
-
-        // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
-            DocumentFile document = getDocumentFile(file, true);
-            if (document != null) {
-                return document.delete();
-            }
-        }
-
-        return !file.exists();
-    }
-
-    private static boolean rmDirHelper(@NonNull final File file) {
-        for (File file1 : file.listFiles()) {
-            if (file1.isDirectory()) {
-                if (!rmDirHelper(file1)) {
-                    return false;
-                }
-            } else {
-                if (!deleteFile(file1)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return success;
     }
 }
