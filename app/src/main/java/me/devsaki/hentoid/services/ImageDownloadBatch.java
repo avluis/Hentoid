@@ -132,9 +132,15 @@ final class ImageDownloadBatch {
                     break;
             }
 
-            if (file.exists() && file.length() != 0) {
-                response.close();
-                return;
+            long fileSize = file.length();
+            if (file.exists()) {
+                if (fileSize == 0) {
+                    // Carry on~
+                    LogHelper.d(TAG, "Empty File!!");
+                } else {
+                    LogHelper.d(TAG, "Existing file size: " + fileSize);
+                    // TODO: Compare file sizes
+                }
             }
 
             OutputStream output = null;
@@ -166,6 +172,7 @@ final class ImageDownloadBatch {
                 }
                 try {
                     input.close();
+                    response.close();
                 } catch (IOException e) {
                     // Ignore
                 }
