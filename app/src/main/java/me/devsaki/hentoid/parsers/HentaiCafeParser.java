@@ -21,6 +21,10 @@ import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
 /**
  * Created by avluis on 07/26/2016.
  * Handles parsing of content from Hentai Cafe
+ * </p>
+ * TODO: Add support for content with multiple chapters
+ * TODO: Address or wait for fix on Jack bug (debug builds only):
+ * https://code.google.com/p/android/issues/detail?id=82691
  */
 public class HentaiCafeParser {
     private static final String TAG = LogHelper.makeLogTag(HentaiCafeParser.class);

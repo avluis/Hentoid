@@ -21,6 +21,9 @@ import static me.devsaki.hentoid.enums.Site.ASMHENTAI;
 /**
  * Created by avluis on 07/24/2016.
  * Handles parsing of content from asmhentai.com
+ * </p>
+ * TODO: Address or wait for fix on Jack bug (debug builds only):
+ * https://code.google.com/p/android/issues/detail?id=82691
  */
 public class ASMHentaiParser {
     private static final String TAG = LogHelper.makeLogTag(ASMHentaiParser.class);

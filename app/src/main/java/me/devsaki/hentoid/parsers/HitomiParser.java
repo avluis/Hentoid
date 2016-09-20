@@ -22,6 +22,9 @@ import static me.devsaki.hentoid.enums.Site.HITOMI;
 /**
  * Created by neko on 08/07/2015.
  * Handles parsing of content from hitomi.la
+ * </p>
+ * TODO: Address or wait for fix on Jack bug (debug builds only):
+ * https://code.google.com/p/android/issues/detail?id=82691
  */
 public class HitomiParser {
     private static final String TAG = LogHelper.makeLogTag(HitomiParser.class);

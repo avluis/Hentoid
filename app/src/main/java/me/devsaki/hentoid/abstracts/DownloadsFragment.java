@@ -249,7 +249,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void checkStorage() {
         if (FileHelper.isSAF()) {
             File storage = new File(settingDir);

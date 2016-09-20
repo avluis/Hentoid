@@ -423,8 +423,10 @@ public class ImportActivity extends BaseActivity {
 
     private void attachInstImage() {
         // A list of known devices can be used here to present instructions relevant to that device
-        instImage.setImageDrawable(ContextCompat.getDrawable(ImportActivity.this,
-                R.drawable.bg_sd_instructions));
+        if (instImage != null) {
+            instImage.setImageDrawable(ContextCompat.getDrawable(ImportActivity.this,
+                    R.drawable.bg_sd_instructions));
+        }
     }
 
     @RequiresApi(api = LOLLIPOP)

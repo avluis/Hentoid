@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.webkit.MimeTypeMap;
@@ -60,7 +59,6 @@ public class FileHelper {
         return prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, null);
     }
 
-    @RequiresApi(api = LOLLIPOP)
     public static boolean isSAF() {
         return getStringUri() != null && !getStringUri().equals("");
     }
@@ -143,7 +141,9 @@ public class FileHelper {
                 // do nothing.
             }
         } catch (FileNotFoundException e) {
-            return false;
+            if (!file.isDirectory()) {
+                return false;
+            }
         }
         boolean result = file.canWrite();
 
@@ -396,11 +396,9 @@ public class FileHelper {
         File dir = getContentDownloadDir(cxt, content);
         String coverUrl = content.getCoverImageUrl();
 
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
-            if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
-                LogHelper.d(TAG, "File not found!! Returning online resource.");
-                return coverUrl;
-            }
+        if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
+            LogHelper.d(TAG, "File not found!! Returning online resource.");
+            return coverUrl;
         }
 
         String thumbExt = coverUrl.substring(coverUrl.length() - 3);
@@ -434,12 +432,10 @@ public class FileHelper {
         LogHelper.d(TAG, "Opening: " + content.getTitle() + " from: " +
                 getContentDownloadDir(cxt, content));
 
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
-            if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
-                LogHelper.d(TAG, "File not found!! Exiting method.");
-                Helper.toast(R.string.sd_access_error);
-                return;
-            }
+        if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
+            LogHelper.d(TAG, "File not found!! Exiting method.");
+            Helper.toast(R.string.sd_access_error);
+            return;
         }
 
         Helper.toast("Opening: " + content.getTitle());
