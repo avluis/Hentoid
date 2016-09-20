@@ -1,5 +1,6 @@
 package me.devsaki.hentoid;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -17,6 +18,7 @@ import java.util.Map;
  */
 final class AnalyticsTrackers {
 
+    @SuppressLint("StaticFieldLeak")
     private static AnalyticsTrackers sInstance;
     private final Map<Target, Tracker> mTrackers = new HashMap<>();
     private final Context mContext;

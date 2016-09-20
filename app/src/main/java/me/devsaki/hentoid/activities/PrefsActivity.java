@@ -135,8 +135,7 @@ public class PrefsActivity extends BaseActivity {
                     .findPreference(ConstsPrefs.PREF_CHECK_UPDATE_MANUAL);
             mUpdateCheck.setOnPreferenceClickListener(preference -> {
                 Helper.toast("Checking for updates...");
-                new UpdateCheck().checkForUpdate(HentoidApp.getAppContext(),
-                        false, true,
+                new UpdateCheck().checkForUpdate(HentoidApp.getAppContext(), false, true,
                         new UpdateCheck.UpdateCheckCallback() {
                             @Override
                             public void noUpdateAvailable() {

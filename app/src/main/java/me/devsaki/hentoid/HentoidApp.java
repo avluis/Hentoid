@@ -148,7 +148,7 @@ public class HentoidApp extends Application {
     }
 
     private void UpdateCheck(boolean onlyWifi) {
-        new UpdateCheck().checkForUpdate(this,
+        UpdateCheck.getInstance().checkForUpdate(this,
                 onlyWifi, false, new UpdateCheck.UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {

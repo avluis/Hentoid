@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.updater;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -51,6 +52,8 @@ public class UpdateCheck {
 
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
+    @SuppressLint("StaticFieldLeak")
+    private static UpdateCheck instance;
     private final int NOTIFICATION_ID = ConstsUpdater.UPDATE_NOTIFICATION_ID;
     private final UpdateNotificationRunnable updateNotificationRunnable =
             new UpdateNotificationRunnable();
@@ -69,6 +72,14 @@ public class UpdateCheck {
     private long done;
     private boolean showToast;
     private int retryCount = 0;
+
+    public static UpdateCheck getInstance() {
+        if (instance == null) {
+            instance = new UpdateCheck();
+        }
+
+        return instance;
+    }
 
     public void checkForUpdate(@NonNull Context context, final boolean onlyWifi,
                                final boolean showToast, final UpdateCheckCallback callback) {

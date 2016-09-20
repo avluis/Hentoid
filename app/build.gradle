@@ -10,7 +10,7 @@ android {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 41
+        versionCode 42
         versionName '1.2.1r1'
         resConfigs "en"
         jackOptions {
