@@ -45,17 +45,15 @@ android {
         release {
             debuggable false
             minifyEnabled true
-            shrinkResources true
+            // Jack does not work with shrinkResources yet
+            shrinkResources false
 
-            //noinspection GroovyAssignabilityCheck
             signingConfig signingConfigs.release
 
             // Library specific proguard files
-            FileCollection proGuardFileCollection = files { file('../.proguard/').listFiles() }
-            proguardFiles(proGuardFileCollection)
+            proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
 
             // Default proguard files & project app specific rules
-            //noinspection GroovyAssignabilityCheck
             proguardFile getDefaultProguardFile('proguard-android.txt')
             proguardFile 'proguard-project-app.pro'
 
