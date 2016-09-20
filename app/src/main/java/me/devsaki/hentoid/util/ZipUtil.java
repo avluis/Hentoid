@@ -2,8 +2,6 @@ package me.devsaki.hentoid.util;
 
 import android.os.AsyncTask;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -24,7 +22,7 @@ import java.util.zip.ZipOutputStream;
 class ZipUtil {
     private static final String TAG = LogHelper.makeLogTag(ZipUtil.class);
 
-    private static final int BUFFER = 1024;
+    private static final int BUFFER = 32 * 1024;
 
     private static void add(final File file, final ZipOutputStream stream, final byte[] data) {
         LogHelper.d(TAG, "Adding: " + file);
@@ -128,17 +126,20 @@ class ZipUtil {
                 createDir(outputFile.getParentFile());
             }
 
-            BufferedInputStream inputStream = new BufferedInputStream(
-                    zipfile.getInputStream(entry));
-            BufferedOutputStream outputStream = new BufferedOutputStream(
-                    new FileOutputStream(outputFile));
-
+            BufferedInputStream in = new BufferedInputStream(zipfile.getInputStream(entry));
+            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile));
             try {
-                IOUtils.copy(inputStream, outputStream);
+                byte[] buffer = new byte[BUFFER];
+                int length;
+                while ((length = in.read(buffer)) > 0) {
+                    out.write(buffer, 0, length);
+                }
+                FileHelper.sync(out);
+                out.flush();
             } finally {
                 try {
-                    outputStream.close();
-                    inputStream.close();
+                    out.close();
+                    in.close();
                 } catch (IOException e) {
                     // Ignore
                 }

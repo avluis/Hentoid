@@ -99,7 +99,7 @@ dependencies {
     compile 'com.android.support:recyclerview-v7:24.2.1'
     compile 'com.android.support:support-v4:24.2.1'
     // Material Dialogs: github.com/afollestad/material-dialogs
-    compile 'com.afollestad.material-dialogs:core:0.9.0.1'
+    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
     // Image loader: github.com/bumptech/glide
     // https://github.com/bumptech/glide/wiki/Snapshots#gradle
     compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
@@ -117,7 +117,7 @@ dependencies {
     // HTTP & HTTP/2 client: github.com/square/okhttp
     compile 'com.squareup.okhttp3:okhttp:3.4.1'
     // IO functionality: commons.apache.org/proper/commons-io/
-    compile 'commons-io:commons-io:2.5'
+    //compile 'commons-io:commons-io:2.5'
     // EventBus: github.com/greenrobot/EventBus
     compile 'org.greenrobot:eventbus:3.0.0'
     // JSOUP HTML parser: jsoup.org/download
@@ -126,7 +126,7 @@ dependencies {
     compile 'io.reactivex:rxandroid:1.2.1'
     // Because RxAndroid releases are few and far between, it is recommended you also
     // explicitly depend on RxJava's latest version for bug fixes and new features.
-    compile 'io.reactivex:rxjava:1.1.9'
+    compile 'io.reactivex:rxjava:1.2.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
