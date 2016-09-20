@@ -9,6 +9,7 @@ import android.text.Html;
 import android.text.Spanned;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import me.devsaki.hentoid.R;
@@ -35,6 +36,15 @@ public class AboutActivity extends BaseActivity {
     }
 
     private void populateLinks(final Intent intent) {
+        ImageView ivAppLogo = (ImageView) findViewById(R.id.iv_app_logo);
+        final String urlGitHubWiki = getString(R.string.about_github_wiki_url);
+        if (ivAppLogo != null) {
+            ivAppLogo.setOnClickListener(v -> {
+                intent.setData(Uri.parse(urlGitHubWiki));
+                startActivity(intent);
+            });
+        }
+
         Spanned spGitHub = Html.fromHtml(getString(R.string.about_github));
         TextView tvGitHub = (TextView) findViewById(R.id.tv_github);
         final String urlGitHub = getString(R.string.about_github_url);

@@ -108,15 +108,17 @@
     <string name="about_community_url" translatable="false">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github" translatable="false"><![CDATA[<u>GitHub</u>]]></string>
     <string name="about_github_url" translatable="false">https://github.com/AVnetWS/Hentoid</string>
+    <string name="about_github_wiki_url" translatable="false">https://github.com/AVnetWS/Hentoid/wiki</string>
     <string name="about_discord" translatable="false"><![CDATA[<u>Discord</u>]]></string>
     <string name="about_discord_url" translatable="false">https://discord.gg/0yFzSPtXehJmFqOM</string>
     <string name="about_reddit" translatable="false"><![CDATA[<u>Reddit</u>]]></string>
     <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
     <string name="about_notes">
         <![CDATA[
-        <p>Initial support for SD Cards via SAF<br>
-        Improvements to endless scrolling<br>
+        <p>Initial support for SD Cards (Android 5.0+)<br>
+        Improvements to download list<br>
         Improvements to on-boarding experience<br>
+        Support for archiving downloaded works<br>
         Minor performance improvements<br>
         Minor fixes</p>]]></string>
     <string name="about_licenses">Display Licenses</string>
