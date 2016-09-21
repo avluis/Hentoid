@@ -3,7 +3,6 @@ package me.devsaki.hentoid.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +27,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.fragments.QueueFragment;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
 
@@ -134,10 +134,10 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
-        holder.tvSeries.setText(Html.fromHtml(templateSeries.replace("@series@", series)));
+        holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@", series)));
 
         if (seriesAttributes == null) {
-            holder.tvSeries.setText(Html.fromHtml(templateSeries.replace("@series@",
+            holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@",
                     cxt.getResources().getString(R.string.work_untitled))));
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
@@ -156,10 +156,10 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 }
             }
         }
-        holder.tvArtist.setText(Html.fromHtml(templateArtist.replace("@artist@", artists)));
+        holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artists)));
 
         if (artistAttributes == null) {
-            holder.tvArtist.setText(Html.fromHtml(templateArtist.replace("@artist@",
+            holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     cxt.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
@@ -180,7 +180,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 }
             }
         }
-        holder.tvTags.setText(Html.fromHtml(tags));
+        holder.tvTags.setText(Helper.fromHtml(tags));
     }
 
     private void attachButtons(View view, final Content content) {

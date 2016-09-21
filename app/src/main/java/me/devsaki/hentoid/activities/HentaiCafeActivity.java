@@ -1,7 +1,10 @@
 package me.devsaki.hentoid.activities;
 
+import android.annotation.TargetApi;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 
 import java.io.IOException;
@@ -45,10 +48,24 @@ public class HentaiCafeActivity extends BaseWebActivity {
 
     private class HentaiCafeWebViewClient extends CustomWebViewClient {
 
+        @SuppressWarnings("deprecation") // From API 24 we should use another overload
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
                 URL u = new URL(url);
+                return !(u.getHost().endsWith("hentai.cafe"));
+            } catch (MalformedURLException e) {
+                LogHelper.d(TAG, "Malformed URL");
+            }
+
+            return false;
+        }
+
+        @TargetApi(Build.VERSION_CODES.N)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            try {
+                URL u = new URL(request.getUrl().toString());
                 return !(u.getHost().endsWith("hentai.cafe"));
             } catch (MalformedURLException e) {
                 LogHelper.d(TAG, "Malformed URL");

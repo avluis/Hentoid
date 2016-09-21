@@ -22,6 +22,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.IntentCompat;
+import android.text.Html;
+import android.text.Spanned;
 import android.view.View;
 import android.webkit.WebResourceResponse;
 import android.widget.AbsListView;
@@ -431,6 +433,15 @@ public final class Helper {
             case PLAIN:
             default:
                 return new WebResourceResponse("text/plain", "UTF-8", open);
+        }
+    }
+
+    public static Spanned fromHtml(String source) {
+        if (isAtLeastAPI(Build.VERSION_CODES.N)) {
+            return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY, null, null);
+        } else {
+            //noinspection deprecation
+            return Html.fromHtml(source);
         }
     }
 

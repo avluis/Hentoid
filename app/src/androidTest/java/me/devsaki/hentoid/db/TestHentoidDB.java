@@ -18,6 +18,8 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by neko on 15/06/2015.
  * Basic database test case
+ * </p>
+ * TODO: Update with new Testing Support Library (and possibly ContentV2)
  */
 public class TestHentoidDB extends AndroidTestCase {
     private static final String TAG = LogHelper.makeLogTag(TestHentoidDB.class);
@@ -31,67 +33,55 @@ public class TestHentoidDB extends AndroidTestCase {
         HentoidDB db = HentoidDB.getInstance(context);
         db.insertContents(contents.toArray(new Content[contents.size()]));
         try {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-                        HentoidDB db = HentoidDB.getInstance(context);
-                        for (int i = 0; i < 100; i++) {
-                            List<Content> contents = generateRandomContent();
-                            db.insertContents(contents.toArray(new Content[contents.size()]));
-                        }
-                    } catch (Exception ex) {
-                        LogHelper.e(TAG, "Error: ", ex);
+            new Thread(() -> {
+                try {
+                    RenamingDelegatingContext context1 = new RenamingDelegatingContext(getContext(), "test_");
+                    HentoidDB db1 = HentoidDB.getInstance(context1);
+                    for (int i = 0; i < 100; i++) {
+                        List<Content> contents1 = generateRandomContent();
+                        db1.insertContents(contents1.toArray(new Content[contents1.size()]));
                     }
-                    locker1 = true;
+                } catch (Exception ex) {
+                    LogHelper.e(TAG, "Error: ", ex);
                 }
+                locker1 = true;
             }).start();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-                        HentoidDB db = HentoidDB.getInstance(context);
-                        for (int i = 0; i < 100; i++) {
-                            List<Content> contents = generateRandomContent();
-                            db.insertContents(contents.toArray(new Content[contents.size()]));
-                        }
-                    } catch (Exception ex) {
-                        LogHelper.e(TAG, "Error: ", ex);
+            new Thread(() -> {
+                try {
+                    RenamingDelegatingContext context12 = new RenamingDelegatingContext(getContext(), "test_");
+                    HentoidDB db12 = HentoidDB.getInstance(context12);
+                    for (int i = 0; i < 100; i++) {
+                        List<Content> contents12 = generateRandomContent();
+                        db12.insertContents(contents12.toArray(new Content[contents12.size()]));
                     }
-                    locker2 = true;
+                } catch (Exception ex) {
+                    LogHelper.e(TAG, "Error: ", ex);
                 }
+                locker2 = true;
             }).start();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-                        HentoidDB db = HentoidDB.getInstance(context);
-                        for (int i = 0; i < 100; i++) {
-                            db.selectContentByQuery("", 1, 10, false);
-                        }
-                    } catch (Exception ex) {
-                        LogHelper.e(TAG, "Error: ", ex);
+            new Thread(() -> {
+                try {
+                    RenamingDelegatingContext context13 = new RenamingDelegatingContext(getContext(), "test_");
+                    HentoidDB db13 = HentoidDB.getInstance(context13);
+                    for (int i = 0; i < 100; i++) {
+                        db13.selectContentByQuery("", 1, 10, false);
                     }
-                    locker3 = true;
+                } catch (Exception ex) {
+                    LogHelper.e(TAG, "Error: ", ex);
                 }
+                locker3 = true;
             }).start();
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        RenamingDelegatingContext context = new RenamingDelegatingContext(getContext(), "test_");
-                        HentoidDB db = HentoidDB.getInstance(context);
-                        for (int i = 0; i < 100; i++) {
-                            db.selectContentByStatus(StatusContent.DOWNLOADED);
-                        }
-                    } catch (Exception ex) {
-                        LogHelper.e(TAG, "Error: ", ex);
+            new Thread(() -> {
+                try {
+                    RenamingDelegatingContext context14 = new RenamingDelegatingContext(getContext(), "test_");
+                    HentoidDB db14 = HentoidDB.getInstance(context14);
+                    for (int i = 0; i < 100; i++) {
+                        db14.selectContentByStatus(StatusContent.DOWNLOADED);
                     }
-                    locker4 = true;
+                } catch (Exception ex) {
+                    LogHelper.e(TAG, "Error: ", ex);
                 }
+                locker4 = true;
             }).start();
             //noinspection StatementWithEmptyBody
             while (!(locker1 && locker2 && locker3 && locker4)) ;

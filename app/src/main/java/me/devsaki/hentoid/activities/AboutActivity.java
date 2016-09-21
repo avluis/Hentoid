@@ -5,7 +5,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
-import android.text.Html;
 import android.text.Spanned;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -45,7 +44,7 @@ public class AboutActivity extends BaseActivity {
             });
         }
 
-        Spanned spGitHub = Html.fromHtml(getString(R.string.about_github));
+        Spanned spGitHub = Helper.fromHtml(getString(R.string.about_github));
         TextView tvGitHub = (TextView) findViewById(R.id.tv_github);
         final String urlGitHub = getString(R.string.about_github_url);
         if (tvGitHub != null) {
@@ -56,7 +55,7 @@ public class AboutActivity extends BaseActivity {
             });
         }
 
-        Spanned spCommunity = Html.fromHtml(getString(R.string.about_community));
+        Spanned spCommunity = Helper.fromHtml(getString(R.string.about_community));
         TextView tvCommunity = (TextView) findViewById(R.id.tv_community);
         final String urlCommunity = getString(R.string.about_community_url);
         if (tvCommunity != null) {
@@ -67,7 +66,7 @@ public class AboutActivity extends BaseActivity {
             });
         }
 
-        Spanned spDiscord = Html.fromHtml(getString(R.string.about_discord));
+        Spanned spDiscord = Helper.fromHtml(getString(R.string.about_discord));
         TextView tvDiscord = (TextView) findViewById(R.id.tv_discord);
         final String urlBlog = getString(R.string.about_discord_url);
         if (tvDiscord != null) {
@@ -78,7 +77,7 @@ public class AboutActivity extends BaseActivity {
             });
         }
 
-        Spanned spReddit = Html.fromHtml(getString(R.string.about_reddit));
+        Spanned spReddit = Helper.fromHtml(getString(R.string.about_reddit));
         TextView tvReddit = (TextView) findViewById(R.id.tv_reddit);
         final String urlReddit = getString(R.string.about_reddit_url);
         if (tvReddit != null) {
@@ -91,7 +90,7 @@ public class AboutActivity extends BaseActivity {
     }
 
     private void attachBuildNotes() {
-        Spanned spAbout = Html.fromHtml(getString(R.string.about));
+        Spanned spAbout = Helper.fromHtml(getString(R.string.about));
         TextView tvAbout = (TextView) findViewById(R.id.tv_about);
         if (tvAbout != null) {
             tvAbout.setText(spAbout);
@@ -109,7 +108,7 @@ public class AboutActivity extends BaseActivity {
             tvVersionName.setText(verName);
         }
 
-        Spanned spAboutNotes = Html.fromHtml(getString(R.string.about_notes));
+        Spanned spAboutNotes = Helper.fromHtml(getString(R.string.about_notes));
         TextView tvAboutNotes = (TextView) findViewById(R.id.tv_about_notes);
         if (tvAboutNotes != null) {
             tvAboutNotes.setText(spAboutNotes);

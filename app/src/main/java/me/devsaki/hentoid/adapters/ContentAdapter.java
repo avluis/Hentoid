@@ -9,7 +9,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.text.Html;
 import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -270,10 +269,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
             }
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
-        holder.tvSeries.setText(Html.fromHtml(templateSeries.replace("@series@", series)));
+        holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@", series)));
 
         if (seriesAttributes == null) {
-            holder.tvSeries.setText(Html.fromHtml(templateSeries.replace("@series@",
+            holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@",
                     cxt.getResources().getString(R.string.work_untitled))));
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
@@ -295,10 +294,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
             }
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
-        holder.tvArtist.setText(Html.fromHtml(templateArtist.replace("@artist@", artists)));
+        holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artists)));
 
         if (artistAttributes == null) {
-            holder.tvArtist.setText(Html.fromHtml(templateArtist.replace("@artist@",
+            holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     cxt.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
@@ -319,7 +318,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                 }
             }
         }
-        holder.tvTags.setText(Html.fromHtml(tags));
+        holder.tvTags.setText(Helper.fromHtml(tags));
     }
 
     private void attachSite(ContentHolder holder, final Content content, int pos) {

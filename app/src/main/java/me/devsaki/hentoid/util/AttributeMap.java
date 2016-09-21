@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import android.os.Build;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +29,13 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
     }
 
     public void add(List<Attribute> attributeList) {
-        for (Attribute item : attributeList) {
-            add(item);
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.N)) {
+            attributeList.forEach(this::add);
+        } else {
+            //noinspection Convert2streamapi
+            for (Attribute item : attributeList) {
+                add(item);
+            }
         }
     }
 }
