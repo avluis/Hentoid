@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -20,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
@@ -38,8 +38,7 @@ public class FileHelper {
     public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
     private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
-    private static final String AUTHORITY = "me.devsaki.hentoid.provider.FileProvider";
-    private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
+    private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
     public static void saveUri(Uri uri) {
         LogHelper.d(TAG, "Saving Uri: " + uri);

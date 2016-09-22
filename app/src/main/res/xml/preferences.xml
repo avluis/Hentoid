@@ -55,7 +55,7 @@
             <intent
                 android:action="android.intent.action.APPLICATION_PREFERENCES"
                 android:targetClass="me.devsaki.hentoid.activities.ImportActivity"
-                android:targetPackage="me.devsaki.hentoid" />
+                android:targetPackage="@string/appId" />
         </Preference>
         <Preference
             android:icon="@null"

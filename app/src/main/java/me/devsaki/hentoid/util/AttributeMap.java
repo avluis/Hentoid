@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
         list.add(attributeItem);
     }
 
+    @SuppressLint("NewApi")
     public void add(List<Attribute> attributeList) {
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.N)) {
             attributeList.forEach(this::add);

@@ -9,7 +9,8 @@ android {
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
-        // Hold updating until implementing an image viewer or Perfect Viewer implements Content URI
+        // Hold updating until implementing an image viewer
+        // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
         versionCode 42
@@ -24,7 +25,6 @@ android {
         targetCompatibility 1.8
         sourceCompatibility 1.8
     }
-    //noinspection GroovyMissingReturnStatement
     packagingOptions {
         exclude 'README.md'
         exclude 'LICENSE'
@@ -35,6 +35,27 @@ android {
         exclude 'META-INF/LICENSE.txt'
         exclude 'META-INF/NOTICE.txt'
         exclude 'META-INF/DEPENDENCIES.txt'
+
+        // `return void` removes the lint error: `Not all execution paths return a value`.
+        return void
+    }
+    productFlavors {
+        dev {
+            buildConfigField('String', 'UPDATE_URL',
+                    '"https://avnet.ws/.apps/hentoid/debug/update.json"')
+            def appId = "me.devsaki.hentoid.dev"
+            resValue('string', 'appId', appId)
+            resValue('string', 'app_name', 'Hentoid-dev')
+            applicationId appId
+        }
+        prod {
+            buildConfigField('String', 'UPDATE_URL',
+                    '"https://raw.githubusercontent.com/AVnetWS/Hentoid/master/app/update.json"')
+            def appId = android.defaultConfig.applicationId
+            resValue('string', 'appId', appId)
+            resValue('string', 'app_name', 'Hentoid')
+            applicationId appId
+        }
     }
     signingConfigs {
         release
@@ -62,6 +83,26 @@ android {
 
             // As of Gradle Android plugin 1.1.0, the test APK has a separate config
             testProguardFile 'proguard-project-test.pro'
+        }
+        qa {
+            debuggable true
+            minifyEnabled true
+            // Jack does not work with shrinkResources yet
+            shrinkResources false
+
+            signingConfig signingConfigs.release
+
+            // Library specific proguard files
+            proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
+
+            // Default proguard files & project app specific rules
+            proguardFile getDefaultProguardFile('proguard-android.txt')
+            proguardFile 'proguard-project-app.pro'
+
+            // As of Gradle Android plugin 1.1.0, the test APK has a separate config
+            testProguardFile 'proguard-project-test.pro'
+
+            versionNameSuffix "-QA"
         }
     }
     lintOptions {
@@ -115,7 +156,7 @@ dependencies {
     // Intro screens or slides: github.com/PaoloRotolo/AppIntro
     compile 'com.github.paolorotolo:appintro:4.0.0'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
-    compile 'com.google.android.gms:play-services-analytics:9.4.0'
+    compile 'com.google.android.gms:play-services-analytics:9.6.0'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     compile 'com.google.code.gson:gson:2.7'
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager

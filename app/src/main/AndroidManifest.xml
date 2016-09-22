@@ -203,7 +203,7 @@
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="me.devsaki.hentoid.provider.FileProvider"
+            android:authorities="${applicationId}.provider.FileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data

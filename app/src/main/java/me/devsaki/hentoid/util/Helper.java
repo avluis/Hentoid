@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ComponentName;
@@ -299,6 +300,7 @@ public final class Helper {
     }
 
     // Sets navigation bar background color
+    @SuppressLint("NewApi")
     public static void setNavBarColor(Activity activity, int color) {
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
             Context context = activity.getApplicationContext();
@@ -308,6 +310,7 @@ public final class Helper {
     }
 
     // Mainly for use with Android < 5.0 - sets OverScroll Glow and Edge Line
+    @SuppressLint("NewApi")
     public static void changeEdgeEffect(Context cxt, View list, int glowColor, int lineColor) {
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
             EdgeEffect edgeEffectTop = new EdgeEffect(cxt);
@@ -436,6 +439,7 @@ public final class Helper {
         }
     }
 
+    @SuppressLint("NewApi")
     public static Spanned fromHtml(String source) {
         if (isAtLeastAPI(Build.VERSION_CODES.N)) {
             return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY, null, null);

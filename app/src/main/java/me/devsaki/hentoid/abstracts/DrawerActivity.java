@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.abstracts;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
@@ -193,6 +194,7 @@ public abstract class DrawerActivity extends BaseActivity {
                 }
             }
 
+            @SuppressLint("NewApi")
             @Override
             public void onDrawerClosed(View drawerView) {
                 if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);

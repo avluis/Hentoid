@@ -92,6 +92,9 @@ public class JsonHelper {
             int response = https.getResponseCode();
 
             LogHelper.d(TAG, "HTTP Response: " + response);
+            if (response == 404) {
+                return null;
+            }
 
             stream = https.getInputStream();
             String s = readInputStream(stream);
@@ -112,6 +115,7 @@ public class JsonHelper {
                 https.disconnect();
             }
         }
+
         return null;
     }
 

@@ -28,7 +28,6 @@ import java.io.IOException;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.ConstsUpdater;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogHelper;
@@ -54,12 +53,12 @@ public class UpdateCheck {
     private static final String KEY_UPDATED_URL = "updateURL";
     @SuppressLint("StaticFieldLeak")
     private static UpdateCheck instance;
-    private final int NOTIFICATION_ID = ConstsUpdater.UPDATE_NOTIFICATION_ID;
+    private final int NOTIFICATION_ID = 4368643;
     private final UpdateNotificationRunnable updateNotificationRunnable =
             new UpdateNotificationRunnable();
     private NotificationCompat.Builder builder;
-    private NotificationManager notificationManager;
-    private RemoteViews notificationView;
+    private NotificationManager notifManager;
+    private RemoteViews notif;
     private int downloadID = -1;
     private DownloadManager downloadManager;
     private String updateDownloadPath;
@@ -107,18 +106,11 @@ public class UpdateCheck {
     }
 
     private void runAsyncTask(boolean retry) {
-        String updateURL;
+        String updateURL = BuildConfig.UPDATE_URL;
 
         if (retry) {
-            updateURL = ConstsUpdater.UPDATE_URL;
             retryCount++;
             LogHelper.d(TAG, "Retrying! Count: " + retryCount);
-        } else {
-            if (BuildConfig.DEBUG) {
-                updateURL = ConstsUpdater.DEBUG_UPDATE_URL;
-            } else {
-                updateURL = ConstsUpdater.UPDATE_URL;
-            }
         }
 
         LogHelper.d(TAG, "Update URL: " + updateURL);
@@ -136,9 +128,9 @@ public class UpdateCheck {
         installUpdate.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent updateIntent = PendingIntent.getBroadcast(cxt, 0, installUpdate, 0);
 
-        notificationView = new RemoteViews(cxt.getPackageName(),
+        notif = new RemoteViews(cxt.getPackageName(),
                 R.layout.notification_update_available);
-        notificationManager = (NotificationManager)
+        notifManager = (NotificationManager)
                 cxt.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
@@ -148,12 +140,12 @@ public class UpdateCheck {
                 .setVibrate(new long[]{1, 1, 1})
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setTicker(cxt.getString(R.string.update_available))
-                .setContent(notificationView);
-        notificationView.setTextViewText(R.id.tv_2,
+                .setContent(notif);
+        notif.setTextViewText(R.id.tv_update_summary,
                 cxt.getString(R.string.download_update));
-        notificationView.setOnClickPendingIntent(R.id.rl_notify_root, updateIntent);
+        notif.setOnClickPendingIntent(R.id.rl_notify_root, updateIntent);
 
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        notifManager.notify(NOTIFICATION_ID, builder.build());
 
         if (downloadManager != null) {
             try {
@@ -173,9 +165,9 @@ public class UpdateCheck {
         clearIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent removeIntent = PendingIntent.getBroadcast(cxt, 0, clearIntent, 0);
 
-        notificationView = new RemoteViews(cxt.getPackageName(),
+        notif = new RemoteViews(cxt.getPackageName(),
                 R.layout.notification_update);
-        notificationManager = (NotificationManager)
+        notifManager = (NotificationManager)
                 cxt.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
@@ -184,14 +176,14 @@ public class UpdateCheck {
                 .setTicker(cxt.getString(R.string.downloading_update))
                 .setAutoCancel(false)
                 .setOngoing(true)
-                .setContent(notificationView)
+                .setContent(notif)
                 .setDeleteIntent(removeIntent);
-        notificationView.setProgressBar(R.id.pb_notification, 100, 0, true);
-        notificationView.setTextViewText(R.id.tv_1, cxt.getString(R.string.downloading_update));
-        notificationView.setTextViewText(R.id.tv_2, "");
-        notificationView.setOnClickPendingIntent(R.id.bt_cancel, cancelIntent);
+        notif.setProgressBar(R.id.pb_notification, 100, 0, true);
+        notif.setTextViewText(R.id.tv_update_title, cxt.getString(R.string.downloading_update));
+        notif.setTextViewText(R.id.tv_update_summary, "");
+        notif.setOnClickPendingIntent(R.id.bt_cancel, cancelIntent);
 
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        notifManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     private void updateDownloadedNotification() {
@@ -203,9 +195,9 @@ public class UpdateCheck {
         clearIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent removeIntent = PendingIntent.getBroadcast(cxt, 0, clearIntent, 0);
 
-        notificationView = new RemoteViews(cxt.getPackageName(),
+        notif = new RemoteViews(cxt.getPackageName(),
                 R.layout.notification_update_available);
-        notificationManager = (NotificationManager)
+        notifManager = (NotificationManager)
                 cxt.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
@@ -216,11 +208,11 @@ public class UpdateCheck {
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setDeleteIntent(removeIntent)
                 .setTicker(cxt.getString(R.string.install_update))
-                .setContent(notificationView);
-        notificationView.setTextViewText(R.id.tv_2, cxt.getString(R.string.install_update));
-        notificationView.setOnClickPendingIntent(R.id.rl_notify_root, installIntent);
+                .setContent(notif);
+        notif.setTextViewText(R.id.tv_update_summary, cxt.getString(R.string.install_update));
+        notif.setOnClickPendingIntent(R.id.rl_notify_root, installIntent);
 
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        notifManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     void installUpdate() {
@@ -266,34 +258,35 @@ public class UpdateCheck {
                         public void onDownloadFailed(DownloadRequest request, int errorCode,
                                                      String errorMessage) {
                             cancelNotificationAndUpdateRunnable();
-                            LogHelper.d(TAG, "Error Code: " + errorCode + ". Error Message: " +
-                                    errorMessage);
-                            if (errorCode == DownloadManager.ERROR_UNHANDLED_HTTP_CODE &&
-                                    "Unhandled HTTP response:404 message:Not Found"
-                                            .equals(errorMessage)) {
-                                try {
-                                    notificationView.setProgressBar(R.id.pb_notification, 100, 0,
-                                            true);
-                                    notificationView.setTextViewText(R.id.tv_1,
-                                            cxt.getString(R.string.error_network));
-                                    notificationView.setTextViewText(R.id.tv_2,
-                                            cxt.getString(R.string.error_file));
-                                    notificationManager.notify(NOTIFICATION_ID, builder.build());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
+                            if (errorCode == DownloadManager.ERROR_UNHANDLED_HTTP_CODE) {
+                                if ("Unhandled HTTP response:404 message:Not Found"
+                                        .equals(errorMessage)) {
+                                    try {
+                                        notif.setProgressBar(R.id.pb_notification, 100, 0, true);
+                                        notif.setTextViewText(R.id.tv_update_title,
+                                                cxt.getString(R.string.error_network_summary));
+                                        notif.setTextViewText(R.id.tv_update_summary,
+                                                cxt.getString(R.string.error_file));
+                                        notifManager.notify(NOTIFICATION_ID, builder.build());
+                                    } catch (Exception e) {
+                                        LogHelper.e(TAG, "Error: ", e);
+                                    }
+                                } else {
+                                    try {
+                                        notif.setProgressBar(R.id.pb_notification, 100, 0, true);
+                                        notif.setTextViewText(R.id.tv_update_title,
+                                                cxt.getString(R.string.error_network_summary));
+                                        notif.setTextViewText(R.id.tv_update_summary,
+                                                cxt.getString(R.string.error_file));
+                                        notifManager.notify(NOTIFICATION_ID, builder.build());
+                                    } catch (Exception e) {
+                                        LogHelper.e(TAG, "Error: ", e);
+                                    }
                                 }
-//                            } else if (errorCode != DownloadManager.ERROR_DOWNLOAD_CANCELLED) {
-//                                try {
-//                                    notificationView.setProgressBar(R.id.pb_notification, 100, 0,
-//                                            true);
-//                                    notificationView.setTextViewText(R.id.tv_1,
-//                                            cxt.getString(R.string.error_network));
-//                                    notificationView.setTextViewText(R.id.tv_2,
-//                                            cxt.getString(R.string.error));
-//                                    notificationManager.notify(NOTIFICATION_ID, builder.build());
-//                                } catch (Exception e) {
-//                                    e.printStackTrace();
-//                                }
+
+                            } else {
+                                LogHelper.d(TAG, "Error Code: " + errorCode + ". Error Message: " +
+                                        errorMessage);
                             }
                             downloadManager = null;
                         }
@@ -339,7 +332,7 @@ public class UpdateCheck {
 
     private void cancelNotification() {
         try {
-            notificationManager.cancel(NOTIFICATION_ID);
+            notifManager.cancel(NOTIFICATION_ID);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -386,6 +379,10 @@ public class UpdateCheck {
                             }
                         }
                     }
+                } else {
+                    if (showToast) {
+                        mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
+                    }
                 }
             } catch (IOException e) {
                 if (retryCount == 0) {
@@ -393,18 +390,15 @@ public class UpdateCheck {
                 } else {
                     LogHelper.e(TAG, "IO ERROR: ", e);
                     HentoidApp.getInstance().trackException(e);
-
                     mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
                 }
             } catch (JSONException e) {
-                HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Error with JSON File: ", e);
+                HentoidApp.getInstance().trackException(e);
                 mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
             } catch (PackageManager.NameNotFoundException e) {
                 HentoidApp.getInstance().trackException(e);
                 LogHelper.e(TAG, "Package Name NOT Found! ", e);
-            } finally {
-                retryCount = 0;
             }
 
             return null;
@@ -414,13 +408,13 @@ public class UpdateCheck {
     private class UpdateNotificationRunnable implements Runnable {
         @Override
         public void run() {
-            notificationView.setProgressBar(R.id.pb_notification, 100, progressBar, false);
-            notificationView.setTextViewText(R.id.tv_2,
+            notif.setProgressBar(R.id.pb_notification, 100, progressBar, false);
+            notif.setTextViewText(R.id.tv_update_summary,
                     "(" + Formatter.formatShortFileSize(cxt, done) + "/"
                             + Formatter.formatShortFileSize(cxt, total) + ") "
                             + progressBar
                             + "%");
-            notificationManager.notify(NOTIFICATION_ID, builder.build());
+            notifManager.notify(NOTIFICATION_ID, builder.build());
             mHandler.postDelayed(this, 1000);
         }
     }

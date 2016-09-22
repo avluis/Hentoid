@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">Hentoid</string>
     <string name="app_intro">Welcome</string>
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
@@ -74,11 +73,9 @@
     <string name="update_available">An update is available!</string>
     <string name="downloading_update">Downloading update:</string>
     <string name="install_update">Tap to install the update!</string>
-    <string name="error_network">Network Error!</string>
     <string name="error_dependency">Error parsing update dependency.\nPlease try again later.</string>
     <string name="error_network_summary">Network error, please try again later.</string>
-    <string name="error_file">Update not found on server.</string>
-    <string name="update_failed">Cannot find update file on server.</string>
+    <string name="error_file">Cannot find update file on server.</string>
     <string name="update_check_no_update">Update Check: No new updates.</string>
     <!-- Image Viewer -->
     <string name="select_the_action">How will we open this?\nYou can configure the default action in preferences.</string>

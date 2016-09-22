@@ -1,7 +1,9 @@
 {
   "project_info": {
     "project_number": "327123173705",
-    "project_id": "hentoid-c90cc"
+    "firebase_url": "https://hentoid-c90cc.firebaseio.com",
+    "project_id": "hentoid-c90cc",
+    "storage_bucket": "hentoid-c90cc.appspot.com"
   },
   "client": [
     {
@@ -11,7 +13,32 @@
           "package_name": "me.devsaki.hentoid"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "327123173705-lec0458odu93dats2hd0csk1pu9qtadc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.devsaki.hentoid",
+            "certificate_hash": "76D849ADB0ACB7F02E9303363C8D6CC289599BAD"
+          }
+        },
+        {
+          "client_id": "327123173705-84urbvmmi08vi1ikbqb6ouesmrhcpv0k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.devsaki.hentoid",
+            "certificate_hash": "4944EFFD32F47A6B372CDEA527A37B9CC84D6CD3"
+          }
+        },
+        {
+          "client_id": "327123173705-ajeotrqh6s7r8ctnaes275le9sa16t3p.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "327123173705-piag21qarvdf90ghq5aqgvq4fo5ur82d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDcJ0CYV9zKu85NOiYEF-24XdO5SPq-iv4"
@@ -29,7 +56,55 @@
           "other_platform_oauth_client": []
         },
         "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:327123173705:android:cd350558254e72a3",
+        "android_client_info": {
+          "package_name": "me.devsaki.hentoid.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "327123173705-pun3vnjv8htflhvbsm4bmefg1er96v2f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.devsaki.hentoid.dev",
+            "certificate_hash": "4944EFFD32F47A6B372CDEA527A37B9CC84D6CD3"
+          }
+        },
+        {
+          "client_id": "327123173705-ajeotrqh6s7r8ctnaes275le9sa16t3p.apps.googleusercontent.com",
+          "client_type": 3
+        },
+        {
+          "client_id": "327123173705-piag21qarvdf90ghq5aqgvq4fo5ur82d.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDcJ0CYV9zKu85NOiYEF-24XdO5SPq-iv4"
+        }
+      ],
+      "services": {
+        "analytics_service": {
           "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "327123173705-ajeotrqh6s7r8ctnaes275le9sa16t3p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
         }
       }
     }
