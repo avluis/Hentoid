@@ -1,10 +1,13 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 24
     buildToolsVersion '24.0.2'
     compileOptions {
         encoding "UTF-8"
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
@@ -17,13 +20,9 @@ android {
         versionName '1.2.1r1'
         resConfigs "en"
         jackOptions {
-            enabled true
+            enabled false
         }
         vectorDrawables.useSupportLibrary = true
-    }
-    compileOptions {
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
     }
     packagingOptions {
         exclude 'README.md'
@@ -110,6 +109,10 @@ android {
     }
 }
 
+retrolambda {
+    jvmArgs '-noverify'
+}
+
 def Properties props = new Properties()
 def propFile = new File('.signing/signing.properties')
 if (propFile.canRead()) {
@@ -156,7 +159,7 @@ dependencies {
     // Intro screens or slides: github.com/PaoloRotolo/AppIntro
     compile 'com.github.paolorotolo:appintro:4.0.0'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
-    compile 'com.google.android.gms:play-services-analytics:9.6.0'
+    compile 'com.google.android.gms:play-services-analytics:9.6.1'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     compile 'com.google.code.gson:gson:2.7'
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager

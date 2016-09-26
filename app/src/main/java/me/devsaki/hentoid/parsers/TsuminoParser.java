@@ -40,9 +40,6 @@ import static me.devsaki.hentoid.enums.Site.TSUMINO;
 /**
  * Created by Shiro on 1/22/2016.
  * Handles parsing of content from tsumino
- * </p>
- * TODO: Address or wait for fix on Jack bug (debug builds only):
- * https://code.google.com/p/android/issues/detail?id=82691
  */
 public class TsuminoParser {
     private static final String TAG = LogHelper.makeLogTag(TsuminoParser.class);
