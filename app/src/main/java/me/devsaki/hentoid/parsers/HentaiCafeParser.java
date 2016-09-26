@@ -91,36 +91,60 @@ public class HentaiCafeParser {
     }
 
     public static List<String> parseImageList(Content content) {
-        String readerUrl = content.getReaderUrl();
+        String galleryUrl = content.getReaderUrl();
         List<String> imgUrls = new ArrayList<>();
+        LogHelper.d(TAG, "Gallery URL: " + galleryUrl);
 
-        Document doc;
-        Elements contents;
-        int pages;
-        String imgUrl;
+        Document readerDoc = null;
         try {
-            doc = Jsoup.connect(readerUrl).get();
-            contents = doc.select("article#content");
-            if (contents.size() > 0) {
-                pages = Integer.parseInt(doc.select("div.text").first().text().replace(" ⤵", ""));
-                content.setQtyPages(pages);
-
-                for (int i = 0; i < pages; i++) {
-                    String newReaderUrl = readerUrl + "page/" + (i + 1);
-                    // TODO: Find another way to gather urls
-                    imgUrl = Jsoup.connect(newReaderUrl).get()
-                            .select("div.inner")
-                            .select("a")
-                            .select("img")
-                            .attr("src");
-                    imgUrls.add(imgUrl);
-                }
-            }
-
+            readerDoc = Jsoup.connect(galleryUrl).get();
         } catch (IOException e) {
-            LogHelper.e(TAG, "Could not grab image urls: ", e);
+            LogHelper.e(TAG, "Error parsing content page: ", e);
         }
-        LogHelper.d(TAG, imgUrls);
+
+        if (readerDoc != null) {
+            Elements links = readerDoc.select("a.x-btn");
+
+            if (links.size() > 1) {
+                LogHelper.d(TAG, "Multiple chapters found!");
+                for (int i = 0; i < links.size(); i++) {
+                    LogHelper.d(TAG, "Chapter Links: " + links.get(i).attr("href"));
+                    // TODO: Bundle all chapters for a single download
+                }
+            } else {
+                LogHelper.d(TAG, "Chapter Link: " + links.attr("href"));
+                // TODO: Proceed with downloading
+            }
+        }
+
+        // TODO: Make use of the JavaScript object in reader to grab data
+
+//        Document doc;
+//        Elements contents;
+//        int pages;
+//        String imgUrl;
+//        try {
+//            doc = Jsoup.connect(readerUrl).get();
+//            contents = doc.select("article#content");
+//            if (contents.size() > 0) {
+//                pages = Integer.parseInt(doc.select("div.text").first().text().replace(" ⤵", ""));
+//                content.setQtyPages(pages);
+//
+//                for (int i = 0; i < pages; i++) {
+//                    String newReaderUrl = readerUrl + "page/" + (i + 1);
+//                    imgUrl = Jsoup.connect(newReaderUrl).get()
+//                            .select("div.inner")
+//                            .select("a")
+//                            .select("img")
+//                            .attr("src");
+//                    imgUrls.add(imgUrl);
+//                }
+//            }
+//
+//        } catch (IOException e) {
+//            LogHelper.e(TAG, "Could not grab image urls: ", e);
+//        }
+//        LogHelper.d(TAG, imgUrls);
 
         return imgUrls;
     }
