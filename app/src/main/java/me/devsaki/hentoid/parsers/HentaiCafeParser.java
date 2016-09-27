@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.parsers;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONTokener;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -8,6 +11,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -96,28 +101,57 @@ public class HentaiCafeParser {
         LogHelper.d(TAG, "Gallery URL: " + galleryUrl);
 
         Document readerDoc = null;
+        Elements links = null;
         try {
             readerDoc = Jsoup.connect(galleryUrl).get();
         } catch (IOException e) {
             LogHelper.e(TAG, "Error parsing content page: ", e);
         }
 
+        boolean multiChapter = false;
         if (readerDoc != null) {
-            Elements links = readerDoc.select("a.x-btn");
+            links = readerDoc.select("a.x-btn");
 
             if (links.size() > 1) {
                 LogHelper.d(TAG, "Multiple chapters found!");
-                for (int i = 0; i < links.size(); i++) {
-                    LogHelper.d(TAG, "Chapter Links: " + links.get(i).attr("href"));
-                    // TODO: Bundle all chapters for a single download
-                }
+                multiChapter = true;
             } else {
                 LogHelper.d(TAG, "Chapter Link: " + links.attr("href"));
-                // TODO: Proceed with downloading
             }
         }
 
-        // TODO: Make use of the JavaScript object in reader to grab data
+        Document doc;
+        Elements contents;
+        Element js;
+        int pages;
+
+        if (links != null) {
+            // TODO: Make use of the JavaScript object in reader to grab data
+            if (!multiChapter) {
+                // TODO: Proceed with a single chapter download
+                try {
+                    doc = Jsoup.connect(links.attr("href")).get();
+                    contents = doc.select("article#content");
+                    js = contents.select("script").last();
+
+                    if (contents.size() > 0) {
+                        pages = Integer.parseInt(
+                                doc.select("div.text").first().text().replace(" ⤵", ""));
+                        LogHelper.d(TAG, "Pages: " + pages);
+                        content.setQtyPages(pages);
+
+                        LogHelper.d(TAG, "JSON Array: " + getJSONArrayFromString(js.toString()));
+                    }
+                } catch (IOException e) {
+                    LogHelper.e(TAG, "JSOUP Error: ", e);
+                }
+            } else {
+                // TODO: Bundle all chapters for a single download
+                for (int i = 0; i < links.size(); i++) {
+                    LogHelper.d(TAG, "Chapter Links: " + links.get(i).attr("href"));
+                }
+            }
+        }
 
 //        Document doc;
 //        Elements contents;
@@ -147,5 +181,22 @@ public class HentaiCafeParser {
 //        LogHelper.d(TAG, imgUrls);
 
         return imgUrls;
+    }
+
+    private static JSONArray getJSONArrayFromString(String s) {
+        Pattern pattern = Pattern.compile(".*\\[\\{ *(.*) *\\}\\].*");
+        Matcher matcher = pattern.matcher(s);
+
+        LogHelper.d(TAG, "Match found? " + matcher.find());
+
+        String results = matcher.group(1);
+        results = "[{" + results + "}]";
+        try {
+            return (JSONArray) new JSONTokener(results).nextValue();
+        } catch (JSONException e) {
+            LogHelper.e(TAG, "Couldn't build JSONArray from the provided string: ", e);
+        }
+
+        return null;
     }
 }

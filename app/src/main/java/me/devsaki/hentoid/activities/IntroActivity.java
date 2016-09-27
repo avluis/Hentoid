@@ -39,11 +39,6 @@ public class IntroActivity extends AppIntro2 {
 
     private Fragment doneFragment;
 
-    private void showSkipButton(boolean showButton) {
-        this.skipButtonEnabled = showButton;
-        setButtonState(skipButton, showButton);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -157,7 +157,7 @@ dependencies {
     // Integrate with OkHttp: github.com/bumptech/glide/wiki/Integration-Libraries#okhttp-3
     compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0-SNAPSHOT'
     // Intro screens or slides: github.com/PaoloRotolo/AppIntro
-    compile 'com.github.paolorotolo:appintro:4.0.0'
+    compile 'com.github.paolorotolo:appintro:4.1.0'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
     compile 'com.google.android.gms:play-services-analytics:9.6.1'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
