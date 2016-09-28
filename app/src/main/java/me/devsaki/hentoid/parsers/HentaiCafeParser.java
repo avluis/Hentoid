@@ -30,13 +30,15 @@ import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
 public class HentaiCafeParser {
     private static final String TAG = LogHelper.makeLogTag(HentaiCafeParser.class);
 
+    private static final int TIMEOUT = 5000; // 5 seconds
+
     public static Content parseContent(String urlString) throws IOException {
-        Document doc = Jsoup.connect(urlString).get();
+        Document doc = Jsoup.connect(urlString).timeout(TIMEOUT).get();
 
         Elements content = doc.select("div.entry-content.content");
 
-        if (urlString.contains(HENTAICAFE.getUrl() + "/78-2/") ||
-                urlString.contains(HENTAICAFE.getUrl() + "/artists/")) {
+        if (urlString.contains(HENTAICAFE.getUrl() + "/78-2/") ||           // ignore tags page
+                urlString.contains(HENTAICAFE.getUrl() + "/artists/")) {    // ignore artist page
 
             return null;
         }
@@ -103,7 +105,7 @@ public class HentaiCafeParser {
         Document readerDoc = null;
         Elements links = null;
         try {
-            readerDoc = Jsoup.connect(galleryUrl).get();
+            readerDoc = Jsoup.connect(galleryUrl).timeout(TIMEOUT).get();
         } catch (IOException e) {
             LogHelper.e(TAG, "Error parsing content page: ", e);
         }
@@ -126,11 +128,9 @@ public class HentaiCafeParser {
         int pages;
 
         if (links != null) {
-            // TODO: Make use of the JavaScript object in reader to grab data
             if (!multiChapter) {
-                // TODO: Proceed with a single chapter download
                 try {
-                    doc = Jsoup.connect(links.attr("href")).get();
+                    doc = Jsoup.connect(links.attr("href")).timeout(TIMEOUT).get();
                     contents = doc.select("article#content");
                     js = contents.select("script").last();
 
@@ -140,7 +140,18 @@ public class HentaiCafeParser {
                         LogHelper.d(TAG, "Pages: " + pages);
                         content.setQtyPages(pages);
 
-                        LogHelper.d(TAG, "JSON Array: " + getJSONArrayFromString(js.toString()));
+                        JSONArray array = getJSONArrayFromString(js.toString());
+                        if (array != null) {
+                            for (int i = 0; i < array.length(); i++) {
+                                try {
+                                    //LogHelper.d(TAG, "JSONObject: " + i + ":"
+                                    //        + array.get(i).toString());
+                                    imgUrls.add(array.getJSONObject(i).getString("url"));
+                                } catch (JSONException e) {
+                                    LogHelper.d(TAG, "Error while reading from array: ", e);
+                                }
+                            }
+                        }
                     }
                 } catch (IOException e) {
                     LogHelper.e(TAG, "JSOUP Error: ", e);
@@ -152,33 +163,7 @@ public class HentaiCafeParser {
                 }
             }
         }
-
-//        Document doc;
-//        Elements contents;
-//        int pages;
-//        String imgUrl;
-//        try {
-//            doc = Jsoup.connect(readerUrl).get();
-//            contents = doc.select("article#content");
-//            if (contents.size() > 0) {
-//                pages = Integer.parseInt(doc.select("div.text").first().text().replace(" ⤵", ""));
-//                content.setQtyPages(pages);
-//
-//                for (int i = 0; i < pages; i++) {
-//                    String newReaderUrl = readerUrl + "page/" + (i + 1);
-//                    imgUrl = Jsoup.connect(newReaderUrl).get()
-//                            .select("div.inner")
-//                            .select("a")
-//                            .select("img")
-//                            .attr("src");
-//                    imgUrls.add(imgUrl);
-//                }
-//            }
-//
-//        } catch (IOException e) {
-//            LogHelper.e(TAG, "Could not grab image urls: ", e);
-//        }
-//        LogHelper.d(TAG, imgUrls);
+        LogHelper.d(TAG, imgUrls);
 
         return imgUrls;
     }

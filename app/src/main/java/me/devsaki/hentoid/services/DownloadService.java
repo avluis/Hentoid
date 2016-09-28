@@ -199,6 +199,7 @@ public class DownloadService extends IntentService {
         EventBus.getDefault().post(new DownloadEvent(percent));
     }
 
+    // TODO: Implement null handling as fail/retry state
     private void parseImageFiles() {
         List<String> aUrls = new ArrayList<>();
         switch (currentContent.getSite()) {

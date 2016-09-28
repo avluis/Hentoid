@@ -102,6 +102,7 @@ final class ImageDownloadBatch {
             if (e instanceof SocketTimeoutException) {
                 LogHelper.w(TAG, "Socket Timeout Exception!", e);
                 // TODO: Handle this somehow
+                semaphore.release(); // <-- Requires testing~
             }
 
             hasError = true;
