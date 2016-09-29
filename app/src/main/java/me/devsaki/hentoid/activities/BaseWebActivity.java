@@ -314,13 +314,7 @@ public class BaseWebActivity extends BaseActivity {
             return;
         }
 
-        Content contentDB = db.selectContentById(content.getUrl().hashCode());
-        if (contentDB != null) {
-            content.setStatus(contentDB.getStatus())
-                    .setImageFiles(contentDB.getImageFiles())
-                    .setDownloadDate(contentDB.getDownloadDate());
-        }
-        db.insertContent(content);
+        addContentToDB(content);
 
         StatusContent contentStatus = content.getStatus();
         if (contentStatus != StatusContent.DOWNLOADED
@@ -340,23 +334,39 @@ public class BaseWebActivity extends BaseActivity {
 
         // Allows debugging parsers without starting a content download
         if (BuildConfig.DEBUG) {
-            switch (content.getSite()) {
-                case HITOMI:
-                    HitomiParser.parseImageList(content);
-                    break;
-                case NHENTAI:
-                    NhentaiParser.parseImageList(content);
-                    break;
-                case TSUMINO:
-                    TsuminoParser.parseImageList(content);
-                    break;
-                case ASMHENTAI:
-                    ASMHentaiParser.parseImageList(content);
-                    break;
-                case HENTAICAFE:
-                    HentaiCafeParser.parseImageList(content);
-                    break;
-            }
+            attachToDebugger(content);
+        }
+    }
+
+    private void addContentToDB(Content content) {
+        Content contentDB = db.selectContentById(content.getUrl().hashCode());
+        if (contentDB != null) {
+            content.setStatus(contentDB.getStatus())
+                    .setImageFiles(contentDB.getImageFiles())
+                    .setDownloadDate(contentDB.getDownloadDate());
+        }
+        db.insertContent(content);
+    }
+
+    private void attachToDebugger(Content content) {
+        switch (content.getSite()) {
+            case HITOMI:
+                HitomiParser.parseImageList(content);
+                break;
+            case NHENTAI:
+                NhentaiParser.parseImageList(content);
+                break;
+            case TSUMINO:
+                TsuminoParser.parseImageList(content);
+                break;
+            case ASMHENTAI:
+                ASMHentaiParser.parseImageList(content);
+                break;
+            case HENTAICAFE:
+                HentaiCafeParser.parseImageList(content);
+                break;
+            default:
+                break;
         }
     }
 
