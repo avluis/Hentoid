@@ -96,7 +96,7 @@ public class HitomiParser {
                 imgUrls.add("https:" + element.text().replace("//g.", "//a."));
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, "Could not connect to the requested resource: ", e);
+            LogHelper.e(TAG, e, "Could not connect to the requested resource");
         }
         LogHelper.d(TAG, imgUrls);
 

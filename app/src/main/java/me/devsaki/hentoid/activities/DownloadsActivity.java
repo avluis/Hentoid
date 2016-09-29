@@ -39,9 +39,9 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         try {
             return getFragment().newInstance();
         } catch (InstantiationException e) {
-            LogHelper.e(TAG, "Error: Could not access constructor: ", e);
+            LogHelper.e(TAG, e, "Error: Could not access constructor");
         } catch (IllegalAccessException e) {
-            LogHelper.e(TAG, "Error: Field or method is not accessible: ", e);
+            LogHelper.e(TAG, e, "Error: Field or method is not accessible");
         }
         return null;
     }

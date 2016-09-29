@@ -153,7 +153,7 @@ public class TsuminoActivity extends BaseWebActivity {
             try {
                 processContent(TsuminoParser.parseContent(url));
             } catch (IOException e) {
-                e.printStackTrace();
+                LogHelper.e(TAG, e, "Error parsing content.");
             }
 
             return null;

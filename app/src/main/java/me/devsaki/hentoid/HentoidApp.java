@@ -97,6 +97,8 @@ public class HentoidApp extends Application {
 
     /***
      * Tracking exception
+     * Note: LogHelper will track exceptions as well,
+     * so no need to call if making use of LogHelper with a throwable.
      *
      * @param e exception to be tracked
      */

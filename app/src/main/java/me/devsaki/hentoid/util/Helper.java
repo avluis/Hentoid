@@ -289,13 +289,13 @@ public final class Helper {
 
                     Runtime.getRuntime().exit(0);
                 } else {
-                    LogHelper.e(TAG, "Was not able to restart application, intent null");
+                    LogHelper.d(TAG, "Was not able to restart application, intent null");
                 }
             } else {
-                LogHelper.e(TAG, "Was not able to restart application, PM null");
+                LogHelper.d(TAG, "Was not able to restart application, PM null");
             }
-        } catch (Exception ex) {
-            LogHelper.e(TAG, "Was not able to restart application: ", ex);
+        } catch (Exception e) {
+            LogHelper.e(TAG, e, "Was not able to restart application");
         }
     }
 

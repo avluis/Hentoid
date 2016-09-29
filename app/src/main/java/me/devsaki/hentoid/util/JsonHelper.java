@@ -18,8 +18,6 @@ import java.nio.charset.Charset;
 
 import javax.net.ssl.HttpsURLConnection;
 
-import me.devsaki.hentoid.HentoidApp;
-
 /**
  * Created by avluis on 06/05/2016.
  * JSON related utility class
@@ -101,8 +99,7 @@ public class JsonHelper {
 
             return new JSONObject(s);
         } catch (JSONException e) {
-            HentoidApp.getInstance().trackException(e);
-            LogHelper.e(TAG, "JSON file not properly formatted: ", e);
+            LogHelper.e(TAG, e, "JSON file not properly formatted");
         } finally {
             if (stream != null) {
                 try {

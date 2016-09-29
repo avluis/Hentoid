@@ -18,6 +18,7 @@ package me.devsaki.hentoid.util;
 import android.util.Log;
 
 import me.devsaki.hentoid.BuildConfig;
+import me.devsaki.hentoid.HentoidApp;
 
 @SuppressWarnings("ALL")
 public class LogHelper {
@@ -86,6 +87,8 @@ public class LogHelper {
             }
             if (t != null) {
                 sb.append("\n").append(Log.getStackTraceString(t));
+                // Exception Tracking
+                HentoidApp.getInstance().trackException((Exception) t);
             }
             message = sb.toString();
         }

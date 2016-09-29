@@ -135,9 +135,9 @@ public class NhentaiParser {
                 imgUrls.add(urlImage);
             }
         } catch (JSONException e) {
-            LogHelper.e(TAG, "Error parsing content: ", e);
+            LogHelper.e(TAG, e, "Error parsing content");
         } catch (Exception e) {
-            LogHelper.e(TAG, "Couldn't connect to resource: " + e);
+            LogHelper.e(TAG, e, "Couldn't connect to resource");
         }
         LogHelper.d(TAG, imgUrls);
 

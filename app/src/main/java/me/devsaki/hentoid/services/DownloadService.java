@@ -149,6 +149,8 @@ public class DownloadService extends IntentService {
             db.updateContentStatus(currentContent);
             updateActivity(-1);
 
+            LogHelper.e(TAG, e, "Exception while parsing image files");
+
             return;
         }
 
@@ -167,7 +169,7 @@ public class DownloadService extends IntentService {
         try {
             JsonHelper.saveJson(currentContent, dir);
         } catch (IOException e) {
-            LogHelper.e(TAG, "Error saving JSON: " + currentContent.getTitle(), e);
+            LogHelper.e(TAG, e, "Error saving JSON: " + currentContent.getTitle());
         }
 
         HentoidApp.downloadComplete();

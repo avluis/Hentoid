@@ -79,7 +79,7 @@ public class SearchContent {
                 mCurrentState = State.READY;
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, "Could not load data from db: ", e);
+            LogHelper.e(TAG, e, "Could not load data from db");
         } finally {
             if (mCurrentState != State.READY) {
                 // Something bad happened!

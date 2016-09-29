@@ -173,7 +173,7 @@ public class FileHelper {
      */
     public static boolean isReadable(@NonNull final File file) {
         if (!file.isFile()) {
-            LogHelper.e(TAG, "isReadable(): Not a File");
+            LogHelper.d(TAG, "isReadable(): Not a File");
 
             return false;
         }
@@ -273,8 +273,7 @@ public class FileHelper {
             hasPermission = FileUtil.makeFile(nomedia);
         } catch (IOException e) {
             hasPermission = false;
-            HentoidApp.getInstance().trackException(e);
-            LogHelper.e(TAG, "We couldn't confirm write permissions to this location: ", e);
+            LogHelper.e(TAG, e, "We couldn't confirm write permissions to this location: ");
         }
 
         if (!hasPermission) {
@@ -309,7 +308,7 @@ public class FileHelper {
             }
         } catch (IOException io) {
             if (!isReadable(noMedia)) {
-                LogHelper.e("Failed to create file: ", io);
+                LogHelper.e(TAG, io, "Failed to create file.");
                 Helper.toast(R.string.error_creating_nomedia_file);
 
                 return false;

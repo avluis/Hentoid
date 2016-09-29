@@ -118,7 +118,7 @@ public class AssetsCache {
 
             extractFile(file);
         } catch (IOException e) {
-            LogHelper.e(TAG, "Failed to assemble file from assets", e);
+            LogHelper.e(TAG, e, "Failed to assemble file from assets");
         }
     }
 
@@ -145,12 +145,10 @@ public class AssetsCache {
                     unpackBundle();
                 }
             } catch (IOException e) {
-                LogHelper.e(TAG, "IO ERROR: ", e);
-                HentoidApp.getInstance().trackException(e);
+                LogHelper.e(TAG, e, "IO ERROR");
                 unpackBundle();
             } catch (JSONException e) {
-                LogHelper.e(TAG, "Error with JSON File: ", e);
-                HentoidApp.getInstance().trackException(e);
+                LogHelper.e(TAG, e, "Error with JSON File");
                 unpackBundle();
             }
 

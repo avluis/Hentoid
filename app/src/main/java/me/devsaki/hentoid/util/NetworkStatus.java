@@ -32,7 +32,7 @@ public final class NetworkStatus {
 
             return connected;
         } catch (Exception e) {
-            LogHelper.v(TAG, "Connectivity: ", e);
+            LogHelper.e(TAG, e);
         }
 
         return false;
@@ -47,7 +47,7 @@ public final class NetworkStatus {
 
             return wifi;
         } catch (Exception e) {
-            LogHelper.v(TAG, "Connectivity: ", e);
+            LogHelper.e(TAG, e);
         }
 
         return false;
@@ -62,7 +62,7 @@ public final class NetworkStatus {
 
             return mobile;
         } catch (Exception e) {
-            LogHelper.v(TAG, "Connectivity: ", e);
+            LogHelper.e(TAG, e);
         }
 
         return false;
@@ -82,7 +82,7 @@ public final class NetworkStatus {
 
                 return (url.getResponseCode() == 204 && url.getContentLength() == 0);
             } catch (IOException e) {
-                LogHelper.e(TAG, "Error checking internet connection: ", e);
+                LogHelper.e(TAG, e, "Error while checking for internet connection");
             }
         } else {
             LogHelper.d(TAG, "No network available!");

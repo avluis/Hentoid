@@ -657,7 +657,7 @@ public class ImportActivity extends BaseActivity {
                     .setUrl(urlBuilder.getId())
                     .setType(type);
         } catch (Exception e) {
-            LogHelper.e(TAG, "Parsing URL to attribute: ", e);
+            LogHelper.e(TAG, e, "Parsing URL to attribute");
             return null;
         }
     }
@@ -793,13 +793,12 @@ public class ImportActivity extends BaseActivity {
                 try {
                     JsonHelper.saveJson(contentV2, file);
                 } catch (IOException e) {
-                    LogHelper.e(TAG,
-                            "Error converting JSON (old) to JSON (v2): "
-                                    + content.getTitle(), e);
+                    LogHelper.e(TAG, e,
+                            "Error converting JSON (old) to JSON (v2): " + content.getTitle());
                 }
                 contents.add(contentV2);
             } catch (Exception e) {
-                LogHelper.e(TAG, "Error reading JSON (old) file: ", e);
+                LogHelper.e(TAG, e, "Error reading JSON (old) file");
             }
         }
 
@@ -815,12 +814,12 @@ public class ImportActivity extends BaseActivity {
                 try {
                     JsonHelper.saveJson(contentV2, file);
                 } catch (IOException e) {
-                    LogHelper.e(TAG, "Error converting JSON (v1) to JSON (v2): "
-                            + content.getTitle(), e);
+                    LogHelper.e(TAG, e, "Error converting JSON (v1) to JSON (v2): "
+                            + content.getTitle());
                 }
                 contents.add(contentV2);
             } catch (Exception e) {
-                LogHelper.e(TAG, "Error reading JSON (v1) file: ", e);
+                LogHelper.e(TAG, e, "Error reading JSON (v1) file");
             }
         }
 
@@ -833,7 +832,7 @@ public class ImportActivity extends BaseActivity {
                 }
                 contents.add(content);
             } catch (Exception e) {
-                LogHelper.e(TAG, "Error reading JSON (v2) file: ", e);
+                LogHelper.e(TAG, e, "Error reading JSON (v2) file");
             }
         }
     }

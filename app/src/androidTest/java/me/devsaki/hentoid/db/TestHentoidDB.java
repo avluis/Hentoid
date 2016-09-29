@@ -42,7 +42,7 @@ public class TestHentoidDB extends AndroidTestCase {
                         db1.insertContents(contents1.toArray(new Content[contents1.size()]));
                     }
                 } catch (Exception ex) {
-                    LogHelper.e(TAG, "Error: ", ex);
+                    LogHelper.e(TAG, ex, "Error");
                 }
                 locker1 = true;
             }).start();
@@ -55,7 +55,7 @@ public class TestHentoidDB extends AndroidTestCase {
                         db12.insertContents(contents12.toArray(new Content[contents12.size()]));
                     }
                 } catch (Exception ex) {
-                    LogHelper.e(TAG, "Error: ", ex);
+                    LogHelper.e(TAG, ex, "Error");
                 }
                 locker2 = true;
             }).start();
@@ -67,7 +67,7 @@ public class TestHentoidDB extends AndroidTestCase {
                         db13.selectContentByQuery("", 1, 10, false);
                     }
                 } catch (Exception ex) {
-                    LogHelper.e(TAG, "Error: ", ex);
+                    LogHelper.e(TAG, ex, "Error");
                 }
                 locker3 = true;
             }).start();
@@ -79,7 +79,7 @@ public class TestHentoidDB extends AndroidTestCase {
                         db14.selectContentByStatus(StatusContent.DOWNLOADED);
                     }
                 } catch (Exception ex) {
-                    LogHelper.e(TAG, "Error: ", ex);
+                    LogHelper.e(TAG, ex, "Error");
                 }
                 locker4 = true;
             }).start();
@@ -87,7 +87,7 @@ public class TestHentoidDB extends AndroidTestCase {
             while (!(locker1 && locker2 && locker3 && locker4)) ;
             LogHelper.i(TAG, "DB Lock: Success");
         } catch (Exception ex) {
-            LogHelper.e(TAG, "Error: ", ex);
+            LogHelper.e(TAG, ex, "Error");
         }
     }
 
@@ -117,6 +117,7 @@ public class TestHentoidDB extends AndroidTestCase {
                     .setStatus(StatusContent.DOWNLOADED)
                     .setUploadDate(k * 2000));
         }
+
         return contents;
     }
 }

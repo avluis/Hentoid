@@ -16,7 +16,7 @@ public class Bus {
         try {
             bus.register(listener);
         } catch (EventBusException e) {
-            LogHelper.w(TAG, e.toString());
+            LogHelper.w(TAG, e);
         }
     }
 
@@ -24,7 +24,7 @@ public class Bus {
         try {
             bus.unregister(listener);
         } catch (EventBusException e) {
-            LogHelper.w(TAG, e.toString());
+            LogHelper.w(TAG, e);
         }
     }
 }

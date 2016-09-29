@@ -70,7 +70,7 @@ final class ImageDownloadBatch {
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
-            LogHelper.e(TAG, "Interrupt while waiting on download task completion: ", e);
+            LogHelper.e(TAG, e, "Interrupt while waiting on download task completion");
         }
     }
 
@@ -86,6 +86,48 @@ final class ImageDownloadBatch {
         return errorCount;
     }
 
+    private void downloadHandler(File file, Response response) throws IOException {
+        boolean npeError = false;
+        OutputStream output = null;
+        final InputStream input = response.body().byteStream();
+        final byte[] buffer = new byte[BUFFER_SIZE];
+        try {
+            output = FileHelper.getOutputStream(file);
+            int dataLength;
+            while ((dataLength = input.read(buffer, 0, BUFFER_SIZE)) != -1) {
+                output.write(buffer, 0, dataLength);
+            }
+            FileHelper.sync(output);
+            output.flush();
+        } catch (NullPointerException npe) {
+            Helper.toast(R.string.sd_access_error);
+            npeError = true;
+        } catch (IOException e) {
+            if (!file.delete()) {
+                LogHelper.e(TAG, e, "Failed to delete file: " + file.getAbsolutePath());
+            }
+            throw e;
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            try {
+                input.close();
+                response.close();
+            } catch (IOException e) {
+                // Ignore
+            }
+            if (npeError) {
+                LogHelper.d(TAG, "NPE on file: " + file.getAbsolutePath());
+                Helper.toast(R.string.sd_access_error);
+            }
+        }
+    }
+
     private class Callback implements okhttp3.Callback {
         private final File dir;
         private final String filename;
@@ -97,10 +139,10 @@ final class ImageDownloadBatch {
 
         @Override
         public void onFailure(Call call, IOException e) {
-            LogHelper.e(TAG, "Error downloading image: " + call.request().url() + " ", e);
+            LogHelper.e(TAG, e, "Error downloading image: " + call.request().url());
 
             if (e instanceof SocketTimeoutException) {
-                LogHelper.w(TAG, "Socket Timeout Exception!", e);
+                LogHelper.w(TAG, e, "Socket Timeout Exception!");
                 // TODO: Handle this somehow
                 semaphore.release(); // <-- Requires testing~
             }
@@ -147,48 +189,6 @@ final class ImageDownloadBatch {
 
             semaphore.release();
             LogHelper.d(TAG, "Done downloading image: " + call.request().url());
-        }
-    }
-
-    private void downloadHandler(File file, Response response) throws IOException {
-        boolean npeError = false;
-        OutputStream output = null;
-        final InputStream input = response.body().byteStream();
-        final byte[] buffer = new byte[BUFFER_SIZE];
-        try {
-            output = FileHelper.getOutputStream(file);
-            int dataLength;
-            while ((dataLength = input.read(buffer, 0, BUFFER_SIZE)) != -1) {
-                output.write(buffer, 0, dataLength);
-            }
-            FileHelper.sync(output);
-            output.flush();
-        } catch (NullPointerException npe) {
-            Helper.toast(R.string.sd_access_error);
-            npeError = true;
-        } catch (IOException e) {
-            if (!file.delete()) {
-                LogHelper.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
-            }
-            throw e;
-        } finally {
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
-            try {
-                input.close();
-                response.close();
-            } catch (IOException e) {
-                // Ignore
-            }
-            if (npeError) {
-                LogHelper.d(TAG, "NPE on file: " + file.getAbsolutePath());
-                Helper.toast(R.string.sd_access_error);
-            }
         }
     }
 }

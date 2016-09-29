@@ -269,7 +269,7 @@ public class UpdateCheck {
                                                 cxt.getString(R.string.error_file));
                                         notifManager.notify(NOTIFICATION_ID, builder.build());
                                     } catch (Exception e) {
-                                        LogHelper.e(TAG, "Error: ", e);
+                                        LogHelper.e(TAG, e, "Error");
                                     }
                                 } else {
                                     try {
@@ -280,7 +280,7 @@ public class UpdateCheck {
                                                 cxt.getString(R.string.error_file));
                                         notifManager.notify(NOTIFICATION_ID, builder.build());
                                     } catch (Exception e) {
-                                        LogHelper.e(TAG, "Error: ", e);
+                                        LogHelper.e(TAG, e, "Error");
                                     }
                                 }
 
@@ -344,8 +344,7 @@ public class UpdateCheck {
                 downloadManager.cancel(downloadID);
                 downloadManager.release();
             } catch (Exception e) {
-                HentoidApp.getInstance().trackException(e);
-                LogHelper.d(TAG, "Issue cancelling download: ", e);
+                LogHelper.e(TAG, e, "Error while cancelling download");
             }
         }
         cancelNotificationAndUpdateRunnable();
@@ -388,17 +387,14 @@ public class UpdateCheck {
                 if (retryCount == 0) {
                     runAsyncTask(true);
                 } else {
-                    LogHelper.e(TAG, "IO ERROR: ", e);
-                    HentoidApp.getInstance().trackException(e);
+                    LogHelper.e(TAG, e, "IO ERROR");
                     mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
                 }
             } catch (JSONException e) {
-                LogHelper.e(TAG, "Error with JSON File: ", e);
-                HentoidApp.getInstance().trackException(e);
+                LogHelper.e(TAG, e, "Error with JSON File");
                 mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
             } catch (PackageManager.NameNotFoundException e) {
-                HentoidApp.getInstance().trackException(e);
-                LogHelper.e(TAG, "Package Name NOT Found! ", e);
+                LogHelper.e(TAG, e, "Package Name NOT Found");
             }
 
             return null;

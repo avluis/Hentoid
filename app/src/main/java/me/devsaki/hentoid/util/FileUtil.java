@@ -35,7 +35,7 @@ class FileUtil {
             stream.getFD().sync();
             return true;
         } catch (IOException e) {
-            LogHelper.e(TAG, "IO Error: ", e);
+            LogHelper.e(TAG, e, "IO Error");
         }
 
         return false;
@@ -132,7 +132,7 @@ class FileUtil {
                 }
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, "Error while attempting to get file: " + target.getAbsolutePath(), e);
+            LogHelper.e(TAG, e, "Error while attempting to get file: " + target.getAbsolutePath());
         }
 
         return outStream;
@@ -347,8 +347,9 @@ class FileUtil {
                 }
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, "Error while copying file from " + source.getAbsolutePath() + " to "
-                    + target.getAbsolutePath() + ": ", e);
+            LogHelper.e(TAG, e,
+                    "Error while copying file from " + source.getAbsolutePath() +
+                            " to " + target.getAbsolutePath());
 
             return false;
         } finally {

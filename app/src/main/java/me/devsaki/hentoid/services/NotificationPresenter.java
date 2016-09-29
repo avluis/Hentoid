@@ -128,8 +128,7 @@ final class NotificationPresenter {
                 builder.setContentTitle(res.getQuantityString(
                         R.plurals.download_completed, count));
                 // Tracking Event (Download Completed)
-                instance.trackEvent("Download Service", "Download",
-                        "Download Content: Success.");
+                instance.trackEvent(TAG, "Download", "Download Content: Success.");
                 break;
             case PAUSED:
                 builder.setContentTitle(res.getString(R.string.download_paused));
@@ -137,21 +136,18 @@ final class NotificationPresenter {
             case CANCELED:
                 builder.setContentTitle(res.getString(R.string.download_cancelled));
                 // Tracking Event (Download Cancelled)
-                instance.trackEvent("Download Service", "Download",
-                        "Download Content: Cancelled.");
+                instance.trackEvent(TAG, "Download", "Download Content: Cancelled.");
                 break;
             case ERROR:
                 builder.setContentTitle(res.getString(R.string.download_error));
                 // Tracking Event (Download Error)
-                instance.trackEvent("Download Service", "Download",
-                        "Download Content: Error.");
+                instance.trackEvent(TAG, "Download", "Download Content: Error.");
                 break;
             case UNHANDLED_ERROR:
                 builder.setContentTitle(res
                         .getString(R.string.unhandled_download_error));
                 // Tracking Event (Download Unhandled Error)
-                instance.trackEvent("Download Service", "Download",
-                        "Download Content: Unhandled Error.");
+                instance.trackEvent(TAG, "Download", "Download Content: Unhandled Error.");
                 break;
             default: // do nothing
                 break;

@@ -39,9 +39,9 @@ class ZipUtil {
                 stream.write(data, 0, count);
             }
         } catch (FileNotFoundException e) {
-            LogHelper.e(TAG, "File Not Found: " + file, e);
+            LogHelper.e(TAG, e, "File Not Found: " + file);
         } catch (IOException e) {
-            LogHelper.d(TAG, "IO Exception: ", e);
+            LogHelper.d(TAG, e, "IO Exception");
         }
     }
 
@@ -62,21 +62,21 @@ class ZipUtil {
                 FileUtil.sync(out);
                 out.flush();
             } catch (Exception e) {
-                LogHelper.e(TAG, "Error: ", e);
+                LogHelper.e(TAG, e, "Error");
                 return false;
             } finally {
                 if (zipOutputStream != null) {
                     try {
                         zipOutputStream.close();
                     } catch (IOException e) {
-                        LogHelper.d(TAG, "IO Exception: ", e);
+                        LogHelper.d(TAG, e, "IO Exception");
                     }
                 }
                 if (out != null) {
                     try {
                         out.close();
                     } catch (IOException e) {
-                        LogHelper.d(TAG, "IO Exception: ", e);
+                        LogHelper.d(TAG, e, "IO Exception");
                     }
                 }
             }
@@ -101,7 +101,7 @@ class ZipUtil {
                 }
                 zipfile.close();
             } catch (Exception e) {
-                LogHelper.e(TAG, "Error while extracting file: " + archive, e);
+                LogHelper.e(TAG, e, "Error while extracting file: " + archive);
                 return false;
             }
 

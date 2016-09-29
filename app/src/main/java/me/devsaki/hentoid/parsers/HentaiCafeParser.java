@@ -107,7 +107,7 @@ public class HentaiCafeParser {
         try {
             readerDoc = Jsoup.connect(galleryUrl).timeout(TIMEOUT).get();
         } catch (IOException e) {
-            LogHelper.e(TAG, "Error parsing content page: ", e);
+            LogHelper.e(TAG, e, "Error parsing content page");
         }
 
         if (readerDoc != null) {
@@ -144,13 +144,13 @@ public class HentaiCafeParser {
                                     //        + array.get(j).toString());
                                     imgUrls.add(array.getJSONObject(j).getString("url"));
                                 } catch (JSONException e) {
-                                    LogHelper.d(TAG, "Error while reading from array: ", e);
+                                    LogHelper.e(TAG, e, "Error while reading from array");
                                 }
                             }
                         }
                     }
                 } catch (IOException e) {
-                    LogHelper.e(TAG, "JSOUP Error: ", e);
+                    LogHelper.e(TAG, e, "JSOUP Error");
                 }
             }
             LogHelper.d(TAG, "Total Pages: " + pages);
@@ -172,7 +172,7 @@ public class HentaiCafeParser {
         try {
             return (JSONArray) new JSONTokener(results).nextValue();
         } catch (JSONException e) {
-            LogHelper.e(TAG, "Couldn't build JSONArray from the provided string: ", e);
+            LogHelper.e(TAG, e, "Couldn't build JSONArray from the provided string");
         }
 
         return null;

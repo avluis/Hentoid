@@ -279,7 +279,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             FileHelper.sync(output);
             output.flush();
         } catch (NullPointerException npe) {
-            LogHelper.e(TAG, "Invalid Stream: ", npe);
+            LogHelper.e(TAG, npe, "Invalid Stream");
             Helper.toast(R.string.sd_access_error);
             new AlertDialog.Builder(getActivity())
                     .setMessage(R.string.sd_access_fatal_error)
@@ -287,7 +287,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     .setPositiveButton(android.R.string.ok, null)
                     .show();
         } catch (IOException e) {
-            LogHelper.e(TAG, "ERROR: ", e);
+            LogHelper.e(TAG, e, "IOException while checking SD Health");
         } finally {
             // finished
             if (output != null) {

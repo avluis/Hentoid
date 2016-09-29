@@ -137,7 +137,7 @@ public class TsuminoParser {
             String request = sendPostRequest(dataUrl, dataOpt);
             imgUrls = buildImageUrls(dataObj, request);
         } catch (Exception e) {
-            LogHelper.e(TAG, "Couldn't complete html/parse request: ", e);
+            LogHelper.e(TAG, e, "Couldn't complete html/parse request: ");
         }
         LogHelper.d(TAG, imgUrls);
 
@@ -187,9 +187,9 @@ public class TsuminoParser {
 
             return builder.toString();
         } catch (UnsupportedEncodingException e) {
-            LogHelper.e(TAG, "Encoding option is not supported for this URL: ", e);
+            LogHelper.e(TAG, e, "Encoding option is not supported for this URL");
         } catch (IOException e) {
-            LogHelper.e(TAG, "IO Exception while attempting request: ", e);
+            LogHelper.e(TAG, e, "IO Exception while attempting request");
         } finally {
             if (http != null) {
                 http.disconnect();
@@ -211,7 +211,7 @@ public class TsuminoParser {
                 imgUrls.add(imgUrl + URLEncoder.encode(
                         urls.getAsJsonArray().get(i).getAsString(), "UTF-8"));
             } catch (UnsupportedEncodingException e) {
-                LogHelper.e(TAG, "Failed to encode URL: ", e);
+                LogHelper.e(TAG, e, "Failed to encode URL");
             }
         }
 

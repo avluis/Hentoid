@@ -73,7 +73,7 @@ public class HttpClientHelper {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    LogHelper.e(TAG, "InputStream Error: ", e);
+                    LogHelper.e(TAG, e, "InputStream Error");
                 }
             }
             if (urlConnection != null) {

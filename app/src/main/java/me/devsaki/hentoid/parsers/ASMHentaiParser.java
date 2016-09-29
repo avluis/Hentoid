@@ -124,7 +124,7 @@ public class ASMHentaiParser {
             }
 
         } catch (IOException e) {
-            LogHelper.e(TAG, "Error while attempting to connect to: " + readerUrl + ": ", e);
+            LogHelper.e(TAG, e, "Error while attempting to connect to: " + readerUrl);
         }
         LogHelper.d(TAG, imgUrls);
 

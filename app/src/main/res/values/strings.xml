@@ -112,7 +112,10 @@
     <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
     <string name="about_notes">
         <![CDATA[
-        <p>Initial support for SD Cards (Android 5.0+)<br>
+        <p>
+        Fix: Hitomi Parser.<br>
+        Fix: Hentai Café Parser.<br>
+        Initial support for SD Cards (Android 5.0+)<br>
         Improvements to download list<br>
         Improvements to on-boarding experience<br>
         Support for archiving downloaded works<br>
