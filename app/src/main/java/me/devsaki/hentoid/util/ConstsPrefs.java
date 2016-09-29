@@ -38,4 +38,5 @@ public abstract class ConstsPrefs {
     static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
     public static final boolean PREF_HIDE_RECENT_DEFAULT = true;
     public static final String PREF_HIDE_RECENT = "pref_hide_recent";
+    public static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
 }

@@ -13,6 +13,7 @@ import com.google.android.gms.analytics.Tracker;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
+import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
 
@@ -136,6 +137,20 @@ public class HentoidApp extends Application {
 
         AnalyticsTrackers.initialize(this);
         AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
+
+        // When dry run is set, hits will not be dispatched,
+        // but will still be logged as though they were dispatched.
+        GoogleAnalytics.getInstance(this).setDryRun(BuildConfig.DEBUG);
+
+        // Analytics Opt-Out
+        GoogleAnalytics.getInstance(this).setAppOptOut(sharedPrefs.getBoolean(
+                ConstsPrefs.PREF_ANALYTICS_TRACKING, false));
+        sharedPrefs.registerOnSharedPreferenceChangeListener((sp, key) -> {
+            if (key.equals(ConstsPrefs.PREF_ANALYTICS_TRACKING)) {
+                GoogleAnalytics.getInstance(getAppContext()).setAppOptOut(
+                        sp.getBoolean(key, false));
+            }
+        });
 
         Helper.queryPrefsKey(this);
         Helper.ignoreSslErrors();

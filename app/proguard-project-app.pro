@@ -80,7 +80,7 @@
 -keepattributes InnerClasses
 -keepattributes EnclosingMethod
 
--keep class com.github.paolorotolo.** {*;}
+#-keep class com.github.paolorotolo.** {*;}
 
 #-keep class com.afollestad.materialdialogs.** {*;}
 
