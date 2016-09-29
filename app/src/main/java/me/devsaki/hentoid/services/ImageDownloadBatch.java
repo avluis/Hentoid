@@ -113,7 +113,6 @@ final class ImageDownloadBatch {
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
-            boolean npeError = false;
             LogHelper.d(TAG, "Start downloading image: " + call.request().url());
 
             if (!response.isSuccessful()) {
@@ -140,51 +139,56 @@ final class ImageDownloadBatch {
                     LogHelper.d(TAG, "Empty File!!");
                 } else {
                     LogHelper.d(TAG, "Existing file size: " + fileSize);
-                    // TODO: Compare file sizes
+                    // TODO: Compare file sizes (without eating the response body)
                 }
             }
 
-            OutputStream output = null;
-            final InputStream input = response.body().byteStream();
-            final byte[] buffer = new byte[BUFFER_SIZE];
-            try {
-                output = FileHelper.getOutputStream(file);
-                int dataLength;
-                while ((dataLength = input.read(buffer, 0, BUFFER_SIZE)) != -1) {
-                    output.write(buffer, 0, dataLength);
-                }
-                FileHelper.sync(output);
-                output.flush();
-            } catch (NullPointerException npe) {
-                Helper.toast(R.string.sd_access_error);
-                npeError = true;
-            } catch (IOException e) {
-                if (!file.delete()) {
-                    LogHelper.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
-                }
-                throw e;
-            } finally {
-                if (output != null) {
-                    try {
-                        output.close();
-                    } catch (IOException e) {
-                        // Ignore
-                    }
-                }
-                try {
-                    input.close();
-                    response.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-                if (npeError) {
-                    LogHelper.d(TAG, "NPE on file: " + file.getAbsolutePath());
-                    Helper.toast(R.string.sd_access_error);
-                }
-            }
+            downloadHandler(file, response);
 
             semaphore.release();
             LogHelper.d(TAG, "Done downloading image: " + call.request().url());
+        }
+    }
+
+    private void downloadHandler(File file, Response response) throws IOException {
+        boolean npeError = false;
+        OutputStream output = null;
+        final InputStream input = response.body().byteStream();
+        final byte[] buffer = new byte[BUFFER_SIZE];
+        try {
+            output = FileHelper.getOutputStream(file);
+            int dataLength;
+            while ((dataLength = input.read(buffer, 0, BUFFER_SIZE)) != -1) {
+                output.write(buffer, 0, dataLength);
+            }
+            FileHelper.sync(output);
+            output.flush();
+        } catch (NullPointerException npe) {
+            Helper.toast(R.string.sd_access_error);
+            npeError = true;
+        } catch (IOException e) {
+            if (!file.delete()) {
+                LogHelper.e(TAG, "Failed to delete file: " + file.getAbsolutePath());
+            }
+            throw e;
+        } finally {
+            if (output != null) {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
+            try {
+                input.close();
+                response.close();
+            } catch (IOException e) {
+                // Ignore
+            }
+            if (npeError) {
+                LogHelper.d(TAG, "NPE on file: " + file.getAbsolutePath());
+                Helper.toast(R.string.sd_access_error);
+            }
         }
     }
 }
