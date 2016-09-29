@@ -17,6 +17,7 @@ import android.webkit.WebViewClient;
 
 import java.util.Date;
 
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
@@ -24,6 +25,11 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.parsers.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.HentaiCafeParser;
+import me.devsaki.hentoid.parsers.HitomiParser;
+import me.devsaki.hentoid.parsers.NhentaiParser;
+import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -308,13 +314,7 @@ public class BaseWebActivity extends BaseActivity {
             return;
         }
 
-        Content contentDB = db.selectContentById(content.getUrl().hashCode());
-        if (contentDB != null) {
-            content.setStatus(contentDB.getStatus())
-                    .setImageFiles(contentDB.getImageFiles())
-                    .setDownloadDate(contentDB.getDownloadDate());
-        }
-        db.insertContent(content);
+        addContentToDB(content);
 
         StatusContent contentStatus = content.getStatus();
         if (contentStatus != StatusContent.DOWNLOADED
@@ -330,6 +330,43 @@ public class BaseWebActivity extends BaseActivity {
             runOnUiThread(() -> showFab(fabRead));
         } else {
             runOnUiThread(() -> hideFab(fabRead));
+        }
+
+        // Allows debugging parsers without starting a content download
+        if (BuildConfig.DEBUG) {
+            attachToDebugger(content);
+        }
+    }
+
+    private void addContentToDB(Content content) {
+        Content contentDB = db.selectContentById(content.getUrl().hashCode());
+        if (contentDB != null) {
+            content.setStatus(contentDB.getStatus())
+                    .setImageFiles(contentDB.getImageFiles())
+                    .setDownloadDate(contentDB.getDownloadDate());
+        }
+        db.insertContent(content);
+    }
+
+    private void attachToDebugger(Content content) {
+        switch (content.getSite()) {
+            case HITOMI:
+                HitomiParser.parseImageList(content);
+                break;
+            case NHENTAI:
+                NhentaiParser.parseImageList(content);
+                break;
+            case TSUMINO:
+                TsuminoParser.parseImageList(content);
+                break;
+            case ASMHENTAI:
+                ASMHentaiParser.parseImageList(content);
+                break;
+            case HENTAICAFE:
+                HentaiCafeParser.parseImageList(content);
+                break;
+            default:
+                break;
         }
     }
 

@@ -85,13 +85,15 @@ public class HitomiParser {
         String html;
         List<String> imgUrls = null;
         try {
-            html = HttpClientHelper.call(content.getReaderUrl());
+            String url = content.getReaderUrl();
+            html = HttpClientHelper.call(url);
+            LogHelper.d(TAG, "Parsing: " + url);
             Document doc = Jsoup.parse(html);
             Elements imgElements = doc.select(".img-url");
             imgUrls = new ArrayList<>(imgElements.size());
 
             for (Element element : imgElements) {
-                imgUrls.add("https:" + element.text());
+                imgUrls.add("https:" + element.text().replace("//g.", "//a."));
             }
         } catch (Exception e) {
             LogHelper.e(TAG, "Could not connect to the requested resource: ", e);
