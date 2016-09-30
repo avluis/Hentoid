@@ -236,7 +236,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         holder.ivCover.layout(0, 0, 0, 0);
         holder.ivCover2.layout(0, 0, 0, 0);
 
-        Glide.with(cxt)
+        Glide.with(cxt.getApplicationContext())
                 .load(FileHelper.getThumb(cxt, content))
                 .fitCenter()
                 .placeholder(R.drawable.ic_placeholder)
@@ -244,7 +244,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                 .into(holder.ivCover);
 
         if (holder.itemView.isSelected()) {
-            Glide.with(cxt)
+            Glide.with(cxt.getApplicationContext())
                     .load(FileHelper.getThumb(cxt, content))
                     .fitCenter()
                     .placeholder(R.drawable.ic_placeholder)
