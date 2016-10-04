@@ -34,7 +34,7 @@ public class NotificationHelper extends BroadcastReceiver {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LogHelper.e(TAG, e, "Notification Exception");
         }
     }
 }
