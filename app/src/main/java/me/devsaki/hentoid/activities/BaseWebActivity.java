@@ -110,6 +110,14 @@ public class BaseWebActivity extends BaseActivity {
         checkPermissions();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        webView.removeAllViews();
+        webView.destroy();
+    }
+
     // Validate permissions
     private void checkPermissions() {
         if (Helper.permissionsCheck(this, ConstsImport.RQST_STORAGE_PERMISSION, false)) {

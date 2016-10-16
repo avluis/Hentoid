@@ -123,7 +123,6 @@ final class ImageDownloadBatch {
             }
             if (npeError) {
                 LogHelper.d(TAG, "NPE on file: " + file.getAbsolutePath());
-                Helper.toast(R.string.sd_access_error);
             }
         }
     }
