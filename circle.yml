@@ -18,7 +18,7 @@ dependencies:
     - echo y | android update sdk --no-ui --all --filter platform-tools
     - echo y | android update sdk --no-ui --all --filter tools
     # Android SDK Platform
-    - if [ ! -d "/usr/local/android-sdk-linux/platforms/android-25" ]; then echo y | android update sdk --no-ui --all --filter "android-25"; fi
+    - if [ ! -d "/usr/local/android-sdk-linux/platforms/android-25" ]; then echo y | android update sdk --no-ui --all --filter "android-25"; echo y | android update sdk -u -a -t 3; fi
     # Android SDK Build-tools
     - if [ ! -d "/usr/local/android-sdk-linux/build-tools/25.0.0" ]; then echo y | android update sdk --no-ui --all --filter "build-tools-25"; fi
     # Android Support Libraries
