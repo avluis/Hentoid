@@ -3,6 +3,7 @@ package me.devsaki.hentoid;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -16,6 +17,7 @@ import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.util.ShortcutHelper;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -162,6 +164,10 @@ public class HentoidApp extends Application {
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         UpdateCheck(!Helper.getMobileUpdatePrefs());
+
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.N_MR1)) {
+            ShortcutHelper.buildShortcuts(this);
+        }
     }
 
     private void UpdateCheck(boolean onlyWifi) {

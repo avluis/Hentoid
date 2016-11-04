@@ -13,7 +13,11 @@ import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -23,6 +27,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.IntentCompat;
+import android.support.v4.graphics.drawable.DrawableCompat;
+import android.support.v7.widget.AppCompatDrawableManager;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
@@ -47,6 +53,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.graphics.Bitmap.Config.ARGB_8888;
 
 /**
  * Created by avluis on 06/05/2016.
@@ -395,6 +402,31 @@ public final class Helper {
         }
 
         return R.drawable.ic_menu_unknown;
+    }
+
+    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+        Drawable d = AppCompatDrawableManager.get().getDrawable(context, drawableId);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+            d = (DrawableCompat.wrap(d)).mutate();
+        }
+
+        Bitmap b = Bitmap.createBitmap(d.getIntrinsicWidth(), d.getIntrinsicHeight(), ARGB_8888);
+        Canvas c = new Canvas(b);
+        d.setBounds(0, 0, c.getWidth(), c.getHeight());
+        d.draw(c);
+
+        return b;
+    }
+
+    public static Bitmap tintBitmap(Bitmap bitmap, int color) {
+        Paint p = new Paint();
+        p.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
+        Bitmap b = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), ARGB_8888);
+        Canvas canvas = new Canvas(b);
+        canvas.drawBitmap(bitmap, 0, 0, p);
+
+        return b;
     }
 
     public static int getAppVersionCode(@NonNull Context cxt) throws NameNotFoundException {
