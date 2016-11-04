@@ -65,6 +65,7 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 /**
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
+ * TODO: Dismiss 'new content' tooltip upon search
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
