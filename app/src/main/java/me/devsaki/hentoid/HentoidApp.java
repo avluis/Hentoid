@@ -76,8 +76,7 @@ public class HentoidApp extends Application {
     }
 
     private synchronized Tracker getGoogleAnalyticsTracker() {
-        AnalyticsTrackers trackers = AnalyticsTrackers.getInstance();
-        return trackers.get(AnalyticsTrackers.Target.APP);
+        return AnalyticsTrackers.get(this, AnalyticsTrackers.Target.APP);
     }
 
     /***
@@ -139,8 +138,7 @@ public class HentoidApp extends Application {
         instance = this;
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        AnalyticsTrackers.initialize(this);
-        AnalyticsTrackers.getInstance().get(AnalyticsTrackers.Target.APP);
+        AnalyticsTrackers.get(this, AnalyticsTrackers.Target.APP);
 
         // When dry run is set, hits will not be dispatched,
         // but will still be logged as though they were dispatched.
