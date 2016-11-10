@@ -74,7 +74,7 @@ public class HentoidApp extends Application {
     }
 
     private synchronized Tracker getGoogleAnalyticsTracker() {
-        return AnalyticsTrackers.get(this, AnalyticsTrackers.Target.APP);
+        return GoogleAnalytics.getInstance(this).newTracker(R.xml.app_tracker);
     }
 
     /***
@@ -103,13 +103,14 @@ public class HentoidApp extends Application {
      */
     public void trackException(Exception e) {
         if (e != null) {
-            Tracker tracker = getGoogleAnalyticsTracker();
-
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(new StandardExceptionParser(this, null)
-                            .getDescription(Thread.currentThread().getName(), e))
-                    .setFatal(false)
-                    .build()
+            getGoogleAnalyticsTracker().send(
+                    new HitBuilders.ExceptionBuilder()
+                            .setDescription(
+                                    new StandardExceptionParser(this, null)
+                                            .getDescription(Thread.currentThread().getName(), e)
+                            )
+                            .setFatal(false)
+                            .build()
             );
         }
     }
@@ -117,16 +118,19 @@ public class HentoidApp extends Application {
     /***
      * Tracking event
      *
-     * @param clazz    event category based on class name
-     * @param action   action of the event
-     * @param label    label
+     * @param clazz  event category based on class name
+     * @param action action of the event
+     * @param label  label
      */
     public void trackEvent(Class clazz, String action, String label) {
-        Tracker tracker = getGoogleAnalyticsTracker();
-
         // Build and send an Event.
-        tracker.send(new HitBuilders.EventBuilder().setCategory(clazz.getSimpleName()).setAction(action)
-                .setLabel(label).build());
+        getGoogleAnalyticsTracker().send(
+                new HitBuilders.EventBuilder()
+                        .setCategory(clazz.getSimpleName())
+                        .setAction(action)
+                        .setLabel(label)
+                        .build()
+        );
     }
 
     @Override
@@ -148,8 +152,6 @@ public class HentoidApp extends Application {
 
         instance = this;
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        AnalyticsTrackers.get(this, AnalyticsTrackers.Target.APP);
 
         // When dry run is set, hits will not be dispatched,
         // but will still be logged as though they were dispatched.
