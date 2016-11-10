@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
@@ -15,7 +16,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -23,7 +24,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Database, Bitmap Cache, Update checks, etc.
  */
 public class HentoidApp extends Application {
-    private static final String TAG = LogHelper.makeLogTag(HentoidApp.class);
 
     private static boolean beginImport;
     private static boolean donePressed;
@@ -74,7 +74,7 @@ public class HentoidApp extends Application {
     }
 
     private synchronized Tracker getGoogleAnalyticsTracker() {
-        return AnalyticsTrackers.get(this, AnalyticsTrackers.Target.APP);
+        return GoogleAnalytics.getInstance(this).newTracker(R.xml.app_tracker);
     }
 
     /***
@@ -96,20 +96,21 @@ public class HentoidApp extends Application {
 
     /***
      * Tracking exception
-     * Note: LogHelper will track exceptions as well,
-     * so no need to call if making use of LogHelper with a throwable.
+     * Note: Timber will track exceptions as well,
+     * so no need to call if making use of Timber with a throwable.
      *
      * @param e exception to be tracked
      */
     public void trackException(Exception e) {
         if (e != null) {
-            Tracker tracker = getGoogleAnalyticsTracker();
-
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(new StandardExceptionParser(this, null)
-                            .getDescription(Thread.currentThread().getName(), e))
-                    .setFatal(false)
-                    .build()
+            getGoogleAnalyticsTracker().send(
+                    new HitBuilders.ExceptionBuilder()
+                            .setDescription(
+                                    new StandardExceptionParser(this, null)
+                                            .getDescription(Thread.currentThread().getName(), e)
+                            )
+                            .setFatal(false)
+                            .build()
             );
         }
     }
@@ -117,26 +118,40 @@ public class HentoidApp extends Application {
     /***
      * Tracking event
      *
-     * @param category event category
-     * @param action   action of the event
-     * @param label    label
+     * @param clazz  event category based on class name
+     * @param action action of the event
+     * @param label  label
      */
-    public void trackEvent(String category, String action, String label) {
-        Tracker tracker = getGoogleAnalyticsTracker();
-
+    public void trackEvent(Class clazz, String action, String label) {
         // Build and send an Event.
-        tracker.send(new HitBuilders.EventBuilder().setCategory(category).setAction(action)
-                .setLabel(label).build());
+        getGoogleAnalyticsTracker().send(
+                new HitBuilders.EventBuilder()
+                        .setCategory(clazz.getSimpleName())
+                        .setAction(action)
+                        .setLabel(label)
+                        .build()
+        );
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        } else {
+            Timber.plant(new Timber.Tree() {
+                @Override
+                protected void log(int priority, String tag, String message, Throwable t) {
+                    if (priority >= Log.INFO && t != null) {
+                        trackException((Exception) t);
+                    }
+                }
+            });
+        }
+
         instance = this;
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        AnalyticsTrackers.get(this, AnalyticsTrackers.Target.APP);
 
         // When dry run is set, hits will not be dispatched,
         // but will still be logged as though they were dispatched.
@@ -156,7 +171,7 @@ public class HentoidApp extends Application {
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
-        LogHelper.d(TAG, "Content item(s) count: " + db.getContentCount());
+        Timber.d("Content item(s) count: %s", db.getContentCount());
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
 
         UpdateCheck(!Helper.getMobileUpdatePrefs());
@@ -167,12 +182,12 @@ public class HentoidApp extends Application {
                 onlyWifi, false, new UpdateCheck.UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {
-                        LogHelper.d(TAG, "Update Check: No update.");
+                        Timber.d("Update Check: No update.");
                     }
 
                     @Override
                     public void onUpdateAvailable() {
-                        LogHelper.d(TAG, "Update Check: Update!");
+                        Timber.d("Update Check: Update!");
                     }
                 });
     }

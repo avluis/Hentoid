@@ -24,6 +24,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import timber.log.Timber;
 
 import static android.os.Environment.MEDIA_MOUNTED;
 import static android.os.Environment.getExternalStorageDirectory;
@@ -37,11 +38,10 @@ public class FileHelper {
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
-    private static final String TAG = LogHelper.makeLogTag(FileHelper.class);
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
     public static void saveUri(Uri uri) {
-        LogHelper.d(TAG, "Saving Uri: " + uri);
+        Timber.d("Saving Uri: %s", uri);
         SharedPreferences prefs = HentoidApp.getSharedPrefs();
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, uri.toString()).apply();
@@ -106,7 +106,7 @@ public class FileHelper {
             if (file != null && !file.equals(cxt.getExternalFilesDir("external"))) {
                 int index = file.getAbsolutePath().lastIndexOf("/Android/data");
                 if (index < 0) {
-                    LogHelper.w(TAG, "Unexpected external file dir: " + file.getAbsolutePath());
+                    Timber.w("Unexpected external file dir: %s", file.getAbsolutePath());
                 } else {
                     String path = file.getAbsolutePath().substring(0, index);
                     try {
@@ -173,7 +173,7 @@ public class FileHelper {
      */
     public static boolean isReadable(@NonNull final File file) {
         if (!file.isFile()) {
-            LogHelper.d(TAG, "isReadable(): Not a File");
+            Timber.d("isReadable(): Not a File");
 
             return false;
         }
@@ -266,14 +266,14 @@ public class FileHelper {
             if (nomedia.exists()) {
                 boolean deleted = FileUtil.deleteFile(nomedia);
                 if (deleted) {
-                    LogHelper.d(TAG, ".nomedia file deleted");
+                    Timber.d(".nomedia file deleted");
                 }
             }
             // Re-create nomedia file to confirm write permissions
             hasPermission = FileUtil.makeFile(nomedia);
         } catch (IOException e) {
             hasPermission = false;
-            LogHelper.e(TAG, e, "We couldn't confirm write permissions to this location: ");
+            Timber.e(e, "We couldn't confirm write permissions to this location: ");
         }
 
         if (!hasPermission) {
@@ -304,11 +304,11 @@ public class FileHelper {
             if (FileUtil.makeFile(noMedia)) {
                 Helper.toast(R.string.nomedia_file_created);
             } else {
-                LogHelper.d(TAG, ".nomedia file already exists.");
+                Timber.d(".nomedia file already exists.");
             }
         } catch (IOException io) {
             if (!isReadable(noMedia)) {
-                LogHelper.e(TAG, io, "Failed to create file.");
+                Timber.e(io, "Failed to create file.");
                 Helper.toast(R.string.error_creating_nomedia_file);
 
                 return false;
@@ -324,9 +324,9 @@ public class FileHelper {
     public static void removeContent(Context cxt, Content content) {
         File dir = getContentDownloadDir(cxt, content);
         if (FileUtil.deleteDir(dir)) {
-            LogHelper.d(TAG, "Directory " + dir + " removed.");
+            Timber.d("Directory %s removed.", dir);
         } else {
-            LogHelper.d(TAG, "Failed to delete directory: " + dir);
+            Timber.d("Failed to delete directory: %s", dir);
         }
     }
 
@@ -395,7 +395,7 @@ public class FileHelper {
         String coverUrl = content.getCoverImageUrl();
 
         if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
-            LogHelper.d(TAG, "File not found!! Returning online resource.");
+            Timber.d("File not found!! Returning online resource.");
             return coverUrl;
         }
 
@@ -427,11 +427,10 @@ public class FileHelper {
     }
 
     public static void openContent(final Context cxt, Content content) {
-        LogHelper.d(TAG, "Opening: " + content.getTitle() + " from: " +
-                getContentDownloadDir(cxt, content));
+        Timber.d("Opening: %s from: %s", content.getTitle(), getContentDownloadDir(cxt, content));
 
         if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
-            LogHelper.d(TAG, "File not found!! Exiting method.");
+            Timber.d("File not found!! Exiting method.");
             Helper.toast(R.string.sd_access_error);
             return;
         }
@@ -497,7 +496,7 @@ public class FileHelper {
     }
 
     public static void archiveContent(final Context cxt, Content content) {
-        LogHelper.d(TAG, "Building file list for: " + content.getTitle());
+        Timber.d("Building file list for: %s", content.getTitle());
         // Build list of files
         File dir = getContentDownloadDir(cxt, content);
         File[] files = dir.listFiles();
@@ -514,21 +513,21 @@ public class FileHelper {
         // Create folder to share from
         File sharedDir = new File(cxt.getExternalCacheDir() + "/shared");
         if (FileUtil.makeDir(sharedDir)) {
-            LogHelper.d(TAG, "Shared folder created.");
+            Timber.d("Shared folder created.");
         }
 
         // Clean directory (in case of previous job)
         if (cleanDirectory(sharedDir)) {
-            LogHelper.d(TAG, "Shared folder cleaned up.");
+            Timber.d("Shared folder cleaned up.");
         }
 
         // Build destination file
-        File dest = new File(cxt.getExternalCacheDir() + "/shared/" +
+        File dest = new File(cxt.getExternalCacheDir() + "/shared/%s",
                 content.getTitle()
                         .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
                         .replaceAll("\\s+", "_")  // white space as underscores
                 + ".zip");
-        LogHelper.d(TAG, "Destination file: " + dest);
+        Timber.d("Destination file: %s", dest);
 
         // Convert ArrayList to Array
         File[] fileArray = fileList.toArray(new File[fileList.size()]);

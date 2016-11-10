@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 04/08/2016.
@@ -15,7 +15,6 @@ public class NotificationHelper extends BroadcastReceiver {
     public static final String NOTIFICATION_DELETED =
             "me.devsaki.hentoid.services.NOTIFICATION_DELETED";
 
-    private static final String TAG = LogHelper.makeLogTag(NotificationHelper.class);
 
     private HentoidApp instance;
 
@@ -30,7 +29,7 @@ public class NotificationHelper extends BroadcastReceiver {
             if (action.equals(NOTIFICATION_DELETED)) {
                 // Reset download count
                 // HentoidApp.setDownloadCount(0);
-                LogHelper.d(TAG, "Notification removed.");
+                Timber.d("Notification removed.");
             }
 
         } catch (Exception e) {

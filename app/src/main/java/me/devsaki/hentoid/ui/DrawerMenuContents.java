@@ -10,7 +10,7 @@ import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 04/11/2016.
@@ -28,7 +28,6 @@ public class DrawerMenuContents {
     public static final String FIELD_TITLE = "title";
     public static final String FIELD_ICON = "icon";
 
-    private static final String TAG = LogHelper.makeLogTag(DrawerMenuContents.class);
 
     private String[] activityName;
     private String[] activityCode;
@@ -64,7 +63,7 @@ public class DrawerMenuContents {
             try {
                 cls = Class.forName("me.devsaki.hentoid.activities." + activity + "Activity");
             } catch (ClassNotFoundException e) {
-                LogHelper.e(TAG, e, "Class not found");
+                Timber.e(e, "Class not found");
             }
 
             activities[i] = cls;

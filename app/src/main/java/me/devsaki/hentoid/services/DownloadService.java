@@ -25,8 +25,8 @@ import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
+import timber.log.Timber;
 
 /**
  * Download Manager implemented as a service
@@ -35,7 +35,6 @@ import me.devsaki.hentoid.util.NetworkStatus;
  * 1 image = 1 task, n images = 1 chapter = 1 job = 1 bundled task.
  */
 public class DownloadService extends IntentService {
-    private static final String TAG = LogHelper.makeLogTag(DownloadService.class);
 
     public static boolean paused;
     private Content currentContent;
@@ -54,7 +53,7 @@ public class DownloadService extends IntentService {
         notificationPresenter = new NotificationPresenter();
         EventBus.getDefault().register(notificationPresenter);
 
-        LogHelper.d(TAG, "Download service created");
+        Timber.d("Download service created");
     }
 
     @Override
@@ -64,13 +63,13 @@ public class DownloadService extends IntentService {
         EventBus.getDefault().unregister(notificationPresenter);
         notificationPresenter = null;
 
-        LogHelper.d(TAG, "Download service destroyed");
+        Timber.d("Download service destroyed");
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
         if (!NetworkStatus.isOnline(this)) {
-            LogHelper.w(TAG, "No connection!");
+            Timber.w("No connection!");
             return;
         }
 
@@ -79,8 +78,8 @@ public class DownloadService extends IntentService {
             initDownload();
 
             File dir = FileHelper.getContentDownloadDir(this, currentContent);
-            LogHelper.d(TAG, "Content Download Dir; " + dir);
-            LogHelper.d(TAG, "Directory created: " + FileHelper.createDirectory(dir));
+            Timber.d("Content Download Dir; %s", dir);
+            Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
@@ -102,7 +101,7 @@ public class DownloadService extends IntentService {
         }
 
         if (paused) {
-            LogHelper.d(TAG, "Pause requested");
+            Timber.d("Pause requested");
             interruptDownload();
             downloadBatch.cancelAllTasks();
             if (currentContent.getStatus() == StatusContent.CANCELED) {
@@ -149,7 +148,7 @@ public class DownloadService extends IntentService {
             db.updateContentStatus(currentContent);
             updateActivity(-1);
 
-            LogHelper.e(TAG, e, "Exception while parsing image files");
+            Timber.e(e, "Exception while parsing image files");
 
             return;
         }
@@ -158,10 +157,10 @@ public class DownloadService extends IntentService {
             interruptDownload();
             return;
         }
-        LogHelper.d(TAG, "Content download started: " + currentContent.getTitle());
+        Timber.d("Content download started: %s", currentContent.getTitle());
 
         // Tracking Event (Download Added)
-        HentoidApp.getInstance().trackEvent(TAG, "Download", "Download Content: Start");
+        HentoidApp.getInstance().trackEvent(DownloadService.class, "Download", "Download Content: Start");
     }
 
     private void postDownloadCompleted(File dir) {
@@ -169,15 +168,15 @@ public class DownloadService extends IntentService {
         try {
             JsonHelper.saveJson(currentContent, dir);
         } catch (IOException e) {
-            LogHelper.e(TAG, e, "Error saving JSON: " + currentContent.getTitle());
+            Timber.e(e, "Error saving JSON: %s", currentContent.getTitle());
         }
 
         HentoidApp.downloadComplete();
         updateActivity(-1);
-        LogHelper.d(TAG, "Content download finished: " + currentContent.getTitle());
+        Timber.d("Content download finished: %s", currentContent.getTitle());
 
         // Tracking Event (Download Completed)
-        HentoidApp.getInstance().trackEvent(TAG, "Download", "Download Content: Complete");
+        HentoidApp.getInstance().trackEvent(DownloadService.class, "Download", "Download Content: Complete");
     }
 
     private void queryForAdditionalDownloads() {

@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.enums;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by neko on 20/06/2015.
@@ -17,7 +17,6 @@ public enum Site {
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", R.drawable.ic_menu_hentaicafe),
     ASMHENTAI(6, "asmhentai", "http://asmhentai.com", R.drawable.ic_menu_asmhentai);
 
-    private static final String TAG = LogHelper.makeLogTag(Site.class);
 
     private final int code;
     private final String description;
@@ -33,7 +32,7 @@ public enum Site {
 
     public static Site searchByCode(int code) {
         if (code == -1) {
-            LogHelper.w(TAG, "Invalid site code!");
+            Timber.w("Invalid site code!");
         }
         for (Site s : Site.values()) {
             if (s.getCode() == code)

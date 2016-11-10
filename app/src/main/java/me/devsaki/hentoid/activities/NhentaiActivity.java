@@ -17,8 +17,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.util.HttpClientHelper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
@@ -29,7 +29,6 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
  * Implements nhentai source
  */
 public class NhentaiActivity extends BaseWebActivity {
-    private static final String TAG = LogHelper.makeLogTag(NhentaiActivity.class);
 
     @Override
     void setSite(Site site) {
@@ -53,7 +52,7 @@ public class NhentaiActivity extends BaseWebActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("nhentai.net"));
             } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
+                Timber.d("Malformed URL");
             }
 
             return false;
@@ -66,7 +65,7 @@ public class NhentaiActivity extends BaseWebActivity {
                 URL u = new URL(request.getUrl().toString());
                 return !(u.getHost().endsWith("nhentai.net"));
             } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
+                Timber.d("Malformed URL");
             }
 
             return false;
@@ -122,7 +121,7 @@ public class NhentaiActivity extends BaseWebActivity {
             try {
                 processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
             } catch (Exception e) {
-                LogHelper.e(TAG, e, "Error parsing content.");
+                Timber.e(e, "Error parsing content.");
             }
 
             return null;

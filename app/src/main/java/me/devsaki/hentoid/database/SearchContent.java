@@ -7,14 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 04/12/2016.
  * Grabs content from db with provided query
  */
 public class SearchContent {
-    private static final String TAG = LogHelper.makeLogTag(SearchContent.class);
 
     private final HentoidDB db;
     private final String mQuery;
@@ -37,7 +36,7 @@ public class SearchContent {
     }
 
     public void retrieveResults(final ContentListener listener) {
-        LogHelper.d(TAG, "Retrieving results.");
+        Timber.d("Retrieving results.");
 
         if (mCurrentState == State.READY) {
             listener.onContentReady(true);
@@ -70,7 +69,7 @@ public class SearchContent {
     }
 
     private synchronized void retrieveContent() {
-        LogHelper.d(TAG, "Retrieving content.");
+        Timber.d("Retrieving content.");
         try {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
@@ -79,11 +78,11 @@ public class SearchContent {
                 mCurrentState = State.READY;
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Could not load data from db");
+            Timber.e(e, "Could not load data from db");
         } finally {
             if (mCurrentState != State.READY) {
                 // Something bad happened!
-                LogHelper.w(TAG, "Failed...");
+                Timber.w("Failed...");
                 mCurrentState = State.FAILED;
             }
         }

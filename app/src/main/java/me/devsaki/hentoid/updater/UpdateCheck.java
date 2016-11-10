@@ -30,8 +30,8 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 8/21/15.
@@ -46,8 +46,6 @@ public class UpdateCheck {
             "me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED";
     static final String ACTION_INSTALL_UPDATE =
             "me.devsaki.hentoid.updater.INSTALL_UPDATE";
-
-    private static final String TAG = LogHelper.makeLogTag(UpdateCheck.class);
 
     private static final String KEY_VERSION_CODE = "versionCode";
     private static final String KEY_UPDATED_URL = "updateURL";
@@ -90,7 +88,7 @@ public class UpdateCheck {
                 (!onlyWifi && NetworkStatus.isOnline(context))) {
             checkNetworkConnectivity();
         } else {
-            LogHelper.w(TAG, "Network is not connected!");
+            Timber.w("Network is not connected!");
         }
         this.showToast = showToast;
     }
@@ -110,10 +108,10 @@ public class UpdateCheck {
 
         if (retry) {
             retryCount++;
-            LogHelper.d(TAG, "Retrying! Count: " + retryCount);
+            Timber.d("Retrying! Count: %s", retryCount);
         }
 
-        LogHelper.d(TAG, "Update URL: " + updateURL);
+        Timber.d("Update URL: %s", updateURL);
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.HONEYCOMB)) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
@@ -269,7 +267,7 @@ public class UpdateCheck {
                                                 cxt.getString(R.string.error_file));
                                         notifManager.notify(NOTIFICATION_ID, builder.build());
                                     } catch (Exception e) {
-                                        LogHelper.e(TAG, e, "Error");
+                                        Timber.e(e, "Error");
                                     }
                                 } else {
                                     try {
@@ -280,13 +278,12 @@ public class UpdateCheck {
                                                 cxt.getString(R.string.error_file));
                                         notifManager.notify(NOTIFICATION_ID, builder.build());
                                     } catch (Exception e) {
-                                        LogHelper.e(TAG, e, "Error");
+                                        Timber.e(e, "Error");
                                     }
                                 }
 
                             } else {
-                                LogHelper.d(TAG, "Error Code: " + errorCode + ". Error Message: " +
-                                        errorMessage);
+                                Timber.d("Error Code: %s Error Message: %s", errorCode, errorMessage);
                             }
                             downloadManager = null;
                         }
@@ -307,7 +304,7 @@ public class UpdateCheck {
 
             downloadManager = new ThinDownloadManager();
             downloadID = downloadManager.add(downloadRequest);
-            LogHelper.d(TAG, "DownloadID: " + downloadID);
+            Timber.d("DownloadID: %s", downloadID);
         } else {
             this.cancelNotification();
         }
@@ -344,7 +341,7 @@ public class UpdateCheck {
                 downloadManager.cancel(downloadID);
                 downloadManager.release();
             } catch (Exception e) {
-                LogHelper.e(TAG, e, "Error while cancelling download");
+                Timber.e(e, "Error while cancelling download");
             }
         }
         cancelNotificationAndUpdateRunnable();
@@ -387,14 +384,14 @@ public class UpdateCheck {
                 if (retryCount == 0) {
                     runAsyncTask(true);
                 } else {
-                    LogHelper.e(TAG, e, "IO ERROR");
+                    Timber.e(e, "IO ERROR");
                     mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
                 }
             } catch (JSONException e) {
-                LogHelper.e(TAG, e, "Error with JSON File");
+                Timber.e(e, "Error with JSON File");
                 mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
             } catch (PackageManager.NameNotFoundException e) {
-                LogHelper.e(TAG, e, "Package Name NOT Found");
+                Timber.e(e, "Package Name NOT Found");
             }
 
             return null;

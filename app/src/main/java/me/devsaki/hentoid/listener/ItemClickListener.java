@@ -7,14 +7,13 @@ import android.view.View.OnLongClickListener;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 05/07/2016.
  * Item OnClick and OnLongClick Listener with support for item selection
  */
 public class ItemClickListener implements OnClickListener, OnLongClickListener {
-    private static final String TAG = LogHelper.makeLogTag(ItemClickListener.class);
 
     private final Context context;
     private final Content content;
@@ -55,8 +54,8 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     public boolean onLongClick(View v) {
         updateSelector();
 
-        LogHelper.d(TAG, "Position: " + position + ": " + content.getTitle() +
-                " has been" + (selected ? " selected." : " unselected."));
+        Timber.d("Position: %s %s has been %s",
+                position, content.getTitle(), (selected ? "selected." : "unselected."));
 
         return true;
     }

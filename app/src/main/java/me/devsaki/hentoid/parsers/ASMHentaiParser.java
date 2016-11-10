@@ -14,7 +14,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.ASMHENTAI;
 
@@ -23,7 +23,6 @@ import static me.devsaki.hentoid.enums.Site.ASMHENTAI;
  * Handles parsing of content from asmhentai.com
  */
 public class ASMHentaiParser {
-    private static final String TAG = LogHelper.makeLogTag(ASMHentaiParser.class);
 
     public static Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
@@ -124,9 +123,9 @@ public class ASMHentaiParser {
             }
 
         } catch (IOException e) {
-            LogHelper.e(TAG, e, "Error while attempting to connect to: " + readerUrl);
+            Timber.e(e, "Error while attempting to connect to: %s", readerUrl);
         }
-        LogHelper.d(TAG, imgUrls);
+        Timber.d("%s", imgUrls);
 
         return imgUrls;
     }
