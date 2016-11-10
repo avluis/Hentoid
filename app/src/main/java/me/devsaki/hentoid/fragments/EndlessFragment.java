@@ -12,7 +12,7 @@ import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.ConstsPrefs;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 08/26/2016.
@@ -20,7 +20,6 @@ import me.devsaki.hentoid.util.LogHelper;
  */
 public class EndlessFragment extends DownloadsFragment implements ContentsWipedListener,
         EndlessScrollListener {
-    private static final String TAG = LogHelper.makeLogTag(EndlessFragment.class);
 
     @Override
     protected void attachScrollListener() {
@@ -85,33 +84,33 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
     @Override
     protected void checkResults() {
         if (contents != null) {
-            LogHelper.d(TAG, "Contents are not null.");
+            Timber.d("Contents are not null.");
         } else if (isLoaded && result != null) {
-            LogHelper.d(TAG, "Result is not null.");
+            Timber.d("Result is not null.");
             result.clear();
         } else {
-            LogHelper.d(TAG, "Contents are null.");
+            Timber.d("Contents are null.");
         }
         mAdapter.setEndlessScrollListener(this);
 
         if (result != null) {
-            LogHelper.d(TAG, "Result is not null.");
-            LogHelper.d(TAG, "Are results loaded? " + isLoaded);
+            Timber.d("Result is not null.");
+            Timber.d("Are results loaded? %s", isLoaded);
             if (result.isEmpty() && !isLoaded) {
-                LogHelper.d(TAG, "Result is empty!");
+                Timber.d("Result is empty!");
                 update();
             }
             checkContent(false);
             mAdapter.setContentsWipedListener(this);
         } else {
-            LogHelper.d(TAG, "Result is null.");
+            Timber.d("Result is null.");
 
             update();
             checkContent(true);
         }
 
         if (!query.isEmpty()) {
-            LogHelper.d(TAG, "Saved Query: " + query);
+            Timber.d("Saved Query: %s", query);
             update();
         }
     }
@@ -157,9 +156,9 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 mAdapter.enableFooter(false);
             }
         } else {
-            LogHelper.d(TAG, "Query: " + query);
+            Timber.d("Query: %s", query);
             if (result != null && !result.isEmpty()) {
-                LogHelper.d(TAG, "Result: Match.");
+                Timber.d("Result: Match.");
 
                 List<Content> searchResults = result;
                 mAdapter.setContentList(searchResults);
@@ -170,7 +169,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 updatePager();
                 mAdapter.enableFooter(false);
             } else {
-                LogHelper.d(TAG, "Result: Nothing to match.");
+                Timber.d("Result: Nothing to match.");
                 displayNoResults();
             }
         }
@@ -182,11 +181,11 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
             if (!isLastPage) {
                 currentPage++;
                 searchContent();
-                LogHelper.d(TAG, "Load more data now~");
+                Timber.d("Load more data now~");
                 mAdapter.enableFooter(true);
             }
         } else {
-            LogHelper.d(TAG, "Endless Scrolling disabled.");
+            Timber.d("Endless Scrolling disabled.");
             mAdapter.enableFooter(false);
         }
     }

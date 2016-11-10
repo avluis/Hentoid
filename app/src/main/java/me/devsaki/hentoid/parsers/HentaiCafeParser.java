@@ -19,7 +19,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
 
@@ -28,7 +28,6 @@ import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
  * Handles parsing of content from Hentai Cafe
  */
 public class HentaiCafeParser {
-    private static final String TAG = LogHelper.makeLogTag(HentaiCafeParser.class);
 
     private static final int TIMEOUT = 5000; // 5 seconds
 
@@ -100,21 +99,21 @@ public class HentaiCafeParser {
     public static List<String> parseImageList(Content content) {
         String galleryUrl = content.getReaderUrl();
         List<String> imgUrls = new ArrayList<>();
-        LogHelper.d(TAG, "Gallery URL: " + galleryUrl);
+        Timber.d("Gallery URL: %s", galleryUrl);
 
         Document readerDoc = null;
         Elements links = null;
         try {
             readerDoc = Jsoup.connect(galleryUrl).timeout(TIMEOUT).get();
         } catch (IOException e) {
-            LogHelper.e(TAG, e, "Error parsing content page");
+            Timber.e(e, "Error parsing content page");
         }
 
         if (readerDoc != null) {
             links = readerDoc.select("a.x-btn");
 
             if (links.size() > 1) {
-                LogHelper.d(TAG, "Multiple chapters found!");
+                Timber.d("Multiple chapters found!");
             }
         }
 
@@ -125,7 +124,7 @@ public class HentaiCafeParser {
 
         if (links != null) {
             for (int i = 0; i < links.size(); i++) {
-                LogHelper.d(TAG, "Chapter Links: " + links.get(i).attr("href"));
+                Timber.d("Chapter Links: %s", links.get(i).attr("href"));
                 try {
                     doc = Jsoup.connect(links.get(i).attr("href")).timeout(TIMEOUT).get();
                     contents = doc.select("article#content");
@@ -134,29 +133,27 @@ public class HentaiCafeParser {
                     if (contents.size() > 0) {
                         pages += Integer.parseInt(
                                 doc.select("div.text").first().text().replace(" ⤵", ""));
-                        LogHelper.d(TAG, "Pages: " + pages);
+                        Timber.d("Pages: %s", pages);
 
                         JSONArray array = getJSONArrayFromString(js.toString());
                         if (array != null) {
                             for (int j = 0; j < array.length(); j++) {
                                 try {
-                                    //LogHelper.d(TAG, "JSONObject: " + j + ":"
-                                    //        + array.get(j).toString());
                                     imgUrls.add(array.getJSONObject(j).getString("url"));
                                 } catch (JSONException e) {
-                                    LogHelper.e(TAG, e, "Error while reading from array");
+                                    Timber.e(e, "Error while reading from array");
                                 }
                             }
                         }
                     }
                 } catch (IOException e) {
-                    LogHelper.e(TAG, e, "JSOUP Error");
+                    Timber.e(e, "JSOUP Error");
                 }
             }
-            LogHelper.d(TAG, "Total Pages: " + pages);
+            Timber.d("Total Pages: %s", pages);
             content.setQtyPages(pages);
         }
-        LogHelper.d(TAG, imgUrls);
+        Timber.d("%s", imgUrls);
 
         return imgUrls;
     }
@@ -165,14 +162,14 @@ public class HentaiCafeParser {
         Pattern pattern = Pattern.compile(".*\\[\\{ *(.*) *\\}\\].*");
         Matcher matcher = pattern.matcher(s);
 
-        LogHelper.d(TAG, "Match found? " + matcher.find());
+        Timber.d("Match found? %s", matcher.find());
 
         String results = matcher.group(1);
         results = "[{" + results + "}]";
         try {
             return (JSONArray) new JSONTokener(results).nextValue();
         } catch (JSONException e) {
-            LogHelper.e(TAG, e, "Couldn't build JSONArray from the provided string");
+            Timber.e(e, "Couldn't build JSONArray from the provided string");
         }
 
         return null;

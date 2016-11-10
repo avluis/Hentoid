@@ -35,8 +35,8 @@ import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+import timber.log.Timber;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -44,7 +44,6 @@ import me.devsaki.hentoid.views.ObservableWebView;
  * The source itself should contain every method it needs to function.
  */
 public class BaseWebActivity extends BaseActivity {
-    private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
     private Content currentContent;
     private HentoidDB db;
@@ -81,9 +80,9 @@ public class BaseWebActivity extends BaseActivity {
 
         setSite(getSite());
         if (site == null) {
-            LogHelper.w(TAG, "Site is null!");
+            Timber.w("Site is null!");
         } else {
-            LogHelper.d(TAG, "Loading site: " + site);
+            Timber.d("Loading site: %s", site);
         }
 
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
@@ -121,9 +120,9 @@ public class BaseWebActivity extends BaseActivity {
     // Validate permissions
     private void checkPermissions() {
         if (Helper.permissionsCheck(this, ConstsImport.RQST_STORAGE_PERMISSION, false)) {
-            LogHelper.d(TAG, "Storage permission allowed!");
+            Timber.d("Storage permission allowed!");
         } else {
-            LogHelper.d(TAG, "Storage permission denied!");
+            Timber.d("Storage permission denied!");
             reset();
         }
     }
@@ -379,7 +378,7 @@ public class BaseWebActivity extends BaseActivity {
     }
 
     void backgroundRequest(String extra) {
-        LogHelper.d(TAG, "Extras: " + extra);
+        Timber.d("Extras: %s", extra);
     }
 
     class CustomWebViewClient extends WebViewClient {

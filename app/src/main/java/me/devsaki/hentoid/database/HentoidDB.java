@@ -22,14 +22,13 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by DevSaki on 10/05/2015.
  * db maintenance class
  */
 public class HentoidDB extends SQLiteOpenHelper {
-    private static final String TAG = LogHelper.makeLogTag(HentoidDB.class);
 
     private static final Object locker = new Object();
     private static final int DATABASE_VERSION = 1;
@@ -84,7 +83,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void insertContents(Content[] rows) {
         synchronized (locker) {
-            LogHelper.d(TAG, "insertContents");
+            Timber.d("insertContents");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
@@ -145,8 +144,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }
@@ -159,7 +157,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void insertImageFiles(Content content) {
         synchronized (locker) {
-            LogHelper.d(TAG, "insertImageFiles");
+            Timber.d("insertImageFiles");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             SQLiteStatement statementImages = null;
@@ -178,8 +176,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.endTransaction();
 
             } finally {
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }
@@ -252,7 +249,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     public Content selectContentById(int id) {
         Content result = null;
         synchronized (locker) {
-            LogHelper.d(TAG, "selectContentById");
+            Timber.d("selectContentById");
             SQLiteDatabase db = null;
             Cursor cursorContents = null;
             try {
@@ -268,8 +265,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContents != null) {
                     cursorContents.close();
                 }
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }
@@ -283,7 +279,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         Content result = null;
 
         synchronized (locker) {
-            LogHelper.d(TAG, "selectContentByStatus");
+            Timber.d("selectContentByStatus");
 
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
@@ -299,8 +295,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorContent != null) {
                     cursorContent.close();
                 }
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }
@@ -313,7 +308,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     public List<Content> selectContentInQueue() {
         List<Content> result = null;
         synchronized (locker) {
-            LogHelper.d(TAG, "selectContentInQueue");
+            Timber.d("selectContentInQueue");
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
             try {
@@ -337,7 +332,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         List<Content> result = null;
 
         synchronized (locker) {
-            LogHelper.d(TAG, "selectContentByQuery");
+            Timber.d("selectContentByQuery");
 
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
@@ -393,8 +388,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         if (cursorContent != null) {
             cursorContent.close();
         }
-        LogHelper.d(TAG, "Closing db connection. Condition: "
-                + (db != null && db.isOpen()));
+        Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
         if (db != null && db.isOpen()) {
             db.close(); // Closing database connection
         }
@@ -472,7 +466,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void updateImageFileStatus(ImageFile row) {
         synchronized (locker) {
-            LogHelper.d(TAG, "updateImageFileStatus");
+            Timber.d("updateImageFileStatus");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             try {
@@ -486,8 +480,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }
@@ -531,7 +524,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void deleteContent(Content content) {
         synchronized (locker) {
-            LogHelper.d(TAG, "deleteContent");
+            Timber.d("deleteContent");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
             SQLiteStatement statementImages = null;
@@ -555,8 +548,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }
@@ -575,7 +567,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void updateContentStatus(Content row) {
         synchronized (locker) {
-            LogHelper.d(TAG, "updateContentStatus");
+            Timber.d("updateContentStatus");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
@@ -592,8 +584,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }
@@ -606,7 +597,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void updateContentStatus(StatusContent updateTo, StatusContent updateFrom) {
         synchronized (locker) {
-            LogHelper.d(TAG, "updateContentStatus2");
+            Timber.d("updateContentStatus2");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
@@ -621,8 +612,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                LogHelper.d(TAG, "Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }

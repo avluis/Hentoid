@@ -20,7 +20,7 @@ import me.devsaki.hentoid.fragments.PagerFragment;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 08/26/2016.
@@ -28,7 +28,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * in accordance to Shared Prefs Setting Key: PREF_ENDLESS_SCROLL
  */
 public class DownloadsActivity extends DrawerActivity implements BackInterface {
-    private static final String TAG = LogHelper.makeLogTag(DownloadsActivity.class);
 
     private final SharedPreferences prefs = HentoidApp.getSharedPrefs();
     private BaseFragment baseFragment;
@@ -39,19 +38,19 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         try {
             return getFragment().newInstance();
         } catch (InstantiationException e) {
-            LogHelper.e(TAG, e, "Error: Could not access constructor");
+            Timber.e(e, "Error: Could not access constructor");
         } catch (IllegalAccessException e) {
-            LogHelper.e(TAG, e, "Error: Field or method is not accessible");
+            Timber.e(e, "Error: Field or method is not accessible");
         }
         return null;
     }
 
     private Class<? extends BaseFragment> getFragment() {
         if (getEndlessPref()) {
-            LogHelper.d(TAG, "getFragment: EndlessFragment.");
+            Timber.d("getFragment: EndlessFragment.");
             return EndlessFragment.class;
         } else {
-            LogHelper.d(TAG, "getFragment: PagerFragment.");
+            Timber.d("getFragment: PagerFragment.");
             return PagerFragment.class;
         }
     }
@@ -124,12 +123,12 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         if (grantResults.length > 0) {
             if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 // Permission Granted
-                LogHelper.d(TAG, "Permissions granted.");
+                Timber.d("Permissions granted.");
                 // In order to apply changes, activity/task restart is needed
                 Helper.doRestart(this);
             } else if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
                 // Permission Denied
-                LogHelper.d(TAG, "Permissions denied.");
+                Timber.d("Permissions denied.");
             }
         } else {
             // Permissions cannot be set, either via policy or forced by user.

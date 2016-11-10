@@ -19,8 +19,8 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
@@ -33,7 +33,6 @@ import static me.devsaki.hentoid.util.Helper.getWebViewOverviewPrefs;
  * Implements Hitomi.la source
  */
 public class HitomiActivity extends BaseWebActivity {
-    private static final String TAG = LogHelper.makeLogTag(HitomiActivity.class);
 
     @Override
     void setSite(Site site) {
@@ -50,7 +49,7 @@ public class HitomiActivity extends BaseWebActivity {
         if (bWebViewOverview) {
             webView.getSettings().setLoadWithOverviewMode(false);
             webView.setInitialScale(webViewInitialZoom);
-            LogHelper.d(TAG, "WebView Initial Scale: " + webViewInitialZoom + "%");
+            Timber.d("WebView Initial Scale: %s%", webViewInitialZoom);
         } else {
             webView.setInitialScale(ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);
@@ -61,7 +60,7 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     void backgroundRequest(String extra) {
-        LogHelper.d(TAG, extra);
+        Timber.d(extra);
         Helper.toast("Processing...");
         executeAsyncTask(new HtmlLoader(), extra);
     }
@@ -76,7 +75,7 @@ public class HitomiActivity extends BaseWebActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("hitomi.la"));
             } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
+                Timber.d("Malformed URL");
             }
 
             return false;
@@ -89,7 +88,7 @@ public class HitomiActivity extends BaseWebActivity {
                 URL u = new URL(request.getUrl().toString());
                 return !(u.getHost().endsWith("hitomi.la"));
             } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
+                Timber.d("Malformed URL");
             }
 
             return false;
@@ -139,7 +138,7 @@ public class HitomiActivity extends BaseWebActivity {
             try {
                 processContent(HitomiParser.parseContent(url));
             } catch (IOException e) {
-                LogHelper.e(TAG, e, "Error parsing content.");
+                Timber.e(e, "Error parsing content.");
             }
 
             return null;

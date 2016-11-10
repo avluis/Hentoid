@@ -13,7 +13,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by neko on 15/06/2015.
@@ -22,7 +22,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * TODO: Update with new Testing Support Library (and possibly ContentV2)
  */
 public class TestHentoidDB extends AndroidTestCase {
-    private static final String TAG = LogHelper.makeLogTag(TestHentoidDB.class);
 
     boolean locker1, locker2, locker3, locker4;
 
@@ -42,7 +41,7 @@ public class TestHentoidDB extends AndroidTestCase {
                         db1.insertContents(contents1.toArray(new Content[contents1.size()]));
                     }
                 } catch (Exception ex) {
-                    LogHelper.e(TAG, ex, "Error");
+                    Timber.e(ex, "Error");
                 }
                 locker1 = true;
             }).start();
@@ -55,7 +54,7 @@ public class TestHentoidDB extends AndroidTestCase {
                         db12.insertContents(contents12.toArray(new Content[contents12.size()]));
                     }
                 } catch (Exception ex) {
-                    LogHelper.e(TAG, ex, "Error");
+                    Timber.e(ex, "Error");
                 }
                 locker2 = true;
             }).start();
@@ -67,7 +66,7 @@ public class TestHentoidDB extends AndroidTestCase {
                         db13.selectContentByQuery("", 1, 10, false);
                     }
                 } catch (Exception ex) {
-                    LogHelper.e(TAG, ex, "Error");
+                    Timber.e(ex, "Error");
                 }
                 locker3 = true;
             }).start();
@@ -79,15 +78,15 @@ public class TestHentoidDB extends AndroidTestCase {
                         db14.selectContentByStatus(StatusContent.DOWNLOADED);
                     }
                 } catch (Exception ex) {
-                    LogHelper.e(TAG, ex, "Error");
+                    Timber.e(ex, "Error");
                 }
                 locker4 = true;
             }).start();
             //noinspection StatementWithEmptyBody
             while (!(locker1 && locker2 && locker3 && locker4)) ;
-            LogHelper.i(TAG, "DB Lock: Success");
+            Timber.i("DB Lock: Success");
         } catch (Exception ex) {
-            LogHelper.e(TAG, ex, "Error");
+            Timber.e(ex, "Error");
         }
     }
 

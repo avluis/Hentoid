@@ -28,7 +28,7 @@ import me.devsaki.hentoid.ui.CompoundAdapter;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 4/11/2016.
@@ -42,7 +42,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
 public abstract class DrawerActivity extends BaseActivity {
-    private static final String TAG = LogHelper.makeLogTag(DrawerActivity.class);
 
     protected Fragment fragment;
     private Context cxt;
@@ -301,7 +300,7 @@ public abstract class DrawerActivity extends BaseActivity {
         }
         // If not handled by drawerToggle, home needs to be handled by returning to previous
         if (item != null && item.getItemId() == android.R.id.home) {
-            LogHelper.d(TAG, "sent home");
+            Timber.d("sent home");
             onBackPressed();
             return true;
         }

@@ -31,7 +31,7 @@ import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
 import me.devsaki.hentoid.dirpicker.util.Bus;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 06/12/2016.
@@ -39,7 +39,6 @@ import me.devsaki.hentoid.util.LogHelper;
  */
 public class DirChooserFragment extends DialogFragment implements
         View.OnClickListener, View.OnLongClickListener {
-    private static final String TAG = LogHelper.makeLogTag(DirChooserFragment.class);
     private static final String CURRENT_ROOT_DIR = "currentRootDir";
     private static final String ROOT_DIR = "rootDir";
 
@@ -124,7 +123,7 @@ public class DirChooserFragment extends DialogFragment implements
 
     @Subscribe
     public void onOpFailedEvent(OpFailedEvent event) {
-        LogHelper.d(TAG, getString(R.string.op_not_allowed));
+        Timber.d(getString(R.string.op_not_allowed));
         Helper.toast(getActivity(), R.string.op_not_allowed);
     }
 
@@ -181,7 +180,7 @@ public class DirChooserFragment extends DialogFragment implements
     }
 
     private void onTextViewClicked(boolean longClick) {
-        LogHelper.d(TAG, "On TextView Clicked Event");
+        Timber.d("On TextView Clicked Event");
         bus.post(new OnTextViewClickedEvent(longClick));
     }
 
@@ -191,7 +190,7 @@ public class DirChooserFragment extends DialogFragment implements
     }
 
     private void requestSDBtnClicked() {
-        LogHelper.d(TAG, "SAF Request Event");
+        Timber.d("SAF Request Event");
         bus.post(new OnSAFRequestEvent());
     }
 

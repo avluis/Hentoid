@@ -58,7 +58,7 @@ import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 
@@ -73,8 +73,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private static final int SHOW_LOADING = 1;
     private static final int SHOW_BLANK = 2;
     private static final String LIST_STATE_KEY = "list_state";
-
-    private static final String TAG = LogHelper.makeLogTag(DownloadsFragment.class);
 
     protected static String query = "";
     private final Handler searchHandler = new Handler();
@@ -191,7 +189,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             queryPrefs();
             checkResults();
         } else {
-            LogHelper.d(TAG, "Storage permission denied!");
+            Timber.d("Storage permission denied!");
             if (permissionChecked) {
                 reset();
             }
@@ -200,11 +198,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     protected void queryPrefs() {
-        LogHelper.d(TAG, "Querying Prefs.");
+        Timber.d("Querying Prefs.");
         boolean shouldUpdate = false;
 
         if (settingDir.isEmpty()) {
-            LogHelper.d(TAG, "Where are my files?!");
+            Timber.d("Where are my files?!");
             Intent intent = new Intent(getActivity(), ImportActivity.class);
             startActivity(intent);
             getActivity().finish();
@@ -213,7 +211,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         String settingDir = FileHelper.getRoot();
 
         if (!this.settingDir.equals(settingDir)) {
-            LogHelper.d(TAG, "Library directory has changed!");
+            Timber.d("Library directory has changed!");
             this.settingDir = settingDir;
             cleanResults();
             shouldUpdate = true;
@@ -229,7 +227,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                         ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
 
         if (this.qtyPages != qtyPages) {
-            LogHelper.d(TAG, "qtyPages updated.");
+            Timber.d("qtyPages updated.");
             this.qtyPages = qtyPages;
             setQuery("");
             shouldUpdate = true;
@@ -239,7 +237,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);
 
         if (this.order != order) {
-            LogHelper.d(TAG, "order updated.");
+            Timber.d("order updated.");
             orderUpdated = true;
             this.order = order;
         }
@@ -253,7 +251,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (FileHelper.isSAF()) {
             File storage = new File(settingDir);
             if (FileHelper.getExtSdCardFolder(storage) == null) {
-                LogHelper.d(TAG, "Where are my files?!");
+                Timber.d("Where are my files?!");
                 Helper.toast(getActivity(),
                         "Could not find library!\nPlease check your storage device.", LONG);
                 setQuery("      ");
@@ -280,7 +278,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             FileHelper.sync(output);
             output.flush();
         } catch (NullPointerException npe) {
-            LogHelper.e(TAG, npe, "Invalid Stream");
+            Timber.e(npe, "Invalid Stream");
             Helper.toast(R.string.sd_access_error);
             new AlertDialog.Builder(getActivity())
                     .setMessage(R.string.sd_access_fatal_error)
@@ -288,7 +286,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     .setPositiveButton(android.R.string.ok, null)
                     .show();
         } catch (IOException e) {
-            LogHelper.e(TAG, e, "IOException while checking SD Health");
+            Timber.e(e, "IOException while checking SD Health");
         } finally {
             // finished
             if (output != null) {
@@ -299,7 +297,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 }
             }
             if (file.exists()) {
-                LogHelper.d(TAG, "Test file removed: " + FileHelper.removeFile(file));
+                Timber.d("Test file removed: %s", FileHelper.removeFile(file));
             }
         }
     }
@@ -432,7 +430,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             } else if (qtyPages > 0 && isLoaded) {
                 Helper.toast(mContext, R.string.not_previous_page);
             } else {
-                LogHelper.d(TAG, R.string.not_limit_per_page);
+                Timber.d("Not limit per page.");
             }
         });
     }
@@ -441,7 +439,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
         btnNext.setOnClickListener(v -> {
             if (qtyPages <= 0) {
-                LogHelper.d(TAG, R.string.not_limit_per_page);
+                Timber.d("Not limit per page.");
             } else {
                 if (!isLastPage && isLoaded) {
                     currentPage++;
@@ -491,7 +489,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     protected void clearQuery(int option) {
-        LogHelper.d(TAG, "Clearing query with option: " + option);
+        Timber.d("Clearing query with option: %s", option);
         if (searchView != null && option == 1) {
             searchView.clearFocus();
             searchView.setIconified(true);
@@ -512,7 +510,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void resetCount() {
-        LogHelper.d(TAG, "Download Count: " + HentoidApp.getDownloadCount());
+        Timber.d("Download Count: %s", HentoidApp.getDownloadCount());
         HentoidApp.setDownloadCount(0);
         NotificationManager manager = (NotificationManager) mContext.getSystemService(
                 Context.NOTIFICATION_SERVICE);
@@ -523,7 +521,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onDownloadEvent(DownloadEvent event) {
         Double percent = event.percent;
         if (percent >= 0) {
-            LogHelper.d(TAG, "Download Progress: " + percent);
+            Timber.d("Download Progress: %s", percent);
         } else if (isLoaded) {
             showReloadToolTip();
         }
@@ -685,7 +683,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             refreshLayout.setEnabled(true);
             newContent = true;
         } else {
-            LogHelper.d(TAG, "Tooltip visible.");
+            Timber.d("Tooltip visible.");
         }
     }
 
@@ -798,11 +796,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onContentReady(boolean success) {
         if (success) {
-            LogHelper.d(TAG, "Content results have loaded.");
+            Timber.d("Content results have loaded.");
             isLoaded = true;
 
             if (search.getContent() == null) {
-                LogHelper.d(TAG, "Result: Nothing to match.");
+                Timber.d("Result: Nothing to match.");
                 displayNoResults();
             } else {
                 displayResults();
@@ -815,7 +813,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void updatePager() {
         // TODO: Test if result.size == qtyPages (meaning; last page, exact size)
         isLastPage = result.size() < qtyPages;
-        LogHelper.d(TAG, "Results: " + result.size());
+        Timber.d("Results: %s", result.size());
     }
 
     protected void displayNoResults() {
@@ -826,14 +824,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             emptyText.setText(R.string.downloads_empty);
             toggleUI(SHOW_BLANK);
         } else {
-            LogHelper.w(TAG, "Why are we in here?");
+            Timber.w("Why are we in here?");
         }
     }
 
     @Override
     public void onContentFailed(boolean failure) {
         if (failure) {
-            LogHelper.d(TAG, "Content results failed to load.");
+            Timber.d("Content results failed to load.");
             isLoaded = false;
         }
     }
@@ -896,7 +894,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Override
     public void onContentsWiped() {
-        LogHelper.d(TAG, "All items cleared!");
+        Timber.d("All items cleared!");
         displayNoResults();
         clearSelection();
         cleanResults();

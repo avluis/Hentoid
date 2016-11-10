@@ -14,13 +14,13 @@ import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 
 import me.devsaki.hentoid.HentoidApp;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 08/25/2016.
  * Methods for use by FileHelper
  */
 class FileUtil {
-    private static final String TAG = LogHelper.makeLogTag(FileUtil.class);
 
     private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
 
@@ -35,7 +35,7 @@ class FileUtil {
             stream.getFD().sync();
             return true;
         } catch (IOException e) {
-            LogHelper.e(TAG, e, "IO Error");
+            Timber.e(e, "IO Error");
         }
 
         return false;
@@ -132,7 +132,7 @@ class FileUtil {
                 }
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Error while attempting to get file: " + target.getAbsolutePath());
+            Timber.e(e, "Error while attempting to get file: %s", target.getAbsolutePath());
         }
 
         return outStream;
@@ -347,9 +347,8 @@ class FileUtil {
                 }
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, e,
-                    "Error while copying file from " + source.getAbsolutePath() +
-                            " to " + target.getAbsolutePath());
+            Timber.e(e, "Error while copying file from %s to %s",
+                    source.getAbsolutePath(), target.getAbsolutePath());
 
             return false;
         } finally {

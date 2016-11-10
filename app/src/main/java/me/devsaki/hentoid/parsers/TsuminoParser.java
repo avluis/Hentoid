@@ -33,7 +33,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
 
@@ -42,7 +42,6 @@ import static me.devsaki.hentoid.enums.Site.TSUMINO;
  * Handles parsing of content from tsumino
  */
 public class TsuminoParser {
-    private static final String TAG = LogHelper.makeLogTag(TsuminoParser.class);
 
     public static Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
@@ -131,15 +130,15 @@ public class TsuminoParser {
             dataOpt = contents.attr("data-opt");
             dataObj = contents.attr("data-obj");
 
-            LogHelper.d(TAG, "Data URL: " + TSUMINO.getUrl() + dataUrl + ", Data Opt: " + dataOpt +
-                    ", Data Obj: " + dataObj);
+            Timber.d("Data URL: %s%s, Data Opt: %s, Data Obj: %s",
+                    TSUMINO.getUrl(), dataUrl, dataOpt, dataObj);
 
             String request = sendPostRequest(dataUrl, dataOpt);
             imgUrls = buildImageUrls(dataObj, request);
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Couldn't complete html/parse request: ");
+            Timber.e(e, "Couldn't complete html/parse request: ");
         }
-        LogHelper.d(TAG, imgUrls);
+        Timber.d("%s", imgUrls);
 
         return imgUrls;
     }
@@ -187,9 +186,9 @@ public class TsuminoParser {
 
             return builder.toString();
         } catch (UnsupportedEncodingException e) {
-            LogHelper.e(TAG, e, "Encoding option is not supported for this URL");
+            Timber.e(e, "Encoding option is not supported for this URL");
         } catch (IOException e) {
-            LogHelper.e(TAG, e, "IO Exception while attempting request");
+            Timber.e(e, "IO Exception while attempting request");
         } finally {
             if (http != null) {
                 http.disconnect();
@@ -211,7 +210,7 @@ public class TsuminoParser {
                 imgUrls.add(imgUrl + URLEncoder.encode(
                         urls.getAsJsonArray().get(i).getAsString(), "UTF-8"));
             } catch (UnsupportedEncodingException e) {
-                LogHelper.e(TAG, e, "Failed to encode URL");
+                Timber.e(e, "Failed to encode URL");
             }
         }
 
