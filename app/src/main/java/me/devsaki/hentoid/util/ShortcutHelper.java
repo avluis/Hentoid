@@ -20,7 +20,6 @@ import me.devsaki.hentoid.activities.NhentaiActivity;
  */
 
 public final class ShortcutHelper {
-    private static final String TAG = LogHelper.makeLogTag(ShortcutHelper.class);
 
     @RequiresApi(api = Build.VERSION_CODES.N_MR1)
     public static void buildShortcuts(Context cxt) {

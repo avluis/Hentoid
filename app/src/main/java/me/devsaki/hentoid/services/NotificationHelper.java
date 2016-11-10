@@ -15,7 +15,6 @@ public class NotificationHelper extends BroadcastReceiver {
     public static final String NOTIFICATION_DELETED =
             "me.devsaki.hentoid.services.NOTIFICATION_DELETED";
 
-
     private HentoidApp instance;
 
     @Override
@@ -33,7 +32,7 @@ public class NotificationHelper extends BroadcastReceiver {
             }
 
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Notification Exception");
+            Timber.e(e, "Notification Exception");
         }
     }
 }
