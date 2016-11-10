@@ -28,15 +28,14 @@ import me.devsaki.hentoid.fragments.QueueFragment;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
+import timber.log.Timber;
 
 /**
  * Created by neko on 11/05/2015.
  * Builds and assigns content from db into adapter for display in queue fragment
  */
 public class QueueContentAdapter extends ArrayAdapter<Content> {
-    private static final String TAG = LogHelper.makeLogTag(QueueContentAdapter.class);
 
     private final Context cxt;
     private final List<Content> contents;
@@ -261,7 +260,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
             fragment.update();
         } else {
-            LogHelper.d(TAG, "Not connected on resume!");
+            Timber.d("Not connected on resume!");
         }
     }
 
@@ -269,7 +268,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         if (content.getStatus() == StatusContent.CANCELED) {
             FileHelper.removeContent(cxt, content);
         } else {
-            LogHelper.d(TAG, "Attempting to clear non-cancelled download: " + content.getTitle());
+            Timber.d("Attempting to clear non-cancelled download: %s", content.getTitle());
         }
     }
 

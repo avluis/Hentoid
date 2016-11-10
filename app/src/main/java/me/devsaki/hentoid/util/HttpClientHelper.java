@@ -12,13 +12,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import me.devsaki.hentoid.HentoidApp;
+import timber.log.Timber;
 
 /**
  * Created by DevSaki on 14/05/2015.
  * Http related utility class
  */
 public class HttpClientHelper {
-    private static final String TAG = LogHelper.makeLogTag(HttpClientHelper.class);
 
     private static final CookieManager cookieManager = CookieManager.getInstance();
 
@@ -73,7 +73,7 @@ public class HttpClientHelper {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    LogHelper.e(TAG, e, "InputStream Error");
+                    Timber.e(e, "InputStream Error");
                 }
             }
             if (urlConnection != null) {

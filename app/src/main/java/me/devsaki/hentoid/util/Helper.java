@@ -45,6 +45,7 @@ import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import timber.log.Timber;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 
@@ -55,7 +56,6 @@ import static android.content.pm.PackageManager.PERMISSION_GRANTED;
  * TODO: Add additional image viewers.
  */
 public final class Helper {
-    private static final String TAG = LogHelper.makeLogTag(Helper.class);
     private static Toast toast;
 
     /**
@@ -103,11 +103,11 @@ public final class Helper {
                 ConstsPrefs.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
                 ConstsPrefs.PREFS_VERSION_KEY, 0);
 
-        LogHelper.d(TAG, "Current Prefs Key value: " + prefsVersion);
+        Timber.d("Current Prefs Key value: %s", prefsVersion);
 
         // Use this whenever any incompatible changes are made to Prefs.
         if (prefsVersion != ConstsPrefs.PREFS_VERSION) {
-            LogHelper.d(TAG, "Shared Prefs Key Mismatch! Clearing Prefs!");
+            Timber.d("Shared Prefs Key Mismatch! Clearing Prefs!");
 
             // Clear All
             clearSharedPreferences();
@@ -115,7 +115,7 @@ public final class Helper {
             // Save current Pref version key
             saveSharedPrefsKey(cxt.getApplicationContext());
         } else {
-            LogHelper.d(TAG, "Prefs Key Match. Carry on.");
+            Timber.d("Prefs Key Match. Carry on.");
         }
     }
 
@@ -207,7 +207,7 @@ public final class Helper {
             toast.getView().isShown();
             toast.setText(message);
         } catch (Exception e) {
-            LogHelper.d(TAG, "toast is null, creating one instead;");
+            Timber.d("toast is null, creating one instead;");
             toast = Toast.makeText(cxt, message, time);
         }
 
@@ -289,13 +289,13 @@ public final class Helper {
 
                     Runtime.getRuntime().exit(0);
                 } else {
-                    LogHelper.d(TAG, "Was not able to restart application, intent null");
+                    Timber.d("Was not able to restart application, intent null");
                 }
             } else {
-                LogHelper.d(TAG, "Was not able to restart application, PM null");
+                Timber.d("Was not able to restart application, PM null");
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Was not able to restart application");
+            Timber.e(e, "Was not able to restart application");
         }
     }
 
@@ -390,7 +390,7 @@ public final class Helper {
                 throw new ResourceException("No resource ID found for: " + resourceName +
                         " / " + c, e);
             } catch (ResourceException rEx) {
-                LogHelper.w(TAG, rEx);
+                Timber.w(rEx);
             }
         }
 

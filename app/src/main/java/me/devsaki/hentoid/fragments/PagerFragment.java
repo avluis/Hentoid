@@ -11,14 +11,13 @@ import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 08/26/2016.
  * Presents the list of downloaded works to the user in a classic pager.
  */
 public class PagerFragment extends DownloadsFragment implements ContentsWipedListener {
-    private static final String TAG = LogHelper.makeLogTag(PagerFragment.class);
 
     @Override
     protected void attachScrollListener() {
@@ -93,23 +92,23 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
     @Override
     protected void checkResults() {
         if (result != null) {
-            LogHelper.d(TAG, "Result is not null.");
-            LogHelper.d(TAG, "Are results loaded? " + isLoaded);
+            Timber.d("Result is not null.");
+            Timber.d("Are results loaded? %s", isLoaded);
             if (result.isEmpty() && !isLoaded) {
-                LogHelper.d(TAG, "Result is empty!");
+                Timber.d("Result is empty!");
                 update();
             }
             checkContent(false);
             mAdapter.setContentsWipedListener(this);
         } else {
-            LogHelper.d(TAG, "Result is null.");
+            Timber.d("Result is null.");
 
             update();
             checkContent(true);
         }
 
         if (!query.isEmpty()) {
-            LogHelper.d(TAG, "Saved Query: " + query);
+            Timber.d("Saved Query: %s", query);
             update();
         }
     }
@@ -153,9 +152,9 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
                 updatePager();
             }
         } else {
-            LogHelper.d(TAG, "Query: " + query);
+            Timber.d("Query: %s", query);
             if (result != null && !result.isEmpty()) {
-                LogHelper.d(TAG, "Result: Match.");
+                Timber.d("Result: Match.");
 
                 List<Content> searchResults = result;
                 mAdapter.setContentList(searchResults);
@@ -165,7 +164,7 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
                 showToolbar(true, true);
                 updatePager();
             } else {
-                LogHelper.d(TAG, "Result: Nothing to match.");
+                Timber.d("Result: Nothing to match.");
                 displayNoResults();
             }
         }

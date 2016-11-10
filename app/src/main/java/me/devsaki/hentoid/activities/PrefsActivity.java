@@ -27,14 +27,13 @@ import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by DevSaki on 20/05/2015.
  * Set up and present preferences.
  */
 public class PrefsActivity extends BaseActivity {
-    private static final String TAG = LogHelper.makeLogTag(PrefsActivity.class);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -139,12 +138,12 @@ public class PrefsActivity extends BaseActivity {
                         new UpdateCheck.UpdateCheckCallback() {
                             @Override
                             public void noUpdateAvailable() {
-                                LogHelper.d(TAG, "Update Check: No update.");
+                                Timber.d("Update Check: No update.");
                             }
 
                             @Override
                             public void onUpdateAvailable() {
-                                LogHelper.d(TAG, "Update Check: Update!");
+                                Timber.d("Update Check: Update!");
                             }
                         });
 

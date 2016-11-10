@@ -9,7 +9,7 @@ import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 
@@ -18,7 +18,6 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Responsible for resolving intents and sending them where appropriate
  */
 public class IntentActivity extends BaseActivity {
-    private static final String TAG = LogHelper.makeLogTag(IntentActivity.class);
 
     private static final String HITOMI = "hitomi.la";
     private static final String NHENTAI = "nhentai.net";
@@ -38,10 +37,10 @@ public class IntentActivity extends BaseActivity {
         Uri data = null;
 
         if (Intent.ACTION_VIEW.equals(action)) {
-            LogHelper.d(TAG, "ACTION_VIEW Intent received.");
+            Timber.d("ACTION_VIEW Intent received.");
             data = intent.getData();
         } else if (Intent.ACTION_SEND.equals(action) & type != null & extras != null) {
-            LogHelper.d(TAG, "ACTION_SEND Intent received.");
+            Timber.d("ACTION_SEND Intent received.");
             data = Uri.parse(intent.getStringExtra(Intent.EXTRA_TEXT));
         }
 
@@ -55,7 +54,7 @@ public class IntentActivity extends BaseActivity {
         String parsedString = null;
         String toParse;
         if (data != null) {
-            LogHelper.d(TAG, "Uri: " + data);
+            Timber.d("Uri: %s", data);
             toParse = data.getPath();
 
             switch (data.getHost()) {
@@ -82,7 +81,7 @@ public class IntentActivity extends BaseActivity {
                             "") : toParse;
                     break;
                 default:
-                    LogHelper.d(TAG, "Unknown host!");
+                    Timber.d("Unknown host!");
                     site = null;
                     break;
             }

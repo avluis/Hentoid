@@ -8,12 +8,13 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import timber.log.Timber;
+
 /**
  * Created by avluis on 7/6/15.
  * General wrapper for network status query.
  */
 public final class NetworkStatus {
-    private static final String TAG = LogHelper.makeLogTag(NetworkStatus.class);
 
     private static NetworkInfo init(Context cxt) {
         Context context = cxt.getApplicationContext();
@@ -32,7 +33,7 @@ public final class NetworkStatus {
 
             return connected;
         } catch (Exception e) {
-            LogHelper.e(TAG, e);
+            Timber.e(e);
         }
 
         return false;
@@ -47,7 +48,7 @@ public final class NetworkStatus {
 
             return wifi;
         } catch (Exception e) {
-            LogHelper.e(TAG, e);
+            Timber.e(e);
         }
 
         return false;
@@ -62,7 +63,7 @@ public final class NetworkStatus {
 
             return mobile;
         } catch (Exception e) {
-            LogHelper.e(TAG, e);
+            Timber.e(e);
         }
 
         return false;
@@ -82,10 +83,10 @@ public final class NetworkStatus {
 
                 return (url.getResponseCode() == 204 && url.getContentLength() == 0);
             } catch (IOException e) {
-                LogHelper.e(TAG, e, "Error while checking for internet connection");
+                Timber.e(e, "Error while checking for internet connection");
             }
         } else {
-            LogHelper.d(TAG, "No network available!");
+            Timber.d("No network available!");
         }
 
         return false;

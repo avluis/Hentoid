@@ -7,15 +7,14 @@ import java.io.File;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
 import me.devsaki.hentoid.dirpicker.model.DirTree;
-import me.devsaki.hentoid.util.LogHelper;
 import rx.Observer;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 06/12/2016.
  * Make Directory Observer
  */
 public class MakeDirObserver implements Observer<File> {
-    private static final String TAG = LogHelper.makeLogTag(MakeDirObserver.class);
 
     private final DirTree dirTree;
     private final EventBus bus;
@@ -42,12 +41,12 @@ public class MakeDirObserver implements Observer<File> {
         if (isNewDirInCurrentDir()) {
             bus.post(new UpdateDirTreeEvent(dirTree.getRoot()));
         }
-        LogHelper.d(TAG, "Make directory completed.");
+        Timber.d("Make directory completed.");
     }
 
     @Override
     public void onError(Throwable e) {
-        LogHelper.d(TAG, "onError: " + e.toString());
+        Timber.d("onError: %s", e.toString());
         bus.post(new OpFailedEvent());
     }
 

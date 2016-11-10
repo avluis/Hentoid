@@ -15,8 +15,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
@@ -25,7 +25,6 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
  * Implements Hentai Cafe source
  */
 public class HentaiCafeActivity extends BaseWebActivity {
-    private final static String TAG = LogHelper.makeLogTag(HentaiCafeActivity.class);
 
     @Override
     void setSite(Site site) {
@@ -41,7 +40,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
 
     @Override
     void backgroundRequest(String extra) {
-        LogHelper.d(TAG, extra);
+        Timber.d(extra);
         Helper.toast("Processing...");
         executeAsyncTask(new HtmlLoader(), extra);
     }
@@ -55,7 +54,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("hentai.cafe"));
             } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
+                Timber.d("Malformed URL");
             }
 
             return false;
@@ -68,7 +67,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
                 URL u = new URL(request.getUrl().toString());
                 return !(u.getHost().endsWith("hentai.cafe"));
             } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
+                Timber.d("Malformed URL");
             }
 
             return false;
@@ -91,7 +90,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
             try {
                 processContent(HentaiCafeParser.parseContent(url));
             } catch (IOException e) {
-                LogHelper.e(TAG, e, "Error parsing content.");
+                Timber.e(e, "Error parsing content.");
             }
 
             return null;

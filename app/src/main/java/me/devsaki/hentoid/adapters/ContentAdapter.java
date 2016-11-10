@@ -36,14 +36,13 @@ import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
  */
 public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
-    private static final String TAG = LogHelper.makeLogTag(ContentAdapter.class);
 
     private static final int VISIBLE_THRESHOLD = 10;
     private static final int VIEW_TYPE_LOADING = 0;
@@ -75,10 +74,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     private void toggleSelection(int pos) {
         if (selectedItems.get(pos, false)) {
             selectedItems.delete(pos);
-            LogHelper.d(TAG, "Removed item: " + pos);
+            Timber.d("Removed item: %s", pos);
         } else {
             selectedItems.put(pos, true);
-            LogHelper.d(TAG, "Added item: " + pos);
+            Timber.d("Added item: %s", pos);
         }
         notifyItemChanged(pos);
     }
@@ -176,8 +175,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         LinearLayout minimal = (LinearLayout) holder.itemView.findViewById(R.id.item_minimal);
 
         if (holder.itemView.isSelected()) {
-            LogHelper.d(TAG, "Position: " + pos + ": " + content.getTitle()
-                    + " is a selected item currently in view.");
+            Timber.d("Position: %s %s is a selected item currently in view.", pos, content.getTitle());
 
             if (getSelectedItemCount() >= 1) {
                 items.setVisibility(View.GONE);
@@ -347,8 +345,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     bg = R.color.card_item_src_migrated;
                     break;
                 default:
-                    LogHelper.d(TAG, "Position: " + pos + ": " + content.getTitle() +
-                            " - Status: " + status);
+                    Timber.d("Position: %s %s - Status: %s", pos, content.getTitle(), status);
                     bg = R.color.card_item_src_other;
                     break;
             }
@@ -383,21 +380,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     boolean selectionMode = getSelectedItemCount() > 0;
 
                     if (selectionMode) {
-                        LogHelper.d(TAG, "In Selection Mode - ignore open requests.");
+                        Timber.d("In Selection Mode - ignore open requests.");
                         if (selected) {
-                            LogHelper.d(TAG, "Item already selected, remove it.");
+                            Timber.d("Item already selected, remove it.");
 
                             toggleSelection(itemPos);
                             setSelected(false, getSelectedItemCount());
                         } else {
-                            LogHelper.d(TAG, "Item not selected, add it.");
+                            Timber.d("Item not selected, add it.");
 
                             toggleSelection(itemPos);
                             setSelected(true, getSelectedItemCount());
                         }
                         onLongClick(v);
                     } else {
-                        LogHelper.d(TAG, "Not in selection mode, opening item.");
+                        Timber.d("Not in selection mode, opening item.");
 
                         clearSelections();
                         setSelected(false, 0);
@@ -418,12 +415,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     boolean selected = getSelectedItem(itemPos);
 
                     if (selected) {
-                        LogHelper.d(TAG, "Item already selected, remove it.");
+                        Timber.d("Item already selected, remove it.");
 
                         toggleSelection(itemPos);
                         setSelected(false, getSelectedItemCount());
                     } else {
-                        LogHelper.d(TAG, "Item not selected, add it.");
+                        Timber.d("Item not selected, add it.");
 
                         toggleSelection(itemPos);
                         setSelected(true, getSelectedItemCount());
@@ -550,7 +547,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         int itemCount = getSelectedItemCount();
         if (itemCount > 0) {
             if (itemCount == 1) {
-                LogHelper.d(TAG, "Preparing to share selected item...");
+                Timber.d("Preparing to share selected item...");
 
                 List<Content> items;
                 items = processSelection();
@@ -559,16 +556,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     shareContent(items.get(0));
                 } else {
                     listener.onItemClear(0);
-                    LogHelper.d(TAG, "Nothing to share!!");
+                    Timber.d("Nothing to share!!");
                 }
             } else {
                 // TODO: Implement multi-item share
-                LogHelper.d(TAG, "How even?");
+                Timber.d("How even?");
                 Helper.toast("Not yet implemented!!");
             }
         } else {
             listener.onItemClear(0);
-            LogHelper.d(TAG, "No items to share!!");
+            Timber.d("No items to share!!");
         }
     }
 
@@ -576,7 +573,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         int itemCount = getSelectedItemCount();
         if (itemCount > 0) {
             if (itemCount == 1) {
-                LogHelper.d(TAG, "Preparing to delete selected item...");
+                Timber.d("Preparing to delete selected item...");
 
                 List<Content> items;
                 items = processSelection();
@@ -585,10 +582,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     deleteContent(items.get(0));
                 } else {
                     listener.onItemClear(0);
-                    LogHelper.d(TAG, "Nothing to delete!!");
+                    Timber.d("Nothing to delete!!");
                 }
             } else {
-                LogHelper.d(TAG, "Preparing to delete selected items...");
+                Timber.d("Preparing to delete selected items...");
 
                 List<Content> items;
                 items = processSelection();
@@ -597,12 +594,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     deleteContents(items);
                 } else {
                     listener.onItemClear(0);
-                    LogHelper.d(TAG, "No items to delete!!");
+                    Timber.d("No items to delete!!");
                 }
             }
         } else {
             listener.onItemClear(0);
-            LogHelper.d(TAG, "No items to delete!!");
+            Timber.d("No items to delete!!");
         }
     }
 
@@ -610,7 +607,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         int itemCount = getSelectedItemCount();
         if (itemCount > 0) {
             if (itemCount == 1) {
-                LogHelper.d(TAG, "Preparing to archive selected item...");
+                Timber.d("Preparing to archive selected item...");
 
                 List<Content> items;
                 items = processSelection();
@@ -619,28 +616,27 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     archiveContent(items.get(0));
                 } else {
                     listener.onItemClear(0);
-                    LogHelper.d(TAG, "Nothing to archive!!");
+                    Timber.d("Nothing to archive!!");
                 }
             } else {
                 // TODO: Implement multi-item archival
-                LogHelper.d(TAG, "How even?");
+                Timber.d("How even?");
                 Helper.toast("Not yet implemented!!");
             }
         } else {
             listener.onItemClear(0);
-            LogHelper.d(TAG, "No items to archive!!");
+            Timber.d("No items to archive!!");
         }
     }
 
     private List<Content> processSelection() {
         List<Content> selectionList = new ArrayList<>();
         List<Integer> selection = getSelectedItems();
-        LogHelper.d(TAG, "Selected items: " + selection);
+        Timber.d("Selected items: %s", selection);
 
         for (int i = 0; i < selection.size(); i++) {
             selectionList.add(i, contents.get(selection.get(i)));
-            LogHelper.d(TAG, "Added: " + contents.get(selection.get(i)).getTitle()
-                    + " to list.");
+            Timber.d("Added: %s to list.", contents.get(selection.get(i)).getTitle());
         }
 
         return selectionList;
@@ -652,7 +648,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     private void removeItem(Content item, boolean broadcast) {
         int position = contents.indexOf(item);
-        LogHelper.d(TAG, "Removing item: " + item.getTitle() + " from adapter.");
+        Timber.d("Removing item: %s from adapter.", item.getTitle());
         contents.remove(position);
         notifyItemRemoved(position);
 
@@ -673,7 +669,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         AsyncTask.execute(() -> {
             FileHelper.removeContent(cxt, item);
             db.deleteContent(item);
-            LogHelper.d(TAG, "Removed item: " + item.getTitle() + " from db and file system.");
+            Timber.d("Removed item: %s from db and file system.", item.getTitle());
         });
 
         notifyDataSetChanged();
@@ -691,7 +687,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
             for (int i = 0; i < items.size(); i++) {
                 FileHelper.removeContent(cxt, items.get(i));
                 db.deleteContent(items.get(i));
-                LogHelper.d(TAG, "Removed item: " + items.get(i).getTitle()
+                Timber.d("Removed item: " + items.get(i).getTitle()
                         + " from db and file system.");
             }
         });

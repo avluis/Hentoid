@@ -24,14 +24,13 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.DownloadService;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 04/10/2016.
  * Presents the list of works currently downloading to the user.
  */
 public class QueueFragment extends BaseFragment {
-    private static final String TAG = LogHelper.makeLogTag(QueueFragment.class);
 
     private ListView mListView;
     private TextView mEmptyText;
@@ -96,7 +95,7 @@ public class QueueFragment extends BaseFragment {
     private void updatePercent(double percent) {
         if (contents != null && !contents.isEmpty()) {
             contents.get(0).setPercent(percent);
-            LogHelper.d(TAG, percent);
+            Timber.d("%s", percent);
             ((ArrayAdapter) mListView.getAdapter()).notifyDataSetChanged();
         }
     }

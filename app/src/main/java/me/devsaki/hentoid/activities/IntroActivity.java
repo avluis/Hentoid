@@ -20,7 +20,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.BaseSlide;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 03/20/2016.
@@ -29,7 +29,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Set storage directory and library import
  */
 public class IntroActivity extends AppIntro2 {
-    private static final String TAG = LogHelper.makeLogTag(IntroActivity.class);
 
     private static final int IMPORT_SLIDE = 4;
 
@@ -139,7 +138,7 @@ public class IntroActivity extends AppIntro2 {
     public void onBackPressed() {
         if (pager.getCurrentItem() == IMPORT_SLIDE + 1) {
             // DO NOT ALLOW
-            LogHelper.d(TAG, "You can't leave just yet!");
+            Timber.d("You can't leave just yet!");
         } else {
             super.onBackPressed();
         }
@@ -163,7 +162,7 @@ public class IntroActivity extends AppIntro2 {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == ConstsImport.RQST_IMPORT_RESULTS) {
-            LogHelper.d(TAG, "REQUEST RESULT RECEIVED");
+            Timber.d("REQUEST RESULT RECEIVED");
             if (data != null) {
                 if (data.getStringExtra(ConstsImport.RESULT_KEY) != null) {
                     String result = data.getStringExtra(ConstsImport.RESULT_KEY);
@@ -174,12 +173,12 @@ public class IntroActivity extends AppIntro2 {
                         resultHandler(false, result);
                     }
                 } else {
-                    LogHelper.d(TAG, "Error: Data not received! Bad resultKey.");
+                    Timber.d("Error: Data not received! Bad resultKey.");
                     // Try again!
                     initImport();
                 }
             } else {
-                LogHelper.d(TAG, "Data is null!");
+                Timber.d("Data is null!");
                 // Try again!
                 initImport();
             }
@@ -193,18 +192,17 @@ public class IntroActivity extends AppIntro2 {
             }, 100);
             handler.removeCallbacks(null);
         } else {
-            LogHelper.d(TAG, "Unknown result code!");
+            Timber.d("Unknown result code!");
         }
     }
 
     private void resultHandler(boolean success, String result) {
         if (success) {
             // If we get RESULT_OK, then:
-            LogHelper.d(TAG, "RESULT_OK: ");
-            LogHelper.d(TAG, result);
+            Timber.d("RESULT_OK: %s", result);
 
             if (result.equals(ConstsImport.PERMISSION_GRANTED)) {
-                LogHelper.d(TAG, "Permission Allowed, resetting.");
+                Timber.d("Permission Allowed, resetting.");
 
                 HentoidApp.setBeginImport(false);
                 setProgressButtonEnabled(false);
@@ -234,7 +232,7 @@ public class IntroActivity extends AppIntro2 {
         } else {
             switch (result) {
                 case ConstsImport.PERMISSION_DENIED:
-                    LogHelper.d(TAG, "Permission Denied by User");
+                    Timber.d("Permission Denied by User");
 
                     pager.setCurrentItem(IMPORT_SLIDE - 3);
                     Snackbar.make(pager, R.string.permission_denied,
@@ -242,7 +240,7 @@ public class IntroActivity extends AppIntro2 {
                     setProgressButtonEnabled(true);
                     break;
                 case ConstsImport.PERMISSION_DENIED_FORCED:
-                    LogHelper.d(TAG, "Permission Denied (Forced) by User/Policy");
+                    Timber.d("Permission Denied (Forced) by User/Policy");
 
                     setProgressButtonEnabled(false);
                     setSwipeLock(true);
@@ -255,7 +253,7 @@ public class IntroActivity extends AppIntro2 {
                             .show();
                     break;
                 case ConstsImport.EXISTING_LIBRARY_FOUND:
-                    LogHelper.d(TAG, "Existing Library Found");
+                    Timber.d("Existing Library Found");
 
                     pager.setCurrentItem(IMPORT_SLIDE - 2);
                     Snackbar.make(pager, R.string.existing_library_error,
@@ -263,7 +261,7 @@ public class IntroActivity extends AppIntro2 {
                     setProgressButtonEnabled(true);
                     break;
                 default:
-                    LogHelper.d(TAG, "RESULT_CANCELED");
+                    Timber.d("RESULT_CANCELED");
 
                     pager.setCurrentItem(IMPORT_SLIDE - 2);
                     setProgressButtonEnabled(true);
