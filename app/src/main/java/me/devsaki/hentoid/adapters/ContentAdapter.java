@@ -19,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -236,6 +237,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
         Glide.with(cxt.getApplicationContext())
                 .load(FileHelper.getThumb(cxt, content))
+                .diskCacheStrategy(DiskCacheStrategy.NONE)
                 .fitCenter()
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder)
@@ -244,6 +246,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         if (holder.itemView.isSelected()) {
             Glide.with(cxt.getApplicationContext())
                     .load(FileHelper.getThumb(cxt, content))
+                    .diskCacheStrategy(DiskCacheStrategy.NONE)
                     .fitCenter()
                     .placeholder(R.drawable.ic_placeholder)
                     .error(R.drawable.ic_placeholder)

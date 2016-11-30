@@ -1,9 +1,8 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25'
+    buildToolsVersion '25.0.1'
     compileOptions {
         encoding "UTF-8"
         targetCompatibility 1.8
@@ -20,7 +19,7 @@ android {
         versionName '1.2.1r3'
         resConfigs "en"
         jackOptions {
-            enabled false
+            enabled true
         }
         vectorDrawables.useSupportLibrary = true
     }
@@ -140,26 +139,26 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     // Support libraries
-    compile 'com.android.support:appcompat-v7:25.0.0'
-    compile 'com.android.support:cardview-v7:25.0.0'
-    compile 'com.android.support:design:25.0.0'
-    compile 'com.android.support:recyclerview-v7:25.0.0'
-    compile 'com.android.support:support-v4:25.0.0'
+    compile 'com.android.support:appcompat-v7:25.0.1'
+    compile 'com.android.support:cardview-v7:25.0.1'
+    compile 'com.android.support:design:25.0.1'
+    compile 'com.android.support:recyclerview-v7:25.0.1'
+    compile 'com.android.support:support-v4:25.0.1'
     // Material Dialogs: github.com/afollestad/material-dialogs
-    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
+    compile 'com.afollestad.material-dialogs:core:0.9.1.0'
     // Image loader: github.com/bumptech/glide
     // https://github.com/bumptech/glide/wiki/Snapshots#gradle
     compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
     // Integrate with OkHttp: github.com/bumptech/glide/wiki/Integration-Libraries#okhttp-3
     compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0-SNAPSHOT'
     // Intro screens or slides: github.com/PaoloRotolo/AppIntro
-    compile 'com.github.paolorotolo:appintro:4.1.0'
+    compile 'com.github.paolorotolo:AppIntro:-SNAPSHOT'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
-    compile 'com.google.android.gms:play-services-analytics:9.8.0'
+    compile 'com.google.android.gms:play-services-analytics:10.0.1'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     compile 'com.google.code.gson:gson:2.8.0'
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
-    compile 'com.mani:ThinDownloadManager:1.2.5'
+    compile 'com.mani:ThinDownloadManager:1.2.7'
     // Additional Support Libraries
     // HTTP & HTTP/2 client: github.com/square/okhttp
     compile 'com.squareup.okhttp3:okhttp:3.4.2'
@@ -173,8 +172,8 @@ dependencies {
     compile 'io.reactivex:rxandroid:1.2.1'
     // Because RxAndroid releases are few and far between, it is recommended you also
     // explicitly depend on RxJava's latest version for bug fixes and new features.
-    compile 'io.reactivex:rxjava:1.2.2'
-    //    https://github.com/JakeWharton/timber
+    compile 'io.reactivex:rxjava:1.2.3'
+    // Timber (Extensible Logger): github.com/JakeWharton/timber
     compile 'com.jakewharton.timber:timber:4.3.1'
 }
 
