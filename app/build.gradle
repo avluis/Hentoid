@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.1'
+    buildToolsVersion '25.0.2'
     compileOptions {
         encoding "UTF-8"
         targetCompatibility 1.8
@@ -133,48 +133,47 @@ dependencies {
     compile fileTree(include: ['*jar'], dir: 'libs')
     // Tests
     // junit: github.com/junit-team/junit4/wiki/Use-with-Gradle
-    testCompile 'junit:junit:4.12'
+    testCompile group: 'junit', name: 'junit', version: '4.12'
     // https://developer.android.com/topic/libraries/testing-support-library/
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     // Support libraries
-    compile 'com.android.support:appcompat-v7:25.0.1'
-    compile 'com.android.support:cardview-v7:25.0.1'
-    compile 'com.android.support:design:25.0.1'
-    compile 'com.android.support:recyclerview-v7:25.0.1'
-    compile 'com.android.support:support-v4:25.0.1'
+    compile group: 'com.android.support', name: 'appcompat-v7', version: '25.1.0'
+    compile group: 'com.android.support', name: 'cardview-v7', version: '25.1.0'
+    compile group: 'com.android.support', name: 'design', version: '25.1.0'
+    compile group: 'com.android.support', name: 'recyclerview-v7', version: '25.1.0'
+    compile group: 'com.android.support', name: 'support-v4', version: '25.1.0'
+    compile group: 'com.android.support', name: 'support-v13', version: '25.1.0'
     // Material Dialogs: github.com/afollestad/material-dialogs
-    compile 'com.afollestad.material-dialogs:core:0.9.1.0'
+    compile group: 'com.afollestad.material-dialogs', name: 'core', version: '0.9.1.0'
     // Image loader: github.com/bumptech/glide
     // https://github.com/bumptech/glide/wiki/Snapshots#gradle
-    compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
+    compile group: 'com.github.bumptech.glide', name: 'glide', version: '3.8.0-SNAPSHOT'
     // Integrate with OkHttp: github.com/bumptech/glide/wiki/Integration-Libraries#okhttp-3
-    compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0-SNAPSHOT'
+    compile group: 'com.github.bumptech.glide', name: 'okhttp3-integration', version: '1.5.0-SNAPSHOT'
     // Intro screens or slides: github.com/PaoloRotolo/AppIntro
-    compile 'com.github.paolorotolo:AppIntro:-SNAPSHOT'
+    compile group: 'com.github.paolorotolo', name: 'AppIntro', version: '-SNAPSHOT'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
-    compile 'com.google.android.gms:play-services-analytics:10.0.1'
+    compile group: 'com.google.android.gms', name: 'play-services-analytics', version: '10.0.1'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
-    compile 'com.google.code.gson:gson:2.8.0'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+    // Timber (Extensible Logger): github.com/JakeWharton/timber
+    compile group: 'com.jakewharton.timber', name: 'timber', version: '4.4.0'
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
-    compile 'com.mani:ThinDownloadManager:1.2.7'
+    compile group: 'com.mani', name: 'ThinDownloadManager', version: '1.3.0'
     // Additional Support Libraries
     // HTTP & HTTP/2 client: github.com/square/okhttp
-    compile 'com.squareup.okhttp3:okhttp:3.4.2'
-    // IO functionality: commons.apache.org/proper/commons-io/
-    //compile 'commons-io:commons-io:2.5'
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.5.0'
     // EventBus: github.com/greenrobot/EventBus
-    compile 'org.greenrobot:eventbus:3.0.0'
+    compile group: 'org.greenrobot', name: 'eventbus', version: '3.0.0'
     // JSOUP HTML parser: jsoup.org/download
-    compile 'org.jsoup:jsoup:1.10.1'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
     // RxAndroid (RxJava bindings for Android): github.com/ReactiveX/RxAndroid
-    compile 'io.reactivex:rxandroid:1.2.1'
+    compile group: 'io.reactivex', name: 'rxandroid', version: '1.2.1'
     // Because RxAndroid releases are few and far between, it is recommended you also
     // explicitly depend on RxJava's latest version for bug fixes and new features.
-    compile 'io.reactivex:rxjava:1.2.3'
-    // Timber (Extensible Logger): github.com/JakeWharton/timber
-    compile 'com.jakewharton.timber:timber:4.3.1'
+    compile group: 'io.reactivex', name: 'rxjava', version: '1.2.4'
 }
 
 apply plugin: 'com.google.gms.google-services'
