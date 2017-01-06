@@ -185,6 +185,7 @@ final class ImageDownloadBatch {
             }
 
             downloadHandler(file, response);
+            response.close();
 
             semaphore.release();
             Timber.d("Done downloading image: %s", call.request().url());
