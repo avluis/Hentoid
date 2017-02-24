@@ -15,14 +15,8 @@ public class NotificationHelper extends BroadcastReceiver {
     public static final String NOTIFICATION_DELETED =
             "me.devsaki.hentoid.services.NOTIFICATION_DELETED";
 
-    private HentoidApp instance;
-
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (instance == null) {
-            instance = HentoidApp.getInstance();
-        }
-
         try {
             String action = intent.getAction();
             if (action.equals(NOTIFICATION_DELETED)) {
