@@ -12,8 +12,6 @@ import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -39,8 +37,10 @@ public class ASMHentaiActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        webView.setWebViewClient(new ASMHentaiWebViewClient());
+        ASMHentaiWebViewClient client = new ASMHentaiWebViewClient();
+        client.restrictTo("asmhentai.com");
 
+        webView.setWebViewClient(client);
         super.setWebView(webView);
     }
 
@@ -53,32 +53,6 @@ public class ASMHentaiActivity extends BaseWebActivity {
 
     private class ASMHentaiWebViewClient extends CustomWebViewClient {
         final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-
-        @SuppressWarnings("deprecation") // From API 24 we should use another overload
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            try {
-                URL u = new URL(url);
-                return !(u.getHost().endsWith("asmhentai.com"));
-            } catch (MalformedURLException e) {
-                Timber.d("Malformed URL");
-            }
-
-            return false;
-        }
-
-        @TargetApi(Build.VERSION_CODES.N)
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            try {
-                URL u = new URL(request.getUrl().toString());
-                return !(u.getHost().endsWith("asmhentai.com"));
-            } catch (MalformedURLException e) {
-                Timber.d("Malformed URL");
-            }
-
-            return false;
-        }
 
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request,
