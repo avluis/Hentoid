@@ -139,12 +139,9 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     // Support libraries
-    compile group: 'com.android.support', name: 'appcompat-v7', version: '25.1.0'
-    compile group: 'com.android.support', name: 'cardview-v7', version: '25.1.0'
-    compile group: 'com.android.support', name: 'design', version: '25.1.0'
-    compile group: 'com.android.support', name: 'recyclerview-v7', version: '25.1.0'
-    compile group: 'com.android.support', name: 'support-v4', version: '25.1.0'
-    compile group: 'com.android.support', name: 'support-v13', version: '25.1.0'
+    compile group: 'com.android.support', name: 'appcompat-v7', version: '25.2.0'
+    compile group: 'com.android.support', name: 'cardview-v7', version: '25.2.0'
+    compile group: 'com.android.support', name: 'design', version: '25.2.0'
     // Material Dialogs: github.com/afollestad/material-dialogs
     compile group: 'com.afollestad.material-dialogs', name: 'core', version: '0.9.1.0'
     // Image loader: github.com/bumptech/glide
@@ -159,7 +156,7 @@ dependencies {
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
     // Timber (Extensible Logger): github.com/JakeWharton/timber
-    compile group: 'com.jakewharton.timber', name: 'timber', version: '4.4.0'
+    compile group: 'com.jakewharton.timber', name: 'timber', version: '4.5.1'
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
     compile group: 'com.mani', name: 'ThinDownloadManager', version: '1.3.0'
     // Additional Support Libraries

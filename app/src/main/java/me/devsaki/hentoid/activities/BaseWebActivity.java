@@ -1,9 +1,12 @@
 package me.devsaki.hentoid.activities;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -11,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -382,6 +386,26 @@ public class BaseWebActivity extends BaseActivity {
     }
 
     class CustomWebViewClient extends WebViewClient {
+
+        private String domainName = "";
+
+        void restrictTo(String s) {
+            domainName = s;
+        }
+
+        @SuppressWarnings("deprecation") // From API 24 we should use another overload
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            String hostStr = Uri.parse(url).getHost();
+            return hostStr != null && !hostStr.contains(domainName);
+        }
+
+        @TargetApi(Build.VERSION_CODES.N)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            String hostStr = Uri.parse(request.getUrl().toString()).getHost();
+            return hostStr != null && !hostStr.contains(domainName);
+        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {

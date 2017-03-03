@@ -12,8 +12,6 @@ import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -49,8 +47,10 @@ public class TsuminoActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        webView.setWebViewClient(new TsuminoWebViewClient());
+        TsuminoWebViewClient client = new TsuminoWebViewClient();
+        client.restrictTo("tsumino.com");
 
+        webView.setWebViewClient(client);
         super.setWebView(webView);
     }
 
@@ -68,32 +68,6 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
         final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-
-        @SuppressWarnings("deprecation") // From API 24 we should use another overload
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            try {
-                URL u = new URL(url);
-                return !(u.getHost().endsWith("tsumino.com"));
-            } catch (MalformedURLException e) {
-                Timber.d("Malformed URL");
-            }
-
-            return false;
-        }
-
-        @TargetApi(Build.VERSION_CODES.N)
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            try {
-                URL u = new URL(request.getUrl().toString());
-                return !(u.getHost().endsWith("tsumino.com"));
-            } catch (MalformedURLException e) {
-                Timber.d("Malformed URL");
-            }
-
-            return false;
-        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
