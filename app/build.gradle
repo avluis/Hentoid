@@ -139,9 +139,9 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     // Support libraries
-    compile group: 'com.android.support', name: 'appcompat-v7', version: '25.1.1'
-    compile group: 'com.android.support', name: 'cardview-v7', version: '25.1.1'
-    compile group: 'com.android.support', name: 'design', version: '25.1.1'
+    compile group: 'com.android.support', name: 'appcompat-v7', version: '25.2.0'
+    compile group: 'com.android.support', name: 'cardview-v7', version: '25.2.0'
+    compile group: 'com.android.support', name: 'design', version: '25.2.0'
     // Material Dialogs: github.com/afollestad/material-dialogs
     compile group: 'com.afollestad.material-dialogs', name: 'core', version: '0.9.1.0'
     // Image loader: github.com/bumptech/glide
