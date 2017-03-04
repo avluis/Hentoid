@@ -34,7 +34,7 @@ public class AssetsCache {
     private static final String KEY_PACK_URL = "packURL";
     private static final String KEY_VERSION_CODE = "versionCode";
     // TODO: Revert cache version before publishing app update (same goes for cache.json)
-    private static final int BUNDLED_CACHE_VERSION = 2;
+    private static final int BUNDLED_CACHE_VERSION = 3;
     private static AssetManager assetManager;
     private static File cacheDir;
 
@@ -164,7 +164,7 @@ public class AssetsCache {
                     LogHelper.d(TAG, "Bundled cache is outdated.");
                     downloadCachePack(downloadURL);
                 } else {
-                    LogHelper.d(TAG, "Bundled cache is current.");
+                    LogHelper.d(TAG, "Bundled cache is current or newer.");
                     unpackBundle();
                 }
             }
