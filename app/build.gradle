@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'me.tatarka.retrolambda'
 
 android {
     compileSdkVersion 25
@@ -18,9 +19,6 @@ android {
         versionCode 43
         versionName '1.2.1r3'
         resConfigs "en"
-        jackOptions {
-            enabled true
-        }
         vectorDrawables.useSupportLibrary = true
     }
     packagingOptions {
@@ -67,8 +65,6 @@ android {
         release {
             debuggable false
             minifyEnabled true
-            // Jack does not work with shrinkResources yet
-            shrinkResources false
 
             signingConfig signingConfigs.release
 
@@ -85,8 +81,6 @@ android {
         qa {
             debuggable true
             minifyEnabled true
-            // Jack does not work with shrinkResources yet
-            shrinkResources false
 
             signingConfig signingConfigs.release
 
