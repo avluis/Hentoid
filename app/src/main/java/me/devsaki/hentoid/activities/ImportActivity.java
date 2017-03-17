@@ -554,9 +554,6 @@ public class ImportActivity extends BaseActivity {
                             finish();
                         })
                 .create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        }
 
         if (files.size() > 0) {
             dialog.show();
@@ -679,9 +676,6 @@ public class ImportActivity extends BaseActivity {
                             .cancelable(false)
                             .showListener(dialogInterface -> mImportDialog =
                                     (MaterialDialog) dialogInterface).build();
-            if (mScanDialog.getWindow() != null) {
-                mScanDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-            }
 
             downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {
