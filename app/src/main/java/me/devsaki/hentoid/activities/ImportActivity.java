@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
@@ -21,10 +20,10 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.InputType;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -87,6 +86,7 @@ public class ImportActivity extends BaseActivity {
     private ImageView instImage;
     private boolean restartFlag;
     private boolean prefInit;
+    private boolean defaultInit;
     private final Handler importHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -97,7 +97,6 @@ public class ImportActivity extends BaseActivity {
             return false;
         }
     });
-    private boolean defaultInit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -308,10 +307,12 @@ public class ImportActivity extends BaseActivity {
                     .setTitle(R.string.dir_path)
                     .setMessage(R.string.dir_path_inst)
                     .setView(text)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                        Editable value = text.getText();
-                        processManualInput(value);
-                    }).setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(android.R.string.ok,
+                            (dialog, which) -> {
+                                Editable value = text.getText();
+                                processManualInput(value);
+                            })
+                    .setNegativeButton(android.R.string.cancel, null)
                     .show();
         }
     }
@@ -521,42 +522,41 @@ public class ImportActivity extends BaseActivity {
                 files.addAll(Arrays.asList(contentFiles));
         }
 
-        final AlertDialog dialog = new AlertDialog.Builder(this)
-                .setIcon(R.drawable.ic_dialog_warning)
-                .setCancelable(false)
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.contents_detected)
-                .setPositiveButton(android.R.string.yes,
-                        (dialog1, which) -> {
-                            dialog1.dismiss();
-                            // Prior Library found, drop and recreate db
-                            cleanUpDB();
-                            // Send results to scan
-                            Helper.executeAsyncTask(new ImportAsyncTask());
-                        })
-                .setNegativeButton(android.R.string.no,
-                        (dialog12, which) -> {
-                            dialog12.dismiss();
-                            // Prior Library found, but user chose to cancel
-                            restartFlag = false;
-                            if (prevRootDir != null) {
-                                currentRootDir = prevRootDir;
-                            }
-                            if (currentRootDir != null) {
-                                FileHelper.validateFolder(currentRootDir.getAbsolutePath());
-                            }
-                            Timber.d("Restart needed: " + false);
-
-                            result = ConstsImport.EXISTING_LIBRARY_FOUND;
-                            Intent returnIntent = new Intent();
-                            returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                            setResult(RESULT_CANCELED, returnIntent);
-                            finish();
-                        })
-                .create();
-
         if (files.size() > 0) {
-            dialog.show();
+            new AlertDialog.Builder(this)
+                    .setIcon(R.drawable.ic_dialog_warning)
+                    .setCancelable(false)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.contents_detected)
+                    .setPositiveButton(android.R.string.yes,
+                            (dialog1, which) -> {
+                                dialog1.dismiss();
+                                // Prior Library found, drop and recreate db
+                                cleanUpDB();
+                                // Send results to scan
+                                Helper.executeAsyncTask(new ImportAsyncTask());
+                            })
+                    .setNegativeButton(android.R.string.no,
+                            (dialog12, which) -> {
+                                dialog12.dismiss();
+                                // Prior Library found, but user chose to cancel
+                                restartFlag = false;
+                                if (prevRootDir != null) {
+                                    currentRootDir = prevRootDir;
+                                }
+                                if (currentRootDir != null) {
+                                    FileHelper.validateFolder(currentRootDir.getAbsolutePath());
+                                }
+                                Timber.d("Restart needed: " + false);
+
+                                result = ConstsImport.EXISTING_LIBRARY_FOUND;
+                                Intent returnIntent = new Intent();
+                                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                                setResult(RESULT_CANCELED, returnIntent);
+                                finish();
+                            })
+                    .create()
+                    .show();
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
             cleanUpDB();
@@ -602,14 +602,11 @@ public class ImportActivity extends BaseActivity {
             Timber.d("Adding contents to db.");
             addDialog.show();
 
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    // Grab all parsed content and add to database
-                    db.insertContents(contents.toArray(new Content[contents.size()]));
-                    importHandler.sendEmptyMessage(0);
-                }
-            };
+            Thread thread = new Thread(() -> {
+                // Grab all parsed content and add to database
+                db.insertContents(contents.toArray(new Content[contents.size()]));
+                importHandler.sendEmptyMessage(0);
+            });
             thread.start();
 
             result = ConstsImport.EXISTING_LIBRARY_IMPORTED;
@@ -667,15 +664,14 @@ public class ImportActivity extends BaseActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            final MaterialDialog mScanDialog =
-                    new MaterialDialog.Builder(ImportActivity.this)
-                            .title(R.string.import_dialog)
-                            .content(R.string.please_wait)
-                            .contentGravity(GravityEnum.CENTER)
-                            .progress(false, 100, false)
-                            .cancelable(false)
-                            .showListener(dialogInterface -> mImportDialog =
-                                    (MaterialDialog) dialogInterface).build();
+            mImportDialog = new MaterialDialog.Builder(ImportActivity.this)
+                    .title(R.string.import_dialog)
+                    .content(R.string.please_wait)
+                    .contentGravity(GravityEnum.CENTER)
+                    .progress(false, 100, false)
+                    .cancelable(false)
+                    .build();
+            mImportDialog.show();
 
             downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {
@@ -688,8 +684,6 @@ public class ImportActivity extends BaseActivity {
                 // Grab all files in downloadDirs
                 files.addAll(Arrays.asList(downloadDir.listFiles()));
             }
-
-            mScanDialog.show();
         }
 
         @Override
