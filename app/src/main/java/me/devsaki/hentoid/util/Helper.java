@@ -306,16 +306,6 @@ public final class Helper {
         }
     }
 
-    // Sets navigation bar background color
-    @SuppressLint("NewApi")
-    public static void setNavBarColor(Activity activity, int color) {
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
-            Context context = activity.getApplicationContext();
-            int navColor = ContextCompat.getColor(context, color);
-            activity.getWindow().setNavigationBarColor(navColor);
-        }
-    }
-
     // Mainly for use with Android < 5.0 - sets OverScroll Glow and Edge Line
     @SuppressLint("NewApi")
     public static void changeEdgeEffect(Context cxt, View list, int glowColor, int lineColor) {
