@@ -33,7 +33,7 @@ public class AssetsCache {
     private static final String CACHE_PACK = "cache.zip";
     private static final String KEY_PACK_URL = "packURL";
     private static final String KEY_VERSION_CODE = "versionCode";
-    private static final int BUNDLED_CACHE_VERSION = 1;
+    private static final int BUNDLED_CACHE_VERSION = 3;
     private static AssetManager assetManager;
     private static File cacheDir;
 
