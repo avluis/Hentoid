@@ -17,10 +17,10 @@ buildscript {
 allprojects {
     repositories {
         jcenter()
-        maven {
+        /*maven { // needed for Glide -SNAPSHOT versions
             name 'glide-snapshot'
             url 'http://oss.sonatype.org/content/repositories/snapshots'
-        }
+        }*/
         maven { url 'https://jitpack.io' }
         mavenCentral()
     }

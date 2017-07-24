@@ -138,34 +138,34 @@ dependencies {
     compile group: 'com.android.support', name: 'cardview-v7', version: '25.3.1'
     compile group: 'com.android.support', name: 'design', version: '25.3.1'
     // Material Dialogs: github.com/afollestad/material-dialogs
-    compile group: 'com.afollestad.material-dialogs', name: 'core', version: '0.9.1.0'
+    compile group: 'com.afollestad.material-dialogs', name: 'core', version: '0.9.4.5'
     // Image loader: github.com/bumptech/glide
     // https://github.com/bumptech/glide/wiki/Snapshots#gradle
-    compile group: 'com.github.bumptech.glide', name: 'glide', version: '3.8.0-SNAPSHOT'
+    compile group: 'com.github.bumptech.glide', name: 'glide', version: '3.8.0'
     // Integrate with OkHttp: github.com/bumptech/glide/wiki/Integration-Libraries#okhttp-3
-    compile group: 'com.github.bumptech.glide', name: 'okhttp3-integration', version: '1.5.0-SNAPSHOT'
-    // Intro screens or slides: github.com/PaoloRotolo/AppIntro
-    compile group: 'com.github.paolorotolo', name: 'AppIntro', version: '-SNAPSHOT'
+    compile group: 'com.github.bumptech.glide', name: 'okhttp3-integration', version: '1.5.0'
+    // Intro screens or slides: https://github.com/apl-devs/AppIntro
+    compile group: 'com.github.paolorotolo', name: 'AppIntro', version: 'v4.2.2'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
     compile group: 'com.google.android.gms', name: 'play-services-analytics', version: '11.0.2'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
-    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.0'
+    compile group: 'com.google.code.gson', name: 'gson', version: '2.8.1'
     // Timber (Extensible Logger): github.com/JakeWharton/timber
     compile group: 'com.jakewharton.timber', name: 'timber', version: '4.5.1'
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
     compile group: 'com.mani', name: 'ThinDownloadManager', version: '1.3.0'
     // Additional Support Libraries
     // HTTP & HTTP/2 client: github.com/square/okhttp
-    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.5.0'
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version: '3.8.1'
     // EventBus: github.com/greenrobot/EventBus
     compile group: 'org.greenrobot', name: 'eventbus', version: '3.0.0'
     // JSOUP HTML parser: jsoup.org/download
-    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.1'
+    compile group: 'org.jsoup', name: 'jsoup', version: '1.10.3'
     // RxAndroid (RxJava bindings for Android): github.com/ReactiveX/RxAndroid
     compile group: 'io.reactivex', name: 'rxandroid', version: '1.2.1'
     // Because RxAndroid releases are few and far between, it is recommended you also
     // explicitly depend on RxJava's latest version for bug fixes and new features.
-    compile group: 'io.reactivex', name: 'rxjava', version: '1.2.4'
+    compile group: 'io.reactivex', name: 'rxjava', version: '1.3.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -6,3 +6,6 @@
     **[] $VALUES;
     public *;
 }
+
+# OkHttp 3 Proguard #
+-keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule
