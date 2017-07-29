@@ -2,6 +2,7 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,9 +13,10 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.bumptech.glide.DrawableRequestBuilder;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
 
@@ -31,6 +33,8 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.NetworkStatus;
 import timber.log.Timber;
+
+import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 /**
  * Created by neko on 11/05/2015.
@@ -104,17 +108,21 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachCover(ViewHolder holder, Content content) {
-        DrawableRequestBuilder<String> thumb = Glide.with(cxt).load(content.getCoverImageUrl());
+        RequestBuilder<Drawable> thumb = Glide.with(cxt).load(content.getCoverImageUrl());
 
         String coverFile = FileHelper.getThumb(cxt, content);
         holder.ivCover.layout(0, 0, 0, 0);
 
-        Glide.with(cxt)
-                .load(coverFile)
-                .diskCacheStrategy(DiskCacheStrategy.RESULT)
+        RequestOptions myOptions = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .fitCenter()
                 .placeholder(R.drawable.ic_placeholder)
-                .error(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder);
+
+        Glide.with(cxt)
+                .load(coverFile)
+                .apply(myOptions)
+                .transition(withCrossFade())
                 .thumbnail(thumb)
                 .into(holder.ivCover);
     }

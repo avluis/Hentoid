@@ -11,6 +11,8 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
 
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -32,6 +34,7 @@ public class HentoidApp extends Application {
     private static int downloadCount = 0;
     private static HentoidApp instance;
     private static SharedPreferences sharedPrefs;
+    private RefWatcher refWatcher;
 
     // Only for use when activity context cannot be passed or used e.g.;
     // Notification resources, Analytics, etc.
@@ -73,6 +76,11 @@ public class HentoidApp extends Application {
 
     public static void setDonePressed(boolean pressed) {
         HentoidApp.donePressed = pressed;
+    }
+
+    public static RefWatcher getRefWatcher(Context context) {
+        HentoidApp app = (HentoidApp) context.getApplicationContext();
+        return app.refWatcher;
     }
 
     private synchronized Tracker getGoogleAnalyticsTracker() {
@@ -139,6 +147,15 @@ public class HentoidApp extends Application {
     public void onCreate() {
         super.onCreate();
 
+        // LeakCanary
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            // This process is dedicated to LeakCanary for heap analysis.
+            // You should not init your app in this process.
+            return;
+        }
+        refWatcher = LeakCanary.install(this);
+
+        // Timber
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         } else {

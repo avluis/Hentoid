@@ -20,6 +20,7 @@ import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,6 +39,8 @@ import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
+
+import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 /**
  * Created by avluis on 04/23/2016.
@@ -232,24 +235,26 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         // The following is needed due to RecyclerView recycling layouts and
         // Glide not considering the layout invalid for the current image:
         // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        holder.ivCover.layout(0, 0, 0, 0);
-        holder.ivCover2.layout(0, 0, 0, 0);
+        //holder.ivCover.layout(0, 0, 0, 0);
+        //holder.ivCover2.layout(0, 0, 0, 0);
+
+        RequestOptions myOptions = new RequestOptions()
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .fitCenter()
+                .placeholder(R.drawable.ic_placeholder)
+                .error(R.drawable.ic_placeholder);
 
         Glide.with(cxt.getApplicationContext())
                 .load(FileHelper.getThumb(cxt, content))
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .fitCenter()
-                .placeholder(R.drawable.ic_placeholder)
-                .error(R.drawable.ic_placeholder)
+                .apply(myOptions)
+                .transition(withCrossFade())
                 .into(holder.ivCover);
 
         if (holder.itemView.isSelected()) {
             Glide.with(cxt.getApplicationContext())
                     .load(FileHelper.getThumb(cxt, content))
-                    .diskCacheStrategy(DiskCacheStrategy.NONE)
-                    .fitCenter()
-                    .placeholder(R.drawable.ic_placeholder)
-                    .error(R.drawable.ic_placeholder)
+                    .apply(myOptions)
+                    .transition(withCrossFade())
                     .into(holder.ivCover2);
         }
     }
