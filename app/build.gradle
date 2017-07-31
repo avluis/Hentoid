@@ -151,7 +151,7 @@ dependencies {
     }
     compile "com.github.bumptech.glide:okhttp3-integration:4.0.0-RC1"
     // Intro screens or slides: https://github.com/apl-devs/AppIntro
-    compile group: 'com.github.paolorotolo', name: 'AppIntro', version: 'v4.2.0'
+    compile group: 'com.github.apl-devs', name: 'AppIntro', version: 'v4.2.2'
     //compile project(':appintro')
     // Google Play Services Analytics: developers.google.com/android/guides/setup
     compile group: 'com.google.android.gms', name: 'play-services-analytics', version: '11.0.4'

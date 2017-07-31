@@ -21,8 +21,8 @@ allprojects {
             name 'glide-snapshot'
             url 'http://oss.sonatype.org/content/repositories/snapshots'
         }*/
-        maven { url 'https://jitpack.io' }
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 

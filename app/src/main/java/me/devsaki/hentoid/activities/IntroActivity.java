@@ -36,6 +36,10 @@ public class IntroActivity extends AppIntro2 {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
 
+    private Handler mImportHandler = new Handler();
+    private Handler mActivityResultHandler = new Handler();
+    private Handler mResultsHandler = new Handler();
+    private Handler mDoneHandler = new Handler();
     private Fragment doneFragment;
 
     @Override
@@ -64,7 +68,18 @@ public class IntroActivity extends AppIntro2 {
         setVibrate(true);
         setVibrateIntensity(30);
         showSkipButton(false);
+        setGoBackLock(true);
         pager.setPagingEnabled(false);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        mImportHandler.removeCallbacksAndMessages(null);
+        mActivityResultHandler.removeCallbacksAndMessages(null);
+        mResultsHandler.removeCallbacksAndMessages(null);
+        mDoneHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
@@ -85,6 +100,7 @@ public class IntroActivity extends AppIntro2 {
         }
 
         if (pager.getCurrentItem() == IMPORT_SLIDE) {
+            showPagerIndicator(false);
             setProgressButtonEnabled(false);
 
             TextView defaultTv = (TextView) findViewById(R.id.tv_library_default);
@@ -146,13 +162,12 @@ public class IntroActivity extends AppIntro2 {
 
     private void initImport() {
         if (HentoidApp.isImportComplete()) {
-            Handler handler = new Handler();
-            handler.postDelayed(() -> {
+            mImportHandler.postDelayed(() -> {
                 Intent selectFolder = new Intent(
                         getApplicationContext(), ImportActivity.class);
                 startActivityForResult(selectFolder, ConstsImport.RQST_IMPORT_RESULTS);
             }, 200);
-            handler.removeCallbacks(null);
+            mImportHandler.removeCallbacks(null);
         }
         HentoidApp.setBeginImport(true);
     }
@@ -185,12 +200,11 @@ public class IntroActivity extends AppIntro2 {
         } else if (requestCode == ConstsImport.RQST_APP_SETTINGS) {
             // Back from app settings
             HentoidApp.setBeginImport(false);
-            Handler handler = new Handler();
-            handler.postDelayed(() -> {
+            mActivityResultHandler.postDelayed(() -> {
                 setProgressButtonEnabled(true);
                 pager.setCurrentItem(IMPORT_SLIDE - 2);
             }, 100);
-            handler.removeCallbacks(null);
+            mActivityResultHandler.removeCallbacks(null);
         } else {
             Timber.d("Unknown result code!");
         }
@@ -211,8 +225,8 @@ public class IntroActivity extends AppIntro2 {
                 Snackbar.make(pager, R.string.permission_granted,
                         Snackbar.LENGTH_SHORT).show();
 
-                Handler handler = new Handler();
-                handler.postDelayed(() -> pager.setCurrentItem(IMPORT_SLIDE), 2000);
+                mResultsHandler.postDelayed(() -> pager.setCurrentItem(IMPORT_SLIDE), 2000);
+                mResultsHandler.removeCallbacks(null);
             } else {
                 // Disallow swiping back
                 setSwipeLock(true);
@@ -221,13 +235,12 @@ public class IntroActivity extends AppIntro2 {
                 setProgressButtonEnabled(true);
 
                 // Auto push to DownloadActivity after 10 seconds
-                Handler doneHandler = new Handler();
-                doneHandler.postDelayed(() -> {
+                mDoneHandler.postDelayed(() -> {
                     if (!HentoidApp.isDonePressed() && doneFragment != null) {
                         onDonePressed(doneFragment);
                     }
                 }, 10000);
-                doneHandler.removeCallbacks(null);
+                mDoneHandler.removeCallbacks(null);
             }
         } else {
             switch (result) {
