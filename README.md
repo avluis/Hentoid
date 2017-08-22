@@ -2,8 +2,6 @@
   Title: Hentoid
   Description: Doujinshi Android App
 -->
-
-[![CircleCI](https://circleci.com/gh/AVnetWS/Hentoid.svg?style=shield&circle-token=62f6f71ba9dd3c419c10ee4e0beea3098ebdb168)](https://circleci.com/gh/AVnetWS/Hentoid) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ae76428c8f7b4b0eb17a2faca9175eb3?branch=master)](https://www.codacy.com/app/AVnetWS/Hentoid/dashboard?bid=3349264&utm_source=github.com&amp;utm_medium=referral&amp;utm_content=AVnetWS/Hentoid&amp;utm_campaign=Badge_Grade)
 ___
 
 [![Hentoid App Icon](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/AVnetWS/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-dev-debug.apk?branch=master&filter=successful)
