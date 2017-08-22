@@ -1,13 +1,12 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion '25.0.3'
+    compileSdkVersion 26
+    buildToolsVersion '26.0.1'
     compileOptions {
         encoding "UTF-8"
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
@@ -35,6 +34,8 @@ android {
         // `return void` removes the lint error: `Not all execution paths return a value`.
         return void
     }
+    // Specifies a flavor dimension.
+    flavorDimensions "buildType"
     productFlavors {
         dev {
             buildConfigField('String', 'UPDATE_URL',
@@ -43,6 +44,7 @@ android {
             resValue('string', 'app_id', appId)
             resValue('string', 'app_name', 'Hentoid-dev')
             applicationId appId
+            dimension "buildType"
         }
         prod {
             buildConfigField('String', 'UPDATE_URL',
@@ -51,6 +53,7 @@ android {
             resValue('string', 'app_id', appId)
             resValue('string', 'app_name', 'Hentoid')
             applicationId appId
+            dimension "buildType"
         }
     }
     signingConfigs {
@@ -96,13 +99,14 @@ android {
 
             versionNameSuffix "-QA"
         }
+        buildTypeMatching 'debug', 'release', 'qa'
     }
     lintOptions {
         lintConfig file("../lint.xml")
     }
 }
 
-def Properties props = new Properties()
+Properties props = new Properties()
 def propFile = new File('.signing/signing.properties')
 if (propFile.canRead()) {
     props.load(new FileInputStream(propFile))
@@ -133,10 +137,10 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     // Support libraries
-    compile group: 'com.android.support', name: 'support-v13', version: '25.3.1'
-    compile group: 'com.android.support', name: 'appcompat-v7', version: '25.3.1'
-    compile group: 'com.android.support', name: 'cardview-v7', version: '25.3.1'
-    compile group: 'com.android.support', name: 'design', version: '25.3.1'
+    compile group: 'com.android.support', name: 'support-v13', version: '26.0.1'
+    compile group: 'com.android.support', name: 'appcompat-v7', version: '26.0.1'
+    compile group: 'com.android.support', name: 'cardview-v7', version: '26.0.1'
+    compile group: 'com.android.support', name: 'design', version: '26.0.1'
     // Material Dialogs: github.com/afollestad/material-dialogs
     compile group: 'com.afollestad.material-dialogs', name: 'core', version: '0.9.4.5'
     // Image loader: github.com/bumptech/glide
@@ -145,16 +149,16 @@ dependencies {
     //compile group: 'com.github.bumptech.glide', name: 'okhttp3-integration', version: '1.5.0'
     compile 'com.github.bumptech.glide:glide:4.0.0-RC1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.0.0-RC1'
-    compile ("com.github.bumptech.glide:recyclerview-integration:4.0.0-RC1") {
+    compile('com.github.bumptech.glide:recyclerview-integration:4.0.0-RC1') {
         // Excludes the support library because it's already included by Glide.
         transitive = false
     }
-    compile "com.github.bumptech.glide:okhttp3-integration:4.0.0-RC1"
+    compile 'com.github.bumptech.glide:okhttp3-integration:4.0.0-RC1'
     // Intro screens or slides: https://github.com/apl-devs/AppIntro
-    compile group: 'com.github.apl-devs', name: 'AppIntro', version: 'v4.2.2'
-    //compile project(':appintro')
+    //compile group: 'com.github.apl-devs', name: 'AppIntro', version: 'v4.2.2'
+    compile 'com.github.apl-devs:appintro:9d5d046037'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
-    compile group: 'com.google.android.gms', name: 'play-services-analytics', version: '11.0.4'
+    compile group: 'com.google.android.gms', name: 'play-services-analytics', version: '11.2.0'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     compile group: 'com.google.code.gson', name: 'gson', version: '2.8.1'
     // Timber (Extensible Logger): github.com/JakeWharton/timber

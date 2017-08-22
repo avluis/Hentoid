@@ -35,7 +35,7 @@
         android:layout_marginTop="3dp"
         android:layout_toEndOf="@+id/iv_notification"
         android:layout_toRightOf="@+id/iv_notification"
-        android:textAppearance="@style/TextAppearance.StatusBar.EventContent" />
+        android:textAppearance="@style/NotificationTitle" />
 
     <TextView
         android:id="@+id/tv_update_summary"
@@ -45,7 +45,7 @@
         android:layout_alignStart="@+id/tv_update_title"
         android:layout_below="@+id/pb_notification"
         android:gravity="center_vertical"
-        android:textAppearance="@style/TextAppearance.StatusBar.EventContent" />
+        android:textAppearance="@style/NotificationTitle" />
 
     <ProgressBar
         android:id="@+id/pb_notification"

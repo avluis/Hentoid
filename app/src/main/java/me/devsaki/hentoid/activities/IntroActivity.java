@@ -69,6 +69,7 @@ public class IntroActivity extends AppIntro2 {
         setVibrateIntensity(30);
         showSkipButton(false);
         setGoBackLock(true);
+        showPagerIndicator(false);
         pager.setPagingEnabled(false);
     }
 
@@ -100,7 +101,6 @@ public class IntroActivity extends AppIntro2 {
         }
 
         if (pager.getCurrentItem() == IMPORT_SLIDE) {
-            showPagerIndicator(false);
             setProgressButtonEnabled(false);
 
             TextView defaultTv = (TextView) findViewById(R.id.tv_library_default);

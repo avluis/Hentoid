@@ -22,7 +22,7 @@
         android:layout_marginStart="5dp"
         android:layout_toEndOf="@+id/iv_notification"
         android:layout_toRightOf="@+id/iv_notification"
-        android:textAppearance="@style/TextAppearance.StatusBar.EventContent"
+        android:textAppearance="@style/NotificationTitle"
         android:textSize="18sp"
         tools:text="Update Time!\nTap me to update." />
 </RelativeLayout>
