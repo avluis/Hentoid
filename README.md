@@ -4,7 +4,7 @@
 -->
 ___
 
-[![Hentoid App Icon](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)](https://circleci.com/api/v1/project/AVnetWS/Hentoid/latest/artifacts/0/$CIRCLE_ARTIFACTS/outputs/apk/app-dev-debug.apk?branch=master&filter=successful)
+![Hentoid App Icon](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)
 
 ##### `Hentoid` is a Doujinshi & H-Manga archiving app.
 ###### `Hentoid` currently supports:
