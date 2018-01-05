@@ -26,7 +26,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.IntentCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.widget.AppCompatDrawableManager;
 import android.text.Html;
@@ -288,7 +287,7 @@ public final class Helper {
                 Intent intent = pm.getLaunchIntentForPackage(cxt.getPackageName());
                 if (intent != null) {
                     ComponentName componentName = intent.getComponent();
-                    Intent mainIntent = IntentCompat.makeRestartActivityTask(componentName);
+                    Intent mainIntent = Intent.makeRestartActivityTask(componentName);
                     mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                             | Intent.FLAG_ACTIVITY_NEW_TASK
                             | Intent.FLAG_ACTIVITY_CLEAR_TASK);
