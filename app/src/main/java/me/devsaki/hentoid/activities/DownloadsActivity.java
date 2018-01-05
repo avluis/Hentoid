@@ -72,7 +72,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         if (getRecentVisibilityPref()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
-        setContentView(getLayoutResId());
+        setContentView(mainLayout);
 
         cxt = HentoidApp.getAppContext();
         initializeToolbar();

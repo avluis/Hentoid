@@ -16,7 +16,6 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -536,28 +535,27 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 mContext.getSystemService(Context.SEARCH_SERVICE);
 
         searchMenu = menu.findItem(R.id.action_search);
-        MenuItemCompat.setOnActionExpandListener(searchMenu,
-                new MenuItemCompat.OnActionExpandListener() {
-                    @Override
-                    public boolean onMenuItemActionExpand(MenuItem item) {
-                        toggleSortMenuItem(menu, false);
+        searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                toggleSortMenuItem(menu, false);
 
-                        return true;
-                    }
+                return true;
+            }
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                toggleSortMenuItem(menu, true);
 
-                    @Override
-                    public boolean onMenuItemActionCollapse(MenuItem item) {
-                        toggleSortMenuItem(menu, true);
+                if (!("").equals(query)) {
+                    query = "";
+                    submitSearchQuery(query, 300);
+                }
 
-                        if (!("").equals(query)) {
-                            query = "";
-                            submitSearchQuery(query, 300);
-                        }
+                return true;
+            }
+        });
 
-                        return true;
-                    }
-                });
-        searchView = (SearchView) MenuItemCompat.getActionView(searchMenu);
+        searchView = (SearchView) searchMenu.getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(
                 getActivity().getComponentName()));
         searchView.setIconifiedByDefault(true);
@@ -608,7 +606,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
 
         if (!shouldHide) {
-            MenuItemCompat.collapseActionView(searchMenu);
+            searchMenu.collapseActionView();
             menu.findItem(R.id.action_search).setVisible(false);
 
             toggleSortMenuItem(menu, false);

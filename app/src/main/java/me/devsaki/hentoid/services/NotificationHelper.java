@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import me.devsaki.hentoid.HentoidApp;
 import timber.log.Timber;
 
 /**

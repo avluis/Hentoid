@@ -9,7 +9,6 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.LayoutRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -42,6 +41,8 @@ import timber.log.Timber;
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
 public abstract class DrawerActivity extends BaseActivity {
+
+    protected static final int mainLayout = R.layout.activity_hentoid;
 
     protected Fragment fragment;
     private Context cxt;
@@ -82,7 +83,7 @@ public abstract class DrawerActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(getLayoutResId());
+        setContentView(mainLayout);
         cxt = HentoidApp.getAppContext();
 
         FragmentManager manager = getSupportFragmentManager();
@@ -121,12 +122,6 @@ public abstract class DrawerActivity extends BaseActivity {
         }
     }
 
-    @SuppressWarnings("SameReturnValue")
-    @LayoutRes
-    protected int getLayoutResId() {
-        return R.layout.activity_hentoid;
-    }
-
     @Override
     public void setTitle(CharSequence title) {
         super.setTitle(title);
@@ -154,20 +149,14 @@ public abstract class DrawerActivity extends BaseActivity {
     }
 
     private void initializeNavigationDrawer() {
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (mDrawerLayout != null) {
-            mDrawerList = (ListView) findViewById(R.id.drawer_list);
-            if (mDrawerList == null) {
-                throw new IllegalStateException(
-                        "A layout with a drawerLayout is required to " +
-                                "include a ListView with id 'drawer_list'");
-            }
-            mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                    mToolbar, R.string.drawer_open, R.string.drawer_close);
-            mDrawerLayout.addDrawerListener(mDrawerListener);
-            populateDrawerItems();
-            updateDrawerToggle();
-        }
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mDrawerList = findViewById(R.id.drawer_list);
+
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+                mToolbar, R.string.drawer_open, R.string.drawer_close);
+        mDrawerLayout.addDrawerListener(mDrawerListener);
+        populateDrawerItems();
+        updateDrawerToggle();
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.

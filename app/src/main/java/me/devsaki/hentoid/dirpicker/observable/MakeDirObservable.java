@@ -6,7 +6,6 @@ import java.io.IOException;
 import me.devsaki.hentoid.dirpicker.exceptions.DirExistsException;
 import me.devsaki.hentoid.dirpicker.exceptions.PermissionDeniedException;
 import rx.Observable;
-import rx.Subscriber;
 
 /**
  * Created by avluis on 06/12/2016.
@@ -15,24 +14,21 @@ import rx.Subscriber;
 public class MakeDirObservable {
 
     public Observable<File> create(final File rootDir, final String dirName) {
-        return Observable.create(new Observable.OnSubscribe<File>() {
-            @Override
-            public void call(Subscriber<? super File> subscriber) {
-                if (!rootDir.canWrite()) {
-                    subscriber.onError(new PermissionDeniedException());
-                }
+        return Observable.unsafeCreate(subscriber -> {
+            if (!rootDir.canWrite()) {
+                subscriber.onError(new PermissionDeniedException());
+            }
 
-                File newDir = new File(rootDir, dirName);
-                if (newDir.exists()) {
-                    subscriber.onError(new DirExistsException());
+            File newDir = new File(rootDir, dirName);
+            if (newDir.exists()) {
+                subscriber.onError(new DirExistsException());
+            } else {
+                boolean isDirCreated = newDir.mkdir();
+                if (isDirCreated) {
+                    subscriber.onNext(newDir);
+                    subscriber.onCompleted();
                 } else {
-                    boolean isDirCreated = newDir.mkdir();
-                    if (isDirCreated) {
-                        subscriber.onNext(newDir);
-                        subscriber.onCompleted();
-                    } else {
-                        subscriber.onError(new IOException());
-                    }
+                    subscriber.onError(new IOException());
                 }
             }
         });

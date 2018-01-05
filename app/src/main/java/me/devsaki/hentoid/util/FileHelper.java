@@ -415,9 +415,7 @@ public class FileHelper {
                 }
             default:
                 File[] fileList = dir.listFiles(
-                        pathname -> {
-                            return pathname.getName().contains("thumb");
-                        }
+                        pathname -> pathname.getName().contains("thumb")
                 );
                 thumb = fileList.length > 0 ? fileList[0].getAbsolutePath() : coverUrl;
                 break;

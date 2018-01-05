@@ -27,7 +27,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
-import android.support.v7.widget.AppCompatDrawableManager;
 import android.text.Html;
 import android.text.Spanned;
 import android.view.View;
@@ -394,7 +393,7 @@ public final class Helper {
     }
 
     public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
-        Drawable d = AppCompatDrawableManager.get().getDrawable(context, drawableId);
+        Drawable d = ContextCompat.getDrawable(context, drawableId);
 
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             d = (DrawableCompat.wrap(d)).mutate();
