@@ -11,8 +11,8 @@ allprojects {
 }
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 24
+    buildToolsVersion '24.2.1'
     compileOptions {
         encoding "UTF-8"
         targetCompatibility 1.8
