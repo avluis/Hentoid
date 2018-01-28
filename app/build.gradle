@@ -28,9 +28,10 @@ android {
         versionCode 43
         versionName '1.2.2_dev'
         resConfigs "en"
-        jackOptions {
-            enabled false
-        }
+
+        android.compileOptions.sourceCompatibility 1.8
+        android.compileOptions.targetCompatibility 1.8
+
         vectorDrawables.useSupportLibrary = true
     }
     packagingOptions {
@@ -164,11 +165,11 @@ dependencies {
     })
 
     // Support libraries
-    compile 'com.android.support:appcompat-v7:26.0.2'
-    compile 'com.android.support:cardview-v7:26.0.2'
-    compile 'com.android.support:design:26.0.2'
-    compile 'com.android.support:recyclerview-v7:26.0.2'
-    compile 'com.android.support:support-v4:26.0.2'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.android.support:cardview-v7:24.2.1'
+    compile 'com.android.support:design:24.2.1'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.android.support:support-v4:24.2.1'
 
     // Material Dialogs: github.com/afollestad/material-dialogs
     compile 'com.afollestad.material-dialogs:core:0.9.0.2'
