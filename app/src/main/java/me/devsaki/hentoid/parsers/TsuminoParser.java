@@ -77,7 +77,7 @@ public class TsuminoParser {
             parseAttributes(attributes, AttributeType.ARTIST, artistElements);
 
             Elements tagElements = content
-                    .select(":has(div.book-info:containsOwn(Tags))")
+                    .select(":has(div.book-info:containsOwn(Tag))")
                     .select("a.book-tag");
             parseAttributes(attributes, AttributeType.TAG, tagElements);
 
