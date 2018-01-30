@@ -48,6 +48,7 @@ public class ASMHentaiParser {
                     .text();
 
             int pages = Integer.parseInt(doc.select("div.pages")
+                    .get(0)
                     .select("h3")
                     .text()
                     .replace("Pages: ", ""));
