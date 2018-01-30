@@ -5,7 +5,7 @@ buildscript {
         jcenter()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.2.0'
+        classpath 'com.android.tools.build:gradle:3.0.1' // Works with 3.0.1; used to be 2.2.0
         classpath 'com.google.gms:google-services:3.0.0'
         // Making use of RetroLambda until Jack/Jill matures:
         // https://code.google.com/p/android/issues/detail?id=82691
