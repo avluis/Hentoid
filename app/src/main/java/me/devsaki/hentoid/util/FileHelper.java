@@ -322,7 +322,10 @@ public class FileHelper {
 
     // Run method in background thread
     public static void removeContent(Context cxt, Content content) {
-        File dir = getContentDownloadDir(cxt, content);
+        //File dir = getContentDownloadDir(cxt, content);
+        String settingDir = getRoot();
+        File dir = new File(settingDir, content.getStorageFolder());
+
         if (FileUtil.deleteDir(dir)) {
             LogHelper.d(TAG, "Directory " + dir + " removed.");
         } else {
@@ -333,7 +336,21 @@ public class FileHelper {
     public static File getContentDownloadDir(Context cxt, Content content) {
         File file;
         String settingDir = getRoot();
-        String folderDir = content.getSite().getFolder() + content.getUniqueSiteId();
+        String folderDir = content.getSite().getFolder();
+        SharedPreferences sp = HentoidApp.getSharedPrefs();
+
+        int folderNamingPreference = Integer.parseInt(
+                sp.getString(
+                        ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_LISTS,
+                        ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_DEFAULT + ""));
+
+        if (folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
+            folderDir = folderDir + content.getAuthor().replaceAll("[^a-zA-Z0-9.-]", "_") + " - ";
+        }
+        if (folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
+            folderDir = folderDir + content.getTitle().replaceAll("[^a-zA-Z0-9.-]", "_") + " - ";
+        }
+        folderDir = folderDir +"["+content.getUniqueSiteId()+"]";
 
         if (settingDir.isEmpty()) {
             return getDefaultDir(cxt, folderDir);
@@ -391,7 +408,10 @@ public class FileHelper {
 
     // Method is used by onBindViewHolder(), speed is key
     public static String getThumb(Context cxt, Content content) {
-        File dir = getContentDownloadDir(cxt, content);
+//        File dir = getContentDownloadDir(cxt, content);
+        String settingDir = getRoot();
+        File dir = new File(settingDir, content.getStorageFolder());
+
         String coverUrl = content.getCoverImageUrl();
 
         if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
@@ -427,8 +447,12 @@ public class FileHelper {
     }
 
     public static void openContent(final Context cxt, Content content) {
-        LogHelper.d(TAG, "Opening: " + content.getTitle() + " from: " +
-                getContentDownloadDir(cxt, content));
+        //        File dir = getContentDownloadDir(cxt, content);
+        String settingDir = getRoot();
+        File dir = new File(settingDir, content.getStorageFolder());
+
+
+        LogHelper.d(TAG, "Opening: " + content.getTitle() + " from: " + dir);
 
         if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
             LogHelper.d(TAG, "File not found!! Exiting method.");
@@ -438,7 +462,7 @@ public class FileHelper {
 
         Helper.toast("Opening: " + content.getTitle());
         SharedPreferences sp = HentoidApp.getSharedPrefs();
-        File dir = getContentDownloadDir(cxt, content);
+
         File imageFile = null;
         File[] files = dir.listFiles();
         Arrays.sort(files);
@@ -499,7 +523,11 @@ public class FileHelper {
     public static void archiveContent(final Context cxt, Content content) {
         LogHelper.d(TAG, "Building file list for: " + content.getTitle());
         // Build list of files
-        File dir = getContentDownloadDir(cxt, content);
+
+        //File dir = getContentDownloadDir(cxt, content);
+        String settingDir = getRoot();
+        File dir = new File(settingDir, content.getStorageFolder());
+
         File[] files = dir.listFiles();
         Arrays.sort(files);
         ArrayList<File> fileList = new ArrayList<>();

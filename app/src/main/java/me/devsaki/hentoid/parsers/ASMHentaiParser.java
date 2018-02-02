@@ -14,6 +14,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.LogHelper;
 
 import static me.devsaki.hentoid.enums.Site.ASMHENTAI;
@@ -79,8 +80,12 @@ public class ASMHentaiParser {
                     .select("a");
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
 
+            String author = "";
+            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+
             return new Content()
                     .setTitle(title)
+                    .setAuthor(author)
                     .setUrl(url)
                     .setCoverImageUrl(coverUrl)
                     .setAttributes(attributes)

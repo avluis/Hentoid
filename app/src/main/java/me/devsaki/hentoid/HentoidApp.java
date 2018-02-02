@@ -3,7 +3,10 @@ package me.devsaki.hentoid;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.preference.PreferenceManager;
+
+import java.util.List;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
@@ -11,6 +14,8 @@ import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
 
 import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.ConstsPrefs;
@@ -156,8 +161,14 @@ public class HentoidApp extends Application {
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
+
         LogHelper.d(TAG, "Content item(s) count: " + db.getContentCount());
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
+        try {
+            UpgradeTo(Helper.getAppVersionCode(this), db);
+        } catch (PackageManager.NameNotFoundException e) {
+            LogHelper.e(TAG, e, "Package Name NOT Found");
+        }
 
         UpdateCheck(!Helper.getMobileUpdatePrefs());
     }
@@ -175,5 +186,21 @@ public class HentoidApp extends Application {
                         LogHelper.d(TAG, "Update Check: Update!");
                     }
                 });
+    }
+
+    private void UpgradeTo(int versionCode, HentoidDB db)
+    {
+        if (versionCode > 43) // Check if all "storage_folder" fields are present in CONTENT DB (mandatory)
+        {
+            List<Content> contents = db.selectContentEmptyFolder();
+            if (contents.size() > 0)
+            {
+                for (int i = 0; i < contents.size() ; i++) {
+                    Content content = contents.get(i);
+                    content.setStorageFolder("/"+content.getSite().getDescription()+"/"+content.getOldUniqueSiteId());
+                    db.updateContentStorageFolder(content);
+                }
+            }
+        }
     }
 }

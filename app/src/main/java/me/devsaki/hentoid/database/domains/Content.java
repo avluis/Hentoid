@@ -27,6 +27,8 @@ public class Content implements Serializable {
     @Expose
     private String title;
     @Expose
+    private String author;
+    @Expose
     private AttributeMap attributes;
     @Expose
     private String coverImageUrl;
@@ -44,6 +46,7 @@ public class Content implements Serializable {
     private double percent;
     @Expose
     private Site site;
+    private String storageFolder;
 
     public AttributeMap getAttributes() {
         return attributes;
@@ -59,6 +62,30 @@ public class Content implements Serializable {
     }
 
     public String getUniqueSiteId() {
+        String[] paths;
+
+        switch (site) {
+            case FAKKU:
+                return url.substring(url.lastIndexOf("/") + 1);
+            case PURURIN:
+                paths = url.split("/");
+                return paths[2].replace(".html", "") + "-" + paths[1];
+            case HITOMI:
+                paths = url.split("/");
+                return paths[1].replace(".html", "");
+            case ASMHENTAI:
+            case NHENTAI:
+            case TSUMINO:
+                return url.replace("/", "") + "-" + site.getDescription();
+            case HENTAICAFE:
+                return url.replace("/?p=", "") + "-" + site.getDescription();
+            default:
+                return "";
+        }
+    }
+
+    // Used for upgrade purposes
+    public String getOldUniqueSiteId() {
         String[] paths;
         switch (site) {
             case FAKKU:
@@ -171,6 +198,15 @@ public class Content implements Serializable {
         return this;
     }
 
+    public String getAuthor() {
+        return author;
+    }
+
+    public Content setAuthor(String author) {
+        this.author = author;
+        return this;
+    }
+
     public String getCoverImageUrl() {
         return coverImageUrl;
     }
@@ -240,6 +276,15 @@ public class Content implements Serializable {
 
     public Content setSite(Site site) {
         this.site = site;
+        return this;
+    }
+
+    public String getStorageFolder() {
+        return storageFolder==null?"":storageFolder;
+    }
+
+    public Content setStorageFolder(String storageFolder) {
+        this.storageFolder = storageFolder;
         return this;
     }
 }

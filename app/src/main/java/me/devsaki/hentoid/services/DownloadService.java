@@ -82,6 +82,10 @@ public class DownloadService extends IntentService {
             LogHelper.d(TAG, "Content Download Dir; " + dir);
             LogHelper.d(TAG, "Directory created: " + FileHelper.createDirectory(dir));
 
+            String fileRoot = FileHelper.getRoot();
+            currentContent.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
+            db.updateContentStorageFolder(currentContent);
+
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
 

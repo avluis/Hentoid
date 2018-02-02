@@ -91,8 +91,16 @@ public class TsuminoParser {
                     .select("a.book-tag");
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
 
+            String author = "";
+            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+            if (author.equals("")) // Try and get Circle
+            {
+                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0) author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+            }
+
             return new Content()
                     .setTitle(title)
+                    .setAuthor(author)
                     .setUrl(url)
                     .setCoverImageUrl(coverUrl)
                     .setAttributes(attributes)

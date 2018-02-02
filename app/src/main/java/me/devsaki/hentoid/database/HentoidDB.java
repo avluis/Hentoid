@@ -27,13 +27,26 @@ import me.devsaki.hentoid.util.LogHelper;
 /**
  * Created by DevSaki on 10/05/2015.
  * db maintenance class
+ *
+ * DB Version history
+ *
+ * v1 : Hentoid v1.2.1
+ *
+ * v2 : Hentoid v1.2.2
+ *
+ *      CONTENT
+ *          + author field
+ *          + storage_folder field
  */
 public class HentoidDB extends SQLiteOpenHelper {
     private static final String TAG = LogHelper.makeLogTag(HentoidDB.class);
 
     private static final Object locker = new Object();
-    private static final int DATABASE_VERSION = 1;
+    private static final int DATABASE_VERSION = 2;
     private static HentoidDB instance;
+
+
+    // TODO : enable foreign keys
 
     private HentoidDB(Context context) {
         super(context, Consts.DATABASE_NAME, null, DATABASE_VERSION);
@@ -60,14 +73,11 @@ public class HentoidDB extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        // Drop older table if it exists
-        db.execSQL("DROP TABLE IF EXISTS " + ContentAttributeTable.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + AttributeTable.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + ContentTable.TABLE_NAME);
-        db.execSQL("DROP TABLE IF EXISTS " + ImageFileTable.TABLE_NAME);
-
-        // Create tables again
-        onCreate(db);
+        if (1 == oldVersion) // Updates from v1 to v2
+        {
+            db.execSQL("ALTER TABLE "+ContentTable.TABLE_NAME+" ADD COLUMN author TEXT");
+            db.execSQL("ALTER TABLE "+ContentTable.TABLE_NAME+" ADD COLUMN storage_folder TEXT");
+        }
     }
 
     public long getContentCount() {
@@ -97,37 +107,39 @@ public class HentoidDB extends SQLiteOpenHelper {
                     deleteContent(db, row);
 
                     statement.clearBindings();
-                    statement.bindLong(1, row.getId());
-                    statement.bindString(2, row.getUniqueSiteId());
+                    statement.bindLong(ContentTable.IDX_INTERNALID, row.getId());
+                    statement.bindString(ContentTable.IDX_SITEID, row.getUniqueSiteId());
                     String category = row.getCategory();
 
                     if (category == null) {
-                        statement.bindNull(3);
+                        statement.bindNull(ContentTable.IDX_CATEGORY);
                     } else {
-                        statement.bindString(3, category);
+                        statement.bindString(ContentTable.IDX_CATEGORY, category);
                     }
 
-                    statement.bindString(4, row.getUrl());
-                    statement.bindNull(5);
+                    statement.bindString(ContentTable.IDX_URL, row.getUrl());
 
                     if (row.getTitle() == null) {
-                        statement.bindNull(6);
+                        statement.bindNull(ContentTable.IDX_TITLE);
                     } else {
-                        statement.bindString(6, row.getTitle());
+                        statement.bindString(ContentTable.IDX_TITLE, row.getTitle());
                     }
 
-                    statement.bindLong(7, row.getQtyPages());
-                    statement.bindLong(8, row.getUploadDate());
-                    statement.bindLong(9, row.getDownloadDate());
-                    statement.bindLong(10, row.getStatus().getCode());
+                    statement.bindLong(ContentTable.IDX_QTYPAGES, row.getQtyPages());
+                    statement.bindLong(ContentTable.IDX_ULDATE, row.getUploadDate());
+                    statement.bindLong(ContentTable.IDX_DLDATE, row.getDownloadDate());
+                    statement.bindLong(ContentTable.IDX_STATUSCODE, row.getStatus().getCode());
 
                     if (row.getCoverImageUrl() == null) {
-                        statement.bindNull(11);
+                        statement.bindNull(ContentTable.IDX_COVERURL);
                     } else {
-                        statement.bindString(11, row.getCoverImageUrl());
+                        statement.bindString(ContentTable.IDX_COVERURL, row.getCoverImageUrl());
                     }
 
-                    statement.bindLong(12, row.getSite().getCode());
+                    statement.bindLong(ContentTable.IDX_SITECODE, row.getSite().getCode());
+                    statement.bindString(ContentTable.IDX_AUTHOR, row.getAuthor());
+                    statement.bindString(ContentTable.IDX_STORAGE_FOLDER, row.getStorageFolder());
+
                     statement.execute();
 
                     if (row.getImageFiles() != null) {
@@ -331,6 +343,24 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    public List<Content> selectContentEmptyFolder() {
+        List<Content> result = null;
+        synchronized (locker) {
+            LogHelper.d(TAG, "selectContentEmptyFolder");
+            SQLiteDatabase db = null;
+            Cursor cursorContent = null;
+            try {
+                db = getReadableDatabase();
+                cursorContent = db.rawQuery(ContentTable.SELECT_NULL_FOLDERS, new String[]{});
+                result = populateResult(cursorContent, db);
+            } finally {
+                closeCursor(cursorContent, db);
+            }
+        }
+
+        return result;
+    }
+
     // This is a long running task, execute with AsyncTask or similar
     public List<Content> selectContentByQuery(String query, int page, int qty, boolean order) {
         String q = query;
@@ -402,14 +432,16 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     private Content populateContent(Cursor cursorContent, SQLiteDatabase db) {
         Content content = new Content()
-                .setUrl(cursorContent.getString(3))
-                .setTitle(cursorContent.getString(4))
-                .setQtyPages(cursorContent.getInt(6))
-                .setUploadDate(cursorContent.getLong(7))
-                .setDownloadDate(cursorContent.getLong(8))
-                .setStatus(StatusContent.searchByCode(cursorContent.getInt(9)))
-                .setCoverImageUrl(cursorContent.getString(10))
-                .setSite(Site.searchByCode(cursorContent.getInt(11)));
+                .setUrl(cursorContent.getString(ContentTable.IDX_URL-1))
+                .setTitle(cursorContent.getString(ContentTable.IDX_TITLE-1))
+                .setQtyPages(cursorContent.getInt(ContentTable.IDX_QTYPAGES-1))
+                .setUploadDate(cursorContent.getLong(ContentTable.IDX_ULDATE-1))
+                .setDownloadDate(cursorContent.getLong(ContentTable.IDX_DLDATE-1))
+                .setStatus(StatusContent.searchByCode(cursorContent.getInt(ContentTable.IDX_STATUSCODE-1)))
+                .setCoverImageUrl(cursorContent.getString(ContentTable.IDX_COVERURL-1))
+                .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SITECODE-1)))
+                .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR-1))
+                .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER-1));
 
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
                 .setAttributes(selectAttributesByContentId(db, content.getId()));
@@ -588,6 +620,35 @@ public class HentoidDB extends SQLiteOpenHelper {
                 statement.bindLong(1, row.getDownloadDate());
                 statement.bindLong(2, row.getStatus().getCode());
                 statement.bindLong(3, row.getId());
+                statement.execute();
+                db.setTransactionSuccessful();
+                db.endTransaction();
+            } finally {
+                LogHelper.d(TAG, "Closing db connection. Condition: "
+                        + (db != null && db.isOpen()));
+                if (statement != null) {
+                    statement.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+    }
+
+    public void updateContentStorageFolder(Content row) {
+        synchronized (locker) {
+            LogHelper.d(TAG, "updateContentStorageFolder");
+            SQLiteDatabase db = null;
+            SQLiteStatement statement = null;
+
+            try {
+                db = getWritableDatabase();
+                statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STORAGE_FOLDER);
+                db.beginTransaction();
+                statement.clearBindings();
+                statement.bindString(1, row.getStorageFolder());
+                statement.bindLong(2, row.getId());
                 statement.execute();
                 db.setTransactionSuccessful();
                 db.endTransaction();
