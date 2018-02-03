@@ -193,7 +193,7 @@ public class HentoidApp extends Application {
         if (versionCode > 43) // Check if all "storage_folder" fields are present in CONTENT DB (mandatory)
         {
             List<Content> contents = db.selectContentEmptyFolder();
-            if (contents.size() > 0)
+            if (contents != null && contents.size() > 0)
             {
                 for (int i = 0; i < contents.size() ; i++) {
                     Content content = contents.get(i);

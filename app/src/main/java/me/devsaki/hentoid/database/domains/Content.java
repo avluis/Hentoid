@@ -11,6 +11,7 @@ import me.devsaki.hentoid.activities.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
+import me.devsaki.hentoid.activities.PururinActivity;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -69,7 +70,7 @@ public class Content implements Serializable {
                 return url.substring(url.lastIndexOf("/") + 1);
             case PURURIN:
                 paths = url.split("/");
-                return paths[2].replace(".html", "") + "-" + paths[1];
+                return paths[1];
             case HITOMI:
                 paths = url.split("/");
                 return paths[1].replace(".html", "");
@@ -120,6 +121,8 @@ public class Content implements Serializable {
                 return HentaiCafeActivity.class;
             case TSUMINO:
                 return TsuminoActivity.class;
+            case PURURIN:
+                return PururinActivity.class;
             default:
                 return BaseWebActivity.class; // Fallback for Pururin and FAKKU
         }
@@ -184,6 +187,8 @@ public class Content implements Serializable {
                 return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
                 return getGalleryUrl();
+            case PURURIN:
+                return site.getUrl() + "/read" + url;
             default:
                 return null;
         }
