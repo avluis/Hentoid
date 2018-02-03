@@ -102,7 +102,17 @@ public class ASMHentaiParser {
             Attribute attribute = new Attribute();
             attribute.setType(type);
             attribute.setUrl(a.attr("href"));
-            attribute.setName(a.text());
+
+            String name = a.text();
+            // Remove counters from ASMhentai metadata (e.g. "Futanari (2660)" => "Futanari")
+            int bracketPos = name.lastIndexOf("(");
+            if (bracketPos > 1)
+            {
+                if (' ' == name.charAt(bracketPos-1)) bracketPos--;
+            }
+            name = name.substring(0,bracketPos);
+            attribute.setName(name);
+
             map.add(attribute);
         }
     }
