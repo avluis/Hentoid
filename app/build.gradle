@@ -16,8 +16,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 43
-        versionName '1.2.1r2'
+        versionCode 44
+        versionName '1.2.2'
         resConfigs "en"
         jackOptions {
             enabled false
