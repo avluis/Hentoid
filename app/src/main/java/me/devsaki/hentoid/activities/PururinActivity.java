@@ -19,8 +19,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.PururinParser;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
@@ -31,7 +31,6 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
  * Implements Pururin source
  */
 public class PururinActivity extends BaseWebActivity {
-    private final static String TAG = LogHelper.makeLogTag(PururinActivity.class);
 
     @Override
     void setSite(Site site) {
@@ -47,7 +46,7 @@ public class PururinActivity extends BaseWebActivity {
 
     @Override
     void backgroundRequest(String extra) {
-        LogHelper.d(TAG, extra);
+        Timber.d(extra);
         Helper.toast("Processing...");
         executeAsyncTask(new HtmlLoader(), extra);
     }
@@ -62,7 +61,7 @@ public class PururinActivity extends BaseWebActivity {
                 URL u = new URL(url);
                 return !(u.getHost().endsWith("pururin.io"));
             } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
+                Timber.d("Malformed URL");
             }
 
             return false;
@@ -75,7 +74,7 @@ public class PururinActivity extends BaseWebActivity {
                 URL u = new URL(request.getUrl().toString());
                 return !(u.getHost().endsWith("pururin.io"));
             } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
+                Timber.d("Malformed URL");
             }
 
             return false;
@@ -138,7 +137,7 @@ public class PururinActivity extends BaseWebActivity {
             try {
                 processContent(PururinParser.parseContent(url));
             } catch (IOException e) {
-                LogHelper.e(TAG, e, "Error parsing content.");
+                Timber.d("Error parsing content.");
             }
 
             return null;

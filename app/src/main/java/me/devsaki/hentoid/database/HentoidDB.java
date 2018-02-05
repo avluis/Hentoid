@@ -27,16 +27,16 @@ import timber.log.Timber;
 /**
  * Created by DevSaki on 10/05/2015.
  * db maintenance class
- *
+ * <p>
  * DB Version history
- *
+ * <p>
  * v1 : Hentoid v1.2.1
- *
+ * <p>
  * v2 : Hentoid v1.2.2
- *
- *      CONTENT
- *          + author field
- *          + storage_folder field
+ * <p>
+ * CONTENT
+ * + author field
+ * + storage_folder field
  */
 public class HentoidDB extends SQLiteOpenHelper {
 
@@ -74,8 +74,8 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         if (1 == oldVersion) // Updates from v1 to v2
         {
-            db.execSQL("ALTER TABLE "+ContentTable.TABLE_NAME+" ADD COLUMN author TEXT");
-            db.execSQL("ALTER TABLE "+ContentTable.TABLE_NAME+" ADD COLUMN storage_folder TEXT");
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN author TEXT");
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN storage_folder TEXT");
         }
     }
 
@@ -341,7 +341,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     public List<Content> selectContentEmptyFolder() {
         List<Content> result = null;
         synchronized (locker) {
-            LogHelper.d(TAG, "selectContentEmptyFolder");
+            Timber.d("selectContentEmptyFolder");
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
             try {
@@ -426,16 +426,16 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     private Content populateContent(Cursor cursorContent, SQLiteDatabase db) {
         Content content = new Content()
-                .setUrl(cursorContent.getString(ContentTable.IDX_URL-1))
-                .setTitle(cursorContent.getString(ContentTable.IDX_TITLE-1))
-                .setQtyPages(cursorContent.getInt(ContentTable.IDX_QTYPAGES-1))
-                .setUploadDate(cursorContent.getLong(ContentTable.IDX_ULDATE-1))
-                .setDownloadDate(cursorContent.getLong(ContentTable.IDX_DLDATE-1))
-                .setStatus(StatusContent.searchByCode(cursorContent.getInt(ContentTable.IDX_STATUSCODE-1)))
-                .setCoverImageUrl(cursorContent.getString(ContentTable.IDX_COVERURL-1))
-                .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SITECODE-1)))
-                .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR-1))
-                .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER-1));
+                .setUrl(cursorContent.getString(ContentTable.IDX_URL - 1))
+                .setTitle(cursorContent.getString(ContentTable.IDX_TITLE - 1))
+                .setQtyPages(cursorContent.getInt(ContentTable.IDX_QTYPAGES - 1))
+                .setUploadDate(cursorContent.getLong(ContentTable.IDX_ULDATE - 1))
+                .setDownloadDate(cursorContent.getLong(ContentTable.IDX_DLDATE - 1))
+                .setStatus(StatusContent.searchByCode(cursorContent.getInt(ContentTable.IDX_STATUSCODE - 1)))
+                .setCoverImageUrl(cursorContent.getString(ContentTable.IDX_COVERURL - 1))
+                .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SITECODE - 1)))
+                .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
+                .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1));
 
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
                 .setAttributes(selectAttributesByContentId(db, content.getId()));
@@ -629,7 +629,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void updateContentStorageFolder(Content row) {
         synchronized (locker) {
-            LogHelper.d(TAG, "updateContentStorageFolder");
+            Timber.d("updateContentStorageFolder");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
@@ -644,7 +644,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db.setTransactionSuccessful();
                 db.endTransaction();
             } finally {
-                LogHelper.d(TAG, "Closing db connection. Condition: "
+                Timber.d("Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
