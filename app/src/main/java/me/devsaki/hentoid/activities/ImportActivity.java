@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
@@ -23,13 +24,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.InputType;
-import android.view.ViewGroup;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 
-import com.afollestad.materialdialogs.GravityEnum;
-import com.afollestad.materialdialogs.MaterialDialog;
+import com.annimon.stream.Stream;
 
 import org.greenrobot.eventbus.Subscribe;
 
@@ -67,6 +66,10 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
+import static android.os.Build.VERSION_CODES.KITKAT;
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
+import static com.annimon.stream.Collectors.toList;
+
 /**
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
@@ -75,9 +78,6 @@ public class ImportActivity extends BaseActivity {
 
     private static final String CURRENT_DIR = "currentDir";
     private static final String PREV_DIR = "prevDir";
-    private static final int KITKAT = Build.VERSION_CODES.KITKAT;
-    private static final int LOLLIPOP = Build.VERSION_CODES.LOLLIPOP;
-    private AlertDialog addDialog;
     private String result;
     private File currentRootDir;
     private File prevRootDir;
@@ -86,36 +86,26 @@ public class ImportActivity extends BaseActivity {
     private ImageView instImage;
     private boolean restartFlag;
     private boolean prefInit;
-    private boolean defaultInit;
     private final Handler importHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
             if (msg.what == 0) {
-                cleanUp(addDialog);
+                cleanUp();
             }
             importHandler.removeCallbacksAndMessages(null);
             return false;
         }
     });
+    private boolean defaultInit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        RelativeLayout relativeLayout = new RelativeLayout(this, null, R.style.ImportTheme);
-        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        setContentView(relativeLayout, layoutParams);
+        View contentView = new View(this, null, R.style.ImportTheme);
+        setContentView(contentView);
 
         db = HentoidDB.getInstance(this);
-
-        addDialog = new AlertDialog.Builder(this)
-                .setIcon(R.drawable.ic_dialog_warning)
-                .setTitle(R.string.add_dialog)
-                .setMessage(R.string.please_wait)
-                .setCancelable(false)
-                .create();
 
         Intent intent = getIntent();
         if (intent != null && intent.getAction() != null) {
@@ -534,7 +524,7 @@ public class ImportActivity extends BaseActivity {
                                 // Prior Library found, drop and recreate db
                                 cleanUpDB();
                                 // Send results to scan
-                                Helper.executeAsyncTask(new ImportAsyncTask());
+                                Helper.executeAsyncTask(new ImportAsyncTask(this));
                             })
                     .setNegativeButton(android.R.string.no,
                             (dialog12, which) -> {
@@ -581,10 +571,7 @@ public class ImportActivity extends BaseActivity {
         context.deleteDatabase(Consts.DATABASE_NAME);
     }
 
-    private void cleanUp(AlertDialog mAddDialog) {
-        if (mAddDialog != null) {
-            mAddDialog.dismiss();
-        }
+    private void cleanUp() {
         Timber.d("Restart needed: %s", restartFlag);
 
         Intent returnIntent = new Intent();
@@ -600,7 +587,6 @@ public class ImportActivity extends BaseActivity {
     private void finishImport(final List<Content> contents) {
         if (contents != null && contents.size() > 0) {
             Timber.d("Adding contents to db.");
-            addDialog.show();
 
             Thread thread = new Thread(() -> {
                 // Grab all parsed content and add to database
@@ -612,7 +598,7 @@ public class ImportActivity extends BaseActivity {
             result = ConstsImport.EXISTING_LIBRARY_IMPORTED;
         } else {
             result = ConstsImport.NEW_LIBRARY_CREATED;
-            cleanUp(addDialog);
+            cleanUp();
         }
     }
 
@@ -654,85 +640,81 @@ public class ImportActivity extends BaseActivity {
     }
 
     private class ImportAsyncTask extends AsyncTask<Integer, String, List<Content>> {
-        private MaterialDialog mImportDialog;
-        private List<File> downloadDirs;
-        private List<File> files;
+
+        private final ProgressDialog progressDialog;
+        private final AlertDialog finishDialog;
+        private final List<File> files;
         private List<Content> contents;
         private int currentPercent;
 
+        private ImportAsyncTask(Context context) {
+            progressDialog = new ProgressDialog(context);
+            progressDialog.setTitle(R.string.import_dialog);
+            progressDialog.setMessage(context.getText(R.string.please_wait));
+            progressDialog.setIndeterminate(false);
+            progressDialog.setMax(100);
+
+            finishDialog = new AlertDialog.Builder(context)
+                    .setIcon(R.drawable.ic_dialog_warning)
+                    .setTitle(R.string.add_dialog)
+                    .setMessage(R.string.please_wait)
+                    .setCancelable(false)
+                    .create();
+
+            files = Stream.of(Site.values())
+                    .map(site -> FileHelper.getSiteDownloadDir(context, site))
+                    .map(File::listFiles)
+                    .flatMap(Stream::of)
+                    .collect(toList());
+        }
+
         @Override
         protected void onPreExecute() {
-            super.onPreExecute();
-
-            mImportDialog = new MaterialDialog.Builder(ImportActivity.this)
-                    .title(R.string.import_dialog)
-                    .content(R.string.please_wait)
-                    .contentGravity(GravityEnum.CENTER)
-                    .progress(false, 100, false)
-                    .cancelable(false)
-                    .build();
-            mImportDialog.show();
-
-            downloadDirs = new ArrayList<>();
-            for (Site site : Site.values()) {
-                // Grab all folders in site folders in storage directory
-                downloadDirs.add(FileHelper.getSiteDownloadDir(ImportActivity.this, site));
-            }
-
-            files = new ArrayList<>();
-            for (File downloadDir : downloadDirs) {
-                // Grab all files in downloadDirs
-                files.addAll(Arrays.asList(downloadDir.listFiles()));
-            }
+            progressDialog.show();
         }
 
         @Override
         protected void onPostExecute(List<Content> contents) {
-            mImportDialog.dismiss();
+            progressDialog.dismiss();
+            finishDialog.show();
             finishImport(contents);
+            finishDialog.dismiss();
         }
 
         @Override
         protected void onProgressUpdate(String... values) {
-            if (currentPercent == 100) {
-                mImportDialog.setContent(R.string.adding_to_db);
-            } else {
-                mImportDialog.setContent(R.string.scanning_files);
-            }
-            mImportDialog.setProgress(currentPercent);
+            progressDialog.setProgress(currentPercent);
         }
 
-        @SuppressWarnings("deprecation")
         @Override
         protected List<Content> doInBackground(Integer... params) {
             int processed = 0;
-            if (files.size() > 0) {
-                contents = new ArrayList<>();
-                for (File file : files) {
-                    if (file.isDirectory()) {
-                        // (v2) JSON file format
-                        File json = new File(file, Consts.JSON_FILE_NAME_V2);
+
+            contents = new ArrayList<>();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    // (v2) JSON file format
+                    File json = new File(file, Consts.JSON_FILE_NAME_V2);
+                    if (json.exists()) {
+                        importJsonV2(json);
+                    } else {
+                        // (v1) JSON file format
+                        json = new File(file, Consts.JSON_FILE_NAME);
                         if (json.exists()) {
-                            importJsonV2(json);
+                            importJsonV1(json, file);
                         } else {
-                            // (v1) JSON file format
-                            json = new File(file, Consts.JSON_FILE_NAME);
+                            // (old) JSON file format (legacy and/or FAKKUDroid App)
+                            json = new File(file, Consts.OLD_JSON_FILE_NAME);
+                            Date importedDate = new Date();
                             if (json.exists()) {
-                                importJsonV1(json, file);
-                            } else {
-                                // (old) JSON file format (legacy and/or FAKKUDroid App)
-                                json = new File(file, Consts.OLD_JSON_FILE_NAME);
-                                Date importedDate = new Date();
-                                if (json.exists()) {
-                                    importJsonLegacy(json, file, importedDate);
-                                }
+                                importJsonLegacy(json, file, importedDate);
                             }
                         }
-                        publishProgress();
                     }
-                    processed++;
-                    currentPercent = (int) (processed * 100.0 / files.size());
+                    publishProgress();
                 }
+                processed++;
+                currentPercent = (int) (processed * 100.0 / files.size());
             }
 
             return contents;
