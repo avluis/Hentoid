@@ -22,6 +22,7 @@ import me.devsaki.hentoid.parsers.ASMHentaiParser;
 import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
+import me.devsaki.hentoid.parsers.PururinParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -81,6 +82,10 @@ public class DownloadService extends IntentService {
             File dir = FileHelper.getContentDownloadDir(this, currentContent);
             LogHelper.d(TAG, "Content Download Dir; " + dir);
             LogHelper.d(TAG, "Directory created: " + FileHelper.createDirectory(dir));
+
+            String fileRoot = FileHelper.getRoot();
+            currentContent.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
+            db.updateContentStorageFolder(currentContent);
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
             addTask(dir, downloadBatch);
@@ -219,6 +224,9 @@ public class DownloadService extends IntentService {
                 break;
             case TSUMINO:
                 aUrls = TsuminoParser.parseImageList(currentContent);
+                break;
+            case PURURIN:
+                aUrls = PururinParser.parseImageList(currentContent);
                 break;
             default:
                 break;

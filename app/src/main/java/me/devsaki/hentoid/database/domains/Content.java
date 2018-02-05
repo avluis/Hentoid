@@ -11,6 +11,7 @@ import me.devsaki.hentoid.activities.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.HitomiActivity;
 import me.devsaki.hentoid.activities.NhentaiActivity;
 import me.devsaki.hentoid.activities.TsuminoActivity;
+import me.devsaki.hentoid.activities.PururinActivity;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -26,6 +27,8 @@ public class Content implements Serializable {
     private String url;
     @Expose
     private String title;
+    @Expose
+    private String author;
     @Expose
     private AttributeMap attributes;
     @Expose
@@ -44,6 +47,7 @@ public class Content implements Serializable {
     private double percent;
     @Expose
     private Site site;
+    private String storageFolder;
 
     public AttributeMap getAttributes() {
         return attributes;
@@ -59,6 +63,30 @@ public class Content implements Serializable {
     }
 
     public String getUniqueSiteId() {
+        String[] paths;
+
+        switch (site) {
+            case FAKKU:
+                return url.substring(url.lastIndexOf("/") + 1);
+            case PURURIN:
+                paths = url.split("/");
+                return paths[1];
+            case HITOMI:
+                paths = url.split("/");
+                return paths[1].replace(".html", "");
+            case ASMHENTAI:
+            case NHENTAI:
+            case TSUMINO:
+                return url.replace("/", "") + "-" + site.getDescription();
+            case HENTAICAFE:
+                return url.replace("/?p=", "") + "-" + site.getDescription();
+            default:
+                return "";
+        }
+    }
+
+    // Used for upgrade purposes
+    public String getOldUniqueSiteId() {
         String[] paths;
         switch (site) {
             case FAKKU:
@@ -93,6 +121,8 @@ public class Content implements Serializable {
                 return HentaiCafeActivity.class;
             case TSUMINO:
                 return TsuminoActivity.class;
+            case PURURIN:
+                return PururinActivity.class;
             default:
                 return BaseWebActivity.class; // Fallback for Pururin and FAKKU
         }
@@ -157,6 +187,8 @@ public class Content implements Serializable {
                 return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
                 return getGalleryUrl();
+            case PURURIN:
+                return site.getUrl() + "/read" + url;
             default:
                 return null;
         }
@@ -168,6 +200,15 @@ public class Content implements Serializable {
 
     public Content setTitle(String title) {
         this.title = title;
+        return this;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public Content setAuthor(String author) {
+        this.author = author;
         return this;
     }
 
@@ -240,6 +281,15 @@ public class Content implements Serializable {
 
     public Content setSite(Site site) {
         this.site = site;
+        return this;
+    }
+
+    public String getStorageFolder() {
+        return storageFolder==null?"":storageFolder;
+    }
+
+    public Content setStorageFolder(String storageFolder) {
+        this.storageFolder = storageFolder;
         return this;
     }
 }
