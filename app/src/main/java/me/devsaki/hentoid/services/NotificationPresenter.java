@@ -24,7 +24,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by Shiro on 3/18/2016.
@@ -32,7 +32,6 @@ import me.devsaki.hentoid.util.LogHelper;
  * Methods are intended to have default level accessors for use with DownloadService class only
  */
 final class NotificationPresenter {
-    private static final String TAG = LogHelper.makeLogTag(NotificationPresenter.class);
 
     private static final int NOTIFICATION_ID = 0;
     private final HentoidApp instance;
@@ -50,7 +49,7 @@ final class NotificationPresenter {
         manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancelAll();
 
-        LogHelper.d(TAG, "Download Counter: " + count);
+        Timber.d("Download Counter: %s", count);
     }
 
     void downloadStarted(final Content content) {
@@ -68,7 +67,7 @@ final class NotificationPresenter {
                 .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.accent))
                 .setLocalOnly(true);
 
-        LogHelper.d(TAG, "Download Counter: " + count);
+        Timber.d("Download Counter: %s", count);
 
         updateNotification(0);
     }
@@ -128,7 +127,7 @@ final class NotificationPresenter {
                 builder.setContentTitle(res.getQuantityString(
                         R.plurals.download_completed, count));
                 // Tracking Event (Download Completed)
-                instance.trackEvent(TAG, "Download", "Download Content: Success.");
+                instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Success.");
                 break;
             case PAUSED:
                 builder.setContentTitle(res.getString(R.string.download_paused));
@@ -136,18 +135,18 @@ final class NotificationPresenter {
             case CANCELED:
                 builder.setContentTitle(res.getString(R.string.download_cancelled));
                 // Tracking Event (Download Cancelled)
-                instance.trackEvent(TAG, "Download", "Download Content: Cancelled.");
+                instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Cancelled.");
                 break;
             case ERROR:
                 builder.setContentTitle(res.getString(R.string.download_error));
                 // Tracking Event (Download Error)
-                instance.trackEvent(TAG, "Download", "Download Content: Error.");
+                instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Error.");
                 break;
             case UNHANDLED_ERROR:
                 builder.setContentTitle(res
                         .getString(R.string.unhandled_download_error));
                 // Tracking Event (Download Unhandled Error)
-                instance.trackEvent(TAG, "Download", "Download Content: Unhandled Error.");
+                instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Unhandled Error.");
                 break;
             default: // do nothing
                 break;

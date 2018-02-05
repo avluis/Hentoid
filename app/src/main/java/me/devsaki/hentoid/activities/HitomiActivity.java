@@ -11,16 +11,14 @@ import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
@@ -33,7 +31,6 @@ import static me.devsaki.hentoid.util.Helper.getWebViewOverviewPrefs;
  * Implements Hitomi.la source
  */
 public class HitomiActivity extends BaseWebActivity {
-    private static final String TAG = LogHelper.makeLogTag(HitomiActivity.class);
 
     @Override
     void setSite(Site site) {
@@ -42,7 +39,10 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        webView.setWebViewClient(new HitomiWebViewClient());
+        HitomiWebViewClient client = new HitomiWebViewClient();
+        client.restrictTo("hitomi.la");
+
+        webView.setWebViewClient(client);
 
         boolean bWebViewOverview = getWebViewOverviewPrefs();
         int webViewInitialZoom = getWebViewInitialZoomPrefs();
@@ -50,7 +50,7 @@ public class HitomiActivity extends BaseWebActivity {
         if (bWebViewOverview) {
             webView.getSettings().setLoadWithOverviewMode(false);
             webView.setInitialScale(webViewInitialZoom);
-            LogHelper.d(TAG, "WebView Initial Scale: " + webViewInitialZoom + "%");
+            Timber.d("WebView Initial Scale: %s%", webViewInitialZoom);
         } else {
             webView.setInitialScale(ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);
@@ -61,39 +61,13 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     void backgroundRequest(String extra) {
-        LogHelper.d(TAG, extra);
+        Timber.d(extra);
         Helper.toast("Processing...");
         executeAsyncTask(new HtmlLoader(), extra);
     }
 
     private class HitomiWebViewClient extends CustomWebViewClient {
         final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-
-        @SuppressWarnings("deprecation") // From API 24 we should use another overload
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            try {
-                URL u = new URL(url);
-                return !(u.getHost().endsWith("hitomi.la"));
-            } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
-            }
-
-            return false;
-        }
-
-        @TargetApi(Build.VERSION_CODES.N)
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            try {
-                URL u = new URL(request.getUrl().toString());
-                return !(u.getHost().endsWith("hitomi.la"));
-            } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
-            }
-
-            return false;
-        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -139,7 +113,7 @@ public class HitomiActivity extends BaseWebActivity {
             try {
                 processContent(HitomiParser.parseContent(url));
             } catch (IOException e) {
-                LogHelper.e(TAG, e, "Error parsing content.");
+                Timber.e(e, "Error parsing content.");
             }
 
             return null;

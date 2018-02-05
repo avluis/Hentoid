@@ -9,7 +9,6 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.annotation.LayoutRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -28,7 +27,7 @@ import me.devsaki.hentoid.ui.CompoundAdapter;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 4/11/2016.
@@ -42,7 +41,8 @@ import me.devsaki.hentoid.util.LogHelper;
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
 public abstract class DrawerActivity extends BaseActivity {
-    private static final String TAG = LogHelper.makeLogTag(DrawerActivity.class);
+
+    protected static final int mainLayout = R.layout.activity_hentoid;
 
     protected Fragment fragment;
     private Context cxt;
@@ -83,7 +83,7 @@ public abstract class DrawerActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setContentView(getLayoutResId());
+        setContentView(mainLayout);
         cxt = HentoidApp.getAppContext();
 
         FragmentManager manager = getSupportFragmentManager();
@@ -122,12 +122,6 @@ public abstract class DrawerActivity extends BaseActivity {
         }
     }
 
-    @SuppressWarnings("SameReturnValue")
-    @LayoutRes
-    protected int getLayoutResId() {
-        return R.layout.activity_hentoid;
-    }
-
     @Override
     public void setTitle(CharSequence title) {
         super.setTitle(title);
@@ -155,20 +149,14 @@ public abstract class DrawerActivity extends BaseActivity {
     }
 
     private void initializeNavigationDrawer() {
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (mDrawerLayout != null) {
-            mDrawerList = (ListView) findViewById(R.id.drawer_list);
-            if (mDrawerList == null) {
-                throw new IllegalStateException(
-                        "A layout with a drawerLayout is required to " +
-                                "include a ListView with id 'drawer_list'");
-            }
-            mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                    mToolbar, R.string.drawer_open, R.string.drawer_close);
-            mDrawerLayout.addDrawerListener(mDrawerListener);
-            populateDrawerItems();
-            updateDrawerToggle();
-        }
+        mDrawerLayout = findViewById(R.id.drawer_layout);
+        mDrawerList = findViewById(R.id.drawer_list);
+
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+                mToolbar, R.string.drawer_open, R.string.drawer_close);
+        mDrawerLayout.addDrawerListener(mDrawerListener);
+        populateDrawerItems();
+        updateDrawerToggle();
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
@@ -301,7 +289,7 @@ public abstract class DrawerActivity extends BaseActivity {
         }
         // If not handled by drawerToggle, home needs to be handled by returning to previous
         if (item != null && item.getItemId() == android.R.id.home) {
-            LogHelper.d(TAG, "sent home");
+            Timber.d("sent home");
             onBackPressed();
             return true;
         }

@@ -15,7 +15,6 @@ import me.devsaki.hentoid.fragments.QueueFragment;
  * Handles hosting of QueueFragment for a single screen.
  */
 public class QueueActivity extends BaseActivity implements BackInterface {
-    //private static final String TAG = LogHelper.makeLogTag(QueueActivity.class);
 
     private BaseFragment baseFragment;
     private Fragment fragment;

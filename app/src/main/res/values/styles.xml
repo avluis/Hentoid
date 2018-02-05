@@ -13,4 +13,6 @@
     <style name="ImportDialog" parent="ImportTheme">
         <item name="android:background">@color/white</item>
     </style>
+
+    <style name="NotificationTitle" parent="@android:style/TextAppearance.StatusBar.EventContent.Title" />
 </resources>

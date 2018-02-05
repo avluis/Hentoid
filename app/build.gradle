@@ -1,59 +1,43 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '24.0.3'
+    compileSdkVersion 27
+
     compileOptions {
-        encoding "UTF-8"
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
-        // Hold updating until implementing an image viewer
+        // Hold updating targetSdkVersion until implementing an image viewer
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
         versionCode 44
         versionName '1.2.2'
-        resConfigs "en"
-        jackOptions {
-            enabled false
-        }
         vectorDrawables.useSupportLibrary = true
     }
-    packagingOptions {
-        exclude 'README.md'
-        exclude 'LICENSE'
-        exclude 'update.json'
-        exclude 'META-INF/LICENSE'
-        exclude 'META-INF/NOTICE'
-        exclude 'META-INF/DEPENDENCIES'
-        exclude 'META-INF/LICENSE.txt'
-        exclude 'META-INF/NOTICE.txt'
-        exclude 'META-INF/DEPENDENCIES.txt'
 
-        // `return void` removes the lint error: `Not all execution paths return a value`.
-        return void
-    }
+    flavorDimensions "buildType"
     productFlavors {
         dev {
             buildConfigField('String', 'UPDATE_URL',
                     '"https://avnet.ws/.apps/hentoid/debug/update.json"')
             def appId = "me.devsaki.hentoid.dev"
-            resValue('string', 'appId', appId)
+            resValue('string', 'app_id', appId)
             resValue('string', 'app_name', 'Hentoid-dev')
             applicationId appId
+            dimension "buildType"
         }
         prod {
             buildConfigField('String', 'UPDATE_URL',
                     '"https://raw.githubusercontent.com/AVnetWS/Hentoid/master/app/update.json"')
             def appId = android.defaultConfig.applicationId
-            resValue('string', 'appId', appId)
+            resValue('string', 'app_id', appId)
             resValue('string', 'app_name', 'Hentoid')
             applicationId appId
+            dimension "buildType"
         }
     }
     signingConfigs {
@@ -68,8 +52,6 @@ android {
         release {
             debuggable false
             minifyEnabled true
-            // Jack does not work with shrinkResources yet
-            shrinkResources false
 
             signingConfig signingConfigs.release
 
@@ -83,37 +65,10 @@ android {
             // As of Gradle Android plugin 1.1.0, the test APK has a separate config
             testProguardFile 'proguard-project-test.pro'
         }
-        qa {
-            debuggable true
-            minifyEnabled true
-            // Jack does not work with shrinkResources yet
-            shrinkResources false
-
-            signingConfig signingConfigs.release
-
-            // Library specific proguard files
-            proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
-
-            // Default proguard files & project app specific rules
-            proguardFile getDefaultProguardFile('proguard-android.txt')
-            proguardFile 'proguard-project-app.pro'
-
-            // As of Gradle Android plugin 1.1.0, the test APK has a separate config
-            testProguardFile 'proguard-project-test.pro'
-
-            versionNameSuffix "-QA"
-        }
-    }
-    lintOptions {
-        lintConfig file("../lint.xml")
     }
 }
 
-retrolambda {
-    jvmArgs '-noverify'
-}
-
-def Properties props = new Properties()
+Properties props = new Properties()
 def propFile = new File('.signing/signing.properties')
 if (propFile.canRead()) {
     props.load(new FileInputStream(propFile))
@@ -136,48 +91,58 @@ if (propFile.canRead()) {
 dependencies {
     // Compile any included libraries
     compile fileTree(include: ['*jar'], dir: 'libs')
-    // Tests
-    // junit: github.com/junit-team/junit4/wiki/Use-with-Gradle
-    testCompile 'junit:junit:4.12'
-    // https://developer.android.com/topic/libraries/testing-support-library/
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
+
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.1'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+
     // Support libraries
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:cardview-v7:24.2.1'
-    compile 'com.android.support:design:24.2.1'
-    compile 'com.android.support:recyclerview-v7:24.2.1'
-    compile 'com.android.support:support-v4:24.2.1'
+    implementation 'com.android.support:support-v13:27.0.2'
+    implementation 'com.android.support:appcompat-v7:27.0.2'
+    implementation 'com.android.support:cardview-v7:27.0.2'
+    implementation 'com.android.support:design:27.0.2'
+
     // Material Dialogs: github.com/afollestad/material-dialogs
-    compile 'com.afollestad.material-dialogs:core:0.9.0.2'
+    implementation 'com.afollestad.material-dialogs:core:0.9.4.5'
+
     // Image loader: github.com/bumptech/glide
-    // https://github.com/bumptech/glide/wiki/Snapshots#gradle
-    compile 'com.github.bumptech.glide:glide:3.8.0-SNAPSHOT'
-    // Integrate with OkHttp: github.com/bumptech/glide/wiki/Integration-Libraries#okhttp-3
-    compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0-SNAPSHOT'
-    // Intro screens or slides: github.com/PaoloRotolo/AppIntro
-    compile 'com.github.paolorotolo:appintro:4.1.0'
+    implementation 'com.github.bumptech.glide:glide:4.4.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.4.0'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.4.0'
+
+    // Intro screens or slides: https://github.com/apl-devs/AppIntro
+    //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
+    implementation 'com.github.apl-devs:appintro:9d5d046037'
+
     // Google Play Services Analytics: developers.google.com/android/guides/setup
-    compile 'com.google.android.gms:play-services-analytics:9.6.1'
+    implementation 'com.google.android.gms:play-services-analytics:11.8.0'
+
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
-    compile 'com.google.code.gson:gson:2.7'
+    implementation 'com.google.code.gson:gson:2.8.1'
+
+    // Timber (Extensible Logger): github.com/JakeWharton/timber
+    implementation 'com.jakewharton.timber:timber:4.5.1'
+
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
-    compile 'com.mani:ThinDownloadManager:1.2.5'
-    // Additional Support Libraries
+    implementation 'com.mani:ThinDownloadManager:1.3.0'
+
     // HTTP & HTTP/2 client: github.com/square/okhttp
-    compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    // IO functionality: commons.apache.org/proper/commons-io/
-    //compile 'commons-io:commons-io:2.5'
+    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+
     // EventBus: github.com/greenrobot/EventBus
-    compile 'org.greenrobot:eventbus:3.0.0'
+    implementation 'org.greenrobot:eventbus:3.0.0'
+
     // JSOUP HTML parser: jsoup.org/download
-    compile 'org.jsoup:jsoup:1.9.2'
+    implementation 'org.jsoup:jsoup:1.10.3'
+
     // RxAndroid (RxJava bindings for Android): github.com/ReactiveX/RxAndroid
-    compile 'io.reactivex:rxandroid:1.2.1'
-    // Because RxAndroid releases are few and far between, it is recommended you also
-    // explicitly depend on RxJava's latest version for bug fixes and new features.
-    compile 'io.reactivex:rxjava:1.2.0'
+    implementation 'io.reactivex:rxandroid:1.2.1'
+    implementation 'io.reactivex:rxjava:1.3.4'
+
+    // LeakCanary: https://github.com/square/leakcanary
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.1'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+    testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

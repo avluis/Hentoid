@@ -61,14 +61,13 @@ public class CompoundAdapter extends SimpleAdapter implements SimpleAdapter.View
         }
 
         final ViewBinder binder = mViewBinder;
-        final String[] from = mFrom;
         final int[] to = mTo;
         final int count = to.length;
 
         for (int i = 0; i < count; i++) {
             final View v = view.findViewById(to[i]);
             if (v != null) {
-                final Object data = dataSet.get(from[i]);
+                final Object data = dataSet.get(mFrom[i]);
                 String IMAGE_KEY = DrawerMenuContents.FIELD_ICON;
                 final Object imageData = dataSet.get(IMAGE_KEY);
                 String text = data == null ? "" : data.toString();

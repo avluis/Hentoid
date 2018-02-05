@@ -59,7 +59,7 @@
             <intent
                 android:action="android.intent.action.APPLICATION_PREFERENCES"
                 android:targetClass="me.devsaki.hentoid.activities.ImportActivity"
-                android:targetPackage="@string/appId" />
+                android:targetPackage="@string/app_id" />
         </Preference>
         <Preference
             android:icon="@null"

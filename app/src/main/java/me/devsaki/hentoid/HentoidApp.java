@@ -4,23 +4,27 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.preference.PreferenceManager;
-
-import java.util.List;
+import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
+import com.squareup.leakcanary.LeakCanary;
+import com.squareup.leakcanary.RefWatcher;
+
+import java.util.List;
 
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
+import me.devsaki.hentoid.util.ShortcutHelper;
+import timber.log.Timber;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -28,13 +32,13 @@ import me.devsaki.hentoid.util.LogHelper;
  * Database, Bitmap Cache, Update checks, etc.
  */
 public class HentoidApp extends Application {
-    private static final String TAG = LogHelper.makeLogTag(HentoidApp.class);
 
     private static boolean beginImport;
     private static boolean donePressed;
     private static int downloadCount = 0;
     private static HentoidApp instance;
     private static SharedPreferences sharedPrefs;
+    private RefWatcher refWatcher;
 
     // Only for use when activity context cannot be passed or used e.g.;
     // Notification resources, Analytics, etc.
@@ -78,8 +82,13 @@ public class HentoidApp extends Application {
         HentoidApp.donePressed = pressed;
     }
 
+    public static RefWatcher getRefWatcher(Context context) {
+        HentoidApp app = (HentoidApp) context.getApplicationContext();
+        return app.refWatcher;
+    }
+
     private synchronized Tracker getGoogleAnalyticsTracker() {
-        return AnalyticsTrackers.get(this, AnalyticsTrackers.Target.APP);
+        return GoogleAnalytics.getInstance(this).newTracker(R.xml.app_tracker);
     }
 
     /***
@@ -101,20 +110,21 @@ public class HentoidApp extends Application {
 
     /***
      * Tracking exception
-     * Note: LogHelper will track exceptions as well,
-     * so no need to call if making use of LogHelper with a throwable.
+     * Note: Timber will track exceptions as well,
+     * so no need to call if making use of Timber with a throwable.
      *
      * @param e exception to be tracked
      */
     public void trackException(Exception e) {
         if (e != null) {
-            Tracker tracker = getGoogleAnalyticsTracker();
-
-            tracker.send(new HitBuilders.ExceptionBuilder()
-                    .setDescription(new StandardExceptionParser(this, null)
-                            .getDescription(Thread.currentThread().getName(), e))
-                    .setFatal(false)
-                    .build()
+            getGoogleAnalyticsTracker().send(
+                    new HitBuilders.ExceptionBuilder()
+                            .setDescription(
+                                    new StandardExceptionParser(this, null)
+                                            .getDescription(Thread.currentThread().getName(), e)
+                            )
+                            .setFatal(false)
+                            .build()
             );
         }
     }
@@ -122,26 +132,49 @@ public class HentoidApp extends Application {
     /***
      * Tracking event
      *
-     * @param category event category
-     * @param action   action of the event
-     * @param label    label
+     * @param clazz  event category based on class name
+     * @param action action of the event
+     * @param label  label
      */
-    public void trackEvent(String category, String action, String label) {
-        Tracker tracker = getGoogleAnalyticsTracker();
-
+    public void trackEvent(Class clazz, String action, String label) {
         // Build and send an Event.
-        tracker.send(new HitBuilders.EventBuilder().setCategory(category).setAction(action)
-                .setLabel(label).build());
+        getGoogleAnalyticsTracker().send(
+                new HitBuilders.EventBuilder()
+                        .setCategory(clazz.getSimpleName())
+                        .setAction(action)
+                        .setLabel(label)
+                        .build()
+        );
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
 
+        // LeakCanary
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            // This process is dedicated to LeakCanary for heap analysis.
+            // You should not init your app in this process.
+            return;
+        }
+        refWatcher = LeakCanary.install(this);
+
+        // Timber
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        } else {
+            Timber.plant(new Timber.Tree() {
+                @Override
+                protected void log(int priority, String tag, String message, Throwable t) {
+                    if (priority >= Log.INFO && t != null) {
+                        trackException((Exception) t);
+                    }
+                }
+            });
+        }
+
         instance = this;
         sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
-
-        AnalyticsTrackers.get(this, AnalyticsTrackers.Target.APP);
 
         // When dry run is set, hits will not be dispatched,
         // but will still be logged as though they were dispatched.
@@ -161,16 +194,19 @@ public class HentoidApp extends Application {
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
-
-        LogHelper.d(TAG, "Content item(s) count: " + db.getContentCount());
+        Timber.d("Content item(s) count: %s", db.getContentCount());
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
         try {
             UpgradeTo(Helper.getAppVersionCode(this), db);
         } catch (PackageManager.NameNotFoundException e) {
-            LogHelper.e(TAG, e, "Package Name NOT Found");
+            Timber.d("Package Name NOT Found");
         }
 
         UpdateCheck(!Helper.getMobileUpdatePrefs());
+
+        if (Helper.isAtLeastAPI(Build.VERSION_CODES.N_MR1)) {
+            ShortcutHelper.buildShortcuts(this);
+        }
     }
 
     private void UpdateCheck(boolean onlyWifi) {
@@ -178,26 +214,24 @@ public class HentoidApp extends Application {
                 onlyWifi, false, new UpdateCheck.UpdateCheckCallback() {
                     @Override
                     public void noUpdateAvailable() {
-                        LogHelper.d(TAG, "Update Check: No update.");
+                        Timber.d("Update Check: No update.");
                     }
 
                     @Override
                     public void onUpdateAvailable() {
-                        LogHelper.d(TAG, "Update Check: Update!");
+                        Timber.d("Update Check: Update!");
                     }
                 });
     }
 
-    private void UpgradeTo(int versionCode, HentoidDB db)
-    {
+    private void UpgradeTo(int versionCode, HentoidDB db) {
         if (versionCode > 43) // Check if all "storage_folder" fields are present in CONTENT DB (mandatory)
         {
             List<Content> contents = db.selectContentEmptyFolder();
-            if (contents != null && contents.size() > 0)
-            {
-                for (int i = 0; i < contents.size() ; i++) {
+            if (contents != null && contents.size() > 0) {
+                for (int i = 0; i < contents.size(); i++) {
                     Content content = contents.get(i);
-                    content.setStorageFolder("/"+content.getSite().getDescription()+"/"+content.getOldUniqueSiteId());
+                    content.setStorageFolder("/" + content.getSite().getDescription() + "/" + content.getOldUniqueSiteId());
                     db.updateContentStorageFolder(content);
                 }
             }

@@ -18,12 +18,13 @@ import java.nio.charset.Charset;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import timber.log.Timber;
+
 /**
  * Created by avluis on 06/05/2016.
  * JSON related utility class
  */
 public class JsonHelper {
-    private static final String TAG = LogHelper.makeLogTag(JsonHelper.class);
 
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
@@ -89,7 +90,7 @@ public class JsonHelper {
             https.connect();
             int response = https.getResponseCode();
 
-            LogHelper.d(TAG, "HTTP Response: " + response);
+            Timber.d("HTTP Response: %s", response);
             if (response == 404) {
                 return null;
             }
@@ -99,7 +100,7 @@ public class JsonHelper {
 
             return new JSONObject(s);
         } catch (JSONException e) {
-            LogHelper.e(TAG, e, "JSON file not properly formatted");
+            Timber.e(e, "JSON file not properly formatted");
         } finally {
             if (stream != null) {
                 try {

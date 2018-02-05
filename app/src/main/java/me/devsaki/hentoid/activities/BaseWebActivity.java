@@ -1,9 +1,12 @@
 package me.devsaki.hentoid.activities;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -11,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -29,15 +33,15 @@ import me.devsaki.hentoid.parsers.ASMHentaiParser;
 import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
-import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.parsers.PururinParser;
+import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+import timber.log.Timber;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -45,7 +49,6 @@ import me.devsaki.hentoid.views.ObservableWebView;
  * The source itself should contain every method it needs to function.
  */
 public class BaseWebActivity extends BaseActivity {
-    private static final String TAG = LogHelper.makeLogTag(BaseWebActivity.class);
 
     private Content currentContent;
     private HentoidDB db;
@@ -82,9 +85,9 @@ public class BaseWebActivity extends BaseActivity {
 
         setSite(getSite());
         if (site == null) {
-            LogHelper.w(TAG, "Site is null!");
+            Timber.w("Site is null!");
         } else {
-            LogHelper.d(TAG, "Loading site: " + site);
+            Timber.d("Loading site: %s", site);
         }
 
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
@@ -111,12 +114,20 @@ public class BaseWebActivity extends BaseActivity {
         checkPermissions();
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        webView.removeAllViews();
+        webView.destroy();
+    }
+
     // Validate permissions
     private void checkPermissions() {
         if (Helper.permissionsCheck(this, ConstsImport.RQST_STORAGE_PERMISSION, false)) {
-            LogHelper.d(TAG, "Storage permission allowed!");
+            Timber.d("Storage permission allowed!");
         } else {
-            LogHelper.d(TAG, "Storage permission denied!");
+            Timber.d("Storage permission denied!");
             reset();
         }
     }
@@ -375,10 +386,30 @@ public class BaseWebActivity extends BaseActivity {
     }
 
     void backgroundRequest(String extra) {
-        LogHelper.d(TAG, "Extras: " + extra);
+        Timber.d("Extras: %s", extra);
     }
 
     class CustomWebViewClient extends WebViewClient {
+
+        private String domainName = "";
+
+        void restrictTo(String s) {
+            domainName = s;
+        }
+
+        @SuppressWarnings("deprecation") // From API 24 we should use another overload
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            String hostStr = Uri.parse(url).getHost();
+            return hostStr != null && !hostStr.contains(domainName);
+        }
+
+        @TargetApi(Build.VERSION_CODES.N)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            String hostStr = Uri.parse(request.getUrl().toString()).getHost();
+            return hostStr != null && !hostStr.contains(domainName);
+        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {

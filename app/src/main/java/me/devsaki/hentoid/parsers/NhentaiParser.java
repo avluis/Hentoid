@@ -13,7 +13,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.HttpClientHelper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.NHENTAI;
 
@@ -22,7 +22,6 @@ import static me.devsaki.hentoid.enums.Site.NHENTAI;
  * Handles parsing of content from nhentai
  */
 public class NhentaiParser {
-    private static final String TAG = LogHelper.makeLogTag(NhentaiParser.class);
 
     public static Content parseContent(String json) throws JSONException {
         JSONObject jsonContent = new JSONObject(json);
@@ -143,11 +142,11 @@ public class NhentaiParser {
                 imgUrls.add(urlImage);
             }
         } catch (JSONException e) {
-            LogHelper.e(TAG, e, "Error parsing content");
+            Timber.e(e, "Error parsing content");
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Couldn't connect to resource");
+            Timber.e(e, "Couldn't connect to resource");
         }
-        LogHelper.d(TAG, imgUrls);
+        Timber.d("%s", imgUrls);
 
         return imgUrls;
     }

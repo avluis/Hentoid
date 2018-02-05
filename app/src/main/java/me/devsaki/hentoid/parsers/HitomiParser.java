@@ -15,7 +15,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.HttpClientHelper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.HITOMI;
 
@@ -24,7 +24,6 @@ import static me.devsaki.hentoid.enums.Site.HITOMI;
  * Handles parsing of content from hitomi.la
  */
 public class HitomiParser {
-    private static final String TAG = LogHelper.makeLogTag(HitomiParser.class);
 
     public static Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
@@ -95,7 +94,7 @@ public class HitomiParser {
         try {
             String url = content.getReaderUrl();
             html = HttpClientHelper.call(url);
-            LogHelper.d(TAG, "Parsing: " + url);
+            Timber.d("Parsing: %s", url);
             Document doc = Jsoup.parse(html);
             Elements imgElements = doc.select(".img-url");
             imgUrls = new ArrayList<>(imgElements.size());
@@ -104,9 +103,9 @@ public class HitomiParser {
                 imgUrls.add("https:" + element.text().replace("//g.", "//a."));
             }
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Could not connect to the requested resource");
+            Timber.e(e, "Could not connect to the requested resource");
         }
-        LogHelper.d(TAG, imgUrls);
+        Timber.d("%s", imgUrls);
 
         return imgUrls;
     }

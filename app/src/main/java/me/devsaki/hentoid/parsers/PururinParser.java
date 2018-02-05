@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers;
 
+import android.text.TextUtils;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -15,7 +17,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.HttpClientHelper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.PURURIN;
 
@@ -24,7 +26,6 @@ import static me.devsaki.hentoid.enums.Site.PURURIN;
  * Handles parsing of content from pururin.io
  */
 public class PururinParser {
-    private static final String TAG = LogHelper.makeLogTag(PururinParser.class);
 
     public static Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
@@ -65,15 +66,17 @@ public class PururinParser {
                 } else if (td.html().startsWith("Category")) {
                     parseAttributes(attributes, AttributeType.CATEGORY, element.select("a"));
                 } else if (td.html().startsWith("Pages")) {
-                    pages = Integer.parseInt(element.select("td").get(1).text().replace(" Pages",""));
+                    pages = Integer.parseInt(element.select("td").get(1).text().replace(" Pages", ""));
                 }
             }
 
             String author = "";
-            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
+                author = attributes.get(AttributeType.ARTIST).get(0).getName();
             if (author.equals("")) // Try and get Circle
             {
-                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0) author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
+                    author = attributes.get(AttributeType.CIRCLE).get(0).getName();
             }
 
             return new Content()
@@ -120,13 +123,11 @@ public class PururinParser {
                 {
                     String[] parts = a.toString().split(",");
 
-                    for (String s : parts)
-                    {
-                        if (s.startsWith("\"image\":"))
-                        {
+                    for (String s : parts) {
+                        if (s.startsWith("\"image\":")) {
                             startPos = s.indexOf("http");
                             endPos = s.indexOf("\"}");
-                            imgUrls.add(s.substring(startPos,endPos).replace("\\/","/"));
+                            imgUrls.add(s.substring(startPos, endPos).replace("\\/", "/"));
                         }
                     }
 
@@ -149,9 +150,9 @@ public class PururinParser {
             */
 
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Error while attempting to connect to: " + readerUrl);
+            Timber.e(e, "Error while attempting to connect to: " + readerUrl);
         }
-        LogHelper.d(TAG, imgUrls);
+        Timber.d(TextUtils.join(",", imgUrls));
 
         return imgUrls;
     }

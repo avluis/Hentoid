@@ -16,11 +16,11 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.LogHelper;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import timber.log.Timber;
 
 /**
  * Created by Shiro on 3/28/2016.
@@ -29,7 +29,6 @@ import okhttp3.Response;
  */
 final class ImageDownloadBatch {
 
-    private static final String TAG = LogHelper.makeLogTag(ImageDownloadBatch.class);
     private static final int BUFFER_SIZE = 10 * 1024;
     private static final CookieManager cookieManager = CookieManager.getInstance();
     private static OkHttpClient client = new OkHttpClient();
@@ -70,7 +69,7 @@ final class ImageDownloadBatch {
         try {
             semaphore.acquire();
         } catch (InterruptedException e) {
-            LogHelper.e(TAG, e, "Interrupt while waiting on download task completion");
+            Timber.e(e, "Interrupt while waiting on download task completion");
         }
     }
 
@@ -104,7 +103,7 @@ final class ImageDownloadBatch {
             npeError = true;
         } catch (IOException e) {
             if (!file.delete()) {
-                LogHelper.e(TAG, e, "Failed to delete file: " + file.getAbsolutePath());
+                Timber.e(e, "Failed to delete file: %s", file.getAbsolutePath());
             }
             throw e;
         } finally {
@@ -122,7 +121,7 @@ final class ImageDownloadBatch {
                 // Ignore
             }
             if (npeError) {
-                LogHelper.d(TAG, "NPE on file: " + file.getAbsolutePath());
+                Timber.d("NPE on file: %s", file.getAbsolutePath());
                 Helper.toast(R.string.sd_access_error);
             }
         }
@@ -139,10 +138,10 @@ final class ImageDownloadBatch {
 
         @Override
         public void onFailure(Call call, IOException e) {
-            LogHelper.e(TAG, e, "Error downloading image: " + call.request().url());
+            Timber.e(e, "Error downloading image: %s", call.request().url());
 
             if (e instanceof SocketTimeoutException) {
-                LogHelper.w(TAG, e, "Socket Timeout Exception!");
+                Timber.w(e, "Socket Timeout Exception!");
                 // TODO: Handle this somehow
                 semaphore.release(); // <-- Requires testing~
             }
@@ -155,10 +154,10 @@ final class ImageDownloadBatch {
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
-            LogHelper.d(TAG, "Start downloading image: " + call.request().url());
+            Timber.d("Start downloading image: %s", call.request().url());
 
             if (!response.isSuccessful()) {
-                LogHelper.w(TAG, "Unexpected http status code: " + response.code());
+                Timber.w("Unexpected http status code: %s", response.code());
             }
 
             final File file;
@@ -178,17 +177,18 @@ final class ImageDownloadBatch {
             if (file.exists()) {
                 if (fileSize == 0) {
                     // Carry on~
-                    LogHelper.d(TAG, "Empty File!!");
+                    Timber.d("Empty File!!");
                 } else {
-                    LogHelper.d(TAG, "Existing file size: " + fileSize);
+                    Timber.d("Existing file size: %s", fileSize);
                     // TODO: Compare file sizes (without eating the response body)
                 }
             }
 
             downloadHandler(file, response);
+            response.close();
 
             semaphore.release();
-            LogHelper.d(TAG, "Done downloading image: " + call.request().url());
+            Timber.d("Done downloading image: %s", call.request().url());
         }
     }
 }

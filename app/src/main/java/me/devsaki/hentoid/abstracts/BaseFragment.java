@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
+import com.squareup.leakcanary.RefWatcher;
+
 import org.greenrobot.eventbus.EventBus;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -63,6 +65,13 @@ public abstract class BaseFragment extends Fragment {
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
         super.onDestroy();
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        RefWatcher refWatcher = HentoidApp.getRefWatcher(getActivity());
+        refWatcher.watch(this);
     }
 
     // Implementations must annotate method with:

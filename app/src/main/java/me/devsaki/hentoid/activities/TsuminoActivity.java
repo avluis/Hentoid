@@ -12,14 +12,12 @@ import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.LogHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
@@ -28,7 +26,6 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
  * Implements tsumino source
  */
 public class TsuminoActivity extends BaseWebActivity {
-    private static final String TAG = LogHelper.makeLogTag(TsuminoActivity.class);
 
     private boolean downloadFabPressed = false;
     private int historyIndex;
@@ -50,8 +47,10 @@ public class TsuminoActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        webView.setWebViewClient(new TsuminoWebViewClient());
+        TsuminoWebViewClient client = new TsuminoWebViewClient();
+        client.restrictTo("tsumino.com");
 
+        webView.setWebViewClient(client);
         super.setWebView(webView);
     }
 
@@ -69,32 +68,6 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
         final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-
-        @SuppressWarnings("deprecation") // From API 24 we should use another overload
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            try {
-                URL u = new URL(url);
-                return !(u.getHost().endsWith("tsumino.com"));
-            } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
-            }
-
-            return false;
-        }
-
-        @TargetApi(Build.VERSION_CODES.N)
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            try {
-                URL u = new URL(request.getUrl().toString());
-                return !(u.getHost().endsWith("tsumino.com"));
-            } catch (MalformedURLException e) {
-                LogHelper.d(TAG, "Malformed URL");
-            }
-
-            return false;
-        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -153,7 +126,7 @@ public class TsuminoActivity extends BaseWebActivity {
             try {
                 processContent(TsuminoParser.parseContent(url));
             } catch (IOException e) {
-                LogHelper.e(TAG, e, "Error parsing content.");
+                Timber.e(e, "Error parsing content.");
             }
 
             return null;

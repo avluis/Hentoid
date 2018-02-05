@@ -14,30 +14,26 @@ import android.view.ViewGroup;
 public class BaseSlide extends Fragment {
 
     private static final String ARG_LAYOUT_RES_ID = "layoutResId";
-    private int layoutResId;
 
     public static BaseSlide newInstance(int layoutResId) {
-        BaseSlide baseSlide = new BaseSlide();
-
         Bundle args = new Bundle();
         args.putInt(ARG_LAYOUT_RES_ID, layoutResId);
+
+        BaseSlide baseSlide = new BaseSlide();
         baseSlide.setArguments(args);
-
         return baseSlide;
-    }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (getArguments() != null && getArguments().containsKey(ARG_LAYOUT_RES_ID))
-            layoutResId = getArguments().getInt(ARG_LAYOUT_RES_ID);
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
+        Bundle arguments = getArguments();
+        if (arguments == null) throw new IllegalArgumentException("No arguments supplied to BaseSlide fragment");
+
+        int layoutResId = arguments.getInt(ARG_LAYOUT_RES_ID, -1);
+        if (layoutResId == -1) throw new IllegalArgumentException("No layout argument supplied to BaseSlide fragment");
+
         return inflater.inflate(layoutResId, container, false);
     }
 }

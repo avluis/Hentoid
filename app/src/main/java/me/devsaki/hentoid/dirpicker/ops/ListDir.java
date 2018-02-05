@@ -9,19 +9,18 @@ import me.devsaki.hentoid.dirpicker.model.DirTree;
 import me.devsaki.hentoid.dirpicker.model.FileBuilder;
 import me.devsaki.hentoid.dirpicker.observable.ListDirObservable;
 import me.devsaki.hentoid.dirpicker.observers.ListDirObserver;
-import me.devsaki.hentoid.util.LogHelper;
 import rx.Observable;
 import rx.Observer;
 import rx.Subscription;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 06/12/2016.
  * List Directory Operation
  */
 class ListDir {
-    private static final String TAG = LogHelper.makeLogTag(ListDir.class);
 
     private final DirTree dirTree;
     private final EventBus bus;
@@ -45,7 +44,7 @@ class ListDir {
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(observer);
         } else {
-            LogHelper.d(TAG, "Failed to process directory list.");
+            Timber.d("Failed to process directory list.");
             bus.post(new OpFailedEvent());
         }
     }

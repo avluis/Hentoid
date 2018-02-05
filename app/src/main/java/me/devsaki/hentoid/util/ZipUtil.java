@@ -14,18 +14,19 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
+import timber.log.Timber;
+
 /**
  * Created by avluis on 09/11/2016.
  * Zip Utility
  */
 
 class ZipUtil {
-    private static final String TAG = LogHelper.makeLogTag(ZipUtil.class);
 
     private static final int BUFFER = 32 * 1024;
 
     private static void add(final File file, final ZipOutputStream stream, final byte[] data) {
-        LogHelper.d(TAG, "Adding: " + file);
+        Timber.d("Adding: %s", file);
         BufferedInputStream origin;
         try {
             FileInputStream fi = new FileInputStream(file);
@@ -39,9 +40,9 @@ class ZipUtil {
                 stream.write(data, 0, count);
             }
         } catch (FileNotFoundException e) {
-            LogHelper.e(TAG, e, "File Not Found: " + file);
+            Timber.e(e, "File Not Found: %s", file);
         } catch (IOException e) {
-            LogHelper.d(TAG, e, "IO Exception");
+            Timber.d(e, "IO Exception");
         }
     }
 
@@ -62,21 +63,21 @@ class ZipUtil {
                 FileUtil.sync(out);
                 out.flush();
             } catch (Exception e) {
-                LogHelper.e(TAG, e, "Error");
+                Timber.e(e, "Error");
                 return false;
             } finally {
                 if (zipOutputStream != null) {
                     try {
                         zipOutputStream.close();
                     } catch (IOException e) {
-                        LogHelper.d(TAG, e, "IO Exception");
+                        Timber.d(e, "IO Exception");
                     }
                 }
                 if (out != null) {
                     try {
                         out.close();
                     } catch (IOException e) {
-                        LogHelper.d(TAG, e, "IO Exception");
+                        Timber.d(e, "IO Exception");
                     }
                 }
             }
@@ -101,7 +102,7 @@ class ZipUtil {
                 }
                 zipfile.close();
             } catch (Exception e) {
-                LogHelper.e(TAG, e, "Error while extracting file: " + archive);
+                Timber.e(e, "Error while extracting file: %s", archive);
                 return false;
             }
 
@@ -110,7 +111,7 @@ class ZipUtil {
 
         @Override
         protected void onPostExecute(Boolean aBoolean) {
-            LogHelper.d(TAG, "All files extracted without error: " + aBoolean);
+            Timber.d("All files extracted without error: %s", aBoolean);
         }
 
         private void unzipEntry(ZipFile zipfile, ZipEntry entry, String outputDir)
@@ -150,9 +151,9 @@ class ZipUtil {
             if (dir.exists()) {
                 return;
             }
-            LogHelper.d(TAG, "Creating dir: " + dir.getName());
+            Timber.d("Creating dir: %s", dir.getName());
             if (!dir.mkdirs()) {
-                LogHelper.w(TAG, "Could not create dir: " + dir);
+                Timber.w("Could not create dir: %s", dir);
             }
         }
     }

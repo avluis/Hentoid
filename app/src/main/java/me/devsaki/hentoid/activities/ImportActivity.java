@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.UriPermission;
@@ -21,10 +20,10 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.Editable;
 import android.text.InputType;
 import android.view.ViewGroup;
-import android.view.WindowManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
@@ -66,14 +65,13 @@ import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.LogHelper;
+import timber.log.Timber;
 
 /**
  * Created by avluis on 04/02/2016.
  * Library Directory selection and Import Activity
  */
 public class ImportActivity extends BaseActivity {
-    private static final String TAG = LogHelper.makeLogTag(ImportActivity.class);
 
     private static final String CURRENT_DIR = "currentDir";
     private static final String PREV_DIR = "prevDir";
@@ -88,6 +86,7 @@ public class ImportActivity extends BaseActivity {
     private ImageView instImage;
     private boolean restartFlag;
     private boolean prefInit;
+    private boolean defaultInit;
     private final Handler importHandler = new Handler(new Handler.Callback() {
         @Override
         public boolean handleMessage(Message msg) {
@@ -98,7 +97,6 @@ public class ImportActivity extends BaseActivity {
             return false;
         }
     });
-    private boolean defaultInit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -122,14 +120,14 @@ public class ImportActivity extends BaseActivity {
         Intent intent = getIntent();
         if (intent != null && intent.getAction() != null) {
             if (intent.getAction().equals(Intent.ACTION_APPLICATION_PREFERENCES)) {
-                LogHelper.d(TAG, "Running from prefs screen.");
+                Timber.d("Running from prefs screen.");
                 prefInit = true;
             }
             if (intent.getAction().equals(Intent.ACTION_GET_CONTENT)) {
-                LogHelper.d(TAG, "Importing default directory.");
+                Timber.d("Importing default directory.");
                 defaultInit = true;
             } else {
-                LogHelper.d(TAG, "Intent: " + intent + "Action: " + intent.getAction());
+                Timber.d("Intent: %s Action: %s", intent, intent.getAction());
             }
         }
         prepImport(savedInstanceState);
@@ -149,7 +147,7 @@ public class ImportActivity extends BaseActivity {
     private void checkForDefaultDirectory() {
         if (checkPermissions()) {
             String settingDir = FileHelper.getRoot();
-            LogHelper.d(TAG, settingDir);
+            Timber.d(settingDir);
 
             File file;
             if (!settingDir.isEmpty()) {
@@ -163,11 +161,11 @@ public class ImportActivity extends BaseActivity {
                 currentRootDir = file;
             } else {
                 currentRootDir = FileHelper.getDefaultDir(this, "");
-                LogHelper.d(TAG, "Creating new storage directory.");
+                Timber.d("Creating new storage directory.");
             }
             pickDownloadDirectory(currentRootDir);
         } else {
-            LogHelper.d(TAG, "Do we have permission?");
+            Timber.d("Do we have permission?");
         }
     }
 
@@ -183,10 +181,10 @@ public class ImportActivity extends BaseActivity {
     private boolean checkPermissions() {
         if (Helper.permissionsCheck(
                 ImportActivity.this, ConstsImport.RQST_STORAGE_PERMISSION, true)) {
-            LogHelper.d(TAG, "Storage permission allowed!");
+            Timber.d("Storage permission allowed!");
             return true;
         } else {
-            LogHelper.d(TAG, "Storage permission denied!");
+            Timber.d("Storage permission denied!");
         }
         return false;
     }
@@ -228,7 +226,7 @@ public class ImportActivity extends BaseActivity {
     private void pickDownloadDirectory(File dir) {
         File downloadDir = dir;
         if (FileHelper.isOnExtSdCard(dir) && !FileHelper.isWritable(dir)) {
-            LogHelper.d(TAG, "Inaccessible: moving back to default directory.");
+            Timber.d("Inaccessible: moving back to default directory.");
             downloadDir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
         }
@@ -247,7 +245,7 @@ public class ImportActivity extends BaseActivity {
     public void onBackPressed() {
         // Send result back to activity
         result = ConstsImport.RESULT_CANCELED;
-        LogHelper.d(TAG, result);
+        Timber.d(result);
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
         setResult(RESULT_CANCELED, returnIntent);
@@ -273,14 +271,14 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void initImport() {
-        LogHelper.d(TAG, "Clearing SAF");
+        Timber.d("Clearing SAF");
         FileHelper.clearUri();
 
         if (Build.VERSION.SDK_INT >= KITKAT) {
             revokePermission();
         }
 
-        LogHelper.d(TAG, "Storage Path: " + currentRootDir);
+        Timber.d("Storage Path: %s", currentRootDir);
         importFolder(currentRootDir);
     }
 
@@ -293,7 +291,7 @@ public class ImportActivity extends BaseActivity {
     @Subscribe
     public void onManualInput(OnTextViewClickedEvent event) {
         if (event.getClickType()) {
-            LogHelper.d(TAG, "Resetting directory back to default.");
+            Timber.d("Resetting directory back to default.");
             currentRootDir = new File(Environment.getExternalStorageDirectory() +
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
             dirChooserFragment.dismiss();
@@ -309,10 +307,12 @@ public class ImportActivity extends BaseActivity {
                     .setTitle(R.string.dir_path)
                     .setMessage(R.string.dir_path_inst)
                     .setView(text)
-                    .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                        Editable value = text.getText();
-                        processManualInput(value);
-                    }).setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(android.R.string.ok,
+                            (dialog, which) -> {
+                                Editable value = text.getText();
+                                processManualInput(value);
+                            })
+                    .setNegativeButton(android.R.string.cancel, null)
                     .show();
         }
     }
@@ -322,7 +322,7 @@ public class ImportActivity extends BaseActivity {
         if (!("").equals(path)) {
             File file = new File(path);
             if (file.exists() && file.isDirectory() && file.canWrite()) {
-                LogHelper.d(TAG, "Got a valid directory!");
+                Timber.d("Got a valid directory!");
                 currentRootDir = file;
                 dirChooserFragment.dismiss();
                 pickDownloadDirectory(currentRootDir);
@@ -331,7 +331,7 @@ public class ImportActivity extends BaseActivity {
                 prepImport(null);
             }
         }
-        LogHelper.d(TAG, path);
+        Timber.d(path);
     }
 
     @Subscribe
@@ -339,11 +339,10 @@ public class ImportActivity extends BaseActivity {
         String[] externalDirs = FileHelper.getExtSdCardPaths();
         List<File> writeableDirs = new ArrayList<>();
         if (externalDirs.length > 0) {
-            LogHelper.d(TAG, "External Directory(ies): " + Arrays.toString(externalDirs));
+            Timber.d("External Directory(ies): %s", Arrays.toString(externalDirs));
             for (String externalDir : externalDirs) {
                 File file = new File(externalDir);
-                LogHelper.d(TAG, "Is " + externalDir + " write-able? " +
-                        FileHelper.isWritable(file));
+                Timber.d("Is %s write-able? %s", externalDir, FileHelper.isWritable(file));
                 if (FileHelper.isWritable(file)) {
                     writeableDirs.add(file);
                 }
@@ -354,7 +353,7 @@ public class ImportActivity extends BaseActivity {
 
     private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {
         if (writeableDirs.isEmpty()) {
-            LogHelper.d(TAG, "Received no write-able external directories.");
+            Timber.d("Received no write-able external directories.");
             if (Helper.isAtLeastAPI(LOLLIPOP)) {
                 if (externalDirs.length > 0) {
                     Helper.toast("Attempting SAF");
@@ -370,32 +369,32 @@ public class ImportActivity extends BaseActivity {
                 // If we get exactly one write-able path returned, attempt to make use of it
                 String sdDir = writeableDirs.get(0) + "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
                 if (FileHelper.validateFolder(sdDir)) {
-                    LogHelper.d(TAG, "Got access to SD Card.");
+                    Timber.d("Got access to SD Card.");
                     currentRootDir = new File(sdDir);
                     dirChooserFragment.dismiss();
                     pickDownloadDirectory(currentRootDir);
                 } else {
                     if (Build.VERSION.SDK_INT == KITKAT) {
-                        LogHelper.d(TAG, "Unable to write to SD Card.");
+                        Timber.d("Unable to write to SD Card.");
                         showKitkatRationale();
                     } else if (Helper.isAtLeastAPI(LOLLIPOP)) {
                         PackageManager manager = this.getPackageManager();
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
                         if (handlers != null && handlers.size() > 0) {
-                            LogHelper.d(TAG, "Device should be able to handle the SAF request");
+                            Timber.d("Device should be able to handle the SAF request");
                             Helper.toast("Attempting SAF");
                             requestWritePermission();
                         } else {
-                            LogHelper.d(TAG, "No apps can handle the requested intent.");
+                            Timber.d("No apps can handle the requested intent.");
                         }
                     } else {
                         noSDSupport();
                     }
                 }
             } else {
-                LogHelper.d(TAG, "We got a fancy device here.");
-                LogHelper.d(TAG, "Available storage locations: " + writeableDirs);
+                Timber.d("We got a fancy device here.");
+                Timber.d("Available storage locations: %s", writeableDirs);
                 noSDSupport();
             }
         }
@@ -410,7 +409,7 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void noSDSupport() {
-        LogHelper.d(TAG, "No write-able directories :(");
+        Timber.d("No write-able directories :(");
         Helper.toast(R.string.no_sd_support);
     }
 
@@ -471,9 +470,9 @@ public class ImportActivity extends BaseActivity {
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         }
         if (getContentResolver().getPersistedUriPermissions().size() == 0) {
-            LogHelper.d(TAG, "Permissions revoked successfully.");
+            Timber.d("Permissions revoked successfully.");
         } else {
-            LogHelper.d(TAG, "Permissions failed to be revoked.");
+            Timber.d("Permissions failed to be revoked.");
         }
     }
 
@@ -498,8 +497,7 @@ public class ImportActivity extends BaseActivity {
             if (FileHelper.getExtSdCardPaths().length > 0) {
                 String[] paths = FileHelper.getExtSdCardPaths();
                 File folder = new File(paths[0] + "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
-                LogHelper.d(TAG, "Directory created successfully: " +
-                        FileHelper.createDirectory(folder));
+                Timber.d("Directory created successfully: %s", FileHelper.createDirectory(folder));
 
                 importFolder(folder);
             }
@@ -524,45 +522,41 @@ public class ImportActivity extends BaseActivity {
                 files.addAll(Arrays.asList(contentFiles));
         }
 
-        final AlertDialog dialog = new AlertDialog.Builder(this)
-                .setIcon(R.drawable.ic_dialog_warning)
-                .setCancelable(false)
-                .setTitle(R.string.app_name)
-                .setMessage(R.string.contents_detected)
-                .setPositiveButton(android.R.string.yes,
-                        (dialog1, which) -> {
-                            dialog1.dismiss();
-                            // Prior Library found, drop and recreate db
-                            cleanUpDB();
-                            // Send results to scan
-                            Helper.executeAsyncTask(new ImportAsyncTask());
-                        })
-                .setNegativeButton(android.R.string.no,
-                        (dialog12, which) -> {
-                            dialog12.dismiss();
-                            // Prior Library found, but user chose to cancel
-                            restartFlag = false;
-                            if (prevRootDir != null) {
-                                currentRootDir = prevRootDir;
-                            }
-                            if (currentRootDir != null) {
-                                FileHelper.validateFolder(currentRootDir.getAbsolutePath());
-                            }
-                            LogHelper.d(TAG, "Restart needed: " + false);
-
-                            result = ConstsImport.EXISTING_LIBRARY_FOUND;
-                            Intent returnIntent = new Intent();
-                            returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
-                            setResult(RESULT_CANCELED, returnIntent);
-                            finish();
-                        })
-                .create();
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-        }
-
         if (files.size() > 0) {
-            dialog.show();
+            new AlertDialog.Builder(this)
+                    .setIcon(R.drawable.ic_dialog_warning)
+                    .setCancelable(false)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.contents_detected)
+                    .setPositiveButton(android.R.string.yes,
+                            (dialog1, which) -> {
+                                dialog1.dismiss();
+                                // Prior Library found, drop and recreate db
+                                cleanUpDB();
+                                // Send results to scan
+                                Helper.executeAsyncTask(new ImportAsyncTask());
+                            })
+                    .setNegativeButton(android.R.string.no,
+                            (dialog12, which) -> {
+                                dialog12.dismiss();
+                                // Prior Library found, but user chose to cancel
+                                restartFlag = false;
+                                if (prevRootDir != null) {
+                                    currentRootDir = prevRootDir;
+                                }
+                                if (currentRootDir != null) {
+                                    FileHelper.validateFolder(currentRootDir.getAbsolutePath());
+                                }
+                                Timber.d("Restart needed: " + false);
+
+                                result = ConstsImport.EXISTING_LIBRARY_FOUND;
+                                Intent returnIntent = new Intent();
+                                returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
+                                setResult(RESULT_CANCELED, returnIntent);
+                                finish();
+                            })
+                    .create()
+                    .show();
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
             cleanUpDB();
@@ -570,7 +564,7 @@ public class ImportActivity extends BaseActivity {
 
             Handler handler = new Handler();
 
-            LogHelper.d(TAG, result);
+            Timber.d(result);
 
             handler.postDelayed(() -> {
                 Intent returnIntent = new Intent();
@@ -582,7 +576,7 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void cleanUpDB() {
-        LogHelper.d(TAG, "Cleaning up DB.");
+        Timber.d("Cleaning up DB.");
         Context context = HentoidApp.getAppContext();
         context.deleteDatabase(Consts.DATABASE_NAME);
     }
@@ -591,7 +585,7 @@ public class ImportActivity extends BaseActivity {
         if (mAddDialog != null) {
             mAddDialog.dismiss();
         }
-        LogHelper.d(TAG, "Restart needed: " + restartFlag);
+        Timber.d("Restart needed: %s", restartFlag);
 
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
@@ -605,17 +599,14 @@ public class ImportActivity extends BaseActivity {
 
     private void finishImport(final List<Content> contents) {
         if (contents != null && contents.size() > 0) {
-            LogHelper.d(TAG, "Adding contents to db.");
+            Timber.d("Adding contents to db.");
             addDialog.show();
 
-            Thread thread = new Thread() {
-                @Override
-                public void run() {
-                    // Grab all parsed content and add to database
-                    db.insertContents(contents.toArray(new Content[contents.size()]));
-                    importHandler.sendEmptyMessage(0);
-                }
-            };
+            Thread thread = new Thread(() -> {
+                // Grab all parsed content and add to database
+                db.insertContents(contents.toArray(new Content[contents.size()]));
+                importHandler.sendEmptyMessage(0);
+            });
             thread.start();
 
             result = ConstsImport.EXISTING_LIBRARY_IMPORTED;
@@ -657,7 +648,7 @@ public class ImportActivity extends BaseActivity {
                     .setUrl(urlBuilder.getId())
                     .setType(type);
         } catch (Exception e) {
-            LogHelper.e(TAG, e, "Parsing URL to attribute");
+            Timber.e(e, "Parsing URL to attribute");
             return null;
         }
     }
@@ -673,18 +664,14 @@ public class ImportActivity extends BaseActivity {
         protected void onPreExecute() {
             super.onPreExecute();
 
-            final MaterialDialog mScanDialog =
-                    new MaterialDialog.Builder(ImportActivity.this)
-                            .title(R.string.import_dialog)
-                            .content(R.string.please_wait)
-                            .contentGravity(GravityEnum.CENTER)
-                            .progress(false, 100, false)
-                            .cancelable(false)
-                            .showListener(dialogInterface -> mImportDialog =
-                                    (MaterialDialog) dialogInterface).build();
-            if (mScanDialog.getWindow() != null) {
-                mScanDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
-            }
+            mImportDialog = new MaterialDialog.Builder(ImportActivity.this)
+                    .title(R.string.import_dialog)
+                    .content(R.string.please_wait)
+                    .contentGravity(GravityEnum.CENTER)
+                    .progress(false, 100, false)
+                    .cancelable(false)
+                    .build();
+            mImportDialog.show();
 
             downloadDirs = new ArrayList<>();
             for (Site site : Site.values()) {
@@ -697,8 +684,6 @@ public class ImportActivity extends BaseActivity {
                 // Grab all files in downloadDirs
                 files.addAll(Arrays.asList(downloadDir.listFiles()));
             }
-
-            mScanDialog.show();
         }
 
         @Override
@@ -793,12 +778,12 @@ public class ImportActivity extends BaseActivity {
                 try {
                     JsonHelper.saveJson(contentV2, file);
                 } catch (IOException e) {
-                    LogHelper.e(TAG, e,
-                            "Error converting JSON (old) to JSON (v2): " + content.getTitle());
+                    Timber.e(e,
+                            "Error converting JSON (old) to JSON (v2): %s", content.getTitle());
                 }
                 contents.add(contentV2);
             } catch (Exception e) {
-                LogHelper.e(TAG, e, "Error reading JSON (old) file");
+                Timber.e(e, "Error reading JSON (old) file");
             }
         }
 
@@ -814,12 +799,11 @@ public class ImportActivity extends BaseActivity {
                 try {
                     JsonHelper.saveJson(contentV2, file);
                 } catch (IOException e) {
-                    LogHelper.e(TAG, e, "Error converting JSON (v1) to JSON (v2): "
-                            + content.getTitle());
+                    Timber.e(e, "Error converting JSON (v1) to JSON (v2): %s", content.getTitle());
                 }
                 contents.add(contentV2);
             } catch (Exception e) {
-                LogHelper.e(TAG, e, "Error reading JSON (v1) file");
+                Timber.e(e, "Error reading JSON (v1) file");
             }
         }
 
@@ -832,7 +816,7 @@ public class ImportActivity extends BaseActivity {
                 }
                 contents.add(content);
             } catch (Exception e) {
-                LogHelper.e(TAG, e, "Error reading JSON (v2) file");
+                Timber.e(e, "Error reading JSON (v2) file");
             }
         }
     }

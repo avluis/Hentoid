@@ -79,11 +79,3 @@
 
 -keepattributes InnerClasses
 -keepattributes EnclosingMethod
-
-#-keep class com.github.paolorotolo.** {*;}
-
-#-keep class com.afollestad.materialdialogs.** {*;}
-
-#-keep class me.zhanghai.android.** {*;}
-
-#-keep class com.turhanoz.android.** {*;}
