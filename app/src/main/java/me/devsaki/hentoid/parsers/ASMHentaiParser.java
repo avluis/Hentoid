@@ -47,6 +47,7 @@ public class ASMHentaiParser {
                     .text();
 
             int pages = Integer.parseInt(doc.select("div.pages")
+                    .get(0)
                     .select("h3")
                     .text()
                     .replace("Pages: ", ""));
@@ -77,8 +78,12 @@ public class ASMHentaiParser {
                     .select("a");
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
 
+            String author = "";
+            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+
             return new Content()
                     .setTitle(title)
+                    .setAuthor(author)
                     .setUrl(url)
                     .setCoverImageUrl(coverUrl)
                     .setAttributes(attributes)
@@ -95,7 +100,17 @@ public class ASMHentaiParser {
             Attribute attribute = new Attribute();
             attribute.setType(type);
             attribute.setUrl(a.attr("href"));
-            attribute.setName(a.text());
+
+            String name = a.text();
+            // Remove counters from ASMhentai metadata (e.g. "Futanari (2660)" => "Futanari")
+            int bracketPos = name.lastIndexOf("(");
+            if (bracketPos > 1)
+            {
+                if (' ' == name.charAt(bracketPos-1)) bracketPos--;
+            }
+            name = name.substring(0,bracketPos);
+            attribute.setName(name);
+
             map.add(attribute);
         }
     }

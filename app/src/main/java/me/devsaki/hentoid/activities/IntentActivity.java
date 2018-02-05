@@ -24,6 +24,7 @@ public class IntentActivity extends BaseActivity {
     private static final String TSUMINO = "www.tsumino.com";
     private static final String ASMHENTAI = "asmhentai.com";
     private static final String HENTAICAFE = "hentai.cafe";
+    private static final String PURURIN = "pururin.io";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -79,6 +80,10 @@ public class IntentActivity extends BaseActivity {
                     String path = data.toString();
                     parsedString = path.contains("/?p=") ? path.replace(Site.HENTAICAFE.getUrl(),
                             "") : toParse;
+                    break;
+                case PURURIN:
+                    site = Site.PURURIN;
+                    parsedString = toParse.replace("/gallery", "").concat("/");
                     break;
                 default:
                     Timber.d("Unknown host!");

@@ -9,61 +9,88 @@ public abstract class ContentTable {
     public static final String TABLE_NAME = "content";
 
     public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO " + TABLE_NAME
-            + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?);";
+            + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
     public static final String LIMIT_BY_PAGE = " LIMIT ?,?";
+
+    // COLUMN NAMES
     private static final String ID_COLUMN = "id";
-    public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE "
-            + ID_COLUMN + " = ?";
     private static final String UNIQUE_SITE_ID_COLUMN = "unique_site_id";
     private static final String CATEGORY_COLUMN = "category";
     private static final String URL_COLUMN = "url";
-    private static final String TITLE_COLUMN = "title";
-    public static final String ORDER_ALPHABETIC = " ORDER BY C." + TITLE_COLUMN;
     private static final String HTML_DESCRIPTION_COLUMN = "html_description";
+    private static final String TITLE_COLUMN = "title";
     private static final String QTY_PAGES_COLUMN = "qty_pages";
     private static final String UPLOAD_DATE_COLUMN = "upload_date";
     private static final String DOWNLOAD_DATE_COLUMN = "download_date";
-    public static final String ORDER_BY_DATE = " ORDER BY C." + DOWNLOAD_DATE_COLUMN + " DESC";
     private static final String STATUS_COLUMN = "status";
-    public static final String UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT = "UPDATE "
-            + TABLE_NAME + " SET " + DOWNLOAD_DATE_COLUMN + " = ?, " + STATUS_COLUMN
-            + " = ? WHERE " + ID_COLUMN + " = ?";
-    public static final String UPDATE_CONTENT_STATUS_STATEMENT = "UPDATE " + TABLE_NAME + " SET "
-            + STATUS_COLUMN + " = ? WHERE " + STATUS_COLUMN + " = ?";
     private static final String COVER_IMAGE_URL_COLUMN = "cover_image_url";
     private static final String SITE_COLUMN = "site";
+    private static final String AUTHOR_COLUMN = "author";
+    private static final String STORAGE_FOLDER_COLUMN = "storage_folder";
+    
+    // COLUMN INDEXES
+    public static final int IDX_INTERNALID = 1;
+    public static final int IDX_SITEID = 2;
+    public static final int IDX_CATEGORY = 3;
+    public static final int IDX_URL = 4;
+    public static final int IDX_HTML_DESCRIPTION = 5;
+    public static final int IDX_TITLE = 6;
+    public static final int IDX_QTYPAGES = 7;
+    public static final int IDX_ULDATE = 8;
+    public static final int IDX_DLDATE = 9;
+    public static final int IDX_STATUSCODE = 10;
+    public static final int IDX_COVERURL = 11;
+    public static final int IDX_SITECODE = 12;
+    public static final int IDX_AUTHOR = 13;
+    public static final int IDX_STORAGE_FOLDER = 14;
+
+    // ORDER
+    public static final String ORDER_BY_DATE = " ORDER BY C." + DOWNLOAD_DATE_COLUMN + " DESC";
+    public static final String ORDER_ALPHABETIC = " ORDER BY C." + TITLE_COLUMN;
+
+    // CREATE
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
             + ID_COLUMN + " INTEGER PRIMARY KEY," + UNIQUE_SITE_ID_COLUMN + " TEXT,"
             + CATEGORY_COLUMN + " TEXT," + URL_COLUMN + " TEXT," + HTML_DESCRIPTION_COLUMN
             + " TEXT," + TITLE_COLUMN + " TEXT" + "," + QTY_PAGES_COLUMN + " INTEGER" + ","
             + UPLOAD_DATE_COLUMN + " INTEGER" + "," + DOWNLOAD_DATE_COLUMN + " INTEGER" + ","
             + STATUS_COLUMN + " INTEGER" + "," + COVER_IMAGE_URL_COLUMN + " TEXT"
-            + "," + SITE_COLUMN + " INTEGER" + ")";
-    public static final String SELECT_BY_CONTENT_ID = "SELECT " + ID_COLUMN + ", "
-            + UNIQUE_SITE_ID_COLUMN + ", " + CATEGORY_COLUMN + ", " + URL_COLUMN + ", "
-            + TITLE_COLUMN + ", " + HTML_DESCRIPTION_COLUMN + ", " + QTY_PAGES_COLUMN + ", "
-            + UPLOAD_DATE_COLUMN + ", " + DOWNLOAD_DATE_COLUMN + ", " + STATUS_COLUMN + ", "
-            + COVER_IMAGE_URL_COLUMN + ", " + SITE_COLUMN + " FROM " + TABLE_NAME + " C WHERE C."
-            + ID_COLUMN + " = ?";
-    public static final String SELECT_BY_STATUS = "SELECT " + ID_COLUMN + ", "
-            + UNIQUE_SITE_ID_COLUMN + ", " + CATEGORY_COLUMN + ", " + URL_COLUMN + ", "
-            + TITLE_COLUMN + ", " + HTML_DESCRIPTION_COLUMN + ", " + QTY_PAGES_COLUMN + ", "
-            + UPLOAD_DATE_COLUMN + ", " + DOWNLOAD_DATE_COLUMN + ", " + STATUS_COLUMN + ", "
-            + COVER_IMAGE_URL_COLUMN + ", " + SITE_COLUMN + " FROM " + TABLE_NAME + " C WHERE C."
+            + "," + SITE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT )";
+
+    // DELETE
+    public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE " + ID_COLUMN + " = ?";
+
+
+    // UPDATE
+    public static final String UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT = "UPDATE "
+            + TABLE_NAME + " SET " + DOWNLOAD_DATE_COLUMN + " = ?, " + STATUS_COLUMN
+            + " = ? WHERE " + ID_COLUMN + " = ?";
+
+    public static final String UPDATE_CONTENT_STATUS_STATEMENT = "UPDATE " + TABLE_NAME + " SET "
+            + STATUS_COLUMN + " = ? WHERE " + STATUS_COLUMN + " = ?";
+
+    public static final String UPDATE_CONTENT_STORAGE_FOLDER = "UPDATE " + TABLE_NAME + " SET " + STORAGE_FOLDER_COLUMN + " = ? WHERE " + ID_COLUMN +" = ?";
+
+
+    // SELECT
+    public static final String SELECT_BY_CONTENT_ID = "SELECT * FROM " + TABLE_NAME + " C WHERE C." + ID_COLUMN + " = ?";
+
+    public static final String SELECT_NULL_FOLDERS = "SELECT * FROM " + TABLE_NAME + " WHERE " + STORAGE_FOLDER_COLUMN + " is null";
+
+    public static final String SELECT_BY_STATUS = "SELECT * FROM " + TABLE_NAME + " C WHERE C."
             + STATUS_COLUMN + " = ? ORDER BY C." + DOWNLOAD_DATE_COLUMN;
-    public static final String SELECT_IN_DOWNLOAD_MANAGER = "SELECT " + ID_COLUMN + ", "
-            + UNIQUE_SITE_ID_COLUMN + ", " + CATEGORY_COLUMN + ", " + URL_COLUMN + ", "
-            + TITLE_COLUMN + ", " + HTML_DESCRIPTION_COLUMN + ", " + QTY_PAGES_COLUMN + ", "
-            + UPLOAD_DATE_COLUMN + ", " + DOWNLOAD_DATE_COLUMN + ", " + STATUS_COLUMN + ", "
-            + COVER_IMAGE_URL_COLUMN + ", " + SITE_COLUMN + " FROM " + TABLE_NAME + " C WHERE C."
+
+    public static final String SELECT_IN_DOWNLOAD_MANAGER = "SELECT * FROM " + TABLE_NAME + " C WHERE C."
             + STATUS_COLUMN + " in (?, ?) ORDER BY C." + STATUS_COLUMN + ", C."
             + DOWNLOAD_DATE_COLUMN;
+
+    // TODO OPTIMIZE
     public static final String SELECT_DOWNLOADS = "SELECT C." + ID_COLUMN + ", C."
             + UNIQUE_SITE_ID_COLUMN + ", C." + CATEGORY_COLUMN + ", C." + URL_COLUMN + ", C."
-            + TITLE_COLUMN + ", C." + HTML_DESCRIPTION_COLUMN + ", C." + QTY_PAGES_COLUMN + ", C."
+            + HTML_DESCRIPTION_COLUMN + ", C." + TITLE_COLUMN + ", C." + QTY_PAGES_COLUMN + ", C."
             + UPLOAD_DATE_COLUMN + ", C." + DOWNLOAD_DATE_COLUMN + ", C." + STATUS_COLUMN + ", C."
-            + COVER_IMAGE_URL_COLUMN + ", C." + SITE_COLUMN + " FROM " + TABLE_NAME + " C WHERE C."
-            + STATUS_COLUMN + " in (?, ?, ?) AND (C." + TITLE_COLUMN + " like ? OR C." + ID_COLUMN
+            + COVER_IMAGE_URL_COLUMN + ", C." + SITE_COLUMN + ", C." + AUTHOR_COLUMN + ", C." + STORAGE_FOLDER_COLUMN +
+            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND (C." + TITLE_COLUMN + " like ? OR C." + ID_COLUMN
             + " in (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM "
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A."

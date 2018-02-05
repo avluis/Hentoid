@@ -34,6 +34,7 @@ import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
+import me.devsaki.hentoid.parsers.PururinParser;
 import me.devsaki.hentoid.services.DownloadService;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -375,6 +376,9 @@ public class BaseWebActivity extends BaseActivity {
                 break;
             case HENTAICAFE:
                 HentaiCafeParser.parseImageList(content);
+                break;
+            case PURURIN:
+                PururinParser.parseImageList(content);
                 break;
             default:
                 break;
