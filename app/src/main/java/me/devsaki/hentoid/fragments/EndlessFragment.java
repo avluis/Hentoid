@@ -105,8 +105,10 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
         } else {
             Timber.d("Result is null.");
 
-            update();
-            checkContent(true);
+            if (isLoaded) { // Do not load anything if a loading activity is already in progress
+                update();
+                checkContent(true);
+            }
         }
 
         if (!query.isEmpty()) {
