@@ -437,7 +437,7 @@ public class FileHelper {
                 File[] fileList = dir.listFiles(
                         pathname -> pathname.getName().contains("thumb")
                 );
-                thumb = fileList.length > 0 ? fileList[0].getAbsolutePath() : coverUrl;
+                thumb = (fileList != null && fileList.length > 0) ? fileList[0].getAbsolutePath() : coverUrl;
                 break;
         }
 
@@ -464,14 +464,17 @@ public class FileHelper {
 
         File imageFile = null;
         File[] files = dir.listFiles();
-        Arrays.sort(files);
-        for (File file : files) {
-            String filename = file.getName();
-            if (filename.endsWith(".jpg") ||
-                    filename.endsWith(".png") ||
-                    filename.endsWith(".gif")) {
-                imageFile = file;
-                break;
+        if (files != null && files.length > 0)
+        {
+            Arrays.sort(files);
+            for (File file : files) {
+                String filename = file.getName();
+                if (filename.endsWith(".jpg") ||
+                        filename.endsWith(".png") ||
+                        filename.endsWith(".gif")) {
+                    imageFile = file;
+                    break;
+                }
             }
         }
         if (imageFile == null) {

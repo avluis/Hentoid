@@ -757,6 +757,9 @@ public class ImportActivity extends BaseActivity {
                 content.setMigratedStatus();
                 content.setDownloadDate(importedDate.getTime());
                 Content contentV2 = content.toV2Content();
+
+                String fileRoot = FileHelper.getRoot();
+                contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
                 try {
                     JsonHelper.saveJson(contentV2, file);
                 } catch (IOException e) {
@@ -778,6 +781,9 @@ public class ImportActivity extends BaseActivity {
                     content.setMigratedStatus();
                 }
                 Content contentV2 = content.toV2Content();
+
+                String fileRoot = FileHelper.getRoot();
+                contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
                 try {
                     JsonHelper.saveJson(contentV2, file);
                 } catch (IOException e) {
@@ -792,6 +798,10 @@ public class ImportActivity extends BaseActivity {
         private void importJsonV2(File json) {
             try {
                 Content content = JsonHelper.jsonToObject(json, Content.class);
+
+                String fileRoot = FileHelper.getRoot();
+                content.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
+
                 if (content.getStatus() != StatusContent.DOWNLOADED
                         && content.getStatus() != StatusContent.ERROR) {
                     content.setStatus(StatusContent.MIGRATED);
