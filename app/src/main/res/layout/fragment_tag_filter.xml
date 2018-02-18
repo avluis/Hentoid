@@ -1,6 +1,7 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/tag_filter_view"
+    android:tag="TagFilter"
     android:layout_width="match_parent"
     android:layout_height="250dp"
     android:layout_gravity="bottom"
@@ -9,28 +10,12 @@
     app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
 
     <RelativeLayout
+        android:id="@+id/tag_filter_view_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:gravity="start|top"
         android:orientation="vertical">
 
 
-        <ToggleButton
-            android:id="@+id/toggleButton3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ToggleButton" />
-
-        <ToggleButton
-            android:id="@+id/toggleButton2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="ToggleButton" />
-
-        <ToggleButton
-            android:id="@+id/toggleButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignLeft="@+id/toggleButton2"
-            android:text="ToggleButton" />
     </RelativeLayout>
 </android.support.v4.widget.NestedScrollView>

@@ -136,8 +136,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                     }
 
                     statement.bindLong(ContentTable.IDX_SITECODE, row.getSite().getCode());
-                    statement.bindString(ContentTable.IDX_AUTHOR, row.getAuthor());
-                    statement.bindString(ContentTable.IDX_STORAGE_FOLDER, row.getStorageFolder());
+                    statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor())?"":row.getAuthor());
+                    statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder())?"":row.getStorageFolder());
 
                     statement.execute();
 

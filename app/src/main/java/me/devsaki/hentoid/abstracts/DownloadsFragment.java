@@ -16,6 +16,8 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
@@ -34,7 +36,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -100,9 +104,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private MenuItem searchMenu;
     private Parcelable mListState;
     private Button btnPage;
-    private MenuItem btnTags;
     private SearchView searchView;
     private SwipeRefreshLayout refreshLayout;
+    private RelativeLayout tagFilterLayout;
+
     private boolean orderUpdated;
     private boolean isSelected;
     private boolean selectTrigger = false;
@@ -382,7 +387,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mListView = (RecyclerView) rootView.findViewById(R.id.list);
         loadingText = (TextView) rootView.findViewById(R.id.loading);
         emptyText = (TextView) rootView.findViewById(R.id.empty);
+        tagFilterLayout =  (RelativeLayout) rootView.findViewById(R.id.tag_filter_view_layout);
+
         tagFilterView = (NestedScrollView) rootView.findViewById(R.id.tag_filter_view);
+        BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
+        tagFilterViewBehaviour.setPeekHeight(0);
 
         mListView.setHasFixedSize(true);
         llm = new LinearLayoutManager(mContext);
@@ -660,8 +669,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
 
         if(tagFilterViewBehaviour.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+            updateTagFilter();
             tagFilterViewBehaviour.setState(BottomSheetBehavior.STATE_EXPANDED);
-            tagFilterViewBehaviour.setPeekHeight(0);
             item.setIcon(R.drawable.ic_menu_tags_on);
         }
         else {
@@ -669,6 +678,21 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             item.setIcon(R.drawable.ic_menu_tags_off);
         }
     }
+
+    private void updateTagFilter()
+    {
+        tagFilterLayout.removeAllViews();
+        addButton("Hentoid");
+    }
+
+    private void addButton(String label)
+    {
+        // Create ToggleButton Dynamically
+        ToggleButton toggleButton = new ToggleButton(mContext);
+        toggleButton.setText(label);
+        tagFilterLayout.addView(toggleButton);
+    }
+
 
     private void submitSearchQuery(String s) {
         submitSearchQuery(s, 0);
