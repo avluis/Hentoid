@@ -5,6 +5,11 @@
     tools:context=".activities.DownloadsActivity"
     tools:ignore="AlwaysShowAction">
     <item
+        android:id="@+id/action_tags"
+        android:icon="@drawable/ic_menu_tags_off"
+        android:title="@string/menu_search"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_search"
         android:icon="@drawable/ic_menu_search"
         android:title="@string/menu_search"

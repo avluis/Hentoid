@@ -105,7 +105,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
         } else {
             Timber.d("Result is null.");
 
-            if (isLoaded) { // Do not load anything if a loading activity is already in progress
+            if (isLoaded) { // Do not load anything if a loading activity is already
                 update();
                 checkContent(true);
             }

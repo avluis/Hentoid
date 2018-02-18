@@ -15,8 +15,10 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -81,6 +83,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected ContentAdapter mAdapter;
     protected LinearLayoutManager llm;
     protected RecyclerView mListView;
+    protected View tagFilterView;
     protected List<Content> contents;
     protected List<Content> result = new ArrayList<>();
     protected SearchContent search;
@@ -97,6 +100,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private MenuItem searchMenu;
     private Parcelable mListState;
     private Button btnPage;
+    private MenuItem btnTags;
     private SearchView searchView;
     private SwipeRefreshLayout refreshLayout;
     private boolean orderUpdated;
@@ -378,6 +382,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mListView = (RecyclerView) rootView.findViewById(R.id.list);
         loadingText = (TextView) rootView.findViewById(R.id.loading);
         emptyText = (TextView) rootView.findViewById(R.id.empty);
+        tagFilterView = (NestedScrollView) rootView.findViewById(R.id.tag_filter_view);
 
         mListView.setHasFixedSize(true);
         llm = new LinearLayoutManager(mContext);
@@ -640,9 +645,28 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 getActivity().invalidateOptionsMenu();
 
                 return true;
+            case R.id.action_tags:
+                toggleTagView(item);
+
+                return true;
             default:
 
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void toggleTagView(MenuItem item)
+    {
+        BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
+
+        if(tagFilterViewBehaviour.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+            tagFilterViewBehaviour.setState(BottomSheetBehavior.STATE_EXPANDED);
+            tagFilterViewBehaviour.setPeekHeight(0);
+            item.setIcon(R.drawable.ic_menu_tags_on);
+        }
+        else {
+            tagFilterViewBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            item.setIcon(R.drawable.ic_menu_tags_off);
         }
     }
 
