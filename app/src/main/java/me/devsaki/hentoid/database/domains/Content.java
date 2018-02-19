@@ -124,7 +124,7 @@ public class Content implements Serializable {
             case PURURIN:
                 return PururinActivity.class;
             default:
-                return BaseWebActivity.class; // Fallback for Pururin and FAKKU
+                return BaseWebActivity.class; // Fallback for FAKKU
         }
     }
 
