@@ -39,6 +39,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import org.apmem.tools.layouts.FlowLayout;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -107,7 +108,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private SwipeRefreshLayout refreshLayout;
 
     // Tag filters
-    private RelativeLayout tagFilterLayout;
+    private FlowLayout tagFilterLayout;
 
     private boolean orderUpdated;
     private boolean isSelected;
@@ -388,7 +389,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mListView = (RecyclerView) rootView.findViewById(R.id.list);
         loadingText = (TextView) rootView.findViewById(R.id.loading);
         emptyText = (TextView) rootView.findViewById(R.id.empty);
-        tagFilterLayout =  (RelativeLayout) rootView.findViewById(R.id.tag_filter_view_layout);
+        tagFilterLayout =  (FlowLayout) rootView.findViewById(R.id.tag_filter_view_layout);
 
         tagFilterView = (NestedScrollView) rootView.findViewById(R.id.tag_filter_view);
         BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
@@ -684,19 +685,35 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     {
         tagFilterLayout.removeAllViews();
 
-        addButton("Hentoid");
-        addButton("TEST");
+        ToggleButton button = addButton("Hentoid");
+        button = addButton("TEST1", button);
+        button = addButton("TEST2", button);
+        button = addButton("too large to be true", button);
+        button = addButton("too large to be true 2", button);
+        button = addButton("TEST2", button);
+        button = addButton("really too large to be true", button);
     }
 
-    private void addButton(String label)
+    private ToggleButton addButton(String label) { return addButton(label, null); }
+    private ToggleButton addButton(String label, ToggleButton button)
     {
-        // Create ToggleButton Dynamically
         ToggleButton toggleButton = new ToggleButton(mContext);
         toggleButton.setText(label);
         toggleButton.setOnClickListener( v -> selectFilter() );
         toggleButton.setTag(label);
-        toggleButton.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
+
+        /*
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.ALIGN_LEFT);
+        if (button != null) params.addRule(RelativeLayout.LEFT_OF, button.getId());
+        toggleButton.setLayoutParams(params);
+        */
+/*
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        toggleButton.setLayoutParams(params);
+*/
         tagFilterLayout.addView(toggleButton);
+        return toggleButton;
     }
 
     public void selectFilter()
