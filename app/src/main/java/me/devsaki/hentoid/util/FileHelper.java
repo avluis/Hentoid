@@ -486,14 +486,8 @@ public class FileHelper {
                     sp.getString(
                             ConstsPrefs.PREF_READ_CONTENT_LISTS,
                             ConstsPrefs.PREF_READ_CONTENT_DEFAULT + ""));
-            if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_ASK) {
-                final File file = imageFile;
-                AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
-                builder.setMessage(R.string.select_the_action)
-                        .setPositiveButton(R.string.open_default_image_viewer,
-                                (dialog, id) -> openFile(cxt, file))
-                        .setNegativeButton(R.string.open_perfect_viewer,
-                                (dialog, id) -> openPerfectViewer(cxt, file)).create().show();
+            if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_DEFAULT) {
+                openFile(cxt, imageFile);
             } else if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(cxt, imageFile);
             }

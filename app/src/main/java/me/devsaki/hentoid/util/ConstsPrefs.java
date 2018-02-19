@@ -15,7 +15,6 @@ public abstract class ConstsPrefs {
 
     static final String PREF_READ_CONTENT_LISTS = "pref_read_content_lists";
     static final int PREF_READ_CONTENT_DEFAULT = 0;
-    static final int PREF_READ_CONTENT_ASK = 0;
     static final int PREF_READ_CONTENT_PERFECT_VIEWER = 1;
 
     static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
