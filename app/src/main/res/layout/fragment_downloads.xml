@@ -11,10 +11,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom" />
 
-    <include
-        android:id="@+id/tag_filter_view"
-        layout="@layout/fragment_tag_filter" />
-
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
@@ -55,6 +51,10 @@
             </LinearLayout>
         </FrameLayout>
     </android.support.v4.widget.SwipeRefreshLayout>
+
+    <include
+        android:id="@+id/tag_filter_view"
+        layout="@layout/fragment_tag_filter" />
 
     <TextView
         android:id="@+id/empty"

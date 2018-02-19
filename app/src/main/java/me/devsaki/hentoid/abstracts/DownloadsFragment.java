@@ -16,8 +16,6 @@ import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
@@ -27,6 +25,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.ActionMode;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -106,6 +105,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private Button btnPage;
     private SearchView searchView;
     private SwipeRefreshLayout refreshLayout;
+
+    // Tag filters
     private RelativeLayout tagFilterLayout;
 
     private boolean orderUpdated;
@@ -682,7 +683,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void updateTagFilter()
     {
         tagFilterLayout.removeAllViews();
+
         addButton("Hentoid");
+        addButton("TEST");
     }
 
     private void addButton(String label)
@@ -690,7 +693,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // Create ToggleButton Dynamically
         ToggleButton toggleButton = new ToggleButton(mContext);
         toggleButton.setText(label);
+        toggleButton.setOnClickListener( v -> selectFilter() );
+        toggleButton.setTag(label);
+        toggleButton.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
         tagFilterLayout.addView(toggleButton);
+    }
+
+    public void selectFilter()
+    {
+        if ( ((ToggleButton)tagFilterLayout.findViewWithTag("Hentoid")).isChecked() )
+        {
+            String s = "Hentoid";
+        }
     }
 
 
