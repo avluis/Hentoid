@@ -355,6 +355,7 @@ public class BaseWebActivity extends BaseActivity {
         if (contentDB != null) {
             content.setStatus(contentDB.getStatus())
                     .setImageFiles(contentDB.getImageFiles())
+                    .setStorageFolder(contentDB.getStorageFolder())
                     .setDownloadDate(contentDB.getDownloadDate());
         }
         db.insertContent(content);

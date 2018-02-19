@@ -335,7 +335,6 @@ public class FileHelper {
 
     public static File getContentDownloadDir(Context cxt, Content content) {
         File file;
-        String settingDir = getRoot();
         String folderDir = content.getSite().getFolder();
         SharedPreferences sp = HentoidApp.getSharedPrefs();
 
@@ -352,9 +351,12 @@ public class FileHelper {
         }
         folderDir = folderDir +"["+content.getUniqueSiteId()+"]";
 
+        String settingDir = getRoot();
         if (settingDir.isEmpty()) {
             return getDefaultDir(cxt, folderDir);
         }
+
+        Timber.d("New book directory %s in %s", folderDir, settingDir);
 
         file = new File(settingDir, folderDir);
         if (!file.exists() && !FileUtil.makeDir(file)) {
@@ -445,7 +447,7 @@ public class FileHelper {
     }
 
     public static void openContent(final Context cxt, Content content) {
-        Timber.d("Opening: %s from: %s", content.getTitle(), getContentDownloadDir(cxt, content));
+        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
         //        File dir = getContentDownloadDir(cxt, content);
         String settingDir = getRoot();
         File dir = new File(settingDir, content.getStorageFolder());
