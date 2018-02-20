@@ -799,6 +799,8 @@ public class ImportActivity extends BaseActivity {
             try {
                 Content content = JsonHelper.jsonToObject(json, Content.class);
 
+                if (null == content.getAuthor()) content.populateAuthor();
+
                 String fileRoot = FileHelper.getRoot();
                 content.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
 
