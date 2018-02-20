@@ -172,6 +172,17 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://comics.asmhentai.com/g" -->
+                <data
+                    android:host="comics.asmhentai.com"
+                    android:pathPrefix="/g"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
                 <!-- Accepts URIs that begin with "https://hentai.cafe/" -->
                 <data
                     android:host="hentai.cafe"
