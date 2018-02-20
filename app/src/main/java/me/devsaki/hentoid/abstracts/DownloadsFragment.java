@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,7 +27,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.view.ActionMode;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -36,9 +36,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.ToggleButton;
 
 import org.apmem.tools.layouts.FlowLayout;
 import org.greenrobot.eventbus.Subscribe;
@@ -48,7 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -57,7 +57,9 @@ import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.SearchContent.ContentListener;
+import me.devsaki.hentoid.database.constants.AttributeTable;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -110,6 +112,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // Tag filters
     private FlowLayout tagFilterLayout;
+    private Map<String, Integer> filters;
 
     private boolean orderUpdated;
     private boolean isSelected;
@@ -395,6 +398,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         tagFilterView = (NestedScrollView) rootView.findViewById(R.id.tag_filter_view);
         BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
         tagFilterViewBehaviour.setPeekHeight(0);
+
+        filters = new HashMap<String, Integer>();
 
         mListView.setHasFixedSize(true);
         llm = new LinearLayoutManager(mContext);
@@ -685,34 +690,50 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void updateTagFilter()
     {
         tagFilterLayout.removeAllViews();
+        filters.clear();
 
-        addButton("Hentoid");
-        addButton("TEST1");
-        addButton("TEST2");
-        addButton("too large to be true");
-        addButton("too large to be true 2");
-        addButton("TEST2");
-        addButton("really too large to be true");
+        List<String> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode());
+
+        for(String s : tags)
+        {
+            addButton(s);
+        }
+
+        // TODO : filtering; interaction between buttons
     }
 
     private Button addButton(String label)
     {
         Button button = new Button(mContext);
         button.setText(label);
+        button.setTextColor(Color.WHITE);
+        button.setBackgroundResource(R.drawable.btn_buttonshape);
         button.setOnClickListener( v -> selectFilter(button, label) );
         button.setTag(label);
 
         tagFilterLayout.addView(button);
+        filters.put(label, 0);
+
         return button;
     }
 
     public void selectFilter(Button b, String s)
     {
         Timber.d("Button pressed : %s", s);
-        if (b.getSolidColor() == Color.BLUE) {
-            b.setBackgroundColor(Color.GREEN);
-        } else {
-            b.setBackgroundColor(Color.BLUE);
+        GradientDrawable grad = (GradientDrawable)b.getBackground();
+
+        switch (filters.get(s)) {
+            case 0:
+                b.setTextColor(Color.RED);
+                grad.setStroke(3, Color.RED);
+                filters.put(s, 1);
+                break;
+            case 1:
+                b.setTextColor(Color.WHITE);
+                grad.setStroke(3, Color.WHITE);
+                filters.put(s, 0);
+                break;
+            default :
         }
     }
 

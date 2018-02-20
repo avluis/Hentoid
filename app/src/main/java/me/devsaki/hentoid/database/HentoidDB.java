@@ -496,6 +496,41 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    // TODO do better than that; returned results shouldn't contain pre-formatting but a Pair(string,int)
+    public List<String> selectAllAttributesByUsage(int type) {
+        ArrayList<String> result = new ArrayList<String>();
+
+        synchronized (locker) {
+            Timber.d("selectAllAttributesByUsage");
+            SQLiteDatabase db = null;
+            SQLiteStatement statement = null;
+
+            Cursor cursorAttributes = null;
+
+            try {
+                db = getWritableDatabase();
+                cursorAttributes = db.rawQuery(AttributeTable.SELECT_ALL_BY_USAGE, new String[]{type + ""});
+
+                // looping through all rows and adding to list
+                if (cursorAttributes.moveToFirst()) {
+
+                    do {
+                        result.add(cursorAttributes.getString(0) + " (" + cursorAttributes.getInt(1) + ")");
+                    } while (cursorAttributes.moveToNext());
+                }
+            } finally {
+                if (cursorAttributes != null) {
+                    cursorAttributes.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
     public void updateImageFileStatus(ImageFile row) {
         synchronized (locker) {
             Timber.d("updateImageFileStatus");
