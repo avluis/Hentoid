@@ -8,6 +8,7 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -685,42 +686,33 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     {
         tagFilterLayout.removeAllViews();
 
-        ToggleButton button = addButton("Hentoid");
-        button = addButton("TEST1", button);
-        button = addButton("TEST2", button);
-        button = addButton("too large to be true", button);
-        button = addButton("too large to be true 2", button);
-        button = addButton("TEST2", button);
-        button = addButton("really too large to be true", button);
+        addButton("Hentoid");
+        addButton("TEST1");
+        addButton("TEST2");
+        addButton("too large to be true");
+        addButton("too large to be true 2");
+        addButton("TEST2");
+        addButton("really too large to be true");
     }
 
-    private ToggleButton addButton(String label) { return addButton(label, null); }
-    private ToggleButton addButton(String label, ToggleButton button)
+    private Button addButton(String label)
     {
-        ToggleButton toggleButton = new ToggleButton(mContext);
-        toggleButton.setText(label);
-        toggleButton.setOnClickListener( v -> selectFilter() );
-        toggleButton.setTag(label);
+        Button button = new Button(mContext);
+        button.setText(label);
+        button.setOnClickListener( v -> selectFilter(button, label) );
+        button.setTag(label);
 
-        /*
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.ALIGN_LEFT);
-        if (button != null) params.addRule(RelativeLayout.LEFT_OF, button.getId());
-        toggleButton.setLayoutParams(params);
-        */
-/*
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-        toggleButton.setLayoutParams(params);
-*/
-        tagFilterLayout.addView(toggleButton);
-        return toggleButton;
+        tagFilterLayout.addView(button);
+        return button;
     }
 
-    public void selectFilter()
+    public void selectFilter(Button b, String s)
     {
-        if ( ((ToggleButton)tagFilterLayout.findViewWithTag("Hentoid")).isChecked() )
-        {
-            String s = "Hentoid";
+        Timber.d("Button pressed : %s", s);
+        if (b.getSolidColor() == Color.BLUE) {
+            b.setBackgroundColor(Color.GREEN);
+        } else {
+            b.setBackgroundColor(Color.BLUE);
         }
     }
 
