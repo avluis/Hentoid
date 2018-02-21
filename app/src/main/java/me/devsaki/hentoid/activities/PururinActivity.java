@@ -105,7 +105,7 @@ public class PururinActivity extends BaseWebActivity {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")) {
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("juicyads.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -122,7 +122,7 @@ public class PururinActivity extends BaseWebActivity {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")) {
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("juicyads.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
