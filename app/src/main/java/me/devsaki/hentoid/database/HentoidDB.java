@@ -356,6 +356,38 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    public List<Content> selectContentByTags(List<String> tags) {
+        List<Content> result = null;
+
+        synchronized (locker) {
+            Timber.d("selectContentByTags");
+
+            SQLiteDatabase db = null;
+            Cursor cursorContent = null;
+
+            String tagString = "";
+            boolean first = true;
+            for(String s : tags)
+            {
+                if (!first)tagString += ","; else first = false;
+                tagString += "\""+s+"\"";
+            }
+
+            Timber.d("tagString %s",tagString);
+
+            try {
+                db = getReadableDatabase();
+                cursorContent = db.rawQuery(ContentTable.SELECT_BY_TAGS,
+                        new String[]{tagString, tags.size()+""});
+                result = populateResult(cursorContent, db);
+            } finally {
+                closeCursor(cursorContent, db);
+            }
+        }
+
+        return result;
+    }
+
     // This is a long running task, execute with AsyncTask or similar
     public List<Content> selectContentByQuery(String query, int page, int qty, boolean order) {
         String q = query;
@@ -515,7 +547,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add(cursorAttributes.getString(0) + " (" + cursorAttributes.getInt(1) + ")");
+                        result.add(cursorAttributes.getString(0)/* + " (" + cursorAttributes.getInt(1) + ")"*/);
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {

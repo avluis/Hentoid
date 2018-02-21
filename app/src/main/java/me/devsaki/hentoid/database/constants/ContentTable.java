@@ -13,7 +13,7 @@ public abstract class ContentTable {
     public static final String LIMIT_BY_PAGE = " LIMIT ?,?";
 
     // COLUMN NAMES
-    private static final String ID_COLUMN = "id";
+    public static final String ID_COLUMN = "id";
     private static final String UNIQUE_SITE_ID_COLUMN = "unique_site_id";
     private static final String CATEGORY_COLUMN = "category";
     private static final String URL_COLUMN = "url";
@@ -22,7 +22,7 @@ public abstract class ContentTable {
     private static final String QTY_PAGES_COLUMN = "qty_pages";
     private static final String UPLOAD_DATE_COLUMN = "upload_date";
     private static final String DOWNLOAD_DATE_COLUMN = "download_date";
-    private static final String STATUS_COLUMN = "status";
+    public static final String STATUS_COLUMN = "status";
     private static final String COVER_IMAGE_URL_COLUMN = "cover_image_url";
     private static final String SITE_COLUMN = "site";
     private static final String AUTHOR_COLUMN = "author";
@@ -83,6 +83,11 @@ public abstract class ContentTable {
     public static final String SELECT_IN_DOWNLOAD_MANAGER = "SELECT * FROM " + TABLE_NAME + " C WHERE C."
             + STATUS_COLUMN + " in (?, ?) ORDER BY C." + STATUS_COLUMN + ", C."
             + DOWNLOAD_DATE_COLUMN;
+
+    public static final String SELECT_BY_TAGS = "select c.*, count(*) " +
+            "from "+TABLE_NAME+" c inner join "+ContentAttributeTable.TABLE_NAME+" ca on ca."+ContentAttributeTable.CONTENT_ID_COLUMN+" = c."+ID_COLUMN+" " +
+            "inner join "+AttributeTable.TABLE_NAME+" a on a."+AttributeTable.ID_COLUMN+" = ca."+ContentAttributeTable.ATTRIBUTE_ID_COLUMN+" " +
+            "where lower(a."+AttributeTable.NAME_COLUMN+") in (?) and a.type = 3 and c.status = 1 group by 1 having count(*) = ?";
 
     // TODO OPTIMIZE
     public static final String SELECT_DOWNLOADS = "SELECT C." + ID_COLUMN + ", C."

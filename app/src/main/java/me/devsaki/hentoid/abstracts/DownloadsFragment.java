@@ -735,6 +735,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             default :
         }
+
+        List<String> selectedTags = new ArrayList<String>();
+        for(String key : filters.keySet())
+        {
+            if (1 == filters.get(key)) selectedTags.add(key);
+        }
+
+        List<Content> contents = getDB().selectContentByTags(selectedTags);
+        if (contents != null) Timber.d("Corresponding books : %s", contents.size()); else Timber.d("Corresponding books : 0");
     }
 
 

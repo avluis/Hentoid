@@ -24,8 +24,9 @@ public abstract class AttributeTable {
 
     // SELECT
     public static final String SELECT_ALL_BY_USAGE = "select distinct lower(a."+NAME_COLUMN+"), count(*) " +
-            "from "+TABLE_NAME+" a inner join "+ContentAttributeTable.TABLE_NAME+" ca " +
-            "on a."+ID_COLUMN+" = ca."+ContentAttributeTable.ATTRIBUTE_ID_COLUMN+" where a.type=? group by 1 order by 2 desc, 1 asc";
+            "from "+TABLE_NAME+" a inner join "+ContentAttributeTable.TABLE_NAME+" ca on a."+ID_COLUMN+" = ca."+ContentAttributeTable.ATTRIBUTE_ID_COLUMN+" " +
+            "inner join "+ContentTable.TABLE_NAME+" c on ca."+ContentAttributeTable.CONTENT_ID_COLUMN+"=c."+ContentTable.ID_COLUMN+" "+
+            "where a."+TYPE_COLUMN+"=? and c."+ContentTable.STATUS_COLUMN+"=1 group by 1 order by 2 desc, 1 asc";
 
     public static final String SELECT_BY_CONTENT_ID = "SELECT T." + ID_COLUMN + ", T." + URL_COLUMN
             + ", T." + NAME_COLUMN + ", T." + TYPE_COLUMN + " FROM " + TABLE_NAME + " T INNER JOIN "
