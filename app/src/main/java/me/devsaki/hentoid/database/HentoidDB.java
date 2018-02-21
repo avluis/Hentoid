@@ -6,6 +6,7 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -370,15 +371,18 @@ public class HentoidDB extends SQLiteOpenHelper {
             for(String s : tags)
             {
                 if (!first)tagString += ","; else first = false;
-                tagString += "\""+s+"\"";
+                tagString += "'"+s.toLowerCase()+"'";
             }
 
             Timber.d("tagString %s",tagString);
 
             try {
                 db = getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_BY_TAGS,
-                        new String[]{tagString, tags.size()+""});
+                String query = ContentTable.SELECT_BY_TAGS;
+                query = query.replace("%1",tagString);
+                query = query.replace("%2",tags.size()+"");
+
+                cursorContent = db .rawQuery(query, new String[]{});
                 result = populateResult(cursorContent, db);
             } finally {
                 closeCursor(cursorContent, db);
@@ -528,9 +532,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    // TODO do better than that; returned results shouldn't contain pre-formatting but a Pair(string,int)
-    public List<String> selectAllAttributesByUsage(int type) {
-        ArrayList<String> result = new ArrayList<String>();
+    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type) {
+        ArrayList<Pair<String,Integer>> result = new ArrayList<Pair<String,Integer>>();
 
         synchronized (locker) {
             Timber.d("selectAllAttributesByUsage");
@@ -547,7 +550,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add(cursorAttributes.getString(0)/* + " (" + cursorAttributes.getInt(1) + ")"*/);
+                        result.add( new Pair<String, Integer>(cursorAttributes.getString(0),cursorAttributes.getInt(1)) );
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {

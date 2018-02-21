@@ -26,6 +26,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Pair;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -77,9 +78,12 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
-    protected static final int SHOW_RESULT = 3;
+
+    protected static final int SHOW_DEFAULT = 0;
     private static final int SHOW_LOADING = 1;
     private static final int SHOW_BLANK = 2;
+    protected static final int SHOW_RESULT = 3;
+
     private static final String LIST_STATE_KEY = "list_state";
 
     protected static String query = "";
@@ -113,10 +117,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Tag filters
     private FlowLayout tagFilterLayout;
     private Map<String, Integer> filters;
+    private List<String> selectedTags;
 
     private boolean orderUpdated;
     private boolean isSelected;
     private boolean selectTrigger = false;
+
+
     // Called when the action mode is created; startActionMode() was called.
     private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
         // Called when action mode is first created.
@@ -400,6 +407,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         tagFilterViewBehaviour.setPeekHeight(0);
 
         filters = new HashMap<String, Integer>();
+        selectedTags = new ArrayList<String>();
 
         mListView.setHasFixedSize(true);
         llm = new LinearLayoutManager(mContext);
@@ -677,6 +685,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
 
         if(tagFilterViewBehaviour.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+            if (getQuery().length() > 0) clearQuery(1); // Clears any previously active query (search bar)
             updateTagFilter();
             tagFilterViewBehaviour.setState(BottomSheetBehavior.STATE_EXPANDED);
             item.setIcon(R.drawable.ic_menu_tags_on);
@@ -692,20 +701,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         tagFilterLayout.removeAllViews();
         filters.clear();
 
-        List<String> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode());
+        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode());
 
-        for(String s : tags)
+        for(Pair<String,Integer> val : tags)
         {
-            addButton(s);
+            addButton(val.first, val.second);
         }
 
-        // TODO : filtering; interaction between buttons
+        // TODO : actual filtering; interaction between buttons
     }
 
-    private Button addButton(String label)
+    private Button addButton(String label, Integer count)
     {
         Button button = new Button(mContext);
-        button.setText(label);
+        button.setText(label + "("+count+")");
         button.setTextColor(Color.WHITE);
         button.setBackgroundResource(R.drawable.btn_buttonshape);
         button.setOnClickListener( v -> selectFilter(button, label) );
@@ -736,14 +745,19 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             default :
         }
 
-        List<String> selectedTags = new ArrayList<String>();
+        selectedTags.clear();
         for(String key : filters.keySet())
         {
             if (1 == filters.get(key)) selectedTags.add(key);
         }
 
+        // TODO : make the use of selected tags in query more explicit (i.e. through argument passing; not class attribute reuse)
+        cleanResults();
+        searchContent();
+/*
         List<Content> contents = getDB().selectContentByTags(selectedTags);
         if (contents != null) Timber.d("Corresponding books : %s", contents.size()); else Timber.d("Corresponding books : 0");
+*/
     }
 
 
@@ -806,6 +820,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void setQuery(String query) {
         DownloadsFragment.query = query;
         currentPage = 1;
+    }
+
+    private String getQuery() {
+        return DownloadsFragment.query == null?"":DownloadsFragment.query;
     }
 
     private void clearSelection() {
@@ -885,8 +903,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected void searchContent() {
         isLoaded = false;
-        search = new SearchContent(mContext, query, currentPage, qtyPages,
-                order == ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE);
+        if (selectedTags.size() > 0) // Search by tag filter
+        {
+            search = new SearchContent(mContext, selectedTags, order == ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE);
+        } else // Search by keyword (search bar)
+        {
+            search = new SearchContent(mContext, query, currentPage, qtyPages,
+                    order == ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE);
+        }
         search.retrieveResults(this);
     }
 

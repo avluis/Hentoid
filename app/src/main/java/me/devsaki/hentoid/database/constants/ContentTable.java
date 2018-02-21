@@ -87,7 +87,7 @@ public abstract class ContentTable {
     public static final String SELECT_BY_TAGS = "select c.*, count(*) " +
             "from "+TABLE_NAME+" c inner join "+ContentAttributeTable.TABLE_NAME+" ca on ca."+ContentAttributeTable.CONTENT_ID_COLUMN+" = c."+ID_COLUMN+" " +
             "inner join "+AttributeTable.TABLE_NAME+" a on a."+AttributeTable.ID_COLUMN+" = ca."+ContentAttributeTable.ATTRIBUTE_ID_COLUMN+" " +
-            "where lower(a."+AttributeTable.NAME_COLUMN+") in (?) and a.type = 3 and c.status = 1 group by 1 having count(*) = ?";
+            "where lower(a."+AttributeTable.NAME_COLUMN+") in (%1) and a.type = 3 and c.status = 1 group by 1 having count(*) = %2";
 
     // TODO OPTIMIZE
     public static final String SELECT_DOWNLOADS = "SELECT C." + ID_COLUMN + ", C."

@@ -137,18 +137,20 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
         result = search.getContent();
 
         if (isLoaded) {
-            toggleUI(0);
+            toggleUI(SHOW_DEFAULT);
         }
 
         if (query.isEmpty()) {
+            Timber.d("Query empty");
             if (result != null && !result.isEmpty()) {
-
+                Timber.d("Result items : %s",result.size());
                 if (contents == null) {
                     contents = result;
                     mAdapter.setContentList(contents);
                     mListView.setAdapter(mAdapter);
                 } else {
                     int curSize = mAdapter.getItemCount();
+                    Timber.d("CurSize : %s",curSize);
                     contents.addAll(result);
                     mAdapter.notifyItemRangeInserted(curSize, contents.size() - 1);
                 }

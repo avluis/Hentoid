@@ -22,6 +22,7 @@ public class SearchContent {
     private final boolean mOrder;
     private volatile State mCurrentState = State.NON_INIT;
     private List<Content> contentList = new ArrayList<>();
+    private List<String> mTagFilter = null;
 
     public SearchContent(final Context context, String query, int page, int qty, boolean order) {
         db = HentoidDB.getInstance(context);
@@ -29,6 +30,17 @@ public class SearchContent {
         mPage = page;
         mQty = qty;
         mOrder = order;
+    }
+
+    public SearchContent(final Context context, List<String> tagFilter, boolean order) {
+        db = HentoidDB.getInstance(context);
+        mTagFilter = new ArrayList<String>();
+        mTagFilter.addAll(tagFilter);
+        mOrder = order;
+
+        mQuery = null;
+        mPage = 0;
+        mQty = 0;
     }
 
     public List<Content> getContent() {
@@ -74,7 +86,11 @@ public class SearchContent {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
 
-                contentList = db.selectContentByQuery(mQuery, mPage, mQty, mOrder);
+                if (null == mTagFilter) {
+                    contentList = db.selectContentByQuery(mQuery, mPage, mQty, mOrder);
+                } else {
+                    contentList = db.selectContentByTags(mTagFilter);
+                }
                 mCurrentState = State.READY;
             }
         } catch (Exception e) {
