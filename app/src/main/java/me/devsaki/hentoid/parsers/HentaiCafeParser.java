@@ -158,6 +158,8 @@ public class HentaiCafeParser {
                                         Timber.e(e, "Error while reading from array");
                                     }
                                 }
+                            } else {
+                                Timber.e("Error while parsing pages");
                             }
                         }
                     } catch (IOException e) {
@@ -179,12 +181,14 @@ public class HentaiCafeParser {
 
         Timber.d("Match found? %s", matcher.find());
 
-        String results = matcher.group(1);
-        results = "[{" + results + "}]";
-        try {
-            return (JSONArray) new JSONTokener(results).nextValue();
-        } catch (JSONException e) {
-            Timber.e(e, "Couldn't build JSONArray from the provided string");
+        if (matcher.groupCount() > 0) {
+            String results = matcher.group(1);
+            results = "[{" + results + "}]";
+            try {
+                return (JSONArray) new JSONTokener(results).nextValue();
+            } catch (JSONException e) {
+                Timber.e(e, "Couldn't build JSONArray from the provided string");
+            }
         }
 
         return null;
