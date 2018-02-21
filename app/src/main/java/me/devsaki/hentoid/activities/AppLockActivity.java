@@ -18,10 +18,9 @@ import android.widget.TextView;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.util.ConstsPrefs;
+import me.devsaki.hentoid.util.Preferences;
 
 /**
  * If set, this will allow us to 'lock' the app behind a password/code.
@@ -101,14 +100,11 @@ public class AppLockActivity extends BaseActivity {
     @SuppressWarnings("UnusedParameters")
     public void checkPin(View view) {
         String pin = etPin.getText().toString();
-        String appLock = HentoidApp.getSharedPrefs().getString(ConstsPrefs.PREF_APP_LOCK, "");
-        boolean appLockVibrate = HentoidApp.getSharedPrefs().getBoolean(
-                ConstsPrefs.PREF_APP_LOCK_VIBRATE, ConstsPrefs.PREF_APP_LOCK_VIBRATE_DEFAULT);
 
         if (handler != null) {
             handler.removeCallbacksAndMessages(null);
         }
-        if (appLock.equals(pin)) {
+        if (Preferences.getAppLockPin().equals(pin)) {
             etPin.setText("");
             etPin.clearFocus();
 
@@ -119,9 +115,7 @@ public class AppLockActivity extends BaseActivity {
             tvAppLock.setText(R.string.pin_ok);
             ivLock.setImageResource(imageMap.get(LOCK_STATE[1]));
 
-            if (vibrator.hasVibrator() & appLockVibrate) {
-                vibrator.vibrate(goodPinPattern, -1);
-            }
+            invokeVibrate();
 
             Intent intent = new Intent(this, DownloadsActivity.class);
             startActivity(intent);
@@ -132,9 +126,13 @@ public class AppLockActivity extends BaseActivity {
             ivLock.setImageResource(imageMap.get(LOCK_STATE[0]));
             tvAppLock.setText(R.string.pin_invalid);
 
-            if (vibrator.hasVibrator() & appLockVibrate) {
-                vibrator.vibrate(wrongPinPattern, -1);
-            }
+            invokeVibrate();
+        }
+    }
+
+    private void invokeVibrate() {
+        if (vibrator.hasVibrator() && Preferences.getAppLockVibrate()) {
+            vibrator.vibrate(goodPinPattern, -1);
         }
     }
 }

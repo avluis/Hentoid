@@ -8,6 +8,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.AssetsCache;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 
 /**
  * Created by avluis on 1/9/16.
@@ -22,7 +23,7 @@ public class SplashActivity extends AppCompatActivity {
 
         AssetsCache.init(HentoidApp.getAppContext());
 
-        if (Helper.isFirstRun()) {
+        if (Preferences.isFirstRun()) {
             Intent intent = new Intent(this, IntroActivity.class);
             startActivity(intent);
             overridePendingTransition(R.anim.fade_in, R.anim.fade_out);

@@ -2,7 +2,6 @@ package me.devsaki.hentoid.activities;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -18,18 +17,16 @@ import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.EndlessFragment;
 import me.devsaki.hentoid.fragments.PagerFragment;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
-import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
  * Created by avluis on 08/26/2016.
  * DownloadsActivity: In charge of hosting EndlessFragment & PagerFragment
- * in accordance to Shared Prefs Setting Key: PREF_ENDLESS_SCROLL
  */
 public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
-    private final SharedPreferences prefs = HentoidApp.getSharedPrefs();
     private BaseFragment baseFragment;
     private Context cxt;
 
@@ -46,7 +43,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     }
 
     private Class<? extends BaseFragment> getFragment() {
-        if (getEndlessPref()) {
+        if (Preferences.getEndlessScroll()) {
             Timber.d("getFragment: EndlessFragment.");
             return EndlessFragment.class;
         } else {
@@ -55,21 +52,11 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         }
     }
 
-    private boolean getEndlessPref() {
-        return prefs.getBoolean(
-                ConstsPrefs.PREF_ENDLESS_SCROLL, ConstsPrefs.PREF_ENDLESS_SCROLL_DEFAULT);
-    }
-
-    private boolean getRecentVisibilityPref() {
-        return prefs.getBoolean(
-                ConstsPrefs.PREF_HIDE_RECENT, ConstsPrefs.PREF_HIDE_RECENT_DEFAULT);
-    }
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getRecentVisibilityPref()) {
+        if (Preferences.getRecentVisibility()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
         setContentView(mainLayout);

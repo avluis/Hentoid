@@ -64,6 +64,7 @@ import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -136,7 +137,7 @@ public class ImportActivity extends BaseActivity {
 
     private void checkForDefaultDirectory() {
         if (checkPermissions()) {
-            String settingDir = FileHelper.getRoot();
+            String settingDir = Preferences.getRootFolderName();
             Timber.d(settingDir);
 
             File file;
@@ -758,7 +759,7 @@ public class ImportActivity extends BaseActivity {
                 content.setDownloadDate(importedDate.getTime());
                 Content contentV2 = content.toV2Content();
 
-                String fileRoot = FileHelper.getRoot();
+                String fileRoot = Preferences.getRootFolderName();
                 contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
                 try {
                     JsonHelper.saveJson(contentV2, file);
@@ -782,7 +783,7 @@ public class ImportActivity extends BaseActivity {
                 }
                 Content contentV2 = content.toV2Content();
 
-                String fileRoot = FileHelper.getRoot();
+                String fileRoot = Preferences.getRootFolderName();
                 contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
                 try {
                     JsonHelper.saveJson(contentV2, file);
@@ -801,7 +802,7 @@ public class ImportActivity extends BaseActivity {
 
                 if (null == content.getAuthor()) content.populateAuthor();
 
-                String fileRoot = FileHelper.getRoot();
+                String fileRoot = Preferences.getRootFolderName();
                 content.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
 
                 if (content.getStatus() != StatusContent.DOWNLOADED

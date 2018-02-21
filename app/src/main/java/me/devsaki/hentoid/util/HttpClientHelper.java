@@ -25,7 +25,7 @@ public class HttpClientHelper {
     public static String call(String urlString) throws Exception {
         String cookie = cookieManager.getCookie(urlString);
         if (cookie == null || cookie.isEmpty()) {
-            cookie = Helper.getSessionCookie();
+            cookie = Preferences.getSessionCookie();
         }
 
         HttpURLConnection urlConnection = null;

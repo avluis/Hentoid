@@ -16,6 +16,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -39,7 +40,7 @@ final class ImageDownloadBatch {
     void newTask(final File dir, final String filename, final String url) {
         String cookie = cookieManager.getCookie(url);
         if (cookie == null || cookie.isEmpty()) {
-            cookie = Helper.getSessionCookie();
+            cookie = Preferences.getSessionCookie();
         }
 
         String userAgent;

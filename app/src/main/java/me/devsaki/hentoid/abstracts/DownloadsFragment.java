@@ -7,7 +7,6 @@ import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -54,9 +53,9 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.util.ConstsImport;
-import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
@@ -162,7 +161,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             mActionMode = null;
         }
     };
-    private SharedPreferences prefs;
     private int order;
     private long backButtonPressed;
     private String settingDir;
@@ -207,7 +205,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             getActivity().finish();
         }
 
-        String settingDir = FileHelper.getRoot();
+        String settingDir = Preferences.getRootFolderName();
 
         if (!this.settingDir.equals(settingDir)) {
             Timber.d("Library directory has changed!");
@@ -220,10 +218,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             checkStorage();
         }
 
-        int qtyPages = Integer.parseInt(
-                prefs.getString(
-                        ConstsPrefs.PREF_QUANTITY_PER_PAGE_LISTS,
-                        ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+        int qtyPages = Preferences.getContentPageQuantity();
 
         if (this.qtyPages != qtyPages) {
             Timber.d("qtyPages updated.");
@@ -232,8 +227,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             shouldUpdate = true;
         }
 
-        int order = prefs.getInt(
-                ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);
+        int order = Preferences.getContentSortOrder();
 
         if (this.order != order) {
             Timber.d("order updated.");
@@ -348,18 +342,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         setHasOptionsMenu(true);
 
         mContext = getContext();
-
-        prefs = HentoidApp.getSharedPrefs();
-
-        settingDir = FileHelper.getRoot();
-
-        order = prefs.getInt(
-                ConstsPrefs.PREF_ORDER_CONTENT_LISTS, ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC);
-
-        qtyPages = Integer.parseInt(
-                prefs.getString(
-                        ConstsPrefs.PREF_QUANTITY_PER_PAGE_LISTS,
-                        ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
+        settingDir = Preferences.getRootFolderName();
+        order = Preferences.getContentSortOrder();
+        qtyPages = Preferences.getContentPageQuantity();
     }
 
     @Override
@@ -542,6 +527,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                 return true;
             }
+
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 toggleSortMenuItem(menu, true);
@@ -587,8 +573,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 return true;
             }
         });
-        SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
-        if (order == 0) {
+        if (order == Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC) {
             menu.findItem(R.id.action_order_alphabetic).setVisible(false);
             menu.findItem(R.id.action_order_by_date).setVisible(true);
         } else {
@@ -596,7 +581,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             menu.findItem(R.id.action_order_by_date).setVisible(false);
         }
         // Save current sort order
-        editor.putInt(ConstsPrefs.PREF_ORDER_CONTENT_LISTS, order).apply();
+        Preferences.setContentSortOrder(order);
     }
 
     @Override
@@ -627,7 +612,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_alphabetic:
                 cleanResults();
                 orderUpdated = true;
-                order = ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC;
+                order = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
                 update();
                 getActivity().invalidateOptionsMenu();
 
@@ -635,7 +620,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_by_date:
                 cleanResults();
                 orderUpdated = true;
-                order = ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE;
+                order = Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE;
                 update();
                 getActivity().invalidateOptionsMenu();
 
@@ -785,7 +770,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void searchContent() {
         isLoaded = false;
         search = new SearchContent(mContext, query, currentPage, qtyPages,
-                order == ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE);
+                order == Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE);
         search.retrieveResults(this);
     }
 

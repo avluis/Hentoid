@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -24,9 +23,9 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.updater.UpdateCheck;
-import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -83,11 +82,9 @@ public class PrefsActivity extends BaseActivity {
             addPreferencesFromResource(R.xml.preferences);
 
             Preference recentVisibility = getPreferenceScreen()
-                    .findPreference(ConstsPrefs.PREF_HIDE_RECENT);
+                    .findPreference(Preferences.Key.PREF_HIDE_RECENT);
 
-            SharedPreferences prefs = HentoidApp.getSharedPrefs();
-            boolean hideRecent = prefs.getBoolean(
-                    ConstsPrefs.PREF_HIDE_RECENT, ConstsPrefs.PREF_HIDE_RECENT_DEFAULT);
+            boolean hideRecent = Preferences.getRecentVisibility();
 
             recentVisibility.setOnPreferenceChangeListener((preference, newValue) -> {
                 if (!newValue.equals(hideRecent)) {
@@ -100,10 +97,10 @@ public class PrefsActivity extends BaseActivity {
             });
 
             Preference addNoMediaFile = getPreferenceScreen()
-                    .findPreference(ConstsPrefs.PREF_ADD_NO_MEDIA_FILE);
+                    .findPreference(Preferences.Key.PREF_ADD_NO_MEDIA_FILE);
             addNoMediaFile.setOnPreferenceClickListener(preference -> FileHelper.createNoMedia());
 
-            Preference appLock = getPreferenceScreen().findPreference(ConstsPrefs.PREF_APP_LOCK);
+            Preference appLock = getPreferenceScreen().findPreference(Preferences.Key.PREF_APP_LOCK);
             appLock.setOnPreferenceClickListener(preference -> {
                 AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                 builder.setTitle(R.string.app_lock_pin_prefs);
@@ -131,7 +128,7 @@ public class PrefsActivity extends BaseActivity {
             });
 
             Preference mUpdateCheck = getPreferenceScreen()
-                    .findPreference(ConstsPrefs.PREF_CHECK_UPDATE_MANUAL);
+                    .findPreference(Preferences.Key.PREF_CHECK_UPDATE_MANUAL);
             mUpdateCheck.setOnPreferenceClickListener(preference -> {
                 Helper.toast("Checking for updates...");
                 new UpdateCheck().checkForUpdate(HentoidApp.getAppContext(), false, true,
@@ -153,9 +150,8 @@ public class PrefsActivity extends BaseActivity {
 
         private void saveKey(DialogInterface dialog, EditText input) {
             String lock = input.getText().toString();
-            SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
-            editor.putString(ConstsPrefs.PREF_APP_LOCK, lock);
-            editor.apply();
+            Preferences.setAppLockPin(lock);
+
             if (lock.isEmpty()) {
                 Helper.toast(getActivity(), R.string.app_lock_disabled);
             } else {
