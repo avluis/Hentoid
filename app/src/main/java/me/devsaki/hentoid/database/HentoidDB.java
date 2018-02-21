@@ -45,7 +45,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     private static HentoidDB instance;
 
 
-    // TODO : enable foreign keys
+    // TODO : enable foreign keys & indexes
 
     private HentoidDB(Context context) {
         super(context, Consts.DATABASE_NAME, null, DATABASE_VERSION);
