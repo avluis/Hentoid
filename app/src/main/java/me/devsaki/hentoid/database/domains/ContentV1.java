@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
@@ -125,6 +126,13 @@ public class ContentV1 {
         if (language != null) attributes.add(language);
         if (user != null) attributes.add(user);
 
+        String author = "";
+        if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+        if (author.equals("")) // Try and get Circle
+        {
+            if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0) author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+        }
+
         return new Content()
                 .setSite(getSite())
                 .setUrl(url)
@@ -133,6 +141,7 @@ public class ContentV1 {
                 .setImageFiles(imageFiles)
                 .setCoverImageUrl(coverImageUrl)
                 .setTitle(title)
+                .setAuthor(author)
                 .setQtyPages(qtyPages)
                 .setDownloadDate(downloadDate)
                 .setStatus(status);
