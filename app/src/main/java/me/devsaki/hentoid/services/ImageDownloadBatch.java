@@ -39,9 +39,6 @@ final class ImageDownloadBatch {
 
     void newTask(final File dir, final String filename, final String url) {
         String cookie = cookieManager.getCookie(url);
-        if (cookie == null || cookie.isEmpty()) {
-            cookie = Preferences.getSessionCookie();
-        }
 
         String userAgent;
         try {

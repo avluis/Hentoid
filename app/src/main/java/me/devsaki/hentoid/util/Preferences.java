@@ -129,17 +129,6 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES_LISTS, Default.PREF_CHECK_UPDATES_DEFAULT);
     }
 
-    public static String getSessionCookie() {
-        return sharedPreferences.getString(Key.WEB_SESSION_COOKIE, "");
-    }
-
-    // TODO investigate why this is not used
-    public static void setSessionCookie(String sessionCookie) {
-        sharedPreferences.edit()
-                .putString(Key.WEB_SESSION_COOKIE, sessionCookie)
-                .apply();
-    }
-
     // TODO another strange one
     public static int getWebViewInitialZoom() {
         return Integer.parseInt(
@@ -174,7 +163,6 @@ public final class Preferences {
         static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
-        static final String WEB_SESSION_COOKIE = "web_session_cookie";
     }
 
     public static final class Default {

@@ -162,9 +162,6 @@ public class TsuminoParser {
         String dataJson = new GsonBuilder().create().toJson(data, Map.class);
 
         String cookie = cookieManager.getCookie(url);
-        if (cookie == null || cookie.isEmpty()) {
-            cookie = Preferences.getSessionCookie();
-        }
 
         try {
             http = (HttpURLConnection) ((new URL(url).openConnection()));
