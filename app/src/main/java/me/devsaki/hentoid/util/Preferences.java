@@ -152,7 +152,7 @@ public final class Preferences {
         static final String PREFS_VERSION_KEY = "prefs_version";
         static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
-        static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
+        public static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         static final String PREF_FIRST_RUN = "pref_first_run";
         static final String PREF_APP_LOCK_VIBRATE = "pref_app_lock_vibrate";
         static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
