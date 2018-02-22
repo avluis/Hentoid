@@ -10,6 +10,7 @@ import timber.log.Timber;
  * Created by Shiro on 2/21/2018.
  * Decorator class that wraps a SharedPreference to implement properties
  * Some properties do not have a setter because it is changed by PreferenceActivity
+ * Some properties are parsed as ints because of limitations with the Preference subclass used
  */
 
 public final class Preferences {
@@ -64,7 +65,6 @@ public final class Preferences {
                 .apply();
     }
 
-    // TODO this is strange
     public static int getContentPageQuantity() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_QUANTITY_PER_PAGE_LISTS,
                 Default.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
@@ -102,7 +102,6 @@ public final class Preferences {
                 .apply();
     }
 
-    // TODO this is also strange
     public static int getFolderNameFormat() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.PREF_FOLDER_NAMING_CONTENT_LISTS,
@@ -129,7 +128,6 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_CHECK_UPDATES_LISTS, Default.PREF_CHECK_UPDATES_DEFAULT);
     }
 
-    // TODO another strange one
     public static int getWebViewInitialZoom() {
         return Integer.parseInt(
                 sharedPreferences.getString(
@@ -148,11 +146,11 @@ public final class Preferences {
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
         public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
         public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
+        public static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         static final String PREF_WELCOME_DONE = "pref_welcome_done";
         static final String PREFS_VERSION_KEY = "prefs_version";
         static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
-        public static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         static final String PREF_FIRST_RUN = "pref_first_run";
         static final String PREF_APP_LOCK_VIBRATE = "pref_app_lock_vibrate";
         static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
