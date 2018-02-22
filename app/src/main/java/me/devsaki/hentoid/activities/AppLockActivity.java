@@ -7,7 +7,6 @@ import android.os.Handler;
 import android.os.Vibrator;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -30,8 +29,8 @@ import me.devsaki.hentoid.util.Preferences;
 public class AppLockActivity extends BaseActivity {
 
     private final long DELAY = 1000;
-    private final long[] goodPinPattern = {0, 250, 100, 100};
-    private final long[] wrongPinPattern = {0, 200, 200, 200};
+    private final long[] correctPinPattern = {0, 250, 100, 100};
+    private final long[] incorrectPinPattern = {0, 200, 200, 200};
     private final Map<String, Integer> imageMap = new HashMap<>();
     private final String[] LOCK_STATE = {"Locked", "Open"};
     private TextView tvAppLock;
@@ -50,54 +49,48 @@ public class AppLockActivity extends BaseActivity {
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
 
-        tvAppLock = (TextView) findViewById(R.id.tv_app_lock_subtitle);
-        etPin = (EditText) findViewById(R.id.et_pin);
-        ivLock = (ImageView) findViewById(R.id.iv_lock);
+        tvAppLock = findViewById(R.id.tv_app_lock_subtitle);
+        etPin = findViewById(R.id.et_pin);
+        ivLock = findViewById(R.id.iv_lock);
 
-        if (etPin != null) {
-            etPin.setGravity(Gravity.CENTER);
-            etPin.setOnKeyListener((v, keyCode, event) -> {
-                if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (keyCode == KeyEvent.KEYCODE_ENTER)) {
-                    checkPin(etPin);
+        etPin.setOnKeyListener((v, keyCode, event) -> {
+            if ((event.getAction() == KeyEvent.ACTION_DOWN) &&
+                    (keyCode == KeyEvent.KEYCODE_ENTER)) {
+                checkPin(null);
 
-                    return true;
+                return true;
+            }
+
+            return false;
+        });
+        etPin.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                // We don't care about this event.
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (handler != null) {
+                    handler.removeCallbacksAndMessages(null);
+                }
+            }
+
+            @Override
+            public void afterTextChanged(final Editable s) {
+                if (tvAppLock != null) {
+                    tvAppLock.setText(R.string.app_lock_pin);
                 }
 
-                return false;
-            });
-            etPin.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                    // We don't care about this event.
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    if (handler != null) {
-                        handler.removeCallbacksAndMessages(null);
-                    }
-                }
-
-                @Override
-                public void afterTextChanged(final Editable s) {
-                    if (tvAppLock != null) {
-                        tvAppLock.setText(R.string.app_lock_pin);
-                    }
-
-                    if (s.length() >= 4) {
-                        handler = new Handler();
-                        handler.postDelayed(() -> {
-                            etPin.setText(s.toString());
-                            checkPin(null);
-                        }, DELAY);
-                    }
-                }
-            });
-        }
+                handler = new Handler();
+                handler.postDelayed(() -> {
+                    etPin.setText(s.toString());
+                    checkPin(null);
+                }, DELAY);
+            }
+        });
     }
 
-    @SuppressWarnings("UnusedParameters")
     public void checkPin(View view) {
         String pin = etPin.getText().toString();
 
@@ -115,7 +108,7 @@ public class AppLockActivity extends BaseActivity {
             tvAppLock.setText(R.string.pin_ok);
             ivLock.setImageResource(imageMap.get(LOCK_STATE[1]));
 
-            invokeVibrate();
+            invokeVibrate(correctPinPattern);
 
             Intent intent = new Intent(this, DownloadsActivity.class);
             startActivity(intent);
@@ -126,13 +119,13 @@ public class AppLockActivity extends BaseActivity {
             ivLock.setImageResource(imageMap.get(LOCK_STATE[0]));
             tvAppLock.setText(R.string.pin_invalid);
 
-            invokeVibrate();
+            invokeVibrate(incorrectPinPattern);
         }
     }
 
-    private void invokeVibrate() {
+    private void invokeVibrate(long[] vibratePattern) {
         if (vibrator.hasVibrator() && Preferences.getAppLockVibrate()) {
-            vibrator.vibrate(goodPinPattern, -1);
+            vibrator.vibrate(vibratePattern, -1);
         }
     }
 }
