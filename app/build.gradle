@@ -14,8 +14,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 44
-        versionName '1.2.2'
+        versionCode 45
+        versionName '1.2.3'
         vectorDrawables.useSupportLibrary = true
     }
 
