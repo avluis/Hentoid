@@ -15,16 +15,14 @@ import java.io.IOException;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
-import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
-import static me.devsaki.hentoid.util.Helper.getWebViewInitialZoomPrefs;
-import static me.devsaki.hentoid.util.Helper.getWebViewOverviewPrefs;
 
 /**
  * Created by Shiro on 1/20/2016.
@@ -44,15 +42,15 @@ public class HitomiActivity extends BaseWebActivity {
 
         webView.setWebViewClient(client);
 
-        boolean bWebViewOverview = getWebViewOverviewPrefs();
-        int webViewInitialZoom = getWebViewInitialZoomPrefs();
+        boolean bWebViewOverview = Preferences.getWebViewOverview();
+        int webViewInitialZoom = Preferences.getWebViewInitialZoom();
 
         if (bWebViewOverview) {
             webView.getSettings().setLoadWithOverviewMode(false);
             webView.setInitialScale(webViewInitialZoom);
             Timber.d("WebView Initial Scale: %s%", webViewInitialZoom);
         } else {
-            webView.setInitialScale(ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
+            webView.setInitialScale(Preferences.Default.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);
         }
 

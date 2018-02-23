@@ -27,6 +27,7 @@ import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -82,7 +83,7 @@ public class DownloadService extends IntentService {
             Timber.d("Content Download Dir; %s", dir);
             Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
 
-            String fileRoot = FileHelper.getRoot();
+            String fileRoot = Preferences.getRootFolderName();
             currentContent.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
             db.updateContentStorageFolder(currentContent);
 

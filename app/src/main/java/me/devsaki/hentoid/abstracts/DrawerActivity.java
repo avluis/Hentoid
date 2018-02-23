@@ -4,11 +4,9 @@ import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -25,8 +23,8 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.ui.CompoundAdapter;
 import me.devsaki.hentoid.ui.DrawerMenuContents;
-import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -58,26 +56,6 @@ public abstract class DrawerActivity extends BaseActivity {
     private int currentPos = -1;
     private boolean itemTapped;
     private DrawerLayout.DrawerListener mDrawerListener;
-
-    /**
-     * Return true if the first-app-run-activities have already been executed.
-     *
-     * @param context Context to be used to lookup the {@link SharedPreferences}.
-     */
-    private static boolean isFirstRunProcessComplete(final Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
-                ConstsPrefs.PREF_WELCOME_DONE, false);
-    }
-
-    /**
-     * Mark whether this is the first time the first-app-run-processes have run.
-     *
-     * @param context Context to be used to edit the {@link SharedPreferences}.
-     */
-    private static void markFirstRunProcessComplete(final Context context) {
-        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        sp.edit().putBoolean(ConstsPrefs.PREF_WELCOME_DONE, true).apply();
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,10 +138,10 @@ public abstract class DrawerActivity extends BaseActivity {
 
         // When the user runs the app for the first time, we want to land them with the
         // navigation drawer open. But just the first time.
-        if (!isFirstRunProcessComplete(this)) {
+        if (!Preferences.isFirstRunProcessComplete()) {
             // first run of the app starts with the nav drawer open
             mDrawerLayout.openDrawer(GravityCompat.START);
-            markFirstRunProcessComplete(this);
+            Preferences.setIsFirstRunProcessComplete(true);
         }
     }
 

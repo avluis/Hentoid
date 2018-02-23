@@ -33,7 +33,7 @@ public class IntentActivity extends BaseActivity {
         Intent intent = getIntent();
         String action = intent.getAction();
         String type = intent.getType();
-        Bundle extras = intent.getExtras() != null ? intent.getExtras() : null;
+        Bundle extras = intent.getExtras();
 
         Uri data = null;
 

@@ -33,6 +33,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
@@ -161,9 +162,6 @@ public class TsuminoParser {
         String dataJson = new GsonBuilder().create().toJson(data, Map.class);
 
         String cookie = cookieManager.getCookie(url);
-        if (cookie == null || cookie.isEmpty()) {
-            cookie = Helper.getSessionCookie();
-        }
 
         try {
             http = (HttpURLConnection) ((new URL(url).openConnection()));
