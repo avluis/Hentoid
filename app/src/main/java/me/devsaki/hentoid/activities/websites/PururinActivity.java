@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities;
+package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
@@ -32,9 +32,8 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
  */
 public class PururinActivity extends BaseWebActivity {
 
-    @Override
-    void setSite(Site site) {
-        super.setSite(Site.PURURIN);
+    Site getStartSite() {
+        return Site.PURURIN;
     }
 
     @Override
@@ -104,7 +103,7 @@ public class PururinActivity extends BaseWebActivity {
                     url.contains("ads.php") || url.contains("syndication.exoclick.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
-                return getWebResourceResponseFromAsset(getSite(), "main.js", TYPE.JS);
+                return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
             } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("juicyads.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
@@ -121,7 +120,7 @@ public class PururinActivity extends BaseWebActivity {
                     url.contains("syndication.exoclick.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
-                return getWebResourceResponseFromAsset(getSite(), "main.js", TYPE.JS);
+                return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
             } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("juicyads.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {

@@ -5,13 +5,13 @@ import com.google.gson.annotations.Expose;
 import java.io.Serializable;
 import java.util.List;
 
-import me.devsaki.hentoid.activities.ASMHentaiActivity;
-import me.devsaki.hentoid.activities.BaseWebActivity;
-import me.devsaki.hentoid.activities.HentaiCafeActivity;
-import me.devsaki.hentoid.activities.HitomiActivity;
-import me.devsaki.hentoid.activities.NhentaiActivity;
-import me.devsaki.hentoid.activities.PururinActivity;
-import me.devsaki.hentoid.activities.TsuminoActivity;
+import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
+import me.devsaki.hentoid.activities.websites.BaseWebActivity;
+import me.devsaki.hentoid.activities.websites.HentaiCafeActivity;
+import me.devsaki.hentoid.activities.websites.HitomiActivity;
+import me.devsaki.hentoid.activities.websites.NhentaiActivity;
+import me.devsaki.hentoid.activities.websites.PururinActivity;
+import me.devsaki.hentoid.activities.websites.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -50,6 +50,7 @@ public class Content implements Serializable {
     private String storageFolder;
 
     public AttributeMap getAttributes() {
+        if (null == attributes) attributes = new AttributeMap();
         return attributes;
     }
 
@@ -75,6 +76,7 @@ public class Content implements Serializable {
                 paths = url.split("/");
                 return paths[1].replace(".html", "");
             case ASMHENTAI:
+            case ASMHENTAI_COMICS:
             case NHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
@@ -99,6 +101,7 @@ public class Content implements Serializable {
                 return paths[1].replace(".html", "") + "-" +
                         title.replaceAll("[^a-zA-Z0-9.-]", "_");
             case ASMHENTAI:
+            case ASMHENTAI_COMICS:
             case NHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
@@ -116,6 +119,7 @@ public class Content implements Serializable {
             case NHENTAI:
                 return NhentaiActivity.class;
             case ASMHENTAI:
+            case ASMHENTAI_COMICS:
                 return ASMHentaiActivity.class;
             case HENTAICAFE:
                 return HentaiCafeActivity.class;
@@ -160,6 +164,7 @@ public class Content implements Serializable {
                 galleryConst = "/galleries";
                 break;
             case ASMHENTAI:
+            case ASMHENTAI_COMICS:
             case NHENTAI:
                 galleryConst = "/g";
                 break;
@@ -184,6 +189,7 @@ public class Content implements Serializable {
             case TSUMINO:
                 return site.getUrl() + "/Read/View" + url;
             case ASMHENTAI:
+            case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
                 return getGalleryUrl();
