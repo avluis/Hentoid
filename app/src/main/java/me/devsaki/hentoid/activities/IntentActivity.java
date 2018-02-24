@@ -23,6 +23,7 @@ public class IntentActivity extends BaseActivity {
     private static final String NHENTAI = "nhentai.net";
     private static final String TSUMINO = "www.tsumino.com";
     private static final String ASMHENTAI = "asmhentai.com";
+    private static final String ASMHENTAI_COMICS = "comics.asmhentai.com";
     private static final String HENTAICAFE = "hentai.cafe";
     private static final String PURURIN = "pururin.io";
 
@@ -70,6 +71,10 @@ public class IntentActivity extends BaseActivity {
                 case TSUMINO:
                     site = Site.TSUMINO;
                     parsedString = toParse.replace("/Book/Info", "");
+                    break;
+                case ASMHENTAI_COMICS:
+                    site = Site.ASMHENTAI_COMICS;
+                    parsedString = toParse.replace("/g", "").concat("/"); // '/' required
                     break;
                 case ASMHENTAI:
                     site = Site.ASMHENTAI;

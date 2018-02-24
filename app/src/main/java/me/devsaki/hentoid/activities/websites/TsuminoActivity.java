@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities;
+package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
@@ -40,9 +40,8 @@ public class TsuminoActivity extends BaseWebActivity {
         return pos;
     }
 
-    @Override
-    void setSite(Site site) {
-        super.setSite(Site.TSUMINO);
+    Site getStartSite() {
+        return Site.TSUMINO;
     }
 
     @Override
