@@ -25,6 +25,11 @@ import static me.devsaki.hentoid.enums.Site.HITOMI;
  */
 public class HitomiParser {
 
+    // Reproduction of the Hitomi.la Javascript to find the hostname of the image server (see subdomain_from_url@reader.js)
+    public final static int NUMBER_OF_FRONTENDS = 2;
+    public final static String HOSTNAME_SUFFIX = "a";
+    public final static char HOSTNAME_PREFIX_BASE = 97;
+
     public static Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
         Elements content = doc.select(".content");
@@ -98,9 +103,12 @@ public class HitomiParser {
             Document doc = Jsoup.parse(html);
             Elements imgElements = doc.select(".img-url");
             imgUrls = new ArrayList<>(imgElements.size());
+            // New Hitomi image URLs starting from mid-february 2018
+            //  If book ID is even, starts with 'aa'; else starts with 'ba'
+            String imageHostname = Character.toString( (char)(HOSTNAME_PREFIX_BASE + Integer.parseInt(content.getUniqueSiteId()) % NUMBER_OF_FRONTENDS) ) + HOSTNAME_SUFFIX;
 
             for (Element element : imgElements) {
-                imgUrls.add("https:" + element.text().replace("//g.", "//a."));
+                imgUrls.add("https:" + element.text().replace("//g.", "//"+imageHostname+"."));
             }
         } catch (Exception e) {
             Timber.e(e, "Could not connect to the requested resource");
