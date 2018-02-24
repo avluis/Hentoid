@@ -47,11 +47,12 @@ final class ImageDownloadBatch {
             userAgent = Consts.USER_AGENT;
         }
 
-        Request request = new Request.Builder()
+        Request.Builder requestBuilder = new Request.Builder()
                 .url(url)
-                .addHeader("User-Agent", userAgent)
-                .addHeader("Cookie", cookie)
-                .build();
+                .addHeader("User-Agent", userAgent);
+
+        if (cookie != null && cookie.length() > 0) requestBuilder.addHeader("Cookie", cookie);
+        Request request =  requestBuilder.build();
 
         client = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)
