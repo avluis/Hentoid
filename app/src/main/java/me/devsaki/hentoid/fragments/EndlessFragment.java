@@ -11,7 +11,7 @@ import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.ConstsPrefs;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -78,7 +78,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
     protected void queryPrefs() {
         super.queryPrefs();
 
-        qtyPages = ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT;
+        qtyPages = Preferences.Default.PREF_QUANTITY_PER_PAGE_DEFAULT;
     }
 
     @Override

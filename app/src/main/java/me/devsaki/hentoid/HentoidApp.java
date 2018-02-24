@@ -2,10 +2,8 @@ package me.devsaki.hentoid;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Build;
-import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -21,8 +19,8 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
-import me.devsaki.hentoid.util.ConstsPrefs;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
 import timber.log.Timber;
 
@@ -37,17 +35,12 @@ public class HentoidApp extends Application {
     private static boolean donePressed;
     private static int downloadCount = 0;
     private static HentoidApp instance;
-    private static SharedPreferences sharedPrefs;
     private RefWatcher refWatcher;
 
     // Only for use when activity context cannot be passed or used e.g.;
     // Notification resources, Analytics, etc.
     public static synchronized HentoidApp getInstance() {
         return instance;
-    }
-
-    public static SharedPreferences getSharedPrefs() {
-        return sharedPrefs;
     }
 
     public static Context getAppContext() {
@@ -174,23 +167,16 @@ public class HentoidApp extends Application {
         }
 
         instance = this;
-        sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+        Preferences.init(this);
 
         // When dry run is set, hits will not be dispatched,
         // but will still be logged as though they were dispatched.
         GoogleAnalytics.getInstance(this).setDryRun(BuildConfig.DEBUG);
 
         // Analytics Opt-Out
-        GoogleAnalytics.getInstance(this).setAppOptOut(sharedPrefs.getBoolean(
-                ConstsPrefs.PREF_ANALYTICS_TRACKING, false));
-        sharedPrefs.registerOnSharedPreferenceChangeListener((sp, key) -> {
-            if (key.equals(ConstsPrefs.PREF_ANALYTICS_TRACKING)) {
-                GoogleAnalytics.getInstance(getAppContext()).setAppOptOut(
-                        sp.getBoolean(key, false));
-            }
-        });
+        boolean isAnalyticsDisabled = Preferences.isAnalyticsDisabled();
+        GoogleAnalytics.getInstance(this).setAppOptOut(isAnalyticsDisabled);
 
-        Helper.queryPrefsKey(this);
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
@@ -202,7 +188,7 @@ public class HentoidApp extends Application {
             Timber.d("Package Name NOT Found");
         }
 
-        UpdateCheck(!Helper.getMobileUpdatePrefs());
+        UpdateCheck(!Preferences.getMobileUpdate());
 
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.N_MR1)) {
             ShortcutHelper.buildShortcuts(this);

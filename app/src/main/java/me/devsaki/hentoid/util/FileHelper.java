@@ -1,9 +1,7 @@
 package me.devsaki.hentoid.util;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -42,20 +40,15 @@ public class FileHelper {
 
     public static void saveUri(Uri uri) {
         Timber.d("Saving Uri: %s", uri);
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, uri.toString()).apply();
+        Preferences.setSdStorageUri(uri.toString());
     }
 
     public static void clearUri() {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, "").apply();
+        Preferences.setSdStorageUri("");
     }
 
     static String getStringUri() {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        return prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, null);
+        return Preferences.getSdStorageUri();
     }
 
     public static boolean isSAF() {
@@ -248,8 +241,6 @@ public class FileHelper {
 
     public static boolean validateFolder(String folder, boolean notify) {
         Context cxt = HentoidApp.getAppContext();
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
         // Validate folder
         File file = new File(folder);
         if (!file.exists() && !file.isDirectory() && !FileUtil.makeDir(file)) {
@@ -283,9 +274,7 @@ public class FileHelper {
             return false;
         }
 
-        editor.putString(Consts.SETTINGS_FOLDER, folder);
-
-        boolean directorySaved = editor.commit();
+        boolean directorySaved = Preferences.setRootFolderName(folder);
         if (!directorySaved) {
             if (notify) {
                 Helper.toast(cxt, R.string.error_creating_folder);
@@ -297,7 +286,7 @@ public class FileHelper {
     }
 
     public static boolean createNoMedia() {
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         File noMedia = new File(settingDir, ".nomedia");
 
         try {
@@ -323,7 +312,7 @@ public class FileHelper {
     // Run method in background thread
     public static void removeContent(Context cxt, Content content) {
         //File dir = getContentDownloadDir(cxt, content);
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
         if (FileUtil.deleteDir(dir)) {
@@ -336,22 +325,18 @@ public class FileHelper {
     public static File getContentDownloadDir(Context cxt, Content content) {
         File file;
         String folderDir = content.getSite().getFolder();
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
 
-        int folderNamingPreference = Integer.parseInt(
-                sp.getString(
-                        ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_LISTS,
-                        ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_DEFAULT + ""));
+        int folderNamingPreference = Preferences.getFolderNameFormat();
 
-        if (folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
+        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
             folderDir = folderDir + content.getAuthor().replaceAll("[^a-zA-Z0-9.-]", "_") + " - ";
         }
-        if (folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
+        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
             folderDir = folderDir + content.getTitle().replaceAll("[^a-zA-Z0-9.-]", "_") + " - ";
         }
-        folderDir = folderDir +"["+content.getUniqueSiteId()+"]";
+        folderDir = folderDir + "[" + content.getUniqueSiteId() + "]";
 
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         if (settingDir.isEmpty()) {
             return getDefaultDir(cxt, folderDir);
         }
@@ -392,7 +377,7 @@ public class FileHelper {
 
     public static File getSiteDownloadDir(Context cxt, Site site) {
         File file;
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
             return getDefaultDir(cxt, folderDir);
@@ -411,12 +396,13 @@ public class FileHelper {
     // Method is used by onBindViewHolder(), speed is key
     public static String getThumb(Context cxt, Content content) {
 //        File dir = getContentDownloadDir(cxt, content);
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
         String coverUrl = content.getCoverImageUrl();
 
-        if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
+        String rootFolderName = Preferences.getRootFolderName();
+        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Returning online resource.");
             return coverUrl;
         }
@@ -449,25 +435,24 @@ public class FileHelper {
     public static void openContent(final Context cxt, Content content) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
         //        File dir = getContentDownloadDir(cxt, content);
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
 
         Timber.d("Opening: " + content.getTitle() + " from: " + dir);
 
-        if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
+        String rootFolderName = Preferences.getRootFolderName();
+        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
             Helper.toast(R.string.sd_access_error);
             return;
         }
 
         Helper.toast("Opening: " + content.getTitle());
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
 
         File imageFile = null;
         File[] files = dir.listFiles();
-        if (files != null && files.length > 0)
-        {
+        if (files != null && files.length > 0) {
             Arrays.sort(files);
             for (File file : files) {
                 String filename = file.getName();
@@ -484,19 +469,10 @@ public class FileHelper {
                     .replace("@dir", dir.getAbsolutePath());
             Helper.toast(cxt, message);
         } else {
-            int readContentPreference = Integer.parseInt(
-                    sp.getString(
-                            ConstsPrefs.PREF_READ_CONTENT_LISTS,
-                            ConstsPrefs.PREF_READ_CONTENT_DEFAULT + ""));
-            if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_ASK) {
-                final File file = imageFile;
-                AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
-                builder.setMessage(R.string.select_the_action)
-                        .setPositiveButton(R.string.open_default_image_viewer,
-                                (dialog, id) -> openFile(cxt, file))
-                        .setNegativeButton(R.string.open_perfect_viewer,
-                                (dialog, id) -> openPerfectViewer(cxt, file)).create().show();
-            } else if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_PERFECT_VIEWER) {
+            int readContentPreference = Preferences.getContentReadAction();
+            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_DEFAULT) {
+                openFile(cxt, imageFile);
+            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(cxt, imageFile);
             }
         }
@@ -529,7 +505,7 @@ public class FileHelper {
         // Build list of files
 
         //File dir = getContentDownloadDir(cxt, content);
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
         File[] files = dir.listFiles();
@@ -559,18 +535,13 @@ public class FileHelper {
                 content.getTitle()
                         .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
                         .replaceAll("\\s+", "_")  // white space as underscores
-                + ".zip");
+                        + ".zip");
         Timber.d("Destination file: %s", dest);
 
         // Convert ArrayList to Array
         File[] fileArray = fileList.toArray(new File[fileList.size()]);
         // Compress files
         new AsyncUnzip(cxt, dest).execute(fileArray, dest);
-    }
-
-    public static String getRoot() {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        return prefs.getString(Consts.SETTINGS_FOLDER, "");
     }
 
     private static class AsyncUnzip extends ZipUtil.ZipTask {
