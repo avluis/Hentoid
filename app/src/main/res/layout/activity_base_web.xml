@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/activity_base_web_padding"
-    tools:context=".activities.websites.BaseWebActivity">
+    tools:context=".activities.BaseWebActivity">
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"

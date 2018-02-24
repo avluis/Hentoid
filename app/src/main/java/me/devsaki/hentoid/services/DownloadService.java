@@ -210,7 +210,6 @@ public class DownloadService extends IntentService {
         List<String> aUrls = new ArrayList<>();
         switch (currentContent.getSite()) {
             case ASMHENTAI:
-            case ASMHENTAI_COMICS:
                 aUrls = ASMHentaiParser.parseImageList(currentContent);
                 break;
             case HENTAICAFE:

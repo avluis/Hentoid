@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.websites;
+package me.devsaki.hentoid.activities;
 
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -21,8 +21,9 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
  */
 public class HentaiCafeActivity extends BaseWebActivity {
 
-    Site getStartSite() {
-        return Site.HENTAICAFE;
+    @Override
+    void setSite(Site site) {
+        super.setSite(Site.HENTAICAFE);
     }
 
     @Override

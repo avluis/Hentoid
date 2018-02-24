@@ -31,23 +31,19 @@ public class DrawerMenuContents {
 
     private String[] activityName;
     private String[] activityCode;
-    private String[] activityClass;
-
     private Class[] activities;
     private ArrayList<Map<String, ?>> items;
 
     public DrawerMenuContents(Context cxt) {
         setActivityList(
                 cxt.getResources().getStringArray(R.array.nav_drawer_names),
-                cxt.getResources().getStringArray(R.array.nav_drawer_codes),
-                cxt.getResources().getStringArray(R.array.nav_drawer_classes));
+                cxt.getResources().getStringArray(R.array.nav_drawer_codes));
         populateActivities();
     }
 
-    private void setActivityList(String[] names, String[] codes, String[] classes) {
+    private void setActivityList(String[] names, String[] codes) {
         this.activityName = names;
         this.activityCode = codes;
-        this.activityClass = classes;
     }
 
     private void populateActivities() {
@@ -56,17 +52,16 @@ public class DrawerMenuContents {
 
         String activity,
                 title,
-                clazz,
                 resourcePrefix = "ic_menu_";
         int resource;
         Class<?> cls = null;
         for (int i = 0; i < activityCode.length; i++) {
             activity = activityCode[i];
-            clazz = activityClass[i];
             title = activityName[i].toUpperCase(Locale.US);
-            resource = Helper.getId(resourcePrefix + activity.toLowerCase(Locale.US), R.drawable.class);
+            resource = Helper.getId(resourcePrefix + activityCode[i].toLowerCase(Locale.US),
+                    R.drawable.class);
             try {
-                cls = Class.forName(clazz);
+                cls = Class.forName("me.devsaki.hentoid.activities." + activity + "Activity");
             } catch (ClassNotFoundException e) {
                 Timber.e(e, "Class not found");
             }

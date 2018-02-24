@@ -13,7 +13,7 @@ import android.support.v4.content.ContextCompat;
 import java.util.Arrays;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.websites.NhentaiActivity;
+import me.devsaki.hentoid.activities.NhentaiActivity;
 
 /**
  * Created by avluis on 11/04/2016.

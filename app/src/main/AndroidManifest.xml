@@ -34,31 +34,31 @@
             android:label="@string/app_intro"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".activities.websites.HitomiActivity"
+            android:name=".activities.HitomiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.NhentaiActivity"
+            android:name=".activities.NhentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.TsuminoActivity"
+            android:name=".activities.TsuminoActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.ASMHentaiActivity"
+            android:name=".activities.ASMHentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.HentaiCafeActivity"
+            android:name=".activities.HentaiCafeActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.PururinActivity"
+            android:name=".activities.PururinActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.BaseWebActivity"
+            android:name=".activities.BaseWebActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
