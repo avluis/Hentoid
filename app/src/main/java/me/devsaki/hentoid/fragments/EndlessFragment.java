@@ -152,7 +152,10 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                     int curSize = mAdapter.getItemCount();
                     Timber.d("CurSize : %s",curSize);
                     contents.addAll(result);
-                    mAdapter.notifyItemRangeInserted(curSize, contents.size() - 1);
+
+                    int size = contents.size()-1;
+                    if (size < 0) size = 0;
+                    mAdapter.notifyItemRangeInserted(curSize, size);
                 }
 
                 toggleUI(SHOW_RESULT);

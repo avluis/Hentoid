@@ -717,6 +717,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setText(label + "("+count+")");
         button.setTextColor(Color.WHITE);
         button.setBackgroundResource(R.drawable.btn_buttonshape);
+/*
+        Just in case
+
+        GradientDrawable grad = (GradientDrawable)button.getBackground();
+        grad.setStroke(3, Color.WHITE);
+*/
         button.setOnClickListener( v -> selectFilter(button, label) );
         button.setTag(label);
 
@@ -728,7 +734,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     public void selectFilter(Button b, String s)
     {
-        Timber.d("Button pressed : %s", s);
         GradientDrawable grad = (GradientDrawable)b.getBackground();
 
         switch (filters.get(s)) {
@@ -752,7 +757,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         // TODO : make the use of selected tags in query more explicit (i.e. through argument passing; not class attribute reuse)
-        cleanResults();
+//        cleanResults();
+
+        if (result != null) {
+            result.clear();
+            result= null;
+        }
+
+
         searchContent();
 /*
         List<Content> contents = getDB().selectContentByTags(selectedTags);
