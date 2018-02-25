@@ -140,6 +140,15 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
             toggleUI(SHOW_DEFAULT);
         }
 
+         Timber.d("Display %s results", result.size());
+         mAdapter.replaceAll(result);
+
+         toggleUI(SHOW_RESULT);
+//         showToolbar(true, true);
+         updatePager();
+         mAdapter.enableFooter(false);
+
+        /*
         if (query.isEmpty()) {
             Timber.d("Query empty");
             if (result != null && !result.isEmpty()) {
@@ -180,6 +189,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 displayNoResults();
             }
         }
+        */
     }
 
     @Override

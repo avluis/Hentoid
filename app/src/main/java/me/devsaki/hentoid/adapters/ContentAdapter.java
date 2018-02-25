@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
@@ -14,6 +15,8 @@ import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -23,6 +26,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -57,14 +61,20 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     private boolean isFooterEnabled = true;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
-    private List<Content> contents = new ArrayList<>();
+//    private List<Content> contents = new ArrayList<>();
+    private Comparator<Content> mComparator;
 
-    public ContentAdapter(Context cxt, final List<Content> contents, ItemSelectListener listener) {
+    public ContentAdapter(Context cxt, ItemSelectListener listener, Comparator<Content> comparator) {
         this.cxt = cxt;
-        this.contents = contents;
         this.listener = listener;
+        mComparator = comparator;
 
         selectedItems = new SparseBooleanArray();
+    }
+
+    public void setComparator(Comparator<Content> comparator)
+    {
+        mComparator = comparator;
     }
 
     public void setEndlessScrollListener(EndlessScrollListener listener) {
@@ -114,6 +124,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         return false;
     }
 
+/*
     public void setContentList(List<Content> contentList) {
         this.contents = contentList;
         updateContentList();
@@ -122,6 +133,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     public void updateContentList() {
         this.notifyDataSetChanged();
     }
+*/
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -146,9 +158,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     public void onBindViewHolder(final ViewHolder holder, final int pos) {
         if (holder instanceof ProgressViewHolder) {
             ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
-        } else if (contents.size() > 0 && pos < contents.size()) {
-            final Content content = contents.get(pos);
+        } else if (mSortedList.size() > 0 && pos < mSortedList.size()) {
+            final Content content = mSortedList.get(pos);
 
+            // Initializes the ViewHolder that contains the books
             updateLayoutVisibility((ContentHolder) holder, content, pos);
             populateLayout((ContentHolder) holder, content, pos);
             attachOnClickListeners((ContentHolder) holder, content, pos);
@@ -534,17 +547,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     @Override
     public long getItemId(int position) {
-        return contents.get(position).getId();
+        return mSortedList.get(position).getId();
     }
 
     @Override
     public int getItemCount() {
-        return (isFooterEnabled) ? contents.size() + 1 : contents.size();
+        return (isFooterEnabled) ? mSortedList.size() + 1 : mSortedList.size();
     }
 
     @Override
     public int getItemViewType(int pos) {
-        return (isFooterEnabled && pos >= contents.size()) ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
+        return (isFooterEnabled && pos >= mSortedList.size()) ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
     }
 
     public void enableFooter(boolean isEnabled) {
@@ -643,8 +656,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         Timber.d("Selected items: %s", selection);
 
         for (int i = 0; i < selection.size(); i++) {
-            selectionList.add(i, contents.get(selection.get(i)));
-            Timber.d("Added: %s to list.", contents.get(selection.get(i)).getTitle());
+            selectionList.add(i, mSortedList.get(selection.get(i)));
+            Timber.d("Added: %s to list.", mSortedList.get(selection.get(i)).getTitle());
         }
 
         return selectionList;
@@ -655,13 +668,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void removeItem(Content item, boolean broadcast) {
-        int position = contents.indexOf(item);
+        int position = mSortedList.indexOf(item);
         Timber.d("Removing item: %s from adapter.", item.getTitle());
-        contents.remove(position);
         notifyItemRemoved(position);
+        mSortedList.remove(item);
 
-        if (contents != null) {
-            if (contents.size() == 0) {
+        if (mSortedList != null) {
+            if (mSortedList.size() == 0) {
                 contentsWipedListener.onContentsWiped();
             }
             if (broadcast) {
@@ -686,10 +699,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void deleteItems(final List<Content> items) {
-        final HentoidDB db = HentoidDB.getInstance(cxt);
+        mSortedList.beginBatchedUpdates();
         for (int i = 0; i < items.size(); i++) {
             removeItem(items.get(i), false);
         }
+        mSortedList.endBatchedUpdates();
+
+        final HentoidDB db = HentoidDB.getInstance(cxt);
 
         AsyncTask.execute(() -> {
             for (int i = 0; i < items.size(); i++) {
@@ -705,6 +721,28 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
         Helper.toast(cxt, "Selected items have been deleted.");
     }
+
+    public void addItem(Content content) {
+        mSortedList.add(content);
+    }
+
+    public void addItems(List<Content> contents) {
+        mSortedList.addAll(contents);
+    }
+
+    public void replaceAll(List<Content> contents) {
+        mSortedList.beginBatchedUpdates();
+        for (int i = mSortedList.size() - 1; i >= 0; i--) {
+            final Content content = mSortedList.get(i);
+            if (!contents.contains(content)) {
+                mSortedList.remove(content);
+            }
+        }
+        mSortedList.addAll(contents);
+        mSortedList.endBatchedUpdates();
+    }
+
+
 
     public interface EndlessScrollListener {
         void onLoadMore();
@@ -722,4 +760,41 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
             progressBar = (ProgressBar) itemView.findViewById(R.id.loadingProgress);
         }
     }
+
+    private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedList.Callback<Content>() {
+        @Override
+        public int compare(Content a, Content b) {
+            return mComparator.compare(a, b);
+        }
+
+        @Override
+        public void onInserted(int position, int count) {
+            notifyItemRangeInserted(position, count);
+        }
+
+        @Override
+        public void onRemoved(int position, int count) {
+            notifyItemRangeRemoved(position, count);
+        }
+
+        @Override
+        public void onMoved(int fromPosition, int toPosition) {
+            notifyItemMoved(fromPosition, toPosition);
+        }
+
+        @Override
+        public void onChanged(int position, int count) {
+            notifyItemRangeChanged(position, count);
+        }
+
+        @Override
+        public boolean areContentsTheSame(Content oldItem, Content newItem) {
+            return oldItem.equals(newItem);
+        }
+
+        @Override
+        public boolean areItemsTheSame(Content item1, Content item2) {
+            return item1.getId() == item2.getId();
+        }
+    });
 }

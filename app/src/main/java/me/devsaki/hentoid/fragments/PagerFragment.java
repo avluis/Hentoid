@@ -145,7 +145,7 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
             if (result != null && !result.isEmpty()) {
 
                 List<Content> singleResult = result;
-                mAdapter.setContentList(singleResult);
+                mAdapter.replaceAll(singleResult);
                 mListView.setAdapter(mAdapter);
 
                 toggleUI(SHOW_RESULT);
@@ -157,7 +157,7 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
                 Timber.d("Result: Match.");
 
                 List<Content> searchResults = result;
-                mAdapter.setContentList(searchResults);
+                mAdapter.replaceAll(searchResults);
                 mListView.setAdapter(mAdapter);
 
                 toggleUI(SHOW_RESULT);

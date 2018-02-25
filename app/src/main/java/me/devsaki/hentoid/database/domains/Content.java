@@ -3,6 +3,7 @@ package me.devsaki.hentoid.database.domains;
 import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.List;
 
 import me.devsaki.hentoid.activities.ASMHentaiActivity;
@@ -292,4 +293,36 @@ public class Content implements Serializable {
         this.storageFolder = storageFolder;
         return this;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Content content = (Content) o;
+
+        if (url != null ? !url.equals(content.url) : content.url != null) return false;
+        return site == content.site;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = url != null ? url.hashCode() : 0;
+        result = 31 * result + (site != null ? site.hashCode() : 0);
+        return result;
+    }
+
+    public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = new Comparator<Content>() {
+        @Override
+        public int compare(Content a, Content b) {
+            return a.getTitle().compareTo(b.getTitle());
+        }
+    };
+
+    public static final Comparator<Content> DLDATE_COMPARATOR = new Comparator<Content>() {
+        @Override
+        public int compare(Content a, Content b) {
+            return new Long(a.getDownloadDate()).compareTo(b.getDownloadDate());
+        }
+    };
 }

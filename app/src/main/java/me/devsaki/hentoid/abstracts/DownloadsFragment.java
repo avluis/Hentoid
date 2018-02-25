@@ -58,7 +58,6 @@ import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.SearchContent.ContentListener;
-import me.devsaki.hentoid.database.constants.AttributeTable;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -397,23 +396,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void initUI(View rootView) {
-        mListView = (RecyclerView) rootView.findViewById(R.id.list);
+        Timber.d("InitUI");
         loadingText = (TextView) rootView.findViewById(R.id.loading);
         emptyText = (TextView) rootView.findViewById(R.id.empty);
-        tagFilterLayout =  (FlowLayout) rootView.findViewById(R.id.tag_filter_view_layout);
 
-        tagFilterView = (NestedScrollView) rootView.findViewById(R.id.tag_filter_view);
-        BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
-        tagFilterViewBehaviour.setPeekHeight(0);
-
-        filters = new HashMap<String, Integer>();
-        selectedTags = new ArrayList<String>();
-
+        // Main view
+        mListView = (RecyclerView) rootView.findViewById(R.id.list);
         mListView.setHasFixedSize(true);
         llm = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(llm);
 
-        mAdapter = new ContentAdapter(mContext, result, this);
+        mAdapter = new ContentAdapter(mContext, this, Content.DLDATE_COMPARATOR);
         mListView.setAdapter(mAdapter);
 
         if (mAdapter.getItemCount() == 0) {
@@ -421,6 +414,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             loadingText.setVisibility(View.VISIBLE);
         }
 
+        // Drawer
         mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
         mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
 
@@ -435,6 +429,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         toolbar = (Toolbar) rootView.findViewById(R.id.downloads_toolbar);
         toolTip = (LinearLayout) rootView.findViewById(R.id.tooltip);
         refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+
+        // Tag filter
+        tagFilterLayout =  (FlowLayout) rootView.findViewById(R.id.tag_filter_view_layout);
+        tagFilterView = (NestedScrollView) rootView.findViewById(R.id.tag_filter_view);
+        BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
+        tagFilterViewBehaviour.setPeekHeight(0);
+
+        filters = new HashMap<String, Integer>();
+        selectedTags = new ArrayList<String>();
     }
 
     protected abstract void attachScrollListener();
@@ -532,7 +535,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout.setRefreshing(false);
         refreshLayout.setEnabled(false);
         newContent = false;
-        mAdapter.updateContentList();
+//        mAdapter.updateContentList();
         cleanResults();
         update();
         resetCount();
@@ -680,6 +683,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    /**
+     * Toggles the use of tag filter. This has an effect on :
+     *   - visibility of the bottom sheet with the tag filter
+     *   - icon displayed in the "Tag" button of the toolbar (on/off)
+     *
+     * @param item Reference to the "Tag" button of the toolbar
+     */
     private void toggleTagView(MenuItem item)
     {
         BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
@@ -696,6 +706,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    /**
+     * Updates the displayed tags in the tag filter, according to owned books and their tags
+     */
     private void updateTagFilter()
     {
         tagFilterLayout.removeAllViews();
@@ -711,6 +724,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // TODO : actual filtering; interaction between buttons
     }
 
+    /**
+     * Adds a tag filter button in the tag filter bottom sheet.
+     * The button displays "label (count)"
+     *
+     * @param label Label to display on the button to add
+     * @param count Count to display on the button to add
+     * @return Created button
+     */
     private Button addButton(String label, Integer count)
     {
         Button button = new Button(mContext);
@@ -732,20 +753,27 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         return button;
     }
 
-    public void selectFilter(Button b, String s)
+    /**
+     * Updates visible books of the collection according to the selected tag filters
+     * This method is fired every time a tag filter button is pressed
+     *
+     * @param b Pressed button
+     * @param tag Tag represented by the pressed button
+     */
+    public void selectFilter(Button b, String tag)
     {
         GradientDrawable grad = (GradientDrawable)b.getBackground();
 
-        switch (filters.get(s)) {
+        switch (filters.get(tag)) {
             case 0:
                 b.setTextColor(Color.RED);
                 grad.setStroke(3, Color.RED);
-                filters.put(s, 1);
+                filters.put(tag, 1);
                 break;
             case 1:
                 b.setTextColor(Color.WHITE);
                 grad.setStroke(3, Color.WHITE);
-                filters.put(s, 0);
+                filters.put(tag, 0);
                 break;
             default :
         }
@@ -758,12 +786,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // TODO : make the use of selected tags in query more explicit (i.e. through argument passing; not class attribute reuse)
 //        cleanResults();
-
+/*
         if (result != null) {
             result.clear();
             result= null;
         }
-
+*/
 
         searchContent();
 /*
@@ -834,6 +862,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         currentPage = 1;
     }
 
+    /**
+     * Returns the current value of the query typed in the search toolbar; empty string if no query typed
+     *
+     * @return Current value of the query typed in the search toolbar; empty string if no query typed
+     */
     private String getQuery() {
         return DownloadsFragment.query == null?"":DownloadsFragment.query;
     }
@@ -928,21 +961,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void showToolbar(boolean show, boolean override);
 
-    @Override
-    public void onContentReady(boolean success) {
-        if (success) {
-            Timber.d("Content results have loaded.");
-            isLoaded = true;
-
-            if (search.getContent() == null) {
-                Timber.d("Result: Nothing to match.");
-                displayNoResults();
-            } else {
-                displayResults();
-            }
-        }
-    }
-
     protected abstract void displayResults();
 
     protected void updatePager() {
@@ -963,6 +981,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    /*
+    ContentListener implementation
+     */
+    @Override
+    public void onContentReady(boolean success) {
+        if (success) {
+            Timber.d("Content results have loaded.");
+            isLoaded = true;
+
+            if (search.getContent() == null) {
+                Timber.d("Result: Nothing to match.");
+                displayNoResults();
+            } else {
+                displayResults();
+            }
+        }
+    }
+
     @Override
     public void onContentFailed(boolean failure) {
         if (failure) {
@@ -971,6 +1007,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    /*
+    ItemSelectListener implementation
+     */
     @Override
     public void onItemSelected(int selectedCount) {
         isSelected = true;
@@ -1027,6 +1066,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    /*
+    ContentsWipedListener implementation
+     */
     @Override
     public void onContentsWiped() {
         Timber.d("All items cleared!");
