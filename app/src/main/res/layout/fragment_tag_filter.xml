@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
-    android:layout_height="250dp"
+    android:layout_height="200dp"
     android:layout_gravity="bottom"
-    android:background="#400000"
+    android:background="#008800"
     android:clipToPadding="true"
     android:tag="TagFilter"
     app:behavior_hideable="false"
@@ -22,6 +22,6 @@
 
     </org.apmem.tools.layouts.FlowLayout>
 
-
+    <!-- background 400000 -->
 
 </android.support.v4.widget.NestedScrollView>

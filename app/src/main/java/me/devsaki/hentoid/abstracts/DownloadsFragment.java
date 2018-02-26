@@ -22,6 +22,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.view.menu.ActionMenuItemView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -74,13 +76,19 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
  * TODO: Dismiss 'new content' tooltip upon search
+ * TODO: Test new behaviour with search, download, import
+ * TODO: Use endlessFragment for search by keyword
+ * TODO: Fix top left alignment of messages after switching to CoordinatorLayout
+ * TODO: Test endless scroll
+ * TODO: Bar height as % of screen
+ * TODO: Test on a real phone
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
 
     protected static final int SHOW_DEFAULT = 0;
-    private static final int SHOW_LOADING = 1;
-    private static final int SHOW_BLANK = 2;
+    protected static final int SHOW_LOADING = 1;
+    protected static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
 
     private static final String LIST_STATE_KEY = "list_state";
@@ -114,9 +122,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private SwipeRefreshLayout refreshLayout;
 
     // Tag filters
+    private MenuItem tagMenuButton;
     private FlowLayout tagFilterLayout;
     private Map<String, Integer> filters;
-    private List<String> selectedTags;
 
     private boolean orderUpdated;
     private boolean isSelected;
@@ -434,10 +442,26 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         tagFilterLayout =  (FlowLayout) rootView.findViewById(R.id.tag_filter_view_layout);
         tagFilterView = (NestedScrollView) rootView.findViewById(R.id.tag_filter_view);
         BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
-        tagFilterViewBehaviour.setPeekHeight(0);
+        tagFilterViewBehaviour.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                // Bottom Sheet was dismissed by user! But this is only fired, if dialog is swiped down! Not if touch outside dismissed the dialog or the back button
+                if (newState == BottomSheetBehavior.STATE_COLLAPSED)
+                {
+                    tagMenuButton.setIcon(R.drawable.ic_menu_tags_off);
+                } else if (newState == BottomSheetBehavior.STATE_EXPANDED)
+                {
+                    tagMenuButton.setIcon(R.drawable.ic_menu_tags_on);
+                }
+            }
 
-        filters = new HashMap<String, Integer>();
-        selectedTags = new ArrayList<String>();
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+
+            }
+        });
+
+        filters = new HashMap<>();
     }
 
     protected abstract void attachScrollListener();
@@ -567,6 +591,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         final SearchManager searchManager = (SearchManager)
                 mContext.getSystemService(Context.SEARCH_SERVICE);
 
+        tagMenuButton = menu.findItem(R.id.action_tags);
         searchMenu = menu.findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
@@ -661,6 +686,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 cleanResults();
                 orderUpdated = true;
                 order = ConstsPrefs.PREF_ORDER_CONTENT_ALPHABETIC;
+                mAdapter.setComparator(Content.TITLE_ALPHA_COMPARATOR);
                 update();
                 getActivity().invalidateOptionsMenu();
 
@@ -669,6 +695,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 cleanResults();
                 orderUpdated = true;
                 order = ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE;
+                mAdapter.setComparator(Content.DLDATE_COMPARATOR);
                 update();
                 getActivity().invalidateOptionsMenu();
 
@@ -712,16 +739,30 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void updateTagFilter()
     {
         tagFilterLayout.removeAllViews();
-        filters.clear();
+        for(String key : filters.keySet())
+        {
+            if (0 == filters.get(key)) filters.put(key, 2);
+            else if (1 == filters.get(key)) filters.put(key, 3);
+        }
 
         List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode());
 
         for(Pair<String,Integer> val : tags)
         {
             addButton(val.first, val.second);
+            if (!filters.containsKey(val.first)) filters.put(val.first, 0);
+            else if (2 == filters.get(val.first)) filters.put(val.first, 0);
+            else if (3 == filters.get(val.first)) filters.put(val.first, 1);
         }
 
-        // TODO : actual filtering; interaction between buttons
+        // Purge unused filter entries
+        Set<String> keySet = filters.keySet();
+        for(String key : keySet)
+        {
+            if (filters.get(key) > 1) filters.remove(key);
+        }
+
+        // TODO : interaction between buttons, source (website) filter
     }
 
     /**
@@ -736,19 +777,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     {
         Button button = new Button(mContext);
         button.setText(label + "("+count+")");
-        button.setTextColor(Color.WHITE);
         button.setBackgroundResource(R.drawable.btn_buttonshape);
-/*
-        Just in case
 
         GradientDrawable grad = (GradientDrawable)button.getBackground();
-        grad.setStroke(3, Color.WHITE);
-*/
+        int color = Color.WHITE;
+        if (filters.containsKey(label) && 3 == filters.get(label)) {
+            color = Color.RED;
+        }
+        button.setTextColor(color);
+        grad.setStroke(3, color);
+
         button.setOnClickListener( v -> selectFilter(button, label) );
         button.setTag(label);
 
         tagFilterLayout.addView(button);
-        filters.put(label, 0);
 
         return button;
     }
@@ -778,26 +820,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             default :
         }
 
-        selectedTags.clear();
+        List<String> selectedTags = new ArrayList<>();
         for(String key : filters.keySet())
         {
             if (1 == filters.get(key)) selectedTags.add(key);
         }
 
-        // TODO : make the use of selected tags in query more explicit (i.e. through argument passing; not class attribute reuse)
-//        cleanResults();
-/*
-        if (result != null) {
-            result.clear();
-            result= null;
-        }
-*/
-
-        searchContent();
-/*
-        List<Content> contents = getDB().selectContentByTags(selectedTags);
-        if (contents != null) Timber.d("Corresponding books : %s", contents.size()); else Timber.d("Corresponding books : 0");
-*/
+        searchContent(selectedTags);
     }
 
 
@@ -852,7 +881,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         if (mAdapter != null) {
-            mAdapter.notifyDataSetChanged();
+            mAdapter.removeAll();
         }
         currentPage = 1;
     }
@@ -946,9 +975,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    protected void searchContent() {
+    protected void searchContent() { searchContent(null); }
+    protected void searchContent(List<String> selectedTags) {
         isLoaded = false;
-        if (selectedTags.size() > 0) // Search by tag filter
+        if (selectedTags != null && selectedTags.size() > 0) // Search by tag filter
         {
             search = new SearchContent(mContext, selectedTags, order == ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE);
         } else // Search by keyword (search bar)
@@ -1044,7 +1074,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 selectTrigger = false;
                 mActionMode.invalidate();
                 mActionMode.setTitle("");
-                mAdapter.notifyDataSetChanged();
+//                mAdapter.notifyDataSetChanged();
             }
         }
 

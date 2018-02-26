@@ -144,7 +144,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
          mAdapter.replaceAll(result);
 
          toggleUI(SHOW_RESULT);
-//         showToolbar(true, true);
          updatePager();
          mAdapter.enableFooter(false);
 

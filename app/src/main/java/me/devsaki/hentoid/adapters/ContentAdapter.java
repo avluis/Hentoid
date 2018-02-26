@@ -124,17 +124,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         return false;
     }
 
-/*
-    public void setContentList(List<Content> contentList) {
-        this.contents = contentList;
-        updateContentList();
-    }
-
-    public void updateContentList() {
-        this.notifyDataSetChanged();
-    }
-*/
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         ViewHolder viewHolder;
@@ -488,8 +477,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                             cxt.startService(intent);
 
                             Helper.toast(cxt, R.string.add_to_queue);
-                            removeItem(item);
-                            notifyDataSetChanged();
+                            remove(item);
                         })
                 .setNegativeButton(android.R.string.no, null)
                 .create().show();
@@ -663,72 +651,59 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         return selectionList;
     }
 
-    private void removeItem(Content item) {
-        removeItem(item, true);
-    }
-
-    private void removeItem(Content item, boolean broadcast) {
-        int position = mSortedList.indexOf(item);
-        Timber.d("Removing item: %s from adapter.", item.getTitle());
-        notifyItemRemoved(position);
-        mSortedList.remove(item);
-
-        if (mSortedList != null) {
-            if (mSortedList.size() == 0) {
-                contentsWipedListener.onContentsWiped();
-            }
-            if (broadcast) {
-                listener.onItemClear(0);
-            }
-        }
-    }
-
     private void deleteItem(final Content item) {
-        final HentoidDB db = HentoidDB.getInstance(cxt);
-        removeItem(item);
+        remove(item);
 
+        final HentoidDB db = HentoidDB.getInstance(cxt);
         AsyncTask.execute(() -> {
             FileHelper.removeContent(cxt, item);
             db.deleteContent(item);
             Timber.d("Removed item: %s from db and file system.", item.getTitle());
         });
 
-        notifyDataSetChanged();
-
         Helper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
     }
 
-    private void deleteItems(final List<Content> items) {
+    private void deleteItems(final List<Content> contents) {
         mSortedList.beginBatchedUpdates();
-        for (int i = 0; i < items.size(); i++) {
-            removeItem(items.get(i), false);
+        for (Content content : contents) {
+            mSortedList.remove(content);
         }
         mSortedList.endBatchedUpdates();
+        listener.onItemClear(0);
 
         final HentoidDB db = HentoidDB.getInstance(cxt);
 
         AsyncTask.execute(() -> {
-            for (int i = 0; i < items.size(); i++) {
-                FileHelper.removeContent(cxt, items.get(i));
-                db.deleteContent(items.get(i));
-                Timber.d("Removed item: " + items.get(i).getTitle()
+            for (int i = 0; i < contents.size(); i++) {
+                FileHelper.removeContent(cxt, contents.get(i));
+                db.deleteContent(contents.get(i));
+                Timber.d("Removed item: " + contents.get(i).getTitle()
                         + " from db and file system.");
             }
         });
 
-        listener.onItemClear(0);
-        notifyDataSetChanged();
-
         Helper.toast(cxt, "Selected items have been deleted.");
     }
 
-    public void addItem(Content content) {
-        mSortedList.add(content);
+    public void remove(Content content)
+    {
+        mSortedList.remove(content);
+        if (0 == mSortedList.size()) {
+            contentsWipedListener.onContentsWiped();
+        }
+        listener.onItemClear(0);
     }
 
-    public void addItems(List<Content> contents) {
-        mSortedList.addAll(contents);
+    public void remove(List<Content> contents) {
+        mSortedList.beginBatchedUpdates();
+        for (Content content : contents) {
+            mSortedList.remove(content);
+        }
+        mSortedList.endBatchedUpdates();
     }
+
+    public void removeAll() { replaceAll(new ArrayList<Content>());}
 
     public void replaceAll(List<Content> contents) {
         mSortedList.beginBatchedUpdates();
