@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities;
+package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
@@ -30,9 +30,8 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
  */
 public class ASMHentaiActivity extends BaseWebActivity {
 
-    @Override
-    void setSite(Site site) {
-        super.setSite(Site.ASMHENTAI);
+    Site getStartSite() {
+        return Site.ASMHENTAI;
     }
 
     @Override
@@ -65,8 +64,11 @@ public class ASMHentaiActivity extends BaseWebActivity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
-            if (url.contains("//asmhentai.com/g/") || url.contains("//comics.asmhentai.com/g/")) {
-                executeAsyncTask(new HtmlLoader(), url);
+            if (url.contains("//asmhentai.com/g/")) {
+                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI.getCode()+"");
+            }
+            else if (url.contains("//comics.asmhentai.com/g/")) {
+                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI_COMICS.getCode()+"");
             }
         }
 
@@ -78,7 +80,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
                     url.contains("ads.php") || url.contains("syndication.exoclick.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
-                return getWebResourceResponseFromAsset(getSite(), "main.js", TYPE.JS);
+                return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
             } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("exosrv.com")|| url.contains("hentaigold.net")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
@@ -95,7 +97,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
                     url.contains("syndication.exoclick.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
-                return getWebResourceResponseFromAsset(getSite(), "main.js", TYPE.JS);
+                return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
             } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("exosrv.com")|| url.contains("hentaigold.net")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
@@ -108,8 +110,9 @@ public class ASMHentaiActivity extends BaseWebActivity {
         @Override
         protected Content doInBackground(String... params) {
             String url = params[0];
+            Site theSite = Site.searchByCode(Integer.parseInt(params[1]));
             try {
-                processContent(ASMHentaiParser.parseContent(url));
+                processContent(ASMHentaiParser.parseContent(url, theSite));
             } catch (IOException e) {
                 Timber.e(e, "Error parsing content.");
             }

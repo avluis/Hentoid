@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities;
+package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
@@ -10,13 +10,11 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.HitomiParser;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.parsers.NhentaiParser;
+import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
 
@@ -26,53 +24,34 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 
 /**
  * Created by Shiro on 1/20/2016.
- * Implements Hitomi.la source
+ * Implements nhentai source
  */
-public class HitomiActivity extends BaseWebActivity {
+public class NhentaiActivity extends BaseWebActivity {
 
-    @Override
-    void setSite(Site site) {
-        super.setSite(Site.HITOMI);
+    Site getStartSite() {
+        return Site.NHENTAI;
     }
 
     @Override
     void setWebView(ObservableWebView webView) {
-        HitomiWebViewClient client = new HitomiWebViewClient();
-        client.restrictTo("hitomi.la");
+        NhentaiWebViewClient client = new NhentaiWebViewClient();
+        client.restrictTo("nhentai.net");
 
         webView.setWebViewClient(client);
-
-        boolean bWebViewOverview = Preferences.getWebViewOverview();
-        int webViewInitialZoom = Preferences.getWebViewInitialZoom();
-
-        if (bWebViewOverview) {
-            webView.getSettings().setLoadWithOverviewMode(false);
-            webView.setInitialScale(webViewInitialZoom);
-            Timber.d("WebView Initial Scale: %s%", webViewInitialZoom);
-        } else {
-            webView.setInitialScale(Preferences.Default.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
-            webView.getSettings().setLoadWithOverviewMode(true);
-        }
-
         super.setWebView(webView);
     }
 
-    @Override
-    void backgroundRequest(String extra) {
-        Timber.d(extra);
-        Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(), extra);
-    }
-
-    private class HitomiWebViewClient extends CustomWebViewClient {
+    private class NhentaiWebViewClient extends CustomWebViewClient {
         final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
-            if (url.contains("//hitomi.la/galleries/")) {
-                executeAsyncTask(new HtmlLoader(), url);
+            if (url.contains("nhentai.net/g/")) {
+                String newURL = url.replace("/g", "/api/gallery");
+                newURL = newURL.substring(0, newURL.length() - 1);
+                executeAsyncTask(new JsonLoader(), newURL);
             }
         }
 
@@ -80,9 +59,11 @@ public class HitomiActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("hitomi.js")) {
-                return getWebResourceResponseFromAsset(getSite(), "hitomi.js", TYPE.JS);
-            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js")) {
+            if (url.contains("//static.nhentai.net/js/")) {
+                return getWebResourceResponseFromAsset(getStartSite(), "main_js.js", TYPE.JS);
+            } else if (url.contains("//static.nhentai.net/css/")) {
+                return getWebResourceResponseFromAsset(getStartSite(), "main_style.css", TYPE.CSS);
+            } else if (url.contains("ads.contentabc.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -94,9 +75,11 @@ public class HitomiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            if (url.contains("hitomi.js")) {
-                return getWebResourceResponseFromAsset(getSite(), "hitomi.js", TYPE.JS);
-            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js")) {
+            if (url.contains("//static.nhentai.net/js/")) {
+                return getWebResourceResponseFromAsset(getStartSite(), "main_js.js", TYPE.JS);
+            } else if (url.contains("//static.nhentai.net/css/")) {
+                return getWebResourceResponseFromAsset(getStartSite(), "main_style.css", TYPE.CSS);
+            } else if (url.contains("ads2.contentabc.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
@@ -104,13 +87,13 @@ public class HitomiActivity extends BaseWebActivity {
         }
     }
 
-    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
+    private class JsonLoader extends AsyncTask<String, Integer, Content> {
         @Override
         protected Content doInBackground(String... params) {
             String url = params[0];
             try {
-                processContent(HitomiParser.parseContent(url));
-            } catch (IOException e) {
+                processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
+            } catch (Exception e) {
                 Timber.e(e, "Error parsing content.");
             }
 

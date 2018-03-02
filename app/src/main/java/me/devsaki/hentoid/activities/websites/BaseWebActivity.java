@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities;
+package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -25,6 +25,7 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -48,24 +49,15 @@ import timber.log.Timber;
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
  */
-public class BaseWebActivity extends BaseActivity {
+public abstract class BaseWebActivity extends BaseActivity {
 
     private Content currentContent;
     private HentoidDB db;
     private ObservableWebView webView;
-    private Site site;
     private boolean webViewIsLoading;
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
-
-    Site getSite() {
-        return site;
-    }
-
-    void setSite(Site site) {
-        this.site = site;
-    }
 
     ObservableWebView getWebView() {
         return webView;
@@ -75,6 +67,8 @@ public class BaseWebActivity extends BaseActivity {
         this.webView = webView;
     }
 
+    abstract Site getStartSite();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,11 +77,10 @@ public class BaseWebActivity extends BaseActivity {
 
         db = HentoidDB.getInstance(this);
 
-        setSite(getSite());
-        if (site == null) {
+        if (getStartSite() == null) {
             Timber.w("Site is null!");
         } else {
-            Timber.d("Loading site: %s", site);
+            Timber.d("Loading site: %s", getStartSite());
         }
 
         fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
@@ -104,7 +97,7 @@ public class BaseWebActivity extends BaseActivity {
         setWebView(getWebView());
 
         String intentVar = getIntent().getStringExtra(Consts.INTENT_URL);
-        webView.loadUrl(intentVar == null ? site.getUrl() : intentVar);
+        webView.loadUrl(intentVar == null ? getStartSite().getUrl() : intentVar);
     }
 
     @Override
@@ -142,7 +135,7 @@ public class BaseWebActivity extends BaseActivity {
         webView.setOnLongClickListener(v -> {
             WebView.HitTestResult result = webView.getHitTestResult();
             if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
-                if (result.getExtra().contains(site.getUrl())) {
+                if (result.getExtra().contains(getStartSite().getUrl())) {
                     backgroundRequest(result.getExtra());
                 }
             } else {
@@ -373,6 +366,7 @@ public class BaseWebActivity extends BaseActivity {
                 TsuminoParser.parseImageList(content);
                 break;
             case ASMHENTAI:
+            case ASMHENTAI_COMICS:
                 ASMHentaiParser.parseImageList(content);
                 break;
             case HENTAICAFE:

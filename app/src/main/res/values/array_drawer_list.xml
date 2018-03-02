@@ -33,4 +33,16 @@
         <item>Prefs</item>
         <item>About</item>
     </string-array>
+    <string-array name="nav_drawer_classes">
+        <item>me.devsaki.hentoid.activities.websites.NhentaiActivity</item>
+        <item>me.devsaki.hentoid.activities.websites.HentaiCafeActivity</item>
+        <item>me.devsaki.hentoid.activities.websites.HitomiActivity</item>
+        <item>me.devsaki.hentoid.activities.websites.ASMHentaiActivity</item>
+        <item>me.devsaki.hentoid.activities.websites.TsuminoActivity</item>
+        <item>me.devsaki.hentoid.activities.websites.PururinActivity</item>
+        <item>me.devsaki.hentoid.activities.DownloadsActivity</item>
+        <item>me.devsaki.hentoid.activities.QueueActivity</item>
+        <item>me.devsaki.hentoid.activities.PrefsActivity</item>
+        <item>me.devsaki.hentoid.activities.AboutActivity</item>
+    </string-array>
 </resources>
