@@ -189,6 +189,7 @@ public class Content implements Serializable {
             case TSUMINO:
                 return site.getUrl() + "/Read/View" + url;
             case ASMHENTAI:
+                return site.getUrl() + "/gallery" + url + "1/";
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
