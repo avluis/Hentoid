@@ -12,7 +12,6 @@ import android.webkit.MimeTypeMap;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -119,46 +118,30 @@ public class FileHelper {
     }
 
     /**
-     * Check is a file is writable.
+     * Check if a file is writable.
      * Detects write issues on external SD card.
      *
      * @param file The file.
      * @return true if the file is writable.
      */
     public static boolean isWritable(@NonNull final File file) {
-        boolean isExisting = file.exists();
+        if (!file.canWrite()) return false;
 
+        // Ensure that it is indeed writable by opening an output stream
         try {
-            FileOutputStream output = new FileOutputStream(file, true);
-            try {
-                output.close();
-            } catch (IOException e) {
-                // do nothing.
-            }
-        } catch (FileNotFoundException e) {
-            if (!file.isDirectory()) {
-                return false;
-            }
+            FileOutputStream output = FileUtils.openOutputStream(file);
+            output.close();
+        } catch (IOException e) {
+            return false;
         }
-        boolean result = file.canWrite();
 
         // Ensure that file is not created during this process.
-        if (!isExisting) {
+        if (file.exists()) {
             //noinspection ResultOfMethodCallIgnored
             file.delete();
         }
 
-        return result;
-    }
-
-    /**
-     * Checks if file could be read or created
-     *
-     * @param file - The file (as a String).
-     * @return true if file's is writable.
-     */
-    public static boolean isReadable(@NonNull final String file) {
-        return isReadable(new File(file));
+        return true;
     }
 
     /**
@@ -167,14 +150,8 @@ public class FileHelper {
      * @param file - The file.
      * @return true if file's is writable.
      */
-    public static boolean isReadable(@NonNull final File file) {
-        if (!file.isFile()) {
-            Timber.d("isReadable(): Not a File");
-
-            return false;
-        }
-
-        return file.exists() && file.canRead();
+    private static boolean isReadable(@NonNull final File file) {
+        return file.exists() && file.isFile() && file.canRead();
     }
 
     /**
@@ -195,16 +172,6 @@ public class FileHelper {
      */
     public static OutputStream getOutputStream(@NonNull final File target) {
         return FileUtil.getOutputStream(target);
-    }
-
-    /**
-     * Create a file.
-     *
-     * @param file The file to be created.
-     * @return true if creation was successful.
-     */
-    public static boolean createFile(@NonNull File file) throws IOException {
-        return FileUtil.makeFile(file);
     }
 
     /**
@@ -403,7 +370,9 @@ public class FileHelper {
         return file;
     }
 
-    // Method is used by onBindViewHolder(), speed is key
+    /**
+     * Method is used by onBindViewHolder(), speed is key
+     */
     public static String getThumb(Content content) {
         String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
