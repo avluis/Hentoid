@@ -28,16 +28,14 @@ class ContentHolder extends RecyclerView.ViewHolder {
     ContentHolder(final View itemView) {
         super(itemView);
 
-        tvTitle = (TextView) itemView.findViewById(R.id.tvTitle);
-        tvTitle2 = (TextView) itemView.findViewById(R.id.tvTitle2);
-        ivCover = (ImageView) itemView.findViewById(R.id.ivCover);
-        ivCover2 = (ImageView) itemView.findViewById(R.id.ivCover2);
-        tvSeries = (TextView) itemView.findViewById(R.id.tvSeries);
-        tvArtist = (TextView) itemView.findViewById(R.id.tvArtist);
-        tvTags = (TextView) itemView.findViewById(R.id.tvTags);
-        ivSite = (ImageView) itemView.findViewById(R.id.ivSite);
-        ivError = (ImageView) itemView.findViewById(R.id.ivError);
-
-        itemView.setClickable(true);
+        tvTitle = itemView.findViewById(R.id.tvTitle);
+        tvTitle2 = itemView.findViewById(R.id.tvTitle2);
+        ivCover = itemView.findViewById(R.id.ivCover);
+        ivCover2 = itemView.findViewById(R.id.ivCover2);
+        tvSeries = itemView.findViewById(R.id.tvSeries);
+        tvArtist = itemView.findViewById(R.id.tvArtist);
+        tvTags = itemView.findViewById(R.id.tvTags);
+        ivSite = itemView.findViewById(R.id.ivSite);
+        ivError = itemView.findViewById(R.id.ivError);
     }
 }

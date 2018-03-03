@@ -14,8 +14,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 45
-        versionName '1.2.3'
+        versionCode 47
+        versionName '1.2.4'
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -143,6 +143,9 @@ dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.1'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
     testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile 'commons-io:commons-io:2.6'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -380,7 +380,6 @@ public final class Helper {
         }
     }
 
-    @SuppressLint("NewApi")
     public static Spanned fromHtml(String source) {
         if (isAtLeastAPI(Build.VERSION_CODES.N)) {
             return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY, null, null);

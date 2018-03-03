@@ -360,9 +360,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void initUI(View rootView) {
-        mListView = (RecyclerView) rootView.findViewById(R.id.list);
-        loadingText = (TextView) rootView.findViewById(R.id.loading);
-        emptyText = (TextView) rootView.findViewById(R.id.empty);
+        mListView = rootView.findViewById(R.id.list);
+        loadingText = rootView.findViewById(R.id.loading);
+        emptyText = rootView.findViewById(R.id.empty);
 
         mListView.setHasFixedSize(true);
         llm = new LinearLayoutManager(mContext);
@@ -376,7 +376,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             loadingText.setVisibility(View.VISIBLE);
         }
 
-        mDrawerLayout = (DrawerLayout) getActivity().findViewById(R.id.drawer_layout);
+        mDrawerLayout = getActivity().findViewById(R.id.drawer_layout);
         mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
 
             @Override
@@ -386,10 +386,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         });
 
-        btnPage = (Button) rootView.findViewById(R.id.btnPage);
-        toolbar = (Toolbar) rootView.findViewById(R.id.downloads_toolbar);
-        toolTip = (LinearLayout) rootView.findViewById(R.id.tooltip);
-        refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipe_container);
+        btnPage = rootView.findViewById(R.id.btnPage);
+        toolbar = rootView.findViewById(R.id.downloads_toolbar);
+        toolTip = rootView.findViewById(R.id.tooltip);
+        refreshLayout = rootView.findViewById(R.id.swipe_container);
     }
 
     protected abstract void attachScrollListener();
@@ -406,7 +406,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void attachPrevious(View rootView) {
-        ImageButton btnPrevious = (ImageButton) rootView.findViewById(R.id.btnPrevious);
+        ImageButton btnPrevious = rootView.findViewById(R.id.btnPrevious);
         btnPrevious.setOnClickListener(v -> {
             if (currentPage > 1 && isLoaded) {
                 currentPage--;
@@ -420,7 +420,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void attachNext(View rootView) {
-        ImageButton btnNext = (ImageButton) rootView.findViewById(R.id.btnNext);
+        ImageButton btnNext = rootView.findViewById(R.id.btnNext);
         btnNext.setOnClickListener(v -> {
             if (qtyPages <= 0) {
                 Timber.d("Not limit per page.");

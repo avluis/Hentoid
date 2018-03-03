@@ -4,12 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.webkit.MimeTypeMap;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -116,46 +118,30 @@ public class FileHelper {
     }
 
     /**
-     * Check is a file is writable.
+     * Check if a file is writable.
      * Detects write issues on external SD card.
      *
      * @param file The file.
      * @return true if the file is writable.
      */
     public static boolean isWritable(@NonNull final File file) {
-        boolean isExisting = file.exists();
+        if (!file.canWrite()) return false;
 
+        // Ensure that it is indeed writable by opening an output stream
         try {
-            FileOutputStream output = new FileOutputStream(file, true);
-            try {
-                output.close();
-            } catch (IOException e) {
-                // do nothing.
-            }
-        } catch (FileNotFoundException e) {
-            if (!file.isDirectory()) {
-                return false;
-            }
+            FileOutputStream output = FileUtils.openOutputStream(file);
+            output.close();
+        } catch (IOException e) {
+            return false;
         }
-        boolean result = file.canWrite();
 
         // Ensure that file is not created during this process.
-        if (!isExisting) {
+        if (file.exists()) {
             //noinspection ResultOfMethodCallIgnored
             file.delete();
         }
 
-        return result;
-    }
-
-    /**
-     * Checks if file could be read or created
-     *
-     * @param file - The file (as a String).
-     * @return true if file's is writable.
-     */
-    public static boolean isReadable(@NonNull final String file) {
-        return isReadable(new File(file));
+        return true;
     }
 
     /**
@@ -164,14 +150,8 @@ public class FileHelper {
      * @param file - The file.
      * @return true if file's is writable.
      */
-    public static boolean isReadable(@NonNull final File file) {
-        if (!file.isFile()) {
-            Timber.d("isReadable(): Not a File");
-
-            return false;
-        }
-
-        return file.exists() && file.canRead();
+    private static boolean isReadable(@NonNull final File file) {
+        return file.exists() && file.isFile() && file.canRead();
     }
 
     /**
@@ -192,16 +172,6 @@ public class FileHelper {
      */
     public static OutputStream getOutputStream(@NonNull final File target) {
         return FileUtil.getOutputStream(target);
-    }
-
-    /**
-     * Create a file.
-     *
-     * @param file The file to be created.
-     * @return true if creation was successful.
-     */
-    public static boolean createFile(@NonNull File file) throws IOException {
-        return FileUtil.makeFile(file);
     }
 
     /**
@@ -230,9 +200,14 @@ public class FileHelper {
      * @param target The folder.
      * @return true if cleaned successfully.
      */
-    public static boolean cleanDirectory(@NonNull File target) {
-        // Delete directory -- create directory
-        return FileUtil.deleteDir(target) && FileUtil.makeDir(target);
+    static boolean cleanDirectory(@NonNull File target) {
+        try {
+            FileUtils.cleanDirectory(target);
+            return true;
+        } catch (IOException e) {
+            Timber.e(e, "Failed to clean directory");
+            return false;
+        }
     }
 
     public static boolean validateFolder(String folder) {
@@ -309,14 +284,14 @@ public class FileHelper {
         return true;
     }
 
-    // Run method in background thread
+    @WorkerThread
     public static void removeContent(Content content) {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (content.getStorageFolder().length() > 0) {
             String settingDir = Preferences.getRootFolderName();
             File dir = new File(settingDir, content.getStorageFolder());
 
-            if (FileUtil.deleteDir(dir)) {
+            if (FileUtils.deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.d("Directory %s removed.", dir);
             } else {
                 Timber.d("Failed to delete directory: %s", dir);
@@ -395,7 +370,9 @@ public class FileHelper {
         return file;
     }
 
-    // Method is used by onBindViewHolder(), speed is key
+    /**
+     * Method is used by onBindViewHolder(), speed is key
+     */
     public static String getThumb(Content content) {
         String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
