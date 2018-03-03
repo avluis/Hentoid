@@ -276,7 +276,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void clearDownload(Content content) {
         if (content.getStatus() == StatusContent.CANCELED) {
-            FileHelper.removeContent(cxt, content);
+            FileHelper.removeContent(content);
         } else {
             Timber.d("Attempting to clear non-cancelled download: %s", content.getTitle());
         }

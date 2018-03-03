@@ -310,15 +310,17 @@ public class FileHelper {
     }
 
     // Run method in background thread
-    public static void removeContent(Context cxt, Content content) {
-        //File dir = getContentDownloadDir(cxt, content);
-        String settingDir = Preferences.getRootFolderName();
-        File dir = new File(settingDir, content.getStorageFolder());
+    public static void removeContent(Content content) {
+        // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
+        if (content.getStorageFolder().length() > 0) {
+            String settingDir = Preferences.getRootFolderName();
+            File dir = new File(settingDir, content.getStorageFolder());
 
-        if (FileUtil.deleteDir(dir)) {
-            Timber.d("Directory %s removed.", dir);
-        } else {
-            Timber.d("Failed to delete directory: %s", dir);
+            if (FileUtil.deleteDir(dir)) {
+                Timber.d("Directory %s removed.", dir);
+            } else {
+                Timber.d("Failed to delete directory: %s", dir);
+            }
         }
     }
 

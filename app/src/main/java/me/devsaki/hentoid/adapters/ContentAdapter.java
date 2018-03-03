@@ -675,7 +675,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         removeItem(item);
 
         AsyncTask.execute(() -> {
-            FileHelper.removeContent(cxt, item);
+            FileHelper.removeContent(item);
             db.deleteContent(item);
             Timber.d("Removed item: %s from db and file system.", item.getTitle());
         });
@@ -693,7 +693,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
         AsyncTask.execute(() -> {
             for (int i = 0; i < items.size(); i++) {
-                FileHelper.removeContent(cxt, items.get(i));
+                FileHelper.removeContent(items.get(i));
                 db.deleteContent(items.get(i));
                 Timber.d("Removed item: " + items.get(i).getTitle()
                         + " from db and file system.");
