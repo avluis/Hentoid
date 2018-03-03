@@ -143,6 +143,9 @@ dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.1'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
     testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile 'commons-io:commons-io:2.6'
 }
 
 apply plugin: 'com.google.gms.google-services'

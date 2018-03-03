@@ -4,9 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.webkit.MimeTypeMap;
+
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -230,9 +233,14 @@ public class FileHelper {
      * @param target The folder.
      * @return true if cleaned successfully.
      */
-    public static boolean cleanDirectory(@NonNull File target) {
-        // Delete directory -- create directory
-        return FileUtil.deleteDir(target) && FileUtil.makeDir(target);
+    static boolean cleanDirectory(@NonNull File target) {
+        try {
+            FileUtils.cleanDirectory(target);
+            return true;
+        } catch (IOException e) {
+            Timber.e(e, "Failed to clean directory");
+            return false;
+        }
     }
 
     public static boolean validateFolder(String folder) {
@@ -309,14 +317,14 @@ public class FileHelper {
         return true;
     }
 
-    // Run method in background thread
+    @WorkerThread
     public static void removeContent(Content content) {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (content.getStorageFolder().length() > 0) {
             String settingDir = Preferences.getRootFolderName();
             File dir = new File(settingDir, content.getStorageFolder());
 
-            if (FileUtil.deleteDir(dir)) {
+            if (FileUtils.deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.d("Directory %s removed.", dir);
             } else {
                 Timber.d("Failed to delete directory: %s", dir);

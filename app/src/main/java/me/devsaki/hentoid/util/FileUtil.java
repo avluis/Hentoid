@@ -4,6 +4,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.provider.DocumentFile;
 
 import java.io.File;
@@ -49,6 +50,7 @@ class FileUtil {
      * @param isDirectory flag indicating if the file should be a directory.
      * @return The DocumentFile.
      */
+    @Nullable
     private static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
         String baseFolder = FileHelper.getExtSdCardFolder(file);
         boolean originalDirectory = false;
@@ -247,59 +249,15 @@ class FileUtil {
         return totalSuccess;
     }
 
-    /**
-     * Delete a folder.
-     *
-     * @param folder The folder.
-     * @return true if successful.
-     */
-    static boolean deleteDir(@NonNull final File folder) {
-        if (!folder.exists()) {
-            return true;
-        }
-        if (!folder.isDirectory()) {
-            return false;
-        }
-        String[] fileList = folder.list();
-        if (fileList != null && fileList.length > 0) {
-            //  empty the folder.
-            rmDir(folder);
-        }
-        String[] fileList1 = folder.list();
-        if (fileList1 != null && fileList1.length > 0) {
-            // Delete only empty folder.
-            return false;
-        }
-        // Try the normal way
-        if (folder.delete()) {
-            return true;
-        }
-
-        // Try with Storage Access Framework.
+    static boolean deleteWithSAF(File file) {
         if (Helper.isAtLeastAPI(LOLLIPOP)) {
-            DocumentFile document = getDocumentFile(folder, true);
+            DocumentFile document = getDocumentFile(file, true);
             if (document != null) {
                 return document.delete();
             }
         }
 
-        return !folder.exists();
-    }
-
-    private static boolean rmDir(@NonNull final File folder) {
-        for (File dir : folder.listFiles()) {
-            if (dir.isDirectory()) {
-                if (!rmDir(dir)) {
-                    return false;
-                }
-            } else {
-                if (!deleteFile(dir)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return false;
     }
 
     /**
