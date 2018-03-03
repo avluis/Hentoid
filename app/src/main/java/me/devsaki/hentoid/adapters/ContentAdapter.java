@@ -245,14 +245,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                 .error(R.drawable.ic_placeholder);
 
         Glide.with(cxt.getApplicationContext())
-                .load(FileHelper.getThumb(cxt, content))
+                .load(FileHelper.getThumb(content))
                 .apply(myOptions)
                 .transition(withCrossFade())
                 .into(holder.ivCover);
 
         if (holder.itemView.isSelected()) {
             Glide.with(cxt.getApplicationContext())
-                    .load(FileHelper.getThumb(cxt, content))
+                    .load(FileHelper.getThumb(content))
                     .apply(myOptions)
                     .transition(withCrossFade())
                     .into(holder.ivCover2);

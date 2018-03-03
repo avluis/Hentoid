@@ -396,8 +396,7 @@ public class FileHelper {
     }
 
     // Method is used by onBindViewHolder(), speed is key
-    public static String getThumb(Context cxt, Content content) {
-//        File dir = getContentDownloadDir(cxt, content);
+    public static String getThumb(Content content) {
         String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
@@ -511,39 +510,41 @@ public class FileHelper {
         File dir = new File(settingDir, content.getStorageFolder());
 
         File[] files = dir.listFiles();
-        Arrays.sort(files);
-        ArrayList<File> fileList = new ArrayList<>();
-        for (File file : files) {
-            String filename = file.getName();
-            if (filename.endsWith(".json") || filename.contains("thumb")) {
-                break;
+        if (files != null && files.length > 0) {
+            Arrays.sort(files);
+            ArrayList<File> fileList = new ArrayList<>();
+            for (File file : files) {
+                String filename = file.getName();
+                if (filename.endsWith(".json") || filename.contains("thumb")) {
+                    break;
+                }
+                fileList.add(file);
             }
-            fileList.add(file);
+
+            // Create folder to share from
+            File sharedDir = new File(cxt.getExternalCacheDir() + "/shared");
+            if (FileUtil.makeDir(sharedDir)) {
+                Timber.d("Shared folder created.");
+            }
+
+            // Clean directory (in case of previous job)
+            if (cleanDirectory(sharedDir)) {
+                Timber.d("Shared folder cleaned up.");
+            }
+
+            // Build destination file
+            File dest = new File(cxt.getExternalCacheDir() + "/shared/%s",
+                    content.getTitle()
+                            .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
+                            .replaceAll("\\s+", "_")  // white space as underscores
+                            + ".zip");
+            Timber.d("Destination file: %s", dest);
+
+            // Convert ArrayList to Array
+            File[] fileArray = fileList.toArray(new File[fileList.size()]);
+            // Compress files
+            new AsyncUnzip(cxt, dest).execute(fileArray, dest);
         }
-
-        // Create folder to share from
-        File sharedDir = new File(cxt.getExternalCacheDir() + "/shared");
-        if (FileUtil.makeDir(sharedDir)) {
-            Timber.d("Shared folder created.");
-        }
-
-        // Clean directory (in case of previous job)
-        if (cleanDirectory(sharedDir)) {
-            Timber.d("Shared folder cleaned up.");
-        }
-
-        // Build destination file
-        File dest = new File(cxt.getExternalCacheDir() + "/shared/%s",
-                content.getTitle()
-                        .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
-                        .replaceAll("\\s+", "_")  // white space as underscores
-                        + ".zip");
-        Timber.d("Destination file: %s", dest);
-
-        // Convert ArrayList to Array
-        File[] fileArray = fileList.toArray(new File[fileList.size()]);
-        // Compress files
-        new AsyncUnzip(cxt, dest).execute(fileArray, dest);
     }
 
     private static class AsyncUnzip extends ZipUtil.ZipTask {
