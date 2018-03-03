@@ -64,7 +64,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
     @Override
     protected void attachRefresh(View rootView) {
-        ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
+        ImageButton btnRefresh = rootView.findViewById(R.id.btnRefresh);
         btnRefresh.setOnClickListener(v -> {
             if (isLoaded) {
                 update();
@@ -155,7 +155,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
                 toggleUI(SHOW_RESULT);
                 updatePager();
-                mAdapter.enableFooter(false);
             }
         } else {
             Timber.d("Query: %s", query);
@@ -169,7 +168,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 toggleUI(SHOW_RESULT);
                 showToolbar(true, true);
                 updatePager();
-                mAdapter.enableFooter(false);
             } else {
                 Timber.d("Result: Nothing to match.");
                 displayNoResults();
@@ -184,11 +182,9 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 currentPage++;
                 searchContent();
                 Timber.d("Load more data now~");
-                mAdapter.enableFooter(true);
             }
         } else {
             Timber.d("Endless Scrolling disabled.");
-            mAdapter.enableFooter(false);
         }
     }
 }
