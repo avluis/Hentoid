@@ -966,7 +966,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isLoaded = false;
         if (selectedTags != null && selectedTags.size() > 0) // Search by tag filter
         {
-            search = new SearchContent(mContext, selectedTags, order == ConstsPrefs.PREF_ORDER_CONTENT_BY_DATE);
+            search = new SearchContent(mContext, selectedTags, order == Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE);
         } else // Search by keyword (search bar)
         {
             search = new SearchContent(mContext, query, currentPage, qtyPages,

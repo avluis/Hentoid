@@ -145,7 +145,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
          toggleUI(SHOW_RESULT);
          updatePager();
-         mAdapter.enableFooter(false);
 
         /*
         if (query.isEmpty()) {

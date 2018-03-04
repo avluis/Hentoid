@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
@@ -54,11 +55,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private final ItemSelectListener listener;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
-//    private List<Content> contents = new ArrayList<>();
     private Comparator<Content> mComparator;
 
-    public ContentAdapter(Context cxt, ItemSelectListener listener, Comparator<Content> comparator) {
-        this.context = cxt;
+    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
+        this.context = context;
         this.listener = listener;
         mComparator = comparator;
 
@@ -495,8 +495,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     @Override
-    public int getItemCount() {
-        return contents.size();
+    public int getItemCount() { return mSortedList.size(); }
 
     public void sharedSelectedItems() {
         int itemCount = getSelectedItemCount();
@@ -670,15 +669,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     public interface ContentsWipedListener {
         void onContentsWiped();
-    }
-
-    private static class ProgressViewHolder extends RecyclerView.ViewHolder {
-        final ProgressBar progressBar;
-
-        ProgressViewHolder(View itemView) {
-            super(itemView);
-            progressBar = (ProgressBar) itemView.findViewById(R.id.loadingProgress);
-        }
     }
 
     private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedList.Callback<Content>() {
