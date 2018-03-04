@@ -1,17 +1,17 @@
 package me.devsaki.hentoid.util;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.webkit.MimeTypeMap;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -42,20 +42,15 @@ public class FileHelper {
 
     public static void saveUri(Uri uri) {
         Timber.d("Saving Uri: %s", uri);
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, uri.toString()).apply();
+        Preferences.setSdStorageUri(uri.toString());
     }
 
     public static void clearUri() {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString(ConstsPrefs.PREF_SD_STORAGE_URI, "").apply();
+        Preferences.setSdStorageUri("");
     }
 
     static String getStringUri() {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        return prefs.getString(ConstsPrefs.PREF_SD_STORAGE_URI, null);
+        return Preferences.getSdStorageUri();
     }
 
     public static boolean isSAF() {
@@ -123,46 +118,30 @@ public class FileHelper {
     }
 
     /**
-     * Check is a file is writable.
+     * Check if a file is writable.
      * Detects write issues on external SD card.
      *
      * @param file The file.
      * @return true if the file is writable.
      */
     public static boolean isWritable(@NonNull final File file) {
-        boolean isExisting = file.exists();
+        if (!file.canWrite()) return false;
 
+        // Ensure that it is indeed writable by opening an output stream
         try {
-            FileOutputStream output = new FileOutputStream(file, true);
-            try {
-                output.close();
-            } catch (IOException e) {
-                // do nothing.
-            }
-        } catch (FileNotFoundException e) {
-            if (!file.isDirectory()) {
-                return false;
-            }
+            FileOutputStream output = FileUtils.openOutputStream(file);
+            output.close();
+        } catch (IOException e) {
+            return false;
         }
-        boolean result = file.canWrite();
 
         // Ensure that file is not created during this process.
-        if (!isExisting) {
+        if (file.exists()) {
             //noinspection ResultOfMethodCallIgnored
             file.delete();
         }
 
-        return result;
-    }
-
-    /**
-     * Checks if file could be read or created
-     *
-     * @param file - The file (as a String).
-     * @return true if file's is writable.
-     */
-    public static boolean isReadable(@NonNull final String file) {
-        return isReadable(new File(file));
+        return true;
     }
 
     /**
@@ -171,14 +150,8 @@ public class FileHelper {
      * @param file - The file.
      * @return true if file's is writable.
      */
-    public static boolean isReadable(@NonNull final File file) {
-        if (!file.isFile()) {
-            Timber.d("isReadable(): Not a File");
-
-            return false;
-        }
-
-        return file.exists() && file.canRead();
+    private static boolean isReadable(@NonNull final File file) {
+        return file.exists() && file.isFile() && file.canRead();
     }
 
     /**
@@ -199,16 +172,6 @@ public class FileHelper {
      */
     public static OutputStream getOutputStream(@NonNull final File target) {
         return FileUtil.getOutputStream(target);
-    }
-
-    /**
-     * Create a file.
-     *
-     * @param file The file to be created.
-     * @return true if creation was successful.
-     */
-    public static boolean createFile(@NonNull File file) throws IOException {
-        return FileUtil.makeFile(file);
     }
 
     /**
@@ -237,9 +200,14 @@ public class FileHelper {
      * @param target The folder.
      * @return true if cleaned successfully.
      */
-    public static boolean cleanDirectory(@NonNull File target) {
-        // Delete directory -- create directory
-        return FileUtil.deleteDir(target) && FileUtil.makeDir(target);
+    static boolean cleanDirectory(@NonNull File target) {
+        try {
+            FileUtils.cleanDirectory(target);
+            return true;
+        } catch (IOException e) {
+            Timber.e(e, "Failed to clean directory");
+            return false;
+        }
     }
 
     public static boolean validateFolder(String folder) {
@@ -248,8 +216,6 @@ public class FileHelper {
 
     public static boolean validateFolder(String folder, boolean notify) {
         Context cxt = HentoidApp.getAppContext();
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        SharedPreferences.Editor editor = prefs.edit();
         // Validate folder
         File file = new File(folder);
         if (!file.exists() && !file.isDirectory() && !FileUtil.makeDir(file)) {
@@ -283,9 +249,7 @@ public class FileHelper {
             return false;
         }
 
-        editor.putString(Consts.SETTINGS_FOLDER, folder);
-
-        boolean directorySaved = editor.commit();
+        boolean directorySaved = Preferences.setRootFolderName(folder);
         if (!directorySaved) {
             if (notify) {
                 Helper.toast(cxt, R.string.error_creating_folder);
@@ -297,7 +261,7 @@ public class FileHelper {
     }
 
     public static boolean createNoMedia() {
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         File noMedia = new File(settingDir, ".nomedia");
 
         try {
@@ -320,41 +284,41 @@ public class FileHelper {
         return true;
     }
 
-    // Run method in background thread
-    public static void removeContent(Context cxt, Content content) {
-        //File dir = getContentDownloadDir(cxt, content);
-        String settingDir = getRoot();
-        File dir = new File(settingDir, content.getStorageFolder());
+    @WorkerThread
+    public static void removeContent(Content content) {
+        // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
+        if (content.getStorageFolder().length() > 0) {
+            String settingDir = Preferences.getRootFolderName();
+            File dir = new File(settingDir, content.getStorageFolder());
 
-        if (FileUtil.deleteDir(dir)) {
-            Timber.d("Directory %s removed.", dir);
-        } else {
-            Timber.d("Failed to delete directory: %s", dir);
+            if (FileUtils.deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
+                Timber.d("Directory %s removed.", dir);
+            } else {
+                Timber.d("Failed to delete directory: %s", dir);
+            }
         }
     }
 
     public static File getContentDownloadDir(Context cxt, Content content) {
         File file;
-        String settingDir = getRoot();
         String folderDir = content.getSite().getFolder();
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
 
-        int folderNamingPreference = Integer.parseInt(
-                sp.getString(
-                        ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_LISTS,
-                        ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_DEFAULT + ""));
+        int folderNamingPreference = Preferences.getFolderNameFormat();
 
-        if (folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
+        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
             folderDir = folderDir + content.getAuthor().replaceAll("[^a-zA-Z0-9.-]", "_") + " - ";
         }
-        if (folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == ConstsPrefs.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
+        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
             folderDir = folderDir + content.getTitle().replaceAll("[^a-zA-Z0-9.-]", "_") + " - ";
         }
-        folderDir = folderDir +"["+content.getUniqueSiteId()+"]";
+        folderDir = folderDir + "[" + content.getUniqueSiteId() + "]";
 
+        String settingDir = Preferences.getRootFolderName();
         if (settingDir.isEmpty()) {
             return getDefaultDir(cxt, folderDir);
         }
+
+        Timber.d("New book directory %s in %s", folderDir, settingDir);
 
         file = new File(settingDir, folderDir);
         if (!file.exists() && !FileUtil.makeDir(file)) {
@@ -390,7 +354,7 @@ public class FileHelper {
 
     public static File getSiteDownloadDir(Context cxt, Site site) {
         File file;
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
             return getDefaultDir(cxt, folderDir);
@@ -406,15 +370,17 @@ public class FileHelper {
         return file;
     }
 
-    // Method is used by onBindViewHolder(), speed is key
-    public static String getThumb(Context cxt, Content content) {
-//        File dir = getContentDownloadDir(cxt, content);
-        String settingDir = getRoot();
+    /**
+     * Method is used by onBindViewHolder(), speed is key
+     */
+    public static String getThumb(Content content) {
+        String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
         String coverUrl = content.getCoverImageUrl();
 
-        if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
+        String rootFolderName = Preferences.getRootFolderName();
+        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Returning online resource.");
             return coverUrl;
         }
@@ -445,27 +411,26 @@ public class FileHelper {
     }
 
     public static void openContent(final Context cxt, Content content) {
-        Timber.d("Opening: %s from: %s", content.getTitle(), getContentDownloadDir(cxt, content));
+        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
         //        File dir = getContentDownloadDir(cxt, content);
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
 
         Timber.d("Opening: " + content.getTitle() + " from: " + dir);
 
-        if (isSAF() && getExtSdCardFolder(new File(getRoot())) == null) {
+        String rootFolderName = Preferences.getRootFolderName();
+        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
             Helper.toast(R.string.sd_access_error);
             return;
         }
 
         Helper.toast("Opening: " + content.getTitle());
-        SharedPreferences sp = HentoidApp.getSharedPrefs();
 
         File imageFile = null;
         File[] files = dir.listFiles();
-        if (files != null && files.length > 0)
-        {
+        if (files != null && files.length > 0) {
             Arrays.sort(files);
             for (File file : files) {
                 String filename = file.getName();
@@ -482,19 +447,10 @@ public class FileHelper {
                     .replace("@dir", dir.getAbsolutePath());
             Helper.toast(cxt, message);
         } else {
-            int readContentPreference = Integer.parseInt(
-                    sp.getString(
-                            ConstsPrefs.PREF_READ_CONTENT_LISTS,
-                            ConstsPrefs.PREF_READ_CONTENT_DEFAULT + ""));
-            if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_ASK) {
-                final File file = imageFile;
-                AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
-                builder.setMessage(R.string.select_the_action)
-                        .setPositiveButton(R.string.open_default_image_viewer,
-                                (dialog, id) -> openFile(cxt, file))
-                        .setNegativeButton(R.string.open_perfect_viewer,
-                                (dialog, id) -> openPerfectViewer(cxt, file)).create().show();
-            } else if (readContentPreference == ConstsPrefs.PREF_READ_CONTENT_PERFECT_VIEWER) {
+            int readContentPreference = Preferences.getContentReadAction();
+            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_DEFAULT) {
+                openFile(cxt, imageFile);
+            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(cxt, imageFile);
             }
         }
@@ -527,48 +483,45 @@ public class FileHelper {
         // Build list of files
 
         //File dir = getContentDownloadDir(cxt, content);
-        String settingDir = getRoot();
+        String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
         File[] files = dir.listFiles();
-        Arrays.sort(files);
-        ArrayList<File> fileList = new ArrayList<>();
-        for (File file : files) {
-            String filename = file.getName();
-            if (filename.endsWith(".json") || filename.contains("thumb")) {
-                break;
+        if (files != null && files.length > 0) {
+            Arrays.sort(files);
+            ArrayList<File> fileList = new ArrayList<>();
+            for (File file : files) {
+                String filename = file.getName();
+                if (filename.endsWith(".json") || filename.contains("thumb")) {
+                    break;
+                }
+                fileList.add(file);
             }
-            fileList.add(file);
+
+            // Create folder to share from
+            File sharedDir = new File(cxt.getExternalCacheDir() + "/shared");
+            if (FileUtil.makeDir(sharedDir)) {
+                Timber.d("Shared folder created.");
+            }
+
+            // Clean directory (in case of previous job)
+            if (cleanDirectory(sharedDir)) {
+                Timber.d("Shared folder cleaned up.");
+            }
+
+            // Build destination file
+            File dest = new File(cxt.getExternalCacheDir() + "/shared/%s",
+                    content.getTitle()
+                            .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
+                            .replaceAll("\\s+", "_")  // white space as underscores
+                            + ".zip");
+            Timber.d("Destination file: %s", dest);
+
+            // Convert ArrayList to Array
+            File[] fileArray = fileList.toArray(new File[fileList.size()]);
+            // Compress files
+            new AsyncUnzip(cxt, dest).execute(fileArray, dest);
         }
-
-        // Create folder to share from
-        File sharedDir = new File(cxt.getExternalCacheDir() + "/shared");
-        if (FileUtil.makeDir(sharedDir)) {
-            Timber.d("Shared folder created.");
-        }
-
-        // Clean directory (in case of previous job)
-        if (cleanDirectory(sharedDir)) {
-            Timber.d("Shared folder cleaned up.");
-        }
-
-        // Build destination file
-        File dest = new File(cxt.getExternalCacheDir() + "/shared/%s",
-                content.getTitle()
-                        .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
-                        .replaceAll("\\s+", "_")  // white space as underscores
-                + ".zip");
-        Timber.d("Destination file: %s", dest);
-
-        // Convert ArrayList to Array
-        File[] fileArray = fileList.toArray(new File[fileList.size()]);
-        // Compress files
-        new AsyncUnzip(cxt, dest).execute(fileArray, dest);
-    }
-
-    public static String getRoot() {
-        SharedPreferences prefs = HentoidApp.getSharedPrefs();
-        return prefs.getString(Consts.SETTINGS_FOLDER, "");
     }
 
     private static class AsyncUnzip extends ZipUtil.ZipTask {

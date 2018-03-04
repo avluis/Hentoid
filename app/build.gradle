@@ -13,8 +13,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 44
-        versionName '1.2.2'
+        versionCode 47
+        versionName '1.2.4'
         vectorDrawables.useSupportLibrary = true
     }
     flavorDimensions "buildType"
@@ -132,6 +132,9 @@ dependencies {
     testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
     //    https://github.com/ApmeM/android-flowlayout
     implementation 'org.apmem.tools:layouts:1.10@aar'
+
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile 'commons-io:commons-io:2.6'
 }
 
 apply plugin: 'com.google.gms.google-services'

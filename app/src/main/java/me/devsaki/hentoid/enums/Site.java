@@ -15,7 +15,8 @@ public enum Site {
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_menu_nhentai),
     TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_menu_tsumino),
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", R.drawable.ic_menu_hentaicafe),
-    ASMHENTAI(6, "asmhentai", "http://asmhentai.com", R.drawable.ic_menu_asmhentai);
+    ASMHENTAI(6, "asmhentai", "http://asmhentai.com", R.drawable.ic_menu_asmhentai),
+    ASMHENTAI_COMICS(7, "asmhentai", "http://comics.asmhentai.com", R.drawable.ic_menu_asmhentai);
 
 
     private final int code;

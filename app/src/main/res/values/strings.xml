@@ -67,7 +67,7 @@
     <string name="sd_access_fatal_error">Hentoid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
-    <string name="restart_needed">"App restart needed to apply changes."</string>
+    <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
     <!-- Updates -->
     <string name="download_update">An update is available!\nTap to start downloading.</string>
     <string name="update_available">An update is available!</string>

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers;
 
+import android.webkit.URLUtil;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONTokener;
@@ -132,30 +134,37 @@ public class HentaiCafeParser {
 
         if (links != null) {
             for (int i = 0; i < links.size(); i++) {
-                Timber.d("Chapter Links: %s", links.get(i).attr("href"));
-                try {
-                    doc = Jsoup.connect(links.get(i).attr("href")).timeout(TIMEOUT).get();
-                    contents = doc.select("article#content");
-                    js = contents.select("script").last();
 
-                    if (contents.size() > 0) {
-                        pages += Integer.parseInt(
-                                doc.select("div.text").first().text().replace(" ⤵", ""));
-                        Timber.d("Pages: %s", pages);
+                String url = links.get(i).attr("href");
 
-                        JSONArray array = getJSONArrayFromString(js.toString());
-                        if (array != null) {
-                            for (int j = 0; j < array.length(); j++) {
-                                try {
-                                    imgUrls.add(array.getJSONObject(j).getString("url"));
-                                } catch (JSONException e) {
-                                    Timber.e(e, "Error while reading from array");
+                if (URLUtil.isValidUrl(url)) {
+                    Timber.d("Chapter Links: %s", links.get(i).attr("href"));
+                    try {
+                        doc = Jsoup.connect(links.get(i).attr("href")).timeout(TIMEOUT).get();
+                        contents = doc.select("article#content");
+                        js = contents.select("script").last();
+
+                        if (contents.size() > 0) {
+                            pages += Integer.parseInt(
+                                    doc.select("div.text").first().text().replace(" ⤵", ""));
+                            Timber.d("Pages: %s", pages);
+
+                            JSONArray array = getJSONArrayFromString(js.toString());
+                            if (array != null) {
+                                for (int j = 0; j < array.length(); j++) {
+                                    try {
+                                        imgUrls.add(array.getJSONObject(j).getString("url"));
+                                    } catch (JSONException e) {
+                                        Timber.e(e, "Error while reading from array");
+                                    }
                                 }
+                            } else {
+                                Timber.e("Error while parsing pages");
                             }
                         }
+                    } catch (IOException e) {
+                        Timber.e(e, "JSOUP Error");
                     }
-                } catch (IOException e) {
-                    Timber.e(e, "JSOUP Error");
                 }
             }
             Timber.d("Total Pages: %s", pages);
@@ -172,12 +181,14 @@ public class HentaiCafeParser {
 
         Timber.d("Match found? %s", matcher.find());
 
-        String results = matcher.group(1);
-        results = "[{" + results + "}]";
-        try {
-            return (JSONArray) new JSONTokener(results).nextValue();
-        } catch (JSONException e) {
-            Timber.e(e, "Couldn't build JSONArray from the provided string");
+        if (matcher.groupCount() > 0) {
+            String results = matcher.group(1);
+            results = "[{" + results + "}]";
+            try {
+                return (JSONArray) new JSONTokener(results).nextValue();
+            } catch (JSONException e) {
+                Timber.e(e, "Couldn't build JSONArray from the provided string");
+            }
         }
 
         return null;

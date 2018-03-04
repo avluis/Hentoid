@@ -4,13 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.RecyclerView.ViewHolder;
-import android.text.TextUtils;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
@@ -50,22 +46,19 @@ import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOption
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
  */
-public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
+public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private static final int VISIBLE_THRESHOLD = 10;
-    private static final int VIEW_TYPE_LOADING = 0;
-    private static final int VIEW_TYPE_ITEM = 1;
-    private final Context cxt;
+    private final Context context;
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
-    private boolean isFooterEnabled = true;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
 //    private List<Content> contents = new ArrayList<>();
     private Comparator<Content> mComparator;
 
     public ContentAdapter(Context cxt, ItemSelectListener listener, Comparator<Content> comparator) {
-        this.cxt = cxt;
+        this.context = cxt;
         this.listener = listener;
         mComparator = comparator;
 
@@ -125,45 +118,25 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        ViewHolder viewHolder;
-
-        if (viewType == VIEW_TYPE_LOADING) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(
-                    R.layout.progress, parent, false);
-
-            viewHolder = new ProgressViewHolder(view);
-        } else {
-            View view = LayoutInflater.from(parent.getContext()).inflate(
-                    R.layout.item_download, parent, false);
-
-            viewHolder = new ContentHolder(view);
-        }
-
-        return viewHolder;
+    public ContentHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        View view = inflater.inflate(R.layout.item_download, parent, false);
+        return new ContentHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, final int pos) {
-        if (holder instanceof ProgressViewHolder) {
-            ((ProgressViewHolder) holder).progressBar.setIndeterminate(true);
-        } else if (mSortedList.size() > 0 && pos < mSortedList.size()) {
-            final Content content = mSortedList.get(pos);
+    public void onBindViewHolder(ContentHolder holder, final int pos) {
+            Content content = mSortedList.get(pos);
 
-            // Initializes the ViewHolder that contains the books
-            updateLayoutVisibility((ContentHolder) holder, content, pos);
-            populateLayout((ContentHolder) holder, content, pos);
-            attachOnClickListeners((ContentHolder) holder, content, pos);
-        }
+            // Initializes the ViewHolder that contains the booksupdateLayoutVisibility( holder, content, pos);
+            populateLayout( holder, content, pos);
+            attachOnClickListeners( holder, content, pos);
+
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
         if (pos == getItemCount() - VISIBLE_THRESHOLD && endlessScrollListener != null) {
             endlessScrollListener.onLoadMore();
-        }
-
-        if (endlessScrollListener == null) {
-            enableFooter(false);
         }
 
         if (getSelectedItems() != null) {
@@ -177,8 +150,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
             }
         }
 
-        final RelativeLayout items = (RelativeLayout) holder.itemView.findViewById(R.id.item);
-        LinearLayout minimal = (LinearLayout) holder.itemView.findViewById(R.id.item_minimal);
+        final RelativeLayout items = holder.itemView.findViewById(R.id.item);
+        LinearLayout minimal = holder.itemView.findViewById(R.id.item_minimal);
 
         if (holder.itemView.isSelected()) {
             Timber.d("Position: %s %s is a selected item currently in view.", pos, content.getTitle());
@@ -203,33 +176,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void attachTitle(ContentHolder holder, Content content) {
+        CharSequence title;
         if (content.getTitle() == null) {
-            holder.tvTitle.setText(R.string.work_untitled);
-            if (holder.itemView.isSelected()) {
-                holder.tvTitle2.setText(R.string.work_untitled);
-            }
+            title = context.getText(R.string.work_untitled);
         } else {
-            holder.tvTitle.setText(content.getTitle());
+            title = content.getTitle();
+        }
 
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                holder.tvTitle.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-                holder.tvTitle.setSingleLine(true);
-                holder.tvTitle.setMarqueeRepeatLimit(5);
-            }
-
-            holder.tvTitle.setSelected(true);
-
-            if (holder.itemView.isSelected()) {
-                holder.tvTitle2.setText(content.getTitle());
-
-                if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
-                    holder.tvTitle2.setEllipsize(TextUtils.TruncateAt.MARQUEE);
-                    holder.tvTitle2.setSingleLine(true);
-                    holder.tvTitle2.setMarqueeRepeatLimit(5);
-                }
-
-                holder.tvTitle2.setSelected(true);
-            }
+        holder.tvTitle.setText(title);
+        if (holder.itemView.isSelected()) {
+            holder.tvTitle2.setText(title);
         }
     }
 
@@ -246,15 +202,15 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder);
 
-        Glide.with(cxt.getApplicationContext())
-                .load(FileHelper.getThumb(cxt, content))
+        Glide.with(context.getApplicationContext())
+                .load(FileHelper.getThumb(content))
                 .apply(myOptions)
                 .transition(withCrossFade())
                 .into(holder.ivCover);
 
         if (holder.itemView.isSelected()) {
-            Glide.with(cxt.getApplicationContext())
-                    .load(FileHelper.getThumb(cxt, content))
+            Glide.with(context.getApplicationContext())
+                    .load(FileHelper.getThumb(content))
                     .apply(myOptions)
                     .transition(withCrossFade())
                     .into(holder.ivCover2);
@@ -262,71 +218,71 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void attachSeries(ContentHolder holder, Content content) {
-        String templateSeries = cxt.getResources().getString(R.string.work_series);
-        String series = "";
+        String templateSeries = context.getResources().getString(R.string.work_series);
+        StringBuilder seriesBuilder = new StringBuilder();
         List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
             holder.tvSeries.setVisibility(View.GONE);
         } else {
             for (int i = 0; i < seriesAttributes.size(); i++) {
                 Attribute attribute = seriesAttributes.get(i);
-                series += attribute.getName();
+                seriesBuilder.append(attribute.getName());
                 if (i != seriesAttributes.size() - 1) {
-                    series += ", ";
+                    seriesBuilder.append(", ");
                 }
             }
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
-        holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@", series)));
+        holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@", seriesBuilder.toString())));
 
         if (seriesAttributes == null) {
             holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@",
-                    cxt.getResources().getString(R.string.work_untitled))));
+                    context.getResources().getString(R.string.work_untitled))));
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
     }
 
     private void attachArtist(ContentHolder holder, Content content) {
-        String templateArtist = cxt.getResources().getString(R.string.work_artist);
-        String artists = "";
+        String templateArtist = context.getResources().getString(R.string.work_artist);
+        StringBuilder artistsBuilder = new StringBuilder();
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
         if (artistAttributes == null) {
             holder.tvArtist.setVisibility(View.GONE);
         } else {
             for (int i = 0; i < artistAttributes.size(); i++) {
                 Attribute attribute = artistAttributes.get(i);
-                artists += attribute.getName();
+                artistsBuilder.append(attribute.getName());
                 if (i != artistAttributes.size() - 1) {
-                    artists += ", ";
+                    artistsBuilder.append(", ");
                 }
             }
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
-        holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artists)));
+        holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artistsBuilder.toString())));
 
         if (artistAttributes == null) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
-                    cxt.getResources().getString(R.string.work_untitled))));
+                    context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
     }
 
     private void attachTags(ContentHolder holder, Content content) {
-        String templateTags = cxt.getResources().getString(R.string.work_tags);
-        String tags = "";
+        String templateTags = context.getResources().getString(R.string.work_tags);
+        StringBuilder tagsBuilder = new StringBuilder();
         List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
                 if (attribute.getName() != null) {
-                    tags += templateTags.replace("@tag@", attribute.getName());
+                    tagsBuilder.append(templateTags.replace("@tag@", attribute.getName()));
                     if (i != tagsAttributes.size() - 1) {
-                        tags += ", ";
+                        tagsBuilder.append(", ");
                     }
                 }
             }
         }
-        holder.tvTags.setText(Helper.fromHtml(tags));
+        holder.tvTags.setText(Helper.fromHtml(tagsBuilder.toString()));
     }
 
     private void attachSite(ContentHolder holder, final Content content, int pos) {
@@ -338,7 +294,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     clearSelections();
                     listener.onItemClear(0);
                 }
-                Helper.viewContent(cxt, content);
+                Helper.viewContent(context, content);
             });
         } else {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
@@ -359,7 +315,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
                     bg = R.color.card_item_src_other;
                     break;
             }
-            holder.ivSite.setBackgroundColor(ContextCompat.getColor(cxt, bg));
+            holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, bg));
 
             if (status == StatusContent.ERROR) {
                 holder.ivError.setVisibility(View.VISIBLE);
@@ -380,7 +336,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
-        holder.itemView.setOnClickListener(new ItemClickListener(cxt, content, pos, listener) {
+        holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, listener) {
 
             @Override
             public void onClick(View v) {
@@ -415,7 +371,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
             }
         });
 
-        holder.itemView.setOnLongClickListener(new ItemClickListener(cxt, content, pos, listener) {
+        holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, listener) {
 
             @Override
             public boolean onLongClick(View v) {
@@ -458,25 +414,25 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
             }
         }
 
-        String message = cxt.getString(R.string.download_again_dialog_message).replace(
+        String message = context.getString(R.string.download_again_dialog_message).replace(
                 "@error", imgErrors + "").replace("@total", images + "");
-        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.download_again_dialog_title)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
-                            HentoidDB db = HentoidDB.getInstance(cxt);
+                            HentoidDB db = HentoidDB.getInstance(context);
 
                             item.setStatus(StatusContent.DOWNLOADING);
                             item.setDownloadDate(new Date().getTime());
 
                             db.updateContentStatus(item);
 
-                            Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
+                            Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
                                     DownloadService.class);
-                            cxt.startService(intent);
+                            context.startService(intent);
 
-                            Helper.toast(cxt, R.string.add_to_queue);
+                            Helper.toast(context, R.string.add_to_queue);
                             remove(item);
                         })
                 .setNegativeButton(android.R.string.no, null)
@@ -493,16 +449,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         intent.putExtra(Intent.EXTRA_TEXT, url);
         intent.setType("text/plain");
 
-        cxt.startActivity(Intent.createChooser(intent, cxt.getString(R.string.send_to)));
+        context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
     }
 
     private void archiveContent(final Content item) {
         Helper.toast(R.string.packaging_content);
-        FileHelper.archiveContent(cxt, item);
+        FileHelper.archiveContent(context, item);
     }
 
     private void deleteContent(final Content item) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
@@ -518,7 +474,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     }
 
     private void deleteContents(final List<Content> items) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(cxt);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(R.string.ask_delete_multiple)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
@@ -540,17 +496,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
 
     @Override
     public int getItemCount() {
-        return (isFooterEnabled) ? mSortedList.size() + 1 : mSortedList.size();
-    }
-
-    @Override
-    public int getItemViewType(int pos) {
-        return (isFooterEnabled && pos >= mSortedList.size()) ? VIEW_TYPE_LOADING : VIEW_TYPE_ITEM;
-    }
-
-    public void enableFooter(boolean isEnabled) {
-        this.isFooterEnabled = isEnabled;
-    }
+        return contents.size();
 
     public void sharedSelectedItems() {
         int itemCount = getSelectedItemCount();
@@ -654,14 +600,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
     private void deleteItem(final Content item) {
         remove(item);
 
-        final HentoidDB db = HentoidDB.getInstance(cxt);
+        final HentoidDB db = HentoidDB.getInstance(context);
         AsyncTask.execute(() -> {
-            FileHelper.removeContent(cxt, item);
+            FileHelper.removeContent(item);
             db.deleteContent(item);
             Timber.d("Removed item: %s from db and file system.", item.getTitle());
         });
 
-        Helper.toast(cxt, cxt.getString(R.string.deleted).replace("@content", item.getTitle()));
+        Helper.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
     }
 
     private void deleteItems(final List<Content> contents) {
@@ -672,18 +618,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ViewHolder> {
         mSortedList.endBatchedUpdates();
         listener.onItemClear(0);
 
-        final HentoidDB db = HentoidDB.getInstance(cxt);
+        final HentoidDB db = HentoidDB.getInstance(context);
 
         AsyncTask.execute(() -> {
-            for (int i = 0; i < contents.size(); i++) {
-                FileHelper.removeContent(cxt, contents.get(i));
-                db.deleteContent(contents.get(i));
-                Timber.d("Removed item: " + contents.get(i).getTitle()
-                        + " from db and file system.");
+            for (Content item : contents) {
+                FileHelper.removeContent(item);
+                db.deleteContent(item);
+                Timber.d("Removed item: %s from db and file system.", item.getTitle());
             }
         });
 
-        Helper.toast(cxt, "Selected items have been deleted.");
+        Helper.toast(context, "Selected items have been deleted.");
     }
 
     public void remove(Content content)

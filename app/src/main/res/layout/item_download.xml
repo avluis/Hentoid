@@ -8,6 +8,7 @@
     android:layout_marginEnd="@dimen/default_cardview_margin"
     android:layout_marginRight="@dimen/default_cardview_margin"
     android:clickable="true"
+    android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardCornerRadius="2dp"
     app:cardElevation="@dimen/cardview_default_elevation">
@@ -29,20 +30,9 @@
             android:paddingRight="1dp"
             android:paddingStart="8dp">
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="?listPreferredItemHeightSmall">
-
-                <include
-                    android:id="@+id/tvTitle"
-                    layout="@layout/include_item_title"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginEnd="8dp"
-                    android:layout_marginRight="8dp" />
-
-            </FrameLayout>
+            <include
+                android:id="@+id/tvTitle"
+                layout="@layout/include_item_title" />
 
             <include layout="@layout/include_item_details" />
 
@@ -112,11 +102,7 @@
 
         <include
             android:id="@+id/tvTitle2"
-            layout="@layout/include_item_title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp" />
+            layout="@layout/include_item_title" />
+
     </LinearLayout>
 </android.support.v7.widget.CardView>

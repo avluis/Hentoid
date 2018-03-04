@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities;
+package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
@@ -40,9 +40,8 @@ public class TsuminoActivity extends BaseWebActivity {
         return pos;
     }
 
-    @Override
-    void setSite(Site site) {
-        super.setSite(Site.TSUMINO);
+    Site getStartSite() {
+        return Site.TSUMINO;
     }
 
     @Override
@@ -99,7 +98,7 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("pop.js")) {
+            if (url.contains("pop.js") || url.contains("/static/")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -111,7 +110,7 @@ public class TsuminoActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            if (url.contains("pop.js")) {
+            if (url.contains("pop.js") || url.contains("/static/")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);

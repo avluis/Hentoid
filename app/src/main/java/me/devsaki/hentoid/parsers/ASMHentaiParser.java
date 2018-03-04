@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers;
 
+import android.webkit.URLUtil;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -12,6 +14,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import timber.log.Timber;
@@ -24,7 +27,7 @@ import static me.devsaki.hentoid.enums.Site.ASMHENTAI;
  */
 public class ASMHentaiParser {
 
-    public static Content parseContent(String urlString) throws IOException {
+    public static Content parseContent(String urlString, Site site) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
 
         Elements content = doc.select("div.info");
@@ -89,7 +92,7 @@ public class ASMHentaiParser {
                     .setAttributes(attributes)
                     .setQtyPages(pages)
                     .setStatus(StatusContent.SAVED)
-                    .setSite(ASMHENTAI);
+                    .setSite(site);
         }
 
         return null;
@@ -104,11 +107,8 @@ public class ASMHentaiParser {
             String name = a.text();
             // Remove counters from ASMhentai metadata (e.g. "Futanari (2660)" => "Futanari")
             int bracketPos = name.lastIndexOf("(");
-            if (bracketPos > 1)
-            {
-                if (' ' == name.charAt(bracketPos-1)) bracketPos--;
-            }
-            name = name.substring(0,bracketPos);
+            if (bracketPos > 1 && ' ' == name.charAt(bracketPos-1)) bracketPos--;
+            if (bracketPos > -1) name = name.substring(0,bracketPos);
             attribute.setName(name);
 
             map.add(attribute);
@@ -119,6 +119,12 @@ public class ASMHentaiParser {
         int pages = content.getQtyPages();
         String readerUrl = content.getReaderUrl();
         List<String> imgUrls = new ArrayList<>();
+
+        if (!URLUtil.isValidUrl(readerUrl))
+        {
+            Timber.e("Invalid URL : %s", readerUrl);
+            return imgUrls;
+        }
 
         Document doc;
         String ext;
