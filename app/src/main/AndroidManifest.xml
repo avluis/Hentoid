@@ -34,31 +34,31 @@
             android:label="@string/app_intro"
             android:theme="@style/AppTheme" />
         <activity
-            android:name=".activities.HitomiActivity"
+            android:name=".activities.websites.HitomiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.NhentaiActivity"
+            android:name=".activities.websites.NhentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.TsuminoActivity"
+            android:name=".activities.websites.TsuminoActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.ASMHentaiActivity"
+            android:name=".activities.websites.ASMHentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.HentaiCafeActivity"
+            android:name=".activities.websites.HentaiCafeActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.PururinActivity"
+            android:name=".activities.websites.PururinActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.BaseWebActivity"
+            android:name=".activities.websites.BaseWebActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
@@ -164,6 +164,17 @@
                 <!-- Accepts URIs that begin with "http://asmhentai.com/g" -->
                 <data
                     android:host="asmhentai.com"
+                    android:pathPrefix="/g"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://comics.asmhentai.com/g" -->
+                <data
+                    android:host="comics.asmhentai.com"
                     android:pathPrefix="/g"
                     android:scheme="http" />
             </intent-filter>

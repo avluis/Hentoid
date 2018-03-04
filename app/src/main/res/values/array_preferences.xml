@@ -16,7 +16,7 @@
     </string-array>
 
     <string-array name="pref_read_content_entries">
-        <item>Ask</item>
+        <item>Default image viewer</item>
         <item>Perfect Viewer</item>
     </string-array>
     <string-array name="pref_read_content_entry_values">

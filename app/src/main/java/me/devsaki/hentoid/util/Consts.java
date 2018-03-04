@@ -10,7 +10,6 @@ public abstract class Consts {
 
     public static final String INTENT_URL = "url";
 
-    static final String SETTINGS_FOLDER = "folder";
     public static final String DEFAULT_LOCAL_DIRECTORY = "Hentoid";
 
     public static final String JSON_FILE_NAME = "content.json";
@@ -23,6 +22,4 @@ public abstract class Consts {
                     + " Chrome/18.0.1025.166 Mobile Safari/535.19";
 
     public static final String DOWNLOAD_COUNT = "DOWNLOAD_COUNT";
-
-    static final String WEB_SESSION_COOKIE = "web_session_cookie";
 }

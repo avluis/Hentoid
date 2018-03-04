@@ -7,7 +7,6 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -76,71 +75,6 @@ public final class Helper {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Consts.INTENT_URL, content.getGalleryUrl());
         context.startActivity(intent);
-    }
-
-    public static String getSessionCookie() {
-        return HentoidApp.getSharedPrefs().getString(Consts.WEB_SESSION_COOKIE, "");
-    }
-
-    public static void setSessionCookie(String sessionCookie) {
-        HentoidApp.getSharedPrefs()
-                .edit()
-                .putString(Consts.WEB_SESSION_COOKIE, sessionCookie)
-                .apply();
-    }
-
-    private static void clearSharedPreferences() {
-        SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
-        editor.clear();
-        editor.apply();
-    }
-
-    private static void saveSharedPrefsKey(Context cxt) {
-        SharedPreferences sp = cxt.getSharedPreferences(
-                ConstsPrefs.PREFS_VERSION_KEY, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        editor.putInt(ConstsPrefs.PREFS_VERSION_KEY, ConstsPrefs.PREFS_VERSION);
-        editor.apply();
-    }
-
-    public static void queryPrefsKey(Context cxt) {
-        final int prefsVersion = cxt.getSharedPreferences(
-                ConstsPrefs.PREFS_VERSION_KEY, Context.MODE_PRIVATE).getInt(
-                ConstsPrefs.PREFS_VERSION_KEY, 0);
-
-        Timber.d("Current Prefs Key value: %s", prefsVersion);
-
-        // Use this whenever any incompatible changes are made to Prefs.
-        if (prefsVersion != ConstsPrefs.PREFS_VERSION) {
-            Timber.d("Shared Prefs Key Mismatch! Clearing Prefs!");
-
-            // Clear All
-            clearSharedPreferences();
-
-            // Save current Pref version key
-            saveSharedPrefsKey(cxt.getApplicationContext());
-        } else {
-            Timber.d("Prefs Key Match. Carry on.");
-        }
-    }
-
-    public static boolean getWebViewOverviewPrefs() {
-        return HentoidApp.getSharedPrefs().getBoolean(
-                ConstsPrefs.PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS,
-                ConstsPrefs.PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT);
-    }
-
-    public static int getWebViewInitialZoomPrefs() {
-        return Integer.parseInt(
-                HentoidApp.getSharedPrefs().getString(
-                        ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_LISTS,
-                        ConstsPrefs.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT + ""));
-    }
-
-    public static boolean getMobileUpdatePrefs() {
-        return HentoidApp.getSharedPrefs().getBoolean(
-                ConstsPrefs.PREF_CHECK_UPDATES_LISTS,
-                ConstsPrefs.PREF_CHECK_UPDATES_DEFAULT);
     }
 
     public static void cancelToast() {
@@ -230,26 +164,13 @@ public final class Helper {
     }
 
     public static void launchMainActivity(Context cxt) {
-        final String appLock = HentoidApp.getSharedPrefs().getString(ConstsPrefs.PREF_APP_LOCK, "");
-
-        if (appLock.isEmpty()) {
+        if (Preferences.getAppLockPin().isEmpty()) {
             Intent intent = new Intent(cxt, DownloadsActivity.class);
             cxt.startActivity(intent);
         } else {
             Intent intent = new Intent(cxt, AppLockActivity.class);
             cxt.startActivity(intent);
         }
-    }
-
-    public static boolean isFirstRun() {
-        return HentoidApp.getSharedPrefs().getBoolean(
-                ConstsPrefs.PREF_FIRST_RUN, ConstsPrefs.PREF_FIRST_RUN_DEFAULT);
-    }
-
-    public static void commitFirstRun(boolean commit) {
-        SharedPreferences.Editor editor = HentoidApp.getSharedPrefs().edit();
-        editor.putBoolean(ConstsPrefs.PREF_FIRST_RUN, commit);
-        editor.apply();
     }
 
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -272,7 +193,7 @@ public final class Helper {
     // We have asked for permissions, but still denied.
     public static void reset(Context cxt, Activity activity) {
         Helper.toast(R.string.reset);
-        Helper.commitFirstRun(true);
+        Preferences.setIsFirstRun(true);
         Intent intent = new Intent(activity, IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         cxt.startActivity(intent);
@@ -459,7 +380,6 @@ public final class Helper {
         }
     }
 
-    @SuppressLint("NewApi")
     public static Spanned fromHtml(String source) {
         if (isAtLeastAPI(Build.VERSION_CODES.N)) {
             return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY, null, null);

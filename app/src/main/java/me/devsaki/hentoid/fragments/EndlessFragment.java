@@ -11,7 +11,7 @@ import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.ConstsPrefs;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -64,7 +64,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
     @Override
     protected void attachRefresh(View rootView) {
-        ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
+        ImageButton btnRefresh = rootView.findViewById(R.id.btnRefresh);
         btnRefresh.setOnClickListener(v -> {
             if (isLoaded) {
                 update();
@@ -78,7 +78,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
     protected void queryPrefs() {
         super.queryPrefs();
 
-        qtyPages = ConstsPrefs.PREF_QUANTITY_PER_PAGE_DEFAULT;
+        qtyPages = Preferences.Default.PREF_QUANTITY_PER_PAGE_DEFAULT;
     }
 
     @Override
@@ -105,8 +105,10 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
         } else {
             Timber.d("Result is null.");
 
-            update();
-            checkContent(true);
+            if (isLoaded) { // Do not load anything if a loading activity is already in progress
+                update();
+                checkContent(true);
+            }
         }
 
         if (!query.isEmpty()) {
@@ -153,7 +155,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
                 toggleUI(SHOW_RESULT);
                 updatePager();
-                mAdapter.enableFooter(false);
             }
         } else {
             Timber.d("Query: %s", query);
@@ -167,7 +168,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 toggleUI(SHOW_RESULT);
                 showToolbar(true, true);
                 updatePager();
-                mAdapter.enableFooter(false);
             } else {
                 Timber.d("Result: Nothing to match.");
                 displayNoResults();
@@ -182,11 +182,9 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 currentPage++;
                 searchContent();
                 Timber.d("Load more data now~");
-                mAdapter.enableFooter(true);
             }
         } else {
             Timber.d("Endless Scrolling disabled.");
-            mAdapter.enableFooter(false);
         }
     }
 }

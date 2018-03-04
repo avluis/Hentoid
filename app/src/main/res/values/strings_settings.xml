@@ -40,7 +40,7 @@
     <string name="nomedia_file_created">.nomedia file created.</string>
     <!-- App Lock -->
     <string name="pref_applock_category">App Lock</string>
-    <string name="pref_app_lock_title">Application Lock</string>
+    <string name="pref_app_lock_title">Application Lock PIN</string>
     <string name="pref_app_lock_summary">Set a PIN password to open the app.\nLeave empty if you don\'t want to be asked.</string>
     <string name="pref_app_lock_vibrate_title">Unlock Feedback</string>
     <string name="pref_app_lock_vibrate_summary">Enable haptic feedback on app lock screen.</string>

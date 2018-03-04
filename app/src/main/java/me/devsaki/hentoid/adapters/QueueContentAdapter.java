@@ -110,7 +110,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void attachCover(ViewHolder holder, Content content) {
         RequestBuilder<Drawable> thumb = Glide.with(cxt).load(content.getCoverImageUrl());
 
-        String coverFile = FileHelper.getThumb(cxt, content);
+        String coverFile = FileHelper.getThumb(content);
         holder.ivCover.layout(0, 0, 0, 0);
 
         RequestOptions myOptions = new RequestOptions()
@@ -276,7 +276,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void clearDownload(Content content) {
         if (content.getStatus() == StatusContent.CANCELED) {
-            FileHelper.removeContent(cxt, content);
+            FileHelper.removeContent(content);
         } else {
             Timber.d("Attempting to clear non-cancelled download: %s", content.getTitle());
         }

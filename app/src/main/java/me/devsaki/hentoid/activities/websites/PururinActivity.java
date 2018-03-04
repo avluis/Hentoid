@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities;
+package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
@@ -12,10 +12,12 @@ import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.PururinParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
@@ -25,22 +27,19 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 
 /**
- * Created by avluis on 07/21/2016.
- * Implements ASMHentai source
+ * Created by robb_w on 01/31/2018.
+ * Implements Pururin source
  */
-public class ASMHentaiActivity extends BaseWebActivity {
+public class PururinActivity extends BaseWebActivity {
 
-    @Override
-    void setSite(Site site) {
-        super.setSite(Site.ASMHENTAI);
+    Site getStartSite() {
+        return Site.PURURIN;
     }
 
     @Override
     void setWebView(ObservableWebView webView) {
-        ASMHentaiWebViewClient client = new ASMHentaiWebViewClient();
-        client.restrictTo("asmhentai.com");
+        webView.setWebViewClient(new PururinWebViewClient());
 
-        webView.setWebViewClient(client);
         super.setWebView(webView);
     }
 
@@ -51,8 +50,34 @@ public class ASMHentaiActivity extends BaseWebActivity {
         executeAsyncTask(new HtmlLoader(), extra);
     }
 
-    private class ASMHentaiWebViewClient extends CustomWebViewClient {
+    private class PururinWebViewClient extends CustomWebViewClient {
         final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+
+        @SuppressWarnings("deprecation") // From API 24 we should use another overload
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            try {
+                URL u = new URL(url);
+                return !(u.getHost().endsWith("pururin.io"));
+            } catch (MalformedURLException e) {
+                Timber.d("Malformed URL");
+            }
+
+            return false;
+        }
+
+        @TargetApi(Build.VERSION_CODES.N)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            try {
+                URL u = new URL(request.getUrl().toString());
+                return !(u.getHost().endsWith("pururin.io"));
+            } catch (MalformedURLException e) {
+                Timber.d("Malformed URL");
+            }
+
+            return false;
+        }
 
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request,
@@ -65,7 +90,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
-            if (url.contains("//asmhentai.com/g/")) {
+            if (url.contains("//pururin.io/gallery/")) {
                 executeAsyncTask(new HtmlLoader(), url);
             }
         }
@@ -78,8 +103,8 @@ public class ASMHentaiActivity extends BaseWebActivity {
                     url.contains("ads.php") || url.contains("syndication.exoclick.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
-                return getWebResourceResponseFromAsset(getSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")) {
+                return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("juicyads.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -95,8 +120,8 @@ public class ASMHentaiActivity extends BaseWebActivity {
                     url.contains("syndication.exoclick.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
-                return getWebResourceResponseFromAsset(getSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")) {
+                return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("juicyads.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
@@ -109,9 +134,9 @@ public class ASMHentaiActivity extends BaseWebActivity {
         protected Content doInBackground(String... params) {
             String url = params[0];
             try {
-                processContent(ASMHentaiParser.parseContent(url));
+                processContent(PururinParser.parseContent(url));
             } catch (IOException e) {
-                Timber.e(e, "Error parsing content.");
+                Timber.d("Error parsing content.");
             }
 
             return null;
