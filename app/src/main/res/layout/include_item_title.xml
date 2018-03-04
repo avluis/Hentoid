@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:focusable="true"
-    android:focusableInTouchMode="true"
-    android:lines="1"
-    android:maxLines="1"
-    android:textAppearance="?android:attr/textAppearanceMedium"
+    android:layout_height="44sp"
+    android:layout_marginEnd="8dp"
+    android:layout_marginRight="8dp"
+    android:ellipsize="end"
+    android:gravity="start|center_vertical"
+    android:maxLines="2"
     android:textColor="@android:color/holo_red_dark"
+    android:textSize="18sp"
     android:textStyle="bold"
-    tools:text="This is a rather long title, just because we need it to be.">
-
-</TextView>
+    app:autoSizeMaxTextSize="18sp"
+    app:autoSizeMinTextSize="14sp"
+    app:autoSizeTextType="uniform"
+    tools:text="This is a rather long title, just because we need it to be." />
