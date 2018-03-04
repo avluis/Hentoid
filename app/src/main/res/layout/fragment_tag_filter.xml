@@ -1,8 +1,7 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
-    android:layout_height="0px"
-    android:layout_gravity="bottom"
+    android:layout_height="200dp"
     android:background="#008800"
     android:clipToPadding="true"
     android:tag="TagFilter">
@@ -10,7 +9,7 @@
     <org.apmem.tools.layouts.FlowLayout
         android:id="@+id/tag_filter_view_layout"
         android:layout_width="fill_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="start|top"
         android:orientation="horizontal">
 

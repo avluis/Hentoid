@@ -11,19 +11,11 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
-    <include
-        android:id="@+id/tag_filter_view"
-        layout="@layout/fragment_tag_filter"
-        android:layout_width="match_parent"
-        android:layout_height="0px"
-        android:layout_above="@+id/downloads_toolbar"
-        />
-
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/tag_filter_view">
+        android:layout_above="@+id/downloads_toolbar">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -58,6 +50,15 @@
             </LinearLayout>
         </FrameLayout>
     </android.support.v4.widget.SwipeRefreshLayout>
+
+    <include
+        android:id="@+id/tag_filter_view"
+        layout="@layout/fragment_tag_filter"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_above="@+id/downloads_toolbar"
+        android:visibility="gone"
+        />
 
     <TextView
         android:id="@+id/empty"

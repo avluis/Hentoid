@@ -687,12 +687,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if(tagFilterState != TagFilterState.EXPANDED) {
             if (getQuery().length() > 0) clearQuery(1); // Clears any previously active query (search bar)
             updateTagFilter();
-            tagFilterView.animate().y(200).start();
+            //tagFilterView.animate().y(200).start();
+            tagFilterView.setVisibility(View.VISIBLE);
             tagFilterState = TagFilterState.EXPANDED;
             item.setIcon(R.drawable.ic_menu_tags_on);
         }
         else {
-            tagFilterView.animate().y(0).start();
+            //tagFilterView.animate().y(0).start();
+            tagFilterView.setVisibility(View.GONE);
             tagFilterState = TagFilterState.COLLAPSED;
             item.setIcon(R.drawable.ic_menu_tags_off);
         }
