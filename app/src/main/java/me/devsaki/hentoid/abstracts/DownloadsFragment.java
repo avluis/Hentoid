@@ -7,7 +7,6 @@ import android.app.NotificationManager;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
@@ -17,12 +16,9 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.view.menu.ActionMenuItemView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -125,6 +121,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private MenuItem tagMenuButton;
     private FlowLayout tagFilterLayout;
     private Map<String, Integer> filters;
+
+    private enum TagFilterState {COLLAPSED, EXPANDED}     // States of animation
+    private TagFilterState tagFilterState = TagFilterState.COLLAPSED;
 
     private boolean orderUpdated;
     private boolean isSelected;
@@ -390,12 +389,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void initUI(View rootView) {
-        mListView = rootView.findViewById(R.id.list);
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
 
         // Main view
-        mListView = (RecyclerView) rootView.findViewById(R.id.list);
+        mListView = rootView.findViewById(R.id.list);
         mListView.setHasFixedSize(true);
         llm = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(llm);
@@ -425,27 +423,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout = rootView.findViewById(R.id.swipe_container);
 
         // Tag filter
-        tagFilterLayout =  (FlowLayout) rootView.findViewById(R.id.tag_filter_view_layout);
-        tagFilterView = (NestedScrollView) rootView.findViewById(R.id.tag_filter_view);
-        BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
-        tagFilterViewBehaviour.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                // Bottom Sheet was dismissed by user! But this is only fired, if dialog is swiped down! Not if touch outside dismissed the dialog or the back button
-                if (newState == BottomSheetBehavior.STATE_COLLAPSED)
-                {
-                    tagMenuButton.setIcon(R.drawable.ic_menu_tags_off);
-                } else if (newState == BottomSheetBehavior.STATE_EXPANDED)
-                {
-                    tagMenuButton.setIcon(R.drawable.ic_menu_tags_on);
-                }
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-
-            }
-        });
+        tagFilterLayout = rootView.findViewById(R.id.tag_filter_view_layout);
+        tagFilterView = rootView.findViewById(R.id.tag_filter_view);
 
         filters = new HashMap<>();
     }
@@ -705,16 +684,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private void toggleTagView(MenuItem item)
     {
-        BottomSheetBehavior tagFilterViewBehaviour = BottomSheetBehavior.from(tagFilterView);
-
-        if(tagFilterViewBehaviour.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+        if(tagFilterState != TagFilterState.EXPANDED) {
             if (getQuery().length() > 0) clearQuery(1); // Clears any previously active query (search bar)
             updateTagFilter();
-            tagFilterViewBehaviour.setState(BottomSheetBehavior.STATE_EXPANDED);
+            tagFilterView.animate().y(200).start();
+            tagFilterState = TagFilterState.EXPANDED;
             item.setIcon(R.drawable.ic_menu_tags_on);
         }
         else {
-            tagFilterViewBehaviour.setState(BottomSheetBehavior.STATE_COLLAPSED);
+            tagFilterView.animate().y(0).start();
+            tagFilterState = TagFilterState.COLLAPSED;
             item.setIcon(R.drawable.ic_menu_tags_off);
         }
     }

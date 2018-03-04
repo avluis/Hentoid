@@ -126,11 +126,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     @Override
     public void onBindViewHolder(ContentHolder holder, final int pos) {
-            Content content = mSortedList.get(pos);
+        Content content = mSortedList.get(pos);
 
-            // Initializes the ViewHolder that contains the booksupdateLayoutVisibility( holder, content, pos);
-            populateLayout( holder, content, pos);
-            attachOnClickListeners( holder, content, pos);
+        // Initializes the ViewHolder that contains the books
+        updateLayoutVisibility( holder, content, pos);
+        populateLayout( holder, content, pos);
+        attachOnClickListeners( holder, content, pos);
 
     }
 
