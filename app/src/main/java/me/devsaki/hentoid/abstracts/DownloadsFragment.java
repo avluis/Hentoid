@@ -36,7 +36,6 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import org.apmem.tools.layouts.FlowLayout;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -45,6 +44,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -119,7 +119,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // Tag filters
     private MenuItem tagMenuButton;
-    private FlowLayout tagFilterLayout;
+    private ViewGroup tagFilterLayout;
     private Map<String, Integer> filters;
 
     private enum TagFilterState {COLLAPSED, EXPANDED}     // States of animation
@@ -423,7 +423,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout = rootView.findViewById(R.id.swipe_container);
 
         // Tag filter
-        tagFilterLayout = rootView.findViewById(R.id.tag_filter_view_layout);
+        tagFilterLayout = rootView.findViewById(R.id.filter_tags);
         tagFilterView = rootView.findViewById(R.id.tag_filter_view);
 
         filters = new HashMap<>();
@@ -705,11 +705,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private void updateTagFilter()
     {
+        // Removes all tag buttons
         tagFilterLayout.removeAllViews();
+
         for(String key : filters.keySet())
         {
-            if (0 == filters.get(key)) filters.put(key, 2);
-            else if (1 == filters.get(key)) filters.put(key, 3);
+            filters.put(key,filters.get(key) + 10);
+//            if (0 == filters.get(key)) filters.put(key, 2);
+//            else if (1 == filters.get(key)) filters.put(key, 3);
         }
 
         List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode());
@@ -718,15 +721,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         {
             addButton(val.first, val.second);
             if (!filters.containsKey(val.first)) filters.put(val.first, 0);
-            else if (2 == filters.get(val.first)) filters.put(val.first, 0);
-            else if (3 == filters.get(val.first)) filters.put(val.first, 1);
+            else if (filters.get(val.first) > 10) filters.put(val.first, filters.get(val.first) - 10);
         }
 
         // Purge unused filter entries
-        Set<String> keySet = filters.keySet();
+        Set<String> keySet = new HashSet<>();
+        keySet.addAll(filters.keySet());
         for(String key : keySet)
         {
-            if (filters.get(key) > 1) filters.remove(key);
+            if (filters.get(key) > 9) filters.remove(key);
         }
 
         // TODO : interaction between buttons, source (website) filter
@@ -745,6 +748,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         Button button = new Button(mContext);
         button.setText(label + "("+count+")");
         button.setBackgroundResource(R.drawable.btn_buttonshape);
+        button.setMinHeight(0);
+        button.setMinimumHeight(0);
 
         GradientDrawable grad = (GradientDrawable)button.getBackground();
         int color = Color.WHITE;
@@ -773,27 +778,29 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     {
         GradientDrawable grad = (GradientDrawable)b.getBackground();
 
-        switch (filters.get(tag)) {
-            case 0:
-                b.setTextColor(Color.RED);
-                grad.setStroke(3, Color.RED);
-                filters.put(tag, 1);
-                break;
-            case 1:
-                b.setTextColor(Color.WHITE);
-                grad.setStroke(3, Color.WHITE);
-                filters.put(tag, 0);
-                break;
-            default :
-        }
+        if (filters.containsKey(tag)) {
 
-        List<String> selectedTags = new ArrayList<>();
-        for(String key : filters.keySet())
-        {
-            if (1 == filters.get(key)) selectedTags.add(key);
-        }
+            switch (filters.get(tag)) {
+                case 0:
+                    b.setTextColor(Color.RED);
+                    grad.setStroke(3, Color.RED);
+                    filters.put(tag, 1);
+                    break;
+                case 1:
+                    b.setTextColor(Color.WHITE);
+                    grad.setStroke(3, Color.WHITE);
+                    filters.put(tag, 0);
+                    break;
+                default:
+            }
 
-        searchContent(selectedTags);
+            List<String> selectedTags = new ArrayList<>();
+            for (String key : filters.keySet()) {
+                if (1 == filters.get(key)) selectedTags.add(key);
+            }
+
+            searchContent(selectedTags);
+        }
     }
 
 

@@ -1,4 +1,5 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:f="http://schemas.android.com/apk/res-auto"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
     android:layout_height="200dp"
@@ -6,15 +7,74 @@
     android:clipToPadding="true"
     android:tag="TagFilter">
 
-    <org.apmem.tools.layouts.FlowLayout
-        android:id="@+id/tag_filter_view_layout"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="start|top"
-        android:orientation="horizontal">
+
+    <LinearLayout
+        android:id="@+id/filter_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="fill"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/filter_sites"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <ImageButton
+                android:id="@+id/filter_nhentai"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                f:srcCompat="@drawable/ic_menu_nhentai"
+                />
+            <ImageButton
+                android:id="@+id/filter_hitomi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                f:srcCompat="@drawable/ic_menu_hitomi"
+                />
+            <ImageButton
+                android:id="@+id/filter_asm"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                f:srcCompat="@drawable/ic_menu_asmhentai"
+                />
+            <ImageButton
+                android:id="@+id/filter_hentaicafe"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                f:srcCompat="@drawable/ic_menu_hentaicafe"
+                />
+            <ImageButton
+                android:id="@+id/filter_tsumino"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                f:srcCompat="@drawable/ic_menu_tsumino"
+                />
+            <ImageButton
+                android:id="@+id/filter_pururin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                f:srcCompat="@drawable/ic_menu_pururin"
+                />
+
+        </LinearLayout>
+
+        <org.apmem.tools.layouts.FlowLayout
+            android:id="@+id/filter_tags"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            f:weightDefault="1.0"
+            android:gravity="fill"
+            android:orientation="horizontal">
 
 
-    </org.apmem.tools.layouts.FlowLayout>
+        </org.apmem.tools.layouts.FlowLayout>
+
+
+    </LinearLayout>
+
 
     <!-- background 400000 -->
 
