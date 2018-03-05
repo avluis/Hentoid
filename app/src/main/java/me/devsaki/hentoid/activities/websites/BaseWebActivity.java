@@ -83,10 +83,10 @@ public abstract class BaseWebActivity extends BaseActivity {
             Timber.d("Loading site: %s", getStartSite());
         }
 
-        fabRead = (FloatingActionButton) findViewById(R.id.fabRead);
-        fabDownload = (FloatingActionButton) findViewById(R.id.fabDownload);
-        fabRefreshOrStop = (FloatingActionButton) findViewById(R.id.fabRefreshStop);
-        fabHome = (FloatingActionButton) findViewById(R.id.fabHome);
+        fabRead = findViewById(R.id.fabRead);
+        fabDownload = findViewById(R.id.fabDownload);
+        fabRefreshOrStop = findViewById(R.id.fabRefreshStop);
+        fabHome = findViewById(R.id.fabHome);
 
         hideFab(fabRead);
         hideFab(fabDownload);
@@ -131,7 +131,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
-        webView = (ObservableWebView) findViewById(R.id.wbMain);
+        webView = findViewById(R.id.wbMain);
         webView.setOnLongClickListener(v -> {
             WebView.HitTestResult result = webView.getHitTestResult();
             if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
@@ -193,7 +193,7 @@ public abstract class BaseWebActivity extends BaseActivity {
     }
 
     private void initSwipeLayout() {
-        swipeLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_container);
+        swipeLayout = findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(() -> {
             if (!swipeLayout.isRefreshing() || !webViewIsLoading) {
                 webView.reload();
@@ -206,7 +206,6 @@ public abstract class BaseWebActivity extends BaseActivity {
                 android.R.color.holo_red_light);
     }
 
-    @SuppressWarnings("UnusedParameters")
     public void onRefreshStopFabClick(View view) {
         if (webViewIsLoading) {
             webView.stopLoading();
@@ -232,12 +231,10 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
-    @SuppressWarnings("UnusedParameters")
     public void onHomeFabClick(View view) {
         goHome();
     }
 
-    @SuppressWarnings("UnusedParameters")
     public void onReadFabClick(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
@@ -250,7 +247,6 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
-    @SuppressWarnings("UnusedParameters")
     public void onDownloadFabClick(View view) {
         processDownload();
     }
@@ -392,7 +388,6 @@ public abstract class BaseWebActivity extends BaseActivity {
             domainName = s;
         }
 
-        @SuppressWarnings("deprecation") // From API 24 we should use another overload
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             String hostStr = Uri.parse(url).getHost();

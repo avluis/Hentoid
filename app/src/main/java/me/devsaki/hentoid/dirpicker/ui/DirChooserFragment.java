@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.DialogFragment;
@@ -87,7 +88,7 @@ public class DirChooserFragment extends DialogFragment implements
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
         View rootView = inflater.inflate(R.layout.fragment_dir_picker, container, false);
 
         initUI(rootView);
@@ -104,11 +105,11 @@ public class DirChooserFragment extends DialogFragment implements
     }
 
     private void initUI(View rootView) {
-        recyclerView = (RecyclerView) rootView.findViewById(R.id.dir_list);
-        textView = (TextView) rootView.findViewById(R.id.current_dir);
-        fabCreateDir = (FloatingActionButton) rootView.findViewById(R.id.create_dir);
-        fabRequestSD = (FloatingActionButton) rootView.findViewById(R.id.request_sd);
-        selectDirBtn = (Button) rootView.findViewById(R.id.select_dir);
+        recyclerView = rootView.findViewById(R.id.dir_list);
+        textView = rootView.findViewById(R.id.current_dir);
+        fabCreateDir = rootView.findViewById(R.id.create_dir);
+        fabRequestSD = rootView.findViewById(R.id.request_sd);
+        selectDirBtn = rootView.findViewById(R.id.select_dir);
 
         textView.setOnClickListener(this);
         textView.setOnLongClickListener(this);

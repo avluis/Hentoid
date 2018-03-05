@@ -65,14 +65,12 @@ public class ASMHentaiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("//asmhentai.com/g/")) {
-                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI.getCode()+"");
-            }
-            else if (url.contains("//comics.asmhentai.com/g/")) {
-                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI_COMICS.getCode()+"");
+                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI.getCode() + "");
+            } else if (url.contains("//comics.asmhentai.com/g/")) {
+                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI_COMICS.getCode() + "");
             }
         }
 
-        @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
@@ -81,7 +79,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("exosrv.com")|| url.contains("hentaigold.net")) {
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("exosrv.com") || url.contains("hentaigold.net")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -98,7 +96,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("exosrv.com")|| url.contains("hentaigold.net")) {
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("exosrv.com") || url.contains("hentaigold.net")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);

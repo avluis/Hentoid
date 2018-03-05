@@ -75,7 +75,6 @@ public class HitomiActivity extends BaseWebActivity {
             }
         }
 
-        @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {

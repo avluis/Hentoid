@@ -88,8 +88,8 @@ class FileUtil {
     private static DocumentFile documentFileHelper(Uri treeUri, boolean originalDirectory,
                                                    String relativePath, boolean isDirectory) {
         // start with root of SD card and then parse through document tree.
-        Context cxt = HentoidApp.getAppContext();
-        DocumentFile document = DocumentFile.fromTreeUri(cxt, treeUri);
+        Context context = HentoidApp.getAppContext();
+        DocumentFile document = DocumentFile.fromTreeUri(context, treeUri);
         if (originalDirectory) {
             return document;
         }
@@ -128,8 +128,8 @@ class FileUtil {
                 // Storage Access Framework
                 DocumentFile targetDocument = getDocumentFile(target, false);
                 if (targetDocument != null) {
-                    Context cxt = HentoidApp.getAppContext();
-                    return cxt.getContentResolver().openOutputStream(
+                    Context context = HentoidApp.getAppContext();
+                    return context.getContentResolver().openOutputStream(
                             targetDocument.getUri());
                 }
             }

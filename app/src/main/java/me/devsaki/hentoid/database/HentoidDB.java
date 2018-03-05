@@ -318,7 +318,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public List<Content> selectContentInQueue() {
-        List<Content> result = null;
+        List<Content> result;
         synchronized (locker) {
             Timber.d("selectContentInQueue");
             SQLiteDatabase db = null;
@@ -339,7 +339,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public List<Content> selectContentEmptyFolder() {
-        List<Content> result = null;
+        List<Content> result;
         synchronized (locker) {
             Timber.d("selectContentEmptyFolder");
             SQLiteDatabase db = null;
@@ -359,7 +359,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     // This is a long running task, execute with AsyncTask or similar
     public List<Content> selectContentByQuery(String query, int page, int qty, boolean order) {
         String q = query;
-        List<Content> result = null;
+        List<Content> result;
 
         synchronized (locker) {
             Timber.d("selectContentByQuery");

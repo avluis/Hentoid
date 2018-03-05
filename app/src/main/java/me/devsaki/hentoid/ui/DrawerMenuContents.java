@@ -36,11 +36,11 @@ public class DrawerMenuContents {
     private Class[] activities;
     private ArrayList<Map<String, ?>> items;
 
-    public DrawerMenuContents(Context cxt) {
+    public DrawerMenuContents(Context context) {
         setActivityList(
-                cxt.getResources().getStringArray(R.array.nav_drawer_names),
-                cxt.getResources().getStringArray(R.array.nav_drawer_codes),
-                cxt.getResources().getStringArray(R.array.nav_drawer_classes));
+                context.getResources().getStringArray(R.array.nav_drawer_names),
+                context.getResources().getStringArray(R.array.nav_drawer_codes),
+                context.getResources().getStringArray(R.array.nav_drawer_classes));
         populateActivities();
     }
 

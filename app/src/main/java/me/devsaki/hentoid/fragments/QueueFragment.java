@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ public class QueueFragment extends BaseFragment {
     private ListView mListView;
     private TextView mEmptyText;
     private List<Content> contents;
-    private Context cxt;
+    private Context context;
 
     public static QueueFragment newInstance() {
         return new QueueFragment();
@@ -61,27 +62,27 @@ public class QueueFragment extends BaseFragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        cxt = getActivity().getApplicationContext();
+        context = getActivity().getApplicationContext();
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
-        mListView = (ListView) rootView.findViewById(android.R.id.list);
-        mEmptyText = (TextView) rootView.findViewById(android.R.id.empty);
+        mListView = rootView.findViewById(android.R.id.list);
+        mEmptyText = rootView.findViewById(android.R.id.empty);
 
-        ImageButton btnStart = (ImageButton) rootView.findViewById(R.id.btnStart);
+        ImageButton btnStart = rootView.findViewById(R.id.btnStart);
         btnStart.setOnClickListener(v -> {
             BaseFragment.getDB().updateContentStatus(StatusContent.DOWNLOADING,
                     StatusContent.PAUSED);
             update();
-            Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
+            Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
                     DownloadService.class);
-            cxt.startService(intent);
+            context.startService(intent);
         });
-        ImageButton btnPause = (ImageButton) rootView.findViewById(R.id.btnPause);
+        ImageButton btnPause = rootView.findViewById(R.id.btnPause);
         btnPause.setOnClickListener(v -> {
             BaseFragment.getDB().updateContentStatus(StatusContent.PAUSED,
                     StatusContent.DOWNLOADING);
@@ -108,7 +109,7 @@ public class QueueFragment extends BaseFragment {
         } else {
             mEmptyText.setVisibility(View.GONE);
         }
-        QueueContentAdapter adapter = new QueueContentAdapter(cxt, contents, QueueFragment.this);
+        QueueContentAdapter adapter = new QueueContentAdapter(context, contents, QueueFragment.this);
         mListView.setAdapter(adapter);
     }
 
