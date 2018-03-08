@@ -3,6 +3,7 @@ package me.devsaki.hentoid.database;
 import android.content.Context;
 import android.os.AsyncTask;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,80 +17,70 @@ import timber.log.Timber;
 public class SearchContent {
 
     private final HentoidDB db;
-    private final String mQuery;
-    private final int mPage;
-    private final int mQty;
-    private final boolean mOrder;
     private volatile State mCurrentState = State.NON_INIT;
     private List<Content> contentList = new ArrayList<>();
-    private List<String> mTagFilter = null;
 
-    public SearchContent(final Context context, String query, int page, int qty, boolean order) {
+    protected ContentListener mListener;
+
+    protected String mQuery;
+    protected int mCurrentPage;
+    protected int mBooksPerPage;
+    protected boolean mIsOrderAlpha;
+    protected List<String> mTagFilter = new ArrayList<>();
+
+    public SearchContent(final Context context, final ContentListener listener) {
         db = HentoidDB.getInstance(context);
-        mQuery = query;
-        mPage = page;
-        mQty = qty;
-        mOrder = order;
+        mListener = listener;
     }
 
-    public SearchContent(final Context context, List<String> tagFilter, boolean order) {
-        db = HentoidDB.getInstance(context);
-        mTagFilter = new ArrayList<String>();
-        mTagFilter.addAll(tagFilter);
-        mOrder = order;
-
+    public void retrieveResults(List<String> tagFilter, boolean isOrderAlpha) {
         mQuery = null;
-        mPage = 0;
-        mQty = 0;
+        mCurrentPage = 0;
+        mBooksPerPage = 0;
+        mIsOrderAlpha = isOrderAlpha;
+        mTagFilter.clear();
+        mTagFilter.addAll(tagFilter);
+
+        retrieveResults();
+    }
+    public void retrieveResults(String query, int currentPage, int booksPerPage, boolean isOrderAlpha) {
+        mTagFilter.clear();
+        mQuery = query;
+        mCurrentPage = currentPage;
+        mBooksPerPage = booksPerPage;
+        mIsOrderAlpha = isOrderAlpha;
+
+        retrieveResults();
     }
 
-    public List<Content> getContent() {
-        return contentList;
-    }
-
-    public void retrieveResults(final ContentListener listener) {
+    private void retrieveResults() {
         Timber.d("Retrieving results.");
 
         if (mCurrentState == State.READY) {
-            listener.onContentReady(true);
-            listener.onContentFailed(false);
+            mListener.onContentReady(true, contentList);
+            mListener.onContentFailed(false);
             return;
         } else if (mCurrentState == State.FAILED) {
-            listener.onContentReady(false);
-            listener.onContentFailed(true);
+            mListener.onContentReady(false, contentList);
+            mListener.onContentFailed(true);
             return;
         }
 
         mCurrentState = State.INIT;
 
-        new AsyncTask<Void, Void, State>() {
-
-            @Override
-            protected State doInBackground(Void... params) {
-                retrieveContent();
-                return mCurrentState;
-            }
-
-            @Override
-            protected void onPostExecute(State current) {
-                if (listener != null) {
-                    listener.onContentReady(current == State.READY);
-                    listener.onContentFailed(current == State.FAILED);
-                }
-            }
-        }.execute();
+        new SearchTask(this).execute();
     }
 
-    private synchronized void retrieveContent() {
+    private synchronized State retrieveContent(String query, int currentPage, int booksPerPage, List<String> tagFilter, boolean isOrderAlpha) {
         Timber.d("Retrieving content.");
         try {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
 
-                if (null == mTagFilter) {
-                    contentList = db.selectContentByQuery(mQuery, mPage, mQty, mOrder);
+                if (null == tagFilter || 0 == tagFilter.size()) {
+                    contentList = db.selectContentByQuery(query, currentPage, booksPerPage, isOrderAlpha);
                 } else {
-                    contentList = db.selectContentByTags(mTagFilter);
+                    contentList = db.selectContentByTags(tagFilter);
                 }
                 mCurrentState = State.READY;
             }
@@ -102,14 +93,40 @@ public class SearchContent {
                 mCurrentState = State.FAILED;
             }
         }
+        return mCurrentState;
     }
 
     private enum State {
         NON_INIT, INIT, DONE, READY, FAILED
     }
 
+    private static class SearchTask extends AsyncTask<Void, Void, State> {
+
+        private WeakReference<SearchContent> activityReference;
+
+        // only retain a weak reference to the activity
+        SearchTask(SearchContent context) {
+            activityReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected State doInBackground(Void... params) {
+            SearchContent activity = activityReference.get();
+            return activity.retrieveContent(activity.mQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mIsOrderAlpha);
+        }
+
+        @Override
+        protected void onPostExecute(State current) {
+            SearchContent activity = activityReference.get();
+            if (activity.mListener != null) {
+                activity.mListener.onContentReady(current == State.READY, activity.contentList);
+                activity.mListener.onContentFailed(current == State.FAILED);
+            }
+        }
+    }
+
     public interface ContentListener {
-        void onContentReady(boolean success);
+        void onContentReady(boolean success, List<Content> contentList);
 
         void onContentFailed(boolean failure);
     }

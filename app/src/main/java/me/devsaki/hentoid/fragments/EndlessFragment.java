@@ -29,7 +29,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                 super.onScrolled(recyclerView, dx, dy);
 
                 // Show toolbar:
-                if (!override && result != null && result.size() > 0) {
+                if (!override && mAdapter.getItemCount() > 0) {
                     // At top of list
                     if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
                             .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
@@ -40,7 +40,7 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
                     }
 
                     // Last item in list
-                    if (llm.findLastVisibleItemPosition() == result.size() - 1) {
+                    if (llm.findLastVisibleItemPosition() == mAdapter.getItemCount() - 1) {
                         showToolbar(true, false);
                     } else {
                         // When scrolling up
@@ -78,25 +78,35 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
     protected void queryPrefs() {
         super.queryPrefs();
 
-        qtyPages = Preferences.Default.PREF_QUANTITY_PER_PAGE_DEFAULT;
+        booksPerPage = Preferences.Default.PREF_QUANTITY_PER_PAGE_DEFAULT;
     }
 
     @Override
     protected void checkResults() {
-        if (contents != null) {
-            Timber.d("Contents are not null.");
-        } else if (isLoaded && result != null) {
+/*
+        if (isLoaded && result != null) {
             Timber.d("Result is not null.");
             result.clear();
         } else {
             Timber.d("Contents are null.");
         }
+*/
         mAdapter.setEndlessScrollListener(this);
 
+        if (0 == mAdapter.getItemCount())
+        {
+            if (!isLoaded) update();
+            else checkContent(true);
+        } else {
+            checkContent(false);
+            mAdapter.setContentsWipedListener(this);
+        }
+
+        /*
         if (result != null) {
             Timber.d("Result is not null.");
             Timber.d("Are results loaded? %s", isLoaded);
-            if (result.isEmpty() && !isLoaded) {
+            if (0 == mAdapter.getItemCount() && !isLoaded) {
                 Timber.d("Result is empty!");
                 update();
             }
@@ -105,15 +115,16 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
         } else {
             Timber.d("Result is null.");
 
-            if (isLoaded) { // Do not load anything if a loading activity is already
+            if (isLoaded) { // Do not load anything if a loading activity is already taking place
                 update();
                 checkContent(true);
             }
         }
+        */
 
         if (!query.isEmpty()) {
             Timber.d("Saved Query: %s", query);
-            update();
+            if (isLoaded) update();
         }
     }
 
@@ -133,18 +144,16 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
     }
 
     @Override
-    protected void displayResults() {
-        result = search.getContent();
-
+    protected void displayResults(List<Content> results) {
         if (isLoaded) {
             toggleUI(SHOW_DEFAULT);
         }
 
-         Timber.d("Display %s results", result.size());
-         mAdapter.replaceAll(result);
+         Timber.d("Display %s results", results.size());
+         mAdapter.replaceAll(results);
 
          toggleUI(SHOW_RESULT);
-         updatePager();
+         updatePager(); // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
 
         /*
         if (query.isEmpty()) {

@@ -393,7 +393,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String query, int page, int qty, boolean order) {
+    public List<Content> selectContentByQuery(String query, int page, int booksPerPage, boolean isOrderAlpha) {
         String q = query;
         List<Content> result = null;
 
@@ -402,17 +402,17 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
-            int start = (page - 1) * qty;
+            int start = (page - 1) * booksPerPage;
             try {
                 q = "%" + q + "%";
                 db = getReadableDatabase();
                 String sql = ContentTable.SELECT_DOWNLOADS;
-                if (order) {
+                if (isOrderAlpha) {
                     sql += ContentTable.ORDER_ALPHABETIC;
                 } else {
                     sql += ContentTable.ORDER_BY_DATE;
                 }
-                if (qty < 0) {
+                if (booksPerPage < 0) {
                     cursorContent = db.rawQuery(sql,
                             new String[]{StatusContent.DOWNLOADED.getCode() + "",
                                     StatusContent.ERROR.getCode() + "",
@@ -427,7 +427,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                                     StatusContent.MIGRATED.getCode() + "", q, q,
                                     AttributeType.ARTIST.getCode() + "",
                                     AttributeType.TAG.getCode() + "",
-                                    AttributeType.SERIE.getCode() + "", start + "", qty + ""});
+                                    AttributeType.SERIE.getCode() + "", start + "", booksPerPage + ""});
                 }
                 result = populateResult(cursorContent, db);
             } finally {

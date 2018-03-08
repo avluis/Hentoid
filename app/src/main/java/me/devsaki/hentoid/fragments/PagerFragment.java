@@ -27,7 +27,7 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
                 super.onScrolled(recyclerView, dx, dy);
 
                 // Show toolbar:
-                if (!override && result != null && result.size() > 0) {
+                if (!override && mAdapter.getItemCount() > 0) {
                     // At top of list
                     if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
                             .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
@@ -38,7 +38,7 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
                     }
 
                     // Last item in list
-                    if (llm.findLastVisibleItemPosition() == result.size() - 1) {
+                    if (llm.findLastVisibleItemPosition() == mAdapter.getItemCount() - 1) {
                         showToolbar(true, false);
                         if (newContent) {
                             toolTip.setVisibility(View.VISIBLE);
@@ -91,10 +91,21 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
 
     @Override
     protected void checkResults() {
+        if (0 == mAdapter.getItemCount())
+        {
+            if (!isLoaded) update();
+            checkContent(true);
+        } else {
+            if (isLoaded) update();
+            checkContent(false);
+            mAdapter.setContentsWipedListener(this);
+        }
+
+/*
         if (result != null) {
             Timber.d("Result is not null.");
             Timber.d("Are results loaded? %s", isLoaded);
-            if (result.isEmpty() && !isLoaded) {
+            if (0 == mAdapter.getItemCount() && !isLoaded) {
                 Timber.d("Result is empty!");
                 update();
             }
@@ -106,10 +117,11 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
             update();
             checkContent(true);
         }
+*/
 
         if (!query.isEmpty()) {
             Timber.d("Saved Query: %s", query);
-            update();
+            if (isLoaded) update();
         }
     }
 
@@ -134,13 +146,19 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
     }
 
     @Override
-    protected void displayResults() {
-        result = search.getContent();
-
+    protected void displayResults(List<Content> results) {
         if (isLoaded) {
-            toggleUI(0);
+            toggleUI(SHOW_DEFAULT);
         }
 
+        Timber.d("Display %s results", results.size());
+        mAdapter.replaceAll(results);
+
+        toggleUI(SHOW_RESULT);
+        updatePager();
+        // TODO - factor in DownloadsFragment ?
+
+/*
         if (query.isEmpty()) {
             if (result != null && !result.isEmpty()) {
 
@@ -168,5 +186,6 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
                 displayNoResults();
             }
         }
+        */
     }
 }

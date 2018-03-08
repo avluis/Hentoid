@@ -339,8 +339,6 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> DLDATE_COMPARATOR = new Comparator<Content>() {
         @Override
-        public int compare(Content a, Content b) {
-            return new Long(a.getDownloadDate()).compareTo(b.getDownloadDate());
-        }
+        public int compare(Content a, Content b) { return new Long(a.getDownloadDate()).compareTo(b.getDownloadDate()) * -1; /* Inverted - last download date first */ }
     };
 }

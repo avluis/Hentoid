@@ -84,21 +84,17 @@ public abstract class ContentTable {
             + STATUS_COLUMN + " in (?, ?) ORDER BY C." + STATUS_COLUMN + ", C."
             + DOWNLOAD_DATE_COLUMN;
 
+    // TODO rewrite like SELECT_DOWNLOADS, using in
     public static final String SELECT_BY_TAGS = "select c.*, count(*) " +
             "from "+TABLE_NAME+" c inner join "+ContentAttributeTable.TABLE_NAME+" ca on ca."+ContentAttributeTable.CONTENT_ID_COLUMN+" = c."+ID_COLUMN+" " +
             "inner join "+AttributeTable.TABLE_NAME+" a on a."+AttributeTable.ID_COLUMN+" = ca."+ContentAttributeTable.ATTRIBUTE_ID_COLUMN+" " +
             "where lower(a."+AttributeTable.NAME_COLUMN+") in (%1) and a.type = 3 and c.status = 1 group by 1 having count(*) = %2";
 
-    // TODO OPTIMIZE
-    public static final String SELECT_DOWNLOADS = "SELECT C." + ID_COLUMN + ", C."
-            + UNIQUE_SITE_ID_COLUMN + ", C." + CATEGORY_COLUMN + ", C." + URL_COLUMN + ", C."
-            + HTML_DESCRIPTION_COLUMN + ", C." + TITLE_COLUMN + ", C." + QTY_PAGES_COLUMN + ", C."
-            + UPLOAD_DATE_COLUMN + ", C." + DOWNLOAD_DATE_COLUMN + ", C." + STATUS_COLUMN + ", C."
-            + COVER_IMAGE_URL_COLUMN + ", C." + SITE_COLUMN + ", C." + AUTHOR_COLUMN + ", C." + STORAGE_FOLDER_COLUMN +
+    public static final String SELECT_DOWNLOADS = "SELECT C.*" +
             " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND (C." + TITLE_COLUMN + " like ? OR C." + ID_COLUMN
             + " in (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM "
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A."
-            + AttributeTable.ID_COLUMN + " WHERE A." + AttributeTable.NAME_COLUMN + " like ? AND A."
+            + AttributeTable.ID_COLUMN + " WHERE lower(A." + AttributeTable.NAME_COLUMN + ") like ? AND A."
             + AttributeTable.TYPE_COLUMN + " in (?, ?, ?)))";
 }

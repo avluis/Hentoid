@@ -78,6 +78,9 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * TODO: Test endless scroll
  * TODO: Bar height as % of screen
  * TODO: Test on a real phone
+ *
+ * TODO: Fix empty 2nd page when contents count = 20
+ * TODO: Fix sort with SQL and ContentComparator when pagedView is active
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
@@ -92,15 +95,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected static String query = "";
     private final Handler searchHandler = new Handler();
     protected Context mContext;
-    protected int qtyPages;
+    protected int booksPerPage;
     protected int currentPage = 1;
     protected ContentAdapter mAdapter;
     protected LinearLayoutManager llm;
     protected RecyclerView mListView;
     protected View tagFilterView;
-    protected List<Content> contents;
-    protected List<Content> result = new ArrayList<>();
-    protected SearchContent search;
+//    protected List<Content> result = new ArrayList<>();
+//    protected SearchContent search;
     protected LinearLayout toolTip;
     protected Toolbar toolbar;
     protected boolean newContent;
@@ -118,7 +120,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private SwipeRefreshLayout refreshLayout;
 
     // Tag filters
-    private MenuItem tagMenuButton;
     private ViewGroup tagFilterLayout;
     private Map<String, Integer> filters;
 
@@ -247,11 +248,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             checkStorage();
         }
 
-        int qtyPages = Preferences.getContentPageQuantity();
+        int booksPerPage = Preferences.getContentPageQuantity();
 
-        if (this.qtyPages != qtyPages) {
-            Timber.d("qtyPages updated.");
-            this.qtyPages = qtyPages;
+        if (this.booksPerPage != booksPerPage) {
+            Timber.d("booksPerPage updated.");
+            this.booksPerPage = booksPerPage;
             setQuery("");
             shouldUpdate = true;
         }
@@ -373,7 +374,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mContext = getContext();
         settingDir = Preferences.getRootFolderName();
         order = Preferences.getContentSortOrder();
-        qtyPages = Preferences.getContentPageQuantity();
+        booksPerPage = Preferences.getContentPageQuantity();
     }
 
     @Override
@@ -448,7 +449,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (currentPage > 1 && isLoaded) {
                 currentPage--;
                 update();
-            } else if (qtyPages > 0 && isLoaded) {
+            } else if (booksPerPage > 0 && isLoaded) {
                 Helper.toast(mContext, R.string.not_previous_page);
             } else {
                 Timber.d("Not limit per page.");
@@ -459,7 +460,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void attachNext(View rootView) {
         ImageButton btnNext = rootView.findViewById(R.id.btnNext);
         btnNext.setOnClickListener(v -> {
-            if (qtyPages <= 0) {
+            if (booksPerPage <= 0) {
                 Timber.d("Not limit per page.");
             } else {
                 if (!isLastPage && isLoaded) {
@@ -524,7 +525,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout.setRefreshing(false);
         refreshLayout.setEnabled(false);
         newContent = false;
-//        mAdapter.updateContentList();
         cleanResults();
         update();
         resetCount();
@@ -533,8 +533,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void resetCount() {
         Timber.d("Download Count: %s", HentoidApp.getDownloadCount());
         HentoidApp.setDownloadCount(0);
-        NotificationManager manager = (NotificationManager) mContext.getSystemService(
-                Context.NOTIFICATION_SERVICE);
+
+        NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancel(0);
     }
 
@@ -556,7 +556,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         final SearchManager searchManager = (SearchManager)
                 mContext.getSystemService(Context.SEARCH_SERVICE);
 
-        tagMenuButton = menu.findItem(R.id.action_tags);
         searchMenu = menu.findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
@@ -687,13 +686,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if(tagFilterState != TagFilterState.EXPANDED) {
             if (getQuery().length() > 0) clearQuery(1); // Clears any previously active query (search bar)
             updateTagFilter();
-            //tagFilterView.animate().y(200).start();
             tagFilterView.setVisibility(View.VISIBLE);
             tagFilterState = TagFilterState.EXPANDED;
             item.setIcon(R.drawable.ic_menu_tags_on);
         }
         else {
-            //tagFilterView.animate().y(0).start();
             tagFilterView.setVisibility(View.GONE);
             tagFilterState = TagFilterState.COLLAPSED;
             item.setIcon(R.drawable.ic_menu_tags_off);
@@ -711,8 +708,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         for(String key : filters.keySet())
         {
             filters.put(key,filters.get(key) + 10);
-//            if (0 == filters.get(key)) filters.put(key, 2);
-//            else if (1 == filters.get(key)) filters.put(key, 3);
         }
 
         List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode());
@@ -844,15 +839,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void cleanResults() {
-        if (contents != null) {
-            contents.clear();
-            contents = null;
-        }
-
+/*
         if (result != null) {
             result.clear();
             result = null;
         }
+*/
 
         if (mAdapter != null) {
             mAdapter.removeAll();
@@ -952,25 +944,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void searchContent() { searchContent(null); }
     protected void searchContent(List<String> selectedTags) {
         isLoaded = false;
+        SearchContent search = new SearchContent(mContext, this);
+
         if (selectedTags != null && selectedTags.size() > 0) // Search by tag filter
         {
-            search = new SearchContent(mContext, selectedTags, order == Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE);
-        } else // Search by keyword (search bar)
+            search.retrieveResults(selectedTags, order == Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE);
+        } else // Default search for basic display; search by keyword (search bar)
         {
-            search = new SearchContent(mContext, query, currentPage, qtyPages,
-                    order == Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE);
+            search.retrieveResults(query, currentPage, booksPerPage, order == Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE);
         }
-        search.retrieveResults(this);
     }
 
     protected abstract void showToolbar(boolean show, boolean override);
 
-    protected abstract void displayResults();
+    protected abstract void displayResults(List<Content> results);
 
     protected void updatePager() {
-        // TODO: Test if result.size == qtyPages (meaning; last page, exact size)
-        isLastPage = result.size() < qtyPages;
-        Timber.d("Results: %s", result.size());
+        // TODO: Test if result.size == booksPerPage (meaning; last page, exact size)
+        isLastPage = mAdapter.getItemCount() <= booksPerPage;
     }
 
     protected void displayNoResults() {
@@ -989,16 +980,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     ContentListener implementation
      */
     @Override
-    public void onContentReady(boolean success) {
+    public void onContentReady(boolean success, List<Content> results) {
         if (success) {
             Timber.d("Content results have loaded.");
             isLoaded = true;
 
-            if (search.getContent() == null) {
+            if (null == results || 0 == results.size()) {
                 Timber.d("Result: Nothing to match.");
                 displayNoResults();
             } else {
-                displayResults();
+                displayResults(results);
             }
         }
     }
