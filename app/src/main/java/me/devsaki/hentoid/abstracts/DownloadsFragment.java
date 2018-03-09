@@ -80,7 +80,8 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * TODO: Test on a real phone
  *
  * TODO: Fix empty 2nd page when contents count = 20
- * TODO: Fix sort with SQL and ContentComparator when pagedView is active
+ * TODO: Fix sort with SQL and ContentComparator when pagedView is active (recent on 2nd page)
+ * TODO: Fix continuous loading on endlessScroll -> additional content replaces new content instead of adding up
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
@@ -636,7 +637,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void toggleSortMenuItem(Menu menu, boolean show) {
-        if (order == 0) {
+        if (order == Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC) {
             menu.findItem(R.id.action_order_by_date).setVisible(show);
         } else {
             menu.findItem(R.id.action_order_alphabetic).setVisible(show);
@@ -948,10 +949,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (selectedTags != null && selectedTags.size() > 0) // Search by tag filter
         {
-            search.retrieveResults(selectedTags, order == Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE);
+            search.retrieveResults(selectedTags, order == Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC);
         } else // Default search for basic display; search by keyword (search bar)
         {
-            search.retrieveResults(query, currentPage, booksPerPage, order == Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE);
+            search.retrieveResults(query, currentPage, booksPerPage, order == Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC);
         }
     }
 
@@ -961,7 +962,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected void updatePager() {
         // TODO: Test if result.size == booksPerPage (meaning; last page, exact size)
-        isLastPage = mAdapter.getItemCount() <= booksPerPage;
+        isLastPage = mAdapter.getItemCount() < booksPerPage;
     }
 
     protected void displayNoResults() {
