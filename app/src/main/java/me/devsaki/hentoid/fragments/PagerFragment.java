@@ -101,24 +101,6 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
             mAdapter.setContentsWipedListener(this);
         }
 
-/*
-        if (result != null) {
-            Timber.d("Result is not null.");
-            Timber.d("Are results loaded? %s", isLoaded);
-            if (0 == mAdapter.getItemCount() && !isLoaded) {
-                Timber.d("Result is empty!");
-                update();
-            }
-            checkContent(false);
-            mAdapter.setContentsWipedListener(this);
-        } else {
-            Timber.d("Result is null.");
-
-            update();
-            checkContent(true);
-        }
-*/
-
         if (!query.isEmpty()) {
             Timber.d("Saved Query: %s", query);
             if (isLoaded) update();

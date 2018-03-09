@@ -83,14 +83,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
     @Override
     protected void checkResults() {
-/*
-        if (isLoaded && result != null) {
-            Timber.d("Result is not null.");
-            result.clear();
-        } else {
-            Timber.d("Contents are null.");
-        }
-*/
         mAdapter.setEndlessScrollListener(this);
 
         if (0 == mAdapter.getItemCount())
@@ -101,26 +93,6 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
             checkContent(false);
             mAdapter.setContentsWipedListener(this);
         }
-
-        /*
-        if (result != null) {
-            Timber.d("Result is not null.");
-            Timber.d("Are results loaded? %s", isLoaded);
-            if (0 == mAdapter.getItemCount() && !isLoaded) {
-                Timber.d("Result is empty!");
-                update();
-            }
-            checkContent(false);
-            mAdapter.setContentsWipedListener(this);
-        } else {
-            Timber.d("Result is null.");
-
-            if (isLoaded) { // Do not load anything if a loading activity is already taking place
-                update();
-                checkContent(true);
-            }
-        }
-        */
 
         if (!query.isEmpty()) {
             Timber.d("Saved Query: %s", query);
@@ -147,52 +119,10 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
     protected void displayResults(List<Content> results) {
         toggleUI(SHOW_DEFAULT);
 
-        //mAdapter.replaceAll(results);
         mAdapter.add(results);
 
          toggleUI(SHOW_RESULT);
          updatePager(); // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
-
-        /*
-        if (query.isEmpty()) {
-            Timber.d("Query empty");
-            if (result != null && !result.isEmpty()) {
-                Timber.d("Result items : %s",result.size());
-                if (contents == null) {
-                    contents = result;
-                    mAdapter.setContentList(contents);
-                    mListView.setAdapter(mAdapter);
-                } else {
-                    int curSize = mAdapter.getItemCount();
-                    Timber.d("CurSize : %s",curSize);
-                    contents.addAll(result);
-
-                    int size = contents.size()-1;
-                    if (size < 0) size = 0;
-                    mAdapter.notifyItemRangeInserted(curSize, size);
-                }
-
-                toggleUI(SHOW_RESULT);
-                updatePager();
-            }
-        } else {
-            Timber.d("Query: %s", query);
-            if (result != null && !result.isEmpty()) {
-                Timber.d("Result: Match.");
-
-                List<Content> searchResults = result;
-                mAdapter.setContentList(searchResults);
-                mListView.setAdapter(mAdapter);
-
-                toggleUI(SHOW_RESULT);
-                showToolbar(true, true);
-                updatePager();
-            } else {
-                Timber.d("Result: Nothing to match.");
-                displayNoResults();
-            }
-        }
-        */
     }
 
     @Override

@@ -72,16 +72,8 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
  * TODO: Dismiss 'new content' tooltip upon search
- * TODO: Test new behaviour with search, download, import
- * TODO: Use endlessFragment for search by keyword
- * TODO: Fix top left alignment of messages after switching to CoordinatorLayout
- * TODO: Test endless scroll
- * TODO: Bar height as % of screen
- * TODO: Test on a real phone
  *
  * TODO: Fix empty 2nd page when contents count = 20
- * TODO: Fix sort with SQL and ContentComparator when pagedView is active (recent on 2nd page)
- * TODO: Fix continuous loading on endlessScroll -> additional content replaces new content instead of adding up
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
@@ -102,8 +94,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected LinearLayoutManager llm;
     protected RecyclerView mListView;
     protected View tagFilterView;
-//    protected List<Content> result = new ArrayList<>();
-//    protected SearchContent search;
     protected LinearLayout toolTip;
     protected Toolbar toolbar;
     protected boolean newContent;
@@ -840,13 +830,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void cleanResults() {
-/*
-        if (result != null) {
-            result.clear();
-            result = null;
-        }
-*/
-
         if (mAdapter != null) {
             mAdapter.removeAll();
         }
@@ -1035,7 +1018,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 selectTrigger = false;
                 mActionMode.invalidate();
                 mActionMode.setTitle("");
-//                mAdapter.notifyDataSetChanged();
             }
         }
 
