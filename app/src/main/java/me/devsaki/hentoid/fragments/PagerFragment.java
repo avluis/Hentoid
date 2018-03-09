@@ -147,16 +147,17 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
 
     @Override
     protected void displayResults(List<Content> results) {
-        if (isLoaded) {
+        if (0 == results.size()) {
+            Timber.d("Result: Nothing to match.");
+            displayNoResults();
+        } else {
             toggleUI(SHOW_DEFAULT);
+
+            mAdapter.replaceAll(results);
+
+            toggleUI(SHOW_RESULT);
+            updatePager();
         }
-
-        Timber.d("Display %s results", results.size());
-        mAdapter.replaceAll(results);
-
-        toggleUI(SHOW_RESULT);
-        updatePager();
-        // TODO - factor in DownloadsFragment ?
 
 /*
         if (query.isEmpty()) {

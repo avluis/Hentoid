@@ -145,12 +145,10 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
     @Override
     protected void displayResults(List<Content> results) {
-        if (isLoaded) {
-            toggleUI(SHOW_DEFAULT);
-        }
+        toggleUI(SHOW_DEFAULT);
 
-         Timber.d("Display %s results", results.size());
-         mAdapter.replaceAll(results);
+        //mAdapter.replaceAll(results);
+        mAdapter.add(results);
 
          toggleUI(SHOW_RESULT);
          updatePager(); // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list

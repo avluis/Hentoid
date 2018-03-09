@@ -662,7 +662,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         mSortedList.endBatchedUpdates();
     }
 
-
+    public void add(List<Content> contents) {
+        mSortedList.beginBatchedUpdates();
+        mSortedList.addAll(contents);
+        mSortedList.endBatchedUpdates();
+    }
 
     public interface EndlessScrollListener {
         void onLoadMore();
@@ -679,9 +683,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         @Override
-        public void onInserted(int position, int count) {
-            notifyItemRangeInserted(position, count);
-        }
+        public void onInserted(int position, int count) { notifyItemRangeInserted(position, count); }
 
         @Override
         public void onRemoved(int position, int count) {
@@ -689,9 +691,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         @Override
-        public void onMoved(int fromPosition, int toPosition) {
-            notifyItemMoved(fromPosition, toPosition);
-        }
+        public void onMoved(int fromPosition, int toPosition) { notifyItemMoved(fromPosition, toPosition); }
 
         @Override
         public void onChanged(int position, int count) {

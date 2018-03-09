@@ -983,15 +983,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onContentReady(boolean success, List<Content> results) {
         if (success) {
-            Timber.d("Content results have loaded.");
+            Timber.d("Content results have loaded : %s results", results.size());
             isLoaded = true;
 
-            if (null == results || 0 == results.size()) {
-                Timber.d("Result: Nothing to match.");
-                displayNoResults();
-            } else {
-                displayResults(results);
-            }
+            displayResults(results);
         }
     }
 

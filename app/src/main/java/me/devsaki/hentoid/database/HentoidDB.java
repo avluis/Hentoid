@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteStatement;
 import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.constants.AttributeTable;
@@ -358,7 +359,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public List<Content> selectContentByTags(List<String> tags) {
-        List<Content> result = null;
+        List<Content> result = Collections.emptyList();
 
         synchronized (locker) {
             Timber.d("selectContentByTags");
@@ -395,7 +396,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     // This is a long running task, execute with AsyncTask or similar
     public List<Content> selectContentByQuery(String query, int page, int booksPerPage, boolean isOrderAlpha) {
         String q = query;
-        List<Content> result = null;
+        List<Content> result = Collections.emptyList();
 
         synchronized (locker) {
             Timber.d("selectContentByQuery");
@@ -439,7 +440,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     private List<Content> populateResult(Cursor cursorContent, SQLiteDatabase db) {
-        List<Content> result = null;
+        List<Content> result = Collections.emptyList();
         if (cursorContent.moveToFirst()) {
             result = new ArrayList<>();
             do {
@@ -480,7 +481,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     private List<ImageFile> selectImageFilesByContentId(SQLiteDatabase db, int id) {
-        List<ImageFile> result = null;
+        List<ImageFile> result = Collections.emptyList();
         Cursor cursorImageFiles = null;
         try {
             cursorImageFiles = db.rawQuery(ImageFileTable.SELECT_BY_CONTENT_ID,
