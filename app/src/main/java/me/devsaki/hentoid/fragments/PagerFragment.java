@@ -86,18 +86,10 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
     protected void showToolbar(boolean show, boolean override) {
         this.override = override;
 
-        if (override) {
-            if (show) {
-                toolbar.setVisibility(View.VISIBLE);
-            } else {
-                toolbar.setVisibility(View.GONE);
-            }
+        if (show) {
+            toolbar.setVisibility(View.VISIBLE);
         } else {
-            if (show) {
-                toolbar.setVisibility(View.VISIBLE);
-            } else {
-                toolbar.setVisibility(View.GONE);
-            }
+            toolbar.setVisibility(View.GONE);
         }
     }
 
@@ -114,35 +106,5 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
             toggleUI(SHOW_RESULT);
             updatePager();
         }
-
-/*
-        if (query.isEmpty()) {
-            if (result != null && !result.isEmpty()) {
-
-                List<Content> singleResult = result;
-                mAdapter.replaceAll(singleResult);
-                mListView.setAdapter(mAdapter);
-
-                toggleUI(SHOW_RESULT);
-                updatePager();
-            }
-        } else {
-            Timber.d("Query: %s", query);
-            if (result != null && !result.isEmpty()) {
-                Timber.d("Result: Match.");
-
-                List<Content> searchResults = result;
-                mAdapter.replaceAll(searchResults);
-                mListView.setAdapter(mAdapter);
-
-                toggleUI(SHOW_RESULT);
-                showToolbar(true, true);
-                updatePager();
-            } else {
-                Timber.d("Result: Nothing to match.");
-                displayNoResults();
-            }
-        }
-        */
     }
 }
