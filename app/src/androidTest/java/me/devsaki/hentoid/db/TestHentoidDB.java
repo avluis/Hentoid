@@ -63,7 +63,7 @@ public class TestHentoidDB extends AndroidTestCase {
                     RenamingDelegatingContext context13 = new RenamingDelegatingContext(getContext(), "test_");
                     HentoidDB db13 = HentoidDB.getInstance(context13);
                     for (int i = 0; i < 100; i++) {
-                        db13.selectContentByQuery("", 1, 10, false);
+                        db13.selectContentByQuery("", 1, 10, 0);
                     }
                 } catch (Exception ex) {
                     Timber.e(ex, "Error");

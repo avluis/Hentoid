@@ -24,6 +24,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -394,7 +395,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String query, int page, int booksPerPage, boolean isOrderAlpha) {
+    public List<Content> selectContentByQuery(String query, int page, int booksPerPage, int orderStyle) {
         String q = query;
         List<Content> result = Collections.emptyList();
 
@@ -408,11 +409,28 @@ public class HentoidDB extends SQLiteOpenHelper {
                 q = "%" + q + "%";
                 db = getReadableDatabase();
                 String sql = ContentTable.SELECT_DOWNLOADS;
-                if (isOrderAlpha) {
-                    sql += ContentTable.ORDER_ALPHABETIC;
-                } else {
-                    sql += ContentTable.ORDER_BY_DATE;
+
+                switch(orderStyle)
+                {
+                    case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
+                        sql += ContentTable.ORDER_BY_DATE + " DESC";
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED:
+                        sql += ContentTable.ORDER_BY_DATE;
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+                        sql += ContentTable.ORDER_ALPHABETIC;
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+                        sql += ContentTable.ORDER_ALPHABETIC + " DESC";
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
+                        sql += ContentTable.ORDER_RANDOM;
+                        break;
+                    default :
+                        // Nothing
                 }
+
                 if (booksPerPage < 0) {
                     cursorContent = db.rawQuery(sql,
                             new String[]{StatusContent.DOWNLOADED.getCode() + "",
@@ -472,7 +490,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setCoverImageUrl(cursorContent.getString(ContentTable.IDX_COVERURL - 1))
                 .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SITECODE - 1)))
                 .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
-                .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1));
+                .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
+                .setQueryOrder(cursorContent.getPosition());
 
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
                 .setAttributes(selectAttributesByContentId(db, content.getId()));

@@ -49,6 +49,7 @@ public class Content implements Serializable {
     @Expose
     private Site site;
     private String storageFolder;
+    private int queryOrder;
 
     public AttributeMap getAttributes() {
         if (null == attributes) attributes = new AttributeMap();
@@ -314,6 +315,9 @@ public class Content implements Serializable {
         return this;
     }
 
+    public int getQueryOrder() { return queryOrder; }
+    public Content setQueryOrder(int order) { queryOrder = order; return this; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -341,6 +345,23 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> DLDATE_COMPARATOR = new Comparator<Content>() {
         @Override
-        public int compare(Content a, Content b) { return new Long(a.getDownloadDate()).compareTo(b.getDownloadDate()) * -1; /* Inverted - last download date first */ }
+        public int compare(Content a, Content b) { return Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate()) * -1; /* Inverted - last download date first */ }
+    };
+
+    public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = new Comparator<Content>() {
+        @Override
+        public int compare(Content a, Content b) { return a.getTitle().compareTo(b.getTitle()) * -1; }
+    };
+
+    public static final Comparator<Content> DLDATE_INV_COMPARATOR = new Comparator<Content>() {
+        @Override
+        public int compare(Content a, Content b) { return Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate()); }
+    };
+
+    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = new Comparator<Content>() {
+        @Override
+        public int compare(Content a, Content b) {
+            return Integer.valueOf(a.getQueryOrder()).compareTo(b.getQueryOrder());
+        }
     };
 }

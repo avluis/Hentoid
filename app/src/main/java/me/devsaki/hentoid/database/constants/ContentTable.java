@@ -45,8 +45,9 @@ public abstract class ContentTable {
     public static final int IDX_STORAGE_FOLDER = 14;
 
     // ORDER
-    public static final String ORDER_BY_DATE = " ORDER BY C." + DOWNLOAD_DATE_COLUMN + " DESC";
+    public static final String ORDER_BY_DATE = " ORDER BY C." + DOWNLOAD_DATE_COLUMN;
     public static final String ORDER_ALPHABETIC = " ORDER BY C." + TITLE_COLUMN;
+    public static final String ORDER_RANDOM = " ORDER BY RANDOM()";
 
     // CREATE
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("

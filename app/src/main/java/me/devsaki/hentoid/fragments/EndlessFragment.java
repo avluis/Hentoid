@@ -26,9 +26,13 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
     }
 
     @Override
-    protected void checkResults() {
+    protected void attachScrollListener() {
+        super.attachScrollListener();
         mAdapter.setEndlessScrollListener(this);
+    }
 
+    @Override
+    protected void checkResults() {
         if (0 == mAdapter.getItemCount())
         {
             if (!isLoaded) update();

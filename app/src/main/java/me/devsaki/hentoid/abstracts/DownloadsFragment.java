@@ -42,6 +42,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +56,7 @@ import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.SearchContent.ContentListener;
+import me.devsaki.hentoid.database.constants.ContentTable;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -106,6 +108,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private DrawerLayout mDrawerLayout;
     private boolean shouldHide;
     private MenuItem searchMenu;
+    private MenuItem orderMenu;
     private Parcelable mListState;
     private Button btnPage;
     private SearchView searchView;
@@ -392,7 +395,26 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         llm = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(llm);
 
-        mAdapter = new ContentAdapter(mContext, this, Content.DLDATE_COMPARATOR);
+        Comparator<Content> comparator;
+        switch(order)
+        {
+            case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
+                comparator = Content.DLDATE_COMPARATOR;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED:
+                comparator = Content.DLDATE_INV_COMPARATOR;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+                comparator = Content.TITLE_ALPHA_COMPARATOR;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+                comparator = Content.TITLE_ALPHA_INV_COMPARATOR;
+                break;
+            default :
+                comparator = Content.QUERY_ORDER_COMPARATOR;
+        }
+
+        mAdapter = new ContentAdapter(mContext, this, comparator);
         mListView.setAdapter(mAdapter);
 
         if (mAdapter.getItemCount() == 0) {
@@ -423,7 +445,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         filters = new HashMap<>();
     }
 
-    private void attachScrollListener() {
+    protected void attachScrollListener() {
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
@@ -555,17 +577,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 mContext.getSystemService(Context.SEARCH_SERVICE);
 
         searchMenu = menu.findItem(R.id.action_search);
+        orderMenu = menu.findItem(R.id.action_order);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                toggleSortMenuItem(menu, false);
+                //toggleSortMenuItem(menu, false);
 
                 return true;
             }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                toggleSortMenuItem(menu, true);
+                //toggleSortMenuItem(menu, true);
 
                 if (!("").equals(query)) {
                     query = "";
@@ -608,13 +631,28 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 return true;
             }
         });
-        if (order == Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC) {
-            menu.findItem(R.id.action_order_alphabetic).setVisible(false);
-            menu.findItem(R.id.action_order_by_date).setVisible(true);
-        } else {
-            menu.findItem(R.id.action_order_alphabetic).setVisible(true);
-            menu.findItem(R.id.action_order_by_date).setVisible(false);
+
+        switch(order)
+        {
+            case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
+                orderMenu.setIcon(R.drawable.ic_menu_sort_321);
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED:
+                orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+                orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+                orderMenu.setIcon(R.drawable.ic_menu_sort_za);
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
+                orderMenu.setIcon(R.drawable.ic_menu_sort_random);
+                break;
+            default :
+                // Nothing
         }
+
         // Save current sort order
         Preferences.setContentSortOrder(order);
     }
@@ -628,44 +666,72 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (!shouldHide) {
             searchMenu.collapseActionView();
             menu.findItem(R.id.action_search).setVisible(false);
-
-            toggleSortMenuItem(menu, false);
-        }
-    }
-
-    private void toggleSortMenuItem(Menu menu, boolean show) {
-        if (order == Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC) {
-            menu.findItem(R.id.action_order_by_date).setVisible(show);
-        } else {
-            menu.findItem(R.id.action_order_alphabetic).setVisible(show);
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        boolean result = false;
+
         switch (item.getItemId()) {
-            case R.id.action_order_alphabetic:
+            case R.id.action_order_AZ:
                 cleanResults();
                 orderUpdated = true;
                 order = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
                 mAdapter.setComparator(Content.TITLE_ALPHA_COMPARATOR);
+                orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
                 update();
-                getActivity().invalidateOptionsMenu();
 
-                return true;
-            case R.id.action_order_by_date:
+                result = true;
+                break;
+            case R.id.action_order_321:
                 cleanResults();
                 orderUpdated = true;
                 order = Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE;
                 mAdapter.setComparator(Content.DLDATE_COMPARATOR);
+                orderMenu.setIcon(R.drawable.ic_menu_sort_321);
                 update();
-                getActivity().invalidateOptionsMenu();
 
-                return true;
+                result = true;
+                break;
+            case R.id.action_order_ZA:
+                cleanResults();
+                orderUpdated = true;
+                order = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
+                mAdapter.setComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
+                orderMenu.setIcon(R.drawable.ic_menu_sort_za);
+                update();
+
+                result = true;
+                break;
+            case R.id.action_order_123:
+                cleanResults();
+                orderUpdated = true;
+                order = Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED;
+                mAdapter.setComparator(Content.DLDATE_INV_COMPARATOR);
+                orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
+                update();
+
+                result = true;
+                break;
+            case R.id.action_order_random:
+                cleanResults();
+                orderUpdated = true;
+                order = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
+                mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
+                orderMenu.setIcon(R.drawable.ic_menu_sort_random);
+                update();
+
+                result = true;
+                break;
             default:
 
-                return super.onOptionsItemSelected(item);
+                result = super.onOptionsItemSelected(item);
         }
+        // Save current sort order
+        Preferences.setContentSortOrder(order);
+
+        return result;
     }
 
     /**
@@ -935,10 +1001,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (selectedTags != null && selectedTags.size() > 0) // Search by tag filter
         {
-            search.retrieveResults(selectedTags, order == Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC);
+            search.retrieveResults(selectedTags, order);
         } else // Default search for basic display; search by keyword (search bar)
         {
-            search.retrieveResults(query, currentPage, booksPerPage, order == Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC);
+            search.retrieveResults(query, currentPage, booksPerPage, order);
         }
     }
 

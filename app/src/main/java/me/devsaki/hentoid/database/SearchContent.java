@@ -25,7 +25,7 @@ public class SearchContent {
     protected String mQuery;
     protected int mCurrentPage;
     protected int mBooksPerPage;
-    protected boolean mIsOrderAlpha;
+    protected int mOrderStyle;
     protected List<String> mTagFilter = new ArrayList<>();
 
     public SearchContent(final Context context, final ContentListener listener) {
@@ -33,22 +33,22 @@ public class SearchContent {
         mListener = listener;
     }
 
-    public void retrieveResults(List<String> tagFilter, boolean isOrderAlpha) {
+    public void retrieveResults(List<String> tagFilter, int orderStyle) {
         mQuery = null;
         mCurrentPage = 0;
         mBooksPerPage = 0;
-        mIsOrderAlpha = isOrderAlpha;
+        mOrderStyle = orderStyle;
         mTagFilter.clear();
         mTagFilter.addAll(tagFilter);
 
         retrieveResults();
     }
-    public void retrieveResults(String query, int currentPage, int booksPerPage, boolean isOrderAlpha) {
+    public void retrieveResults(String query, int currentPage, int booksPerPage, int orderStyle) {
         mTagFilter.clear();
         mQuery = query;
         mCurrentPage = currentPage;
         mBooksPerPage = booksPerPage;
-        mIsOrderAlpha = isOrderAlpha;
+        mOrderStyle = orderStyle;
 
         retrieveResults();
     }
@@ -71,14 +71,14 @@ public class SearchContent {
         new SearchTask(this).execute();
     }
 
-    private synchronized State retrieveContent(String query, int currentPage, int booksPerPage, List<String> tagFilter, boolean isOrderAlpha) {
+    private synchronized State retrieveContent(String query, int currentPage, int booksPerPage, List<String> tagFilter, int orderStyle) {
         Timber.d("Retrieving content.");
         try {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
 
                 if (null == tagFilter || 0 == tagFilter.size()) {
-                    contentList = db.selectContentByQuery(query, currentPage, booksPerPage, isOrderAlpha);
+                    contentList = db.selectContentByQuery(query, currentPage, booksPerPage, orderStyle);
                 } else {
                     contentList = db.selectContentByTags(tagFilter);
                 }
@@ -112,7 +112,7 @@ public class SearchContent {
         @Override
         protected State doInBackground(Void... params) {
             SearchContent activity = activityReference.get();
-            return activity.retrieveContent(activity.mQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mIsOrderAlpha);
+            return activity.retrieveContent(activity.mQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mOrderStyle);
         }
 
         @Override
