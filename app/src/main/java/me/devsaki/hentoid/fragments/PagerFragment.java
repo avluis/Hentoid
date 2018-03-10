@@ -17,47 +17,40 @@ import timber.log.Timber;
  * Created by avluis on 08/26/2016.
  * Presents the list of downloaded works to the user in a classic pager.
  */
-public class PagerFragment extends DownloadsFragment implements ContentsWipedListener {
+public class PagerFragment extends DownloadsFragment {
 
     @Override
-    protected void attachScrollListener() {
-        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
+    protected void attachOnClickListeners(View rootView) {
+        super.attachOnClickListeners(rootView);
+        attachPrevious(rootView);
+        attachNext(rootView);
+    }
 
-                // Show toolbar:
-                if (!override && mAdapter.getItemCount() > 0) {
-                    // At top of list
-                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
-                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
-                        showToolbar(true, false);
-                        if (newContent) {
-                            toolTip.setVisibility(View.VISIBLE);
-                        }
-                    }
+    private void attachPrevious(View rootView) {
+        ImageButton btnPrevious = rootView.findViewById(R.id.btnPrevious);
+        btnPrevious.setOnClickListener(v -> {
+            if (currentPage > 1 && isLoaded) {
+                currentPage--;
+                update();
+            } else if (booksPerPage > 0 && isLoaded) {
+                Helper.toast(mContext, R.string.not_previous_page);
+            } else {
+                Timber.d("Not limit per page.");
+            }
+        });
+    }
 
-                    // Last item in list
-                    if (llm.findLastVisibleItemPosition() == mAdapter.getItemCount() - 1) {
-                        showToolbar(true, false);
-                        if (newContent) {
-                            toolTip.setVisibility(View.VISIBLE);
-                        }
-                    } else {
-                        // When scrolling up
-                        if (dy < -10) {
-                            showToolbar(true, false);
-                            if (newContent) {
-                                toolTip.setVisibility(View.VISIBLE);
-                            }
-                            // When scrolling down
-                        } else if (dy > 100) {
-                            showToolbar(false, false);
-                            if (newContent) {
-                                toolTip.setVisibility(View.GONE);
-                            }
-                        }
-                    }
+    private void attachNext(View rootView) {
+        ImageButton btnNext = rootView.findViewById(R.id.btnNext);
+        btnNext.setOnClickListener(v -> {
+            if (booksPerPage <= 0) {
+                Timber.d("Not limit per page.");
+            } else {
+                if (!isLastPage && isLoaded) {
+                    currentPage++;
+                    update();
+                } else if (isLastPage) {
+                    Helper.toast(mContext, R.string.not_next_page);
                 }
             }
         });

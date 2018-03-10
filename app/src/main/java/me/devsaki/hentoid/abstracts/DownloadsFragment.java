@@ -32,7 +32,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -93,11 +92,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected ContentAdapter mAdapter;
     protected LinearLayoutManager llm;
     protected RecyclerView mListView;
-    protected LinearLayout toolTip;
+    protected LinearLayout newContentToolTip;
     protected Toolbar toolbar;
-    protected boolean newContent;
+    // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
+    protected boolean isNewContentAvailable;
     protected boolean override;
+    // True if current page is last page (EndlessView : a "page" is a group of books in the list; last page means there is nothing left to load)
     protected boolean isLastPage;
+    // True if book list has finished loading; used for synchronization between threads
     protected boolean isLoaded;
     private ActionMode mActionMode;
     private int mDrawerState;
@@ -411,7 +413,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         btnPage = rootView.findViewById(R.id.btnPage);
         toolbar = rootView.findViewById(R.id.downloads_toolbar);
-        toolTip = rootView.findViewById(R.id.tooltip);
+        newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
 
         // Tag filter
@@ -421,46 +423,54 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         filters = new HashMap<>();
     }
 
-    protected abstract void attachScrollListener();
+    private void attachScrollListener() {
+        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
 
-    private void attachOnClickListeners(View rootView) {
-        attachPrevious(rootView);
-        attachNext(rootView);
+                // Show toolbar:
+                if (!override && mAdapter.getItemCount() > 0) {
+                    // At top of list
+                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
+                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
+                        showToolbar(true, false);
+                        if (isNewContentAvailable) {
+                            newContentToolTip.setVisibility(View.VISIBLE);
+                        }
+                    }
 
-        toolTip.setOnClickListener(v -> commitRefresh());
-
-        refreshLayout.setEnabled(false);
-        refreshLayout.setOnRefreshListener(this::commitRefresh);
-    }
-
-    private void attachPrevious(View rootView) {
-        ImageButton btnPrevious = rootView.findViewById(R.id.btnPrevious);
-        btnPrevious.setOnClickListener(v -> {
-            if (currentPage > 1 && isLoaded) {
-                currentPage--;
-                update();
-            } else if (booksPerPage > 0 && isLoaded) {
-                Helper.toast(mContext, R.string.not_previous_page);
-            } else {
-                Timber.d("Not limit per page.");
-            }
-        });
-    }
-
-    private void attachNext(View rootView) {
-        ImageButton btnNext = rootView.findViewById(R.id.btnNext);
-        btnNext.setOnClickListener(v -> {
-            if (booksPerPage <= 0) {
-                Timber.d("Not limit per page.");
-            } else {
-                if (!isLastPage && isLoaded) {
-                    currentPage++;
-                    update();
-                } else if (isLastPage) {
-                    Helper.toast(mContext, R.string.not_next_page);
+                    // Last item in list
+                    if (llm.findLastVisibleItemPosition() == mAdapter.getItemCount() - 1) {
+                        showToolbar(true, false);
+                        if (isNewContentAvailable) {
+                            newContentToolTip.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        // When scrolling up
+                        if (dy < -10) {
+                            showToolbar(true, false);
+                            if (isNewContentAvailable) {
+                                newContentToolTip.setVisibility(View.VISIBLE);
+                            }
+                            // When scrolling down
+                        } else if (dy > 100) {
+                            showToolbar(false, false);
+                            if (isNewContentAvailable) {
+                                newContentToolTip.setVisibility(View.GONE);
+                            }
+                        }
+                    }
                 }
             }
         });
+    }
+
+    protected void attachOnClickListeners(View rootView) {
+        newContentToolTip.setOnClickListener(v -> commitRefresh());
+
+        refreshLayout.setEnabled(false);
+        refreshLayout.setOnRefreshListener(this::commitRefresh);
     }
 
     @Override
@@ -509,10 +519,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     protected void commitRefresh() {
-        toolTip.setVisibility(View.GONE);
+        newContentToolTip.setVisibility(View.GONE);
         refreshLayout.setRefreshing(false);
         refreshLayout.setEnabled(false);
-        newContent = false;
+        isNewContentAvailable = false;
         cleanResults();
         update();
         resetCount();
@@ -813,10 +823,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void showReloadToolTip() {
-        if (toolTip.getVisibility() == View.GONE) {
-            toolTip.setVisibility(View.VISIBLE);
+        if (newContentToolTip.getVisibility() == View.GONE) {
+            newContentToolTip.setVisibility(View.VISIBLE);
             refreshLayout.setEnabled(true);
-            newContent = true;
+            isNewContentAvailable = true;
         } else {
             Timber.d("Tooltip visible.");
         }

@@ -2,11 +2,9 @@ package me.devsaki.hentoid.fragments;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.ImageButton;
 
 import java.util.List;
 
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
@@ -18,49 +16,7 @@ import timber.log.Timber;
  * Created by avluis on 08/26/2016.
  * Presents the list of downloaded works to the user in an endless scroll list.
  */
-public class EndlessFragment extends DownloadsFragment implements ContentsWipedListener,
-        EndlessScrollListener {
-
-    @Override
-    protected void attachScrollListener() {
-        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                // Show toolbar:
-                if (!override && mAdapter.getItemCount() > 0) {
-                    // At top of list
-                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
-                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
-                        showToolbar(true, false);
-                        if (newContent) {
-                            toolTip.setVisibility(View.VISIBLE);
-                        }
-                    }
-
-                    // Last item in list
-                    if (llm.findLastVisibleItemPosition() == mAdapter.getItemCount() - 1) {
-                        showToolbar(true, false);
-                    } else {
-                        // When scrolling up
-                        if (dy < -10) {
-                            showToolbar(true, false);
-                            if (newContent) {
-                                toolTip.setVisibility(View.VISIBLE);
-                            }
-                            // When scrolling down
-                        } else if (dy > 100) {
-                            showToolbar(false, false);
-                            if (newContent) {
-                                toolTip.setVisibility(View.GONE);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
+public class EndlessFragment extends DownloadsFragment implements EndlessScrollListener {
 
     @Override
     protected void queryPrefs() {
