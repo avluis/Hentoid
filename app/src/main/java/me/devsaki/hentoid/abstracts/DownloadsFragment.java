@@ -93,7 +93,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected ContentAdapter mAdapter;
     protected LinearLayoutManager llm;
     protected RecyclerView mListView;
-    protected View tagFilterView;
     protected LinearLayout toolTip;
     protected Toolbar toolbar;
     protected boolean newContent;
@@ -111,6 +110,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private SwipeRefreshLayout refreshLayout;
 
     // Tag filters
+    protected View tagFilterView;
     private ViewGroup tagFilterLayout;
     private Map<String, Integer> filters;
 
@@ -426,7 +426,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void attachOnClickListeners(View rootView) {
         attachPrevious(rootView);
         attachNext(rootView);
-        attachRefresh(rootView);
 
         toolTip.setOnClickListener(v -> commitRefresh());
 
@@ -463,8 +462,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         });
     }
-
-    protected abstract void attachRefresh(View rootView);
 
     @Override
     public boolean onBackPressed() {
@@ -653,10 +650,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 mAdapter.setComparator(Content.DLDATE_COMPARATOR);
                 update();
                 getActivity().invalidateOptionsMenu();
-
-                return true;
-            case R.id.action_tags:
-                toggleTagView(item);
 
                 return true;
             default:
