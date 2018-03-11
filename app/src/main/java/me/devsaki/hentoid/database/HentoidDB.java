@@ -395,7 +395,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String query, int page, int booksPerPage, int orderStyle) {
+    public List<Content> selectContentByQuery(String query, int page, int booksPerPage, List<Integer> siteFilter, int orderStyle) {
         String q = query;
         List<Content> result = Collections.emptyList();
 
@@ -409,6 +409,17 @@ public class HentoidDB extends SQLiteOpenHelper {
                 q = "%" + q + "%";
                 db = getReadableDatabase();
                 String sql = ContentTable.SELECT_DOWNLOADS;
+
+                String siteString = "";
+                boolean first = true;
+                for(Integer i : siteFilter)
+                {
+                    if (!first) siteString += ","; else first = false;
+                    siteString += i.toString();
+                }
+
+                Timber.d("siteString %s", siteString);
+                sql = sql.replace("%1", siteString);
 
                 switch(orderStyle)
                 {

@@ -65,10 +65,16 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
     protected void displayResults(List<Content> results) {
         toggleUI(SHOW_DEFAULT);
 
-        mAdapter.add(results);
+        if (isSearchMode)
+        {
+            mAdapter.replaceAll(results);
+        }
+        else {
+            mAdapter.add(results);
+        }
 
-         toggleUI(SHOW_RESULT);
-         updatePager(); // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
+        toggleUI(SHOW_RESULT);
+        updatePager(); // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
     }
 
     @Override

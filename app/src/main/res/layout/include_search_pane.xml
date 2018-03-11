@@ -29,6 +29,8 @@
                 android:background="@color/transparent"
                 android:minWidth="40dp"
                 android:minHeight="40dp"
+                android:scaleType="fitXY"
+                android:layout_marginRight="10dp"
                 f:srcCompat="@drawable/ic_menu_nhentai"
                 />
             <ImageButton
@@ -38,6 +40,8 @@
                 android:background="@color/transparent"
                 android:minWidth="40dp"
                 android:minHeight="40dp"
+                android:scaleType="fitXY"
+                android:layout_marginRight="10dp"
                 f:srcCompat="@drawable/ic_menu_hitomi"
                 />
             <ImageButton
@@ -47,7 +51,20 @@
                 android:background="@color/transparent"
                 android:minWidth="40dp"
                 android:minHeight="40dp"
+                android:scaleType="fitXY"
+                android:layout_marginRight="10dp"
                 f:srcCompat="@drawable/ic_menu_asmhentai"
+                />
+            <ImageButton
+                android:id="@+id/filter_asmcomics"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:minWidth="40dp"
+                android:minHeight="40dp"
+                android:scaleType="fitXY"
+                android:layout_marginRight="10dp"
+                f:srcCompat="@drawable/ic_menu_asmcomics"
                 />
             <ImageButton
                 android:id="@+id/filter_hentaicafe"
@@ -56,6 +73,8 @@
                 android:background="@color/transparent"
                 android:minWidth="40dp"
                 android:minHeight="40dp"
+                android:scaleType="fitXY"
+                android:layout_marginRight="10dp"
                 f:srcCompat="@drawable/ic_menu_hentaicafe"
                 />
             <ImageButton
@@ -65,6 +84,8 @@
                 android:background="@color/transparent"
                 android:minWidth="40dp"
                 android:minHeight="40dp"
+                android:scaleType="fitXY"
+                android:layout_marginRight="10dp"
                 f:srcCompat="@drawable/ic_menu_tsumino"
                 />
             <ImageButton
@@ -74,6 +95,8 @@
                 android:background="@color/transparent"
                 android:minWidth="40dp"
                 android:minHeight="40dp"
+                android:scaleType="fitXY"
+                android:layout_marginRight="10dp"
                 f:srcCompat="@drawable/ic_menu_pururin"
                 />
 

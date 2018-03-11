@@ -27,28 +27,33 @@ public class SearchContent {
     protected int mBooksPerPage;
     protected int mOrderStyle;
     protected List<String> mTagFilter = new ArrayList<>();
+    protected List<Integer> mSiteFilter = new ArrayList<>();
 
     public SearchContent(final Context context, final ContentListener listener) {
         db = HentoidDB.getInstance(context);
         mListener = listener;
     }
 
-    public void retrieveResults(List<String> tagFilter, int orderStyle) {
+    public void retrieveResults(List<String> tagFilter, List<Integer> siteFilters,  int orderStyle) {
         mQuery = null;
         mCurrentPage = 0;
         mBooksPerPage = 0;
         mOrderStyle = orderStyle;
         mTagFilter.clear();
         mTagFilter.addAll(tagFilter);
+        mSiteFilter.clear();
+        mSiteFilter.addAll(siteFilters);
 
         retrieveResults();
     }
-    public void retrieveResults(String query, int currentPage, int booksPerPage, int orderStyle) {
+    public void retrieveResults(String query, int currentPage, int booksPerPage, List<Integer> siteFilters, int orderStyle) {
         mTagFilter.clear();
         mQuery = query;
         mCurrentPage = currentPage;
         mBooksPerPage = booksPerPage;
         mOrderStyle = orderStyle;
+        mSiteFilter.clear();
+        mSiteFilter.addAll(siteFilters);
 
         retrieveResults();
     }
@@ -71,14 +76,14 @@ public class SearchContent {
         new SearchTask(this).execute();
     }
 
-    private synchronized State retrieveContent(String query, int currentPage, int booksPerPage, List<String> tagFilter, int orderStyle) {
+    private synchronized State retrieveContent(String query, int currentPage, int booksPerPage, List<String> tagFilter, List<Integer> siteFilter, int orderStyle) {
         Timber.d("Retrieving content.");
         try {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
 
                 if (null == tagFilter || 0 == tagFilter.size()) {
-                    contentList = db.selectContentByQuery(query, currentPage, booksPerPage, orderStyle);
+                    contentList = db.selectContentByQuery(query, currentPage, booksPerPage, siteFilter, orderStyle);
                 } else {
                     contentList = db.selectContentByTags(tagFilter);
                 }
@@ -100,6 +105,7 @@ public class SearchContent {
         NON_INIT, INIT, DONE, READY, FAILED
     }
 
+
     private static class SearchTask extends AsyncTask<Void, Void, State> {
 
         private WeakReference<SearchContent> activityReference;
@@ -112,7 +118,7 @@ public class SearchContent {
         @Override
         protected State doInBackground(Void... params) {
             SearchContent activity = activityReference.get();
-            return activity.retrieveContent(activity.mQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mOrderStyle);
+            return activity.retrieveContent(activity.mQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mSiteFilter, activity.mOrderStyle);
         }
 
         @Override

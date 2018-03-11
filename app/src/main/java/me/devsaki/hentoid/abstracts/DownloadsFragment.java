@@ -144,6 +144,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected boolean isLastPage;
     // True if book list has finished loading; used for synchronization between threads
     protected boolean isLoaded;
+    // True if search mode is active
+    protected boolean isSearchMode = false;
     private ActionMode mActionMode;
     private int mDrawerState;
     private boolean shouldHide;
@@ -475,10 +477,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchPane = rootView.findViewById(R.id.tag_filter_view);
 
         tagFilters = new HashMap<>();
+        // Init site filters; all on by default
         siteFilters = new ArrayList<>();
         siteFilters.add(Site.NHENTAI.getCode());
         siteFilters.add(Site.HITOMI.getCode());
         siteFilters.add(Site.ASMHENTAI.getCode());
+        siteFilters.add(Site.ASMHENTAI_COMICS.getCode());
         siteFilters.add(Site.HENTAICAFE.getCode());
         siteFilters.add(Site.PURURIN.getCode());
         siteFilters.add(Site.TSUMINO.getCode());
@@ -686,6 +690,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         final View asmButton = getActivity().findViewById(R.id.filter_asm);
         asmButton.setOnClickListener(v -> onClickSiteFilter(asmButton, Site.ASMHENTAI.getCode()));
 
+        final View asmComicsButton = getActivity().findViewById(R.id.filter_asmcomics);
+        asmComicsButton.setOnClickListener(v -> onClickSiteFilter(asmComicsButton, Site.ASMHENTAI_COMICS.getCode()));
+
         final View tsminoButton = getActivity().findViewById(R.id.filter_tsumino);
         tsminoButton.setOnClickListener(v -> onClickSiteFilter(tsminoButton, Site.TSUMINO.getCode()));
 
@@ -809,6 +816,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         else {
             searchPane.setVisibility(View.GONE);
         }
+        isSearchMode = visible;
     }
 
     private void onClickSiteFilter(View button, int siteCode)
@@ -823,6 +831,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             siteFilters.add(Integer.valueOf(siteCode));
             imgButton.clearColorFilter();
         }
+
+        searchContent();
     }
 
     /**
@@ -1069,10 +1079,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (selectedTags != null && selectedTags.size() > 0) // Search by tag filter
         {
-            search.retrieveResults(selectedTags, order);
+            search.retrieveResults(selectedTags, siteFilters, order);
         } else // Default search for basic display; search by keyword (search bar)
         {
-            search.retrieveResults(query, currentPage, booksPerPage, order);
+            search.retrieveResults(query, currentPage, booksPerPage, siteFilters, order);
         }
     }
 
