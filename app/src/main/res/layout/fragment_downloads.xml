@@ -53,7 +53,7 @@
 
     <include
         android:id="@+id/tag_filter_view"
-        layout="@layout/fragment_tag_filter"
+        layout="@layout/include_search_pane"
         android:layout_width="match_parent"
         android:layout_height="200dp"
         android:layout_above="@+id/downloads_toolbar"
