@@ -56,7 +56,6 @@ import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.SearchContent.ContentListener;
-import me.devsaki.hentoid.database.constants.ContentTable;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -79,6 +78,8 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
 
+    // ======== CONSTANTS
+
     protected static final int SHOW_DEFAULT = 0;
     protected static final int SHOW_LOADING = 1;
     protected static final int SHOW_BLANK = 2;
@@ -86,16 +87,54 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     private static final String LIST_STATE_KEY = "list_state";
 
+
+    // ======== UI ELEMENTS
+
+    // Top tooltip appearing when a download has been completed
+    protected LinearLayout newContentToolTip;
+    // Left drawer
+    private DrawerLayout mDrawerLayout;
+    // "Search" button on top menu
+    private MenuItem searchMenu;
+    // "Sort" button on top menu
+    private MenuItem orderMenu;
+    // Action view associated with search menu button
+    private SearchView searchView;
+    // Search pane that shows up on top when using search function
+    protected View searchPane;
+    // Tag mosaic at the bottom of the search pane
+    private ViewGroup tagMosaic;
+    // Layout containing the list of books
+    private SwipeRefreshLayout refreshLayout;
+    // List containing all books
+    protected RecyclerView mListView;
+    // Layout manager associated with the above list view
+    protected LinearLayoutManager llm;
+    // Pane saying "Loading up~"
+    private TextView loadingText;
+    // Pane saying "Why am I empty ?"
+    private TextView emptyText;
+    // Bottom toolbar with page numbers
+    protected Toolbar pagerToolbar;
+    // Button containing the page number on Paged view
+    private Button btnPage;
+
+
+    // == VARIABLES TAKEN FROM SETTINGS
+    // Books per page
+    protected int booksPerPage;
+    // Hentoid directory
+    private String settingDir;
+
+
+    // == VARIABLES
+
+    protected Context mContext;
+    // Expression typed in the search bar
     protected static String query = "";
     private final Handler searchHandler = new Handler();
-    protected Context mContext;
-    protected int booksPerPage;
     protected int currentPage = 1;
     protected ContentAdapter mAdapter;
-    protected LinearLayoutManager llm;
-    protected RecyclerView mListView;
-    protected LinearLayout newContentToolTip;
-    protected Toolbar toolbar;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
     protected boolean isNewContentAvailable;
     protected boolean override;
@@ -105,27 +144,23 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected boolean isLoaded;
     private ActionMode mActionMode;
     private int mDrawerState;
-    private DrawerLayout mDrawerLayout;
     private boolean shouldHide;
-    private MenuItem searchMenu;
-    private MenuItem orderMenu;
     private Parcelable mListState;
-    private Button btnPage;
-    private SearchView searchView;
-    private SwipeRefreshLayout refreshLayout;
-
-    // Tag filters
-    protected View tagFilterView;
-    private ViewGroup tagFilterLayout;
-    private Map<String, Integer> filters;
-
-    private enum TagFilterState {COLLAPSED, EXPANDED}     // States of animation
-    private TagFilterState tagFilterState = TagFilterState.COLLAPSED;
-
-    private boolean orderUpdated;
+    // Active tag filters
+    private Map<String, Integer> tagFilters;
+    // Indicates whether or not one of the books has been selected
     private boolean isSelected;
     private boolean selectTrigger = false;
+    // Books sort order
+    private int order;
+    // True if sort order has been updated
+    private boolean orderUpdated;
+    private long backButtonPressed;
+    private boolean permissionChecked;
+    private ObjectAnimator animator;
 
+
+    // == METHODS
 
     // Called when the action mode is created; startActionMode() was called.
     private final ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
@@ -187,13 +222,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             mActionMode = null;
         }
     };
-    private int order;
-    private long backButtonPressed;
-    private String settingDir;
-    private TextView loadingText;
-    private TextView emptyText;
-    private boolean permissionChecked;
-    private ObjectAnimator animator;
 
     @Override
     public void onResume() {
@@ -434,15 +462,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         });
 
         btnPage = rootView.findViewById(R.id.btnPage);
-        toolbar = rootView.findViewById(R.id.downloads_toolbar);
+        pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
 
         // Tag filter
-        tagFilterLayout = rootView.findViewById(R.id.filter_tags);
-        tagFilterView = rootView.findViewById(R.id.tag_filter_view);
+        tagMosaic = rootView.findViewById(R.id.filter_tags);
+        searchPane = rootView.findViewById(R.id.tag_filter_view);
 
-        filters = new HashMap<>();
+        tagFilters = new HashMap<>();
     }
 
     protected void attachScrollListener() {
@@ -581,14 +609,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
-                //toggleSortMenuItem(menu, false);
+                setSearchPaneVisibility(true);
 
                 return true;
             }
 
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
-                //toggleSortMenuItem(menu, true);
+                setSearchPaneVisibility(false);
 
                 if (!("").equals(query)) {
                     query = "";
@@ -736,24 +764,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Toggles the use of tag filter. This has an effect on :
-     *   - visibility of the bottom sheet with the tag filter
-     *   - icon displayed in the "Tag" button of the toolbar (on/off)
-     *
-     * @param item Reference to the "Tag" button of the toolbar
+     *   - visibility of the sheet with the tag filter
      */
-    private void toggleTagView(MenuItem item)
+    private void setSearchPaneVisibility(boolean visible)
     {
-        if(tagFilterState != TagFilterState.EXPANDED) {
+        if(visible) {
             if (getQuery().length() > 0) clearQuery(1); // Clears any previously active query (search bar)
             updateTagFilter();
-            tagFilterView.setVisibility(View.VISIBLE);
-            tagFilterState = TagFilterState.EXPANDED;
-            item.setIcon(R.drawable.ic_menu_tags_on);
+            searchPane.setVisibility(View.VISIBLE);
         }
         else {
-            tagFilterView.setVisibility(View.GONE);
-            tagFilterState = TagFilterState.COLLAPSED;
-            item.setIcon(R.drawable.ic_menu_tags_off);
+            searchPane.setVisibility(View.GONE);
         }
     }
 
@@ -763,11 +784,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void updateTagFilter()
     {
         // Removes all tag buttons
-        tagFilterLayout.removeAllViews();
+        tagMosaic.removeAllViews();
 
-        for(String key : filters.keySet())
+        for(String key : tagFilters.keySet())
         {
-            filters.put(key,filters.get(key) + 10);
+            tagFilters.put(key, tagFilters.get(key) + 10);
         }
 
         List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode());
@@ -775,16 +796,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         for(Pair<String,Integer> val : tags)
         {
             addButton(val.first, val.second);
-            if (!filters.containsKey(val.first)) filters.put(val.first, 0);
-            else if (filters.get(val.first) > 10) filters.put(val.first, filters.get(val.first) - 10);
+            if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, 0);
+            else if (tagFilters.get(val.first) > 10) tagFilters.put(val.first, tagFilters.get(val.first) - 10);
         }
 
         // Purge unused filter entries
         Set<String> keySet = new HashSet<>();
-        keySet.addAll(filters.keySet());
+        keySet.addAll(tagFilters.keySet());
         for(String key : keySet)
         {
-            if (filters.get(key) > 9) filters.remove(key);
+            if (tagFilters.get(key) > 9) tagFilters.remove(key);
         }
 
         // TODO : interaction between buttons, source (website) filter
@@ -808,7 +829,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         GradientDrawable grad = (GradientDrawable)button.getBackground();
         int color = Color.WHITE;
-        if (filters.containsKey(label) && 3 == filters.get(label)) {
+        if (tagFilters.containsKey(label) && 3 == tagFilters.get(label)) {
             color = Color.RED;
         }
         button.setTextColor(color);
@@ -817,7 +838,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setOnClickListener( v -> selectFilter(button, label) );
         button.setTag(label);
 
-        tagFilterLayout.addView(button);
+        tagMosaic.addView(button);
 
         return button;
     }
@@ -833,25 +854,25 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     {
         GradientDrawable grad = (GradientDrawable)b.getBackground();
 
-        if (filters.containsKey(tag)) {
+        if (tagFilters.containsKey(tag)) {
 
-            switch (filters.get(tag)) {
+            switch (tagFilters.get(tag)) {
                 case 0:
                     b.setTextColor(Color.RED);
                     grad.setStroke(3, Color.RED);
-                    filters.put(tag, 1);
+                    tagFilters.put(tag, 1);
                     break;
                 case 1:
                     b.setTextColor(Color.WHITE);
                     grad.setStroke(3, Color.WHITE);
-                    filters.put(tag, 0);
+                    tagFilters.put(tag, 0);
                     break;
                 default:
             }
 
             List<String> selectedTags = new ArrayList<>();
-            for (String key : filters.keySet()) {
-                if (1 == filters.get(key)) selectedTags.add(key);
+            for (String key : tagFilters.keySet()) {
+                if (1 == tagFilters.get(key)) selectedTags.add(key);
             }
 
             searchContent(selectedTags);
@@ -906,7 +927,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void setQuery(String query) {
-        DownloadsFragment.query = query;
+        this.query = query;
         currentPage = 1;
     }
 
@@ -916,7 +937,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @return Current value of the query typed in the search toolbar; empty string if no query typed
      */
     private String getQuery() {
-        return DownloadsFragment.query == null?"":DownloadsFragment.query;
+        return query == null?"":query;
     }
 
     private void clearSelection() {
@@ -1067,7 +1088,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         if (mActionMode == null) {
-            mActionMode = toolbar.startActionMode(mActionModeCallback);
+            mActionMode = pagerToolbar.startActionMode(mActionModeCallback);
         }
 
         if (mActionMode != null) {

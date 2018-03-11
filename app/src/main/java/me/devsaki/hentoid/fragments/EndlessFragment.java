@@ -1,12 +1,10 @@
 package me.devsaki.hentoid.fragments;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import java.util.List;
 
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
-import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Preferences;
@@ -54,12 +52,12 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
 
         if (override) {
             if (show) {
-                toolbar.setVisibility(View.VISIBLE);
+                pagerToolbar.setVisibility(View.VISIBLE);
             } else {
-                toolbar.setVisibility(View.GONE);
+                pagerToolbar.setVisibility(View.GONE);
             }
         } else {
-            toolbar.setVisibility(View.GONE);
+            pagerToolbar.setVisibility(View.GONE);
         }
     }
 
