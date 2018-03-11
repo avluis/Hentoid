@@ -136,9 +136,11 @@ public class Content implements Serializable {
         if (site == Site.FAKKU) {
             return url.substring(1, url.lastIndexOf("/"));
         } else {
-            List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);
-            if (attributesList != null && attributesList.size() > 0) {
-                return attributesList.get(0).getName();
+            if (attributes != null) {
+                List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);
+                if (attributesList != null && attributesList.size() > 0) {
+                    return attributesList.get(0).getName();
+                }
             }
         }
 
