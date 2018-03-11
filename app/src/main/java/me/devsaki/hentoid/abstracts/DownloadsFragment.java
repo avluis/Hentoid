@@ -18,12 +18,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.Pair;
+import android.util.TypedValue;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -35,6 +37,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.ToggleButton;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -164,6 +167,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private long backButtonPressed;
     private boolean permissionChecked;
     private ObjectAnimator animator;
+
+    private boolean filterByTitle = true;
+    private boolean filterByArtist = true;
+    private boolean filterByTag = false;
 
 
     // == METHODS
@@ -699,6 +706,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         final View pururinButton = getActivity().findViewById(R.id.filter_pururin);
         pururinButton.setOnClickListener(v -> onClickSiteFilter(pururinButton, Site.PURURIN.getCode()));
 
+        // Attach listeners to category filter buttons
+        getActivity().findViewById(R.id.search_filter_title).setOnClickListener(v -> updateFilters(!filterByTitle, filterByArtist, filterByTag));
+        getActivity().findViewById(R.id.search_filter_artist).setOnClickListener(v -> updateFilters(filterByTitle, !filterByArtist, filterByTag));
+        getActivity().findViewById(R.id.search_filter_tag).setOnClickListener(v -> updateFilters(filterByTitle, filterByArtist, !filterByTag));
 
         // == BOOKS SORT
 
@@ -810,7 +821,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     {
         if(visible) {
             if (getQuery().length() > 0) clearQuery(1); // Clears any previously active query (search bar)
-            updateTagMosaic();
             searchPane.setVisibility(View.VISIBLE);
         }
         else {
@@ -833,6 +843,52 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         searchContent();
+    }
+
+    private void updateFilters(boolean filterByTitle, boolean filterByArtist, boolean filterByTag)
+    {
+        if (filterByTag && !this.filterByTag)
+        {
+            this.filterByTitle = false;
+            ((ToggleButton)getActivity().findViewById(R.id.search_filter_title)).setChecked(false);
+            this.filterByArtist = false;
+            ((ToggleButton)getActivity().findViewById(R.id.search_filter_artist)).setChecked(false);
+
+            // Enable tag mosaic
+            ViewGroup.LayoutParams params = searchPane.getLayoutParams();
+            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 200, getResources().getDisplayMetrics());
+            searchPane.setLayoutParams(params);
+
+            updateTagMosaic();
+            tagMosaic.setVisibility(View.VISIBLE);
+            this.filterByTag = true;
+        }
+        else if (this.filterByTag && (!filterByTag || filterByTitle || filterByArtist)) {
+
+            // Get back to the default filter = title
+            if (!filterByTag && !this.filterByTitle && !this.filterByArtist) {
+                this.filterByTitle = true;
+                ((ToggleButton) getActivity().findViewById(R.id.search_filter_title)).setChecked(true);
+            } else {
+                this.filterByTitle = filterByTitle;
+                this.filterByArtist = filterByArtist;
+            }
+            ((ToggleButton) getActivity().findViewById(R.id.search_filter_tag)).setChecked(false);
+
+            // Disable tag mosaic
+            ViewGroup.LayoutParams params = searchPane.getLayoutParams();
+            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90, getResources().getDisplayMetrics());;
+            searchPane.setLayoutParams(params);
+
+            tagMosaic.setVisibility(View.GONE);
+            this.filterByTag = false;
+            tagFilters.clear();
+        }
+        else
+        {
+            this.filterByTitle = filterByTitle;
+            this.filterByArtist = filterByArtist;
+        }
     }
 
     /**

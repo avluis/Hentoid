@@ -55,7 +55,7 @@
         android:id="@+id/tag_filter_view"
         layout="@layout/include_search_pane"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="wrap_content"
         android:layout_above="@+id/downloads_toolbar"
         android:visibility="gone"
         />

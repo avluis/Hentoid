@@ -2,11 +2,10 @@
     xmlns:f="http://schemas.android.com/apk/res-auto"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
-    android:layout_height="200dp"
+    android:layout_height="90dp"
     android:background="#400000"
     android:clipToPadding="true"
     android:tag="TagFilter">
-
 
     <LinearLayout
         android:id="@+id/filter_wrapper"
