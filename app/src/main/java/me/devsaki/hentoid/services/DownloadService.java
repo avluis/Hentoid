@@ -33,7 +33,7 @@ import timber.log.Timber;
 /**
  * Download Manager implemented as a service
  * <p/>
- * TODO: Implement download job tracking: https://github.com/AVnetWS/Hentoid/issues/110
+ * TODO: Implement download job tracking: https://github.com/avluis/Hentoid/issues/110
  * 1 image = 1 task, n images = 1 chapter = 1 job = 1 bundled task.
  */
 public class DownloadService extends IntentService {
