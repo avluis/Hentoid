@@ -76,8 +76,8 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
  * TODO: Dismiss 'new content' tooltip upon search
- *
- * TODO: Fix empty 2nd page when contents count = 20
+ * TODO: Fix empty 2nd page when books count = booksPerPage
+ * TODO: Dispay tags as "disabled" in tag mosaic when current selection has books without them
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
@@ -91,7 +91,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected static final int TAGFILTER_ACTIVE = 0;
     protected static final int TAGFILTER_SELECTED = 1;
-    protected static final int TAGFILTER_INACTIVE = 2;
+    protected static final int TAGFILTER_INACTIVE = 3;
 
     private static final String LIST_STATE_KEY = "list_state";
 
@@ -595,6 +595,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         update();
     }
 
+    /**
+     * Called by pressing the "New Content" button that appear on new downloads
+     */
     protected void commitRefresh() {
         newContentToolTip.setVisibility(View.GONE);
         refreshLayout.setRefreshing(false);
@@ -852,12 +855,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         {
             siteFilters.remove(Integer.valueOf(siteCode));
             imgButton.setColorFilter(Color.BLACK);
-            if (filterByTag) updateTagMosaic();
         } else {
             siteFilters.add(Integer.valueOf(siteCode));
             imgButton.clearColorFilter();
-            if (filterByTag) updateTagMosaic();
         }
+        if (filterByTag) updateTagMosaic();
 
         searchContent();
     }
@@ -917,33 +919,61 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *   - owned books and their tags
      *   - selected site filters
      */
-    private void updateTagMosaic()
+    private void updateTagMosaic() { updateTagMosaic(true); }
+    private void updateTagMosaic(boolean removeNotFound)
     {
+        List<String> selectedTags = new ArrayList<>();
+        for (String key : tagFilters.keySet()) {
+            if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
+        }
+        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), selectedTags, siteFilters);
+
         // Removes all tag buttons
-        tagMosaic.removeAllViews();
-
-        // Set all buttons to be removed
-        for(String key : tagFilters.keySet())
+        if (removeNotFound)
         {
-            tagFilters.put(key, tagFilters.get(key) + 10);
-        }
+            tagMosaic.removeAllViews();
 
-        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), siteFilters);
+            // Set all buttons to be removed
+            for(String key : tagFilters.keySet())
+            {
+                tagFilters.put(key, tagFilters.get(key) + 10);
+            }
 
-        for(Pair<String,Integer> val : tags)
-        {
-            if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
-            else if (tagFilters.get(val.first) > 9) tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
+            for(Pair<String,Integer> val : tags)
+            {
+                if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
+                else if (tagFilters.get(val.first) > 9) tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
 
-            addTagButton(val.first, val.second);
-        }
+                addTagButton(val.first, val.second);
+            }
 
-        // Purge unused filter entries
-        Set<String> keySet = new HashSet<>();
-        keySet.addAll(tagFilters.keySet());
-        for(String key : keySet)
-        {
-            if (tagFilters.get(key) > 9) tagFilters.remove(key);
+            // Purge unused filter entries
+            Set<String> keySet = new HashSet<>();
+            keySet.addAll(tagFilters.keySet());
+            for (String key : keySet) {
+                if (tagFilters.get(key) > 9) tagFilters.remove(key);
+            }
+        } else {
+            List<String> availableTags = new ArrayList<>();
+            for(Pair<String,Integer> val : tags)
+            {
+                availableTags.add(val.first);
+            }
+
+            for (String key : tagFilters.keySet()) {
+                Button b = tagMosaic.findViewWithTag(key);
+
+                if (availableTags.contains(key)) {
+                    if (TAGFILTER_INACTIVE == tagFilters.get(key)) {
+                        tagFilters.put(key, TAGFILTER_ACTIVE);
+                        colorButton(b, TAGFILTER_ACTIVE);
+                    }
+                }
+                else {
+                    tagFilters.put(key, TAGFILTER_INACTIVE);
+                    colorButton(b, TAGFILTER_INACTIVE);
+                }
+            }
         }
 
         // TODO deactivate tag if previously selected tags are incompatible with it
@@ -964,23 +994,28 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setMinHeight(0);
         button.setMinimumHeight(0);
 
-        GradientDrawable grad = (GradientDrawable)button.getBackground();
-        int color = Color.WHITE;
-        if (tagFilters.containsKey(label)) {
-            if (TAGFILTER_SELECTED == tagFilters.get(label)) {
-                color = Color.RED;
-            }
-            else if (TAGFILTER_INACTIVE == tagFilters.get(label)) {
-                color = Color.DKGRAY;
-            }
-        }
-        button.setTextColor(color);
-        grad.setStroke(3, color);
+        int tagState = TAGFILTER_ACTIVE;
+        if (tagFilters.containsKey(label)) tagState = tagFilters.get(label);
+        colorButton(button, tagState);
 
         button.setOnClickListener( v -> selectTagFilter(button, label) );
         button.setTag(label);
 
         tagMosaic.addView(button);
+    }
+
+    private void colorButton(Button b, int tagState)
+    {
+        GradientDrawable grad = (GradientDrawable)b.getBackground();
+        int color = Color.WHITE;
+        if (TAGFILTER_SELECTED == tagState) {
+            color = Color.RED;
+        }
+        else if (TAGFILTER_INACTIVE == tagState) {
+            color = Color.DKGRAY;
+        }
+        b.setTextColor(color);
+        grad.setStroke(3, color);
     }
 
     /**
@@ -1014,7 +1049,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
 
             // Update filtered books
-            if (doSearch) searchContent();
+            if (doSearch) {
+                searchContent();
+                updateTagMosaic(false);
+                /*
+                Handler handler = new Handler();
+                handler.post(() -> { updateTagMosaic(false); });
+                */
+            }
         }
         else
         {

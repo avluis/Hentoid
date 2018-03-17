@@ -103,15 +103,4 @@ public abstract class ContentTable {
 
     public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
             + AttributeTable.TYPE_COLUMN + " = 3)";
-
-/*
-    public static final String SELECT_DOWNLOADS = "SELECT C.*" +
-            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C."+SITE_COLUMN+" in (%1)" +
-            " AND (C." + TITLE_COLUMN + " like ? OR C." + ID_COLUMN
-            + " in (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM "
-            + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
-            + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A."
-            + AttributeTable.ID_COLUMN + " WHERE lower(A." + AttributeTable.NAME_COLUMN + ") like ? AND A."
-            + AttributeTable.TYPE_COLUMN + " in (?, ?, ?)))";
-*/
 }

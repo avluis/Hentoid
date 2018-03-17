@@ -537,29 +537,34 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<Integer> siteFilter) {
+    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites) {
         ArrayList<Pair<String,Integer>> result = new ArrayList<Pair<String,Integer>>();
 
         synchronized (locker) {
             Timber.d("selectAllAttributesByUsage");
             SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
 
             Cursor cursorAttributes = null;
 
-            String sql = AttributeTable.SELECT_ALL_BY_USAGE;
-            String siteString = buildListQuery(siteFilter);
-            sql = sql.replace("%1", siteString);
+            String sql = AttributeTable.SELECT_ALL_BY_USAGE_BASE;
+            sql = sql.replace("%1", buildListQuery(sites));
+
+            if (tags != null && tags.size() > 0) {
+                sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
+                sql = sql.replace("%2", buildListQuery(tags));
+            }
+
+            sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
 
             try {
-                db = getWritableDatabase();
+                db = getReadableDatabase();
                 cursorAttributes = db.rawQuery(sql, new String[]{type + ""});
 
                 // looping through all rows and adding to list
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add( new Pair<String, Integer>(cursorAttributes.getString(0),cursorAttributes.getInt(1)) );
+                        result.add( new Pair<>(cursorAttributes.getString(0),cursorAttributes.getInt(1)) );
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
