@@ -164,10 +164,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int order;
     // True if sort order has been updated
     private boolean orderUpdated;
+    // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
     private boolean permissionChecked;
     private ObjectAnimator animator;
 
+    // States for search bar buttons
     private boolean filterByTitle = true;
     private boolean filterByArtist = true;
     private boolean filterByTag = false;
@@ -678,6 +680,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     clearQuery(1);
                 }
 
+                if (s.isEmpty() && filterByTag)
+                {
+                    for (String tag : tagFilters.keySet())
+                    {
+                        Button btn = tagMosaic.findViewWithTag(tag);
+                        if (btn != null) btn.setVisibility(View.VISIBLE);
+                    }
+                }
+
                 return true;
             }
         });
@@ -862,6 +873,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             updateTagMosaic();
             tagMosaic.setVisibility(View.VISIBLE);
             this.filterByTag = true;
+            setQuery("");
+            searchView.setQuery("", false);
         }
         else if (this.filterByTag && (!filterByTag || filterByTitle || filterByArtist)) {
 
@@ -883,6 +896,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             tagMosaic.setVisibility(View.GONE);
             this.filterByTag = false;
             tagFilters.clear();
+            setQuery("");
+            searchView.setQuery("", false);
         }
         else
         {
@@ -921,7 +936,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (tagFilters.get(key) > 9) tagFilters.remove(key);
         }
 
-        // TODO : interaction between buttons, source (website) filter
+        // TODO : tag search searches with correct site filters applied
+        // TODO : site filters are applied to displayed tags
+        // TODO : search query is applied to tags when tag mode activated
     }
 
     /**
@@ -998,13 +1015,27 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void submitSearchQuery(final String s, long delay) {
-        query = s;
-        searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(() -> {
-            setQuery(s);
-            cleanResults();
-            update();
-        }, delay);
+        if (!filterByTag) { // Search actual books based on query
+            query = s;
+            searchHandler.removeCallbacksAndMessages(null);
+            searchHandler.postDelayed(() -> {
+                setQuery(s);
+                cleanResults();
+                update();
+            }, delay);
+        } else { // Filter tag mosaic based on query
+            for (String tag : tagFilters.keySet())
+            {
+                Button btn = tagMosaic.findViewWithTag(tag);
+                if (btn != null) {
+                    if (tag.contains(s)) {
+                        btn.setVisibility(View.VISIBLE);
+                    } else {
+                        btn.setVisibility(View.GONE);
+                    }
+                }
+            }
+        }
     }
 
     protected void checkContent(boolean clear) {
