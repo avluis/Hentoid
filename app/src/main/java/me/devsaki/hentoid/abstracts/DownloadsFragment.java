@@ -946,9 +946,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (tagFilters.get(key) > 9) tagFilters.remove(key);
         }
 
-        // x TODO refresh tag cloud when new download complete
-        // x TODO maintain tag filter when playing with site filter
-
         // TODO deactivate tag if previously selected tags are incompatible with it
     }
 
@@ -1016,7 +1013,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     doSearch = false;
             }
 
-            // Run a new search
+            // Update filtered books
             if (doSearch) searchContent();
         }
         else
@@ -1224,6 +1221,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             Timber.d("Content results have loaded : %s results", results.size());
             isLoaded = true;
 
+            // Display new results
             displayResults(results);
         }
     }

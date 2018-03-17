@@ -358,36 +358,6 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         return result;
     }
-/*
-    public List<Content> selectContentByTags(List<String> tags) {
-        List<Content> result = Collections.emptyList();
-
-        synchronized (locker) {
-            Timber.d("selectContentByTags");
-
-            SQLiteDatabase db = null;
-            Cursor cursorContent = null;
-
-            String tagString = buildListQuery(tags);
-
-            Timber.d("tagString %s",tagString);
-
-            try {
-                db = getReadableDatabase();
-                String query = ContentTable.SELECT_BY_TAGS;
-                query = query.replace("%1",tagString);
-                query = query.replace("%2",tags.size()+"");
-
-                cursorContent = db .rawQuery(query, new String[]{});
-                result = populateResult(cursorContent, db);
-            } finally {
-                closeCursor(cursorContent, db);
-            }
-        }
-
-        return result;
-    }
-*/
 
     // This is a long running task, execute with AsyncTask or similar
     public List<Content> selectContentByQuery(String title, String author, int page, int booksPerPage, List<String> tags, List<Integer> sites, int orderStyle) {
