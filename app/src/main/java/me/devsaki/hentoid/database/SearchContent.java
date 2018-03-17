@@ -34,26 +34,15 @@ public class SearchContent {
         mListener = listener;
     }
 
-    public void retrieveResults(List<String> tagFilter, List<Integer> siteFilters,  int orderStyle) {
-        mQuery = null;
-        mCurrentPage = 0;
-        mBooksPerPage = 0;
-        mOrderStyle = orderStyle;
-        mTagFilter.clear();
-        mTagFilter.addAll(tagFilter);
-        mSiteFilter.clear();
-        mSiteFilter.addAll(siteFilters);
-
-        retrieveResults();
-    }
-    public void retrieveResults(String query, int currentPage, int booksPerPage, List<Integer> siteFilters, int orderStyle) {
-        mTagFilter.clear();
+    public void retrieveResults(String query, int currentPage, int booksPerPage, List<String> tags, List<Integer> sites, int orderStyle) {
         mQuery = query;
         mCurrentPage = currentPage;
         mBooksPerPage = booksPerPage;
         mOrderStyle = orderStyle;
+        mTagFilter.clear();
+        if (tags != null) mTagFilter.addAll(tags);
         mSiteFilter.clear();
-        mSiteFilter.addAll(siteFilters);
+        if (sites != null) mSiteFilter.addAll(sites);
 
         retrieveResults();
     }
@@ -76,17 +65,14 @@ public class SearchContent {
         new SearchTask(this).execute();
     }
 
-    private synchronized State retrieveContent(String query, int currentPage, int booksPerPage, List<String> tagFilter, List<Integer> siteFilter, int orderStyle) {
+    private synchronized State retrieveContent(String query, int currentPage, int booksPerPage, List<String> tagFilter, List<Integer> sites, int orderStyle) {
         Timber.d("Retrieving content.");
         try {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
 
-                if (null == tagFilter || 0 == tagFilter.size()) {
-                    contentList = db.selectContentByQuery(query, currentPage, booksPerPage, siteFilter, orderStyle);
-                } else {
-                    contentList = db.selectContentByTags(tagFilter);
-                }
+                contentList = db.selectContentByQuery(query, query, currentPage, booksPerPage, tagFilter, sites, orderStyle);
+
                 mCurrentState = State.READY;
             }
         } catch (Exception e) {

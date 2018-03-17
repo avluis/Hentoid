@@ -358,7 +358,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         return result;
     }
-
+/*
     public List<Content> selectContentByTags(List<String> tags) {
         List<Content> result = Collections.emptyList();
 
@@ -368,13 +368,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
 
-            String tagString = "";
-            boolean first = true;
-            for(String s : tags)
-            {
-                if (!first)tagString += ","; else first = false;
-                tagString += "'"+s.toLowerCase()+"'";
-            }
+            String tagString = buildListQuery(tags);
 
             Timber.d("tagString %s",tagString);
 
@@ -393,11 +387,12 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         return result;
     }
+*/
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String query, int page, int booksPerPage, List<Integer> siteFilter, int orderStyle) {
-        String q = query;
+    public List<Content> selectContentByQuery(String title, String author, int page, int booksPerPage, List<String> tags, List<Integer> sites, int orderStyle) {
         List<Content> result = Collections.emptyList();
+        boolean hasAuthor = (author != null && author.length() > 0);
 
         synchronized (locker) {
             Timber.d("selectContentByQuery");
@@ -406,20 +401,32 @@ public class HentoidDB extends SQLiteOpenHelper {
             Cursor cursorContent = null;
             int start = (page - 1) * booksPerPage;
             try {
-                q = "%" + q + "%";
                 db = getReadableDatabase();
-                String sql = ContentTable.SELECT_DOWNLOADS;
+                String sql = ContentTable.SELECT_DOWNLOADS_BASE;
+                sql = sql.replace("%1", buildListQuery(sites));
 
-                String siteString = "";
-                boolean first = true;
-                for(Integer i : siteFilter)
-                {
-                    if (!first) siteString += ","; else first = false;
-                    siteString += i.toString();
+                if (title != null && title.length() > 0) {
+                    sql += ContentTable.SELECT_DOWNLOADS_TITLE;
+                    title = '%'+title.replace("'","''")+'%';
+                    sql = sql.replace("%2", title);
                 }
 
-                Timber.d("siteString %s", siteString);
-                sql = sql.replace("%1", siteString);
+                if (hasAuthor || tags.size() > 0) {
+                    sql += ContentTable.SELECT_DOWNLOADS_JOINS;
+
+                    if (hasAuthor) {
+                        sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
+                        author = '%' + author.replace("'", "''") + '%';
+                        sql = sql.replace("%3", author);
+                    }
+
+                    if (tags.size() > 0) {
+                        sql += ContentTable.SELECT_DOWNLOADS_TAGS;
+                        sql = sql.replace("%4", buildListQuery(tags));
+                    }
+
+                    sql += ")";
+                }
 
                 switch(orderStyle)
                 {
@@ -442,22 +449,19 @@ public class HentoidDB extends SQLiteOpenHelper {
                         // Nothing
                 }
 
+                Timber.d("Query : %s; %s, %s",sql, start, booksPerPage);
+
                 if (booksPerPage < 0) {
                     cursorContent = db.rawQuery(sql,
                             new String[]{StatusContent.DOWNLOADED.getCode() + "",
                                     StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + "", q, q,
-                                    AttributeType.ARTIST.getCode() + "",
-                                    AttributeType.TAG.getCode() + "",
-                                    AttributeType.SERIE.getCode() + ""});
+                                    StatusContent.MIGRATED.getCode() + ""});
                 } else {
                     cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE,
                             new String[]{StatusContent.DOWNLOADED.getCode() + "",
                                     StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + "", q, q,
-                                    AttributeType.ARTIST.getCode() + "",
-                                    AttributeType.TAG.getCode() + "",
-                                    AttributeType.SERIE.getCode() + "", start + "", booksPerPage + ""});
+                                    StatusContent.MIGRATED.getCode() + "",
+                                    start + "", booksPerPage + ""});
                 }
                 result = populateResult(cursorContent, db);
             } finally {
@@ -563,7 +567,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type) {
+    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<Integer> siteFilter) {
         ArrayList<Pair<String,Integer>> result = new ArrayList<Pair<String,Integer>>();
 
         synchronized (locker) {
@@ -573,9 +577,13 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             Cursor cursorAttributes = null;
 
+            String sql = AttributeTable.SELECT_ALL_BY_USAGE;
+            String siteString = buildListQuery(siteFilter);
+            sql = sql.replace("%1", siteString);
+
             try {
                 db = getWritableDatabase();
-                cursorAttributes = db.rawQuery(AttributeTable.SELECT_ALL_BY_USAGE, new String[]{type + ""});
+                cursorAttributes = db.rawQuery(sql, new String[]{type + ""});
 
                 // looping through all rows and adding to list
                 if (cursorAttributes.moveToFirst()) {
@@ -783,5 +791,20 @@ public class HentoidDB extends SQLiteOpenHelper {
                 }
             }
         }
+    }
+
+    private String buildListQuery(List<?> list)
+    {
+        String result = "";
+        if (list != null) {
+            boolean first = true;
+            for (Object o : list) {
+                if (!first) result += ",";
+                else first = false;
+                result += "'" + o.toString().toLowerCase() + "'";
+            }
+        }
+
+        return result;
     }
 }

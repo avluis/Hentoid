@@ -18,7 +18,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.support.v4.widget.NestedScrollView;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -89,6 +88,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected static final int SHOW_LOADING = 1;
     protected static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
+
+    protected static final int TAGFILTER_ACTIVE = 0;
+    protected static final int TAGFILTER_SELECTED = 1;
+    protected static final int TAGFILTER_INACTIVE = 2;
 
     private static final String LIST_STATE_KEY = "list_state";
 
@@ -597,6 +600,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout.setRefreshing(false);
         refreshLayout.setEnabled(false);
         isNewContentAvailable = false;
+        if (filterByTag) updateTagMosaic();
         cleanResults();
         update();
         resetCount();
@@ -697,30 +701,30 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // Attaches listeners to website filters
         final View nHentaiButton = getActivity().findViewById(R.id.filter_nhentai);
-        nHentaiButton.setOnClickListener(v -> onClickSiteFilter(nHentaiButton, Site.NHENTAI.getCode()));
+        nHentaiButton.setOnClickListener(v -> selectSiteFilter(nHentaiButton, Site.NHENTAI.getCode()));
 
         final View hitomiButton = getActivity().findViewById(R.id.filter_hitomi);
-        hitomiButton.setOnClickListener(v -> onClickSiteFilter(hitomiButton, Site.HITOMI.getCode()));
+        hitomiButton.setOnClickListener(v -> selectSiteFilter(hitomiButton, Site.HITOMI.getCode()));
 
         final View hentaiCafeButton = getActivity().findViewById(R.id.filter_hentaicafe);
-        hentaiCafeButton.setOnClickListener(v -> onClickSiteFilter(hentaiCafeButton, Site.HENTAICAFE.getCode()));
+        hentaiCafeButton.setOnClickListener(v -> selectSiteFilter(hentaiCafeButton, Site.HENTAICAFE.getCode()));
 
         final View asmButton = getActivity().findViewById(R.id.filter_asm);
-        asmButton.setOnClickListener(v -> onClickSiteFilter(asmButton, Site.ASMHENTAI.getCode()));
+        asmButton.setOnClickListener(v -> selectSiteFilter(asmButton, Site.ASMHENTAI.getCode()));
 
         final View asmComicsButton = getActivity().findViewById(R.id.filter_asmcomics);
-        asmComicsButton.setOnClickListener(v -> onClickSiteFilter(asmComicsButton, Site.ASMHENTAI_COMICS.getCode()));
+        asmComicsButton.setOnClickListener(v -> selectSiteFilter(asmComicsButton, Site.ASMHENTAI_COMICS.getCode()));
 
         final View tsminoButton = getActivity().findViewById(R.id.filter_tsumino);
-        tsminoButton.setOnClickListener(v -> onClickSiteFilter(tsminoButton, Site.TSUMINO.getCode()));
+        tsminoButton.setOnClickListener(v -> selectSiteFilter(tsminoButton, Site.TSUMINO.getCode()));
 
         final View pururinButton = getActivity().findViewById(R.id.filter_pururin);
-        pururinButton.setOnClickListener(v -> onClickSiteFilter(pururinButton, Site.PURURIN.getCode()));
+        pururinButton.setOnClickListener(v -> selectSiteFilter(pururinButton, Site.PURURIN.getCode()));
 
         // Attach listeners to category filter buttons
-        getActivity().findViewById(R.id.search_filter_title).setOnClickListener(v -> updateFilters(!filterByTitle, filterByArtist, filterByTag));
-        getActivity().findViewById(R.id.search_filter_artist).setOnClickListener(v -> updateFilters(filterByTitle, !filterByArtist, filterByTag));
-        getActivity().findViewById(R.id.search_filter_tag).setOnClickListener(v -> updateFilters(filterByTitle, filterByArtist, !filterByTag));
+        getActivity().findViewById(R.id.search_filter_title).setOnClickListener(v -> selectFieldFilter(!filterByTitle, filterByArtist, filterByTag));
+        getActivity().findViewById(R.id.search_filter_artist).setOnClickListener(v -> selectFieldFilter(filterByTitle, !filterByArtist, filterByTag));
+        getActivity().findViewById(R.id.search_filter_tag).setOnClickListener(v -> selectFieldFilter(filterByTitle, filterByArtist, !filterByTag));
 
         // == BOOKS SORT
 
@@ -840,7 +844,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isSearchMode = visible;
     }
 
-    private void onClickSiteFilter(View button, int siteCode)
+    private void selectSiteFilter(View button, int siteCode)
     {
         ImageButton imgButton = (ImageButton)button;
 
@@ -848,15 +852,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         {
             siteFilters.remove(Integer.valueOf(siteCode));
             imgButton.setColorFilter(Color.BLACK);
+            if (filterByTag) updateTagMosaic();
         } else {
             siteFilters.add(Integer.valueOf(siteCode));
             imgButton.clearColorFilter();
+            if (filterByTag) updateTagMosaic();
         }
 
         searchContent();
     }
 
-    private void updateFilters(boolean filterByTitle, boolean filterByArtist, boolean filterByTag)
+    private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag)
     {
         if (filterByTag && !this.filterByTag)
         {
@@ -907,25 +913,29 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Updates the displayed tags in the tag filter, according to owned books and their tags
+     * Updates the displayed tags in the tag mosaic, according to :
+     *   - owned books and their tags
+     *   - selected site filters
      */
     private void updateTagMosaic()
     {
         // Removes all tag buttons
         tagMosaic.removeAllViews();
 
+        // Set all buttons to be removed
         for(String key : tagFilters.keySet())
         {
             tagFilters.put(key, tagFilters.get(key) + 10);
         }
 
-        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode());
+        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), siteFilters);
 
         for(Pair<String,Integer> val : tags)
         {
+            if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
+            else if (tagFilters.get(val.first) > 9) tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
+
             addTagButton(val.first, val.second);
-            if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, 0);
-            else if (tagFilters.get(val.first) > 10) tagFilters.put(val.first, tagFilters.get(val.first) - 10);
         }
 
         // Purge unused filter entries
@@ -936,9 +946,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (tagFilters.get(key) > 9) tagFilters.remove(key);
         }
 
-        // TODO : tag search searches with correct site filters applied
-        // TODO : site filters are applied to displayed tags
-        // TODO : search query is applied to tags when tag mode activated
+        // x TODO refresh tag cloud when new download complete
+        // x TODO maintain tag filter when playing with site filter
+
+        // TODO deactivate tag if previously selected tags are incompatible with it
     }
 
     /**
@@ -947,9 +958,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *
      * @param label Label to display on the button to add
      * @param count Count to display on the button to add
-     * @return Created button
      */
-    private Button addTagButton(String label, Integer count)
+    private void addTagButton(String label, Integer count)
     {
         Button button = new Button(mContext);
         button.setText(label + "("+count+")");
@@ -959,8 +969,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         GradientDrawable grad = (GradientDrawable)button.getBackground();
         int color = Color.WHITE;
-        if (tagFilters.containsKey(label) && 3 == tagFilters.get(label)) {
-            color = Color.RED;
+        if (tagFilters.containsKey(label)) {
+            if (TAGFILTER_SELECTED == tagFilters.get(label)) {
+                color = Color.RED;
+            }
+            else if (TAGFILTER_INACTIVE == tagFilters.get(label)) {
+                color = Color.DKGRAY;
+            }
         }
         button.setTextColor(color);
         grad.setStroke(3, color);
@@ -969,8 +984,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setTag(label);
 
         tagMosaic.addView(button);
-
-        return button;
     }
 
     /**
@@ -980,32 +993,35 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @param b Pressed button
      * @param tag Tag represented by the pressed button
      */
-    public void selectTagFilter(Button b, String tag)
+    private void selectTagFilter(Button b, String tag)
     {
         GradientDrawable grad = (GradientDrawable)b.getBackground();
+        boolean doSearch = true;
 
         if (tagFilters.containsKey(tag)) {
 
             switch (tagFilters.get(tag)) {
-                case 0:
+                case TAGFILTER_ACTIVE:
                     b.setTextColor(Color.RED);
                     grad.setStroke(3, Color.RED);
-                    tagFilters.put(tag, 1);
+                    tagFilters.put(tag, TAGFILTER_SELECTED);
                     break;
-                case 1:
+                case TAGFILTER_SELECTED:
                     b.setTextColor(Color.WHITE);
                     grad.setStroke(3, Color.WHITE);
-                    tagFilters.put(tag, 0);
+                    tagFilters.put(tag, TAGFILTER_ACTIVE);
                     break;
                 default:
+                    // Inactive button
+                    doSearch = false;
             }
 
-            List<String> selectedTags = new ArrayList<>();
-            for (String key : tagFilters.keySet()) {
-                if (1 == tagFilters.get(key)) selectedTags.add(key);
-            }
-
-            searchContent(selectedTags);
+            // Run a new search
+            if (doSearch) searchContent();
+        }
+        else
+        {
+            Timber.d("Tag %s absent from tagFilter", tag);
         }
     }
 
@@ -1159,18 +1175,23 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    protected void searchContent() { searchContent(null); }
-    protected void searchContent(List<String> selectedTags) {
+    protected void searchContent() {
+        List<String> selectedTags = new ArrayList<>();
+        String query = this.getQuery();
+
+        // Populate tag filter if tag filtering is active
+        if (filterByTag)
+        {
+            for (String key : tagFilters.keySet()) {
+                if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
+            }
+            // Tag filter is incompatible with search by keyword
+            query = "";
+        }
+
         isLoaded = false;
         SearchContent search = new SearchContent(mContext, this);
-
-        if (selectedTags != null && selectedTags.size() > 0) // Search by tag filter
-        {
-            search.retrieveResults(selectedTags, siteFilters, order);
-        } else // Default search for basic display; search by keyword (search bar)
-        {
-            search.retrieveResults(query, currentPage, booksPerPage, siteFilters, order);
-        }
+        search.retrieveResults(query, currentPage, booksPerPage, selectedTags, siteFilters, order);
     }
 
     protected abstract void showToolbar(boolean show, boolean override);
