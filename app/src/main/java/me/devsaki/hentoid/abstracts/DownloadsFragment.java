@@ -77,7 +77,6 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Common elements for use by EndlessFragment and PagerFragment
  * TODO: Dismiss 'new content' tooltip upon search
  * TODO: Fix empty 2nd page when books count = booksPerPage
- * TODO: Dispay tags as "disabled" in tag mosaic when current selection has books without them
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
@@ -139,7 +138,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected Context mContext;
     // Expression typed in the search bar
-    protected static String query = "";
+    protected String query = "";
     private final Handler searchHandler = new Handler();
     protected int currentPage = 1;
     protected ContentAdapter mAdapter;
@@ -883,6 +882,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.filterByTag = true;
             setQuery("");
             searchView.setQuery("", false);
+            searchContent();
         }
         else if (this.filterByTag && (!filterByTag || filterByTitle || filterByArtist)) {
 
@@ -906,6 +906,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             tagFilters.clear();
             setQuery("");
             searchView.setQuery("", false);
+            searchContent();
         }
         else
         {
@@ -975,8 +976,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 }
             }
         }
-
-        // TODO deactivate tag if previously selected tags are incompatible with it
     }
 
     /**
@@ -1051,11 +1050,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             // Update filtered books
             if (doSearch) {
                 searchContent();
-                updateTagMosaic(false);
-                /*
                 Handler handler = new Handler();
                 handler.post(() -> { updateTagMosaic(false); });
-                */
             }
         }
         else
@@ -1230,7 +1226,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         isLoaded = false;
         SearchContent search = new SearchContent(mContext, this);
-        search.retrieveResults(query, currentPage, booksPerPage, selectedTags, siteFilters, order);
+        search.retrieveResults(filterByTitle?query:"", filterByArtist?query:"", currentPage, booksPerPage, selectedTags, siteFilters, order);
     }
 
     protected abstract void showToolbar(boolean show, boolean override);

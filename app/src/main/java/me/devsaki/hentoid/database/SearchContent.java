@@ -20,22 +20,24 @@ public class SearchContent {
     private volatile State mCurrentState = State.NON_INIT;
     private List<Content> contentList = new ArrayList<>();
 
-    protected ContentListener mListener;
+    private ContentListener mListener;
 
-    protected String mQuery;
-    protected int mCurrentPage;
-    protected int mBooksPerPage;
-    protected int mOrderStyle;
-    protected List<String> mTagFilter = new ArrayList<>();
-    protected List<Integer> mSiteFilter = new ArrayList<>();
+    private String mTitleQuery;
+    private String mAuthorQuery;
+    private int mCurrentPage;
+    private int mBooksPerPage;
+    private int mOrderStyle;
+    private List<String> mTagFilter = new ArrayList<>();
+    private List<Integer> mSiteFilter = new ArrayList<>();
 
     public SearchContent(final Context context, final ContentListener listener) {
         db = HentoidDB.getInstance(context);
         mListener = listener;
     }
 
-    public void retrieveResults(String query, int currentPage, int booksPerPage, List<String> tags, List<Integer> sites, int orderStyle) {
-        mQuery = query;
+    public void retrieveResults(String titleQuery, String authorQuery, int currentPage, int booksPerPage, List<String> tags, List<Integer> sites, int orderStyle) {
+        mTitleQuery = titleQuery;
+        mAuthorQuery = authorQuery;
         mCurrentPage = currentPage;
         mBooksPerPage = booksPerPage;
         mOrderStyle = orderStyle;
@@ -65,13 +67,13 @@ public class SearchContent {
         new SearchTask(this).execute();
     }
 
-    private synchronized State retrieveContent(String query, int currentPage, int booksPerPage, List<String> tagFilter, List<Integer> sites, int orderStyle) {
+    private synchronized State retrieveContent(String titleQuery, String authorQuery, int currentPage, int booksPerPage, List<String> tagFilter, List<Integer> sites, int orderStyle) {
         Timber.d("Retrieving content.");
         try {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
 
-                contentList = db.selectContentByQuery(query, query, currentPage, booksPerPage, tagFilter, sites, orderStyle);
+                contentList = db.selectContentByQuery(titleQuery, authorQuery, currentPage, booksPerPage, tagFilter, sites, orderStyle);
 
                 mCurrentState = State.READY;
             }
@@ -104,7 +106,7 @@ public class SearchContent {
         @Override
         protected State doInBackground(Void... params) {
             SearchContent activity = activityReference.get();
-            return activity.retrieveContent(activity.mQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mSiteFilter, activity.mOrderStyle);
+            return activity.retrieveContent(activity.mTitleQuery, activity.mAuthorQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mSiteFilter, activity.mOrderStyle);
         }
 
         @Override
