@@ -65,7 +65,7 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
 
     @Override
     protected void attachRefresh(View rootView) {
-        ImageButton btnRefresh = (ImageButton) rootView.findViewById(R.id.btnRefresh);
+        ImageButton btnRefresh = rootView.findViewById(R.id.btnRefresh);
         btnRefresh.setOnClickListener(v -> {
             if (isLoaded) {
                 commitRefresh();

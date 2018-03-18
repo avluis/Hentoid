@@ -22,8 +22,8 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     private int selectedItemCount;
     private boolean selected;
 
-    protected ItemClickListener(Context cxt, Content content, int pos, ItemSelectListener listener) {
-        this.context = cxt;
+    protected ItemClickListener(Context context, Content content, int pos, ItemSelectListener listener) {
+        this.context = context;
         this.content = content;
         this.position = pos;
         this.selectedItemCount = 0;

@@ -64,10 +64,12 @@ public class HitomiParser {
             int pages = doc.select(".thumbnail-container").size();
 
             String author = "";
-            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
+                author = attributes.get(AttributeType.ARTIST).get(0).getName();
             if (author.equals("")) // Try and get Circle
             {
-                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0) author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
+                    author = attributes.get(AttributeType.CIRCLE).get(0).getName();
             }
 
             return new Content()
@@ -105,10 +107,10 @@ public class HitomiParser {
             imgUrls = new ArrayList<>(imgElements.size());
             // New Hitomi image URLs starting from mid-february 2018
             //  If book ID is even, starts with 'aa'; else starts with 'ba'
-            String imageHostname = Character.toString( (char)(HOSTNAME_PREFIX_BASE + Integer.parseInt(content.getUniqueSiteId()) % NUMBER_OF_FRONTENDS) ) + HOSTNAME_SUFFIX;
+            String imageHostname = Character.toString((char) (HOSTNAME_PREFIX_BASE + Integer.parseInt(content.getUniqueSiteId()) % NUMBER_OF_FRONTENDS)) + HOSTNAME_SUFFIX;
 
             for (Element element : imgElements) {
-                imgUrls.add("https:" + element.text().replace("//g.", "//"+imageHostname+"."));
+                imgUrls.add("https:" + element.text().replace("//g.", "//" + imageHostname + "."));
             }
         } catch (Exception e) {
             Timber.e(e, "Could not connect to the requested resource");

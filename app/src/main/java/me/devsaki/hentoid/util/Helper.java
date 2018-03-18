@@ -86,42 +86,42 @@ public final class Helper {
 
     // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
     public static void toast(String text) {
-        Context cxt = HentoidApp.getAppContext();
-        if (cxt != null) {
-            toast(cxt, text);
+        Context context = HentoidApp.getAppContext();
+        if (context != null) {
+            toast(context, text);
         }
     }
 
     public static void toast(int resource) {
-        Context cxt = HentoidApp.getAppContext();
-        if (cxt != null) {
-            toast(cxt, cxt.getResources().getString(resource));
+        Context context = HentoidApp.getAppContext();
+        if (context != null) {
+            toast(context, context.getResources().getString(resource));
         }
     }
 
-    public static void toast(Context cxt, String text) {
-        toast(cxt, text, DURATION.SHORT);
+    public static void toast(Context context, String text) {
+        toast(context, text, DURATION.SHORT);
     }
 
-    public static void toast(Context cxt, int resource) {
-        toast(cxt, resource, DURATION.SHORT);
+    public static void toast(Context context, int resource) {
+        toast(context, resource, DURATION.SHORT);
     }
 
-    public static void toast(Context cxt, String text, DURATION duration) {
-        toast(cxt, text, -1, duration);
+    public static void toast(Context context, String text, DURATION duration) {
+        toast(context, text, -1, duration);
     }
 
-    private static void toast(Context cxt, int resource, DURATION duration) {
-        toast(cxt, null, resource, duration);
+    private static void toast(Context context, int resource, DURATION duration) {
+        toast(context, null, resource, duration);
     }
 
-    private static void toast(@NonNull Context cxt, @Nullable String text, int res,
+    private static void toast(@NonNull Context context, @Nullable String text, int res,
                               DURATION duration) {
         String message = null;
         if (text != null) {
             message = text;
         } else if (res != -1) {
-            message = cxt.getString(res);
+            message = context.getString(res);
         } else {
             Throwable noResource = new Throwable("You must provide a String or Resource ID!");
             try {
@@ -147,7 +147,7 @@ public final class Helper {
             toast.setText(message);
         } catch (Exception e) {
             Timber.d("toast is null, creating one instead;");
-            toast = Toast.makeText(cxt, message, time);
+            toast = Toast.makeText(context, message, time);
         }
 
         toast.show();
@@ -163,13 +163,13 @@ public final class Helper {
         StrictMode.setThreadPolicy(policy);
     }
 
-    public static void launchMainActivity(Context cxt) {
+    public static void launchMainActivity(Context context) {
         if (Preferences.getAppLockPin().isEmpty()) {
-            Intent intent = new Intent(cxt, DownloadsActivity.class);
-            cxt.startActivity(intent);
+            Intent intent = new Intent(context, DownloadsActivity.class);
+            context.startActivity(intent);
         } else {
-            Intent intent = new Intent(cxt, AppLockActivity.class);
-            cxt.startActivity(intent);
+            Intent intent = new Intent(context, AppLockActivity.class);
+            context.startActivity(intent);
         }
     }
 
@@ -191,27 +191,27 @@ public final class Helper {
     }
 
     // We have asked for permissions, but still denied.
-    public static void reset(Context cxt, Activity activity) {
+    public static void reset(Context context, Activity activity) {
         Helper.toast(R.string.reset);
         Preferences.setIsFirstRun(true);
         Intent intent = new Intent(activity, IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        cxt.startActivity(intent);
+        context.startActivity(intent);
         activity.finish();
     }
 
-    public static void doRestart(@NonNull Context cxt) {
+    public static void doRestart(@NonNull Context context) {
         try {
-            PackageManager pm = cxt.getPackageManager();
+            PackageManager pm = context.getPackageManager();
             if (pm != null) {
-                Intent intent = pm.getLaunchIntentForPackage(cxt.getPackageName());
+                Intent intent = pm.getLaunchIntentForPackage(context.getPackageName());
                 if (intent != null) {
                     ComponentName componentName = intent.getComponent();
                     Intent mainIntent = Intent.makeRestartActivityTask(componentName);
                     mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
                             | Intent.FLAG_ACTIVITY_NEW_TASK
                             | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    cxt.startActivity(mainIntent);
+                    context.startActivity(mainIntent);
 
                     Runtime.getRuntime().exit(0);
                 } else {
@@ -227,11 +227,11 @@ public final class Helper {
 
     // Mainly for use with Android < 5.0 - sets OverScroll Glow and Edge Line
     @SuppressLint("NewApi")
-    public static void changeEdgeEffect(Context cxt, View list, int glowColor, int lineColor) {
+    public static void changeEdgeEffect(Context context, View list, int glowColor, int lineColor) {
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
-            EdgeEffect edgeEffectTop = new EdgeEffect(cxt);
+            EdgeEffect edgeEffectTop = new EdgeEffect(context);
             edgeEffectTop.setColor(glowColor);
-            EdgeEffect edgeEffectBottom = new EdgeEffect(cxt);
+            EdgeEffect edgeEffectBottom = new EdgeEffect(context);
             edgeEffectBottom.setColor(glowColor);
 
             try {
@@ -247,16 +247,16 @@ public final class Helper {
             }
         } else {
             // Android < 5.0 - OverScroll Glow
-            int glowDrawableId = cxt.getResources().getIdentifier("overscroll_glow", "drawable",
+            int glowDrawableId = context.getResources().getIdentifier("overscroll_glow", "drawable",
                     "android");
-            Drawable androidGlow = ContextCompat.getDrawable(cxt, glowDrawableId);
-            androidGlow.setColorFilter(ContextCompat.getColor(cxt, glowColor),
+            Drawable androidGlow = ContextCompat.getDrawable(context, glowDrawableId);
+            androidGlow.setColorFilter(ContextCompat.getColor(context, glowColor),
                     PorterDuff.Mode.SRC_ATOP);
             // Android < 5.0 - OverScroll Edge Line
-            final int edgeDrawableId = cxt.getResources().getIdentifier("overscroll_edge",
+            final int edgeDrawableId = context.getResources().getIdentifier("overscroll_edge",
                     "drawable", "android");
-            final Drawable overScrollEdge = ContextCompat.getDrawable(cxt, edgeDrawableId);
-            overScrollEdge.setColorFilter(ContextCompat.getColor(cxt, lineColor),
+            final Drawable overScrollEdge = ContextCompat.getDrawable(context, edgeDrawableId);
+            overScrollEdge.setColorFilter(ContextCompat.getColor(context, lineColor),
                     PorterDuff.Mode.SRC_ATOP);
         }
     }
@@ -338,26 +338,26 @@ public final class Helper {
         return b;
     }
 
-    public static int getAppVersionCode(@NonNull Context cxt) throws NameNotFoundException {
-        return cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionCode;
+    public static int getAppVersionCode(@NonNull Context context) throws NameNotFoundException {
+        return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
     }
 
-    public static String getAppVersionInfo(@NonNull Context cxt) throws NameNotFoundException {
-        return cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionName;
+    public static String getAppVersionInfo(@NonNull Context context) throws NameNotFoundException {
+        return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
     }
 
-    public static String getAppUserAgent(@NonNull Context cxt) throws NameNotFoundException {
+    public static String getAppUserAgent(@NonNull Context context) throws NameNotFoundException {
         return Consts.USER_AGENT + " Hentoid/v" +
-                cxt.getPackageManager().getPackageInfo(cxt.getPackageName(), 0).versionName;
+                context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
     }
 
     public static WebResourceResponse getWebResourceResponseFromAsset(Site site, String filename,
                                                                       TYPE type) {
-        Context cxt = HentoidApp.getAppContext();
+        Context context = HentoidApp.getAppContext();
         String pathPrefix = site.getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + filename;
         try {
-            File asset = new File(cxt.getExternalCacheDir() + "/" + file);
+            File asset = new File(context.getExternalCacheDir() + "/" + file);
             FileInputStream stream = new FileInputStream(asset);
             return Helper.getUtf8EncodedWebResourceResponse(stream, type);
         } catch (IOException e) {

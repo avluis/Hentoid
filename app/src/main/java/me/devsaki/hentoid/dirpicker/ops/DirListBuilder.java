@@ -24,12 +24,12 @@ public class DirListBuilder {
     private ListDir listDir;
     private MakeDir makeDir;
 
-    public DirListBuilder(Context cxt, EventBus bus, RecyclerView recyclerView) {
+    public DirListBuilder(Context context, EventBus bus, RecyclerView recyclerView) {
         this.bus = bus;
         this.dirTree = new DirTree(bus);
 
         initOps();
-        attachRecyclerView(cxt, recyclerView);
+        attachRecyclerView(context, recyclerView);
     }
 
     private void initOps() {
@@ -37,9 +37,9 @@ public class DirListBuilder {
         makeDir = new MakeDir(dirTree, bus);
     }
 
-    private void attachRecyclerView(Context cxt, RecyclerView recyclerView) {
+    private void attachRecyclerView(Context context, RecyclerView recyclerView) {
         adapter = new DirAdapter(dirTree.dirList, bus);
-        recyclerView.setLayoutManager(new LinearLayoutManager(cxt));
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
     }

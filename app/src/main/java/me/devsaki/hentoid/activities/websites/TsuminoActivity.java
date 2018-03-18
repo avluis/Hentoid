@@ -53,7 +53,6 @@ public class TsuminoActivity extends BaseWebActivity {
         super.setWebView(webView);
     }
 
-    @SuppressWarnings("UnusedParameters")
     @Override
     public void onDownloadFabClick(View view) {
         downloadFabPressed = true;
@@ -94,7 +93,6 @@ public class TsuminoActivity extends BaseWebActivity {
             }
         }
 
-        @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {

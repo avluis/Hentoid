@@ -42,13 +42,13 @@ import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOption
  */
 public class QueueContentAdapter extends ArrayAdapter<Content> {
 
-    private final Context cxt;
+    private final Context context;
     private final List<Content> contents;
     private final QueueFragment fragment;
 
-    public QueueContentAdapter(Context cxt, List<Content> contents, QueueFragment fragment) {
-        super(cxt, R.layout.item_queue, contents);
-        this.cxt = cxt;
+    public QueueContentAdapter(Context context, List<Content> contents, QueueFragment fragment) {
+        super(context, R.layout.item_queue, contents);
+        this.context = context;
         this.contents = contents;
         this.fragment = fragment;
     }
@@ -63,15 +63,15 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         // Check if an existing view is being reused, otherwise inflate the view
         if (v == null) {
             holder = new ViewHolder();
-            LayoutInflater inflater = LayoutInflater.from(cxt);
+            LayoutInflater inflater = LayoutInflater.from(context);
             v = inflater.inflate(R.layout.item_queue, parent, false);
 
-            holder.tvTitle = (TextView) v.findViewById(R.id.tvTitle);
-            holder.ivCover = (ImageView) v.findViewById(R.id.ivCover);
-            holder.tvSeries = (TextView) v.findViewById(R.id.tvSeries);
-            holder.tvArtist = (TextView) v.findViewById(R.id.tvArtist);
-            holder.tvTags = (TextView) v.findViewById(R.id.tvTags);
-            holder.tvSite = (TextView) v.findViewById(R.id.tvSite);
+            holder.tvTitle = v.findViewById(R.id.tvTitle);
+            holder.ivCover = v.findViewById(R.id.ivCover);
+            holder.tvSeries = v.findViewById(R.id.tvSeries);
+            holder.tvArtist = v.findViewById(R.id.tvArtist);
+            holder.tvTags = v.findViewById(R.id.tvTags);
+            holder.tvSite = v.findViewById(R.id.tvSite);
 
             v.setTag(holder);
         } else {
@@ -108,7 +108,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachCover(ViewHolder holder, Content content) {
-        RequestBuilder<Drawable> thumb = Glide.with(cxt).load(content.getCoverImageUrl());
+        RequestBuilder<Drawable> thumb = Glide.with(context).load(content.getCoverImageUrl());
 
         String coverFile = FileHelper.getThumb(content);
         holder.ivCover.layout(0, 0, 0, 0);
@@ -119,7 +119,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder);
 
-        Glide.with(cxt)
+        Glide.with(context)
                 .load(coverFile)
                 .apply(myOptions)
                 .transition(withCrossFade())
@@ -128,7 +128,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachSeries(ViewHolder holder, Content content) {
-        String templateSeries = cxt.getString(R.string.work_series);
+        String templateSeries = context.getString(R.string.work_series);
         String series = "";
         List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
@@ -147,13 +147,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
         if (seriesAttributes == null) {
             holder.tvSeries.setText(Helper.fromHtml(templateSeries.replace("@series@",
-                    cxt.getResources().getString(R.string.work_untitled))));
+                    context.getResources().getString(R.string.work_untitled))));
             holder.tvSeries.setVisibility(View.VISIBLE);
         }
     }
 
     private void attachArtist(ViewHolder holder, Content content) {
-        String templateArtist = cxt.getString(R.string.work_artist);
+        String templateArtist = context.getString(R.string.work_artist);
         String artists = "";
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
         if (artistAttributes != null) {
@@ -169,13 +169,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
         if (artistAttributes == null) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
-                    cxt.getResources().getString(R.string.work_untitled))));
+                    context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
     }
 
     private void attachTags(ViewHolder holder, Content content) {
-        String templateTags = cxt.getString(R.string.work_tags);
+        String templateTags = context.getString(R.string.work_tags);
         String tags = "";
         List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
         if (tagsAttributes != null) {
@@ -193,12 +193,12 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachButtons(View view, final Content content) {
-        Button btnCancel = (Button) view.findViewById(R.id.btnCancel);
+        Button btnCancel = view.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(v -> {
             cancel(content);
             notifyDataSetChanged();
         });
-        Button btnPause = (Button) view.findViewById(R.id.btnPause);
+        Button btnPause = view.findViewById(R.id.btnPause);
         btnPause.setOnClickListener(v -> {
             if (content.getStatus() != StatusContent.DOWNLOADING) {
                 resume(content);
@@ -213,7 +213,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void updateProgress(View view, Content content) {
-        ProgressBar pb = (ProgressBar) view.findViewById(R.id.pbDownload);
+        ProgressBar pb = view.findViewById(R.id.pbDownload);
         if (content.getStatus() != StatusContent.PAUSED) {
             pb.setVisibility(View.VISIBLE);
             if (content.getPercent() > 0) {
@@ -228,7 +228,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void cancel(Content content) {
-        HentoidDB db = HentoidDB.getInstance(cxt);
+        HentoidDB db = HentoidDB.getInstance(context);
         // Quick hack as workaround if download is paused
         if (content.getStatus() == StatusContent.PAUSED) {
             resume(content);
@@ -244,7 +244,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void pause(Content content) {
-        HentoidDB db = HentoidDB.getInstance(cxt);
+        HentoidDB db = HentoidDB.getInstance(context);
         content.setStatus(StatusContent.PAUSED);
         // Anytime a download status is set to downloading,
         // download count goes up by one.
@@ -259,14 +259,14 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void resume(Content content) {
-        if (NetworkStatus.isOnline(cxt)) {
-            HentoidDB db = HentoidDB.getInstance(cxt);
+        if (NetworkStatus.isOnline(context)) {
+            HentoidDB db = HentoidDB.getInstance(context);
             content.setStatus(StatusContent.DOWNLOADING);
             db.updateContentStatus(content);
             if (content.getId() == contents.get(0).getId()) {
-                Intent intent = new Intent(Intent.ACTION_SYNC, null, cxt,
+                Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
                         DownloadService.class);
-                cxt.startService(intent);
+                context.startService(intent);
             }
             fragment.update();
         } else {
