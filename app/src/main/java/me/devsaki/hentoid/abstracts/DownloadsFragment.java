@@ -958,7 +958,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
         List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), selectedTags, siteFilters);
 
-        // Removes all tag buttons
+        // Remove all tag buttons that do not appear in results
         if (removeNotFound)
         {
             tagMosaic.removeAllViews();
@@ -983,17 +983,21 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             for (String key : keySet) {
                 if (tagFilters.get(key) > 9) tagFilters.remove(key);
             }
-        } else {
-            List<String> availableTags = new ArrayList<>();
+        } else { // Disable all tag buttons that do not appear in results
+            Map<String, Integer> availableTags = new HashMap<>();
             for(Pair<String,Integer> val : tags)
             {
-                availableTags.add(val.first);
+                availableTags.put(val.first, val.second);
             }
 
             for (String key : tagFilters.keySet()) {
                 Button b = tagMosaic.findViewWithTag(key);
+                int count = 0;
+                if (availableTags.containsKey(key)) count = availableTags.get(key);
 
-                if (availableTags.contains(key)) {
+                b.setText(key + "("+count+")");
+
+                if (availableTags.containsKey(key)) {
                     if (TAGFILTER_INACTIVE == tagFilters.get(key)) {
                         tagFilters.put(key, TAGFILTER_ACTIVE);
                         colorButton(b, TAGFILTER_ACTIVE);
