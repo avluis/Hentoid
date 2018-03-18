@@ -342,7 +342,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public List<Content> selectContentEmptyFolder() {
-        List<Content> result = null;
+        List<Content> result;
         synchronized (locker) {
             Timber.d("selectContentEmptyFolder");
             SQLiteDatabase db = null;

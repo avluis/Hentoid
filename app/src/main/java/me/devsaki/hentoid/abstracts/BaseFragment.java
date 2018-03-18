@@ -34,8 +34,8 @@ public abstract class BaseFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Context cxt = HentoidApp.getAppContext();
-        db = HentoidDB.getInstance(cxt);
+        Context context = HentoidApp.getAppContext();
+        db = HentoidDB.getInstance(context);
 
         if (!(getActivity() instanceof BackInterface)) {
             throw new ClassCastException(
@@ -76,7 +76,6 @@ public abstract class BaseFragment extends Fragment {
 
     // Implementations must annotate method with:
     // @Subscribe(threadMode = ThreadMode.MAIN)
-    @SuppressWarnings("unused")
     public abstract void onDownloadEvent(DownloadEvent event);
 
     public interface BackInterface {

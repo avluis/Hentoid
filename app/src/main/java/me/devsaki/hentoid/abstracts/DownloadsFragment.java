@@ -381,7 +381,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
         mListState = llm.onSaveInstanceState();
@@ -398,7 +398,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onViewCreated(View view, Bundle state) {
+    public void onViewCreated(@NonNull View view, Bundle state) {
         super.onViewCreated(view, state);
 
         if (mListState != null) {

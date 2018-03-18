@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -43,14 +44,12 @@ public abstract class DrawerActivity extends BaseActivity {
     protected static final int mainLayout = R.layout.activity_hentoid;
 
     protected Fragment fragment;
-    private Context cxt;
+    private Context context;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private DrawerMenuContents mDrawerMenuContents;
     private Toolbar mToolbar;
     private ActionBarDrawerToggle mDrawerToggle;
-    private final FragmentManager.OnBackStackChangedListener onBackStackChangedListener =
-            this::updateDrawerToggle;
     private boolean isToolbarInitialized;
     private int itemToOpen = -1;
     private int currentPos = -1;
@@ -62,7 +61,7 @@ public abstract class DrawerActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(mainLayout);
-        cxt = HentoidApp.getAppContext();
+        context = HentoidApp.getAppContext();
 
         FragmentManager manager = getSupportFragmentManager();
         fragment = manager.findFragmentById(R.id.content_frame);
@@ -79,7 +78,7 @@ public abstract class DrawerActivity extends BaseActivity {
     protected abstract Fragment buildFragment();
 
     protected String getToolbarTitle() {
-        return Helper.getActivityName(cxt, R.string.app_name);
+        return Helper.getActivityName(context, R.string.app_name);
     }
 
     private String getFragmentTag() {
@@ -113,7 +112,7 @@ public abstract class DrawerActivity extends BaseActivity {
     }
 
     protected void initializeToolbar() {
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        mToolbar = findViewById(R.id.toolbar);
         if (mToolbar == null) {
             throw new IllegalStateException(
                     "Layout is required to include a Toolbar with id " +
@@ -148,12 +147,12 @@ public abstract class DrawerActivity extends BaseActivity {
     private void setupActionBarDrawerToggle() {
         mDrawerListener = new DrawerLayout.DrawerListener() {
             @Override
-            public void onDrawerSlide(View drawerView, float slideOffset) {
+            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
                 if (mDrawerToggle != null) mDrawerToggle.onDrawerSlide(drawerView, slideOffset);
             }
 
             @Override
-            public void onDrawerOpened(View drawerView) {
+            public void onDrawerOpened(@NonNull View drawerView) {
                 if (mDrawerToggle != null) mDrawerToggle.onDrawerOpened(drawerView);
                 if (getSupportActionBar() != null) {
                     getSupportActionBar().setTitle(getToolbarTitle());
@@ -162,7 +161,7 @@ public abstract class DrawerActivity extends BaseActivity {
 
             @SuppressLint("NewApi")
             @Override
-            public void onDrawerClosed(View drawerView) {
+            public void onDrawerClosed(@NonNull View drawerView) {
                 if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
 
                 int position = itemToOpen;
@@ -247,7 +246,7 @@ public abstract class DrawerActivity extends BaseActivity {
         // Whenever the fragment back stack changes, we may need to update the
         // action bar toggle: only top level screens show the hamburger-like icon, inner
         // screens - either Activities or fragments - show the "Up" icon instead.
-        getSupportFragmentManager().addOnBackStackChangedListener(onBackStackChangedListener);
+        getSupportFragmentManager().addOnBackStackChangedListener(this::updateDrawerToggle);
     }
 
     @Override
@@ -295,7 +294,7 @@ public abstract class DrawerActivity extends BaseActivity {
     @Override
     public void onPause() {
         super.onPause();
-        getSupportFragmentManager().removeOnBackStackChangedListener(onBackStackChangedListener);
+        getSupportFragmentManager().removeOnBackStackChangedListener(this::updateDrawerToggle);
     }
 
     private void updateDrawerToggle() {

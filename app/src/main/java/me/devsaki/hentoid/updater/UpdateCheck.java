@@ -60,7 +60,7 @@ public class UpdateCheck {
     private int downloadID = -1;
     private DownloadManager downloadManager;
     private String updateDownloadPath;
-    private Context cxt;
+    private Context context;
     private UpdateCheckCallback updateCheckResult;
     private Handler mHandler;
     private String downloadURL;
@@ -80,7 +80,7 @@ public class UpdateCheck {
 
     public void checkForUpdate(@NonNull Context context, final boolean onlyWifi,
                                final boolean showToast, final UpdateCheckCallback callback) {
-        this.cxt = context;
+        this.context = context;
         this.updateCheckResult = callback;
         mHandler = new Handler(context.getMainLooper());
 
@@ -124,23 +124,23 @@ public class UpdateCheck {
 
         Intent installUpdate = new Intent(ACTION_DOWNLOAD_UPDATE);
         installUpdate.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent updateIntent = PendingIntent.getBroadcast(cxt, 0, installUpdate, 0);
+        PendingIntent updateIntent = PendingIntent.getBroadcast(context, 0, installUpdate, 0);
 
-        notif = new RemoteViews(cxt.getPackageName(),
+        notif = new RemoteViews(context.getPackageName(),
                 R.layout.notification_update_available);
         notifManager = (NotificationManager)
-                cxt.getSystemService(Context.NOTIFICATION_SERVICE);
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
-                .Builder(cxt)
+                .Builder(context)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVibrate(new long[]{1, 1, 1})
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
-                .setTicker(cxt.getString(R.string.update_available))
+                .setTicker(context.getString(R.string.update_available))
                 .setContent(notif);
         notif.setTextViewText(R.id.tv_update_summary,
-                cxt.getString(R.string.download_update));
+                context.getString(R.string.download_update));
         notif.setOnClickPendingIntent(R.id.rl_notify_root, updateIntent);
 
         notifManager.notify(NOTIFICATION_ID, builder.build());
@@ -157,27 +157,27 @@ public class UpdateCheck {
     void downloadingUpdateNotification() {
         Intent stopIntent = new Intent(ACTION_DOWNLOAD_CANCELLED);
         stopIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent cancelIntent = PendingIntent.getBroadcast(cxt, 0, stopIntent, 0);
+        PendingIntent cancelIntent = PendingIntent.getBroadcast(context, 0, stopIntent, 0);
 
         Intent clearIntent = new Intent(ACTION_NOTIFICATION_REMOVED);
         clearIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent removeIntent = PendingIntent.getBroadcast(cxt, 0, clearIntent, 0);
+        PendingIntent removeIntent = PendingIntent.getBroadcast(context, 0, clearIntent, 0);
 
-        notif = new RemoteViews(cxt.getPackageName(),
+        notif = new RemoteViews(context.getPackageName(),
                 R.layout.notification_update);
         notifManager = (NotificationManager)
-                cxt.getSystemService(Context.NOTIFICATION_SERVICE);
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
-                .Builder(cxt)
+                .Builder(context)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
-                .setTicker(cxt.getString(R.string.downloading_update))
+                .setTicker(context.getString(R.string.downloading_update))
                 .setAutoCancel(false)
                 .setOngoing(true)
                 .setContent(notif)
                 .setDeleteIntent(removeIntent);
         notif.setProgressBar(R.id.pb_notification, 100, 0, true);
-        notif.setTextViewText(R.id.tv_update_title, cxt.getString(R.string.downloading_update));
+        notif.setTextViewText(R.id.tv_update_title, context.getString(R.string.downloading_update));
         notif.setTextViewText(R.id.tv_update_summary, "");
         notif.setOnClickPendingIntent(R.id.bt_cancel, cancelIntent);
 
@@ -187,27 +187,27 @@ public class UpdateCheck {
     private void updateDownloadedNotification() {
         Intent installUpdate = new Intent(ACTION_INSTALL_UPDATE);
         installUpdate.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent installIntent = PendingIntent.getBroadcast(cxt, 0, installUpdate, 0);
+        PendingIntent installIntent = PendingIntent.getBroadcast(context, 0, installUpdate, 0);
 
         Intent clearIntent = new Intent(ACTION_NOTIFICATION_REMOVED);
         clearIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent removeIntent = PendingIntent.getBroadcast(cxt, 0, clearIntent, 0);
+        PendingIntent removeIntent = PendingIntent.getBroadcast(context, 0, clearIntent, 0);
 
-        notif = new RemoteViews(cxt.getPackageName(),
+        notif = new RemoteViews(context.getPackageName(),
                 R.layout.notification_update_available);
         notifManager = (NotificationManager)
-                cxt.getSystemService(Context.NOTIFICATION_SERVICE);
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
 
         builder = new NotificationCompat
-                .Builder(cxt)
+                .Builder(context)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setVibrate(new long[]{1, 1, 1})
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setDeleteIntent(removeIntent)
-                .setTicker(cxt.getString(R.string.install_update))
+                .setTicker(context.getString(R.string.install_update))
                 .setContent(notif);
-        notif.setTextViewText(R.id.tv_update_summary, cxt.getString(R.string.install_update));
+        notif.setTextViewText(R.id.tv_update_summary, context.getString(R.string.install_update));
         notif.setOnClickPendingIntent(R.id.rl_notify_root, installIntent);
 
         notifManager.notify(NOTIFICATION_ID, builder.build());
@@ -225,7 +225,7 @@ public class UpdateCheck {
         intent.setDataAndType(Uri.parse("file://" + updateDownloadPath),
                 "application/vnd.android.package-archive");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        cxt.startActivity(intent);
+        context.startActivity(intent);
     }
 
     void downloadUpdate() {
@@ -236,7 +236,7 @@ public class UpdateCheck {
             }
 
             Uri downloadUri = Uri.parse(downloadURL);
-            Uri destinationUri = Uri.parse(updateDownloadPath = cxt.getExternalCacheDir() +
+            Uri destinationUri = Uri.parse(updateDownloadPath = context.getExternalCacheDir() +
                     "/hentoid_update.apk");
 
             DownloadRequest downloadRequest = new DownloadRequest(downloadUri)
@@ -262,9 +262,9 @@ public class UpdateCheck {
                                     try {
                                         notif.setProgressBar(R.id.pb_notification, 100, 0, true);
                                         notif.setTextViewText(R.id.tv_update_title,
-                                                cxt.getString(R.string.error_network_summary));
+                                                context.getString(R.string.error_network_summary));
                                         notif.setTextViewText(R.id.tv_update_summary,
-                                                cxt.getString(R.string.error_file));
+                                                context.getString(R.string.error_file));
                                         notifManager.notify(NOTIFICATION_ID, builder.build());
                                     } catch (Exception e) {
                                         Timber.e(e, "Error");
@@ -273,9 +273,9 @@ public class UpdateCheck {
                                     try {
                                         notif.setProgressBar(R.id.pb_notification, 100, 0, true);
                                         notif.setTextViewText(R.id.tv_update_title,
-                                                cxt.getString(R.string.error_network_summary));
+                                                context.getString(R.string.error_network_summary));
                                         notif.setTextViewText(R.id.tv_update_summary,
-                                                cxt.getString(R.string.error_file));
+                                                context.getString(R.string.error_file));
                                         notifManager.notify(NOTIFICATION_ID, builder.build());
                                     } catch (Exception e) {
                                         Timber.e(e, "Error");
@@ -360,7 +360,7 @@ public class UpdateCheck {
                 JSONObject jsonObject = new JsonHelper().jsonReader(params[0]);
                 if (jsonObject != null) {
                     int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
-                    if (Helper.getAppVersionCode(cxt) < updateVersionCode) {
+                    if (Helper.getAppVersionCode(context) < updateVersionCode) {
                         if (updateCheckResult != null) {
                             updateCheckResult.onUpdateAvailable();
                         }
@@ -370,14 +370,14 @@ public class UpdateCheck {
                         if (updateCheckResult != null) {
                             updateCheckResult.noUpdateAvailable();
                             if (showToast) {
-                                mHandler.post(() -> Helper.toast(cxt,
+                                mHandler.post(() -> Helper.toast(context,
                                         R.string.update_check_no_update));
                             }
                         }
                     }
                 } else {
                     if (showToast) {
-                        mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
+                        mHandler.post(() -> Helper.toast(context, R.string.error_dependency));
                     }
                 }
             } catch (IOException e) {
@@ -385,11 +385,11 @@ public class UpdateCheck {
                     runAsyncTask(true);
                 } else {
                     Timber.e(e, "IO ERROR");
-                    mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
+                    mHandler.post(() -> Helper.toast(context, R.string.error_dependency));
                 }
             } catch (JSONException e) {
                 Timber.e(e, "Error with JSON File");
-                mHandler.post(() -> Helper.toast(cxt, R.string.error_dependency));
+                mHandler.post(() -> Helper.toast(context, R.string.error_dependency));
             } catch (PackageManager.NameNotFoundException e) {
                 Timber.e(e, "Package Name NOT Found");
             }
@@ -403,8 +403,8 @@ public class UpdateCheck {
         public void run() {
             notif.setProgressBar(R.id.pb_notification, 100, progressBar, false);
             notif.setTextViewText(R.id.tv_update_summary,
-                    "(" + Formatter.formatShortFileSize(cxt, done) + "/"
-                            + Formatter.formatShortFileSize(cxt, total) + ") "
+                    "(" + Formatter.formatShortFileSize(context, done) + "/"
+                            + Formatter.formatShortFileSize(context, total) + ") "
                             + progressBar
                             + "%");
             notifManager.notify(NOTIFICATION_ID, builder.build());

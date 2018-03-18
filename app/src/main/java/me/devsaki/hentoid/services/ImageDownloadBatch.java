@@ -16,7 +16,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.Preferences;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -52,7 +51,7 @@ final class ImageDownloadBatch {
                 .addHeader("User-Agent", userAgent);
 
         if (cookie != null && cookie.length() > 0) requestBuilder.addHeader("Cookie", cookie);
-        Request request =  requestBuilder.build();
+        Request request = requestBuilder.build();
 
         client = new OkHttpClient.Builder()
                 .connectTimeout(10, TimeUnit.SECONDS)

@@ -27,7 +27,7 @@ public abstract class ContentTable {
     public static final String SITE_COLUMN = "site";
     private static final String AUTHOR_COLUMN = "author";
     private static final String STORAGE_FOLDER_COLUMN = "storage_folder";
-    
+
     // COLUMN INDEXES
     public static final int IDX_INTERNALID = 1;
     public static final int IDX_SITEID = 2;
@@ -70,7 +70,7 @@ public abstract class ContentTable {
     public static final String UPDATE_CONTENT_STATUS_STATEMENT = "UPDATE " + TABLE_NAME + " SET "
             + STATUS_COLUMN + " = ? WHERE " + STATUS_COLUMN + " = ?";
 
-    public static final String UPDATE_CONTENT_STORAGE_FOLDER = "UPDATE " + TABLE_NAME + " SET " + STORAGE_FOLDER_COLUMN + " = ? WHERE " + ID_COLUMN +" = ?";
+    public static final String UPDATE_CONTENT_STORAGE_FOLDER = "UPDATE " + TABLE_NAME + " SET " + STORAGE_FOLDER_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
 
 
     // SELECT

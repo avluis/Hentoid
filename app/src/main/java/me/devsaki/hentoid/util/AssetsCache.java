@@ -29,7 +29,7 @@ import timber.log.Timber;
 public class AssetsCache {
 
     private static final String CACHE_JSON =
-            "https://raw.githubusercontent.com/AVnetWS/Hentoid/master/.cache/cache.json";
+            "https://raw.githubusercontent.com/avluis/Hentoid/master/.cache/cache.json";
     private static final String CACHE_PACK = "cache.zip";
     private static final String KEY_PACK_URL = "packURL";
     private static final String KEY_VERSION_CODE = "versionCode";
@@ -37,9 +37,9 @@ public class AssetsCache {
     private static AssetManager assetManager;
     private static File cacheDir;
 
-    public static void init(Context cxt) {
-        assetManager = cxt.getAssets();
-        cacheDir = cxt.getExternalCacheDir();
+    public static void init(Context context) {
+        assetManager = context.getAssets();
+        cacheDir = context.getExternalCacheDir();
         if (cacheDir != null) {
             // Check remote cache version
             checkNetworkConnectivity();

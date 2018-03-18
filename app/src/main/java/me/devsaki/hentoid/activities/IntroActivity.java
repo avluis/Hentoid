@@ -37,10 +37,10 @@ public class IntroActivity extends AppIntro2 {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
 
-    private Handler mImportHandler = new Handler();
-    private Handler mActivityResultHandler = new Handler();
-    private Handler mResultsHandler = new Handler();
-    private Handler mDoneHandler = new Handler();
+    private final Handler mImportHandler = new Handler();
+    private final Handler mActivityResultHandler = new Handler();
+    private final Handler mResultsHandler = new Handler();
+    private final Handler mDoneHandler = new Handler();
     private Fragment doneFragment;
 
     @Override
@@ -104,8 +104,8 @@ public class IntroActivity extends AppIntro2 {
         if (pager.getCurrentItem() == IMPORT_SLIDE) {
             setProgressButtonEnabled(false);
 
-            TextView defaultTv = (TextView) findViewById(R.id.tv_library_default);
-            TextView customTv = (TextView) findViewById(R.id.tv_library_custom);
+            TextView defaultTv = findViewById(R.id.tv_library_default);
+            TextView customTv = findViewById(R.id.tv_library_custom);
 
             defaultTv.setCompoundDrawablesWithIntrinsicBounds(
                     R.drawable.ic_action_sd_storage, 0, 0, 0);

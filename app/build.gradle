@@ -30,7 +30,7 @@ android {
         }
         prod {
             buildConfigField('String', 'UPDATE_URL',
-                    '"https://raw.githubusercontent.com/AVnetWS/Hentoid/master/app/update.json"')
+                    '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"')
             def appId = android.defaultConfig.applicationId
             resValue('string', 'app_id', appId)
             resValue('string', 'app_name', 'Hentoid')
