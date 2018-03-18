@@ -321,7 +321,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public List<Content> selectContentInQueue() {
-        List<Content> result = null;
+        List<Content> result = Collections.emptyList();
         synchronized (locker) {
             Timber.d("selectContentInQueue");
             SQLiteDatabase db = null;
@@ -393,9 +393,10 @@ public class HentoidDB extends SQLiteOpenHelper {
                     if (tags.size() > 0) {
                         sql += ContentTable.SELECT_DOWNLOADS_TAGS;
                         sql = sql.replace("%4", buildListQuery(tags));
+                        sql = sql.replace("%5", tags.size()+"");
                     }
 
-                    sql += ")";
+                    sql += "))";
                 }
 
                 switch(orderStyle)
@@ -552,6 +553,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             if (tags != null && tags.size() > 0) {
                 sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
                 sql = sql.replace("%2", buildListQuery(tags));
+                sql = sql.replace("%3", tags.size()+"");
             }
 
             sql += AttributeTable.SELECT_ALL_BY_USAGE_END;

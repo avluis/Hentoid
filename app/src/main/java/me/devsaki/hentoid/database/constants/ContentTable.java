@@ -85,6 +85,12 @@ public abstract class ContentTable {
             + STATUS_COLUMN + " in (?, ?) ORDER BY C." + STATUS_COLUMN + ", C."
             + DOWNLOAD_DATE_COLUMN;
 
+/*
+    public static final String SELECT_BY_TAGS = "select c.*, count(*) " +
+            "from "+TABLE_NAME+" c inner join "+ContentAttributeTable.TABLE_NAME+" ca on ca."+ContentAttributeTable.CONTENT_ID_COLUMN+" = c."+ID_COLUMN+" " +
+            "inner join "+AttributeTable.TABLE_NAME+" a on a."+AttributeTable.ID_COLUMN+" = ca."+ContentAttributeTable.ATTRIBUTE_ID_COLUMN+" " +
+            "where lower(a."+AttributeTable.NAME_COLUMN+") in (%1) and a.type = 3 and c.status = 1 group by 1 having count(*) = %2";
+ */
 
     // SEARCH QUERIES "TOOLBOX"
 
@@ -94,7 +100,7 @@ public abstract class ContentTable {
     public static final String SELECT_DOWNLOADS_TITLE = " AND C." + TITLE_COLUMN + " like '%2' ";
 
     public static final String SELECT_DOWNLOADS_JOINS = " AND C." + ID_COLUMN
-            + " in (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM "
+            + " in (SELECT "+ContentAttributeTable.CONTENT_ID_COLUMN+" FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM "
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A."+ AttributeTable.ID_COLUMN + " WHERE ";
 
@@ -102,5 +108,5 @@ public abstract class ContentTable {
             + AttributeTable.TYPE_COLUMN + " in (0, 7))";
 
     public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
-            + AttributeTable.TYPE_COLUMN + " = 3)";
+            + AttributeTable.TYPE_COLUMN + " = 3) GROUP BY 1 HAVING COUNT(*)=%5";
 }
