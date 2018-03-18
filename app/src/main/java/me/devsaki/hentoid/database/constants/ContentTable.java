@@ -89,11 +89,11 @@ public abstract class ContentTable {
     // SEARCH QUERIES "TOOLBOX"
 
     public static final String SELECT_DOWNLOADS_BASE = "SELECT C.*" +
-            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C."+SITE_COLUMN+" in (%1)";
+            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C."+SITE_COLUMN+" in (%1) ";
 
-    public static final String SELECT_DOWNLOADS_TITLE = " AND C." + TITLE_COLUMN + " like '%2' ";
+    public static final String SELECT_DOWNLOADS_TITLE = " C." + TITLE_COLUMN + " like '%2' ";
 
-    public static final String SELECT_DOWNLOADS_JOINS = " AND C." + ID_COLUMN
+    public static final String SELECT_DOWNLOADS_JOINS = " C." + ID_COLUMN
             + " in (SELECT "+ContentAttributeTable.CONTENT_ID_COLUMN+" FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM "
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A."+ AttributeTable.ID_COLUMN + " WHERE ";

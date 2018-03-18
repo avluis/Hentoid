@@ -904,7 +904,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.filterByTag = true;
             setQuery("");
             searchView.setQuery("", false);
-            searchContent();
         }
         else if (this.filterByTag && (!filterByTag || filterByTitle || filterByArtist)) {
 
@@ -928,13 +927,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             tagFilters.clear();
             setQuery("");
             searchView.setQuery("", false);
-            searchContent();
         }
         else
         {
             this.filterByTitle = filterByTitle;
             this.filterByArtist = filterByArtist;
         }
+        searchContent();
     }
 
     private void updateTagMosaic() { updateTagMosaic(true); }

@@ -376,21 +376,24 @@ public class HentoidDB extends SQLiteOpenHelper {
                 sql = sql.replace("%1", buildListQuery(sites));
 
                 if (title != null && title.length() > 0) {
+                    sql += " AND ";
                     sql += ContentTable.SELECT_DOWNLOADS_TITLE;
                     title = '%'+title.replace("'","''")+'%';
                     sql = sql.replace("%2", title);
                 }
 
                 if (hasAuthor || tags.size() > 0) {
-                    sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-
                     if (hasAuthor) {
+                        sql += " OR ";
+                        sql += ContentTable.SELECT_DOWNLOADS_JOINS;
                         sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
                         author = '%' + author.replace("'", "''") + '%';
                         sql = sql.replace("%3", author);
                     }
 
                     if (tags.size() > 0) {
+                        sql += " AND ";
+                        sql += ContentTable.SELECT_DOWNLOADS_JOINS;
                         sql += ContentTable.SELECT_DOWNLOADS_TAGS;
                         sql = sql.replace("%4", buildListQuery(tags));
                         sql = sql.replace("%5", tags.size()+"");
