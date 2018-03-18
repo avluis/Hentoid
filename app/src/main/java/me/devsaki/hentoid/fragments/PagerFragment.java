@@ -44,10 +44,10 @@ public class PagerFragment extends DownloadsFragment {
             if (booksPerPage <= 0) {
                 Timber.d("Not limit per page.");
             } else {
-                if (!isLastPage && isLoaded) {
+                if (!isLastPage() && isLoaded) {
                     currentPage++;
                     update();
-                } else if (isLastPage) {
+                } else if (isLastPage()) {
                     Helper.toast(mContext, R.string.not_next_page);
                 }
             }
@@ -95,7 +95,6 @@ public class PagerFragment extends DownloadsFragment {
             mAdapter.replaceAll(results);
 
             toggleUI(SHOW_RESULT);
-            updatePager();
         }
     }
 }

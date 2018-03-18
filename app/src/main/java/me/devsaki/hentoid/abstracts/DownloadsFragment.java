@@ -145,8 +145,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
     protected boolean isNewContentAvailable;
     protected boolean override;
-    // True if current page is last page (EndlessView : a "page" is a group of books in the list; last page means there is nothing left to load)
-    protected boolean isLastPage;
     // True if book list has finished loading; used for synchronization between threads
     protected boolean isLoaded;
     // True if search mode is active
@@ -265,6 +263,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    /**
+     * Updates class variables with Hentoid user preferences
+     */
     protected void queryPrefs() {
         Timber.d("Querying Prefs.");
         boolean shouldUpdate = false;
@@ -765,9 +766,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    /**
+     * Callback method used when a sort method is selected in the sort drop-down menu
+     * => Updates the GUI according to the chosen sort method
+     *
+     * @param item MenuItem that has been selected
+     * @return true if the order has been successfuly processed
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        boolean result = false;
+        boolean result;
 
         switch (item.getItemId()) {
             case R.id.action_order_AZ:
@@ -831,8 +839,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Toggles the use of tag filter. This has an effect on :
-     *   - visibility of the sheet with the tag filter
+     * Toggles the visibility of the search pane
+     *
+     * @param visible True if search pane has to become visible; false if not
      */
     private void setSearchPaneVisibility(boolean visible)
     {
@@ -846,6 +855,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isSearchMode = visible;
     }
 
+    /**
+     * Updates the GUI according to the chosen source (website) filters
+     *
+     * @param button Source (website) filter button that has been pressed
+     * @param siteCode Code of the corresponding site
+     */
     private void selectSiteFilter(View button, int siteCode)
     {
         ImageButton imgButton = (ImageButton)button;
@@ -855,7 +870,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             siteFilters.remove(Integer.valueOf(siteCode));
             imgButton.setColorFilter(Color.BLACK);
         } else {
-            siteFilters.add(Integer.valueOf(siteCode));
+            siteFilters.add(siteCode);
             imgButton.clearColorFilter();
         }
         if (filterByTag) updateTagMosaic();
@@ -863,6 +878,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchContent();
     }
 
+    /**
+     * Updates the GUI according to the chosen filters
+     *
+     * @param filterByTitle True if filter by title is activated
+     * @param filterByArtist True if filter by artist is activated
+     * @param filterByTag True if filter by tag is activated
+     */
     private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag)
     {
         if (filterByTag && !this.filterByTag)
@@ -915,12 +937,19 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    private void updateTagMosaic() { updateTagMosaic(true); }
     /**
      * Updates the displayed tags in the tag mosaic, according to :
      *   - owned books and their tags
-     *   - selected site filters
+     *   - selected source (website) filters
+     *   - selected tags
+     *
+     *   Two behaviours :
+     *      removeNotFound = true -> tag button does not appear when not found in results
+     *      removeNotFound = false -> tag button appears as disabled when not found in results
+     *
+     * @param removeNotFound Indicated whether a tag not found in results is invisible or visible + disabled
      */
-    private void updateTagMosaic() { updateTagMosaic(true); }
     private void updateTagMosaic(boolean removeNotFound)
     {
         List<String> selectedTags = new ArrayList<>();
@@ -1003,6 +1032,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         tagMosaic.addView(button);
     }
 
+    /**
+     * Applies to the edges and text of the given Button the color corresponding to the given state
+     *
+     * @param b Button to be updated
+     * @param tagState Tag state whose color has to be applied
+     */
     private void colorButton(Button b, int tagState)
     {
         GradientDrawable grad = (GradientDrawable)b.getBackground();
@@ -1152,6 +1187,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         setCurrentPage();
     }
 
+    /**
+     * Updates the page number on the bottom toolbar
+     */
     private void setCurrentPage() {
         btnPage.setText(String.valueOf(currentPage));
     }
@@ -1210,6 +1248,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    /**
+     * Runs a new search in the DB according to active filters :
+     *   - Selected source (website)
+     *   - Either
+     *      * Search string for Title or Artist
+     *      or
+     *      * Selected tags in tag mosaic
+     */
     protected void searchContent() {
         List<String> selectedTags = new ArrayList<>();
         String query = this.getQuery();
@@ -1233,10 +1279,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void displayResults(List<Content> results);
 
-    protected void updatePager() {
-        // TODO: Test if result.size == booksPerPage (meaning; last page, exact size)
-        isLastPage = mAdapter.getItemCount() < booksPerPage;
-    }
+    // TODO: Test if result.size == booksPerPage (meaning; last page, exact size)
+    protected boolean isLastPage() { return (mAdapter.getItemCount() < booksPerPage); }
 
     protected void displayNoResults() {
         if (isLoaded && !("").equals(query)) {

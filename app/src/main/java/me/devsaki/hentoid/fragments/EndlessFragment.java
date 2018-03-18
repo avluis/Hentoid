@@ -74,13 +74,12 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
         }
 
         toggleUI(SHOW_RESULT);
-        updatePager(); // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
     }
 
     @Override
     public void onLoadMore() {
         if (query.isEmpty()) {
-            if (!isLastPage) {
+            if (!isLastPage()) { // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
                 currentPage++;
                 searchContent();
                 Timber.d("Load more data now~");
