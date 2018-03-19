@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.PururinParser;
@@ -133,8 +135,9 @@ public class PururinActivity extends BaseWebActivity {
             String url = params[0];
             try {
                 processContent(PururinParser.parseContent(url));
-            } catch (IOException e) {
-                Timber.d("Error parsing content.");
+            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
+                Timber.e(e, "Error parsing content.");
+                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
             return null;
