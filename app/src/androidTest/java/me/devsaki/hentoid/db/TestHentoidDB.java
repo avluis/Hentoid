@@ -4,6 +4,7 @@ import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -63,7 +64,7 @@ public class TestHentoidDB extends AndroidTestCase {
                     RenamingDelegatingContext context13 = new RenamingDelegatingContext(getContext(), "test_");
                     HentoidDB db13 = HentoidDB.getInstance(context13);
                     for (int i = 0; i < 100; i++) {
-                        db13.selectContentByQuery("", 1, 10, false);
+                        db13.selectContentByQuery("", "", 1, 10, Collections.emptyList(), Collections.emptyList(), 0);
                     }
                 } catch (Exception ex) {
                     Timber.e(ex, "Error");

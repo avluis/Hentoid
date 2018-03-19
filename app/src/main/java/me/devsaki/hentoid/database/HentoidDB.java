@@ -6,8 +6,10 @@ import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
+import android.util.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.constants.AttributeTable;
@@ -22,6 +24,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -45,7 +48,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     private static HentoidDB instance;
 
 
-    // TODO : enable foreign keys
+    // TODO : enable foreign keys & indexes
 
     private HentoidDB(Context context) {
         super(context, Consts.DATABASE_NAME, null, DATABASE_VERSION);
@@ -136,8 +139,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                     }
 
                     statement.bindLong(ContentTable.IDX_SITECODE, row.getSite().getCode());
-                    statement.bindString(ContentTable.IDX_AUTHOR, row.getAuthor());
-                    statement.bindString(ContentTable.IDX_STORAGE_FOLDER, row.getStorageFolder());
+                    statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor())?"":row.getAuthor());
+                    statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder())?"":row.getStorageFolder());
 
                     statement.execute();
 
@@ -318,7 +321,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public List<Content> selectContentInQueue() {
-        List<Content> result;
+        List<Content> result = Collections.emptyList();
         synchronized (locker) {
             Timber.d("selectContentInQueue");
             SQLiteDatabase db = null;
@@ -357,41 +360,82 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String query, int page, int qty, boolean order) {
-        String q = query;
-        List<Content> result;
+    public List<Content> selectContentByQuery(String title, String author, int page, int booksPerPage, List<String> tags, List<Integer> sites, int orderStyle) {
+        List<Content> result = Collections.emptyList();
+        boolean hasAuthor = (author != null && author.length() > 0);
 
         synchronized (locker) {
             Timber.d("selectContentByQuery");
 
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
-            int start = (page - 1) * qty;
+            int start = (page - 1) * booksPerPage;
             try {
-                q = "%" + q + "%";
                 db = getReadableDatabase();
-                String sql = ContentTable.SELECT_DOWNLOADS;
-                if (order) {
-                    sql += ContentTable.ORDER_ALPHABETIC;
-                } else {
-                    sql += ContentTable.ORDER_BY_DATE;
+                String sql = ContentTable.SELECT_DOWNLOADS_BASE;
+                sql = sql.replace("%1", buildListQuery(sites));
+
+                if (title != null && title.length() > 0) {
+                    sql += " AND ";
+                    sql += ContentTable.SELECT_DOWNLOADS_TITLE;
+                    title = '%'+title.replace("'","''")+'%';
+                    sql = sql.replace("%2", title);
                 }
-                if (qty < 0) {
+
+                if (hasAuthor || tags.size() > 0) {
+                    if (hasAuthor) {
+                        sql += " OR ";
+                        sql += ContentTable.SELECT_DOWNLOADS_JOINS;
+                        sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
+                        author = '%' + author.replace("'", "''") + '%';
+                        sql = sql.replace("%3", author);
+                    }
+
+                    if (tags.size() > 0) {
+                        sql += " AND ";
+                        sql += ContentTable.SELECT_DOWNLOADS_JOINS;
+                        sql += ContentTable.SELECT_DOWNLOADS_TAGS;
+                        sql = sql.replace("%4", buildListQuery(tags));
+                        sql = sql.replace("%5", tags.size()+"");
+                    }
+
+                    sql += "))";
+                }
+
+                switch(orderStyle)
+                {
+                    case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
+                        sql += ContentTable.ORDER_BY_DATE + " DESC";
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED:
+                        sql += ContentTable.ORDER_BY_DATE;
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+                        sql += ContentTable.ORDER_ALPHABETIC;
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+                        sql += ContentTable.ORDER_ALPHABETIC + " DESC";
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
+                        sql += ContentTable.ORDER_RANDOM;
+                        break;
+                    default :
+                        // Nothing
+                }
+
+                Timber.d("Query : %s; %s, %s",sql, start, booksPerPage);
+
+                if (booksPerPage < 0) {
                     cursorContent = db.rawQuery(sql,
                             new String[]{StatusContent.DOWNLOADED.getCode() + "",
                                     StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + "", q, q,
-                                    AttributeType.ARTIST.getCode() + "",
-                                    AttributeType.TAG.getCode() + "",
-                                    AttributeType.SERIE.getCode() + ""});
+                                    StatusContent.MIGRATED.getCode() + ""});
                 } else {
                     cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE,
                             new String[]{StatusContent.DOWNLOADED.getCode() + "",
                                     StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + "", q, q,
-                                    AttributeType.ARTIST.getCode() + "",
-                                    AttributeType.TAG.getCode() + "",
-                                    AttributeType.SERIE.getCode() + "", start + "", qty + ""});
+                                    StatusContent.MIGRATED.getCode() + "",
+                                    start + "", booksPerPage + ""});
                 }
                 result = populateResult(cursorContent, db);
             } finally {
@@ -403,7 +447,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     private List<Content> populateResult(Cursor cursorContent, SQLiteDatabase db) {
-        List<Content> result = null;
+        List<Content> result = Collections.emptyList();
         if (cursorContent.moveToFirst()) {
             result = new ArrayList<>();
             do {
@@ -435,7 +479,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setCoverImageUrl(cursorContent.getString(ContentTable.IDX_COVERURL - 1))
                 .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SITECODE - 1)))
                 .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
-                .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1));
+                .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
+                .setQueryOrder(cursorContent.getPosition());
 
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
                 .setAttributes(selectAttributesByContentId(db, content.getId()));
@@ -444,7 +489,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     private List<ImageFile> selectImageFilesByContentId(SQLiteDatabase db, int id) {
-        List<ImageFile> result = null;
+        List<ImageFile> result = Collections.emptyList();
         Cursor cursorImageFiles = null;
         try {
             cursorImageFiles = db.rawQuery(ImageFileTable.SELECT_BY_CONTENT_ID,
@@ -490,6 +535,50 @@ public class HentoidDB extends SQLiteOpenHelper {
         } finally {
             if (cursorAttributes != null) {
                 cursorAttributes.close();
+            }
+        }
+
+        return result;
+    }
+
+    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites) {
+        ArrayList<Pair<String,Integer>> result = new ArrayList<Pair<String,Integer>>();
+
+        synchronized (locker) {
+            Timber.d("selectAllAttributesByUsage");
+            SQLiteDatabase db = null;
+
+            Cursor cursorAttributes = null;
+
+            String sql = AttributeTable.SELECT_ALL_BY_USAGE_BASE;
+            sql = sql.replace("%1", buildListQuery(sites));
+
+            if (tags != null && tags.size() > 0) {
+                sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
+                sql = sql.replace("%2", buildListQuery(tags));
+                sql = sql.replace("%3", tags.size()+"");
+            }
+
+            sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
+
+            try {
+                db = getReadableDatabase();
+                cursorAttributes = db.rawQuery(sql, new String[]{type + ""});
+
+                // looping through all rows and adding to list
+                if (cursorAttributes.moveToFirst()) {
+
+                    do {
+                        result.add( new Pair<>(cursorAttributes.getString(0),cursorAttributes.getInt(1)) );
+                    } while (cursorAttributes.moveToNext());
+                }
+            } finally {
+                if (cursorAttributes != null) {
+                    cursorAttributes.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
             }
         }
 
@@ -682,5 +771,20 @@ public class HentoidDB extends SQLiteOpenHelper {
                 }
             }
         }
+    }
+
+    private String buildListQuery(List<?> list)
+    {
+        String result = "";
+        if (list != null) {
+            boolean first = true;
+            for (Object o : list) {
+                if (!first) result += ",";
+                else first = false;
+                result += "'" + o.toString().toLowerCase() + "'";
+            }
+        }
+
+        return result;
     }
 }

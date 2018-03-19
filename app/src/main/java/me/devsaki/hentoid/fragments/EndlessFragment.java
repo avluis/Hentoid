@@ -1,14 +1,10 @@
 package me.devsaki.hentoid.fragments;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.ImageButton;
 
 import java.util.List;
 
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
-import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Preferences;
@@ -18,102 +14,35 @@ import timber.log.Timber;
  * Created by avluis on 08/26/2016.
  * Presents the list of downloaded works to the user in an endless scroll list.
  */
-public class EndlessFragment extends DownloadsFragment implements ContentsWipedListener,
-        EndlessScrollListener {
-
-    @Override
-    protected void attachScrollListener() {
-        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-
-                // Show toolbar:
-                if (!override && result != null && result.size() > 0) {
-                    // At top of list
-                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
-                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
-                        showToolbar(true, false);
-                        if (newContent) {
-                            toolTip.setVisibility(View.VISIBLE);
-                        }
-                    }
-
-                    // Last item in list
-                    if (llm.findLastVisibleItemPosition() == result.size() - 1) {
-                        showToolbar(true, false);
-                    } else {
-                        // When scrolling up
-                        if (dy < -10) {
-                            showToolbar(true, false);
-                            if (newContent) {
-                                toolTip.setVisibility(View.VISIBLE);
-                            }
-                            // When scrolling down
-                        } else if (dy > 100) {
-                            showToolbar(false, false);
-                            if (newContent) {
-                                toolTip.setVisibility(View.GONE);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    @Override
-    protected void attachRefresh(View rootView) {
-        ImageButton btnRefresh = rootView.findViewById(R.id.btnRefresh);
-        btnRefresh.setOnClickListener(v -> {
-            if (isLoaded) {
-                update();
-            }
-        });
-
-        btnRefresh.setOnLongClickListener(v -> false);
-    }
+public class EndlessFragment extends DownloadsFragment implements EndlessScrollListener {
 
     @Override
     protected void queryPrefs() {
         super.queryPrefs();
 
-        qtyPages = Preferences.Default.PREF_QUANTITY_PER_PAGE_DEFAULT;
+        booksPerPage = Preferences.Default.PREF_QUANTITY_PER_PAGE_DEFAULT;
+    }
+
+    @Override
+    protected void attachScrollListener() {
+        super.attachScrollListener();
+        mAdapter.setEndlessScrollListener(this);
     }
 
     @Override
     protected void checkResults() {
-        if (contents != null) {
-            Timber.d("Contents are not null.");
-        } else if (isLoaded && result != null) {
-            Timber.d("Result is not null.");
-            result.clear();
+        if (0 == mAdapter.getItemCount())
+        {
+            if (!isLoaded) update();
+            else checkContent(true);
         } else {
-            Timber.d("Contents are null.");
-        }
-        mAdapter.setEndlessScrollListener(this);
-
-        if (result != null) {
-            Timber.d("Result is not null.");
-            Timber.d("Are results loaded? %s", isLoaded);
-            if (result.isEmpty() && !isLoaded) {
-                Timber.d("Result is empty!");
-                update();
-            }
             checkContent(false);
             mAdapter.setContentsWipedListener(this);
-        } else {
-            Timber.d("Result is null.");
-
-            if (isLoaded) { // Do not load anything if a loading activity is already in progress
-                update();
-                checkContent(true);
-            }
         }
 
         if (!query.isEmpty()) {
             Timber.d("Saved Query: %s", query);
-            update();
+            if (isLoaded) update();
         }
     }
 
@@ -123,62 +52,34 @@ public class EndlessFragment extends DownloadsFragment implements ContentsWipedL
 
         if (override) {
             if (show) {
-                toolbar.setVisibility(View.VISIBLE);
+                pagerToolbar.setVisibility(View.VISIBLE);
             } else {
-                toolbar.setVisibility(View.GONE);
+                pagerToolbar.setVisibility(View.GONE);
             }
         } else {
-            toolbar.setVisibility(View.GONE);
+            pagerToolbar.setVisibility(View.GONE);
         }
     }
 
     @Override
-    protected void displayResults() {
-        result = search.getContent();
+    protected void displayResults(List<Content> results) {
+        toggleUI(SHOW_DEFAULT);
 
-        if (isLoaded) {
-            toggleUI(0);
+        if (isSearchMode)
+        {
+            mAdapter.replaceAll(results);
+        }
+        else {
+            mAdapter.add(results);
         }
 
-        if (query.isEmpty()) {
-            if (result != null && !result.isEmpty()) {
-
-                if (contents == null) {
-                    contents = result;
-                    mAdapter.setContentList(contents);
-                    mListView.setAdapter(mAdapter);
-                } else {
-                    int curSize = mAdapter.getItemCount();
-                    contents.addAll(result);
-                    mAdapter.notifyItemRangeInserted(curSize, contents.size() - 1);
-                }
-
-                toggleUI(SHOW_RESULT);
-                updatePager();
-            }
-        } else {
-            Timber.d("Query: %s", query);
-            if (result != null && !result.isEmpty()) {
-                Timber.d("Result: Match.");
-
-                List<Content> searchResults = result;
-                mAdapter.setContentList(searchResults);
-                mListView.setAdapter(mAdapter);
-
-                toggleUI(SHOW_RESULT);
-                showToolbar(true, true);
-                updatePager();
-            } else {
-                Timber.d("Result: Nothing to match.");
-                displayNoResults();
-            }
-        }
+        toggleUI(SHOW_RESULT);
     }
 
     @Override
     public void onLoadMore() {
         if (query.isEmpty()) {
-            if (!isLastPage) {
+            if (!isLastPage()) { // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
                 currentPage++;
                 searchContent();
                 Timber.d("Load more data now~");

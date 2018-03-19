@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -19,6 +20,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -50,14 +52,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private final ItemSelectListener listener;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
-    private List<Content> contents = new ArrayList<>();
+    private Comparator<Content> mComparator;
 
-    public ContentAdapter(Context context, List<Content> contents, ItemSelectListener listener) {
+    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
         this.context = context;
-        this.contents = contents;
         this.listener = listener;
+        mComparator = comparator;
 
         selectedItems = new SparseBooleanArray();
+    }
+
+    public void setComparator(Comparator<Content> comparator)
+    {
+        mComparator = comparator;
     }
 
     public void setEndlessScrollListener(EndlessScrollListener listener) {
@@ -107,15 +114,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         return false;
     }
 
-    public void setContentList(List<Content> contentList) {
-        this.contents = contentList;
-        updateContentList();
-    }
-
-    public void updateContentList() {
-        this.notifyDataSetChanged();
-    }
-
     @Override
     public ContentHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
@@ -125,11 +123,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     @Override
     public void onBindViewHolder(ContentHolder holder, final int pos) {
-        Content content = contents.get(pos);
+        Content content = mSortedList.get(pos);
 
-        updateLayoutVisibility(holder, content, pos);
-        populateLayout(holder, content, pos);
-        attachOnClickListeners(holder, content, pos);
+        // Initializes the ViewHolder that contains the books
+        updateLayoutVisibility( holder, content, pos);
+        populateLayout( holder, content, pos);
+        attachOnClickListeners( holder, content, pos);
+
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
@@ -431,8 +431,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             context.startService(intent);
 
                             Helper.toast(context, R.string.add_to_queue);
-                            removeItem(item);
-                            notifyDataSetChanged();
+                            remove(item);
                         })
                 .setNegativeButton(android.R.string.no, null)
                 .create().show();
@@ -490,13 +489,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     @Override
     public long getItemId(int position) {
-        return contents.get(position).getId();
+        return mSortedList.get(position).getId();
     }
 
     @Override
-    public int getItemCount() {
-        return contents.size();
-    }
+    public int getItemCount() { return mSortedList.size(); }
 
     public void sharedSelectedItems() {
         int itemCount = getSelectedItemCount();
@@ -590,66 +587,82 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         Timber.d("Selected items: %s", selection);
 
         for (int i = 0; i < selection.size(); i++) {
-            selectionList.add(i, contents.get(selection.get(i)));
-            Timber.d("Added: %s to list.", contents.get(selection.get(i)).getTitle());
+            selectionList.add(i, mSortedList.get(selection.get(i)));
+            Timber.d("Added: %s to list.", mSortedList.get(selection.get(i)).getTitle());
         }
 
         return selectionList;
     }
 
-    private void removeItem(Content item) {
-        removeItem(item, true);
-    }
-
-    private void removeItem(Content item, boolean broadcast) {
-        int position = contents.indexOf(item);
-        Timber.d("Removing item: %s from adapter.", item.getTitle());
-        contents.remove(position);
-        notifyItemRemoved(position);
-
-        if (contents != null) {
-            if (contents.size() == 0) {
-                contentsWipedListener.onContentsWiped();
-            }
-            if (broadcast) {
-                listener.onItemClear(0);
-            }
-        }
-    }
-
     private void deleteItem(final Content item) {
-        final HentoidDB db = HentoidDB.getInstance(context);
-        removeItem(item);
+        remove(item);
 
+        final HentoidDB db = HentoidDB.getInstance(context);
         AsyncTask.execute(() -> {
             FileHelper.removeContent(item);
             db.deleteContent(item);
             Timber.d("Removed item: %s from db and file system.", item.getTitle());
         });
 
-        notifyDataSetChanged();
-
         Helper.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
     }
 
-    private void deleteItems(final List<Content> items) {
-        final HentoidDB db = HentoidDB.getInstance(context);
-        for (int i = 0; i < items.size(); i++) {
-            removeItem(items.get(i), false);
+    private void deleteItems(final List<Content> contents) {
+        mSortedList.beginBatchedUpdates();
+        for (Content content : contents) {
+            mSortedList.remove(content);
         }
+        mSortedList.endBatchedUpdates();
+        listener.onItemClear(0);
+
+        final HentoidDB db = HentoidDB.getInstance(context);
 
         AsyncTask.execute(() -> {
-            for (Content item : items) {
+            for (Content item : contents) {
                 FileHelper.removeContent(item);
                 db.deleteContent(item);
-                Timber.d("Removed item: %s from db and file system", item.getTitle());
+                Timber.d("Removed item: %s from db and file system.", item.getTitle());
             }
         });
 
-        listener.onItemClear(0);
-        notifyDataSetChanged();
-
         Helper.toast(context, "Selected items have been deleted.");
+    }
+
+    public void remove(Content content)
+    {
+        mSortedList.remove(content);
+        if (0 == mSortedList.size()) {
+            contentsWipedListener.onContentsWiped();
+        }
+        listener.onItemClear(0);
+    }
+
+    public void remove(List<Content> contents) {
+        mSortedList.beginBatchedUpdates();
+        for (Content content : contents) {
+            mSortedList.remove(content);
+        }
+        mSortedList.endBatchedUpdates();
+    }
+
+    public void removeAll() { replaceAll(new ArrayList<Content>());}
+
+    public void replaceAll(List<Content> contents) {
+        mSortedList.beginBatchedUpdates();
+        for (int i = mSortedList.size() - 1; i >= 0; i--) {
+            final Content content = mSortedList.get(i);
+            if (!contents.contains(content)) {
+                mSortedList.remove(content);
+            }
+        }
+        mSortedList.addAll(contents);
+        mSortedList.endBatchedUpdates();
+    }
+
+    public void add(List<Content> contents) {
+        mSortedList.beginBatchedUpdates();
+        mSortedList.addAll(contents);
+        mSortedList.endBatchedUpdates();
     }
 
     public interface EndlessScrollListener {
@@ -659,4 +672,37 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     public interface ContentsWipedListener {
         void onContentsWiped();
     }
+
+    private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedList.Callback<Content>() {
+        @Override
+        public int compare(Content a, Content b) {
+            return mComparator.compare(a, b);
+        }
+
+        @Override
+        public void onInserted(int position, int count) { notifyItemRangeInserted(position, count); }
+
+        @Override
+        public void onRemoved(int position, int count) {
+            notifyItemRangeRemoved(position, count);
+        }
+
+        @Override
+        public void onMoved(int fromPosition, int toPosition) { notifyItemMoved(fromPosition, toPosition); }
+
+        @Override
+        public void onChanged(int position, int count) {
+            notifyItemRangeChanged(position, count);
+        }
+
+        @Override
+        public boolean areContentsTheSame(Content oldItem, Content newItem) {
+            return oldItem.equals(newItem);
+        }
+
+        @Override
+        public boolean areItemsTheSame(Content item1, Content item2) {
+            return item1.getId() == item2.getId();
+        }
+    });
 }

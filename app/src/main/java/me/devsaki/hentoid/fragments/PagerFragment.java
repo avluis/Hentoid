@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.fragments;
 
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
 
@@ -8,7 +7,6 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
-import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
@@ -17,99 +15,60 @@ import timber.log.Timber;
  * Created by avluis on 08/26/2016.
  * Presents the list of downloaded works to the user in a classic pager.
  */
-public class PagerFragment extends DownloadsFragment implements ContentsWipedListener {
+public class PagerFragment extends DownloadsFragment {
 
     @Override
-    protected void attachScrollListener() {
-        mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
+    protected void attachOnClickListeners(View rootView) {
+        super.attachOnClickListeners(rootView);
+        attachPrevious(rootView);
+        attachNext(rootView);
+    }
 
-                // Show toolbar:
-                if (!override && result != null && result.size() > 0) {
-                    // At top of list
-                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
-                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
-                        showToolbar(true, false);
-                        if (newContent) {
-                            toolTip.setVisibility(View.VISIBLE);
-                        }
-                    }
+    private void attachPrevious(View rootView) {
+        ImageButton btnPrevious = rootView.findViewById(R.id.btnPrevious);
+        btnPrevious.setOnClickListener(v -> {
+            if (currentPage > 1 && isLoaded) {
+                currentPage--;
+                update();
+            } else if (booksPerPage > 0 && isLoaded) {
+                Helper.toast(mContext, R.string.not_previous_page);
+            } else {
+                Timber.d("Not limit per page.");
+            }
+        });
+    }
 
-                    // Last item in list
-                    if (llm.findLastVisibleItemPosition() == result.size() - 1) {
-                        showToolbar(true, false);
-                        if (newContent) {
-                            toolTip.setVisibility(View.VISIBLE);
-                        }
-                    } else {
-                        // When scrolling up
-                        if (dy < -10) {
-                            showToolbar(true, false);
-                            if (newContent) {
-                                toolTip.setVisibility(View.VISIBLE);
-                            }
-                            // When scrolling down
-                        } else if (dy > 100) {
-                            showToolbar(false, false);
-                            if (newContent) {
-                                toolTip.setVisibility(View.GONE);
-                            }
-                        }
-                    }
+    private void attachNext(View rootView) {
+        ImageButton btnNext = rootView.findViewById(R.id.btnNext);
+        btnNext.setOnClickListener(v -> {
+            if (booksPerPage <= 0) {
+                Timber.d("Not limit per page.");
+            } else {
+                if (!isLastPage() && isLoaded) {
+                    currentPage++;
+                    update();
+                } else if (isLastPage()) {
+                    Helper.toast(mContext, R.string.not_next_page);
                 }
             }
         });
     }
 
     @Override
-    protected void attachRefresh(View rootView) {
-        ImageButton btnRefresh = rootView.findViewById(R.id.btnRefresh);
-        btnRefresh.setOnClickListener(v -> {
-            if (isLoaded) {
-                commitRefresh();
-            }
-        });
-
-        btnRefresh.setOnLongClickListener(v -> {
-            if (currentPage != 1 && isLoaded) {
-                Helper.toast(mContext, R.string.moving_to_first_page);
-                clearQuery(1);
-
-                return true;
-            } else if (currentPage == 1 && isLoaded) {
-                Helper.toast(mContext, R.string.on_first_page);
-                commitRefresh();
-
-                return true;
-            }
-
-            return false;
-        });
-    }
-
-    @Override
     protected void checkResults() {
-        if (result != null) {
-            Timber.d("Result is not null.");
-            Timber.d("Are results loaded? %s", isLoaded);
-            if (result.isEmpty() && !isLoaded) {
-                Timber.d("Result is empty!");
-                update();
-            }
+        if (0 == mAdapter.getItemCount())
+        {
+            if (!isLoaded) update();
+            checkContent(true);
+        } else {
+            if (isLoaded) update();
             checkContent(false);
             mAdapter.setContentsWipedListener(this);
-        } else {
-            Timber.d("Result is null.");
-
-            update();
-            checkContent(true);
         }
 
         if (!query.isEmpty()) {
             Timber.d("Saved Query: %s", query);
-            update();
+            if (isLoaded) update();
         }
     }
 
@@ -118,55 +77,24 @@ public class PagerFragment extends DownloadsFragment implements ContentsWipedLis
     protected void showToolbar(boolean show, boolean override) {
         this.override = override;
 
-        if (override) {
-            if (show) {
-                toolbar.setVisibility(View.VISIBLE);
-            } else {
-                toolbar.setVisibility(View.GONE);
-            }
+        if (show) {
+            pagerToolbar.setVisibility(View.VISIBLE);
         } else {
-            if (show) {
-                toolbar.setVisibility(View.VISIBLE);
-            } else {
-                toolbar.setVisibility(View.GONE);
-            }
+            pagerToolbar.setVisibility(View.GONE);
         }
     }
 
     @Override
-    protected void displayResults() {
-        result = search.getContent();
-
-        if (isLoaded) {
-            toggleUI(0);
-        }
-
-        if (query.isEmpty()) {
-            if (result != null && !result.isEmpty()) {
-
-                List<Content> singleResult = result;
-                mAdapter.setContentList(singleResult);
-                mListView.setAdapter(mAdapter);
-
-                toggleUI(SHOW_RESULT);
-                updatePager();
-            }
+    protected void displayResults(List<Content> results) {
+        if (0 == results.size()) {
+            Timber.d("Result: Nothing to match.");
+            displayNoResults();
         } else {
-            Timber.d("Query: %s", query);
-            if (result != null && !result.isEmpty()) {
-                Timber.d("Result: Match.");
+            toggleUI(SHOW_DEFAULT);
 
-                List<Content> searchResults = result;
-                mAdapter.setContentList(searchResults);
-                mListView.setAdapter(mAdapter);
+            mAdapter.replaceAll(results);
 
-                toggleUI(SHOW_RESULT);
-                showToolbar(true, true);
-                updatePager();
-            } else {
-                Timber.d("Result: Nothing to match.");
-                displayNoResults();
-            }
+            toggleUI(SHOW_RESULT);
         }
     }
 }
