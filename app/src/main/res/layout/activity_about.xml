@@ -3,154 +3,161 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:scrollbars="none">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".activities.AboutActivity">
 
-    <LinearLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_margin="16dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/about_ic_group_layout_margin_top"
-            android:orientation="horizontal">
+        <ImageView
+            android:id="@+id/iv_app_logo"
+            android:layout_width="@dimen/about_ic_hentoid_width"
+            android:layout_height="@dimen/about_ic_hentoid_height"
+            android:src="@drawable/ic_hentoid"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
 
-            <ImageView
-                android:id="@+id/iv_app_logo"
-                android:layout_width="@dimen/about_ic_hentoid_width"
-                android:layout_height="@dimen/about_ic_hentoid_height"
-                android:src="@drawable/ic_hentoid"
-                tools:ignore="ContentDescription" />
-
-            <GridLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:columnCount="2"
-                android:rowCount="4">
-
-                <ImageView
-                    android:layout_width="@dimen/about_ic_icons_width"
-                    android:layout_height="@dimen/about_ic_icons_height"
-                    android:cropToPadding="true"
-                    app:srcCompat="@drawable/ic_favicon_github"
-                    tools:ignore="ContentDescription" />
-
-                <TextView
-                    android:id="@+id/tv_github"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginStart="5dp"
-                    android:text="@string/about_github"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="@dimen/about_ic_icons_textSize" />
-
-                <ImageView
-                    android:layout_width="@dimen/about_ic_icons_width"
-                    android:layout_height="@dimen/about_ic_icons_height"
-                    android:cropToPadding="true"
-                    app:srcCompat="@drawable/ic_favicon_gplus"
-                    tools:ignore="ContentDescription" />
-
-                <TextView
-                    android:id="@+id/tv_community"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginStart="5dp"
-                    android:text="@string/about_community"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="@dimen/about_ic_icons_textSize" />
-
-                <ImageView
-                    android:layout_width="@dimen/about_ic_icons_width"
-                    android:layout_height="@dimen/about_ic_icons_height"
-                    android:cropToPadding="true"
-                    app:srcCompat="@drawable/ic_favicon_discord"
-                    tools:ignore="ContentDescription" />
-
-                <TextView
-                    android:id="@+id/tv_discord"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginStart="5dp"
-                    android:text="@string/about_discord"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="@dimen/about_ic_icons_textSize" />
-
-                <ImageView
-                    android:layout_width="@dimen/about_ic_icons_width"
-                    android:layout_height="@dimen/about_ic_icons_height"
-                    android:cropToPadding="true"
-                    app:srcCompat="@drawable/ic_favicon_reddit"
-                    tools:ignore="ContentDescription" />
-
-                <TextView
-                    android:id="@+id/tv_reddit"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginLeft="5dp"
-                    android:layout_marginStart="5dp"
-                    android:text="@string/about_reddit"
-                    android:textAppearance="?android:attr/textAppearanceLarge"
-                    android:textSize="@dimen/about_ic_icons_textSize" />
-            </GridLayout>
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/githubIcon"
+            android:layout_width="@dimen/about_ic_icons_width"
+            android:layout_height="@dimen/about_ic_icons_height"
+            android:cropToPadding="true"
+            app:layout_constraintBottom_toTopOf="@id/gplusIcon"
+            app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/ic_favicon_github"
+            tools:ignore="ContentDescription" />
 
         <TextView
-            android:id="@+id/tv_about"
+            android:id="@+id/tv_github"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="15dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="15dp"
-            android:text="@string/about"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="@dimen/about_textSize" />
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
+            android:text="@string/about_github"
+            android:textSize="@dimen/about_ic_icons_textSize"
+            app:layout_constraintBottom_toBottomOf="@id/githubIcon"
+            app:layout_constraintStart_toEndOf="@id/githubIcon"
+            app:layout_constraintTop_toTopOf="@id/githubIcon"
+            tools:layout_editor_absoluteY="5dp" />
+
+        <ImageView
+            android:id="@+id/gplusIcon"
+            android:layout_width="@dimen/about_ic_icons_width"
+            android:layout_height="@dimen/about_ic_icons_height"
+            android:cropToPadding="true"
+            app:layout_constraintBottom_toTopOf="@id/discordIcon"
+            app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+            app:layout_constraintTop_toBottomOf="@id/githubIcon"
+            app:srcCompat="@drawable/ic_favicon_gplus"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tv_community"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
+            android:text="@string/about_community"
+            android:textSize="@dimen/about_ic_icons_textSize"
+            app:layout_constraintBottom_toBottomOf="@id/gplusIcon"
+            app:layout_constraintStart_toEndOf="@id/gplusIcon"
+            app:layout_constraintTop_toTopOf="@id/gplusIcon" />
+
+        <ImageView
+            android:id="@+id/discordIcon"
+            android:layout_width="@dimen/about_ic_icons_width"
+            android:layout_height="@dimen/about_ic_icons_height"
+            android:cropToPadding="true"
+            app:layout_constraintBottom_toTopOf="@id/redditIcon"
+            app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+            app:layout_constraintTop_toBottomOf="@id/gplusIcon"
+            app:srcCompat="@drawable/ic_favicon_discord"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tv_discord"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
+            android:text="@string/about_discord"
+            android:textSize="@dimen/about_ic_icons_textSize"
+            app:layout_constraintBottom_toBottomOf="@id/discordIcon"
+            app:layout_constraintStart_toEndOf="@id/discordIcon"
+            app:layout_constraintTop_toTopOf="@id/discordIcon" />
+
+        <ImageView
+            android:id="@+id/redditIcon"
+            android:layout_width="@dimen/about_ic_icons_width"
+            android:layout_height="@dimen/about_ic_icons_height"
+            android:cropToPadding="true"
+            app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+            app:layout_constraintTop_toBottomOf="@id/discordIcon"
+            app:srcCompat="@drawable/ic_favicon_reddit"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tv_reddit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginStart="5dp"
+            android:text="@string/about_reddit"
+            android:textSize="@dimen/about_ic_icons_textSize"
+            app:layout_constraintBottom_toBottomOf="@id/redditIcon"
+            app:layout_constraintStart_toEndOf="@id/redditIcon"
+            app:layout_constraintTop_toTopOf="@id/redditIcon" />
+
+        <TextView
+            android:id="@+id/aboutText1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/about1"
+            android:textSize="@dimen/about_textSize"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/redditIcon" />
+
+        <TextView
+            android:id="@+id/aboutText2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/about2"
+            android:textSize="@dimen/about_textSize"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/aboutText1" />
 
         <TextView
             android:id="@+id/tv_version_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="15dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="5dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textSize="@dimen/about_textSize" />
-
-        <TextView
-            android:id="@+id/tv_about_notes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="15dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="15dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginTop="5dp"
-            android:text="@string/about_notes"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textSize="@dimen/about_textSize" />
+            android:layout_marginTop="16dp"
+            android:textSize="@dimen/about_textSize"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/aboutText2"
+            tools:text="Hentoid 1.2.4" />
 
         <Button
             android:id="@+id/btn_about_licenses"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="5dp"
+            android:layout_marginBottom="16dp"
+            android:layout_marginTop="16dp"
             android:text="@string/about_licenses"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textSize="@dimen/about_textSize" />
-    </LinearLayout>
+            android:textSize="@dimen/about_textSize"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_version_name" />
+
+    </android.support.constraint.ConstraintLayout>
+
 </ScrollView>

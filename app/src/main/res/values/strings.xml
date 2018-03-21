@@ -89,36 +89,16 @@
     <string name="pin_invalid">PIN Invalid!</string>
     <string name="pin_ok">PIN OK!</string>
     <!-- About Activity -->
-    <string name="about">
-        <![CDATA[
-        <p><b>Hentoid</b> is a Doujinshi & H-Manga archiving app.<br>
-        Hentoid was originally created by <b>Cesar Arasaki</b>.</p>
-        <p>Hentoid offers you a way to archive H-Manga to your device without the worry of it ever being removed from your collection.<br>
-        Hentoid was previously known as FakkuDroid, before it was relaunched as an entirely new app.</p>
-        <p>While initially designed to work with <b>FAKKU</b>, <b>Pururin</b> and <b>Hitomi</b> - support for <b>nhentai</b> and <b>tsumino</b> has also been added.</p>
-        <p>Unfortunately, FAKKU has gone legit soon after this and Pururin was left to die as their domain expired.</p>
-        <p><b>Notes:</b><br>
-        In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.<br>
-        FAKKU has dropped support for free content, and while support for FAKKU Books or Subscriptions is not currently planned, this may change in the future.</p>]]></string>
-    <string name="about_community" translatable="false"><![CDATA[<u>Google+</u>]]></string>
+    <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
+    <string name="about2">In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
+    <string name="about_community" translatable="false"><u>Google+</u></string>
     <string name="about_community_url" translatable="false">https://plus.google.com/communities/110496467189870321840</string>
-    <string name="about_github" translatable="false"><![CDATA[<u>GitHub</u>]]></string>
+    <string name="about_github" translatable="false"><u>GitHub</u></string>
     <string name="about_github_url" translatable="false">https://github.com/AVnetWS/Hentoid</string>
     <string name="about_github_wiki_url" translatable="false">https://github.com/AVnetWS/Hentoid/wiki</string>
-    <string name="about_discord" translatable="false"><![CDATA[<u>Discord</u>]]></string>
+    <string name="about_discord" translatable="false"><u>Discord</u></string>
     <string name="about_discord_url" translatable="false">https://discord.gg/QEZ3qk9</string>
-    <string name="about_reddit" translatable="false"><![CDATA[<u>Reddit</u>]]></string>
+    <string name="about_reddit" translatable="false"><u>Reddit</u></string>
     <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
-    <string name="about_notes">
-        <![CDATA[
-        <p>
-        Fix: Hitomi Parser.<br>
-        Fix: Hentai Café Parser.<br>
-        Initial support for SD Cards (Android 5.0+)<br>
-        Improvements to download list<br>
-        Improvements to on-boarding experience<br>
-        Support for archiving downloaded works<br>
-        Minor performance improvements<br>
-        Minor fixes</p>]]></string>
     <string name="about_licenses">Display Licenses</string>
 </resources>

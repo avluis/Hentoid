@@ -95,7 +95,6 @@
         </activity>
         <activity
             android:name=".activities.AboutActivity"
-            android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_about"
             android:parentActivityName=".activities.DownloadsActivity"
             android:theme="@style/AppTheme"
