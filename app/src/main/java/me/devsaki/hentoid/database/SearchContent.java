@@ -112,7 +112,7 @@ public class SearchContent {
         @Override
         protected void onPostExecute(State current) {
             SearchContent activity = activityReference.get();
-            if (activity.mListener != null) {
+            if (activity != null && activity.mListener != null) {
                 activity.mListener.onContentReady(current == State.READY, activity.contentList);
                 activity.mListener.onContentFailed(current == State.FAILED);
             }
