@@ -413,13 +413,10 @@ public class FileHelper {
     public static void openContent(final Context context, Content content) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
         //        File dir = getContentDownloadDir(context, content);
-        String settingDir = Preferences.getRootFolderName();
-        File dir = new File(settingDir, content.getStorageFolder());
-
+        String rootFolderName = Preferences.getRootFolderName();
+        File dir = new File(rootFolderName, content.getStorageFolder());
 
         Timber.d("Opening: " + content.getTitle() + " from: " + dir);
-
-        String rootFolderName = Preferences.getRootFolderName();
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
             Helper.toast(R.string.sd_access_error);

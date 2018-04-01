@@ -511,7 +511,10 @@ public class ImportActivity extends BaseActivity {
 
             if (FileHelper.getExtSdCardPaths().length > 0) {
                 String[] paths = FileHelper.getExtSdCardPaths();
-                File folder = new File(paths[0] + "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
+                String[] uriContents = treeUri.getPath().split(":");
+                String folderStr = paths[0] + "/" + ((uriContents.length > 1)?(uriContents[1]+"/"):"") +Consts.DEFAULT_LOCAL_DIRECTORY;
+
+                File folder = new File(folderStr);
                 Timber.d("Directory created successfully: %s", FileHelper.createDirectory(folder));
 
                 importFolder(folder);
