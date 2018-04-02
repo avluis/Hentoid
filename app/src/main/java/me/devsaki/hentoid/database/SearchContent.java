@@ -48,8 +48,6 @@ public class SearchContent {
 
         mCurrentState = State.NON_INIT;
 
-        Timber.d("ContentSearch.retrieveResults '%s' '%s' %s %s %s %s %s", titleQuery, authorQuery, currentPage, booksPerPage, mTagFilter.size(), mSiteFilter.size(), orderStyle);
-
         retrieveResults();
     }
 
