@@ -48,8 +48,11 @@ public class Content implements Serializable {
     private double percent;
     @Expose
     private Site site;
-    private String storageFolder;
-    private int queryOrder;
+    private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
+    @Expose
+    private boolean favourite;
+    private int queryOrder; // Runtime attribute; no need to expose it
+
 
     public AttributeMap getAttributes() {
         if (null == attributes) attributes = new AttributeMap();
@@ -316,7 +319,14 @@ public class Content implements Serializable {
         return this;
     }
 
-    public int getQueryOrder() { return queryOrder; }
+    public boolean isFavourite() { return favourite; }
+
+    public Content setFavourite(boolean favourite) {
+        this.favourite = favourite;
+        return this;
+    }
+
+    private int getQueryOrder() { return queryOrder; }
     public Content setQueryOrder(int order) { queryOrder = order; return this; }
 
     @Override
@@ -337,32 +347,13 @@ public class Content implements Serializable {
         return result;
     }
 
-    public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = new Comparator<Content>() {
-        @Override
-        public int compare(Content a, Content b) {
-            return a.getTitle().compareTo(b.getTitle());
-        }
-    };
+    public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
 
-    public static final Comparator<Content> DLDATE_COMPARATOR = new Comparator<Content>() {
-        @Override
-        public int compare(Content a, Content b) { return Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate()) * -1; /* Inverted - last download date first */ }
-    };
+    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> { return Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate()) * -1; /* Inverted - last download date first */ };
 
-    public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = new Comparator<Content>() {
-        @Override
-        public int compare(Content a, Content b) { return a.getTitle().compareTo(b.getTitle()) * -1; }
-    };
+    public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
 
-    public static final Comparator<Content> DLDATE_INV_COMPARATOR = new Comparator<Content>() {
-        @Override
-        public int compare(Content a, Content b) { return Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate()); }
-    };
+    public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate());
 
-    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = new Comparator<Content>() {
-        @Override
-        public int compare(Content a, Content b) {
-            return Integer.valueOf(a.getQueryOrder()).compareTo(b.getQueryOrder());
-        }
-    };
+    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.valueOf(a.getQueryOrder()).compareTo(b.getQueryOrder());
 }

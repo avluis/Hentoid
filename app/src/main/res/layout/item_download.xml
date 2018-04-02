@@ -47,6 +47,7 @@
             android:layout_alignStart="@+id/row_details"
             android:adjustViewBounds="true"
             android:clickable="true"
+            android:focusable="true"
             android:paddingBottom="5dp"
             android:paddingEnd="8dp"
             android:paddingLeft="5dp"
@@ -62,14 +63,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBottom="@+id/row_details"
-            android:layout_alignEnd="@+id/row_details"
-            android:layout_alignRight="@+id/row_details"
+            android:layout_toLeftOf="@id/ivFavourite"
+            android:layout_toStartOf="@id/ivFavourite"
             android:adjustViewBounds="true"
             android:background="@color/card_item_src_other"
             android:clickable="true"
+            android:focusable="true"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_item_error_outline"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"
+            />
+
+        <ImageView
+            android:id="@+id/ivFavourite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/row_details"
+            android:layout_alignEnd="@+id/row_details"
+            android:layout_alignRight="@+id/row_details"
+            android:adjustViewBounds="true"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_fav_empty"
+            tools:ignore="ContentDescription"
+            />
     </RelativeLayout>
 
     <LinearLayout

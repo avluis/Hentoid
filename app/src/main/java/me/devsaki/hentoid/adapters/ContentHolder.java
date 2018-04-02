@@ -24,6 +24,7 @@ class ContentHolder extends RecyclerView.ViewHolder {
     final TextView tvTags;
     final ImageView ivSite;
     final ImageView ivError;
+    final ImageView ivFavourite;
 
     ContentHolder(final View itemView) {
         super(itemView);
@@ -37,5 +38,6 @@ class ContentHolder extends RecyclerView.ViewHolder {
         tvTags = itemView.findViewById(R.id.tvTags);
         ivSite = itemView.findViewById(R.id.ivSite);
         ivError = itemView.findViewById(R.id.ivError);
+        ivFavourite = itemView.findViewById(R.id.ivFavourite);
     }
 }

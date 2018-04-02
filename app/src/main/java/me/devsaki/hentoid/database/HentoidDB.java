@@ -44,7 +44,7 @@ import timber.log.Timber;
 public class HentoidDB extends SQLiteOpenHelper {
 
     private static final Object locker = new Object();
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
     private static HentoidDB instance;
 
 
@@ -75,10 +75,16 @@ public class HentoidDB extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        if (1 == oldVersion) // Updates from v1 to v2
+        if (oldVersion < 2) // Updates to v2
         {
-            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN author TEXT");
-            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN storage_folder TEXT");
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.AUTHOR_COLUMN + " TEXT");
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.STORAGE_FOLDER_COLUMN + " TEXT");
+            Timber.i("Upgrading DB version to v2");
+        }
+        if (oldVersion < 3) // Updates to v3
+        {
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.FAVOURITE_COLUMN + " INTEGER DEFAULT 0");
+            Timber.i("Upgrading DB version to v3");
         }
     }
 
@@ -141,6 +147,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     statement.bindLong(ContentTable.IDX_SITECODE, row.getSite().getCode());
                     statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor())?"":row.getAuthor());
                     statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder())?"":row.getStorageFolder());
+                    statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite()?1:0);
 
                     statement.execute();
 
@@ -480,6 +487,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SITECODE - 1)))
                 .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
                 .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
+                .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
                 .setQueryOrder(cursorContent.getPosition());
 
         content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
@@ -745,6 +753,36 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
+    public void updateContentFavourite(Content content) {
+        synchronized (locker) {
+            Timber.d("updateContentFavourite");
+            SQLiteDatabase db = null;
+            SQLiteStatement statement = null;
+
+            try {
+                db = getWritableDatabase();
+                statement = db.compileStatement(ContentTable.UPDATE_CONTENT_FAVOURITE);
+
+                db.beginTransaction();
+                statement.clearBindings();
+                statement.bindString(1, content.isFavourite()?"1":"0" );
+                statement.bindLong(2, content.getId());
+                statement.execute();
+                db.setTransactionSuccessful();
+                db.endTransaction();
+            } finally {
+                Timber.d("Closing db connection. Condition: "
+                        + (db != null && db.isOpen()));
+                if (statement != null) {
+                    statement.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+    }
+
     public void updateContentStatus(StatusContent updateTo, StatusContent updateFrom) {
         synchronized (locker) {
             Timber.d("updateContentStatus2");
@@ -775,16 +813,16 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     private String buildListQuery(List<?> list)
     {
-        String result = "";
+        StringBuilder str = new StringBuilder("");
         if (list != null) {
             boolean first = true;
             for (Object o : list) {
-                if (!first) result += ",";
+                if (!first) str.append(",");
                 else first = false;
-                result += "'" + o.toString().toLowerCase() + "'";
+                str.append("'").append(o.toString().toLowerCase()).append("'");
             }
         }
 
-        return result;
+        return str.toString();
     }
 }

@@ -315,6 +315,27 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
             holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, bg));
 
+            // Favourite toggle
+            if (content.isFavourite()) {
+                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full_red);
+            } else {
+                holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+            }
+            holder.ivFavourite.setOnClickListener(v -> {
+                if (getSelectedItemCount() >= 1) {
+                    clearSelections();
+                    listener.onItemClear(0);
+                }
+                if (content.isFavourite()) {
+                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                } else {
+                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_full_red);
+                }
+                favToggleItem(content);
+            });
+
+
+            // Error icon
             if (status == StatusContent.ERROR) {
                 holder.ivError.setVisibility(View.VISIBLE);
                 holder.ivError.setOnClickListener(v -> {
@@ -487,6 +508,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 .create().show();
     }
 
+    private void favToggleItem(Content item) {
+        item.setFavourite(!item.isFavourite());
+
+        // Persist in it DB
+        final HentoidDB db = HentoidDB.getInstance(context);
+        db.updateContentFavourite(item);
+    }
+
     @Override
     public long getItemId(int position) {
         return mSortedList.get(position).getId();
@@ -631,18 +660,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     public void remove(Content content)
     {
         mSortedList.remove(content);
-        if (0 == mSortedList.size()) {
+        if (0 == mSortedList.size() && contentsWipedListener != null) {
             contentsWipedListener.onContentsWiped();
         }
-        listener.onItemClear(0);
-    }
-
-    public void remove(List<Content> contents) {
-        mSortedList.beginBatchedUpdates();
-        for (Content content : contents) {
-            mSortedList.remove(content);
-        }
-        mSortedList.endBatchedUpdates();
+        if (listener != null) listener.onItemClear(0);
     }
 
     public void removeAll() { replaceAll(new ArrayList<Content>());}
