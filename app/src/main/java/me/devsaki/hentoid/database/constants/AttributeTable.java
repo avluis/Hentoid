@@ -28,6 +28,8 @@ public abstract class AttributeTable {
             "inner join "+ContentTable.TABLE_NAME+" c on ca."+ContentAttributeTable.CONTENT_ID_COLUMN+"=c."+ContentTable.ID_COLUMN+" "+
             "where a."+TYPE_COLUMN+"=? and c."+ContentTable.STATUS_COLUMN+" in (1,4,5) and c."+ContentTable.SITE_COLUMN+" in (%1)";
 
+    public static final String SELECT_ALL_BY_USAGE_FAVS = " and c."+ContentTable.FAVOURITE_COLUMN+" = 1 ";
+
     public static final String SELECT_ALL_BY_USAGE_TAG_FILTER = " AND (c."+ContentTable.ID_COLUMN+" in (" +
             " SELECT " +ContentAttributeTable.CONTENT_ID_COLUMN+" FROM ("+
             " select ca1."+ContentAttributeTable.CONTENT_ID_COLUMN+" , COUNT(*)" +

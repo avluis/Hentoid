@@ -367,7 +367,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String title, String author, int page, int booksPerPage, List<String> tags, List<Integer> sites, int orderStyle) {
+    public List<Content> selectContentByQuery(String title, String author, int page, int booksPerPage, List<String> tags, List<Integer> sites, boolean filterFavourites, int orderStyle) {
         List<Content> result = Collections.emptyList();
         boolean hasAuthor = (author != null && author.length() > 0);
 
@@ -381,6 +381,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db = getReadableDatabase();
                 String sql = ContentTable.SELECT_DOWNLOADS_BASE;
                 sql = sql.replace("%1", buildListQuery(sites));
+
+                if (filterFavourites) sql += ContentTable.SELECT_DOWNLOADS_FAVS;
 
                 if (title != null && title.length() > 0) {
                     sql += " AND ";
@@ -549,7 +551,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites) {
+    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites, boolean filterFavourites) {
         ArrayList<Pair<String,Integer>> result = new ArrayList<Pair<String,Integer>>();
 
         synchronized (locker) {
@@ -560,6 +562,8 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             String sql = AttributeTable.SELECT_ALL_BY_USAGE_BASE;
             sql = sql.replace("%1", buildListQuery(sites));
+
+            if (filterFavourites) sql += AttributeTable.SELECT_ALL_BY_USAGE_FAVS;
 
             if (tags != null && tags.size() > 0) {
                 sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;

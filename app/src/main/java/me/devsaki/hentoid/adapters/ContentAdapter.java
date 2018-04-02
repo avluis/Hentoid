@@ -317,7 +317,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
             // Favourite toggle
             if (content.isFavourite()) {
-                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full_red);
+                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
             } else {
                 holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
             }
@@ -329,7 +329,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 if (content.isFavourite()) {
                     holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
                 } else {
-                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_full_red);
+                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
                 }
                 favToggleItem(content);
             });

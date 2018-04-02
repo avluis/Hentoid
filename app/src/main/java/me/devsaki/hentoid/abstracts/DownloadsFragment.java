@@ -154,10 +154,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int mDrawerState;
     private boolean shouldHide;
     private Parcelable mListState;
-    // Active tag filters
-    private Map<String, Integer> tagFilters;
-    // Active site filters
-    private List<Integer> siteFilters;
     // Indicates whether or not one of the books has been selected
     private boolean isSelected;
     private boolean selectTrigger = false;
@@ -169,6 +165,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private long backButtonPressed;
     private boolean permissionChecked;
     private ObjectAnimator animator;
+
+    // Active tag filters
+    private Map<String, Integer> tagFilters;
+    // Active site filters
+    private List<Integer> siteFilters;
+    // Filter favourites
+    private boolean filterFavourites = false;
 
     // States for search bar buttons
     private boolean filterByTitle = true;
@@ -707,25 +710,30 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // Attaches listeners to website filters
         final View nHentaiButton = getActivity().findViewById(R.id.filter_nhentai);
-        nHentaiButton.setOnClickListener(v -> selectSiteFilter(nHentaiButton, Site.NHENTAI.getCode()));
+        nHentaiButton.setOnClickListener(v -> toggleSiteFilter(nHentaiButton, Site.NHENTAI.getCode()));
 
         final View hitomiButton = getActivity().findViewById(R.id.filter_hitomi);
-        hitomiButton.setOnClickListener(v -> selectSiteFilter(hitomiButton, Site.HITOMI.getCode()));
+        hitomiButton.setOnClickListener(v -> toggleSiteFilter(hitomiButton, Site.HITOMI.getCode()));
 
         final View hentaiCafeButton = getActivity().findViewById(R.id.filter_hentaicafe);
-        hentaiCafeButton.setOnClickListener(v -> selectSiteFilter(hentaiCafeButton, Site.HENTAICAFE.getCode()));
+        hentaiCafeButton.setOnClickListener(v -> toggleSiteFilter(hentaiCafeButton, Site.HENTAICAFE.getCode()));
 
         final View asmButton = getActivity().findViewById(R.id.filter_asm);
-        asmButton.setOnClickListener(v -> selectSiteFilter(asmButton, Site.ASMHENTAI.getCode()));
+        asmButton.setOnClickListener(v -> toggleSiteFilter(asmButton, Site.ASMHENTAI.getCode()));
 
         final View asmComicsButton = getActivity().findViewById(R.id.filter_asmcomics);
-        asmComicsButton.setOnClickListener(v -> selectSiteFilter(asmComicsButton, Site.ASMHENTAI_COMICS.getCode()));
+        asmComicsButton.setOnClickListener(v -> toggleSiteFilter(asmComicsButton, Site.ASMHENTAI_COMICS.getCode()));
 
         final View tsminoButton = getActivity().findViewById(R.id.filter_tsumino);
-        tsminoButton.setOnClickListener(v -> selectSiteFilter(tsminoButton, Site.TSUMINO.getCode()));
+        tsminoButton.setOnClickListener(v -> toggleSiteFilter(tsminoButton, Site.TSUMINO.getCode()));
 
         final View pururinButton = getActivity().findViewById(R.id.filter_pururin);
-        pururinButton.setOnClickListener(v -> selectSiteFilter(pururinButton, Site.PURURIN.getCode()));
+        pururinButton.setOnClickListener(v -> toggleSiteFilter(pururinButton, Site.PURURIN.getCode()));
+
+        // Attaches listener to favourite filters
+        final ImageButton favouriteButton = getActivity().findViewById(R.id.filter_favs);
+        favouriteButton.setColorFilter(Color.BLACK);
+        favouriteButton.setOnClickListener(v -> toggleFavouriteFilter(favouriteButton));
 
         // Attach listeners to category filter buttons
         getActivity().findViewById(R.id.search_filter_title).setOnClickListener(v -> selectFieldFilter(!filterByTitle, filterByArtist, filterByTag));
@@ -859,12 +867,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Updates the GUI according to the chosen source (website) filters
+     * Toggles the chosen source (website) filter and updates the GUI accordingly
      *
      * @param button Source (website) filter button that has been pressed
      * @param siteCode Code of the corresponding site
      */
-    private void selectSiteFilter(View button, int siteCode)
+    private void toggleSiteFilter(View button, int siteCode)
     {
         ImageButton imgButton = (ImageButton)button;
 
@@ -875,6 +883,30 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         } else {
             siteFilters.add(siteCode);
             imgButton.clearColorFilter();
+        }
+        if (filterByTag) updateTagMosaic();
+
+        searchContent();
+    }
+
+    /**
+     * Toggles favourite filter and updates the GUI accordingly
+     *
+     * @param button Filter button that has been pressed
+     */
+    private void toggleFavouriteFilter(View button)
+    {
+        ImageButton imgButton = (ImageButton)button;
+
+        filterFavourites = !filterFavourites;
+
+        if (filterFavourites)
+        {
+            imgButton.setImageResource(R.drawable.ic_fav_full);
+            imgButton.clearColorFilter();
+        } else {
+            imgButton.setImageResource(R.drawable.ic_fav_empty);
+            imgButton.setColorFilter(Color.BLACK);
         }
         if (filterByTag) updateTagMosaic();
 
@@ -958,7 +990,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         for (String key : tagFilters.keySet()) {
             if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
         }
-        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), selectedTags, siteFilters);
+        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), selectedTags, siteFilters, filterFavourites);
 
         // Remove all tag buttons that do not appear in results
         if (removeNotFound)
@@ -1278,7 +1310,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         isLoaded = false;
-        search.retrieveResults(filterByTitle?query:"", filterByArtist?query:"", currentPage, booksPerPage, selectedTags, siteFilters, order);
+        search.retrieveResults(filterByTitle?query:"", filterByArtist?query:"", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
     }
 
     protected abstract void showToolbar(boolean show, boolean override);

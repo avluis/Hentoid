@@ -27,6 +27,7 @@ public class SearchContent {
     private int mCurrentPage;
     private int mBooksPerPage;
     private int mOrderStyle;
+    private boolean mFilterFavourites;
     private List<String> mTagFilter = new ArrayList<>();
     private List<Integer> mSiteFilter = new ArrayList<>();
 
@@ -35,12 +36,13 @@ public class SearchContent {
         mListener = listener;
     }
 
-    public void retrieveResults(String titleQuery, String authorQuery, int currentPage, int booksPerPage, List<String> tags, List<Integer> sites, int orderStyle) {
+    public void retrieveResults(String titleQuery, String authorQuery, int currentPage, int booksPerPage, List<String> tags, List<Integer> sites, boolean filterFavourites, int orderStyle) {
         mTitleQuery = titleQuery;
         mAuthorQuery = authorQuery;
         mCurrentPage = currentPage;
         mBooksPerPage = booksPerPage;
         mOrderStyle = orderStyle;
+        mFilterFavourites = filterFavourites;
         mTagFilter.clear();
         if (tags != null) mTagFilter.addAll(tags);
         mSiteFilter.clear();
@@ -69,13 +71,13 @@ public class SearchContent {
         new SearchTask(this).execute();
     }
 
-    private synchronized State retrieveContent(String titleQuery, String authorQuery, int currentPage, int booksPerPage, List<String> tagFilter, List<Integer> sites, int orderStyle) {
+    private synchronized State retrieveContent(String titleQuery, String authorQuery, int currentPage, int booksPerPage, List<String> tagFilter, List<Integer> sites, boolean filterFavourites, int orderStyle) {
         Timber.d("Retrieving content.");
         try {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
 
-                contentList = db.selectContentByQuery(titleQuery, authorQuery, currentPage, booksPerPage, tagFilter, sites, orderStyle);
+                contentList = db.selectContentByQuery(titleQuery, authorQuery, currentPage, booksPerPage, tagFilter, sites, filterFavourites, orderStyle);
 
                 mCurrentState = State.READY;
             }
@@ -108,7 +110,7 @@ public class SearchContent {
         @Override
         protected State doInBackground(Void... params) {
             SearchContent activity = activityReference.get();
-            return activity.retrieveContent(activity.mTitleQuery, activity.mAuthorQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mSiteFilter, activity.mOrderStyle);
+            return activity.retrieveContent(activity.mTitleQuery, activity.mAuthorQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mSiteFilter, activity.mFilterFavourites, activity.mOrderStyle);
         }
 
         @Override

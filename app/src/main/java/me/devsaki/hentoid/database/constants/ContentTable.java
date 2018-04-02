@@ -96,6 +96,8 @@ public abstract class ContentTable {
     public static final String SELECT_DOWNLOADS_BASE = "SELECT C.*" +
             " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C."+SITE_COLUMN+" in (%1) ";
 
+    public static final String SELECT_DOWNLOADS_FAVS = " AND C."+FAVOURITE_COLUMN+" = 1 ";
+
     public static final String SELECT_DOWNLOADS_TITLE = " C." + TITLE_COLUMN + " like '%2' ";
 
     public static final String SELECT_DOWNLOADS_JOINS = " C." + ID_COLUMN

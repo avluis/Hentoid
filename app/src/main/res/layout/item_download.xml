@@ -87,6 +87,7 @@
             android:focusable="true"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_fav_empty"
+            android:tint="@color/card_item_src_other"
             tools:ignore="ContentDescription"
             />
     </RelativeLayout>
