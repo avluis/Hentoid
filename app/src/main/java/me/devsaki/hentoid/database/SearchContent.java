@@ -17,7 +17,7 @@ import timber.log.Timber;
 public class SearchContent {
 
     private final HentoidDB db;
-    private volatile State mCurrentState = State.NON_INIT;
+    private volatile State mCurrentState;
     private List<Content> contentList = new ArrayList<>();
 
     private ContentListener mListener;
@@ -45,6 +45,8 @@ public class SearchContent {
         if (tags != null) mTagFilter.addAll(tags);
         mSiteFilter.clear();
         if (sites != null) mSiteFilter.addAll(sites);
+
+        mCurrentState = State.NON_INIT;
 
         retrieveResults();
     }
