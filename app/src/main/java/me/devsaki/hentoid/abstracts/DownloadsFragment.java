@@ -139,8 +139,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected Context mContext;
     // Expression typed in the search bar
     protected String query = "";
-    private final Handler searchHandler = new Handler();
     protected int currentPage = 1;
+    // Async content search utility class; has to be instanciated class-wide because of asynchronous callbacks
+    SearchContent search;
     protected ContentAdapter mAdapter;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
     protected boolean isNewContentAvailable;
@@ -498,6 +499,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         siteFilters.add(Site.HENTAICAFE.getCode());
         siteFilters.add(Site.PURURIN.getCode());
         siteFilters.add(Site.TSUMINO.getCode());
+
+        search = new SearchContent(mContext, this);
     }
 
     protected void attachScrollListener() {
@@ -1106,6 +1109,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void submitSearchQuery(final String s, long delay) {
         if (!filterByTag) { // Search actual books based on query
             query = s;
+            Handler searchHandler = new Handler();
             searchHandler.removeCallbacksAndMessages(null);
             searchHandler.postDelayed(() -> {
                 setQuery(s);
@@ -1274,7 +1278,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         isLoaded = false;
-        SearchContent search = new SearchContent(mContext, this);
         search.retrieveResults(filterByTitle?query:"", filterByArtist?query:"", currentPage, booksPerPage, selectedTags, siteFilters, order);
     }
 
