@@ -93,6 +93,7 @@ public class Content implements Serializable {
     }
 
     // Used for upgrade purposes
+    @Deprecated
     public String getOldUniqueSiteId() {
         String[] paths;
         switch (site) {
