@@ -9,11 +9,11 @@ public abstract class ContentTable {
     public static final String TABLE_NAME = "content";
 
     public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO " + TABLE_NAME
-            + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+            + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
     public static final String LIMIT_BY_PAGE = " LIMIT ?,?";
 
     // COLUMN NAMES
-    public static final String ID_COLUMN = "id";
+    static final String ID_COLUMN = "id";
     private static final String UNIQUE_SITE_ID_COLUMN = "unique_site_id";
     private static final String CATEGORY_COLUMN = "category";
     private static final String URL_COLUMN = "url";
@@ -22,11 +22,12 @@ public abstract class ContentTable {
     private static final String QTY_PAGES_COLUMN = "qty_pages";
     private static final String UPLOAD_DATE_COLUMN = "upload_date";
     private static final String DOWNLOAD_DATE_COLUMN = "download_date";
-    public static final String STATUS_COLUMN = "status";
+    static final String STATUS_COLUMN = "status";
     private static final String COVER_IMAGE_URL_COLUMN = "cover_image_url";
-    public static final String SITE_COLUMN = "site";
-    private static final String AUTHOR_COLUMN = "author";
-    private static final String STORAGE_FOLDER_COLUMN = "storage_folder";
+    static final String SITE_COLUMN = "site";
+    public static final String AUTHOR_COLUMN = "author";
+    public static final String STORAGE_FOLDER_COLUMN = "storage_folder";
+    public static final String FAVOURITE_COLUMN = "favourite";
 
     // COLUMN INDEXES
     public static final int IDX_INTERNALID = 1;
@@ -43,6 +44,7 @@ public abstract class ContentTable {
     public static final int IDX_SITECODE = 12;
     public static final int IDX_AUTHOR = 13;
     public static final int IDX_STORAGE_FOLDER = 14;
+    public static final int IDX_FAVOURITE = 15;
 
     // ORDER
     public static final String ORDER_BY_DATE = " ORDER BY C." + DOWNLOAD_DATE_COLUMN;
@@ -56,7 +58,8 @@ public abstract class ContentTable {
             + " TEXT," + TITLE_COLUMN + " TEXT" + "," + QTY_PAGES_COLUMN + " INTEGER" + ","
             + UPLOAD_DATE_COLUMN + " INTEGER" + "," + DOWNLOAD_DATE_COLUMN + " INTEGER" + ","
             + STATUS_COLUMN + " INTEGER" + "," + COVER_IMAGE_URL_COLUMN + " TEXT"
-            + "," + SITE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT )";
+            + "," + SITE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT, "
+            + FAVOURITE_COLUMN + " INTEGER DEFAULT 0 )";
 
     // DELETE
     public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE " + ID_COLUMN + " = ?";
@@ -71,6 +74,8 @@ public abstract class ContentTable {
             + STATUS_COLUMN + " = ? WHERE " + STATUS_COLUMN + " = ?";
 
     public static final String UPDATE_CONTENT_STORAGE_FOLDER = "UPDATE " + TABLE_NAME + " SET " + STORAGE_FOLDER_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
+
+    public static final String UPDATE_CONTENT_FAVOURITE = "UPDATE " + TABLE_NAME + " SET " + FAVOURITE_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
 
 
     // SELECT
@@ -90,6 +95,8 @@ public abstract class ContentTable {
 
     public static final String SELECT_DOWNLOADS_BASE = "SELECT C.*" +
             " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C."+SITE_COLUMN+" in (%1) ";
+
+    public static final String SELECT_DOWNLOADS_FAVS = " AND C."+FAVOURITE_COLUMN+" = 1 ";
 
     public static final String SELECT_DOWNLOADS_TITLE = " C." + TITLE_COLUMN + " like '%2' ";
 

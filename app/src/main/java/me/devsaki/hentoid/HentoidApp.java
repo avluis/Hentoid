@@ -210,8 +210,14 @@ public class HentoidApp extends Application {
                 });
     }
 
+    /**
+     * Handles complex DB version updates at startup
+     *
+     * @param versionCode Current app version
+     * @param db Hentoid DB
+     */
     private void UpgradeTo(int versionCode, HentoidDB db) {
-        if (versionCode > 43) // Check if all "storage_folder" fields are present in CONTENT DB (mandatory)
+        if (versionCode > 43) // Update all "storage_folder" fields in CONTENT table (mandatory)
         {
             List<Content> contents = db.selectContentEmptyFolder();
             if (contents != null && contents.size() > 0) {
