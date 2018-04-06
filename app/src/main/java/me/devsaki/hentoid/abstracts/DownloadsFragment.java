@@ -126,6 +126,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Button containing the page number on Paged view
     private Button btnPage;
 
+    // == UTIL OBJECTS
+    private ObjectAnimator animator;
+    // Handler for text searches; needs to be there to be cancelable upon new key press
+    private Handler searchHandler = new Handler();
 
     // == VARIABLES TAKEN FROM SETTINGS
     // Books per page
@@ -149,7 +153,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // True if book list has finished loading; used for synchronization between threads
     protected boolean isLoaded;
     // True if search mode is active
-    protected boolean isSearchMode = false;
+    private boolean isSearchMode = false;
+    // True if search results need to replace displayed books
+    protected boolean isSearchReplaceResults;
     private ActionMode mActionMode;
     private int mDrawerState;
     private boolean shouldHide;
@@ -164,7 +170,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
     private boolean permissionChecked;
-    private ObjectAnimator animator;
 
     // Active tag filters
     private Map<String, Integer> tagFilters;
@@ -1141,7 +1146,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void submitSearchQuery(final String s, long delay) {
         if (!filterByTag) { // Search actual books based on query
             query = s;
-            Handler searchHandler = new Handler();
             searchHandler.removeCallbacksAndMessages(null);
             searchHandler.postDelayed(() -> {
                 setQuery(s);
@@ -1295,7 +1299,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *      or
      *      * Selected tags in tag mosaic
      */
-    protected void searchContent() {
+    protected void searchContent() { searchContent(isSearchMode); }
+    protected void searchContent(boolean searchMode) {
         List<String> selectedTags = new ArrayList<>();
         String query = this.getQuery();
 
@@ -1310,6 +1315,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         isLoaded = false;
+        isSearchReplaceResults = searchMode;
         search.retrieveResults(filterByTitle?query:"", filterByArtist?query:"", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
     }
 

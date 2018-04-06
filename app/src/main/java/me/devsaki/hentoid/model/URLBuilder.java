@@ -3,6 +3,7 @@ package me.devsaki.hentoid.model;
 /**
  * General builder for URLs
  */
+@Deprecated
 public class URLBuilder {
 
     private String url;

@@ -5,6 +5,7 @@ import java.util.List;
 /**
  * General builder for works.
  */
+@Deprecated
 public class DoujinBuilder {
 
     private String title;
