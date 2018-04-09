@@ -7,6 +7,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -97,7 +98,7 @@ public class HitomiParser {
 
     public static List<String> parseImageList(Content content) {
         String html;
-        List<String> imgUrls = null;
+        List<String> imgUrls = Collections.emptyList();
         try {
             String url = content.getReaderUrl();
             html = HttpClientHelper.call(url);
