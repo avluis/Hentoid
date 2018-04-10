@@ -10,6 +10,8 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -60,8 +62,9 @@ public class HentaiCafeActivity extends BaseWebActivity {
         protected Content doInBackground(String... params) {
             String url = params[0];
             try {
-                processContent(HentaiCafeParser.parseContent(url));
-            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
+                ContentParser parser = ContentParserFactory.getInstance().getParser(Site.HENTAICAFE);
+                processContent(parser.parseContent(url));
+            } catch (Exception e) {
                 Timber.e(e, "Error parsing content.");
                 runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }

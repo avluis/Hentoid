@@ -18,12 +18,9 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.parsers.ASMHentaiParser;
-import me.devsaki.hentoid.parsers.HentaiCafeParser;
-import me.devsaki.hentoid.parsers.HitomiParser;
-import me.devsaki.hentoid.parsers.NhentaiParser;
-import me.devsaki.hentoid.parsers.PururinParser;
-import me.devsaki.hentoid.parsers.TsuminoParser;
+import me.devsaki.hentoid.parsers.BaseParser;
+import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -208,30 +205,8 @@ public class DownloadService extends IntentService {
 
     // TODO: Implement null handling as fail/retry state
     private void parseImageFiles(Content currentContent) {
-        List<String> aUrls = new ArrayList<>();
-        switch (currentContent.getSite()) {
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                aUrls = ASMHentaiParser.parseImageList(currentContent);
-                break;
-            case HENTAICAFE:
-                aUrls = HentaiCafeParser.parseImageList(currentContent);
-                break;
-            case HITOMI:
-                aUrls = HitomiParser.parseImageList(currentContent);
-                break;
-            case NHENTAI:
-                aUrls = NhentaiParser.parseImageList(currentContent);
-                break;
-            case TSUMINO:
-                aUrls = TsuminoParser.parseImageList(currentContent);
-                break;
-            case PURURIN:
-                aUrls = PururinParser.parseImageList(currentContent);
-                break;
-            default:
-                break;
-        }
+        ContentParser parser = ContentParserFactory.getInstance().getParser(currentContent);
+        List<String> aUrls = parser.parseImageList(currentContent);
 
         int i = 1;
         List<ImageFile> imageFileList = new ArrayList<>();

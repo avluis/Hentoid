@@ -18,6 +18,8 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
@@ -112,8 +114,9 @@ public class ASMHentaiActivity extends BaseWebActivity {
             String url = params[0];
             Site theSite = Site.searchByCode(Integer.parseInt(params[1]));
             try {
-                processContent(ASMHentaiParser.parseContent(url, theSite));
-            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
+                ContentParser parser = ContentParserFactory.getInstance().getParser(Site.ASMHENTAI);
+                processContent(parser.parseContent(url));
+            } catch (Exception e) {
                 Timber.e(e, "Error parsing content.");
                 runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }

@@ -19,6 +19,8 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.PururinParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -134,8 +136,9 @@ public class PururinActivity extends BaseWebActivity {
         protected Content doInBackground(String... params) {
             String url = params[0];
             try {
-                processContent(PururinParser.parseContent(url));
-            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
+                ContentParser parser = ContentParserFactory.getInstance().getParser(Site.PURURIN);
+                processContent(parser.parseContent(url));
+            } catch (Exception e) {
                 Timber.e(e, "Error parsing content.");
                 runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }

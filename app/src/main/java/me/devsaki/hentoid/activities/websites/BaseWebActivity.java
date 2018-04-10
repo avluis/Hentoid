@@ -31,12 +31,14 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ASMHentaiParser;
+import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.parsers.PururinParser;
 import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.services.ContentDownload;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -260,13 +262,15 @@ public abstract class BaseWebActivity extends BaseActivity {
             return;
         }
         Helper.toast(this, R.string.add_to_queue);
-        currentContent.setDownloadDate(new Date().getTime())
-                .setStatus(StatusContent.DOWNLOADING);
 
-        db.updateContentStatus(currentContent);
+        /*
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
 
         startService(intent);
+        */
+
+        ContentDownload.downloadContent(HentoidApp.getAppContext(), currentContent);
+
         hideFab(fabDownload);
     }
 
@@ -351,29 +355,8 @@ public abstract class BaseWebActivity extends BaseActivity {
     }
 
     private void attachToDebugger(Content content) {
-        switch (content.getSite()) {
-            case HITOMI:
-                HitomiParser.parseImageList(content);
-                break;
-            case NHENTAI:
-                NhentaiParser.parseImageList(content);
-                break;
-            case TSUMINO:
-                TsuminoParser.parseImageList(content);
-                break;
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                ASMHentaiParser.parseImageList(content);
-                break;
-            case HENTAICAFE:
-                HentaiCafeParser.parseImageList(content);
-                break;
-            case PURURIN:
-                PururinParser.parseImageList(content);
-                break;
-            default:
-                break;
-        }
+        ContentParser parser = ContentParserFactory.getInstance().getParser(content);
+        parser.parseImageList(content);
     }
 
     void backgroundRequest(String extra) {
