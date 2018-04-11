@@ -80,7 +80,7 @@ public class PururinParser extends BaseParser {
     protected List<String> parseImages(Content content) throws Exception {
         List<String> result = new ArrayList<>();
 
-        Document doc = Jsoup.parse(HttpClientHelper.call(content.getReaderUrl()));
+        Document doc = Jsoup.connect(content.getReaderUrl()).get();
         Elements js = doc.select("script");
         int startPos, endPos;
 
