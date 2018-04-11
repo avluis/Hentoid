@@ -68,7 +68,7 @@ public class NhentaiActivity extends BaseWebActivity {
                 return getWebResourceResponseFromAsset(getStartSite(), "main_js.js", TYPE.JS);
             } else if (url.contains("//static.nhentai.net/css/")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main_style.css", TYPE.CSS);
-            } else if (url.contains("ads.contentabc.com")) {
+            } else if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -84,7 +84,7 @@ public class NhentaiActivity extends BaseWebActivity {
                 return getWebResourceResponseFromAsset(getStartSite(), "main_js.js", TYPE.JS);
             } else if (url.contains("//static.nhentai.net/css/")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main_style.css", TYPE.CSS);
-            } else if (url.contains("ads2.contentabc.com")) {
+            } else if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);

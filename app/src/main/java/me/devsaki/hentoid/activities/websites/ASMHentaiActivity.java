@@ -2,7 +2,6 @@ package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceError;
@@ -11,15 +10,8 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.ASMHentaiParser;
-import me.devsaki.hentoid.parsers.ContentParser;
-import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
@@ -68,23 +60,18 @@ public class ASMHentaiActivity extends BaseWebActivity {
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
-            if (url.contains("//asmhentai.com/g/")) {
-                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI.getCode() + "");
-            } else if (url.contains("//comics.asmhentai.com/g/")) {
-                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI_COMICS.getCode() + "");
+            if (url.contains("asmhentai.com/g/")) {
+                executeAsyncTask(new HtmlLoader(), url);
             }
         }
 
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("ads.js") || url.contains("f.js") || url.contains("pop.js") ||
-                    url.contains("ads.php") || url.contains("syndication.exoclick.com")) {
+            if (url.contains("f.js") || isUrlForbidden(url) ) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("exosrv.com") || url.contains("hentaigold.net")) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
             }
@@ -95,33 +82,13 @@ public class ASMHentaiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            if (url.contains("ads.js") || url.contains("f.js") || url.contains("pop.js") ||
-                    url.contains("syndication.exoclick.com")) {
+            if (url.contains("f.js") || isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("exosrv.com") || url.contains("hentaigold.net")) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
             }
-        }
-    }
-
-    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-            Site theSite = Site.searchByCode(Integer.parseInt(params[1]));
-            try {
-                ContentParser parser = ContentParserFactory.getInstance().getParser(Site.ASMHENTAI);
-                processContent(parser.parseContent(url));
-            } catch (Exception e) {
-                Timber.e(e, "Error parsing content.");
-                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
-            }
-
-            return null;
         }
     }
 }

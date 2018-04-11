@@ -12,7 +12,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.HttpClientHelper;
 
 /**
  * Created by robb_w on 01/31/2018.

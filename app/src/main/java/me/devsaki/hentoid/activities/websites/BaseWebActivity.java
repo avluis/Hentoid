@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -19,7 +20,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -30,14 +32,8 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.parsers.ASMHentaiParser;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.parsers.HentaiCafeParser;
-import me.devsaki.hentoid.parsers.HitomiParser;
-import me.devsaki.hentoid.parsers.NhentaiParser;
-import me.devsaki.hentoid.parsers.PururinParser;
-import me.devsaki.hentoid.parsers.TsuminoParser;
 import me.devsaki.hentoid.services.ContentDownload;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -60,6 +56,21 @@ public abstract class BaseWebActivity extends BaseActivity {
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;
     private boolean fabReadEnabled, fabDownloadEnabled;
     private SwipeRefreshLayout swipeLayout;
+    private static List<String> blockedAds = new ArrayList<>();
+
+    static
+    {
+        blockedAds.add("exoclick.com");
+        blockedAds.add("juicyadultads.com");
+        blockedAds.add("juicyads.com");
+        blockedAds.add("exosrv.com");
+        blockedAds.add("hentaigold.net");
+        blockedAds.add("ads.php");
+        blockedAds.add("ads.js");
+        blockedAds.add("pop.js");
+        blockedAds.add("trafficsan.com");
+        blockedAds.add("contentabc.com");
+    }
 
     ObservableWebView getWebView() {
         return webView;
@@ -263,11 +274,18 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
         Helper.toast(this, R.string.add_to_queue);
 
-        /*
+
+/*
+        currentContent.setDownloadDate(new Date().getTime())
+        .setStatus(StatusContent.DOWNLOADING);
+
+        db.updateContentStatus(currentContent);
+
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
 
         startService(intent);
-        */
+*/
+
 
         ContentDownload.downloadContent(HentoidApp.getAppContext(), currentContent);
 
@@ -398,6 +416,32 @@ public abstract class BaseWebActivity extends BaseActivity {
         public void onPageFinished(WebView view, String url) {
             webViewIsLoading = false;
             fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
+        }
+    }
+
+    protected boolean isUrlForbidden(String url)
+    {
+        for(String s : blockedAds)
+        {
+            if (url.contains(s)) return true;
+        }
+
+        return false;
+    }
+
+    protected class HtmlLoader extends AsyncTask<String, Integer, Content> {
+        @Override
+        protected Content doInBackground(String... params) {
+            String url = params[0];
+            try {
+                ContentParser parser = ContentParserFactory.getInstance().getParser(getStartSite());
+                processContent(parser.parseContent(url));
+            } catch (Exception e) {
+                Timber.e(e, "Error parsing content.");
+                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+            }
+
+            return null;
         }
     }
 }

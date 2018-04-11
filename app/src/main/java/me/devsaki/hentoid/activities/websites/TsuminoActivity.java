@@ -2,7 +2,6 @@ package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -11,18 +10,9 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.ContentParser;
-import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
-import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
@@ -101,7 +91,7 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("pop.js") || url.contains("/static/")) {
+            if (url.contains("/static/") || isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -113,27 +103,11 @@ public class TsuminoActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            if (url.contains("pop.js") || url.contains("/static/")) {
+            if (url.contains("/static/") || isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
             }
-        }
-    }
-
-    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-            try {
-                ContentParser parser = ContentParserFactory.getInstance().getParser(Site.TSUMINO);
-                processContent(parser.parseContent(url));
-            } catch (Exception e) {
-                Timber.e(e, "Error parsing content.");
-                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
-            }
-
-            return null;
         }
     }
 }

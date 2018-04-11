@@ -1,18 +1,9 @@
 package me.devsaki.hentoid.activities.websites;
 
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.webkit.WebView;
 
-import java.io.IOException;
-
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.ContentParser;
-import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
@@ -54,22 +45,6 @@ public class HentaiCafeActivity extends BaseWebActivity {
             if (url.contains("//hentai.cafe/")) {
                 executeAsyncTask(new HtmlLoader(), url);
             }
-        }
-    }
-
-    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-            try {
-                ContentParser parser = ContentParserFactory.getInstance().getParser(Site.HENTAICAFE);
-                processContent(parser.parseContent(url));
-            } catch (Exception e) {
-                Timber.e(e, "Error parsing content.");
-                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
-            }
-
-            return null;
         }
     }
 }
