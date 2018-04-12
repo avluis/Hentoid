@@ -206,6 +206,11 @@
             android:enabled="true"
             android:exported="false" />
 
+        <service
+            android:name=".services.ContentDownloadService"
+            android:enabled="true"
+            android:exported="false" />
+
         <receiver
             android:name=".updater.UpdateReceiver"
             android:enabled="true"

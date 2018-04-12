@@ -16,6 +16,7 @@ import me.devsaki.hentoid.database.constants.AttributeTable;
 import me.devsaki.hentoid.database.constants.ContentAttributeTable;
 import me.devsaki.hentoid.database.constants.ContentTable;
 import me.devsaki.hentoid.database.constants.ImageFileTable;
+import me.devsaki.hentoid.database.constants.QueueTable;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
@@ -44,7 +45,7 @@ import timber.log.Timber;
 public class HentoidDB extends SQLiteOpenHelper {
 
     private static final Object locker = new Object();
-    private static final int DATABASE_VERSION = 3;
+    private static final int DATABASE_VERSION = 4;
     private static HentoidDB instance;
 
 
@@ -85,6 +86,11 @@ public class HentoidDB extends SQLiteOpenHelper {
         {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.FAVOURITE_COLUMN + " INTEGER DEFAULT 0");
             Timber.i("Upgrading DB version to v3");
+        }
+        if (oldVersion < 4) // Updates to v4
+        {
+            db.execSQL(QueueTable.CREATE_TABLE);
+            Timber.i("Upgrading DB version to v4");
         }
     }
 
@@ -525,6 +531,36 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    public double countProcessedImageRateById(int contentId) {
+        double result = 0;
+
+        synchronized (locker) {
+            Timber.d("countProcessedImageRateById");
+
+            SQLiteDatabase db = null;
+            Cursor cursorContent = null;
+            try {
+                db = getReadableDatabase();
+                cursorContent = db.rawQuery(ImageFileTable.SELECT_PROCESSED_RATE_BY_CONTENT_ID,
+                        new String[]{contentId + "", contentId + ""});
+
+                if (cursorContent.moveToFirst()) {
+                    result = cursorContent.getDouble(0);
+                }
+            } finally {
+                if (cursorContent != null) {
+                    cursorContent.close();
+                }
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
     private AttributeMap selectAttributesByContentId(SQLiteDatabase db, int id) {
         AttributeMap result = null;
         Cursor cursorAttributes = null;
@@ -552,7 +588,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites, boolean filterFavourites) {
-        ArrayList<Pair<String,Integer>> result = new ArrayList<Pair<String,Integer>>();
+        ArrayList<Pair<String,Integer>> result = new ArrayList<>();
 
         synchronized (locker) {
             Timber.d("selectAllAttributesByUsage");
@@ -828,5 +864,111 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
 
         return str.toString();
+    }
+
+    public List<Pair<Integer,Integer>> selectQueue() {
+        ArrayList<Pair<Integer,Integer>> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectQueue");
+            SQLiteDatabase db = null;
+            Cursor cursorQueue = null;
+
+            try {
+                db = getReadableDatabase();
+                cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{});
+
+                // looping through all rows and adding to list
+                if (cursorQueue.moveToFirst()) {
+                    do {
+                        result.add(new Pair<>(cursorQueue.getInt(0), cursorQueue.getInt(1)) );
+                    } while (cursorQueue.moveToNext());
+                }
+            } finally {
+                if (cursorQueue != null) {
+                    cursorQueue.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public void insertQueue(Content content, int order) {
+        synchronized (locker) {
+            Timber.d("insertQueue");
+            SQLiteDatabase db = null;
+            SQLiteStatement statement = null;
+
+            try {
+                db = getWritableDatabase();
+                statement = db.compileStatement(QueueTable.INSERT_STATEMENT);
+
+                statement.clearBindings();
+                statement.bindLong(1, content.getId());
+                statement.bindLong(2, order);
+                statement.execute();
+            } finally {
+                if (statement != null) {
+                    statement.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+    }
+
+    public void deleteQueueById(int contentId) {
+        synchronized (locker) {
+            Timber.d("deleteQueueById");
+            SQLiteDatabase db = null;
+            SQLiteStatement statement = null;
+
+            try {
+                db = getWritableDatabase();
+                statement = db.compileStatement(QueueTable.DELETE_STATEMENT);
+
+                statement.clearBindings();
+                statement.bindLong(1, contentId);
+                statement.execute();
+            } finally {
+                if (statement != null) {
+                    statement.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+    }
+
+    public void udpateQueue(Content content, int newOrder) {
+        synchronized (locker) {
+            Timber.d("udpateQueue");
+            SQLiteDatabase db = null;
+            SQLiteStatement statement = null;
+
+
+            try {
+                db = getWritableDatabase();
+                statement = db.compileStatement(QueueTable.UPDATE_STATEMENT);
+
+                statement.clearBindings();
+                statement.bindLong(1, newOrder);
+                statement.bindLong(2, content.getId());
+                statement.execute();
+            } finally {
+                if (statement != null) {
+                    statement.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
     }
 }

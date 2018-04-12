@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebBackForwardList;
@@ -21,6 +22,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.BuildConfig;
@@ -34,7 +36,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.services.ContentDownload;
+import me.devsaki.hentoid.services.ContentDownloadService;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -274,20 +276,17 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
         Helper.toast(this, R.string.add_to_queue);
 
-
-/*
         currentContent.setDownloadDate(new Date().getTime())
-        .setStatus(StatusContent.DOWNLOADING);
+                .setStatus(StatusContent.DOWNLOADING);
 
         db.updateContentStatus(currentContent);
+        List<Pair<Integer,Integer>> queue = db.selectQueue();
+        db.insertQueue(currentContent, queue.size()+1);
 
-        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
 
         startService(intent);
-*/
 
-
-        ContentDownload.downloadContent(HentoidApp.getAppContext(), currentContent);
 
         hideFab(fabDownload);
     }

@@ -65,7 +65,7 @@ public abstract class ContentTable {
     public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE " + ID_COLUMN + " = ?";
 
 
-    // UPDATE8
+    // UPDATE
     public static final String UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT = "UPDATE "
             + TABLE_NAME + " SET " + DOWNLOAD_DATE_COLUMN + " = ?, " + STATUS_COLUMN
             + " = ? WHERE " + ID_COLUMN + " = ?";
