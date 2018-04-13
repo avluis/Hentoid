@@ -97,11 +97,11 @@ public class ASMHentaiParser extends BaseParser {
                         .select("a")
                         .select("img")
                         .attr("src");
-        // TODO: Verify extension types on this source
-        String ext = imgUrl.substring(imgUrl.length() - 4);
+
+        String ext = imgUrl.substring(imgUrl.lastIndexOf('.'));
 
         for (int i = 0; i < content.getQtyPages(); i++) {
-            String img = imgUrl.substring(0, imgUrl.length() - 4) + (i + 1) + ext;
+            String img = imgUrl.substring(0, imgUrl.lastIndexOf('/') + 1) + (i + 1) + ext;
             result.add(img);
         }
 
