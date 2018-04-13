@@ -125,7 +125,6 @@ public class ASMHentaiParser {
         }
 
         Document doc;
-        String ext;
         try {
             doc = Jsoup.connect(readerUrl).get();
             String imgUrl = "http:" +
@@ -134,10 +133,10 @@ public class ASMHentaiParser {
                             .select("img")
                             .attr("src");
             // TODO: Verify extension types on this source
-            ext = imgUrl.substring(imgUrl.length() - 4);
+            String ext = imgUrl.substring(imgUrl.lastIndexOf('.'));
 
             for (int i = 0; i < pages; i++) {
-                String img = imgUrl.substring(0, imgUrl.length() - 4) + (i + 1) + ext;
+                String img = imgUrl.substring(0, imgUrl.lastIndexOf('/') + 1) + (i + 1) + ext;
                 imgUrls.add(img);
             }
 
