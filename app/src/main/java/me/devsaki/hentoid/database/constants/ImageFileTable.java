@@ -40,9 +40,5 @@ public abstract class ImageFileTable {
             + ", " + NAME_COLUMN + " FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN
             + " = ? ORDER BY " + ORDER_COLUMN;
 
-    private static final String COUNT_BY_CONTENT_ID = "SELECT COUNT(*) FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN + " = ?";
-
-    private static final String SELECT_PROCESSED_BY_CONTENT_ID = "SELECT COUNT(*) FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN + " = ? AND C."+STATUS_COLUMN + " <> "+ StatusContent.SAVED.getCode();
-
-    public static final String SELECT_PROCESSED_RATE_BY_CONTENT_ID = "SELECT ("+SELECT_PROCESSED_BY_CONTENT_ID+") / ("+COUNT_BY_CONTENT_ID+")";
+    public static final String SELECT_PROCESSED_BY_CONTENT_ID = "SELECT COUNT(*) FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN + " = ? AND C."+STATUS_COLUMN + " IN (?,?)";
 }

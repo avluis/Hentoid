@@ -12,7 +12,7 @@ public abstract class QueueTable {
 
     // COLUMN NAMES
     private static final String ID_COLUMN = "content_id";
-    private static final String ORDER_COLUMN = "order";
+    private static final String ORDER_COLUMN = "rank";
 
     // CREATE
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("

@@ -29,7 +29,9 @@ import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.MimeTypes;
 import me.devsaki.hentoid.util.NetworkStatus;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 public class ContentDownloadService extends IntentService {
@@ -75,7 +77,10 @@ public class ContentDownloadService extends IntentService {
     private void downloadQueueHead()
     {
         // Exits if download queue is already running - there can only be one service active at a time
-        if (!QueueManager.getInstance(this).isQueueEmpty()) return;
+        if (!QueueManager.getInstance(this).isQueueEmpty()) {
+            Timber.d("Download still active; aborting");
+            return;
+        }
 
         // Works on first item of queue
         List<Pair<Integer,Integer>> queue = db.selectQueue();
@@ -106,21 +111,25 @@ public class ContentDownloadService extends IntentService {
                 return;
             }
 
+            Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
+            notificationPresenter.downloadStarted(content);
             File dir = FileHelper.getContentDownloadDir(this, content);
             Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
 
+            String fileRoot = Preferences.getRootFolderName();
+            content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
+            db.updateContentStorageFolder(content);
+
             // Plan download actions
+            ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
+            QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(cover, dir, content.getId(), images.size()));
             for (ImageFile img : images) {
-                if (img.getStatus().equals(StatusContent.SAVED) || img.getStatus().equals(StatusContent.ERROR)) QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir, content.getId()));
+                if (img.getStatus().equals(StatusContent.SAVED) || img.getStatus().equals(StatusContent.ERROR))
+                    QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir, content.getId(), images.size()));
                 else if (img.getStatus().equals(StatusContent.DOWNLOADED)) nbDownloadedImages++;
             }
 
-            updateActivity(nbDownloadedImages/images.size());
-
-            /*
-            content.setStatus(StatusContent.DOWNLOADED);
-            db.updateContentStatus(content);
-            */
+            updateActivity(nbDownloadedImages*1.0/(images.size()));
         }
     }
 
@@ -142,19 +151,20 @@ public class ContentDownloadService extends IntentService {
         return imageFileList;
     }
 
-    private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir, int contentId)
+    private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir, int contentId, int imgCount)
     {
         return new InputStreamVolleyRequest(Request.Method.GET, img.getUrl(),
                 response -> {
-                    // TODO handle the response
+                    Timber.d("xxxResponse %s", img.getUrl());
+
                     try {
-                        Timber.d("xxxResponse %s", img.getUrl());
                         if (response!=null) {
                             //covert reponse to input stream
 
-                            try (InputStream input = new ByteArrayInputStream(response)) {
+                            try (InputStream input = new ByteArrayInputStream(response.getKey())) {
+                                String contentType = response.getValue().get("Content-Type");
                                 //Create a file on desired path and write stream data to it
-                                File file = new File(dir, Math.random() + ".jpg");
+                                File file = new File(dir, img.getName() + "." + MimeTypes.getExtensionFromMimeType(contentType));
                                 //                                map.put("resume_path", file.toString());
                                 Timber.d("xxxWriteTo %s", file.getPath());
                                 try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
@@ -172,26 +182,28 @@ public class ContentDownloadService extends IntentService {
                                 }
                             }
 
-                            finalizeImage(img, dir, contentId);
+                            finalizeImage(img, dir, contentId, imgCount, true);
                         }
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
                         Timber.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
                         e.printStackTrace();
+                        finalizeImage(img, dir, contentId, imgCount, false);
                     }
                 }, error -> {
-                    // TODO handle the error
-            Timber.d("xxxError");
+                    Timber.d("xxxError");
                     error.printStackTrace();
+                    finalizeImage(img, dir, contentId, imgCount, false);
                 }, null);
     }
 
-    void finalizeImage(ImageFile img, File dir, int contentId)
+    void finalizeImage(ImageFile img, File dir, int contentId, int imgCount, boolean success)
     {
-        img.setStatus(StatusContent.DOWNLOADED);
+        img.setStatus(success?StatusContent.DOWNLOADED:StatusContent.ERROR);
         db.updateImageFileStatus(img);
 
-        double dlRate = db.countProcessedImageRateById(contentId);
+        int processed = db.countProcessedImagesById(contentId, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.ERROR.getCode()});
+        double dlRate = processed * 1.0 / imgCount;
         updateActivity(dlRate);
 
         if (1 == dlRate)
@@ -208,14 +220,15 @@ public class ContentDownloadService extends IntentService {
             // Signal activity end
             HentoidApp.downloadComplete();
             updateActivity(-1);
-            Timber.d("Content download finished: %s", content.getTitle());
+            Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
 
             // Tracking Event (Download Completed)
             HentoidApp.getInstance().trackEvent(DownloadService.class, "Download", "Download Content: Complete");
 
             // Mark content as downloaded
+            boolean isSuccess = (0 == db.countProcessedImagesById(contentId, new int[]{StatusContent.ERROR.getCode(), StatusContent.IGNORED.getCode()}));
             content.setDownloadDate(new Date().getTime());
-            content.setStatus(StatusContent.DOWNLOADED);
+            content.setStatus(isSuccess?StatusContent.DOWNLOADED:StatusContent.ERROR);
             db.updateContentStatus(content);
 
             // Delete from queue

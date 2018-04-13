@@ -29,7 +29,6 @@ public class QueueManager implements RequestQueue.RequestFinishedListener {
         if (mRequestQueue == null) {
             mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext());
             mRequestQueue.addRequestFinishedListener(this);
-            mRequestQueue.start();
         }
         return mRequestQueue;
     }
@@ -37,12 +36,13 @@ public class QueueManager implements RequestQueue.RequestFinishedListener {
     public <T> void addToRequestQueue(Request<T> req) {
         mRequestQueue.add(req);
         nbRequests++;
-        Timber.d("request added");
+        Timber.d("Queue ::: request added - current total %s", nbRequests);
     }
 
     public void onRequestFinished(Request request)
     {
         nbRequests--;
+        Timber.d("Queue ::: request removed - current total %s", nbRequests);
     }
 
     public boolean isQueueEmpty()

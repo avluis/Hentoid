@@ -71,6 +71,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         db.execSQL(AttributeTable.CREATE_TABLE);
         db.execSQL(ContentAttributeTable.CREATE_TABLE);
         db.execSQL(ImageFileTable.CREATE_TABLE);
+        db.execSQL(QueueTable.CREATE_TABLE);
     }
 
     @Override
@@ -531,21 +532,30 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public double countProcessedImageRateById(int contentId) {
-        double result = 0;
+    public int countProcessedImagesById(int contentId, int[] status) {
+        int result = 0;
 
         synchronized (locker) {
-            Timber.d("countProcessedImageRateById");
+            Timber.d("countProcessedImagesById");
 
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
+
+            String status1 = "";
+            String status2 = "";
+            if (status != null)
+            {
+                if (status.length > 0) status1 = status[0]+"";
+                if (status.length > 1) status2 = status[1]+"";
+            }
+
             try {
                 db = getReadableDatabase();
-                cursorContent = db.rawQuery(ImageFileTable.SELECT_PROCESSED_RATE_BY_CONTENT_ID,
-                        new String[]{contentId + "", contentId + ""});
+                cursorContent = db.rawQuery(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID,
+                        new String[]{contentId + "", status1, status2});
 
                 if (cursorContent.moveToFirst()) {
-                    result = cursorContent.getDouble(0);
+                    result = cursorContent.getInt(0);
                 }
             } finally {
                 if (cursorContent != null) {

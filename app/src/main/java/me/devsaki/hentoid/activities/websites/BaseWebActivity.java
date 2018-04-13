@@ -281,12 +281,16 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         db.updateContentStatus(currentContent);
         List<Pair<Integer,Integer>> queue = db.selectQueue();
-        db.insertQueue(currentContent, queue.size()+1);
+        int lastIndex = 1;
+        if (queue.size() > 0)
+        {
+            lastIndex = queue.get(queue.size()-1).second + 1;
+        }
+        db.insertQueue(currentContent, lastIndex);
 
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
 
         startService(intent);
-
 
         hideFab(fabDownload);
     }
