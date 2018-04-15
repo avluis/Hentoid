@@ -132,57 +132,63 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Handler for text searches; needs to be there to be cancelable upon new key press
     private Handler searchHandler = new Handler();
 
-    // == VARIABLES TAKEN FROM SETTINGS
+    // == VARIABLES TAKEN FROM SETTINGS / PREFERENCES
     // Books per page
     protected int booksPerPage;
     // Hentoid directory
     private String settingDir;
+    // Books sort order
+    private int order;
 
 
     // == VARIABLES
 
     protected Context mContext;
+    // Current state of left drawer (see constants in DrawerLayout class)
+    private int mDrawerState;
     // Expression typed in the search bar
     protected String query = "";
+    // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
     protected int currentPage = 1;
     // Async content search utility class; has to be instanciated class-wide because of asynchronous callbacks
-    SearchContent search;
+    private SearchContent search;
+    // Adapter in charge of book list display
     protected ContentAdapter mAdapter;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
     protected boolean isNewContentAvailable;
-    protected boolean override;
+
     // True if book list has finished loading; used for synchronization between threads
     protected boolean isLoaded;
-    // True if search mode is active
-    private boolean isSearchMode = false;
-    // True if search results need to replace displayed books
+    // True if search results need to replace displayed books (set before calling a search to be used during results display)
     protected boolean isSearchReplaceResults;
-    private ActionMode mActionMode;
-    private int mDrawerState;
-    private boolean shouldHide;
-    private Parcelable mListState;
     // Indicates whether or not one of the books has been selected
     private boolean isSelected;
-    private boolean selectTrigger = false;
-    // Books sort order
-    private int order;
     // True if sort order has been updated
     private boolean orderUpdated;
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
-    private boolean permissionChecked;
 
+    // True if search mode is active
+    private boolean isSearchMode = false;
     // Active tag filters
     private Map<String, Integer> tagFilters;
     // Active site filters
     private List<Integer> siteFilters;
-    // Filter favourites
+    // Favourite filter active
     private boolean filterFavourites = false;
 
     // States for search bar buttons
     private boolean filterByTitle = true;
     private boolean filterByArtist = true;
     private boolean filterByTag = false;
+
+    // To be documented
+    private ActionMode mActionMode;
+    private boolean shouldHide;
+    private Parcelable mListState;
+    private boolean selectTrigger = false;
+    private boolean storagePermissionChecked;
+    protected boolean override;
 
 
     // == METHODS
@@ -266,10 +272,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             checkResults();
         } else {
             Timber.d("Storage permission denied!");
-            if (permissionChecked) {
+            if (storagePermissionChecked) {
                 reset();
             }
-            permissionChecked = true;
+            storagePermissionChecked = true;
         }
     }
 
