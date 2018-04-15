@@ -68,6 +68,7 @@ import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.RandomSeed;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
@@ -839,6 +840,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 orderUpdated = true;
                 order = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
                 mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
+                RandomSeed.getInstance().renewSeed();
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
                 update();
 
@@ -1017,8 +1019,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
 
             // Purge unused filter entries
-            Set<String> keySet = new HashSet<>();
-            keySet.addAll(tagFilters.keySet());
+            Set<String> keySet = new HashSet<>(tagFilters.keySet());
             for (String key : keySet) {
                 if (tagFilters.get(key) > 9) tagFilters.remove(key);
             }

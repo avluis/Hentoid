@@ -25,21 +25,12 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.RandomSeed;
 import timber.log.Timber;
 
 /**
  * Created by DevSaki on 10/05/2015.
  * db maintenance class
- * <p>
- * DB Version history
- * <p>
- * v1 : Hentoid v1.2.1
- * <p>
- * v2 : Hentoid v1.2.2
- * <p>
- * CONTENT
- * + author field
- * + storage_folder field
  */
 public class HentoidDB extends SQLiteOpenHelper {
 
@@ -426,7 +417,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                        sql += ContentTable.ORDER_RANDOM;
+                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeed.getInstance().getRandomNumber()) );
                         break;
                     default :
                         // Nothing
@@ -552,7 +543,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites, boolean filterFavourites) {
-        ArrayList<Pair<String,Integer>> result = new ArrayList<Pair<String,Integer>>();
+        ArrayList<Pair<String,Integer>> result = new ArrayList<>();
 
         synchronized (locker) {
             Timber.d("selectAllAttributesByUsage");
