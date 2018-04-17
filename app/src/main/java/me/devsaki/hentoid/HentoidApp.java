@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
+import com.facebook.stetho.Stetho;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
@@ -176,6 +177,11 @@ public class HentoidApp extends Application {
         // Analytics Opt-Out
         boolean isAnalyticsDisabled = Preferences.isAnalyticsDisabled();
         GoogleAnalytics.getInstance(this).setAppOptOut(isAnalyticsDisabled);
+
+        if (BuildConfig.DEBUG) {
+            // Stetho init
+            Stetho.initializeWithDefaults(this);
+        }
 
         Helper.ignoreSslErrors();
 

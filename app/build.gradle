@@ -89,10 +89,12 @@ if (propFile.canRead()) {
 
 dependencies {
     // Compile any included libraries
-    compile fileTree(include: ['*jar'], dir: 'libs')
+    implementation fileTree(include: ['*jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    // Stetho core
+    debugImplementation 'com.facebook.stetho:stetho:1.5.0'
 
     // Support libraries
     implementation 'com.android.support:support-v4:27.1.0'
@@ -138,7 +140,7 @@ dependencies {
     //    https://github.com/ApmeM/android-flowlayout
     implementation 'org.apmem.tools:layouts:1.10@aar'
     // https://mvnrepository.com/artifact/commons-io/commons-io
-    compile 'commons-io:commons-io:2.6'
+    implementation 'commons-io:commons-io:2.6'
 }
 
 apply plugin: 'com.google.gms.google-services'
