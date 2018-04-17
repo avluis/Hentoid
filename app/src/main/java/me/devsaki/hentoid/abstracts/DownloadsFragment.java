@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -446,6 +447,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             {
                 tagFilters.put(tagKeys.get(i), tagValues.get(i));
             }
+            restoreTagMosaic();
         } else {
             // Init site filters; all on by default
             siteFilters.add(Site.NHENTAI.getCode());
@@ -765,7 +767,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // Attaches listener to favourite filters
         final ImageButton favouriteButton = getActivity().findViewById(R.id.filter_favs);
-        if (filterFavourites) favouriteButton.clearColorFilter(); else favouriteButton.setColorFilter(Color.BLACK);
+        updateFavouriteFilter(favouriteButton);
         favouriteButton.setOnClickListener(v -> toggleFavouriteFilter(favouriteButton));
 
         // Attach listeners to category filter buttons
@@ -933,23 +935,27 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *
      * @param button Filter button that has been pressed
      */
-    private void toggleFavouriteFilter(View button)
+    private void toggleFavouriteFilter(ImageButton button)
     {
-        ImageButton imgButton = (ImageButton)button;
-
         filterFavourites = !filterFavourites;
 
-        if (filterFavourites)
-        {
-            imgButton.setImageResource(R.drawable.ic_fav_full);
-            imgButton.clearColorFilter();
-        } else {
-            imgButton.setImageResource(R.drawable.ic_fav_empty);
-            imgButton.setColorFilter(Color.BLACK);
-        }
+        updateFavouriteFilter(button);
+
         if (filterByTag) updateTagMosaic();
 
         searchContent();
+    }
+
+    private void updateFavouriteFilter(ImageButton button)
+    {
+        if (filterFavourites)
+        {
+            button.setImageResource(R.drawable.ic_fav_full);
+            button.clearColorFilter();
+        } else {
+            button.setImageResource(R.drawable.ic_fav_empty);
+            button.setColorFilter(Color.BLACK);
+        }
     }
 
     /**
@@ -1016,6 +1022,21 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.filterByArtist = filterByArtist;
         }
         searchContent();
+    }
+
+    private void restoreTagMosaic()
+    {
+        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), Collections.emptyList(), siteFilters, filterFavourites);
+
+        tagMosaic.removeAllViews();
+
+        for(Pair<String,Integer> val : tags)
+        {
+            if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
+            else if (tagFilters.get(val.first) > 9) tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
+
+            addTagButton(val.first, val.second);
+        }
     }
 
     private void updateTagMosaic() { updateTagMosaic(true); }
