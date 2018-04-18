@@ -3,6 +3,7 @@ package me.devsaki.hentoid.database.domains;
 import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -285,6 +286,7 @@ public class Content implements Serializable {
     }
 
     public List<ImageFile> getImageFiles() {
+        if (null == imageFiles) imageFiles = Collections.emptyList();
         return imageFiles;
     }
 

@@ -289,7 +289,6 @@ public abstract class BaseWebActivity extends BaseActivity {
         db.insertQueue(currentContent, lastIndex);
 
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-
         startService(intent);
 
         hideFab(fabDownload);

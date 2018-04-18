@@ -33,6 +33,7 @@ import timber.log.Timber;
  * TODO: Implement download job tracking: https://github.com/avluis/Hentoid/issues/110
  * 1 image = 1 task, n images = 1 chapter = 1 job = 1 bundled task.
  */
+@Deprecated
 public class DownloadService extends IntentService {
 
     public static boolean paused;

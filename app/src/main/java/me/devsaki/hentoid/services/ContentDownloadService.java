@@ -96,10 +96,9 @@ public class ContentDownloadService extends IntentService {
 
             // Check if images are already known
             List<ImageFile> images = content.getImageFiles();
-            if (images != null && images.size() > 0)
+            if (0 == images.size())
             {
-                // TODO - do something ?
-            } else { // Create image list in DB
+                // Create image list in DB
                 images = parseImageFiles(content);
                 content.setImageFiles(images);
                 db.insertImageFiles(content);
@@ -155,26 +154,20 @@ public class ContentDownloadService extends IntentService {
     {
         return new InputStreamVolleyRequest(Request.Method.GET, img.getUrl(),
                 response -> {
-                    Timber.d("xxxResponse %s", img.getUrl());
-
                     try {
                         if (response!=null) {
-                            //covert reponse to input stream
+                            // Create a file on desired path and write stream data to it
+                            String contentType = response.getValue().get("Content-Type");
+                            File file = new File(dir, img.getName() + "." + MimeTypes.getExtensionFromMimeType(contentType));
+                            Timber.d("Write image %s to %s", img.getUrl(), file.getPath());
+
+                            byte data[] = new byte[1024];
+                            int count;
 
                             try (InputStream input = new ByteArrayInputStream(response.getKey())) {
-                                String contentType = response.getValue().get("Content-Type");
-                                //Create a file on desired path and write stream data to it
-                                File file = new File(dir, img.getName() + "." + MimeTypes.getExtensionFromMimeType(contentType));
-                                //                                map.put("resume_path", file.toString());
-                                Timber.d("xxxWriteTo %s", file.getPath());
                                 try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
-                                    byte data[] = new byte[1024];
-
-                                    long total = 0;
-                                    int count;
 
                                     while ((count = input.read(data)) != -1) {
-                                        total += count;
                                         output.write(data, 0, count);
                                     }
 
@@ -185,13 +178,12 @@ public class ContentDownloadService extends IntentService {
                             finalizeImage(img, dir, contentId, imgCount, true);
                         }
                     } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        Timber.d("KEY_ERROR", "UNABLE TO DOWNLOAD FILE");
+                        Timber.d("Unexpected error - Image %s not retrieved", img.getUrl());
                         e.printStackTrace();
                         finalizeImage(img, dir, contentId, imgCount, false);
                     }
                 }, error -> {
-                    Timber.d("xxxError");
+                    Timber.d("Download error - Image %s not retrieved", img.getUrl());
                     error.printStackTrace();
                     finalizeImage(img, dir, contentId, imgCount, false);
                 }, null);
@@ -223,7 +215,7 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
 
             // Tracking Event (Download Completed)
-            HentoidApp.getInstance().trackEvent(DownloadService.class, "Download", "Download Content: Complete");
+            HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
 
             // Mark content as downloaded
             boolean isSuccess = (0 == db.countProcessedImagesById(contentId, new int[]{StatusContent.ERROR.getCode(), StatusContent.IGNORED.getCode()}));
@@ -234,9 +226,9 @@ public class ContentDownloadService extends IntentService {
             // Delete from queue
             db.deleteQueueById(contentId);
 
-            // Download next content
-            // TODO - launch in a new Intent ??
-            downloadQueueHead();
+            // Download next content in a new Intent
+            Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
+            startService(intentService);
         }
     }
 

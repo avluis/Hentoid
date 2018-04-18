@@ -6,6 +6,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 
+import me.devsaki.hentoid.util.VolleyOkHttp3Stack;
 import timber.log.Timber;
 
 public class QueueManager implements RequestQueue.RequestFinishedListener {
@@ -27,7 +28,7 @@ public class QueueManager implements RequestQueue.RequestFinishedListener {
 
     private RequestQueue getRequestQueue(Context ctx) {
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext());
+            mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext(), new VolleyOkHttp3Stack());
             mRequestQueue.addRequestFinishedListener(this);
         }
         return mRequestQueue;

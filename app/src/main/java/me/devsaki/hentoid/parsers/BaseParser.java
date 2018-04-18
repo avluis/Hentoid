@@ -20,7 +20,7 @@ import timber.log.Timber;
 
 public abstract class BaseParser implements ContentParser {
 
-    static final int TIMEOUT = 5000; // 5 seconds
+    static final int TIMEOUT = 10000; // 10 seconds
 
     protected abstract Content parseContent(Document doc);
     protected abstract List<String> parseImages(Content content) throws Exception;
