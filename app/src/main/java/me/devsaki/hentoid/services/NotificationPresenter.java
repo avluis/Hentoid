@@ -12,6 +12,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.Locale;
 
@@ -80,6 +81,7 @@ final class NotificationPresenter {
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
         Double percent = event.percent;
+        Timber.d("Event notified : %s percent", percent.toString());
         updateNotification(percent == -1 ? 0 : percent);
     }
 

@@ -125,7 +125,7 @@ dependencies {
     // For downloading images
     implementation 'com.android.volley:volley:1.1.0'
     // EventBus: github.com/greenrobot/EventBus
-    implementation 'org.greenrobot:eventbus:3.0.0'
+    implementation 'org.greenrobot:eventbus:3.1.1'
     // JSOUP HTML parser: jsoup.org/download
     implementation 'org.jsoup:jsoup:1.10.3'
     // RxAndroid (RxJava bindings for Android): github.com/ReactiveX/RxAndroid

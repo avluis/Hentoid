@@ -56,12 +56,11 @@ public class ContentDownloadService extends IntentService {
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-
         EventBus.getDefault().unregister(notificationPresenter);
         notificationPresenter = null;
 
         Timber.d("Download service destroyed");
+        super.onDestroy();
     }
 
     @Override
@@ -78,7 +77,7 @@ public class ContentDownloadService extends IntentService {
     {
         // Exits if download queue is already running - there can only be one service active at a time
         if (!QueueManager.getInstance(this).isQueueEmpty()) {
-            Timber.d("Download still active; aborting");
+            Timber.d("Download still active. Aborting");
             return;
         }
 
@@ -86,50 +85,92 @@ public class ContentDownloadService extends IntentService {
         List<Pair<Integer,Integer>> queue = db.selectQueue();
         if (0 == queue.size())
         {
-            Timber.w("Queue is empty");
+            Timber.w("Queue is empty. Aborting.");
             return;
         }
         Content content = db.selectContentById(queue.get(0).first);
 
-        if (content != null && content.getStatus() != StatusContent.DOWNLOADED) {
-            int nbDownloadedImages = 0;
-
-            // Check if images are already known
-            List<ImageFile> images = content.getImageFiles();
-            if (0 == images.size())
-            {
-                // Create image list in DB
-                images = parseImageFiles(content);
-                content.setImageFiles(images);
-                db.insertImageFiles(content);
-            }
-
-            if (0 == images.size())
-            {
-                Timber.w("Image list is empty");
-                return;
-            }
-
-            Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
-            notificationPresenter.downloadStarted(content);
-            File dir = FileHelper.getContentDownloadDir(this, content);
-            Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
-
-            String fileRoot = Preferences.getRootFolderName();
-            content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
-            db.updateContentStorageFolder(content);
-
-            // Plan download actions
-            ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
-            QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(cover, dir, content.getId(), images.size()));
-            for (ImageFile img : images) {
-                if (img.getStatus().equals(StatusContent.SAVED) || img.getStatus().equals(StatusContent.ERROR))
-                    QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir, content.getId(), images.size()));
-                else if (img.getStatus().equals(StatusContent.DOWNLOADED)) nbDownloadedImages++;
-            }
-
-            updateActivity(nbDownloadedImages*1.0/(images.size()));
+        if (null == content || StatusContent.DOWNLOADED == content.getStatus())
+        {
+            Timber.w("Content is unavailable, or already downloaded. Aborting.");
+            return;
         }
+
+        // Check if images are already known
+        List<ImageFile> images = content.getImageFiles();
+        if (0 == images.size())
+        {
+            // Create image list in DB
+            images = parseImageFiles(content);
+            content.setImageFiles(images);
+            db.insertImageFiles(content);
+        }
+
+        if (0 == images.size())
+        {
+            Timber.w("Image list is empty");
+            return;
+        }
+
+        Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
+        notificationPresenter.downloadStarted(content);
+        File dir = FileHelper.getContentDownloadDir(this, content);
+        Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
+
+        String fileRoot = Preferences.getRootFolderName();
+        content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
+        db.updateContentStorageFolder(content);
+
+        // Plan download actions
+        ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
+        QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(cover, dir));
+        for (ImageFile img : images) {
+            if (img.getStatus().equals(StatusContent.SAVED) || img.getStatus().equals(StatusContent.ERROR))
+                QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir));
+        }
+
+        // Watches progression
+        double dlRate = 0;
+        while (dlRate < 1) {
+            // TODO interrupt if job canceled
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } finally {
+                int processed = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.ERROR.getCode()});
+                dlRate = processed * 1.0 / images.size();
+                updateActivity(dlRate);
+            }
+        }
+
+        // Save JSON file
+        try {
+            JsonHelper.saveJson(content, dir);
+        } catch (IOException e) {
+            Timber.e(e, "Error saving JSON: %s", content.getTitle());
+        }
+
+        // Signal activity end
+        HentoidApp.downloadComplete();
+        updateActivity(-1);
+        Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
+
+        // Tracking Event (Download Completed)
+        HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
+
+        // Mark content as downloaded
+        boolean isSuccess = (0 == db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode(), StatusContent.IGNORED.getCode()}));
+        content.setDownloadDate(new Date().getTime());
+        content.setStatus(isSuccess?StatusContent.DOWNLOADED:StatusContent.ERROR);
+        db.updateContentStatus(content);
+
+        // Delete from queue
+        db.deleteQueueById(content.getId());
+
+        // Download next content in a new Intent
+        Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
+        startService(intentService);
     }
 
     private static List<ImageFile> parseImageFiles(Content content) {
@@ -150,7 +191,7 @@ public class ContentDownloadService extends IntentService {
         return imageFileList;
     }
 
-    private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir, int contentId, int imgCount)
+    private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir)
     {
         return new InputStreamVolleyRequest(Request.Method.GET, img.getUrl(),
                 response -> {
@@ -175,64 +216,28 @@ public class ContentDownloadService extends IntentService {
                                 }
                             }
 
-                            finalizeImage(img, dir, contentId, imgCount, true);
+                            finalizeImage(img, true);
                         }
                     } catch (Exception e) {
                         Timber.d("Unexpected error - Image %s not retrieved", img.getUrl());
                         e.printStackTrace();
-                        finalizeImage(img, dir, contentId, imgCount, false);
+                        finalizeImage(img, false);
                     }
                 }, error -> {
                     Timber.d("Download error - Image %s not retrieved", img.getUrl());
                     error.printStackTrace();
-                    finalizeImage(img, dir, contentId, imgCount, false);
+                    finalizeImage(img, false);
                 }, null);
     }
 
-    void finalizeImage(ImageFile img, File dir, int contentId, int imgCount, boolean success)
+    private void finalizeImage(ImageFile img, boolean success)
     {
         img.setStatus(success?StatusContent.DOWNLOADED:StatusContent.ERROR);
         db.updateImageFileStatus(img);
-
-        int processed = db.countProcessedImagesById(contentId, new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.ERROR.getCode()});
-        double dlRate = processed * 1.0 / imgCount;
-        updateActivity(dlRate);
-
-        if (1 == dlRate)
-        {
-            Content content = db.selectContentById(contentId);
-
-            // Save JSON file
-            try {
-                JsonHelper.saveJson(content, dir);
-            } catch (IOException e) {
-                Timber.e(e, "Error saving JSON: %s", content.getTitle());
-            }
-
-            // Signal activity end
-            HentoidApp.downloadComplete();
-            updateActivity(-1);
-            Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
-
-            // Tracking Event (Download Completed)
-            HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
-
-            // Mark content as downloaded
-            boolean isSuccess = (0 == db.countProcessedImagesById(contentId, new int[]{StatusContent.ERROR.getCode(), StatusContent.IGNORED.getCode()}));
-            content.setDownloadDate(new Date().getTime());
-            content.setStatus(isSuccess?StatusContent.DOWNLOADED:StatusContent.ERROR);
-            db.updateContentStatus(content);
-
-            // Delete from queue
-            db.deleteQueueById(contentId);
-
-            // Download next content in a new Intent
-            Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-            startService(intentService);
-        }
     }
 
-    private void updateActivity(double percent) {
-        EventBus.getDefault().post(new DownloadEvent(percent));
+    private static void updateActivity(double percent) {
+        Timber.d("UpdateActivity : %s percent", String.valueOf(percent));
+        EventBus.getDefault().post(new DownloadEvent(percent * 100));
     }
 }
