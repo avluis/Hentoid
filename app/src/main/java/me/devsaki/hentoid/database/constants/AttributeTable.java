@@ -34,7 +34,7 @@ public abstract class AttributeTable {
             " SELECT " +ContentAttributeTable.CONTENT_ID_COLUMN+" FROM ("+
             " select ca1."+ContentAttributeTable.CONTENT_ID_COLUMN+" , COUNT(*)" +
             " from "+ContentAttributeTable.TABLE_NAME+" as ca1 inner join "+AttributeTable.TABLE_NAME+" as a1 on ca1."+ContentAttributeTable.ATTRIBUTE_ID_COLUMN+" = a1."+AttributeTable.ID_COLUMN+
-            " where a1."+AttributeTable.TYPE_COLUMN+"=3 and a1."+AttributeTable.NAME_COLUMN+" in (%2) GROUP BY 1 HAVING COUNT(*) = %3) ) ) ";
+            " where a1."+AttributeTable.TYPE_COLUMN+"=3 and lower(a1."+AttributeTable.NAME_COLUMN+") in (%2) GROUP BY 1 HAVING COUNT(*) = %3) ) ) ";
 
     public static final String SELECT_ALL_BY_USAGE_END = " group by 1 order by 2 desc, 1 asc";
 

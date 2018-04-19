@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,6 +69,7 @@ import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.RandomSeed;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
@@ -92,7 +94,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected static final int TAGFILTER_SELECTED = 1;
     protected static final int TAGFILTER_INACTIVE = 3;
 
+    // Save state constants
     private static final String LIST_STATE_KEY = "list_state";
+    private static final String IS_SEARCH_MODE = "is_search_mode";
+    private static final String TAG_FILTERS_KEYS = "tag_filters_keys";
+    private static final String TAG_FILTERS_VALUES = "tag_filters_values";
+    private static final String SITE_FILTERS = "site_filters";
+    private static final String FILTER_FAVOURITES = "filter_favs";
+    private static final String QUERY = "query";
+    private static final String FILTER_BY_TITLE = "filter_by_title";
+    private static final String FILTER_BY_ARTIST = "filter_by_artist";
+    private static final String FILTER_BY_TAG = "filter_by_tag";
 
 
     // ======== UI ELEMENTS
@@ -131,57 +143,63 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Handler for text searches; needs to be there to be cancelable upon new key press
     private Handler searchHandler = new Handler();
 
-    // == VARIABLES TAKEN FROM SETTINGS
+    // == VARIABLES TAKEN FROM SETTINGS / PREFERENCES
     // Books per page
     protected int booksPerPage;
     // Hentoid directory
     private String settingDir;
+    // Books sort order
+    private int order;
 
 
     // == VARIABLES
 
     protected Context mContext;
-    // Expression typed in the search bar
-    protected String query = "";
+    // Current state of left drawer (see constants in DrawerLayout class)
+    private int mDrawerState;
+    // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
     protected int currentPage = 1;
     // Async content search utility class; has to be instanciated class-wide because of asynchronous callbacks
-    SearchContent search;
+    private SearchContent search;
+    // Adapter in charge of book list display
     protected ContentAdapter mAdapter;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
     protected boolean isNewContentAvailable;
-    protected boolean override;
+
     // True if book list has finished loading; used for synchronization between threads
     protected boolean isLoaded;
-    // True if search mode is active
-    private boolean isSearchMode = false;
-    // True if search results need to replace displayed books
+    // True if search results need to replace displayed books (set before calling a search to be used during results display)
     protected boolean isSearchReplaceResults;
-    private ActionMode mActionMode;
-    private int mDrawerState;
-    private boolean shouldHide;
-    private Parcelable mListState;
     // Indicates whether or not one of the books has been selected
     private boolean isSelected;
-    private boolean selectTrigger = false;
-    // Books sort order
-    private int order;
     // True if sort order has been updated
     private boolean orderUpdated;
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
-    private boolean permissionChecked;
 
+    // True if search mode is active
+    private boolean isSearchMode = false;
     // Active tag filters
-    private Map<String, Integer> tagFilters;
+    private Map<String, Integer> tagFilters = new HashMap<>();
     // Active site filters
-    private List<Integer> siteFilters;
-    // Filter favourites
+    private ArrayList<Integer> siteFilters = new ArrayList<>();
+    // Favourite filter active
     private boolean filterFavourites = false;
+    // Expression typed in the search bar
+    protected String query = "";
 
     // States for search bar buttons
     private boolean filterByTitle = true;
     private boolean filterByArtist = true;
     private boolean filterByTag = false;
+
+    // To be documented
+    private ActionMode mActionMode;
+    private boolean shouldHide;
+    private Parcelable mListState;
+    private boolean selectTrigger = false;
+    private boolean storagePermissionChecked;
+    protected boolean override;
 
 
     // == METHODS
@@ -265,10 +283,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             checkResults();
         } else {
             Timber.d("Storage permission denied!");
-            if (permissionChecked) {
+            if (storagePermissionChecked) {
                 reset();
             }
-            permissionChecked = true;
+            storagePermissionChecked = true;
         }
     }
 
@@ -395,6 +413,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         mListState = llm.onSaveInstanceState();
         outState.putParcelable(LIST_STATE_KEY, mListState);
+        outState.putBoolean(IS_SEARCH_MODE, isSearchMode);
+        outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
+        outState.putString(QUERY, query);
+        outState.putIntegerArrayList(SITE_FILTERS, siteFilters);
+        outState.putBoolean(FILTER_BY_TITLE, filterByTitle);
+        outState.putBoolean(FILTER_BY_ARTIST, filterByArtist);
+        outState.putBoolean(FILTER_BY_TAG, filterByTag);
+
+        // Save tag filters (key set on one variable; value set on the other)
+        outState.putStringArrayList(TAG_FILTERS_KEYS, new ArrayList<>(tagFilters.keySet()));
+        outState.putIntegerArrayList(TAG_FILTERS_VALUES, new ArrayList<>(tagFilters.values()));
     }
 
     @Override
@@ -403,6 +432,31 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (state != null) {
             mListState = state.getParcelable(LIST_STATE_KEY);
+            isSearchMode = state.getBoolean(IS_SEARCH_MODE, false);
+            filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
+            query = state.getString(QUERY,"");
+            siteFilters = state.getIntegerArrayList(SITE_FILTERS);
+            filterByTitle = state.getBoolean(FILTER_BY_TITLE, true);
+            filterByArtist = state.getBoolean(FILTER_BY_ARTIST, true);
+            filterByTag = state.getBoolean(FILTER_BY_TAG, false);
+
+            // Restore tag filters (key set on one variable; value set on the other)
+            List<String> tagKeys = state.getStringArrayList(TAG_FILTERS_KEYS);
+            List<Integer> tagValues = state.getIntegerArrayList(TAG_FILTERS_VALUES);
+            for (int i=0; i < tagKeys.size(); i++)
+            {
+                tagFilters.put(tagKeys.get(i), tagValues.get(i));
+            }
+            restoreTagMosaic();
+        } else {
+            // Init site filters; all on by default
+            siteFilters.add(Site.NHENTAI.getCode());
+            siteFilters.add(Site.HITOMI.getCode());
+            siteFilters.add(Site.ASMHENTAI.getCode());
+            siteFilters.add(Site.ASMHENTAI_COMICS.getCode());
+            siteFilters.add(Site.HENTAICAFE.getCode());
+            siteFilters.add(Site.PURURIN.getCode());
+            siteFilters.add(Site.TSUMINO.getCode());
         }
     }
 
@@ -496,17 +550,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // Tag filter
         tagMosaic = rootView.findViewById(R.id.filter_tags);
         searchPane = rootView.findViewById(R.id.tag_filter_view);
-
-        tagFilters = new HashMap<>();
-        // Init site filters; all on by default
-        siteFilters = new ArrayList<>();
-        siteFilters.add(Site.NHENTAI.getCode());
-        siteFilters.add(Site.HITOMI.getCode());
-        siteFilters.add(Site.ASMHENTAI.getCode());
-        siteFilters.add(Site.ASMHENTAI_COMICS.getCode());
-        siteFilters.add(Site.HENTAICAFE.getCode());
-        siteFilters.add(Site.PURURIN.getCode());
-        siteFilters.add(Site.TSUMINO.getCode());
 
         search = new SearchContent(mContext, this);
     }
@@ -714,36 +757,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // == SEARCH PANE
 
         // Attaches listeners to website filters
-        final View nHentaiButton = getActivity().findViewById(R.id.filter_nhentai);
-        nHentaiButton.setOnClickListener(v -> toggleSiteFilter(nHentaiButton, Site.NHENTAI.getCode()));
-
-        final View hitomiButton = getActivity().findViewById(R.id.filter_hitomi);
-        hitomiButton.setOnClickListener(v -> toggleSiteFilter(hitomiButton, Site.HITOMI.getCode()));
-
-        final View hentaiCafeButton = getActivity().findViewById(R.id.filter_hentaicafe);
-        hentaiCafeButton.setOnClickListener(v -> toggleSiteFilter(hentaiCafeButton, Site.HENTAICAFE.getCode()));
-
-        final View asmButton = getActivity().findViewById(R.id.filter_asm);
-        asmButton.setOnClickListener(v -> toggleSiteFilter(asmButton, Site.ASMHENTAI.getCode()));
-
-        final View asmComicsButton = getActivity().findViewById(R.id.filter_asmcomics);
-        asmComicsButton.setOnClickListener(v -> toggleSiteFilter(asmComicsButton, Site.ASMHENTAI_COMICS.getCode()));
-
-        final View tsminoButton = getActivity().findViewById(R.id.filter_tsumino);
-        tsminoButton.setOnClickListener(v -> toggleSiteFilter(tsminoButton, Site.TSUMINO.getCode()));
-
-        final View pururinButton = getActivity().findViewById(R.id.filter_pururin);
-        pururinButton.setOnClickListener(v -> toggleSiteFilter(pururinButton, Site.PURURIN.getCode()));
+        initSiteButton(getActivity().findViewById(R.id.filter_nhentai), Site.NHENTAI.getCode());
+        initSiteButton(getActivity().findViewById(R.id.filter_hitomi), Site.HITOMI.getCode());
+        initSiteButton(getActivity().findViewById(R.id.filter_hentaicafe), Site.HENTAICAFE.getCode());
+        initSiteButton(getActivity().findViewById(R.id.filter_asm), Site.ASMHENTAI.getCode());
+        initSiteButton(getActivity().findViewById(R.id.filter_asmcomics), Site.ASMHENTAI_COMICS.getCode());
+        initSiteButton(getActivity().findViewById(R.id.filter_tsumino), Site.TSUMINO.getCode());
+        initSiteButton(getActivity().findViewById(R.id.filter_pururin), Site.PURURIN.getCode());
 
         // Attaches listener to favourite filters
         final ImageButton favouriteButton = getActivity().findViewById(R.id.filter_favs);
-        favouriteButton.setColorFilter(Color.BLACK);
+        updateFavouriteFilter(favouriteButton);
         favouriteButton.setOnClickListener(v -> toggleFavouriteFilter(favouriteButton));
 
         // Attach listeners to category filter buttons
         getActivity().findViewById(R.id.search_filter_title).setOnClickListener(v -> selectFieldFilter(!filterByTitle, filterByArtist, filterByTag));
         getActivity().findViewById(R.id.search_filter_artist).setOnClickListener(v -> selectFieldFilter(filterByTitle, !filterByArtist, filterByTag));
         getActivity().findViewById(R.id.search_filter_tag).setOnClickListener(v -> selectFieldFilter(filterByTitle, filterByArtist, !filterByTag));
+        if (filterByTag) forceSelectTagFilter();
 
         // == BOOKS SORT
 
@@ -768,6 +799,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             default :
                 // Nothing
         }
+    }
+
+    private void initSiteButton(ImageButton button, int siteCode)
+    {
+        if (siteFilters.contains(siteCode)) button.clearColorFilter(); else button.setColorFilter(Color.BLACK);
+        button.setOnClickListener(v -> toggleSiteFilter(button, siteCode));
     }
 
     @Override
@@ -839,6 +876,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 orderUpdated = true;
                 order = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
                 mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
+                RandomSeed.getInstance().renewSeed();
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
                 update();
 
@@ -877,17 +915,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @param button Source (website) filter button that has been pressed
      * @param siteCode Code of the corresponding site
      */
-    private void toggleSiteFilter(View button, int siteCode)
+    private void toggleSiteFilter(ImageButton button, int siteCode)
     {
-        ImageButton imgButton = (ImageButton)button;
-
         if (siteFilters.contains(siteCode))
         {
             siteFilters.remove(Integer.valueOf(siteCode));
-            imgButton.setColorFilter(Color.BLACK);
+            button.setColorFilter(Color.BLACK);
         } else {
             siteFilters.add(siteCode);
-            imgButton.clearColorFilter();
+            button.clearColorFilter();
         }
         if (filterByTag) updateTagMosaic();
 
@@ -899,23 +935,27 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *
      * @param button Filter button that has been pressed
      */
-    private void toggleFavouriteFilter(View button)
+    private void toggleFavouriteFilter(ImageButton button)
     {
-        ImageButton imgButton = (ImageButton)button;
-
         filterFavourites = !filterFavourites;
 
-        if (filterFavourites)
-        {
-            imgButton.setImageResource(R.drawable.ic_fav_full);
-            imgButton.clearColorFilter();
-        } else {
-            imgButton.setImageResource(R.drawable.ic_fav_empty);
-            imgButton.setColorFilter(Color.BLACK);
-        }
+        updateFavouriteFilter(button);
+
         if (filterByTag) updateTagMosaic();
 
         searchContent();
+    }
+
+    private void updateFavouriteFilter(ImageButton button)
+    {
+        if (filterFavourites)
+        {
+            button.setImageResource(R.drawable.ic_fav_full);
+            button.clearColorFilter();
+        } else {
+            button.setImageResource(R.drawable.ic_fav_empty);
+            button.setColorFilter(Color.BLACK);
+        }
     }
 
     /**
@@ -927,7 +967,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag)
     {
-        if (filterByTag && !this.filterByTag)
+        selectFieldFilter(filterByTitle, filterByArtist, filterByTag, false);
+    }
+    private void forceSelectTagFilter()
+    {
+        selectFieldFilter(filterByTitle, filterByArtist, filterByTag, true);
+    }
+    private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag, boolean overrideDisplayTags)
+    {
+        if ((filterByTag && !this.filterByTag) || overrideDisplayTags)
         {
             this.filterByTitle = false;
             ((ToggleButton)getActivity().findViewById(R.id.search_filter_title)).setChecked(false);
@@ -939,7 +987,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 200, getResources().getDisplayMetrics());
             searchPane.setLayoutParams(params);
 
-            updateTagMosaic();
+            updateTagMosaic(!overrideDisplayTags);
             tagMosaic.setVisibility(View.VISIBLE);
             this.filterByTag = true;
             setQuery("");
@@ -974,6 +1022,21 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.filterByArtist = filterByArtist;
         }
         searchContent();
+    }
+
+    private void restoreTagMosaic()
+    {
+        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), Collections.emptyList(), siteFilters, filterFavourites);
+
+        tagMosaic.removeAllViews();
+
+        for(Pair<String,Integer> val : tags)
+        {
+            if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
+            else if (tagFilters.get(val.first) > 9) tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
+
+            addTagButton(val.first, val.second);
+        }
     }
 
     private void updateTagMosaic() { updateTagMosaic(true); }
@@ -1017,12 +1080,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
 
             // Purge unused filter entries
-            Set<String> keySet = new HashSet<>();
-            keySet.addAll(tagFilters.keySet());
+            Set<String> keySet = new HashSet<>(tagFilters.keySet());
             for (String key : keySet) {
                 if (tagFilters.get(key) > 9) tagFilters.remove(key);
             }
-        } else { // Disable all tag buttons that do not appear in results
+        } else { // Disable all tag buttons that do not appear in results _and_ are not selected
             Map<String, Integer> availableTags = new HashMap<>();
             for(Pair<String,Integer> val : tags)
             {
@@ -1032,20 +1094,22 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             for (String key : tagFilters.keySet()) {
                 Button b = tagMosaic.findViewWithTag(key);
                 int count = 0;
-                if (availableTags.containsKey(key)) count = availableTags.get(key);
-
-                b.setText(key + "("+count+")");
 
                 if (availableTags.containsKey(key)) {
+                    count = availableTags.get(key);
                     if (TAGFILTER_INACTIVE == tagFilters.get(key)) {
                         tagFilters.put(key, TAGFILTER_ACTIVE);
                         colorButton(b, TAGFILTER_ACTIVE);
                     }
                 }
                 else {
-                    tagFilters.put(key, TAGFILTER_INACTIVE);
-                    colorButton(b, TAGFILTER_INACTIVE);
+                    if (TAGFILTER_SELECTED != tagFilters.get(key)) {
+                        tagFilters.put(key, TAGFILTER_INACTIVE);
+                        colorButton(b, TAGFILTER_INACTIVE);
+                    }
                 }
+
+                b.setText(key + "("+count+")");
             }
         }
     }
