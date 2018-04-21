@@ -74,6 +74,7 @@ class FileUtil {
         }
 
         String sdStorageUriStr = FileHelper.getStringUri();
+
         Uri sdStorageUri;
         if (sdStorageUriStr != null) {
             sdStorageUri = Uri.parse(sdStorageUriStr);
@@ -107,17 +108,26 @@ class FileUtil {
         // start with root and then parse through document tree.
         Context context = HentoidApp.getAppContext();
         DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
+
         if (returnRoot) {
             return document;
         }
         String[] parts = relativePath.split("/");
         for (int i = 0; i < parts.length; i++) {
             DocumentFile nextDocument = document.findFile(parts[i]);
-            if (nextDocument == null) {
+            // The folder might exist in its capitalized version (might happen with legacy installs from the FakkuDroid era)
+            if (null == nextDocument) nextDocument = document.findFile(Helper.capitalize(parts[i]));
+
+            // The folder definitely doesn't exist at all
+            if (null == nextDocument) {
+                Timber.d("Document %s - part #%s : '%s' not found; creating", document.getName(), String.valueOf(i), parts[i]);
+
                 if ((i < parts.length - 1) || isDirectory) {
                     nextDocument = document.createDirectory(parts[i]);
+                    if (null == nextDocument) Timber.e("Failed to create subdirectory %s/%s", document.getName(), parts[i]);
                 } else {
                     nextDocument = document.createFile("image", parts[i]);
+                    if (null == nextDocument) Timber.e("Failed to create file %s/image%s", document.getName(), parts[i]);
                 }
             }
             document = nextDocument;
