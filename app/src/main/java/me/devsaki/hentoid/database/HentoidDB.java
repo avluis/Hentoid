@@ -109,60 +109,63 @@ public class HentoidDB extends SQLiteOpenHelper {
                 statement = db.compileStatement(ContentTable.INSERT_STATEMENT);
                 db.beginTransaction();
 
-                for (Content row : rows) {
-                    deleteContent(db, row);
+                try {
+                    for (Content row : rows) {
+                        deleteContent(db, row);
 
-                    statement.clearBindings();
-                    statement.bindLong(ContentTable.IDX_INTERNALID, row.getId());
-                    statement.bindString(ContentTable.IDX_SITEID, row.getUniqueSiteId());
-                    String category = row.getCategory();
+                        statement.clearBindings();
+                        statement.bindLong(ContentTable.IDX_INTERNALID, row.getId());
+                        statement.bindString(ContentTable.IDX_SITEID, row.getUniqueSiteId());
+                        String category = row.getCategory();
 
-                    if (category == null) {
-                        statement.bindNull(ContentTable.IDX_CATEGORY);
-                    } else {
-                        statement.bindString(ContentTable.IDX_CATEGORY, category);
-                    }
-
-                    statement.bindString(ContentTable.IDX_URL, row.getUrl());
-
-                    if (row.getTitle() == null) {
-                        statement.bindNull(ContentTable.IDX_TITLE);
-                    } else {
-                        statement.bindString(ContentTable.IDX_TITLE, row.getTitle());
-                    }
-
-                    statement.bindLong(ContentTable.IDX_QTYPAGES, row.getQtyPages());
-                    statement.bindLong(ContentTable.IDX_ULDATE, row.getUploadDate());
-                    statement.bindLong(ContentTable.IDX_DLDATE, row.getDownloadDate());
-                    statement.bindLong(ContentTable.IDX_STATUSCODE, row.getStatus().getCode());
-
-                    if (row.getCoverImageUrl() == null) {
-                        statement.bindNull(ContentTable.IDX_COVERURL);
-                    } else {
-                        statement.bindString(ContentTable.IDX_COVERURL, row.getCoverImageUrl());
-                    }
-
-                    statement.bindLong(ContentTable.IDX_SITECODE, row.getSite().getCode());
-                    statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor())?"":row.getAuthor());
-                    statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder())?"":row.getStorageFolder());
-                    statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite()?1:0);
-
-                    statement.execute();
-
-                    if (row.getImageFiles() != null) {
-                        insertImageFiles(db, row);
-                    }
-
-                    List<Attribute> attributes = new ArrayList<>();
-                    for (AttributeType attributeType : AttributeType.values()) {
-                        if (row.getAttributes().get(attributeType) != null) {
-                            attributes.addAll(row.getAttributes().get(attributeType));
+                        if (category == null) {
+                            statement.bindNull(ContentTable.IDX_CATEGORY);
+                        } else {
+                            statement.bindString(ContentTable.IDX_CATEGORY, category);
                         }
+
+                        statement.bindString(ContentTable.IDX_URL, row.getUrl());
+
+                        if (row.getTitle() == null) {
+                            statement.bindNull(ContentTable.IDX_TITLE);
+                        } else {
+                            statement.bindString(ContentTable.IDX_TITLE, row.getTitle());
+                        }
+
+                        statement.bindLong(ContentTable.IDX_QTYPAGES, row.getQtyPages());
+                        statement.bindLong(ContentTable.IDX_ULDATE, row.getUploadDate());
+                        statement.bindLong(ContentTable.IDX_DLDATE, row.getDownloadDate());
+                        statement.bindLong(ContentTable.IDX_STATUSCODE, row.getStatus().getCode());
+
+                        if (row.getCoverImageUrl() == null) {
+                            statement.bindNull(ContentTable.IDX_COVERURL);
+                        } else {
+                            statement.bindString(ContentTable.IDX_COVERURL, row.getCoverImageUrl());
+                        }
+
+                        statement.bindLong(ContentTable.IDX_SITECODE, row.getSite().getCode());
+                        statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor()) ? "" : row.getAuthor());
+                        statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder()) ? "" : row.getStorageFolder());
+                        statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
+
+                        statement.execute();
+
+                        if (row.getImageFiles() != null) {
+                            insertImageFiles(db, row);
+                        }
+
+                        List<Attribute> attributes = new ArrayList<>();
+                        for (AttributeType attributeType : AttributeType.values()) {
+                            if (row.getAttributes().get(attributeType) != null) {
+                                attributes.addAll(row.getAttributes().get(attributeType));
+                            }
+                        }
+                        insertAttributes(db, row, attributes);
                     }
-                    insertAttributes(db, row, attributes);
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
                 }
-                db.setTransactionSuccessful();
-                db.endTransaction();
             } finally {
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
@@ -184,17 +187,19 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             try {
                 db = getWritableDatabase();
-                db.beginTransaction();
-                statement = db.compileStatement(ImageFileTable.INSERT_STATEMENT);
-                statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
-                statementImages.clearBindings();
-                statementImages.bindLong(1, content.getId());
-                statementImages.execute();
+                try {
+                    db.beginTransaction();
+                    statement = db.compileStatement(ImageFileTable.INSERT_STATEMENT);
+                    statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
+                    statementImages.clearBindings();
+                    statementImages.bindLong(1, content.getId());
+                    statementImages.execute();
 
-                insertImageFiles(statement, content);
-                db.setTransactionSuccessful();
-                db.endTransaction();
-
+                    insertImageFiles(statement, content);
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
             } finally {
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
@@ -267,28 +272,37 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public Content selectContentById(int id) {
-        Content result = null;
+        Content result = null; // Should stay that way unless all callers are updated
         synchronized (locker) {
             Timber.d("selectContentById");
             SQLiteDatabase db = null;
-            Cursor cursorContents = null;
             try {
                 db = getReadableDatabase();
-                cursorContents = db.rawQuery(ContentTable.SELECT_BY_CONTENT_ID,
-                        new String[]{id + ""});
-
-                // looping through all rows and adding to list
-                if (cursorContents.moveToFirst()) {
-                    result = populateContent(cursorContents, db);
-                }
+                result = selectContentById(db, id);
             } finally {
-                if (cursorContents != null) {
-                    cursorContents.close();
-                }
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }
+            }
+        }
+
+        return result;
+    }
+
+    private Content selectContentById(SQLiteDatabase db, int id) {
+        Cursor cursorContents = null;
+        Content result = null;
+
+        try {
+            cursorContents = db.rawQuery(ContentTable.SELECT_BY_CONTENT_ID, new String[]{id + ""});
+
+            if (cursorContents.moveToFirst()) {
+                result = populateContent(cursorContents, db);
+            }
+        } finally {
+            if (cursorContents != null) {
+                cursorContents.close();
             }
         }
 
@@ -325,6 +339,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    @Deprecated
     public List<Content> selectContentInQueue() {
         List<Content> result = Collections.emptyList();
         synchronized (locker) {
@@ -643,12 +658,15 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db = getWritableDatabase();
                 statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_STATEMENT);
                 db.beginTransaction();
-                statement.clearBindings();
-                statement.bindLong(1, row.getStatus().getCode());
-                statement.bindLong(2, row.getId());
-                statement.execute();
-                db.setTransactionSuccessful();
-                db.endTransaction();
+                try {
+                    statement.clearBindings();
+                    statement.bindLong(1, row.getStatus().getCode());
+                    statement.bindLong(2, row.getId());
+                    statement.execute();
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
             } finally {
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
@@ -665,11 +683,13 @@ public class HentoidDB extends SQLiteOpenHelper {
         SQLiteStatement statement = null;
         SQLiteStatement statementImages = null;
         SQLiteStatement statementAttributes = null;
+        SQLiteStatement statementQueue = null;
 
         try {
             statement = db.compileStatement(ContentTable.DELETE_STATEMENT);
             statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
             statementAttributes = db.compileStatement(ContentAttributeTable.DELETE_STATEMENT);
+            statementQueue = db.compileStatement(QueueTable.DELETE_STATEMENT);
             statement.clearBindings();
             statement.bindLong(1, content.getId());
             statement.execute();
@@ -679,6 +699,9 @@ public class HentoidDB extends SQLiteOpenHelper {
             statementAttributes.clearBindings();
             statementAttributes.bindLong(1, content.getId());
             statementAttributes.execute();
+            statementQueue.clearBindings();
+            statementQueue.bindLong(1, content.getId());
+            statementQueue.execute();
         } finally {
             if (statement != null) {
                 statement.close();
@@ -689,6 +712,9 @@ public class HentoidDB extends SQLiteOpenHelper {
             if (statementAttributes != null) {
                 statementAttributes.close();
             }
+            if (statementQueue != null) {
+                statementQueue.close();
+            }
         }
     }
 
@@ -696,38 +722,18 @@ public class HentoidDB extends SQLiteOpenHelper {
         synchronized (locker) {
             Timber.d("deleteContent");
             SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
-            SQLiteStatement statementImages = null;
-            SQLiteStatement statementAttributes = null;
 
             try {
                 db = getWritableDatabase();
-                statement = db.compileStatement(ContentTable.DELETE_STATEMENT);
-                statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
-                statementAttributes = db.compileStatement(ContentAttributeTable.DELETE_STATEMENT);
                 db.beginTransaction();
-                statement.clearBindings();
-                statement.bindLong(1, content.getId());
-                statement.execute();
-                statementImages.clearBindings();
-                statementImages.bindLong(1, content.getId());
-                statementImages.execute();
-                statementAttributes.clearBindings();
-                statementAttributes.bindLong(1, content.getId());
-                statementAttributes.execute();
-                db.setTransactionSuccessful();
-                db.endTransaction();
+                try {
+                    deleteContent(db, content);
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
             } finally {
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
-                if (statementImages != null) {
-                    statementImages.close();
-                }
-                if (statementAttributes != null) {
-                    statementAttributes.close();
-                }
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }
@@ -746,13 +752,16 @@ public class HentoidDB extends SQLiteOpenHelper {
                 statement = db.compileStatement(ContentTable
                         .UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT);
                 db.beginTransaction();
-                statement.clearBindings();
-                statement.bindLong(1, row.getDownloadDate());
-                statement.bindLong(2, row.getStatus().getCode());
-                statement.bindLong(3, row.getId());
-                statement.execute();
-                db.setTransactionSuccessful();
-                db.endTransaction();
+                try {
+                    statement.clearBindings();
+                    statement.bindLong(1, row.getDownloadDate());
+                    statement.bindLong(2, row.getStatus().getCode());
+                    statement.bindLong(3, row.getId());
+                    statement.execute();
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
             } finally {
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
@@ -775,12 +784,15 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db = getWritableDatabase();
                 statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STORAGE_FOLDER);
                 db.beginTransaction();
-                statement.clearBindings();
-                statement.bindString(1, row.getStorageFolder());
-                statement.bindLong(2, row.getId());
-                statement.execute();
-                db.setTransactionSuccessful();
-                db.endTransaction();
+                try {
+                    statement.clearBindings();
+                    statement.bindString(1, row.getStorageFolder());
+                    statement.bindLong(2, row.getId());
+                    statement.execute();
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
             } finally {
                 Timber.d("Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
@@ -805,12 +817,15 @@ public class HentoidDB extends SQLiteOpenHelper {
                 statement = db.compileStatement(ContentTable.UPDATE_CONTENT_FAVOURITE);
 
                 db.beginTransaction();
-                statement.clearBindings();
-                statement.bindString(1, content.isFavourite()?"1":"0" );
-                statement.bindLong(2, content.getId());
-                statement.execute();
-                db.setTransactionSuccessful();
-                db.endTransaction();
+                try {
+                    statement.clearBindings();
+                    statement.bindString(1, content.isFavourite() ? "1" : "0");
+                    statement.bindLong(2, content.getId());
+                    statement.execute();
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
             } finally {
                 Timber.d("Closing db connection. Condition: "
                         + (db != null && db.isOpen()));
@@ -834,12 +849,15 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db = getWritableDatabase();
                 statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STATUS_STATEMENT);
                 db.beginTransaction();
-                statement.clearBindings();
-                statement.bindLong(1, updateTo.getCode());
-                statement.bindLong(2, updateFrom.getCode());
-                statement.execute();
-                db.setTransactionSuccessful();
-                db.endTransaction();
+                try {
+                    statement.clearBindings();
+                    statement.bindLong(1, updateTo.getCode());
+                    statement.bindLong(2, updateFrom.getCode());
+                    statement.execute();
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
             } finally {
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
@@ -883,6 +901,38 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorQueue.moveToFirst()) {
                     do {
                         result.add(new Pair<>(cursorQueue.getInt(0), cursorQueue.getInt(1)) );
+                    } while (cursorQueue.moveToNext());
+                }
+            } finally {
+                if (cursorQueue != null) {
+                    cursorQueue.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public List<Content> selectQueueContents() {
+        ArrayList<Content> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectQueue");
+            SQLiteDatabase db = null;
+            Cursor cursorQueue = null;
+
+            try {
+                db = getReadableDatabase();
+                cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{});
+
+                // looping through all rows and adding to list
+                if (cursorQueue.moveToFirst()) {
+                    do {
+                        Integer i = cursorQueue.getInt(0);
+                        result.add(selectContentById(db, i));
                     } while (cursorQueue.moveToNext());
                 }
             } finally {
@@ -947,7 +997,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    public void udpateQueue(Content content, int newOrder) {
+    public void udpateQueue(int contentId, int newOrder) {
         synchronized (locker) {
             Timber.d("udpateQueue");
             SQLiteDatabase db = null;
@@ -960,7 +1010,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
                 statement.clearBindings();
                 statement.bindLong(1, newOrder);
-                statement.bindLong(2, content.getId());
+                statement.bindLong(2, contentId);
                 statement.execute();
             } finally {
                 if (statement != null) {

@@ -9,16 +9,12 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.parsers.NhentaiParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -40,7 +36,7 @@ public class NhentaiActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        NhentaiWebViewClient client = new NhentaiWebViewClient();
+        NhentaiWebViewClient client = new NhentaiWebViewClient(this);
         client.restrictTo("nhentai.net");
 
         webView.setWebViewClient(client);
@@ -48,7 +44,9 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private class NhentaiWebViewClient extends CustomWebViewClient {
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        NhentaiWebViewClient(BaseWebActivity activity) {
+            super(activity);
+        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {

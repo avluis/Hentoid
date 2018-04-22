@@ -1,15 +1,12 @@
 package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
-
-import java.io.ByteArrayInputStream;
 
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Helper;
@@ -32,7 +29,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        ASMHentaiWebViewClient client = new ASMHentaiWebViewClient();
+        ASMHentaiWebViewClient client = new ASMHentaiWebViewClient(this, "asmhentai.com/g/");
         client.restrictTo("asmhentai.com");
 
         webView.setWebViewClient(client);
@@ -43,26 +40,19 @@ public class ASMHentaiActivity extends BaseWebActivity {
     void backgroundRequest(String extra) {
         Timber.d(extra);
         Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(), extra);
+        executeAsyncTask(new HtmlLoader(this), extra);
     }
 
     private class ASMHentaiWebViewClient extends CustomWebViewClient {
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        ASMHentaiWebViewClient(BaseWebActivity activity, String url) {
+            super(activity, url);
+        }
 
         @Override
         public void onReceivedError(WebView view, WebResourceRequest request,
                                     WebResourceError error) {
             /*Workaround for cache miss when re-submitting data to search form*/
             view.loadUrl(view.getOriginalUrl());
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains("asmhentai.com/g/")) {
-                executeAsyncTask(new HtmlLoader(), url);
-            }
         }
 
         @Override

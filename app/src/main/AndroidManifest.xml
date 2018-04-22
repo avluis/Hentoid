@@ -58,10 +58,6 @@
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.BaseWebActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
-        <activity
             android:name=".activities.DownloadsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -200,11 +196,6 @@
                     android:scheme="http" />
             </intent-filter>
         </activity>
-
-        <service
-            android:name=".services.DownloadService"
-            android:enabled="true"
-            android:exported="false" />
 
         <service
             android:name=".services.ContentDownloadService"

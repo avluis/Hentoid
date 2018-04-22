@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -151,7 +152,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:orientation="horizontal">
-
+<!--
             <Button
                 android:id="@+id/btnPause"
                 style="?android:attr/borderlessButtonStyle"
@@ -161,12 +162,31 @@
                 android:text="@string/pause"
                 android:textColor="@android:color/black"
                 android:textStyle="bold" />
+-->
+
+            <ImageButton
+                android:id="@+id/queueUpBtn"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="3"
+                android:background="@color/transparent"
+                app:srcCompat="@drawable/ic_arrow_drop_down_black_24dp"
+                android:contentDescription="@string/move_up" />
+
+            <ImageButton
+                android:id="@+id/queueDownBtn"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="3"
+                android:background="@color/transparent"
+                app:srcCompat="@drawable/ic_arrow_drop_up_black_24dp"
+                android:contentDescription="@string/move_down" />
 
             <Button
                 android:id="@+id/btnCancel"
                 style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
                 android:layout_weight="3"
                 android:text="@string/cancel"
                 android:textColor="@android:color/black"

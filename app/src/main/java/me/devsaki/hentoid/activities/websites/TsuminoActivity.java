@@ -9,8 +9,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.io.ByteArrayInputStream;
-
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.views.ObservableWebView;
 
@@ -41,7 +39,7 @@ public class TsuminoActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        TsuminoWebViewClient client = new TsuminoWebViewClient();
+        TsuminoWebViewClient client = new TsuminoWebViewClient(this);
         client.restrictTo("tsumino.com");
 
         webView.setWebViewClient(client);
@@ -60,7 +58,9 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        TsuminoWebViewClient(BaseWebActivity activity) {
+            super(activity);
+        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -79,7 +79,7 @@ public class TsuminoActivity extends BaseWebActivity {
             super.onPageFinished(view, url);
 
             if (url.contains("//www.tsumino.com/Book/Info/")) {
-                executeAsyncTask(new HtmlLoader(), url);
+                executeAsyncTask(new HtmlLoader(activity), url);
             } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;
                 int currentIndex = getWebView().copyBackForwardList().getCurrentIndex();

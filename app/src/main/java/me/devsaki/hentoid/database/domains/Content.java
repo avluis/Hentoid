@@ -45,14 +45,14 @@ public class Content implements Serializable {
     private StatusContent status;
     @Expose
     private List<ImageFile> imageFiles;
-    @Expose(serialize = false, deserialize = false)
-    private double percent;
     @Expose
     private Site site;
     private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
     @Expose
     private boolean favourite;
-    private int queryOrder; // Runtime attribute; no need to expose it
+    // Runtime attributes; no need to expose them
+    private double percent;
+    private int queryOrder;
 
 
     public AttributeMap getAttributes() {
@@ -339,8 +339,7 @@ public class Content implements Serializable {
 
         Content content = (Content) o;
 
-        if (url != null ? !url.equals(content.url) : content.url != null) return false;
-        return site == content.site;
+        return (url != null ? url.equals(content.url) : content.url == null) && site == content.site;
     }
 
     @Override
@@ -352,11 +351,11 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
 
-    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> { return Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate()) * -1; /* Inverted - last download date first */ };
+    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> { return Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; /* Inverted - last download date first */ };
 
     public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
 
-    public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate());
+    public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
 
-    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.valueOf(a.getQueryOrder()).compareTo(b.getQueryOrder());
+    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
 }

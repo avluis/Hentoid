@@ -1,9 +1,9 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,20 +18,19 @@ import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.List;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.fragments.QueueFragment;
-import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.NetworkStatus;
 import timber.log.Timber;
 
 import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
@@ -44,13 +43,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private final Context context;
     private final List<Content> contents;
-    private final QueueFragment fragment;
 
-    public QueueContentAdapter(Context context, List<Content> contents, QueueFragment fragment) {
+    public QueueContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.item_queue, contents);
         this.context = context;
         this.contents = contents;
-        this.fragment = fragment;
     }
 
     @NonNull
@@ -129,16 +126,16 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void attachSeries(ViewHolder holder, Content content) {
         String templateSeries = context.getString(R.string.work_series);
-        String series = "";
+        StringBuilder series = new StringBuilder();
         List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
             holder.tvSeries.setVisibility(View.GONE);
         } else {
             for (int i = 0; i < seriesAttributes.size(); i++) {
                 Attribute attribute = seriesAttributes.get(i);
-                series += attribute.getName();
+                series.append(attribute.getName());
                 if (i != seriesAttributes.size() - 1) {
-                    series += ", ";
+                    series.append(", ");
                 }
             }
             holder.tvSeries.setVisibility(View.VISIBLE);
@@ -154,14 +151,14 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void attachArtist(ViewHolder holder, Content content) {
         String templateArtist = context.getString(R.string.work_artist);
-        String artists = "";
+        StringBuilder artists = new StringBuilder();
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
         if (artistAttributes != null) {
             for (int i = 0; i < artistAttributes.size(); i++) {
                 Attribute attribute = artistAttributes.get(i);
-                artists += attribute.getName();
+                artists.append(attribute.getName());
                 if (i != artistAttributes.size() - 1) {
-                    artists += ", ";
+                    artists.append(", ");
                 }
             }
         }
@@ -176,40 +173,38 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void attachTags(ViewHolder holder, Content content) {
         String templateTags = context.getString(R.string.work_tags);
-        String tags = "";
+        StringBuilder tags = new StringBuilder();
         List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
                 if (attribute.getName() != null) {
-                    tags += templateTags.replace("@tag@", attribute.getName());
+                    tags.append(templateTags.replace("@tag@", attribute.getName()));
                     if (i != tagsAttributes.size() - 1) {
-                        tags += ", ";
+                        tags.append(", ");
                     }
                 }
             }
         }
-        holder.tvTags.setText(Helper.fromHtml(tags));
+        holder.tvTags.setText(Helper.fromHtml(tags.toString()));
     }
 
     private void attachButtons(View view, final Content content) {
+        Button btnUp = view.findViewById(R.id.queueUpBtn);
+        btnUp.setOnClickListener(v -> {
+            moveUp(content);
+            notifyDataSetChanged();
+        });
+        Button btnDown = view.findViewById(R.id.queueDownBtn);
+        btnDown.setOnClickListener(v -> {
+            moveDown(content);
+            notifyDataSetChanged();
+        });
         Button btnCancel = view.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(v -> {
             cancel(content);
             notifyDataSetChanged();
         });
-        Button btnPause = view.findViewById(R.id.btnPause);
-        btnPause.setOnClickListener(v -> {
-            if (content.getStatus() != StatusContent.DOWNLOADING) {
-                resume(content);
-            } else {
-                pause(content);
-                notifyDataSetChanged();
-            }
-        });
-        if (content.getStatus() != StatusContent.DOWNLOADING) {
-            btnPause.setText(R.string.resume);
-        }
     }
 
     private void updateProgress(View view, Content content) {
@@ -227,51 +222,61 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
     }
 
-    private void cancel(Content content) {
+    private void moveUp(Content content) {
         HentoidDB db = HentoidDB.getInstance(context);
-        // Quick hack as workaround if download is paused
-        if (content.getStatus() == StatusContent.PAUSED) {
-            resume(content);
-        }
-        content.setStatus(StatusContent.CANCELED);
-        db.updateContentStatus(content);
-        if (content.getId() == contents.get(0).getId()) {
-            DownloadService.paused = true;
-        }
-        contents.remove(content);
-        fragment.update();
-        clearDownload(content);
-    }
+        List<Pair<Integer,Integer>> queue = db.selectQueue();
 
-    private void pause(Content content) {
-        HentoidDB db = HentoidDB.getInstance(context);
-        content.setStatus(StatusContent.PAUSED);
-        // Anytime a download status is set to downloading,
-        // download count goes up by one.
-        int downloadCount = HentoidApp.getDownloadCount();
-        HentoidApp.setDownloadCount(--downloadCount);
+        int prevItemId = -1;
+        int prevItemPosition = -1;
+        int loopPosition = 0;
 
-        db.updateContentStatus(content);
-        if (content.getId() == contents.get(0).getId()) {
-            DownloadService.paused = true;
-        }
-        fragment.update();
-    }
-
-    private void resume(Content content) {
-        if (NetworkStatus.isOnline(context)) {
-            HentoidDB db = HentoidDB.getInstance(context);
-            content.setStatus(StatusContent.DOWNLOADING);
-            db.updateContentStatus(content);
-            if (content.getId() == contents.get(0).getId()) {
-                Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
-                        DownloadService.class);
-                context.startService(intent);
+        for (Pair<Integer,Integer> p : queue)
+        {
+            if (p.first.equals(content.getId()) && prevItemId > -1)
+            {
+                db.udpateQueue(p.first, prevItemPosition);
+                db.udpateQueue(prevItemId, p.second);
+                if (1 == loopPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                break;
+            } else {
+                prevItemId = p.first;
+                prevItemPosition = p.second;
             }
-            fragment.update();
-        } else {
-            Timber.d("Not connected on resume!");
+            loopPosition++;
         }
+    }
+
+    private void moveDown(Content content) {
+        HentoidDB db = HentoidDB.getInstance(context);
+        List<Pair<Integer,Integer>> queue = db.selectQueue();
+
+        int itemId = -1;
+        int itemPosition = -1;
+        int loopPosition = 0;
+
+        for (Pair<Integer,Integer> p : queue)
+        {
+            if (p.first.equals(content.getId()))
+            {
+                itemId = p.first;
+                itemPosition = p.second;
+            }
+            else if (itemId > -1)
+            {
+                db.udpateQueue(p.first, itemPosition);
+                db.udpateQueue(itemId, p.second);
+                if (0 == loopPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                break;
+            }
+            loopPosition++;
+        }
+    }
+
+    private void cancel(Content content) {
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+        content.setStatus(StatusContent.CANCELED);
+        contents.remove(content);
+        clearDownload(content);
     }
 
     private void clearDownload(Content content) {

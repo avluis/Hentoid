@@ -9,17 +9,15 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import timber.log.Timber;
-
 class InputStreamVolleyRequest extends Request<byte[]> {
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mListener;
     private Map<String, String> mParams;
 
     //create a static map for directly accessing headers
-    public Map<String, String> responseHeaders ;
+    private Map<String, String> responseHeaders ;
 
-    public InputStreamVolleyRequest(int method, String mUrl , Response.Listener<Map.Entry<byte[], Map<String, String>>> listener,
-                                    Response.ErrorListener errorListener, HashMap<String, String> params) {
+    InputStreamVolleyRequest(int method, String mUrl, Response.Listener<Map.Entry<byte[], Map<String, String>>> listener,
+                             Response.ErrorListener errorListener, HashMap<String, String> params) {
         super(method, mUrl, errorListener);
         // this request would never use cache.
         setShouldCache(false);
@@ -30,7 +28,7 @@ class InputStreamVolleyRequest extends Request<byte[]> {
     @Override
     protected Map<String, String> getParams() {
         return mParams;
-    };
+    }
 
 
     @Override

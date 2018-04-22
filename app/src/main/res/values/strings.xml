@@ -26,6 +26,10 @@
     <string name="cancel">Cancel</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="queue_paused">Queue paused</string>
+    <string name="queue_dl">Downloading…</string>
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series"><![CDATA[<b>Series:</b> @series@]]></string>

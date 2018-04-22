@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceError;
@@ -9,7 +8,6 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.io.ByteArrayInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -34,7 +32,7 @@ public class PururinActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        webView.setWebViewClient(new PururinWebViewClient());
+        webView.setWebViewClient(new PururinWebViewClient(this, "//pururin.io/gallery/"));
 
         super.setWebView(webView);
     }
@@ -43,11 +41,13 @@ public class PururinActivity extends BaseWebActivity {
     void backgroundRequest(String extra) {
         Timber.d(extra);
         Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(), extra);
+        executeAsyncTask(new HtmlLoader(this), extra);
     }
 
     private class PururinWebViewClient extends CustomWebViewClient {
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        PururinWebViewClient(BaseWebActivity activity, String filteredUrl) {
+            super(activity, filteredUrl);
+        }
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
@@ -79,15 +79,6 @@ public class PururinActivity extends BaseWebActivity {
                                     WebResourceError error) {
             /*Workaround for cache miss when re-submitting data to search form*/
             view.loadUrl(view.getOriginalUrl());
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains("//pururin.io/gallery/")) {
-                executeAsyncTask(new HtmlLoader(), url);
-            }
         }
 
         @Override

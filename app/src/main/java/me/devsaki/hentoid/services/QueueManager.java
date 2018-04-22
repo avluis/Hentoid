@@ -19,6 +19,7 @@ public class QueueManager implements RequestQueue.RequestFinishedListener {
         mRequestQueue = getRequestQueue(context);
     }
 
+    public static synchronized QueueManager getInstance() { return getInstance(null); }
     public static synchronized QueueManager getInstance(Context context) {
         if (mInstance == null) {
             mInstance = new QueueManager(context);
@@ -51,4 +52,22 @@ public class QueueManager implements RequestQueue.RequestFinishedListener {
         return (0 == nbRequests);
     }
 
+    public void pauseQueue()
+    {
+        mRequestQueue.stop();
+        Timber.d("Queue ::: paused");
+    }
+
+    public void startQueue()
+    {
+        mRequestQueue.start();
+        Timber.d("Queue ::: started");
+    }
+
+    public void cancelQueue()
+    {
+        RequestQueue.RequestFilter filterForAll = request -> true;
+        mRequestQueue.cancelAll(filterForAll);
+        Timber.d("Queue ::: canceled");
+    }
 }

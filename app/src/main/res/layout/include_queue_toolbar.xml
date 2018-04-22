@@ -5,7 +5,7 @@
     style="@style/Toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minHeight="?attr/actionBarSize"
+    android:minHeight="?android:attr/actionBarSize"
     android:theme="@style/Base.Theme.AppCompat.CompactMenu"
     app:contentInsetEnd="0dp"
     app:contentInsetStart="0dp">
@@ -14,7 +14,7 @@
         android:id="@+id/queue_nav"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
+        android:gravity="start"
         android:orientation="horizontal">
 
         <ImageButton
@@ -23,6 +23,7 @@
             android:layout_height="?android:attr/actionBarSize"
             android:background="@drawable/btn_content_selector"
             android:scaleType="fitXY"
+            android:visibility="gone"
             app:srcCompat="@drawable/ic_action_pause"
             tools:ignore="ContentDescription" />
 
@@ -34,6 +35,14 @@
             android:scaleType="fitXY"
             app:srcCompat="@drawable/ic_action_play"
             tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/queueText"
+            android:layout_width="0dp"
+            android:textColor="@android:color/white"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/app_intro" />
     </LinearLayout>
 
 </android.support.v7.widget.Toolbar>

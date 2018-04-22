@@ -18,7 +18,8 @@ public class NotificationHelper extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         try {
             String action = intent.getAction();
-            if (action.equals(NOTIFICATION_DELETED)) {
+            if (null == action) Timber.w("Action is null !");
+            else if (action.equals(NOTIFICATION_DELETED)) {
                 // Reset download count
                 // HentoidApp.setDownloadCount(0);
                 Timber.d("Notification removed.");

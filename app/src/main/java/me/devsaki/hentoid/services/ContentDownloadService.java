@@ -7,6 +7,7 @@ import android.util.Pair;
 import com.android.volley.Request;
 
 import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
 
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
@@ -38,6 +39,8 @@ public class ContentDownloadService extends IntentService {
 
     private HentoidDB db;
     private NotificationPresenter notificationPresenter;
+    private boolean downloadCanceled;
+    private boolean downloadSkipped;
 
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
@@ -50,6 +53,7 @@ public class ContentDownloadService extends IntentService {
 
         notificationPresenter = new NotificationPresenter();
         EventBus.getDefault().register(notificationPresenter);
+        EventBus.getDefault().register(this);
 
         Timber.d("Download service created");
     }
@@ -113,6 +117,8 @@ public class ContentDownloadService extends IntentService {
         }
 
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
+        downloadCanceled = false;
+        downloadSkipped = false;
         notificationPresenter.downloadStarted(content);
         File dir = FileHelper.getContentDownloadDir(this, content);
         Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
@@ -130,9 +136,9 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Watches progression
+        // NB : download pause is managed at the Volley queue level (see QueueManager.pauseQueue / startQueue)
         double dlRate = 0;
-        while (dlRate < 1) {
-            // TODO interrupt if job canceled
+        while (dlRate < 1 && !downloadCanceled && !downloadSkipped) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
@@ -140,37 +146,52 @@ public class ContentDownloadService extends IntentService {
             } finally {
                 int processed = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.ERROR.getCode()});
                 dlRate = processed * 1.0 / images.size();
-                updateActivity(dlRate);
+                updateActivity(content, dlRate);
             }
         }
 
-        // Save JSON file
-        try {
-            JsonHelper.saveJson(content, dir);
-        } catch (IOException e) {
-            Timber.e(e, "Error saving JSON: %s", content.getTitle());
+        if (!downloadCanceled)
+        {
+            // Save JSON file
+            try {
+                JsonHelper.saveJson(content, dir);
+            } catch (IOException e) {
+                Timber.e(e, "Error saving JSON: %s", content.getTitle());
+            }
+
+            // Signal activity end
+            HentoidApp.downloadComplete();
+            Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
+
+            // Tracking Event (Download Completed)
+            HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
+
+            // Mark content as downloaded
+            boolean isSuccess = (0 == db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode(), StatusContent.IGNORED.getCode()}));
+            content.setDownloadDate(new Date().getTime());
+            content.setStatus(isSuccess ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+            completeActivity(content, isSuccess);
+            db.updateContentStatus(content);
+
+            // Delete from queue
+            db.deleteQueueById(content.getId());
+        } else if (downloadCanceled) {
+            Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
+
+            // Remove content altogether from the DB (including queue)
+            db.deleteContent(content);
+        } else if (downloadSkipped) {
+            Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
+
+            content.setStatus(StatusContent.PAUSED);
+            db.updateContentStatus(content);
         }
-
-        // Signal activity end
-        HentoidApp.downloadComplete();
-        updateActivity(-1);
-        Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
-
-        // Tracking Event (Download Completed)
-        HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
-
-        // Mark content as downloaded
-        boolean isSuccess = (0 == db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode(), StatusContent.IGNORED.getCode()}));
-        content.setDownloadDate(new Date().getTime());
-        content.setStatus(isSuccess?StatusContent.DOWNLOADED:StatusContent.ERROR);
-        db.updateContentStatus(content);
-
-        // Delete from queue
-        db.deleteQueueById(content.getId());
 
         // Download next content in a new Intent
         Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
         startService(intentService);
+
+        EventBus.getDefault().unregister(this);
     }
 
     private static List<ImageFile> parseImageFiles(Content content) {
@@ -236,8 +257,40 @@ public class ContentDownloadService extends IntentService {
         db.updateImageFileStatus(img);
     }
 
-    private static void updateActivity(double percent) {
+    private static void updateActivity(Content content, double percent) {
         Timber.d("UpdateActivity : %s percent", String.valueOf(percent));
-        EventBus.getDefault().post(new DownloadEvent(percent * 100));
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, percent * 100));
+    }
+
+    private static void completeActivity(Content content, boolean success) {
+        Timber.d("CompleteActivity : success = %s", String.valueOf(success));
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE));
+    }
+
+    @Subscribe
+    public void onDownloadEvent(DownloadEvent event) {
+        Timber.d("Event notified : %s / %s percent", event.eventType, String.valueOf(event.percent));
+
+        switch (event.eventType)
+        {
+            // Nothing special in case of progress
+            // case DownloadEvent.EV_PROGRESS:
+            case DownloadEvent.EV_PAUSE :
+                QueueManager.getInstance().pauseQueue();
+                db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
+                break;
+            case DownloadEvent.EV_UNPAUSE :
+                QueueManager.getInstance().startQueue();
+                db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
+                break;
+            case DownloadEvent.EV_CANCEL :
+                downloadCanceled = true;
+                QueueManager.getInstance().cancelQueue();
+                break;
+            case DownloadEvent.EV_SKIP :
+                downloadSkipped = true;
+                QueueManager.getInstance().cancelQueue();
+                break;
+        }
     }
 }

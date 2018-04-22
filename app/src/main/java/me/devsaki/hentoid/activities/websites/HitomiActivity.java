@@ -1,14 +1,11 @@
 package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
-import android.graphics.Bitmap;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
-
-import java.io.ByteArrayInputStream;
 
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Helper;
@@ -32,7 +29,7 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        HitomiWebViewClient client = new HitomiWebViewClient();
+        HitomiWebViewClient client = new HitomiWebViewClient(this, "//hitomi.la/galleries/");
         client.restrictTo("hitomi.la");
 
         webView.setWebViewClient(client);
@@ -56,19 +53,12 @@ public class HitomiActivity extends BaseWebActivity {
     void backgroundRequest(String extra) {
         Timber.d(extra);
         Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(), extra);
+        executeAsyncTask(new HtmlLoader(this), extra);
     }
 
     private class HitomiWebViewClient extends CustomWebViewClient {
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains("//hitomi.la/galleries/")) {
-                executeAsyncTask(new HtmlLoader(), url);
-            }
+        HitomiWebViewClient(BaseWebActivity activity, String filteredUrl) {
+            super(activity, filteredUrl);
         }
 
         @Override

@@ -21,6 +21,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.io.ByteArrayInputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,6 +45,8 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
+
+import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -124,10 +128,11 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
         webView.removeAllViews();
         webView.destroy();
+        webView = null;
+
+        super.onDestroy();
     }
 
     // Validate permissions
@@ -150,7 +155,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         webView.setOnLongClickListener(v -> {
             WebView.HitTestResult result = webView.getHitTestResult();
             if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
-                if (result.getExtra().contains(getStartSite().getUrl())) {
+                if (result.getExtra() != null && result.getExtra().contains(getStartSite().getUrl())) {
                     backgroundRequest(result.getExtra());
                 }
             } else {
@@ -386,9 +391,23 @@ public abstract class BaseWebActivity extends BaseActivity {
     class CustomWebViewClient extends WebViewClient {
 
         private String domainName = "";
+        private final String filteredUrl;
+        protected final BaseWebActivity activity;
+        protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         void restrictTo(String s) {
             domainName = s;
+        }
+
+        CustomWebViewClient(BaseWebActivity activity, String filteredUrl)
+        {
+            this.activity = activity;
+            this.filteredUrl = filteredUrl;
+        }
+        CustomWebViewClient(BaseWebActivity activity)
+        {
+            this.activity = activity;
+            this.filteredUrl = "";
         }
 
         @Override
@@ -412,6 +431,10 @@ public abstract class BaseWebActivity extends BaseActivity {
             fabHome.show();
             hideFab(fabDownload);
             hideFab(fabRead);
+
+            if (filteredUrl.length() > 0 && url.contains(filteredUrl)) {
+                executeAsyncTask(new HtmlLoader(activity), url);
+            }
         }
 
         @Override
@@ -431,16 +454,25 @@ public abstract class BaseWebActivity extends BaseActivity {
         return false;
     }
 
-    protected class HtmlLoader extends AsyncTask<String, Integer, Content> {
+    protected static class HtmlLoader extends AsyncTask<String, Integer, Content> {
+
+        private WeakReference<BaseWebActivity> activityReference;
+
+        // only retain a weak reference to the activity
+        HtmlLoader(BaseWebActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
         @Override
         protected Content doInBackground(String... params) {
             String url = params[0];
+            BaseWebActivity activity = activityReference.get();
             try {
-                ContentParser parser = ContentParserFactory.getInstance().getParser(getStartSite());
-                processContent(parser.parseContent(url));
+                ContentParser parser = ContentParserFactory.getInstance().getParser(activity.getStartSite());
+                activity.processContent(parser.parseContent(url));
             } catch (Exception e) {
                 Timber.e(e, "Error parsing content.");
-                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+                activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
             return null;

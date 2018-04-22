@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -12,20 +11,18 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.services.DownloadService;
-import timber.log.Timber;
 
 /**
  * Created by avluis on 04/10/2016.
@@ -50,8 +47,8 @@ public class QueueFragment extends BaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        Double percent = event.percent;
-        if (percent >= 0) {
+        if (DownloadEvent.EV_PROGRESS == event.eventType) {
+            Double percent = event.percent;
             updatePercent(percent);
         } else {
             update();
@@ -74,19 +71,20 @@ public class QueueFragment extends BaseFragment {
         mEmptyText = rootView.findViewById(android.R.id.empty);
 
         ImageButton btnStart = rootView.findViewById(R.id.btnStart);
-        btnStart.setOnClickListener(v -> {
-            BaseFragment.getDB().updateContentStatus(StatusContent.DOWNLOADING,
-                    StatusContent.PAUSED);
-            update();
-            Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
-                    DownloadService.class);
-            context.startService(intent);
-        });
         ImageButton btnPause = rootView.findViewById(R.id.btnPause);
+        TextView queueText = rootView.findViewById(R.id.queueText);
+        btnStart.setOnClickListener(v -> {
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE));
+            btnStart.setVisibility(View.GONE);
+            btnPause.setVisibility(View.VISIBLE);
+            queueText.setText(R.string.queue_dl);
+            update();
+        });
         btnPause.setOnClickListener(v -> {
-            BaseFragment.getDB().updateContentStatus(StatusContent.PAUSED,
-                    StatusContent.DOWNLOADING);
-            DownloadService.paused = true;
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
+            btnPause.setVisibility(View.GONE);
+            btnStart.setVisibility(View.VISIBLE);
+            queueText.setText(R.string.queue_paused);
             update();
         });
 
@@ -96,20 +94,20 @@ public class QueueFragment extends BaseFragment {
     private void updatePercent(double percent) {
         if (contents != null && !contents.isEmpty()) {
             contents.get(0).setPercent(percent);
-            Timber.d("%s", percent);
             ((ArrayAdapter) mListView.getAdapter()).notifyDataSetChanged();
         }
     }
 
     public void update() {
-        contents = BaseFragment.getDB().selectContentInQueue();
+        contents = getDB().selectQueueContents();
         if (contents == null) {
-            contents = new ArrayList<>();
+            contents = Collections.emptyList();
             mEmptyText.setVisibility(View.VISIBLE);
         } else {
+
             mEmptyText.setVisibility(View.GONE);
         }
-        QueueContentAdapter adapter = new QueueContentAdapter(context, contents, QueueFragment.this);
+        QueueContentAdapter adapter = new QueueContentAdapter(context, contents);
         mListView.setAdapter(adapter);
     }
 

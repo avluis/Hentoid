@@ -18,7 +18,6 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.parsers.BaseParser;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.FileHelper;
@@ -201,7 +200,7 @@ public class DownloadService extends IntentService {
     }
 
     private void updateActivity(double percent) {
-        EventBus.getDefault().post(new DownloadEvent(percent));
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, percent));
     }
 
     // TODO: Implement null handling as fail/retry state

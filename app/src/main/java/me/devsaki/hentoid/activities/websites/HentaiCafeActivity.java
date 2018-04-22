@@ -1,8 +1,5 @@
 package me.devsaki.hentoid.activities.websites;
 
-import android.graphics.Bitmap;
-import android.webkit.WebView;
-
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -22,7 +19,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        HentaiCafeWebViewClient client = new HentaiCafeWebViewClient();
+        HentaiCafeWebViewClient client = new HentaiCafeWebViewClient(this, "//hentai.cafe/");
         client.restrictTo("hentai.cafe");
 
         webView.setWebViewClient(client);
@@ -33,18 +30,13 @@ public class HentaiCafeActivity extends BaseWebActivity {
     void backgroundRequest(String extra) {
         Timber.d(extra);
         Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(), extra);
+        executeAsyncTask(new HtmlLoader(this), extra);
     }
 
     private class HentaiCafeWebViewClient extends CustomWebViewClient {
 
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains("//hentai.cafe/")) {
-                executeAsyncTask(new HtmlLoader(), url);
-            }
+        HentaiCafeWebViewClient(BaseWebActivity activity, String filteredUrl) {
+            super(activity, filteredUrl);
         }
     }
 }
