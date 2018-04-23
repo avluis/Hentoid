@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import me.devsaki.hentoid.database.constants.AttributeTable;
 import me.devsaki.hentoid.database.constants.ContentAttributeTable;
 import me.devsaki.hentoid.database.constants.ContentTable;
@@ -271,6 +273,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
+    @Nullable
     public Content selectContentById(int id) {
         Content result = null; // Should stay that way unless all callers are updated
         synchronized (locker) {
@@ -290,6 +293,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    @Nullable
     private Content selectContentById(SQLiteDatabase db, int id) {
         Cursor cursorContents = null;
         Content result = null;

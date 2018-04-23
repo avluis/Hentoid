@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -78,7 +79,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         // Populate the data into the template view using the data object
         if (content != null) {
             populateLayout(holder, content);
-            attachButtons(v, content);
+            attachButtons(v, content, (0 == pos), (contents.size() - 1 == pos));
             updateProgress(v, content);
         }
         // Return the completed view to render on screen
@@ -189,13 +190,15 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         holder.tvTags.setText(Helper.fromHtml(tags.toString()));
     }
 
-    private void attachButtons(View view, final Content content) {
-        Button btnUp = view.findViewById(R.id.queueUpBtn);
+    private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem) {
+        ImageButton btnUp = view.findViewById(R.id.queueUpBtn);
+        if (isFirstItem) btnUp.setVisibility(View.INVISIBLE);
         btnUp.setOnClickListener(v -> {
             moveUp(content);
             notifyDataSetChanged();
         });
-        Button btnDown = view.findViewById(R.id.queueDownBtn);
+        ImageButton btnDown = view.findViewById(R.id.queueDownBtn);
+        if (isLastItem) btnDown.setVisibility(View.INVISIBLE);
         btnDown.setOnClickListener(v -> {
             moveDown(content);
             notifyDataSetChanged();
