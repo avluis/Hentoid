@@ -153,39 +153,35 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:orientation="horizontal">
-<!--
-            <Button
-                android:id="@+id/btnPause"
-                style="?android:attr/borderlessButtonStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="3"
-                android:text="@string/pause"
-                android:textColor="@android:color/black"
-                android:textStyle="bold" />
--->
 
-            <ImageButton
+            <ImageView
                 android:id="@+id/queueUpBtn"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:layout_weight="3"
                 android:background="@color/transparent"
-                app:srcCompat="@drawable/ic_arrow_drop_down_black_24dp"
-                android:contentDescription="@string/move_up" />
+                android:contentDescription="@string/move_up"
+                android:scaleType="fitCenter"
+                android:tint="#FF000000"
+                android:clickable="true"
+                android:focusable="true"
+                app:srcCompat="@drawable/ic_arrow_drop_up_black_24dp" />
 
-            <ImageButton
+            <ImageView
                 android:id="@+id/queueDownBtn"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="40dp"
                 android:layout_weight="3"
                 android:background="@color/transparent"
-                app:srcCompat="@drawable/ic_arrow_drop_up_black_24dp"
-                android:contentDescription="@string/move_down" />
+                android:contentDescription="@string/move_down"
+                android:scaleType="fitCenter"
+                android:tint="#FF000000"
+                android:clickable="true"
+                android:focusable="true"
+                app:srcCompat="@drawable/ic_arrow_drop_down_black_24dp" />
 
             <Button
                 android:id="@+id/btnCancel"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
                 android:layout_weight="3"
