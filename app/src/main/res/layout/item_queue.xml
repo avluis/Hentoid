@@ -151,44 +151,37 @@
             style="@style/Base.Widget.AppCompat.ButtonBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
             android:orientation="horizontal">
 
-            <ImageView
+            <ImageButton
                 android:id="@+id/queueUpBtn"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
-                android:layout_weight="3"
-                android:background="@color/transparent"
-                android:contentDescription="@string/move_up"
-                android:scaleType="fitCenter"
-                android:tint="#FF000000"
-                android:clickable="true"
-                android:focusable="true"
-                app:srcCompat="@drawable/ic_arrow_drop_up_black_24dp" />
+                android:layout_weight="1"
+                android:adjustViewBounds="true"
+                tools:ignore="ContentDescription"
+                android:background="@drawable/ic_arrow_drop_up_black_24dp" />
 
-            <ImageView
+            <ImageButton
                 android:id="@+id/queueDownBtn"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="40dp"
-                android:layout_weight="3"
-                android:background="@color/transparent"
-                android:contentDescription="@string/move_down"
-                android:scaleType="fitCenter"
-                android:tint="#FF000000"
-                android:clickable="true"
-                android:focusable="true"
-                app:srcCompat="@drawable/ic_arrow_drop_down_black_24dp" />
+                android:layout_weight="1"
+                android:scaleType="center"
+                tools:ignore="ContentDescription"
+                android:background="@drawable/ic_arrow_drop_down_black_24dp" />
 
             <Button
                 android:id="@+id/btnCancel"
+                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="40dp"
-                android:layout_weight="3"
+                android:layout_weight="1"
                 android:text="@string/cancel"
                 android:textColor="@android:color/black"
                 android:textStyle="bold"
-                tools:ignore="ButtonOrder" />
+                tools:ignore="ButtonOrder"
+                />
         </LinearLayout>
     </LinearLayout>
 </android.support.v7.widget.CardView>

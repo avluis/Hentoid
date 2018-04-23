@@ -191,13 +191,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     }
 
     private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem) {
-        ImageView btnUp = view.findViewById(R.id.queueUpBtn);
+        View btnUp = view.findViewById(R.id.queueUpBtn);
         if (isFirstItem) btnUp.setVisibility(View.INVISIBLE);
         btnUp.setOnClickListener(v -> {
             moveUp(content);
             notifyDataSetChanged();
         });
-        ImageView btnDown = view.findViewById(R.id.queueDownBtn);
+        View btnDown = view.findViewById(R.id.queueDownBtn);
         if (isLastItem) btnDown.setVisibility(View.INVISIBLE);
         btnDown.setOnClickListener(v -> {
             moveDown(content);
