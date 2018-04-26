@@ -422,4 +422,14 @@ public final class Helper {
             this.code = code;
         }
     }
+
+    public static String capitalize(String s)
+    {
+        if (null == s || 0 == s.length()) return s;
+        else if (1 == s.length()) return s.toUpperCase();
+        else
+        {
+            return s.substring(0,1).toUpperCase() + s.substring(1);
+        }
+    }
 }
