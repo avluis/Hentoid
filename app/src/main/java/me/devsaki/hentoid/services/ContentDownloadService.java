@@ -74,16 +74,20 @@ public class ContentDownloadService extends IntentService {
             return;
         }
 
+        Timber.d("New intent processed");
+
         downloadQueueHead();
     }
 
     private void downloadQueueHead()
     {
+/*
         // Exits if download queue is already running - there can only be one service active at a time
         if (!QueueManager.getInstance(this).isQueueEmpty()) {
             Timber.d("Download still active. Aborting");
             return;
         }
+*/
 
         // Works on first item of queue
         List<Pair<Integer,Integer>> queue = db.selectQueue();
@@ -139,14 +143,14 @@ public class ContentDownloadService extends IntentService {
         // NB : download pause is managed at the Volley queue level (see QueueManager.pauseQueue / startQueue)
         double dlRate = 0;
         while (dlRate < 1 && !downloadCanceled && !downloadSkipped) {
+            int processed = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.ERROR.getCode()});
+            dlRate = processed * 1.0 / images.size();
+            updateActivity(content, dlRate);
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-            } finally {
-                int processed = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.ERROR.getCode()});
-                dlRate = processed * 1.0 / images.size();
-                updateActivity(content, dlRate);
             }
         }
 
@@ -177,9 +181,6 @@ public class ContentDownloadService extends IntentService {
             db.deleteQueueById(content.getId());
         } else if (downloadCanceled) {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
-
-            // Remove content altogether from the DB (including queue)
-            db.deleteContent(content);
         } else if (downloadSkipped) {
             Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
 

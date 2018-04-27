@@ -21,6 +21,7 @@ import com.bumptech.glide.request.RequestOptions;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -239,6 +240,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             {
                 db.udpateQueue(p.first, prevItemPosition);
                 db.udpateQueue(prevItemId, p.second);
+                Collections.swap(contents, prevItemPosition, p.second);
                 if (1 == loopPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             } else {
@@ -268,6 +270,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             {
                 db.udpateQueue(p.first, itemPosition);
                 db.udpateQueue(itemId, p.second);
+                Collections.swap(contents, itemPosition, p.second);
                 if (0 == loopPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             }
@@ -277,8 +280,14 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void cancel(Content content) {
         EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
-        content.setStatus(StatusContent.CANCELED);
+
+        // Remove content altogether from the DB (including queue)
+        HentoidDB db = HentoidDB.getInstance(context);
+        db.deleteContent(content);
+//        content.setStatus(StatusContent.CANCELED);
+        // Remove the content from the in-memory list
         contents.remove(content);
+        // Remove the content from the disk
         clearDownload(content);
     }
 
