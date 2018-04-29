@@ -13,8 +13,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 48
-        versionName '1.2.5'
+        versionCode 50
+        versionName '1.2.7'
         vectorDrawables.useSupportLibrary = true
     }
     flavorDimensions "buildType"
@@ -93,8 +93,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+
     // Stetho core
-    debugImplementation 'com.facebook.stetho:stetho:1.5.0'
+    implementation 'com.facebook.stetho:stetho:1.5.0'
+
     // Support libraries
     implementation 'com.android.support:support-v4:27.1.0'
     implementation 'com.android.support:recyclerview-v7:27.1.0'

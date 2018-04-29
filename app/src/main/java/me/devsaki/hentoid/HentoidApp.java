@@ -189,7 +189,7 @@ public class HentoidApp extends Application {
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
-        Timber.d("Content item(s) count: %s", db.getContentCount());
+        Timber.d("Content item(s) count: %s", db.countContent());
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
         try {
             UpgradeTo(Helper.getAppVersionCode(this), db);

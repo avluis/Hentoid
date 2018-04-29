@@ -19,6 +19,7 @@ public class SearchContent {
     private final HentoidDB db;
     private volatile State mCurrentState;
     private List<Content> contentList = new ArrayList<>();
+    private int totalContent;
 
     private ContentListener mListener;
 
@@ -49,6 +50,8 @@ public class SearchContent {
         if (sites != null) mSiteFilter.addAll(sites);
 
         mCurrentState = State.NON_INIT;
+        contentList.clear();
+        totalContent = 0;
 
         retrieveResults();
     }
@@ -57,11 +60,11 @@ public class SearchContent {
         Timber.d("Retrieving results.");
 
         if (mCurrentState == State.READY) {
-            mListener.onContentReady(true, contentList);
+            mListener.onContentReady(true, contentList, totalContent);
             mListener.onContentFailed(false);
             return;
         } else if (mCurrentState == State.FAILED) {
-            mListener.onContentReady(false, contentList);
+            mListener.onContentReady(false, contentList, totalContent);
             mListener.onContentFailed(true);
             return;
         }
@@ -78,6 +81,8 @@ public class SearchContent {
                 mCurrentState = State.DONE;
 
                 contentList = db.selectContentByQuery(titleQuery, authorQuery, currentPage, booksPerPage, tagFilter, sites, filterFavourites, orderStyle);
+                // Fetch total query count (since query are paged, query results count is always <= booksPerPage)
+                totalContent = db.countContentByQuery(titleQuery, authorQuery, tagFilter, sites, filterFavourites);
 
                 mCurrentState = State.READY;
             }
@@ -117,14 +122,14 @@ public class SearchContent {
         protected void onPostExecute(State current) {
             SearchContent activity = activityReference.get();
             if (activity != null && activity.mListener != null) {
-                activity.mListener.onContentReady(current == State.READY, activity.contentList);
+                activity.mListener.onContentReady(current == State.READY, activity.contentList, activity.totalContent);
                 activity.mListener.onContentFailed(current == State.FAILED);
             }
         }
     }
 
     public interface ContentListener {
-        void onContentReady(boolean success, List<Content> contentList);
+        void onContentReady(boolean success, List<Content> contentList, int totalContent);
 
         void onContentFailed(boolean failure);
     }
