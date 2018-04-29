@@ -1,5 +1,6 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:f="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
     android:layout_height="90dp"
@@ -15,7 +16,7 @@
         android:orientation="vertical">
 
         <LinearLayout
-            android:id="@+id/filter_sites"
+            android:id="@+id/filter_sites1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
@@ -32,7 +33,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginEnd="8dp"
                 f:srcCompat="@drawable/ic_menu_nhentai"
-                />
+                tools:ignore="ContentDescription" />
             <ImageButton
                 android:id="@+id/filter_hitomi"
                 android:layout_width="wrap_content"
@@ -44,7 +45,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginEnd="8dp"
                 f:srcCompat="@drawable/ic_menu_hitomi"
-                />
+                tools:ignore="ContentDescription" />
             <ImageButton
                 android:id="@+id/filter_asm"
                 android:layout_width="wrap_content"
@@ -56,7 +57,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginEnd="8dp"
                 f:srcCompat="@drawable/ic_menu_asmhentai"
-                />
+                tools:ignore="ContentDescription" />
             <ImageButton
                 android:id="@+id/filter_asmcomics"
                 android:layout_width="wrap_content"
@@ -68,7 +69,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginEnd="8dp"
                 f:srcCompat="@drawable/ic_menu_asmcomics"
-                />
+                tools:ignore="ContentDescription" />
             <ImageButton
                 android:id="@+id/filter_hentaicafe"
                 android:layout_width="wrap_content"
@@ -80,7 +81,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginEnd="8dp"
                 f:srcCompat="@drawable/ic_menu_hentaicafe"
-                />
+                tools:ignore="ContentDescription" />
             <ImageButton
                 android:id="@+id/filter_tsumino"
                 android:layout_width="wrap_content"
@@ -92,7 +93,7 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginEnd="8dp"
                 f:srcCompat="@drawable/ic_menu_tsumino"
-                />
+                tools:ignore="ContentDescription" />
             <ImageButton
                 android:id="@+id/filter_pururin"
                 android:layout_width="wrap_content"
@@ -104,7 +105,30 @@
                 android:layout_marginRight="8dp"
                 android:layout_marginEnd="8dp"
                 f:srcCompat="@drawable/ic_menu_pururin"
-                />
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/filter_fakku"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/transparent"
+                android:minWidth="32dp"
+                android:minHeight="32dp"
+                android:scaleType="fitXY"
+                android:layout_marginRight="8dp"
+                android:layout_marginEnd="8dp"
+                f:srcCompat="@drawable/ic_menu_fakku"
+                tools:ignore="ContentDescription" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/filter_sites2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:orientation="horizontal">
+
             <ImageButton
                 android:id="@+id/filter_favs"
                 android:layout_width="wrap_content"
@@ -115,7 +139,7 @@
                 android:minHeight="32dp"
                 android:scaleType="fitXY"
                 f:srcCompat="@drawable/ic_fav_empty"
-                />
+                tools:ignore="ContentDescription" />
 
         </LinearLayout>
 
