@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -44,6 +45,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -78,7 +80,6 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
  * TODO: Dismiss 'new content' tooltip upon search
- * TODO: Fix empty 2nd page when books count = booksPerPage
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
@@ -299,9 +300,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (settingDir.isEmpty()) {
             Timber.d("Where are my files?!");
-            Intent intent = new Intent(getActivity(), ImportActivity.class);
+
+            FragmentActivity activity = getActivity();
+            if (null == activity) {
+                Timber.e("Activity unreachable !");
+                return;
+            }
+            Intent intent = new Intent(activity, ImportActivity.class);
             startActivity(intent);
-            getActivity().finish();
+            activity.finish();
         }
 
         String settingDir = Preferences.getRootFolderName();
@@ -350,7 +357,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                 Handler handler = new Handler();
                 handler.postDelayed(() -> {
-                    getActivity().finish();
+                    FragmentActivity activity = getActivity();
+                    if (null == activity) {
+                        Timber.e("Activity unreachable !");
+                        return;
+                    }
+                    activity.finish();
                     Runtime.getRuntime().exit(0);
                 }, 3000);
             }
@@ -393,8 +405,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         }
     }
-
-    protected abstract void checkResults();
 
     private void reset() {
         Helper.reset(HentoidApp.getAppContext(), getActivity());
@@ -443,11 +453,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             // Restore tag filters (key set on one variable; value set on the other)
             List<String> tagKeys = state.getStringArrayList(TAG_FILTERS_KEYS);
             List<Integer> tagValues = state.getIntegerArrayList(TAG_FILTERS_VALUES);
-            for (int i=0; i < tagKeys.size(); i++)
-            {
-                tagFilters.put(tagKeys.get(i), tagValues.get(i));
+            if (tagKeys != null && tagValues != null) {
+                for (int i = 0; i < tagKeys.size(); i++) {
+                    tagFilters.put(tagKeys.get(i), tagValues.get(i));
+                }
+                restoreTagMosaic();
             }
-            restoreTagMosaic();
         } else {
             // Init site filters; all on by default
             siteFilters.add(Site.NHENTAI.getCode());
@@ -457,6 +468,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             siteFilters.add(Site.HENTAICAFE.getCode());
             siteFilters.add(Site.PURURIN.getCode());
             siteFilters.add(Site.TSUMINO.getCode());
+            siteFilters.add(Site.FAKKU.getCode());
         }
     }
 
@@ -532,13 +544,19 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         // Drawer
-        mDrawerLayout = getActivity().findViewById(R.id.drawer_layout);
+        FragmentActivity activity = getActivity();
+        if (null == activity) {
+            Timber.e("Activity unreachable !");
+            return;
+        }
+
+        mDrawerLayout = activity.findViewById(R.id.drawer_layout);
         mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
 
             @Override
             public void onDrawerStateChanged(int newState) {
                 mDrawerState = newState;
-                getActivity().invalidateOptionsMenu();
+                activity.invalidateOptionsMenu();
             }
         });
 
@@ -668,7 +686,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         HentoidApp.setDownloadCount(0);
 
         NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(0);
+        if (manager != null) manager.cancel(0);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -712,9 +730,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         });
 
+        FragmentActivity activity = getActivity();
+        if (null == activity) {
+            Timber.e("Activity unreachable !");
+            return;
+        }
+
         searchView = (SearchView) searchMenu.getActionView();
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(
-                getActivity().getComponentName()));
+        if (searchManager != null) {
+            searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
+        }
         searchView.setIconifiedByDefault(true);
         searchView.setQueryHint(getString(R.string.search_hint));
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -757,23 +782,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // == SEARCH PANE
 
         // Attaches listeners to website filters
-        initSiteButton(getActivity().findViewById(R.id.filter_nhentai), Site.NHENTAI.getCode());
-        initSiteButton(getActivity().findViewById(R.id.filter_hitomi), Site.HITOMI.getCode());
-        initSiteButton(getActivity().findViewById(R.id.filter_hentaicafe), Site.HENTAICAFE.getCode());
-        initSiteButton(getActivity().findViewById(R.id.filter_asm), Site.ASMHENTAI.getCode());
-        initSiteButton(getActivity().findViewById(R.id.filter_asmcomics), Site.ASMHENTAI_COMICS.getCode());
-        initSiteButton(getActivity().findViewById(R.id.filter_tsumino), Site.TSUMINO.getCode());
-        initSiteButton(getActivity().findViewById(R.id.filter_pururin), Site.PURURIN.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_nhentai), Site.NHENTAI.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_hitomi), Site.HITOMI.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_hentaicafe), Site.HENTAICAFE.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_asm), Site.ASMHENTAI.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_asmcomics), Site.ASMHENTAI_COMICS.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_tsumino), Site.TSUMINO.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_pururin), Site.PURURIN.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_fakku), Site.FAKKU.getCode());
 
         // Attaches listener to favourite filters
-        final ImageButton favouriteButton = getActivity().findViewById(R.id.filter_favs);
+        final ImageButton favouriteButton = activity.findViewById(R.id.filter_favs);
         updateFavouriteFilter(favouriteButton);
         favouriteButton.setOnClickListener(v -> toggleFavouriteFilter(favouriteButton));
 
         // Attach listeners to category filter buttons
-        getActivity().findViewById(R.id.search_filter_title).setOnClickListener(v -> selectFieldFilter(!filterByTitle, filterByArtist, filterByTag));
-        getActivity().findViewById(R.id.search_filter_artist).setOnClickListener(v -> selectFieldFilter(filterByTitle, !filterByArtist, filterByTag));
-        getActivity().findViewById(R.id.search_filter_tag).setOnClickListener(v -> selectFieldFilter(filterByTitle, filterByArtist, !filterByTag));
+        activity.findViewById(R.id.search_filter_title).setOnClickListener(v -> selectFieldFilter(!filterByTitle, filterByArtist, filterByTag));
+        activity.findViewById(R.id.search_filter_artist).setOnClickListener(v -> selectFieldFilter(filterByTitle, !filterByArtist, filterByTag));
+        activity.findViewById(R.id.search_filter_tag).setOnClickListener(v -> selectFieldFilter(filterByTitle, filterByArtist, !filterByTag));
         if (filterByTag) forceSelectTagFilter();
 
         // == BOOKS SORT
@@ -975,12 +1001,19 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
     private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag, boolean overrideDisplayTags)
     {
+        FragmentActivity activity = getActivity();
+        if (null == activity)
+        {
+            Timber.e("Activity unreachable !");
+            return;
+        }
+
         if ((filterByTag && !this.filterByTag) || overrideDisplayTags)
         {
             this.filterByTitle = false;
-            ((ToggleButton)getActivity().findViewById(R.id.search_filter_title)).setChecked(false);
+            ((ToggleButton)activity.findViewById(R.id.search_filter_title)).setChecked(false);
             this.filterByArtist = false;
-            ((ToggleButton)getActivity().findViewById(R.id.search_filter_artist)).setChecked(false);
+            ((ToggleButton)activity.findViewById(R.id.search_filter_artist)).setChecked(false);
 
             // Enable tag mosaic
             ViewGroup.LayoutParams params = searchPane.getLayoutParams();
@@ -998,16 +1031,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             // Get back to the default filter = title
             if (!filterByTag && !this.filterByTitle && !this.filterByArtist) {
                 this.filterByTitle = true;
-                ((ToggleButton) getActivity().findViewById(R.id.search_filter_title)).setChecked(true);
+                ((ToggleButton) activity.findViewById(R.id.search_filter_title)).setChecked(true);
             } else {
                 this.filterByTitle = filterByTitle;
                 this.filterByArtist = filterByArtist;
             }
-            ((ToggleButton) getActivity().findViewById(R.id.search_filter_tag)).setChecked(false);
+            ((ToggleButton) activity.findViewById(R.id.search_filter_tag)).setChecked(false);
 
             // Disable tag mosaic
             ViewGroup.LayoutParams params = searchPane.getLayoutParams();
-            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90, getResources().getDisplayMetrics());;
+            params.height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 90, getResources().getDisplayMetrics());
             searchPane.setLayoutParams(params);
 
             tagMosaic.setVisibility(View.GONE);
@@ -1109,7 +1142,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     }
                 }
 
-                b.setText(key + "("+count+")");
+                b.setText(MessageFormat.format("{0}({1})", key, count));
             }
         }
     }
@@ -1124,7 +1157,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void addTagButton(String label, Integer count)
     {
         Button button = new Button(mContext);
-        button.setText(label + "("+count+")");
+        button.setText(MessageFormat.format("{0}({1})", label, count));
         button.setBackgroundResource(R.drawable.btn_buttonshape);
         button.setMinHeight(0);
         button.setMinimumHeight(0);
@@ -1193,7 +1226,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (doSearch) {
                 searchContent();
                 Handler handler = new Handler();
-                handler.post(() -> { updateTagMosaic(false); });
+                handler.post(() -> updateTagMosaic(false));
             }
         }
         else
@@ -1387,8 +1420,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void displayResults(List<Content> results);
 
-    // TODO: Test if result.size == booksPerPage (meaning; last page, exact size)
-    protected boolean isLastPage() { return (mAdapter.getItemCount() < booksPerPage); }
+    protected abstract void checkResults();
+
+    protected boolean isLastPage()
+    {
+        return ( currentPage * booksPerPage >= mAdapter.getTotalCount() );
+    }
 
     protected void displayNoResults() {
         if (isLoaded && !("").equals(query)) {
@@ -1406,13 +1443,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     ContentListener implementation
      */
     @Override
-    public void onContentReady(boolean success, List<Content> results) {
+    public void onContentReady(boolean success, List<Content> results, int totalContent) {
         if (success) {
-            Timber.d("Content results have loaded : %s results", results.size());
+            Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
             isLoaded = true;
 
             // Display new results
             displayResults(results);
+
+            mAdapter.setTotalCount(totalContent);
         }
     }
 
