@@ -80,7 +80,6 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
  * TODO: Dismiss 'new content' tooltip upon search
- * TODO: Fix empty 2nd page when books count = booksPerPage
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
@@ -1421,7 +1420,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void checkResults();
 
-    // TODO: Test if result.size == booksPerPage (meaning; last page, exact size)
     protected boolean isLastPage()
     {
         return ( currentPage * booksPerPage >= mAdapter.getTotalCount() );
