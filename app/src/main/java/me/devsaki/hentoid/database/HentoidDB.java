@@ -79,10 +79,18 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    public long getContentCount() {
-        SQLiteDatabase db = this.getReadableDatabase();
-        long count = DatabaseUtils.queryNumEntries(db, ContentTable.TABLE_NAME);
-        db.close();
+    public long countContent() {
+        long count = 0;
+
+        SQLiteDatabase db = null;
+        try {
+            db = getReadableDatabase();
+            count = DatabaseUtils.queryNumEntries(db, ContentTable.TABLE_NAME);
+        } finally {
+            if (db != null && db.isOpen()) {
+                db.close(); // Closing database connection
+            }
+        }
 
         return count;
     }
@@ -360,7 +368,6 @@ public class HentoidDB extends SQLiteOpenHelper {
     // This is a long running task, execute with AsyncTask or similar
     public List<Content> selectContentByQuery(String title, String author, int page, int booksPerPage, List<String> tags, List<Integer> sites, boolean filterFavourites, int orderStyle) {
         List<Content> result = Collections.emptyList();
-        boolean hasAuthor = (author != null && author.length() > 0);
 
         synchronized (locker) {
             Timber.d("selectContentByQuery");
@@ -370,37 +377,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             int start = (page - 1) * booksPerPage;
             try {
                 db = getReadableDatabase();
-                String sql = ContentTable.SELECT_DOWNLOADS_BASE;
-                sql = sql.replace("%1", buildListQuery(sites));
-
-                if (filterFavourites) sql += ContentTable.SELECT_DOWNLOADS_FAVS;
-
-                if (title != null && title.length() > 0) {
-                    sql += " AND ";
-                    sql += ContentTable.SELECT_DOWNLOADS_TITLE;
-                    title = '%'+title.replace("'","''")+'%';
-                    sql = sql.replace("%2", title);
-                }
-
-                if (hasAuthor || tags.size() > 0) {
-                    if (hasAuthor) {
-                        sql += " OR ";
-                        sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-                        sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
-                        author = '%' + author.replace("'", "''") + '%';
-                        sql = sql.replace("%3", author);
-                    }
-
-                    if (tags.size() > 0) {
-                        sql += " AND ";
-                        sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-                        sql += ContentTable.SELECT_DOWNLOADS_TAGS;
-                        sql = sql.replace("%4", buildListQuery(tags));
-                        sql = sql.replace("%5", tags.size()+"");
-                    }
-
-                    sql += "))";
-                }
+                String sql = buildContentSearchQuery(title, author, tags, sites, filterFavourites);
 
                 switch(orderStyle)
                 {
@@ -444,6 +421,76 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
 
         return result;
+    }
+
+    public int countContentByQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites)
+    {
+        int count = 0;
+        SQLiteDatabase db = null;
+        Cursor cursorCount = null;
+
+        synchronized (locker) {
+            Timber.d("countContentByQuery");
+
+            try {
+                db = getReadableDatabase();
+                String sql = buildContentSearchQuery(title, author, tags, sites, filterFavourites);
+                sql = sql.replace("C.*", "COUNT(*)");
+
+                Timber.d("Query : %s", sql);
+
+                cursorCount = db.rawQuery(sql, new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                        StatusContent.ERROR.getCode() + "",
+                        StatusContent.MIGRATED.getCode() + ""});
+
+                if (cursorCount.moveToFirst()) {
+                    count = cursorCount.getInt(0);
+                }
+            } finally {
+                closeCursor(cursorCount, db);
+            }
+        }
+
+        return count;
+    }
+
+    private String buildContentSearchQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites)
+    {
+        boolean hasAuthor = (author != null && author.length() > 0);
+
+        String sql = ContentTable.SELECT_DOWNLOADS_BASE;
+        sql = sql.replace("%1", buildListQuery(sites));
+
+        if (filterFavourites) sql += ContentTable.SELECT_DOWNLOADS_FAVS;
+
+        if (title != null && title.length() > 0) {
+            sql += " AND ";
+            sql += ContentTable.SELECT_DOWNLOADS_TITLE;
+            title = '%'+title.replace("'","''")+'%';
+            sql = sql.replace("%2", title);
+        }
+
+        if (hasAuthor || tags.size() > 0) {
+            if (hasAuthor) {
+                sql += " OR ";
+                sql += ContentTable.SELECT_DOWNLOADS_JOINS;
+                sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
+                author = '%' + author.replace("'", "''") + '%';
+                sql = sql.replace("%3", author);
+            }
+
+            if (tags.size() > 0) {
+                sql += " AND ";
+                sql += ContentTable.SELECT_DOWNLOADS_JOINS;
+                sql += ContentTable.SELECT_DOWNLOADS_TAGS;
+                sql = sql.replace("%4", buildListQuery(tags));
+                sql = sql.replace("%5", tags.size() + "");
+            }
+
+            sql += "))";
+        }
+
+        return sql;
     }
 
     private List<Content> populateResult(Cursor cursorContent, SQLiteDatabase db) {
