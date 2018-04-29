@@ -15,11 +15,12 @@
         android:gravity="fill"
         android:orientation="vertical">
 
-        <LinearLayout
+        <org.apmem.tools.layouts.FlowLayout
             android:id="@+id/filter_sites1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
+            f:weightDefault="1.0"
             android:orientation="horizontal">
 
             <ImageButton
@@ -120,15 +121,6 @@
                 f:srcCompat="@drawable/ic_menu_fakku"
                 tools:ignore="ContentDescription" />
 
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/filter_sites2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="start"
-            android:orientation="horizontal">
-
             <ImageButton
                 android:id="@+id/filter_favs"
                 android:layout_width="wrap_content"
@@ -141,7 +133,7 @@
                 f:srcCompat="@drawable/ic_fav_empty"
                 tools:ignore="ContentDescription" />
 
-        </LinearLayout>
+        </org.apmem.tools.layouts.FlowLayout>
 
         <LinearLayout
             android:id="@+id/filter_fields"
