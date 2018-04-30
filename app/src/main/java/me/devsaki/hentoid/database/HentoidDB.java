@@ -351,28 +351,6 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    @Deprecated
-    public List<Content> selectContentInQueue() {
-        List<Content> result = Collections.emptyList();
-        synchronized (locker) {
-            Timber.d("selectContentInQueue");
-            SQLiteDatabase db = null;
-            Cursor cursorContent = null;
-            try {
-                db = getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_IN_DOWNLOAD_MANAGER,
-                        new String[]{StatusContent.DOWNLOADING.getCode() + "",
-                                StatusContent.PAUSED.getCode() + ""});
-
-                result = populateResult(cursorContent, db);
-            } finally {
-                closeCursor(cursorContent, db);
-            }
-        }
-
-        return result;
-    }
-
     public List<Content> selectContentEmptyFolder() {
         List<Content> result;
         synchronized (locker) {

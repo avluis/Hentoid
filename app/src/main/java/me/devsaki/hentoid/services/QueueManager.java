@@ -9,7 +9,7 @@ import com.android.volley.toolbox.Volley;
 import me.devsaki.hentoid.util.VolleyOkHttp3Stack;
 import timber.log.Timber;
 
-public class QueueManager implements RequestQueue.RequestFinishedListener {
+public class QueueManager implements RequestQueue.RequestFinishedListener<Object> {
     private static QueueManager mInstance;
 
     private RequestQueue mRequestQueue;

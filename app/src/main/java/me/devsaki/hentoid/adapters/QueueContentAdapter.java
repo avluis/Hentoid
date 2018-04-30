@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -56,8 +55,6 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     @Override
     public View getView(int pos, View view, @NonNull ViewGroup parent) {
         View v = view;
-        // Get the data item for this position
-        final Content content = contents.get(pos);
         ViewHolder holder;
         // Check if an existing view is being reused, otherwise inflate the view
         if (v == null) {
@@ -78,6 +75,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
 
         // Populate the data into the template view using the data object
+        // Get the data item for this position
+        final Content content = contents.get(pos);
         if (content != null) {
             populateLayout(holder, content);
             attachButtons(v, content, (0 == pos), (contents.size() - 1 == pos));
@@ -213,9 +212,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void updateProgress(View view, Content content) {
         ProgressBar pb = view.findViewById(R.id.pbDownload);
+
+Timber.d("updateProgress %s CALLED %s", content.getPercent(), content.getStatus().getCode());
+
         if (content.getStatus() != StatusContent.PAUSED) {
             pb.setVisibility(View.VISIBLE);
             if (content.getPercent() > 0) {
+Timber.d("updateProgress %s SET", content.getPercent());
                 pb.setIndeterminate(false);
                 pb.setProgress((int) content.getPercent());
             } else {
