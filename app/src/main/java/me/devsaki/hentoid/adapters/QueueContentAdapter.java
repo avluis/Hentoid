@@ -290,16 +290,15 @@ Timber.d("updateProgress %s SET", content.getPercent());
     }
 
     private void cancel(Content content) {
-        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
-
         // Remove content altogether from the DB (including queue)
         HentoidDB db = HentoidDB.getInstance(context);
         db.deleteContent(content);
-//        content.setStatus(StatusContent.CANCELED);
-        // Remove the content from the in-memory list
-        contents.remove(content);
         // Remove the content from the disk
         clearDownload(content);
+        // Remove the content from the in-memory list and the UI
+        remove(content);
+
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
     }
 
     private void clearDownload(Content content) {
