@@ -233,32 +233,37 @@ Timber.d("updateProgress %s SET", content.getPercent());
         HentoidDB db = HentoidDB.getInstance(context);
         List<Pair<Integer,Integer>> queue = db.selectQueue();
 
-        int prevItemId = -1;
+        int prevItemId = 0;
+        int prevItemQueuePosition = -1;
         int prevItemPosition = -1;
         int loopPosition = 0;
 
         for (Pair<Integer,Integer> p : queue)
         {
-            if (p.first.equals(content.getId()) && prevItemId > -1)
+            if (p.first.equals(content.getId()) && prevItemId != 0)
             {
-                db.udpateQueue(p.first, prevItemPosition);
+                db.udpateQueue(p.first, prevItemQueuePosition);
                 db.udpateQueue(prevItemId, p.second);
-                Collections.swap(contents, prevItemPosition, p.second);
+                Collections.swap(contents, prevItemPosition, loopPosition);
                 if (1 == loopPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             } else {
                 prevItemId = p.first;
-                prevItemPosition = p.second;
+                prevItemQueuePosition = p.second;
+                prevItemPosition = loopPosition;
             }
             loopPosition++;
         }
+
+        notifyDataSetChanged();
     }
 
     private void moveDown(Content content) {
         HentoidDB db = HentoidDB.getInstance(context);
         List<Pair<Integer,Integer>> queue = db.selectQueue();
 
-        int itemId = -1;
+        int itemId = 0;
+        int itemQueuePosition = -1;
         int itemPosition = -1;
         int loopPosition = 0;
 
@@ -267,18 +272,21 @@ Timber.d("updateProgress %s SET", content.getPercent());
             if (p.first.equals(content.getId()))
             {
                 itemId = p.first;
-                itemPosition = p.second;
+                itemQueuePosition = p.second;
+                itemPosition = loopPosition;
             }
-            else if (itemId > -1)
+            else if (itemId != 0)
             {
-                db.udpateQueue(p.first, itemPosition);
+                db.udpateQueue(p.first, itemQueuePosition);
                 db.udpateQueue(itemId, p.second);
-                Collections.swap(contents, itemPosition, p.second);
+                Collections.swap(contents, itemPosition, loopPosition);
                 if (0 == loopPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             }
             loopPosition++;
         }
+
+        notifyDataSetChanged();
     }
 
     private void cancel(Content content) {
