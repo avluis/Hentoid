@@ -294,19 +294,11 @@ Timber.d("updateProgress %s SET", content.getPercent());
         HentoidDB db = HentoidDB.getInstance(context);
         db.deleteContent(content);
         // Remove the content from the disk
-        clearDownload(content);
+        FileHelper.removeContent(content);
         // Remove the content from the in-memory list and the UI
         remove(content);
 
         EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
-    }
-
-    private void clearDownload(Content content) {
-        if (content.getStatus() == StatusContent.CANCELED) {
-            FileHelper.removeContent(content);
-        } else {
-            Timber.d("Attempting to clear non-cancelled download: %s", content.getTitle());
-        }
     }
 
     // View lookup cache
