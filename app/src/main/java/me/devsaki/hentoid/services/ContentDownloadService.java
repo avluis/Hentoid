@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -41,6 +42,7 @@ public class ContentDownloadService extends IntentService {
     private NotificationPresenter notificationPresenter;
     private boolean downloadCanceled;
     private boolean downloadSkipped;
+    private boolean downloadPaused;
 
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
@@ -96,6 +98,7 @@ public class ContentDownloadService extends IntentService {
             Timber.w("Queue is empty. Aborting.");
             return;
         }
+
         Content content = db.selectContentById(queue.get(0).first);
 
         if (null == content || StatusContent.DOWNLOADED == content.getStatus())
@@ -123,6 +126,7 @@ public class ContentDownloadService extends IntentService {
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
         downloadSkipped = false;
+        downloadPaused = false;
         notificationPresenter.downloadStarted(content);
         File dir = FileHelper.getContentDownloadDir(this, content);
         Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
@@ -142,7 +146,7 @@ public class ContentDownloadService extends IntentService {
         // Watches progression
         // NB : download pause is managed at the Volley queue level (see QueueManager.pauseQueue / startQueue)
         double dlRate = 0;
-        while (dlRate < 1 && !downloadCanceled && !downloadSkipped) {
+        while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !downloadPaused) {
             int processed = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.ERROR.getCode()});
             dlRate = processed * 1.0 / images.size();
             updateActivity(content, dlRate);
@@ -154,7 +158,7 @@ public class ContentDownloadService extends IntentService {
             }
         }
 
-        if (!downloadCanceled)
+        if (!downloadCanceled && !downloadSkipped && !downloadPaused)
         {
             // Save JSON file
             try {
@@ -183,14 +187,15 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
         } else if (downloadSkipped) {
             Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
-
-            content.setStatus(StatusContent.PAUSED);
-            db.updateContentStatus(content);
+        } else if (downloadPaused) {
+            Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
         }
 
-        // Download next content in a new Intent
-        Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-        startService(intentService);
+        if (!downloadPaused) {
+            // Download next content in a new Intent
+            Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
+            startService(intentService);
+        }
 
         EventBus.getDefault().unregister(this);
     }
@@ -219,29 +224,11 @@ public class ContentDownloadService extends IntentService {
                 response -> {
                     try {
                         if (response!=null) {
-                            // Create a file on desired path and write stream data to it
-                            String contentType = response.getValue().get("Content-Type");
-                            File file = new File(dir, img.getName() + "." + MimeTypes.getExtensionFromMimeType(contentType));
-                            Timber.d("Write image %s to %s", img.getUrl(), file.getPath());
-
-                            byte data[] = new byte[1024];
-                            int count;
-
-                            try (InputStream input = new ByteArrayInputStream(response.getKey())) {
-                                try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
-
-                                    while ((count = input.read(data)) != -1) {
-                                        output.write(data, 0, count);
-                                    }
-
-                                    output.flush();
-                                }
-                            }
-
+                            saveImage(img, dir, response);
                             finalizeImage(img, true);
                         }
-                    } catch (Exception e) {
-                        Timber.d("Unexpected error - Image %s not retrieved", img.getUrl());
+                    } catch (IOException e) {
+                        Timber.d("I/O error - Image %s not saved", img.getUrl());
                         e.printStackTrace();
                         finalizeImage(img, false);
                     }
@@ -250,6 +237,28 @@ public class ContentDownloadService extends IntentService {
                     error.printStackTrace();
                     finalizeImage(img, false);
                 }, null);
+    }
+
+    private static void saveImage(ImageFile img, File dir, Map.Entry<byte[], Map<String, String>> response) throws IOException
+    {
+        // Create a file on desired path and write stream data to it
+        String contentType = response.getValue().get("Content-Type");
+        File file = new File(dir, img.getName() + "." + MimeTypes.getExtensionFromMimeType(contentType));
+        Timber.d("Write image %s to %s", img.getUrl(), file.getPath());
+
+        byte data[] = new byte[1024];
+        int count;
+
+        try (InputStream input = new ByteArrayInputStream(response.getKey())) {
+            try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
+
+                while ((count = input.read(data)) != -1) {
+                    output.write(data, 0, count);
+                }
+
+                output.flush();
+            }
+        }
     }
 
     private void finalizeImage(ImageFile img, boolean success)
@@ -277,20 +286,28 @@ public class ContentDownloadService extends IntentService {
             // Nothing special in case of progress
             // case DownloadEvent.EV_PROGRESS:
             case DownloadEvent.EV_PAUSE :
+/*
                 QueueManager.getInstance().pauseQueue();
+*/
+                db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
+                QueueManager.getInstance().cancelQueue();
+                downloadPaused = true;
+                break;
+            // Won't be here to act
+/*
+            case DownloadEvent.EV_UNPAUSE :
+                // QueueManager.getInstance().startQueue();
                 db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
                 break;
-            case DownloadEvent.EV_UNPAUSE :
-                QueueManager.getInstance().startQueue();
-                db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                break;
+*/
             case DownloadEvent.EV_CANCEL :
-                downloadCanceled = true;
                 QueueManager.getInstance().cancelQueue();
+                downloadCanceled = true;
                 break;
             case DownloadEvent.EV_SKIP :
-                downloadSkipped = true;
+                db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 QueueManager.getInstance().cancelQueue();
+                downloadSkipped = true;
                 break;
         }
     }

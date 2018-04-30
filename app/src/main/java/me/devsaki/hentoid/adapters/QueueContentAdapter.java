@@ -76,10 +76,10 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
         // Populate the data into the template view using the data object
         // Get the data item for this position
-        final Content content = contents.get(pos);
+        final Content content = getItem(pos);
         if (content != null) {
             populateLayout(holder, content);
-            attachButtons(v, content, (0 == pos), (contents.size() - 1 == pos));
+            attachButtons(v, content, (0 == pos), (getCount() - 1 == pos));
             updateProgress(v, content);
         }
         // Return the completed view to render on screen

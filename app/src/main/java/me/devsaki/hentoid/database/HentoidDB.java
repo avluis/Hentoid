@@ -868,7 +868,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    public void updateContentStatus(StatusContent updateTo, StatusContent updateFrom) {
+    public void updateContentStatus(StatusContent updateFrom, StatusContent updateTo) {
         synchronized (locker) {
             Timber.d("updateContentStatus2");
             SQLiteDatabase db = null;

@@ -8,7 +8,6 @@ import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,16 +16,15 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentDownloadService;
-import me.devsaki.hentoid.services.QueueManager;
 import timber.log.Timber;
 
 /**
@@ -35,9 +33,9 @@ import timber.log.Timber;
  */
 public class QueueFragment extends BaseFragment {
 
-    private List<Content> contents;
     private Context context;
-    QueueContentAdapter mAdapter;
+    private QueueContentAdapter mAdapter;
+    private boolean isPaused;
 
     // UI ELEMENTS
     private ListView mListView;
@@ -62,8 +60,13 @@ public class QueueFragment extends BaseFragment {
         if (DownloadEvent.EV_PROGRESS == event.eventType) {
             Double percent = event.percent;
             updatePercent(percent);
+        } else if (DownloadEvent.EV_UNPAUSE == event.eventType) {
+            getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
+            Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
+            context.startService(intent);
+            update(event.eventType);
         } else {
-            update();
+            update(event.eventType);
         }
     }
 
@@ -90,47 +93,37 @@ public class QueueFragment extends BaseFragment {
         btnPause = rootView.findViewById(R.id.btnPause);
         queueText = rootView.findViewById(R.id.queueText);
 
-        btnStart.setOnClickListener(v -> {
-            if (contents.size() > 0) {
-                if (QueueManager.getInstance(context).isQueueEmpty())
-                {
-                    Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
-                    context.startService(intent);
-                } else {
-                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE));
-                }
-                btnStart.setVisibility(View.GONE);
-                btnPause.setVisibility(View.VISIBLE);
-                queueText.setText(R.string.queue_dl);
-                update();
-            }
-        });
-        btnPause.setOnClickListener(v -> {
-            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE));
-            btnPause.setVisibility(View.GONE);
-            btnStart.setVisibility(View.VISIBLE);
-            queueText.setText(R.string.queue_paused);
-            update();
-        });
+        btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
+        btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
 
         return rootView;
     }
 
     private void updatePercent(double percent) {
-        if (contents != null && !contents.isEmpty()) {
-            contents.get(0).setPercent(percent);
-            mAdapter.notifyDataSetChanged();
+        if (!isPaused && mAdapter != null && mAdapter.getCount() > 0) {
+            Content content = mAdapter.getItem(0);
+            if (content != null) {
+                content.setPercent(percent);
+                mAdapter.notifyDataSetChanged();
+            }
         }
     }
 
-    public void update() {
-        contents = getDB().selectQueueContents();
+    public void update() { update (-1); }
+    public void update(int eventType) {
+        List<Content> contents = getDB().selectQueueContents();
+
+        boolean isEmpty = (0 == contents.size());
+        isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || contents.get(0).getStatus() == StatusContent.PAUSED));
+        boolean isActive = (!isEmpty && !isPaused);
+
+        Timber.d("Queue state : E/P/A > %s/%s/%s", isEmpty, isPaused, isActive);
 
         // Update list visibility
-        if (contents.size() > 0) mEmptyText.setVisibility(View.GONE); else mEmptyText.setVisibility(View.VISIBLE);
+        mEmptyText.setVisibility(isEmpty?View.VISIBLE:View.GONE);
 
         // Update control bar status
-        if (contents.size() > 0 && !QueueManager.getInstance(context).isQueueEmpty())
+        if (isActive)
         {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
@@ -138,7 +131,7 @@ public class QueueFragment extends BaseFragment {
         } else {
             btnPause.setVisibility(View.GONE);
 
-            if (contents.size() > 0) {
+            if (isPaused) {
                 btnStart.setVisibility(View.VISIBLE);
                 queueText.setText(R.string.queue_paused);
             } else {
