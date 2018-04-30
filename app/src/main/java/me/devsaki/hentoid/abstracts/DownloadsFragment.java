@@ -468,6 +468,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             siteFilters.add(Site.HENTAICAFE.getCode());
             siteFilters.add(Site.PURURIN.getCode());
             siteFilters.add(Site.TSUMINO.getCode());
+            siteFilters.add(Site.FAKKU.getCode());
         }
     }
 
@@ -788,6 +789,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         initSiteButton(activity.findViewById(R.id.filter_asmcomics), Site.ASMHENTAI_COMICS.getCode());
         initSiteButton(activity.findViewById(R.id.filter_tsumino), Site.TSUMINO.getCode());
         initSiteButton(activity.findViewById(R.id.filter_pururin), Site.PURURIN.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_fakku), Site.FAKKU.getCode());
 
         // Attaches listener to favourite filters
         final ImageButton favouriteButton = activity.findViewById(R.id.filter_favs);
