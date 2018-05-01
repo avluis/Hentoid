@@ -16,18 +16,22 @@ public class DownloadEvent {
 
     public final Content content;
     public final int eventType;
-    public final double percent;
+    public final int pagesOK;
+    public final int pagesKO;
+    public final int pagesTotal;
 
     public DownloadEvent(int eventType) {
-        this.content = null; this.eventType = eventType; this.percent = 0.0;
+        this.content = null; this.eventType = eventType; this.pagesOK = 0; this.pagesKO = 0; this.pagesTotal = 0;
     }
-    public DownloadEvent(int eventType, double percent) {
-        this.content = null; this.eventType = eventType; this.percent = percent;
+    public DownloadEvent(int eventType, int pagesOK, int pagesKO, int pagesTotal) {
+        this.content = null; this.eventType = eventType; this.pagesOK = pagesOK; this.pagesKO = pagesKO; this.pagesTotal = pagesTotal;
     }
     public DownloadEvent(Content content, int eventType) {
-        this.content = content; this.eventType = eventType; this.percent = 0.0;
+        this.content = content; this.eventType = eventType; this.pagesOK = 0; this.pagesKO = 0; this.pagesTotal = 0;
     }
-    public DownloadEvent(Content content, int eventType, double percent) {
-        this.content = content; this.eventType = eventType; this.percent = percent;
+
+    @Deprecated
+    public DownloadEvent(int eventType, double percent) {
+        this.content = null; this.eventType = eventType; this.pagesOK = 0; this.pagesKO = 0; this.pagesTotal = 0;
     }
 }

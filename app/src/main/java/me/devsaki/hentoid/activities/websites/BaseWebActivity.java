@@ -258,11 +258,13 @@ public abstract class BaseWebActivity extends BaseActivity {
     public void onReadFabClick(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
-            if (StatusContent.DOWNLOADED == currentContent.getStatus()
-                    || StatusContent.ERROR == currentContent.getStatus()) {
-                FileHelper.openContent(this, currentContent);
-            } else {
-                hideFab(fabRead);
+            if (currentContent != null) {
+                if (StatusContent.DOWNLOADED == currentContent.getStatus()
+                        || StatusContent.ERROR == currentContent.getStatus()) {
+                    FileHelper.openContent(this, currentContent);
+                } else {
+                    hideFab(fabRead);
+                }
             }
         }
     }

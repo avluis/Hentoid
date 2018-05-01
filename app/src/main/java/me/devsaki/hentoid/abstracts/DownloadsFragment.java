@@ -691,10 +691,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        Double percent = event.percent;
-        if (percent >= 0) {
-            Timber.d("Download Progress: %s", percent);
-        } else if (isLoaded) {
+        if (event.eventType == DownloadEvent.EV_COMPLETE && isLoaded) {
             showReloadToolTip();
         }
     }
@@ -1284,8 +1281,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             newContentToolTip.setVisibility(View.VISIBLE);
             refreshLayout.setEnabled(true);
             isNewContentAvailable = true;
-        } else {
-            Timber.d("Tooltip visible.");
         }
     }
 

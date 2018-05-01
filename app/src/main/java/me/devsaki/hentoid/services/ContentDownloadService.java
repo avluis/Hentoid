@@ -81,8 +81,7 @@ public class ContentDownloadService extends IntentService {
         downloadQueueHead();
     }
 
-    private void downloadQueueHead()
-    {
+    private void downloadQueueHead() {
 /*
         // Exits if download queue is already running - there can only be one service active at a time
         if (!QueueManager.getInstance(this).isQueueEmpty()) {
@@ -92,33 +91,29 @@ public class ContentDownloadService extends IntentService {
 */
 
         // Works on first item of queue
-        List<Pair<Integer,Integer>> queue = db.selectQueue();
-        if (0 == queue.size())
-        {
+        List<Pair<Integer, Integer>> queue = db.selectQueue();
+        if (0 == queue.size()) {
             Timber.w("Queue is empty. Aborting.");
             return;
         }
 
         Content content = db.selectContentById(queue.get(0).first);
 
-        if (null == content || StatusContent.DOWNLOADED == content.getStatus())
-        {
+        if (null == content || StatusContent.DOWNLOADED == content.getStatus()) {
             Timber.w("Content is unavailable, or already downloaded. Aborting.");
             return;
         }
 
         // Check if images are already known
         List<ImageFile> images = content.getImageFiles();
-        if (0 == images.size())
-        {
+        if (0 == images.size()) {
             // Create image list in DB
             images = parseImageFiles(content);
             content.setImageFiles(images);
             db.insertImageFiles(content);
         }
 
-        if (0 == images.size())
-        {
+        if (0 == images.size()) {
             Timber.w("Image list is empty");
             return;
         }
@@ -147,9 +142,10 @@ public class ContentDownloadService extends IntentService {
         // NB : download pause is managed at the Volley queue level (see QueueManager.pauseQueue / startQueue)
         double dlRate = 0;
         while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !downloadPaused) {
-            int processed = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode(), StatusContent.ERROR.getCode()});
-            dlRate = processed * 1.0 / images.size();
-            updateActivity(content, dlRate);
+            int pagesOK = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode()});
+            int pagesKO = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode()});
+            dlRate = (pagesOK + pagesKO) * 1.0 / images.size();
+            updateActivity(pagesOK, pagesKO, images.size());
 
             try {
                 Thread.sleep(1000);
@@ -158,8 +154,7 @@ public class ContentDownloadService extends IntentService {
             }
         }
 
-        if (!downloadCanceled && !downloadSkipped && !downloadPaused)
-        {
+        if (!downloadCanceled && !downloadSkipped && !downloadPaused) {
             // Save JSON file
             try {
                 JsonHelper.saveJson(content, dir);
@@ -178,8 +173,9 @@ public class ContentDownloadService extends IntentService {
             boolean isSuccess = (0 == db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode(), StatusContent.IGNORED.getCode()}));
             content.setDownloadDate(new Date().getTime());
             content.setStatus(isSuccess ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-            completeActivity(content, isSuccess);
             db.updateContentStatus(content);
+
+            completeActivity(content, isSuccess);
 
             // Delete from queue
             db.deleteQueueById(content.getId());
@@ -218,12 +214,11 @@ public class ContentDownloadService extends IntentService {
         return imageFileList;
     }
 
-    private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir)
-    {
+    private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir) {
         return new InputStreamVolleyRequest(Request.Method.GET, img.getUrl(),
                 response -> {
                     try {
-                        if (response!=null) {
+                        if (response != null) {
                             saveImage(img, dir, response);
                             finalizeImage(img, true);
                         }
@@ -233,14 +228,13 @@ public class ContentDownloadService extends IntentService {
                         finalizeImage(img, false);
                     }
                 }, error -> {
-                    Timber.d("Download error - Image %s not retrieved", img.getUrl());
-                    error.printStackTrace();
-                    finalizeImage(img, false);
-                }, null);
+            Timber.d("Download error - Image %s not retrieved", img.getUrl());
+            error.printStackTrace();
+            finalizeImage(img, false);
+        }, null);
     }
 
-    private static void saveImage(ImageFile img, File dir, Map.Entry<byte[], Map<String, String>> response) throws IOException
-    {
+    private static void saveImage(ImageFile img, File dir, Map.Entry<byte[], Map<String, String>> response) throws IOException {
         // Create a file on desired path and write stream data to it
         String contentType = response.getValue().get("Content-Type");
         File file = new File(dir, img.getName() + "." + MimeTypes.getExtensionFromMimeType(contentType));
@@ -261,15 +255,14 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    private void finalizeImage(ImageFile img, boolean success)
-    {
-        img.setStatus(success?StatusContent.DOWNLOADED:StatusContent.ERROR);
+    private void finalizeImage(ImageFile img, boolean success) {
+        img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         db.updateImageFileStatus(img);
     }
 
-    private static void updateActivity(Content content, double percent) {
-        Timber.d("UpdateActivity : %s percent", String.valueOf(percent));
-        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, percent * 100));
+    private static void updateActivity(int pagesOK, int pagesKO, int totalPages) {
+        Timber.d("UpdateActivity : OK : %s - KO : %s - Total : %s > %s %", pagesOK, pagesKO, totalPages, String.valueOf((pagesOK + pagesKO) * 1.0 / totalPages));
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
     }
 
     private static void completeActivity(Content content, boolean success) {
@@ -279,13 +272,10 @@ public class ContentDownloadService extends IntentService {
 
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
-        Timber.d("Event notified : %s / %s percent", event.eventType, String.valueOf(event.percent));
-
-        switch (event.eventType)
-        {
+        switch (event.eventType) {
             // Nothing special in case of progress
             // case DownloadEvent.EV_PROGRESS:
-            case DownloadEvent.EV_PAUSE :
+            case DownloadEvent.EV_PAUSE:
 /*
                 QueueManager.getInstance().pauseQueue();
 */
@@ -300,11 +290,11 @@ public class ContentDownloadService extends IntentService {
                 db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
                 break;
 */
-            case DownloadEvent.EV_CANCEL :
+            case DownloadEvent.EV_CANCEL:
                 QueueManager.getInstance().cancelQueue();
                 downloadCanceled = true;
                 break;
-            case DownloadEvent.EV_SKIP :
+            case DownloadEvent.EV_SKIP:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 QueueManager.getInstance().cancelQueue();
                 downloadSkipped = true;

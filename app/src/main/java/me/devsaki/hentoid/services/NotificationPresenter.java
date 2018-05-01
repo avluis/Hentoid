@@ -87,7 +87,7 @@ final class NotificationPresenter {
         switch (event.eventType)
         {
             case DownloadEvent.EV_PROGRESS:
-                updateProgress(event.percent);
+                updateProgress((event.pagesKO + event.pagesOK) * 1.0 / event.pagesTotal);
                 break;
             case DownloadEvent.EV_PAUSE :
                 updatePause();

@@ -8,6 +8,8 @@ import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -25,6 +27,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentDownloadService;
+import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
@@ -57,9 +60,11 @@ public class QueueFragment extends BaseFragment {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
+
+        Timber.d("Event received : %s", event.eventType);
+
         if (DownloadEvent.EV_PROGRESS == event.eventType) {
-            Double percent = event.percent;
-            updatePercent(percent);
+            updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal);
         } else if (DownloadEvent.EV_UNPAUSE == event.eventType) {
             getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
             Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
@@ -99,17 +104,28 @@ public class QueueFragment extends BaseFragment {
         return rootView;
     }
 
-    private void updatePercent(double percent) {
+    private void updateProgress(int pagesOK, int pagesKO, int totalPages) {
         if (!isPaused && mAdapter != null && mAdapter.getCount() > 0) {
             Content content = mAdapter.getItem(0);
             if (content != null) {
-                content.setPercent(percent);
+                // Update book progress bar
+                content.setPercent((pagesOK + pagesKO) * 1.0 / totalPages);
                 mAdapter.notifyDataSetChanged();
+
+                // Update information bar
+                StringBuilder message = new StringBuilder(context.getResources().getString(R.string.queue_dl));
+                String processedPagesFmt = Helper.fixedLengthInt(pagesOK, String.valueOf(totalPages).length());
+                message.append(" ").append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
+
+                queueText.setText(message.toString());
             }
         }
     }
 
-    public void update() { update (-1); }
+    public void update() {
+        update(-1);
+    }
+
     public void update(int eventType) {
         List<Content> contents = getDB().selectQueueContents();
 
@@ -120,20 +136,27 @@ public class QueueFragment extends BaseFragment {
         Timber.d("Queue state : E/P/A > %s/%s/%s", isEmpty, isPaused, isActive);
 
         // Update list visibility
-        mEmptyText.setVisibility(isEmpty?View.VISIBLE:View.GONE);
+        mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update control bar status
-        if (isActive)
-        {
+        if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
             queueText.setText(R.string.queue_dl);
+            queueText.clearAnimation();
         } else {
             btnPause.setVisibility(View.GONE);
 
             if (isPaused) {
                 btnStart.setVisibility(View.VISIBLE);
                 queueText.setText(R.string.queue_paused);
+
+                Animation anim = new AlphaAnimation(0.0f, 1.0f);
+                anim.setDuration(750);
+                anim.setStartOffset(20);
+                anim.setRepeatMode(Animation.REVERSE);
+                anim.setRepeatCount(Animation.INFINITE);
+                queueText.startAnimation(anim);
             } else {
                 btnStart.setVisibility(View.GONE);
                 queueText.setText(R.string.queue_empty2);

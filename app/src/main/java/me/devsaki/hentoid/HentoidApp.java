@@ -232,7 +232,7 @@ public class HentoidApp extends Application {
             if (contents != null && contents.size() > 0) {
                 for (int i = 0; i < contents.size(); i++) {
                     Content content = contents.get(i);
-                    content.setStorageFolder("/" + content.getSite().getDescription() + "/" + content.getOldUniqueSiteId());
+                    content.setStorageFolder("/" + content.getSite().getDescription() + "/" + content.getOldUniqueSiteId()); // This line must use deprecated code, as it migrates it to newest version
                     db.updateContentStorageFolder(content);
                 }
             }
