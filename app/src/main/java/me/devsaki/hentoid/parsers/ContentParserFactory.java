@@ -29,6 +29,8 @@ public class ContentParserFactory {
                 return new TsuminoParser();
             case PURURIN:
                 return new PururinParser();
+            case PANDA:
+                return new PandaParser();
             default:
                 return new DummyParser();
         }

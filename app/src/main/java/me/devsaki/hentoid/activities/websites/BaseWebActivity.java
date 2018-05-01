@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Pair;
@@ -17,6 +18,7 @@ import android.view.View;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -26,6 +28,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -47,6 +51,7 @@ import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
+import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -76,6 +81,9 @@ public abstract class BaseWebActivity extends BaseActivity {
         blockedAds.add("pop.js");
         blockedAds.add("trafficsan.com");
         blockedAds.add("contentabc.com");
+        blockedAds.add("bebi.com");
+        blockedAds.add("aftv-serving.bid");
+        blockedAds.add("smatoo.net");
     }
 
     ObservableWebView getWebView() {
@@ -275,7 +283,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
-        if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
+        if (currentContent != null && StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Helper.toast(this, R.string.already_downloaded);
             hideFab(fabDownload);
 
@@ -434,8 +442,14 @@ public abstract class BaseWebActivity extends BaseActivity {
             hideFab(fabDownload);
             hideFab(fabRead);
 
-            if (filteredUrl.length() > 0 && url.contains(filteredUrl)) {
-                executeAsyncTask(new HtmlLoader(activity), url);
+            if (filteredUrl.length() > 0)
+            {
+                Pattern pattern = Pattern.compile(filteredUrl);
+                Matcher matcher = pattern.matcher(url);
+
+                if (matcher.find()) {
+                    executeAsyncTask(new HtmlLoader(activity), url);
+                }
             }
         }
 
@@ -443,6 +457,28 @@ public abstract class BaseWebActivity extends BaseActivity {
         public void onPageFinished(WebView view, String url) {
             webViewIsLoading = false;
             fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
+        }
+
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull String url) {
+            if (isUrlForbidden(url)) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
+            } else {
+                return super.shouldInterceptRequest(view, url);
+            }
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull WebResourceRequest request) {
+            String url = request.getUrl().toString();
+            if (isUrlForbidden(url)) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
+            } else {
+                return super.shouldInterceptRequest(view, request);
+            }
         }
     }
 

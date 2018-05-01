@@ -12,6 +12,7 @@ import me.devsaki.hentoid.activities.websites.BaseWebActivity;
 import me.devsaki.hentoid.activities.websites.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.websites.HitomiActivity;
 import me.devsaki.hentoid.activities.websites.NhentaiActivity;
+import me.devsaki.hentoid.activities.websites.PandaActivity;
 import me.devsaki.hentoid.activities.websites.PururinActivity;
 import me.devsaki.hentoid.activities.websites.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -84,6 +85,7 @@ public class Content implements Serializable {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
+            case PANDA:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
             case HENTAICAFE:
@@ -110,6 +112,7 @@ public class Content implements Serializable {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
+            case PANDA:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
             case HENTAICAFE:
@@ -134,6 +137,8 @@ public class Content implements Serializable {
                 return TsuminoActivity.class;
             case PURURIN:
                 return PururinActivity.class;
+            case PANDA:
+                return PandaActivity.class;
             default:
                 return BaseWebActivity.class; // Fallback for FAKKU
         }
@@ -181,6 +186,7 @@ public class Content implements Serializable {
                 galleryConst = "/Book/Info";
                 break;
             case HENTAICAFE:
+            case PANDA:
             default:
                 galleryConst = "";
                 break; // Includes FAKKU & Hentai Cafe
@@ -202,6 +208,7 @@ public class Content implements Serializable {
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
+            case PANDA:
                 return getGalleryUrl();
             case PURURIN:
                 return site.getUrl() + "/read" + url;

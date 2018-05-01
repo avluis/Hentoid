@@ -461,14 +461,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         } else {
             // Init site filters; all on by default
-            siteFilters.add(Site.NHENTAI.getCode());
-            siteFilters.add(Site.HITOMI.getCode());
-            siteFilters.add(Site.ASMHENTAI.getCode());
-            siteFilters.add(Site.ASMHENTAI_COMICS.getCode());
-            siteFilters.add(Site.HENTAICAFE.getCode());
-            siteFilters.add(Site.PURURIN.getCode());
-            siteFilters.add(Site.TSUMINO.getCode());
-            siteFilters.add(Site.FAKKU.getCode());
+            for (Site s : Site.values()) {
+                siteFilters.add(s.getCode());
+            }
         }
     }
 

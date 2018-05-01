@@ -261,7 +261,7 @@ public class ContentDownloadService extends IntentService {
     }
 
     private static void updateActivity(int pagesOK, int pagesKO, int totalPages) {
-        Timber.d("UpdateActivity : OK : %s - KO : %s - Total : %s > %s %", pagesOK, pagesKO, totalPages, String.valueOf((pagesOK + pagesKO) * 1.0 / totalPages));
+        Timber.d("UpdateActivity : OK : %s - KO : %s - Total : %s > %s pc.", pagesOK, pagesKO, totalPages, String.valueOf((pagesOK + pagesKO) * 100.0 / totalPages));
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
     }
 

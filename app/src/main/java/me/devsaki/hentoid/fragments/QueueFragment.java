@@ -109,7 +109,7 @@ public class QueueFragment extends BaseFragment {
             Content content = mAdapter.getItem(0);
             if (content != null) {
                 // Update book progress bar
-                content.setPercent((pagesOK + pagesKO) * 1.0 / totalPages);
+                content.setPercent((pagesOK + pagesKO) * 100.0 / totalPages);
                 mAdapter.notifyDataSetChanged();
 
                 // Update information bar
