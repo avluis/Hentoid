@@ -45,7 +45,7 @@ final class NotificationPresenter {
     NotificationPresenter() {
         instance = HentoidApp.getInstance();
         res = instance.getResources();
-        count = HentoidApp.getDownloadCount();
+        count = ContentQueueManager.getInstance().getDownloadCount();
         manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancelAll();
 
@@ -202,7 +202,7 @@ final class NotificationPresenter {
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
                 Intent.FLAG_ACTIVITY_SINGLE_TOP);
         Bundle bundle = new Bundle();
-        bundle.putInt(Consts.DOWNLOAD_COUNT, HentoidApp.getDownloadCount());
+        bundle.putInt(Consts.DOWNLOAD_COUNT, ContentQueueManager.getInstance().getDownloadCount());
         resultIntent.putExtras(bundle);
 
         return PendingIntent.getActivity(instance, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);

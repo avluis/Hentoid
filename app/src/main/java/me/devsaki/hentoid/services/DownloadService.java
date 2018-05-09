@@ -174,7 +174,7 @@ public class DownloadService extends IntentService {
             Timber.e(e, "Error saving JSON: %s", currentContent.getTitle());
         }
 
-        HentoidApp.downloadComplete();
+        ContentQueueManager.getInstance().downloadComplete();
         updateActivity(-1);
         Timber.d("Content download finished: %s", currentContent.getTitle());
 

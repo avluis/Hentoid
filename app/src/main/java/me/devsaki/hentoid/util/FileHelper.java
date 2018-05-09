@@ -375,6 +375,7 @@ public class FileHelper {
      */
     public static String getThumb(Content content) {
         String settingDir = Preferences.getRootFolderName();
+        Timber.d("GetThumb %s --- %s", settingDir, content.getStorageFolder());
         File dir = new File(settingDir, content.getStorageFolder());
 
         String coverUrl = content.getCoverImageUrl();

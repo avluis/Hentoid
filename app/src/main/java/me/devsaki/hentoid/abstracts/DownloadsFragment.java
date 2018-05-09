@@ -67,6 +67,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -677,8 +678,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void resetCount() {
-        Timber.d("Download Count: %s", HentoidApp.getDownloadCount());
-        HentoidApp.setDownloadCount(0);
+        Timber.d("Download Count: %s", ContentQueueManager.getInstance().getDownloadCount());
+        ContentQueueManager.getInstance().setDownloadCount(0);
 
         NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) manager.cancel(0);
@@ -1260,7 +1261,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (clear) {
             resetCount();
         } else {
-            if (HentoidApp.getDownloadCount() > 0) {
+            if (ContentQueueManager.getInstance().getDownloadCount() > 0) {
                 if (isLoaded) {
                     showReloadToolTip();
                 }

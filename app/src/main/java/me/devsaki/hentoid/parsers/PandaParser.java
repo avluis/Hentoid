@@ -68,9 +68,7 @@ public class PandaParser extends BaseParser {
                     Pattern pattern = Pattern.compile("document\\['pu'\\] = '(.+)'");
                     Matcher matcher = pattern.matcher(e.toString());
 
-                    Timber.d("Match found? %s", matcher.find());
-
-                    if (matcher.groupCount() > 0) {
+                    if (matcher.find() && matcher.groupCount() > 0) {
                         result.add(matcher.group(1));
                     }
                     break;

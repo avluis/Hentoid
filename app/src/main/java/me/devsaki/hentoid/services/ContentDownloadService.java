@@ -42,7 +42,6 @@ public class ContentDownloadService extends IntentService {
     private NotificationPresenter notificationPresenter;
     private boolean downloadCanceled;
     private boolean downloadSkipped;
-    private boolean downloadPaused;
 
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
@@ -84,11 +83,18 @@ public class ContentDownloadService extends IntentService {
     private void downloadQueueHead() {
 /*
         // Exits if download queue is already running - there can only be one service active at a time
-        if (!QueueManager.getInstance(this).isQueueEmpty()) {
+        if (!RequestQueueManager.getInstance(this).isQueueEmpty()) {
             Timber.d("Download still active. Aborting");
             return;
         }
 */
+        ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
+
+        // Check if queue is already paused
+        if (contentQueueManager.isQueuePaused()) {
+            Timber.w("Queue is paused. Aborting.");
+            return;
+        }
 
         // Works on first item of queue
         List<Pair<Integer, Integer>> queue = db.selectQueue();
@@ -121,7 +127,6 @@ public class ContentDownloadService extends IntentService {
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
         downloadSkipped = false;
-        downloadPaused = false;
         notificationPresenter.downloadStarted(content);
         File dir = FileHelper.getContentDownloadDir(this, content);
         Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
@@ -132,16 +137,16 @@ public class ContentDownloadService extends IntentService {
 
         // Plan download actions
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
-        QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(cover, dir));
+        RequestQueueManager.getInstance(this).addToRequestQueue(buildStringRequest(cover, dir));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED) || img.getStatus().equals(StatusContent.ERROR))
-                QueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir));
+                RequestQueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir));
         }
 
         // Watches progression
-        // NB : download pause is managed at the Volley queue level (see QueueManager.pauseQueue / startQueue)
+        // NB : download pause is managed at the Volley queue level (see RequestQueueManager.pauseQueue / startQueue)
         double dlRate = 0;
-        while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !downloadPaused) {
+        while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()) {
             int pagesOK = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode()});
             int pagesKO = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode()});
             dlRate = (pagesOK + pagesKO) * 1.0 / images.size();
@@ -154,7 +159,7 @@ public class ContentDownloadService extends IntentService {
             }
         }
 
-        if (!downloadCanceled && !downloadSkipped && !downloadPaused) {
+        if (!downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()) {
             // Save JSON file
             try {
                 JsonHelper.saveJson(content, dir);
@@ -163,7 +168,7 @@ public class ContentDownloadService extends IntentService {
             }
 
             // Signal activity end
-            HentoidApp.downloadComplete();
+            contentQueueManager.downloadComplete();
             Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
 
             // Tracking Event (Download Completed)
@@ -183,11 +188,11 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
         } else if (downloadSkipped) {
             Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
-        } else if (downloadPaused) {
+        } else if (contentQueueManager.isQueuePaused()) {
             Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
         }
 
-        if (!downloadPaused) {
+        if (!contentQueueManager.isQueuePaused()) {
             // Download next content in a new Intent
             Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
             startService(intentService);
@@ -276,27 +281,19 @@ public class ContentDownloadService extends IntentService {
             // Nothing special in case of progress
             // case DownloadEvent.EV_PROGRESS:
             case DownloadEvent.EV_PAUSE:
-/*
-                QueueManager.getInstance().pauseQueue();
-*/
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                QueueManager.getInstance().cancelQueue();
-                downloadPaused = true;
+                RequestQueueManager.getInstance().cancelQueue();
+                ContentQueueManager.getInstance().pauseQueue();
                 break;
-            // Won't be here to act
-/*
-            case DownloadEvent.EV_UNPAUSE :
-                // QueueManager.getInstance().startQueue();
-                db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
-                break;
-*/
+            // Won't be active to catch that
+//          case DownloadEvent.EV_UNPAUSE :
             case DownloadEvent.EV_CANCEL:
-                QueueManager.getInstance().cancelQueue();
+                RequestQueueManager.getInstance().cancelQueue();
                 downloadCanceled = true;
                 break;
             case DownloadEvent.EV_SKIP:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                QueueManager.getInstance().cancelQueue();
+                RequestQueueManager.getInstance().cancelQueue();
                 downloadSkipped = true;
                 break;
         }

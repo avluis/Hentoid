@@ -20,6 +20,8 @@ public class DownloadEvent {
     public final int pagesKO;
     public final int pagesTotal;
 
+    // TODO : implement coherence checks according to eventType in each constructor
+
     public DownloadEvent(int eventType) {
         this.content = null; this.eventType = eventType; this.pagesOK = 0; this.pagesKO = 0; this.pagesTotal = 0;
     }

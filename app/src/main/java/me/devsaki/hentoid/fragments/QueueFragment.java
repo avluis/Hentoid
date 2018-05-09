@@ -27,6 +27,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentDownloadService;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
@@ -66,6 +67,7 @@ public class QueueFragment extends BaseFragment {
         if (DownloadEvent.EV_PROGRESS == event.eventType) {
             updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal);
         } else if (DownloadEvent.EV_UNPAUSE == event.eventType) {
+            ContentQueueManager.getInstance().unpauseQueue();
             getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
             Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
             context.startService(intent);
