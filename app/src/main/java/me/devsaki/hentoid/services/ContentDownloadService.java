@@ -61,6 +61,7 @@ public class ContentDownloadService extends IntentService {
 
     @Override
     public void onDestroy() {
+        EventBus.getDefault().unregister(this);
         EventBus.getDefault().unregister(notificationPresenter);
         notificationPresenter = null;
 
@@ -198,8 +199,6 @@ public class ContentDownloadService extends IntentService {
             Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
             startService(intentService);
         }
-
-        EventBus.getDefault().unregister(this);
     }
 
     private static List<ImageFile> parseImageFiles(Content content) {

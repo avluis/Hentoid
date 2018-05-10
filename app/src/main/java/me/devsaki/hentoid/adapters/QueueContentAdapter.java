@@ -213,12 +213,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void updateProgress(View view, Content content) {
         ProgressBar pb = view.findViewById(R.id.pbDownload);
 
-Timber.d("updateProgress %s CALLED %s", content.getPercent(), content.getStatus().getCode());
-
         if (content.getStatus() != StatusContent.PAUSED) {
             pb.setVisibility(View.VISIBLE);
             if (content.getPercent() > 0) {
-Timber.d("updateProgress %s SET", content.getPercent());
                 pb.setIndeterminate(false);
                 pb.setProgress((int) content.getPercent());
             } else {
