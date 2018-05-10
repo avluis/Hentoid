@@ -18,6 +18,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -45,7 +46,8 @@ public class QueueFragment extends BaseFragment {
     private TextView mEmptyText;
     private ImageButton btnStart;
     private ImageButton btnPause;
-    private TextView queueText; // Text displayed on the right of the queue pause / play button
+    private TextView queueStatus; // 1st line of text displayed on the right of the queue pause / play button
+    private TextView queueInfo; // 2nd line of text displayed on the right of the queue pause / play button
 
 
     public static QueueFragment newInstance() {
@@ -56,27 +58,6 @@ public class QueueFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         update();
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDownloadEvent(DownloadEvent event) {
-
-        Timber.d("Event received : %s", event.eventType);
-
-        switch (event.eventType) {
-            case DownloadEvent.EV_PROGRESS :
-                updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal);
-                break;
-            case DownloadEvent.EV_UNPAUSE :
-                ContentQueueManager.getInstance().unpauseQueue();
-                getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
-                Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
-                context.startService(intent);
-                update(event.eventType);
-                break;
-            default :
-                update(event.eventType);
-        }
     }
 
     @Override
@@ -100,12 +81,38 @@ public class QueueFragment extends BaseFragment {
 
         btnStart = rootView.findViewById(R.id.btnStart);
         btnPause = rootView.findViewById(R.id.btnPause);
-        queueText = rootView.findViewById(R.id.queueText);
+        queueStatus = rootView.findViewById(R.id.queueStatus);
+        queueInfo = rootView.findViewById(R.id.queueInfo);
+
+        // Remplace placeholder text by empty strings
+        queueStatus.setText(R.string.queue_empty2);
+        queueInfo.setText(R.string.queue_empty2);
 
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
 
         return rootView;
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDownloadEvent(DownloadEvent event) {
+
+        Timber.d("Event received : %s", event.eventType);
+
+        switch (event.eventType) {
+            case DownloadEvent.EV_PROGRESS :
+                updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal);
+                break;
+            case DownloadEvent.EV_UNPAUSE :
+                ContentQueueManager.getInstance().unpauseQueue();
+                getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
+                Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
+                context.startService(intent);
+                update(event.eventType);
+                break;
+            default :
+                update(event.eventType);
+        }
     }
 
     private void updateProgress(int pagesOK, int pagesKO, int totalPages) {
@@ -117,24 +124,21 @@ public class QueueFragment extends BaseFragment {
                 mAdapter.notifyDataSetChanged();
 
                 // Update information bar
-                StringBuilder message = new StringBuilder(context.getResources().getString(R.string.queue_dl));
+                StringBuilder message = new StringBuilder();
                 String processedPagesFmt = Helper.fixedLengthInt(pagesOK, String.valueOf(totalPages).length());
-                message.append(" ").append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
+                message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
 
-                queueText.setText(message.toString());
+                queueInfo.setText(message.toString());
             }
         }
     }
 
-    public void update() {
-        update(-1);
-    }
-
+    public void update() { update(-1); }
     public void update(int eventType) {
         List<Content> contents = getDB().selectQueueContents();
 
         boolean isEmpty = (0 == contents.size());
-        boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || contents.get(0).getStatus() == StatusContent.PAUSED));
+        boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused()) );
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, contents.size());
@@ -143,31 +147,37 @@ public class QueueFragment extends BaseFragment {
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update control bar status
+        queueInfo.setText(R.string.queue_empty2);
+
         if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
-            queueText.setText(R.string.queue_dl);
-            queueText.clearAnimation();
+            queueStatus.setText(MessageFormat.format( context.getString(R.string.queue_dl), contents.get(0).getTitle()) );
+            queueInfo.clearAnimation();
+            queueStatus.clearAnimation();
         } else {
             btnPause.setVisibility(View.GONE);
 
             if (isPaused) {
                 btnStart.setVisibility(View.VISIBLE);
-                queueText.setText(R.string.queue_paused);
+                queueStatus.setText(R.string.queue_paused);
 
                 Animation anim = new AlphaAnimation(0.0f, 1.0f);
                 anim.setDuration(750);
                 anim.setStartOffset(20);
                 anim.setRepeatMode(Animation.REVERSE);
                 anim.setRepeatCount(Animation.INFINITE);
-                queueText.startAnimation(anim);
+                queueStatus.startAnimation(anim);
+                queueInfo.startAnimation(anim);
             } else {
                 btnStart.setVisibility(View.GONE);
-                queueText.setText(R.string.queue_empty2);
+                queueStatus.setText(R.string.queue_empty2);
+                queueInfo.setText(R.string.queue_empty2);
             }
         }
 
         // Update adapter
+        // TODO - this is kinda shabby
         mAdapter = new QueueContentAdapter(context, contents);
         mListView.setAdapter(mAdapter);
     }

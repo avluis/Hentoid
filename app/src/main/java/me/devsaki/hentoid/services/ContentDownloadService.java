@@ -169,23 +169,24 @@ public class ContentDownloadService extends IntentService {
                 Timber.e(e, "Error saving JSON: %s", content.getTitle());
             }
 
-            // Signal activity end
-            contentQueueManager.downloadComplete();
-            Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
-
-            // Tracking Event (Download Completed)
-            HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
-
             // Mark content as downloaded
             content.setDownloadDate(new Date().getTime());
             content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
             db.updateContentStatus(content);
+
+            Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
 
             // Delete book from queue
             db.deleteQueueById(content.getId());
 
             // Signals current download as completed
             completeActivity(pagesOK, pagesKO, images.size());
+
+            // Increase downloads count
+            contentQueueManager.downloadComplete();
+
+            // Tracking Event (Download Completed)
+            HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
         } else if (downloadCanceled) {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
         } else if (downloadSkipped) {

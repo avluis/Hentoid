@@ -35,13 +35,30 @@
             app:srcCompat="@drawable/ic_action_play"
             tools:ignore="ContentDescription" />
 
-        <TextView
-            android:id="@+id/queueText"
-            android:layout_width="0dp"
-            android:textColor="@android:color/white"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/app_intro" />
+        <LinearLayout
+            android:id="@+id/queue_nav2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="start"
+            android:orientation="vertical">
+
+            <TextView
+                    android:id="@+id/queueStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:textColor="@android:color/white"
+                    android:layout_weight="1"
+                    android:text="@string/app_intro" />
+
+            <TextView
+                android:id="@+id/queueInfo"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:textColor="@android:color/white"
+                android:layout_weight="1"
+                android:text="@string/app_intro" />
+
+        </LinearLayout>
     </LinearLayout>
 
 </android.support.v7.widget.Toolbar>

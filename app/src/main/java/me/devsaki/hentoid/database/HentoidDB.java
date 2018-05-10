@@ -979,18 +979,26 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void insertQueue(Content content, int order) {
         synchronized (locker) {
-            Timber.d("insertQueue");
+            Timber.d("insertQueue %s %s", content.getId(), order);
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
             try {
                 db = getWritableDatabase();
-                statement = db.compileStatement(QueueTable.INSERT_STATEMENT);
+                try {
+                    db.beginTransaction();
 
-                statement.clearBindings();
-                statement.bindLong(1, content.getId());
-                statement.bindLong(2, order);
-                statement.execute();
+                    statement = db.compileStatement(QueueTable.INSERT_STATEMENT);
+                    statement.clearBindings();
+
+                    statement.bindLong(1, content.getId());
+                    statement.bindLong(2, order);
+                    statement.execute();
+
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
             } finally {
                 if (statement != null) {
                     statement.close();

@@ -30,7 +30,7 @@
     <string name="move_down">Move down</string>
     <string name="queue_empty2" />
     <string name="queue_paused">Queue paused</string>
-    <string name="queue_dl">Downloading…</string>
+    <string name="queue_dl">Downloading {0}</string>
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series"><![CDATA[<b>Series:</b> @series@]]></string>
