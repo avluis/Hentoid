@@ -110,6 +110,9 @@ public class QueueFragment extends BaseFragment {
                 context.startService(intent);
                 update(event.eventType);
                 break;
+            case DownloadEvent.EV_SKIP :
+                // Handled directly by the adapter
+                break;
             default :
                 update(event.eventType);
         }

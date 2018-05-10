@@ -66,7 +66,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             holder.tvSeries = v.findViewById(R.id.tvSeries);
             holder.tvArtist = v.findViewById(R.id.tvArtist);
             holder.tvTags = v.findViewById(R.id.tvTags);
-            holder.tvSite = v.findViewById(R.id.tvSite);
+            holder.ivSource = v.findViewById(R.id.ivSource);
 
             v.setTag(holder);
         } else {
@@ -92,7 +92,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         attachArtist(holder, content);
         attachTags(holder, content);
 
-        holder.tvSite.setText(content.getSite().getDescription());
+        holder.ivSource.setImageResource(content.getSite().getIco());
     }
 
     private void attachTitle(ViewHolder holder, Content content) {
@@ -191,22 +191,17 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem) {
         View btnUp = view.findViewById(R.id.queueUpBtn);
-        if (isFirstItem) btnUp.setVisibility(View.INVISIBLE);
-        btnUp.setOnClickListener(v -> {
-            moveUp(content);
-            notifyDataSetChanged();
-        });
+        ((ImageView)btnUp).setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
+        btnUp.setVisibility(isFirstItem?View.INVISIBLE:View.VISIBLE);
+        btnUp.setOnClickListener(v -> moveUp(content));
+
         View btnDown = view.findViewById(R.id.queueDownBtn);
-        if (isLastItem) btnDown.setVisibility(View.INVISIBLE);
-        btnDown.setOnClickListener(v -> {
-            moveDown(content);
-            notifyDataSetChanged();
-        });
+        ((ImageView)btnDown).setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
+        btnDown.setVisibility(isLastItem?View.INVISIBLE:View.VISIBLE);
+        btnDown.setOnClickListener(v -> moveDown(content));
+
         Button btnCancel = view.findViewById(R.id.btnCancel);
-        btnCancel.setOnClickListener(v -> {
-            cancel(content);
-            notifyDataSetChanged();
-        });
+        btnCancel.setOnClickListener(v -> cancel(content));
     }
 
     private void updateProgress(View view, Content content) {
@@ -304,6 +299,6 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         TextView tvSeries;
         TextView tvArtist;
         TextView tvTags;
-        TextView tvSite;
+        ImageView ivSource;
     }
 }
