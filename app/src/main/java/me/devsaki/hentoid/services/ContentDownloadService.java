@@ -146,10 +146,11 @@ public class ContentDownloadService extends IntentService {
 
         // Watches progression
         // NB : download pause is managed at the Volley queue level (see RequestQueueManager.pauseQueue / startQueue)
-        double dlRate = 0;
-        while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()) {
-            int pagesOK = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode()});
-            int pagesKO = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode()});
+        double dlRate;
+        int pagesOK, pagesKO;
+        do {
+            pagesOK = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode()});
+            pagesKO = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode()});
             dlRate = (pagesOK + pagesKO) * 1.0 / images.size();
             updateActivity(pagesOK, pagesKO, images.size());
 
@@ -158,7 +159,7 @@ public class ContentDownloadService extends IntentService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        }
+        } while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
 
         if (!downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()) {
             // Save JSON file
@@ -176,16 +177,15 @@ public class ContentDownloadService extends IntentService {
             HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
 
             // Mark content as downloaded
-            boolean isSuccess = (0 == db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode(), StatusContent.IGNORED.getCode()}));
             content.setDownloadDate(new Date().getTime());
-            content.setStatus(isSuccess ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+            content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
             db.updateContentStatus(content);
 
             // Delete book from queue
             db.deleteQueueById(content.getId());
 
             // Signals current download as completed
-            completeActivity(content, isSuccess);
+            completeActivity(pagesOK, pagesKO, images.size());
         } else if (downloadCanceled) {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
         } else if (downloadSkipped) {
@@ -270,9 +270,9 @@ public class ContentDownloadService extends IntentService {
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
     }
 
-    private static void completeActivity(Content content, boolean success) {
-        Timber.d("CompleteActivity : success = %s", String.valueOf(success));
-        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE));
+    private static void completeActivity(int pagesOK, int pagesKO, int pagesTotal) {
+        Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, pagesTotal));
     }
 
     @Subscribe

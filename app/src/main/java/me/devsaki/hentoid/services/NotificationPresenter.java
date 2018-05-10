@@ -99,7 +99,7 @@ final class NotificationPresenter {
                 updateSkip();
                 break;
             case DownloadEvent.EV_COMPLETE :
-                updateComplete(event.content);
+                updateComplete(0 == event.pagesKO);
                 break;
 //            case DownloadEvent.EV_UNPAUSE : <-- nothing; used to restart download queue activity that will produce a Progress event
         }
@@ -127,9 +127,9 @@ final class NotificationPresenter {
         manager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    private void updateComplete(Content content)
+    private void updateComplete(boolean isSuccess)
     {
-        Timber.d("Event notified : complete with status %s", content.getStatus());
+        Timber.d("Event notified : complete with status %s", isSuccess);
 
         builder.setContentIntent(getDefaultIntent());
 
@@ -138,7 +138,7 @@ final class NotificationPresenter {
                 .setContentText("")
                 .setDeleteIntent(getDeleteIntent());
 
-        if (content.getStatus().equals(StatusContent.DOWNLOADED)) {
+        if (isSuccess) {
             builder.setContentTitle(res.getQuantityString(R.plurals.download_completed,
                     count).replace("%d", String.valueOf(count)));
 
