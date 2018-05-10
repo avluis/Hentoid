@@ -180,10 +180,11 @@ public class ContentDownloadService extends IntentService {
             content.setStatus(isSuccess ? StatusContent.DOWNLOADED : StatusContent.ERROR);
             db.updateContentStatus(content);
 
-            completeActivity(content, isSuccess);
-
-            // Delete from queue
+            // Delete book from queue
             db.deleteQueueById(content.getId());
+
+            // Signals current download as completed
+            completeActivity(content, isSuccess);
         } else if (downloadCanceled) {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
         } else if (downloadSkipped) {

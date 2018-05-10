@@ -39,7 +39,6 @@ public class QueueFragment extends BaseFragment {
 
     private Context context;
     private QueueContentAdapter mAdapter;
-    private boolean isPaused;
 
     // UI ELEMENTS
     private ListView mListView;
@@ -64,16 +63,19 @@ public class QueueFragment extends BaseFragment {
 
         Timber.d("Event received : %s", event.eventType);
 
-        if (DownloadEvent.EV_PROGRESS == event.eventType) {
-            updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal);
-        } else if (DownloadEvent.EV_UNPAUSE == event.eventType) {
-            ContentQueueManager.getInstance().unpauseQueue();
-            getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
-            Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
-            context.startService(intent);
-            update(event.eventType);
-        } else {
-            update(event.eventType);
+        switch (event.eventType) {
+            case DownloadEvent.EV_PROGRESS :
+                updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal);
+                break;
+            case DownloadEvent.EV_UNPAUSE :
+                ContentQueueManager.getInstance().unpauseQueue();
+                getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
+                Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
+                context.startService(intent);
+                update(event.eventType);
+                break;
+            default :
+                update(event.eventType);
         }
     }
 
@@ -107,7 +109,7 @@ public class QueueFragment extends BaseFragment {
     }
 
     private void updateProgress(int pagesOK, int pagesKO, int totalPages) {
-        if (!isPaused && mAdapter != null && mAdapter.getCount() > 0) {
+        if (!ContentQueueManager.getInstance().isQueuePaused() && mAdapter != null && mAdapter.getCount() > 0) {
             Content content = mAdapter.getItem(0);
             if (content != null) {
                 // Update book progress bar
@@ -132,10 +134,10 @@ public class QueueFragment extends BaseFragment {
         List<Content> contents = getDB().selectQueueContents();
 
         boolean isEmpty = (0 == contents.size());
-        isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || contents.get(0).getStatus() == StatusContent.PAUSED));
+        boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || contents.get(0).getStatus() == StatusContent.PAUSED));
         boolean isActive = (!isEmpty && !isPaused);
 
-        Timber.d("Queue state : E/P/A > %s/%s/%s", isEmpty, isPaused, isActive);
+        Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, contents.size());
 
         // Update list visibility
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
