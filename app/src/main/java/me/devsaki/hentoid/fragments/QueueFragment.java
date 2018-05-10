@@ -111,7 +111,9 @@ public class QueueFragment extends BaseFragment {
                 update(event.eventType);
                 break;
             case DownloadEvent.EV_SKIP :
-                // Handled directly by the adapter
+                // Books switch / display handled directly by the adapter
+                Content content = mAdapter.getItem(0);
+                if (content != null) updateBookTitle(content.getTitle());
                 break;
             default :
                 update(event.eventType);
@@ -136,6 +138,10 @@ public class QueueFragment extends BaseFragment {
         }
     }
 
+    private void updateBookTitle(String bookTitle) {
+        queueStatus.setText(MessageFormat.format( context.getString(R.string.queue_dl), bookTitle) );
+    }
+
     public void update() { update(-1); }
     public void update(int eventType) {
         List<Content> contents = getDB().selectQueueContents();
@@ -155,7 +161,7 @@ public class QueueFragment extends BaseFragment {
         if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
-            queueStatus.setText(MessageFormat.format( context.getString(R.string.queue_dl), contents.get(0).getTitle()) );
+            updateBookTitle(contents.get(0).getTitle());
             queueInfo.clearAnimation();
             queueStatus.clearAnimation();
         } else {
