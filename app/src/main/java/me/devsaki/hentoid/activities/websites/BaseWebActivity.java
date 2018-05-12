@@ -301,7 +301,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         {
             lastIndex = queue.get(queue.size()-1).second + 1;
         }
-        db.insertQueue(currentContent, lastIndex);
+        db.insertQueue(currentContent.getId(), lastIndex);
 
         Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
         startService(intent);

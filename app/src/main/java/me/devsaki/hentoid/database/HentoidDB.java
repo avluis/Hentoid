@@ -121,7 +121,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
                 try {
                     for (Content row : rows) {
-                        deleteContent(db, row);
+                        deleteContent(db, row, false);
 
                         statement.clearBindings();
                         statement.bindLong(ContentTable.IDX_INTERNALID, row.getId());
@@ -708,7 +708,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    private void deleteContent(SQLiteDatabase db, Content content) {
+    private void deleteContent(SQLiteDatabase db, Content content) { deleteContent(db, content, true); }
+    private void deleteContent(SQLiteDatabase db, Content content, boolean deletefromQueue) {
         SQLiteStatement statement = null;
         SQLiteStatement statementImages = null;
         SQLiteStatement statementAttributes = null;
@@ -718,7 +719,8 @@ public class HentoidDB extends SQLiteOpenHelper {
             statement = db.compileStatement(ContentTable.DELETE_STATEMENT);
             statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
             statementAttributes = db.compileStatement(ContentAttributeTable.DELETE_STATEMENT);
-            statementQueue = db.compileStatement(QueueTable.DELETE_STATEMENT);
+            if (deletefromQueue) statementQueue = db.compileStatement(QueueTable.DELETE_STATEMENT);
+
             statement.clearBindings();
             statement.bindLong(1, content.getId());
             statement.execute();
@@ -728,9 +730,11 @@ public class HentoidDB extends SQLiteOpenHelper {
             statementAttributes.clearBindings();
             statementAttributes.bindLong(1, content.getId());
             statementAttributes.execute();
-            statementQueue.clearBindings();
-            statementQueue.bindLong(1, content.getId());
-            statementQueue.execute();
+            if (deletefromQueue) {
+                statementQueue.clearBindings();
+                statementQueue.bindLong(1, content.getId());
+                statementQueue.execute();
+            }
         } finally {
             if (statement != null) {
                 statement.close();
@@ -977,28 +981,21 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public void insertQueue(Content content, int order) {
+    public void insertQueue(int id, int order) {
         synchronized (locker) {
-            Timber.d("insertQueue %s %s", content.getId(), order);
+            Timber.d("insertQueue");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 
             try {
                 db = getWritableDatabase();
-                try {
-                    db.beginTransaction();
 
-                    statement = db.compileStatement(QueueTable.INSERT_STATEMENT);
-                    statement.clearBindings();
+                statement = db.compileStatement(QueueTable.INSERT_STATEMENT);
+                statement.clearBindings();
 
-                    statement.bindLong(1, content.getId());
-                    statement.bindLong(2, order);
-                    statement.execute();
-
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                statement.bindLong(1, id);
+                statement.bindLong(2, order);
+                statement.execute();
             } finally {
                 if (statement != null) {
                     statement.close();

@@ -456,7 +456,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             {
                                 lastIndex = queue.get(queue.size()-1).second + 1;
                             }
-                            db.insertQueue(item, lastIndex);
+                            db.insertQueue(item.getId(), lastIndex);
 
 
                             Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
