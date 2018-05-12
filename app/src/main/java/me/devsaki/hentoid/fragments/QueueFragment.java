@@ -113,7 +113,10 @@ public class QueueFragment extends BaseFragment {
             case DownloadEvent.EV_SKIP :
                 // Books switch / display handled directly by the adapter
                 Content content = mAdapter.getItem(0);
-                if (content != null) updateBookTitle(content.getTitle());
+                if (content != null) {
+                    updateBookTitle(content.getTitle());
+                    queueInfo.setText("");
+                }
                 break;
             default :
                 update(event.eventType);

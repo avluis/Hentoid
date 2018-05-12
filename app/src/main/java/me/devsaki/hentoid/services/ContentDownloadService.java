@@ -111,6 +111,9 @@ public class ContentDownloadService extends IntentService {
             return;
         }
 
+        content.setStatus(StatusContent.DOWNLOADING);
+        db.updateContentStatus(content);
+
         // Check if images are already known
         List<ImageFile> images = content.getImageFiles();
         if (0 == images.size()) {

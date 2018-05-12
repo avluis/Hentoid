@@ -293,8 +293,8 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         currentContent.setDownloadDate(new Date().getTime())
                 .setStatus(StatusContent.DOWNLOADING);
-
         db.updateContentStatus(currentContent);
+
         List<Pair<Integer,Integer>> queue = db.selectQueue();
         int lastIndex = 1;
         if (queue.size() > 0)

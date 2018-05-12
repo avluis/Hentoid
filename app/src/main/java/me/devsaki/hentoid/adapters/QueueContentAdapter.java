@@ -236,7 +236,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 db.udpateQueue(p.first, prevItemQueuePosition);
                 db.udpateQueue(prevItemId, p.second);
                 Collections.swap(contents, prevItemPosition, loopPosition);
-                if (1 == loopPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                if (0 == prevItemPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             } else {
                 prevItemId = p.first;
@@ -271,7 +271,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 db.udpateQueue(p.first, itemQueuePosition);
                 db.udpateQueue(itemId, p.second);
                 Collections.swap(contents, itemPosition, loopPosition);
-                if (0 == loopPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                if (0 == itemPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             }
             loopPosition++;
