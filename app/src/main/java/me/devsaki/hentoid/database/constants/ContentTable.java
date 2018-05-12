@@ -98,14 +98,14 @@ public abstract class ContentTable {
 
     public static final String SELECT_DOWNLOADS_FAVS = " AND C."+FAVOURITE_COLUMN+" = 1 ";
 
-    public static final String SELECT_DOWNLOADS_TITLE = " C." + TITLE_COLUMN + " like '%2' ";
+    public static final String SELECT_DOWNLOADS_TITLE = " lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
 
     public static final String SELECT_DOWNLOADS_JOINS = " C." + ID_COLUMN
             + " in (SELECT "+ContentAttributeTable.CONTENT_ID_COLUMN+" FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM "
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A."+ AttributeTable.ID_COLUMN + " WHERE ";
 
-    public static final String SELECT_DOWNLOADS_AUTHOR = "(lower(A." + AttributeTable.NAME_COLUMN + ") = '%3' AND A."
+    public static final String SELECT_DOWNLOADS_AUTHOR = "(lower(A." + AttributeTable.NAME_COLUMN + ") LIKE '%3' AND A."
             + AttributeTable.TYPE_COLUMN + " in (0, 7))";
 
     public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
