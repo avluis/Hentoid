@@ -56,7 +56,7 @@
         layout="@layout/include_search_pane"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/downloads_toolbar"
+        android:layout_alignParentTop="true"
         android:visibility="gone"
         />
 

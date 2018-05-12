@@ -460,39 +460,47 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     private String buildContentSearchQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites)
     {
-        boolean hasAuthor = (author != null && author.length() > 0);
+        boolean hasTitleFilter = (title != null && title.length() > 0);
+        boolean hasAuthorFilter = (author != null && author.length() > 0);
+        boolean hasTagFilter = (tags != null && tags.size() > 0);
 
+        // Base criteria in Content table
         String sql = ContentTable.SELECT_DOWNLOADS_BASE;
         sql = sql.replace("%1", buildListQuery(sites));
 
         if (filterFavourites) sql += ContentTable.SELECT_DOWNLOADS_FAVS;
 
-        if (title != null && title.length() > 0) {
-            sql += " AND ";
+
+        // Title / Author / Tag filters
+        if (hasTitleFilter || hasAuthorFilter || hasTagFilter) sql += " AND (";
+
+        // Title filter -> continue querying Content table
+        if (hasTitleFilter) {
             sql += ContentTable.SELECT_DOWNLOADS_TITLE;
             title = '%'+title.replace("'","''")+'%';
             sql = sql.replace("%2", title);
         }
 
-        if (hasAuthor || tags.size() > 0) {
-            if (hasAuthor) {
-                sql += " OR ";
-                sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-                sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
-                author = '%' + author.replace("'", "''") + '%';
-                sql = sql.replace("%3", author);
-            }
-
-            if (tags.size() > 0) {
-                sql += " AND ";
-                sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-                sql += ContentTable.SELECT_DOWNLOADS_TAGS;
-                sql = sql.replace("%4", buildListQuery(tags));
-                sql = sql.replace("%5", tags.size() + "");
-            }
-
+        // Author & tags filter -> query attribute table through a join
+        if (hasAuthorFilter) {
+            if (hasTitleFilter) sql += " OR ";
+            sql += ContentTable.SELECT_DOWNLOADS_JOINS;
+            sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
+            author = '%' + author.replace("'", "''") + '%';
+            sql = sql.replace("%3", author);
             sql += "))";
         }
+
+        if (hasTagFilter) {
+            if (hasTitleFilter || hasAuthorFilter) sql += " OR ";
+            sql += ContentTable.SELECT_DOWNLOADS_JOINS;
+            sql += ContentTable.SELECT_DOWNLOADS_TAGS;
+            sql = sql.replace("%4", buildListQuery(tags));
+            sql = sql.replace("%5", tags.size() + "");
+            sql += "))";
+        }
+
+        if (hasTitleFilter || hasAuthorFilter || hasTagFilter) sql += " )";
 
         return sql;
     }
