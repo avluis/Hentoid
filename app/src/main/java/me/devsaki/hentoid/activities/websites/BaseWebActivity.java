@@ -51,7 +51,6 @@ import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
-import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -60,13 +59,20 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
  */
 public abstract class BaseWebActivity extends BaseActivity {
 
-    private Content currentContent;
-    private HentoidDB db;
-    private ObservableWebView webView;
-    private boolean webViewIsLoading;
-    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;
-    private boolean fabReadEnabled, fabDownloadEnabled;
+    // UI
+    private ObservableWebView webView;                                              // Associated webview
+    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;   // Action buttons
     private SwipeRefreshLayout swipeLayout;
+
+    // Content currently viewed
+    private Content currentContent;
+    // Database
+    private HentoidDB db;
+    // Indicates if webView is loading
+    private boolean webViewIsLoading;
+    // Indicates if corresponding action buttons are enabled
+    private boolean fabReadEnabled, fabDownloadEnabled;
+    // List of blocked domains (ads or annoying images)
     private static List<String> blockedAds = new ArrayList<>();
 
     static
