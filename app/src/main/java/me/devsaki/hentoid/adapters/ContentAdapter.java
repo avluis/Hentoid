@@ -248,7 +248,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         String templateArtist = context.getResources().getString(R.string.work_artist);
         StringBuilder artistsBuilder = new StringBuilder();
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (artistAttributes == null) {
+        if (null == artistAttributes) artistAttributes = new ArrayList<>();
+        List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
+        if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
+
+        if (artistAttributes.isEmpty()) {
             holder.tvArtist.setVisibility(View.GONE);
         } else {
             for (int i = 0; i < artistAttributes.size(); i++) {
@@ -262,7 +266,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artistsBuilder.toString())));
 
-        if (artistAttributes == null) {
+        if (artistAttributes.isEmpty()) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);

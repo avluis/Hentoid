@@ -20,6 +20,7 @@ import com.bumptech.glide.request.RequestOptions;
 
 import org.greenrobot.eventbus.EventBus;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -153,7 +154,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         String templateArtist = context.getString(R.string.work_artist);
         StringBuilder artists = new StringBuilder();
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (artistAttributes != null) {
+        if (null == artistAttributes) artistAttributes = new ArrayList<>();
+        List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
+        if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
+
+        if (!artistAttributes.isEmpty()) {
             for (int i = 0; i < artistAttributes.size(); i++) {
                 Attribute attribute = artistAttributes.get(i);
                 artists.append(attribute.getName());
@@ -164,7 +169,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artists)));
 
-        if (artistAttributes == null) {
+        if (artistAttributes.isEmpty()) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
