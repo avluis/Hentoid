@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Log;
 
+import com.facebook.stetho.Stetho;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
@@ -177,10 +178,15 @@ public class HentoidApp extends Application {
         boolean isAnalyticsDisabled = Preferences.isAnalyticsDisabled();
         GoogleAnalytics.getInstance(this).setAppOptOut(isAnalyticsDisabled);
 
+        if (BuildConfig.DEBUG) {
+            // Stetho init
+            Stetho.initializeWithDefaults(this);
+        }
+
         Helper.ignoreSslErrors();
 
         HentoidDB db = HentoidDB.getInstance(this);
-        Timber.d("Content item(s) count: %s", db.getContentCount());
+        Timber.d("Content item(s) count: %s", db.countContent());
         db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
         try {
             UpgradeTo(Helper.getAppVersionCode(this), db);
@@ -210,8 +216,14 @@ public class HentoidApp extends Application {
                 });
     }
 
+    /**
+     * Handles complex DB version updates at startup
+     *
+     * @param versionCode Current app version
+     * @param db Hentoid DB
+     */
     private void UpgradeTo(int versionCode, HentoidDB db) {
-        if (versionCode > 43) // Check if all "storage_folder" fields are present in CONTENT DB (mandatory)
+        if (versionCode > 43) // Update all "storage_folder" fields in CONTENT table (mandatory)
         {
             List<Content> contents = db.selectContentEmptyFolder();
             if (contents != null && contents.size() > 0) {

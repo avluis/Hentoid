@@ -37,9 +37,9 @@ public class AssetsCache {
     private static AssetManager assetManager;
     private static File cacheDir;
 
-    public static void init(Context cxt) {
-        assetManager = cxt.getAssets();
-        cacheDir = cxt.getExternalCacheDir();
+    public static void init(Context context) {
+        assetManager = context.getAssets();
+        cacheDir = context.getExternalCacheDir();
         if (cacheDir != null) {
             // Check remote cache version
             checkNetworkConnectivity();

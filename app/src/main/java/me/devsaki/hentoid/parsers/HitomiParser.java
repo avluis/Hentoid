@@ -7,6 +7,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -26,9 +27,9 @@ import static me.devsaki.hentoid.enums.Site.HITOMI;
 public class HitomiParser {
 
     // Reproduction of the Hitomi.la Javascript to find the hostname of the image server (see subdomain_from_url@reader.js)
-    public final static int NUMBER_OF_FRONTENDS = 2;
-    public final static String HOSTNAME_SUFFIX = "a";
-    public final static char HOSTNAME_PREFIX_BASE = 97;
+    private final static int NUMBER_OF_FRONTENDS = 2;
+    private final static String HOSTNAME_SUFFIX = "a";
+    private final static char HOSTNAME_PREFIX_BASE = 97;
 
     public static Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).get();
@@ -64,10 +65,12 @@ public class HitomiParser {
             int pages = doc.select(".thumbnail-container").size();
 
             String author = "";
-            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
+                author = attributes.get(AttributeType.ARTIST).get(0).getName();
             if (author.equals("")) // Try and get Circle
             {
-                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0) author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
+                    author = attributes.get(AttributeType.CIRCLE).get(0).getName();
             }
 
             return new Content()
@@ -95,7 +98,7 @@ public class HitomiParser {
 
     public static List<String> parseImageList(Content content) {
         String html;
-        List<String> imgUrls = null;
+        List<String> imgUrls = Collections.emptyList();
         try {
             String url = content.getReaderUrl();
             html = HttpClientHelper.call(url);
@@ -103,12 +106,14 @@ public class HitomiParser {
             Document doc = Jsoup.parse(html);
             Elements imgElements = doc.select(".img-url");
             imgUrls = new ArrayList<>(imgElements.size());
-            // New Hitomi image URLs starting from mid-february 2018
-            //  If book ID is even, starts with 'aa'; else starts with 'ba'
-            String imageHostname = Character.toString( (char)(HOSTNAME_PREFIX_BASE + Integer.parseInt(content.getUniqueSiteId()) % NUMBER_OF_FRONTENDS) ) + HOSTNAME_SUFFIX;
+            // New Hitomi image URLs starting from mid-april 2018
+            //  If book ID is even or < 4, starts with 'aa'; else starts with 'ba'
+            int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
+            if (1 == referenceId || 3 == referenceId) referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
+            String imageHostname = Character.toString((char) (HOSTNAME_PREFIX_BASE + referenceId % NUMBER_OF_FRONTENDS)) + HOSTNAME_SUFFIX;
 
             for (Element element : imgElements) {
-                imgUrls.add("https:" + element.text().replace("//g.", "//"+imageHostname+"."));
+                imgUrls.add("https:" + element.text().replace("//g.", "//" + imageHostname + "."));
             }
         } catch (Exception e) {
             Timber.e(e, "Could not connect to the requested resource");

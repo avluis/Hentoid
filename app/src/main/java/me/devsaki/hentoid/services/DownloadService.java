@@ -39,7 +39,6 @@ import timber.log.Timber;
 public class DownloadService extends IntentService {
 
     public static boolean paused;
-    private Content currentContent;
     private HentoidDB db;
     private NotificationPresenter notificationPresenter;
 
@@ -75,9 +74,9 @@ public class DownloadService extends IntentService {
             return;
         }
 
-        currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
+        Content currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
         if (currentContent != null && currentContent.getStatus() != StatusContent.DOWNLOADED) {
-            initDownload();
+            initDownload(currentContent);
 
             File dir = FileHelper.getContentDownloadDir(this, currentContent);
             Timber.d("Content Download Dir; %s", dir);
@@ -88,13 +87,14 @@ public class DownloadService extends IntentService {
             db.updateContentStorageFolder(currentContent);
 
             ImageDownloadBatch downloadBatch = new ImageDownloadBatch();
-            addTask(dir, downloadBatch);
+            addTask(dir, downloadBatch, currentContent);
 
             queryForAdditionalDownloads();
         }
     }
 
-    private void addTask(File dir, ImageDownloadBatch downloadBatch) {
+    private void addTask(File dir, ImageDownloadBatch downloadBatch, Content currentContent) {
+        Timber.d("addTask %s (%s)", currentContent.getTitle(), currentContent.getId());
         // Add download tasks
         downloadBatch.newTask(dir, "thumb", currentContent.getCoverImageUrl());
         List<ImageFile> imageFiles = currentContent.getImageFiles();
@@ -108,7 +108,7 @@ public class DownloadService extends IntentService {
 
         if (paused) {
             Timber.d("Pause requested");
-            interruptDownload();
+            interruptDownload(currentContent.getId());
             downloadBatch.cancelAllTasks();
             if (currentContent.getStatus() == StatusContent.CANCELED) {
                 notificationPresenter.downloadInterrupted(currentContent);
@@ -137,17 +137,17 @@ public class DownloadService extends IntentService {
         currentContent.setDownloadDate(new Date().getTime());
         db.updateContentStatus(currentContent);
 
-        postDownloadCompleted(dir);
+        postDownloadCompleted(dir, currentContent);
     }
 
-    private void initDownload() {
+    private void initDownload(Content currentContent) {
         notificationPresenter.downloadStarted(currentContent);
         if (paused) {
-            interruptDownload();
+            interruptDownload(currentContent.getId());
             return;
         }
         try {
-            parseImageFiles();
+            parseImageFiles(currentContent);
         } catch (Exception e) {
             currentContent.setStatus(StatusContent.UNHANDLED_ERROR);
             currentContent.setStatus(StatusContent.PAUSED);
@@ -160,7 +160,7 @@ public class DownloadService extends IntentService {
         }
 
         if (paused) {
-            interruptDownload();
+            interruptDownload(currentContent.getId());
             return;
         }
         Timber.d("Content download started: %s", currentContent.getTitle());
@@ -169,7 +169,7 @@ public class DownloadService extends IntentService {
         HentoidApp.getInstance().trackEvent(DownloadService.class, "Download", "Download Content: Start");
     }
 
-    private void postDownloadCompleted(File dir) {
+    private void postDownloadCompleted(File dir, Content currentContent) {
         // Save JSON file
         try {
             JsonHelper.saveJson(currentContent, dir);
@@ -187,7 +187,7 @@ public class DownloadService extends IntentService {
 
     private void queryForAdditionalDownloads() {
         // Search for queued content download tasks and fire intent
-        currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
+        Content currentContent = db.selectContentByStatus(StatusContent.DOWNLOADING);
         if (currentContent != null) {
             Intent intentService = new Intent(Intent.ACTION_SYNC, null, this,
                     DownloadService.class);
@@ -196,9 +196,9 @@ public class DownloadService extends IntentService {
         }
     }
 
-    private void interruptDownload() {
+    private void interruptDownload(int contentId) {
         paused = false;
-        currentContent = db.selectContentById(currentContent.getId());
+        Content currentContent = db.selectContentById(contentId);
         notificationPresenter.downloadInterrupted(currentContent);
     }
 
@@ -207,7 +207,7 @@ public class DownloadService extends IntentService {
     }
 
     // TODO: Implement null handling as fail/retry state
-    private void parseImageFiles() {
+    private void parseImageFiles(Content currentContent) {
         List<String> aUrls = new ArrayList<>();
         switch (currentContent.getSite()) {
             case ASMHENTAI:

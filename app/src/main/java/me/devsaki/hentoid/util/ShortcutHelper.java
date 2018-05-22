@@ -22,20 +22,20 @@ import me.devsaki.hentoid.activities.websites.NhentaiActivity;
 public final class ShortcutHelper {
 
     @RequiresApi(api = Build.VERSION_CODES.N_MR1)
-    public static void buildShortcuts(Context cxt) {
+    public static void buildShortcuts(Context context) {
         // TODO: Loop across all activities
-        int tint_color = ContextCompat.getColor(cxt, R.color.accent);
-        ShortcutManager shortcutManager = cxt.getSystemService(ShortcutManager.class);
+        int tint_color = ContextCompat.getColor(context, R.color.accent);
+        ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
 
-        Bitmap nhentaiBitmap = Helper.getBitmapFromVectorDrawable(cxt, R.drawable.ic_menu_nhentai);
+        Bitmap nhentaiBitmap = Helper.getBitmapFromVectorDrawable(context, R.drawable.ic_menu_nhentai);
         nhentaiBitmap = Helper.tintBitmap(nhentaiBitmap, tint_color);
         Icon nhentaiIcon = Icon.createWithBitmap(nhentaiBitmap);
 
-        Intent nhentaiIntent = new Intent(cxt, NhentaiActivity.class);
+        Intent nhentaiIntent = new Intent(context, NhentaiActivity.class);
         nhentaiIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         nhentaiIntent.setAction(Intent.ACTION_VIEW);
 
-        ShortcutInfo nhentai = new ShortcutInfo.Builder(cxt, "nhentai")
+        ShortcutInfo nhentai = new ShortcutInfo.Builder(context, "nhentai")
                 .setShortLabel("nhentai")
                 .setLongLabel("Open nhentai")
                 .setIcon(nhentaiIcon)

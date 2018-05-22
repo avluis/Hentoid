@@ -10,10 +10,14 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 
+import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.NhentaiParser;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
@@ -55,7 +59,6 @@ public class NhentaiActivity extends BaseWebActivity {
             }
         }
 
-        @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
@@ -95,6 +98,7 @@ public class NhentaiActivity extends BaseWebActivity {
                 processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
             } catch (Exception e) {
                 Timber.e(e, "Error parsing content.");
+                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
             return null;

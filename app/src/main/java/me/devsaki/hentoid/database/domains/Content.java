@@ -3,6 +3,7 @@ package me.devsaki.hentoid.database.domains;
 import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.List;
 
 import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
@@ -47,7 +48,11 @@ public class Content implements Serializable {
     private double percent;
     @Expose
     private Site site;
-    private String storageFolder;
+    private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
+    @Expose
+    private boolean favourite;
+    private int queryOrder; // Runtime attribute; no need to expose it
+
 
     public AttributeMap getAttributes() {
         if (null == attributes) attributes = new AttributeMap();
@@ -88,6 +93,7 @@ public class Content implements Serializable {
     }
 
     // Used for upgrade purposes
+    @Deprecated
     public String getOldUniqueSiteId() {
         String[] paths;
         switch (site) {
@@ -203,13 +209,14 @@ public class Content implements Serializable {
         }
     }
 
-    public void populateAuthor()
-    {
+    public void populateAuthor() {
         String author = "";
-        if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+        if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
+            author = attributes.get(AttributeType.ARTIST).get(0).getName();
         if (author.equals("")) // Try and get Circle
         {
-            if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0) author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+            if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
+                author = attributes.get(AttributeType.CIRCLE).get(0).getName();
         }
         setAuthor(author);
     }
@@ -305,11 +312,49 @@ public class Content implements Serializable {
     }
 
     public String getStorageFolder() {
-        return storageFolder==null?"":storageFolder;
+        return storageFolder == null ? "" : storageFolder;
     }
 
     public Content setStorageFolder(String storageFolder) {
         this.storageFolder = storageFolder;
         return this;
     }
+
+    public boolean isFavourite() { return favourite; }
+
+    public Content setFavourite(boolean favourite) {
+        this.favourite = favourite;
+        return this;
+    }
+
+    private int getQueryOrder() { return queryOrder; }
+    public Content setQueryOrder(int order) { queryOrder = order; return this; }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Content content = (Content) o;
+
+        if (url != null ? !url.equals(content.url) : content.url != null) return false;
+        return site == content.site;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = url != null ? url.hashCode() : 0;
+        result = 31 * result + (site != null ? site.hashCode() : 0);
+        return result;
+    }
+
+    public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
+
+    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> { return Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate()) * -1; /* Inverted - last download date first */ };
+
+    public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
+
+    public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate());
+
+    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.valueOf(a.getQueryOrder()).compareTo(b.getQueryOrder());
 }

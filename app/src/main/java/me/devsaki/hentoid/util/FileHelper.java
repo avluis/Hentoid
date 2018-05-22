@@ -95,10 +95,10 @@ public class FileHelper {
      * @return A list of external SD card paths.
      */
     public static String[] getExtSdCardPaths() {
-        Context cxt = HentoidApp.getAppContext();
+        Context context = HentoidApp.getAppContext();
         List<String> paths = new ArrayList<>();
-        for (File file : ContextCompat.getExternalFilesDirs(cxt, "external")) {
-            if (file != null && !file.equals(cxt.getExternalFilesDir("external"))) {
+        for (File file : ContextCompat.getExternalFilesDirs(context, "external")) {
+            if (file != null && !file.equals(context.getExternalFilesDir("external"))) {
                 int index = file.getAbsolutePath().lastIndexOf("/Android/data");
                 if (index < 0) {
                     Timber.w("Unexpected external file dir: %s", file.getAbsolutePath());
@@ -215,12 +215,12 @@ public class FileHelper {
     }
 
     public static boolean validateFolder(String folder, boolean notify) {
-        Context cxt = HentoidApp.getAppContext();
+        Context context = HentoidApp.getAppContext();
         // Validate folder
         File file = new File(folder);
         if (!file.exists() && !file.isDirectory() && !FileUtil.makeDir(file)) {
             if (notify) {
-                Helper.toast(cxt, R.string.error_creating_folder);
+                Helper.toast(context, R.string.error_creating_folder);
             }
             return false;
         }
@@ -244,7 +244,7 @@ public class FileHelper {
 
         if (!hasPermission) {
             if (notify) {
-                Helper.toast(cxt, R.string.error_write_permission);
+                Helper.toast(context, R.string.error_write_permission);
             }
             return false;
         }
@@ -252,7 +252,7 @@ public class FileHelper {
         boolean directorySaved = Preferences.setRootFolderName(folder);
         if (!directorySaved) {
             if (notify) {
-                Helper.toast(cxt, R.string.error_creating_folder);
+                Helper.toast(context, R.string.error_creating_folder);
             }
             return false;
         }
@@ -299,7 +299,7 @@ public class FileHelper {
         }
     }
 
-    public static File getContentDownloadDir(Context cxt, Content content) {
+    public static File getContentDownloadDir(Context context, Content content) {
         File file;
         String folderDir = content.getSite().getFolder();
 
@@ -315,7 +315,7 @@ public class FileHelper {
 
         String settingDir = Preferences.getRootFolderName();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(cxt, folderDir);
+            return getDefaultDir(context, folderDir);
         }
 
         Timber.d("New book directory %s in %s", folderDir, settingDir);
@@ -331,18 +331,18 @@ public class FileHelper {
         return file;
     }
 
-    public static File getDefaultDir(Context cxt, String dir) {
+    public static File getDefaultDir(Context context, String dir) {
         File file;
         try {
             file = new File(getExternalStorageDirectory() + "/"
                     + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
         } catch (Exception e) {
-            file = cxt.getDir("", Context.MODE_PRIVATE);
+            file = context.getDir("", Context.MODE_PRIVATE);
             file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
         }
 
         if (!file.exists() && !FileUtil.makeDir(file)) {
-            file = cxt.getDir("", Context.MODE_PRIVATE);
+            file = context.getDir("", Context.MODE_PRIVATE);
             file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
             if (!file.exists()) {
                 FileUtil.makeDir(file);
@@ -352,12 +352,12 @@ public class FileHelper {
         return file;
     }
 
-    public static File getSiteDownloadDir(Context cxt, Site site) {
+    public static File getSiteDownloadDir(Context context, Site site) {
         File file;
         String settingDir = Preferences.getRootFolderName();
         String folderDir = site.getFolder();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(cxt, folderDir);
+            return getDefaultDir(context, folderDir);
         }
         file = new File(settingDir, folderDir);
         if (!file.exists() && !FileUtil.makeDir(file)) {
@@ -410,16 +410,13 @@ public class FileHelper {
         return thumb;
     }
 
-    public static void openContent(final Context cxt, Content content) {
+    public static void openContent(final Context context, Content content) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
-        //        File dir = getContentDownloadDir(cxt, content);
-        String settingDir = Preferences.getRootFolderName();
-        File dir = new File(settingDir, content.getStorageFolder());
-
+        //        File dir = getContentDownloadDir(context, content);
+        String rootFolderName = Preferences.getRootFolderName();
+        File dir = new File(rootFolderName, content.getStorageFolder());
 
         Timber.d("Opening: " + content.getTitle() + " from: " + dir);
-
-        String rootFolderName = Preferences.getRootFolderName();
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
             Helper.toast(R.string.sd_access_error);
@@ -443,46 +440,46 @@ public class FileHelper {
             }
         }
         if (imageFile == null) {
-            String message = cxt.getString(R.string.image_file_not_found)
+            String message = context.getString(R.string.image_file_not_found)
                     .replace("@dir", dir.getAbsolutePath());
-            Helper.toast(cxt, message);
+            Helper.toast(context, message);
         } else {
             int readContentPreference = Preferences.getContentReadAction();
             if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_DEFAULT) {
-                openFile(cxt, imageFile);
+                openFile(context, imageFile);
             } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
-                openPerfectViewer(cxt, imageFile);
+                openPerfectViewer(context, imageFile);
             }
         }
     }
 
-    private static void openFile(Context cxt, File aFile) {
+    private static void openFile(Context context, File aFile) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         myIntent.setDataAndType(Uri.fromFile(file), mimeType);
-        cxt.startActivity(myIntent);
+        context.startActivity(myIntent);
     }
 
-    private static void openPerfectViewer(Context cxt, File firstImage) {
+    private static void openPerfectViewer(Context context, File firstImage) {
         try {
-            Intent intent = cxt
+            Intent intent = context
                     .getPackageManager()
                     .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
             intent.setAction(Intent.ACTION_VIEW);
             intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
-            cxt.startActivity(intent);
+            context.startActivity(intent);
         } catch (Exception e) {
-            Helper.toast(cxt, R.string.error_open_perfect_viewer);
+            Helper.toast(context, R.string.error_open_perfect_viewer);
         }
     }
 
-    public static void archiveContent(final Context cxt, Content content) {
+    public static void archiveContent(final Context context, Content content) {
         Timber.d("Building file list for: %s", content.getTitle());
         // Build list of files
 
-        //File dir = getContentDownloadDir(cxt, content);
+        //File dir = getContentDownloadDir(context, content);
         String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
@@ -499,7 +496,7 @@ public class FileHelper {
             }
 
             // Create folder to share from
-            File sharedDir = new File(cxt.getExternalCacheDir() + "/shared");
+            File sharedDir = new File(context.getExternalCacheDir() + "/shared");
             if (FileUtil.makeDir(sharedDir)) {
                 Timber.d("Shared folder created.");
             }
@@ -510,7 +507,7 @@ public class FileHelper {
             }
 
             // Build destination file
-            File dest = new File(cxt.getExternalCacheDir() + "/shared/%s",
+            File dest = new File(context.getExternalCacheDir() + "/shared/%s",
                     content.getTitle()
                             .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
                             .replaceAll("\\s+", "_")  // white space as underscores
@@ -520,16 +517,16 @@ public class FileHelper {
             // Convert ArrayList to Array
             File[] fileArray = fileList.toArray(new File[fileList.size()]);
             // Compress files
-            new AsyncUnzip(cxt, dest).execute(fileArray, dest);
+            new AsyncUnzip(context, dest).execute(fileArray, dest);
         }
     }
 
     private static class AsyncUnzip extends ZipUtil.ZipTask {
-        final Context cxt;
+        final Context context;
         final File dest;
 
-        AsyncUnzip(Context cxt, File dest) {
-            this.cxt = cxt;
+        AsyncUnzip(Context context, File dest) {
+            this.context = context;
             this.dest = dest;
         }
 
@@ -539,10 +536,10 @@ public class FileHelper {
             sendIntent.setAction(Intent.ACTION_SEND);
             // Hentoid is FileProvider ready!!
             sendIntent.putExtra(Intent.EXTRA_STREAM,
-                    FileProvider.getUriForFile(cxt, AUTHORITY, dest));
+                    FileProvider.getUriForFile(context, AUTHORITY, dest));
             sendIntent.setType(MimeTypes.getMimeType(dest));
 
-            cxt.startActivity(sendIntent);
+            context.startActivity(sendIntent);
         }
     }
 }

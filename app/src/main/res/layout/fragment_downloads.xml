@@ -51,6 +51,15 @@
         </FrameLayout>
     </android.support.v4.widget.SwipeRefreshLayout>
 
+    <include
+        android:id="@+id/tag_filter_view"
+        layout="@layout/include_search_pane"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        />
+
     <TextView
         android:id="@+id/empty"
         android:layout_width="wrap_content"

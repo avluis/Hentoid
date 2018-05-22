@@ -28,7 +28,7 @@ import timber.log.Timber;
 public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     private BaseFragment baseFragment;
-    private Context cxt;
+    private Context context;
 
     @Override
     protected Fragment buildFragment() {
@@ -61,7 +61,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         }
         setContentView(mainLayout);
 
-        cxt = HentoidApp.getAppContext();
+        context = HentoidApp.getAppContext();
         initializeToolbar();
         setTitle(getToolbarTitle());
     }
@@ -125,7 +125,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     @Override
     protected String getToolbarTitle() {
-        return Helper.getActivityName(cxt, R.string.title_activity_downloads);
+        return Helper.getActivityName(context, R.string.title_activity_downloads);
     }
 
     @Override

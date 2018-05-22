@@ -36,9 +36,8 @@ class CreateDirDialog {
         }
     }
 
-    @SuppressWarnings("UnusedReturnValue")
-    public AlertDialog dialog(final File currentDir) {
-        return new AlertDialog.Builder(ctx)
+    void dialog(final File currentDir) {
+        new AlertDialog.Builder(ctx)
                 .setTitle(R.string.dir_name)
                 .setMessage(R.string.dir_name_inst)
                 .setView(text)

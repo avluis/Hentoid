@@ -12,6 +12,8 @@ import android.webkit.WebView;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.HitomiParser;
@@ -75,7 +77,6 @@ public class HitomiActivity extends BaseWebActivity {
             }
         }
 
-        @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
@@ -109,8 +110,9 @@ public class HitomiActivity extends BaseWebActivity {
             String url = params[0];
             try {
                 processContent(HitomiParser.parseContent(url));
-            } catch (IOException e) {
+            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
                 Timber.e(e, "Error parsing content.");
+                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
             return null;

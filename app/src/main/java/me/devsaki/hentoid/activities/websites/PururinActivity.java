@@ -15,6 +15,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.PururinParser;
@@ -53,7 +55,6 @@ public class PururinActivity extends BaseWebActivity {
     private class PururinWebViewClient extends CustomWebViewClient {
         final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
-        @SuppressWarnings("deprecation") // From API 24 we should use another overload
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             try {
@@ -95,7 +96,6 @@ public class PururinActivity extends BaseWebActivity {
             }
         }
 
-        @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
@@ -121,7 +121,7 @@ public class PururinActivity extends BaseWebActivity {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("juicyads.com")) {
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("juicyads.com")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
@@ -135,8 +135,9 @@ public class PururinActivity extends BaseWebActivity {
             String url = params[0];
             try {
                 processContent(PururinParser.parseContent(url));
-            } catch (IOException e) {
-                Timber.d("Error parsing content.");
+            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
+                Timber.e(e, "Error parsing content.");
+                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
             return null;

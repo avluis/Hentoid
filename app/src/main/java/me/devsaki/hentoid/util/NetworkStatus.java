@@ -16,18 +16,15 @@ import timber.log.Timber;
  */
 public final class NetworkStatus {
 
-    private static NetworkInfo init(Context cxt) {
-        Context context = cxt.getApplicationContext();
-        ConnectivityManager connMgr = (ConnectivityManager) context
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
-
+    private static NetworkInfo init(Context context) {
+        ConnectivityManager connMgr = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         return connMgr.getActiveNetworkInfo();
     }
 
-    public static boolean isOnline(Context cxt) {
+    public static boolean isOnline(Context context) {
         boolean connected;
         try {
-            NetworkInfo netInfo = init(cxt);
+            NetworkInfo netInfo = init(context);
             connected = netInfo != null && netInfo.isAvailable() &&
                     netInfo.isConnected();
 
@@ -39,10 +36,10 @@ public final class NetworkStatus {
         return false;
     }
 
-    public static boolean isWifi(Context cxt) {
+    public static boolean isWifi(Context context) {
         boolean wifi;
         try {
-            NetworkInfo netInfo = init(cxt);
+            NetworkInfo netInfo = init(context);
             wifi = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
                     ConnectivityManager.TYPE_WIFI;
 
@@ -54,24 +51,9 @@ public final class NetworkStatus {
         return false;
     }
 
-    public static boolean isMobile(Context cxt) {
-        boolean mobile;
-        try {
-            NetworkInfo netInfo = init(cxt);
-            mobile = netInfo != null && netInfo.isConnected() && netInfo.getType() ==
-                    ConnectivityManager.TYPE_MOBILE;
-
-            return mobile;
-        } catch (Exception e) {
-            Timber.e(e);
-        }
-
-        return false;
-    }
-
     // Must be run on a background thread!!
-    public static boolean hasInternetAccess(Context cxt) {
-        if (isOnline(cxt)) {
+    public static boolean hasInternetAccess(Context context) {
+        if (isOnline(context)) {
             try {
                 HttpURLConnection url = (HttpURLConnection)
                         (new URL("http://clients3.google.com/generate_204").openConnection());

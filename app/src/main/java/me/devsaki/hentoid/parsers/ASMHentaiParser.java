@@ -19,8 +19,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.enums.Site.ASMHENTAI;
-
 /**
  * Created by avluis on 07/24/2016.
  * Handles parsing of content from asmhentai.com
@@ -82,7 +80,8 @@ public class ASMHentaiParser {
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
 
             String author = "";
-            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0) author = attributes.get(AttributeType.ARTIST).get(0).getName();
+            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
+                author = attributes.get(AttributeType.ARTIST).get(0).getName();
 
             return new Content()
                     .setTitle(title)
@@ -107,8 +106,8 @@ public class ASMHentaiParser {
             String name = a.text();
             // Remove counters from ASMhentai metadata (e.g. "Futanari (2660)" => "Futanari")
             int bracketPos = name.lastIndexOf("(");
-            if (bracketPos > 1 && ' ' == name.charAt(bracketPos-1)) bracketPos--;
-            if (bracketPos > -1) name = name.substring(0,bracketPos);
+            if (bracketPos > 1 && ' ' == name.charAt(bracketPos - 1)) bracketPos--;
+            if (bracketPos > -1) name = name.substring(0, bracketPos);
             attribute.setName(name);
 
             map.add(attribute);
@@ -120,14 +119,12 @@ public class ASMHentaiParser {
         String readerUrl = content.getReaderUrl();
         List<String> imgUrls = new ArrayList<>();
 
-        if (!URLUtil.isValidUrl(readerUrl))
-        {
+        if (!URLUtil.isValidUrl(readerUrl)) {
             Timber.e("Invalid URL : %s", readerUrl);
             return imgUrls;
         }
 
         Document doc;
-        String ext;
         try {
             doc = Jsoup.connect(readerUrl).get();
             String imgUrl = "http:" +
@@ -136,10 +133,10 @@ public class ASMHentaiParser {
                             .select("img")
                             .attr("src");
             // TODO: Verify extension types on this source
-            ext = imgUrl.substring(imgUrl.length() - 4);
+            String ext = imgUrl.substring(imgUrl.lastIndexOf('.'));
 
             for (int i = 0; i < pages; i++) {
-                String img = imgUrl.substring(0, imgUrl.length() - 4) + (i + 1) + ext;
+                String img = imgUrl.substring(0, imgUrl.lastIndexOf('/') + 1) + (i + 1) + ext;
                 imgUrls.add(img);
             }
 

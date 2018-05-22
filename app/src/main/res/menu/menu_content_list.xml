@@ -11,13 +11,31 @@
         app:actionViewClass="android.support.v7.widget.SearchView"
         app:showAsAction="collapseActionView|ifRoom" />
     <item
-        android:id="@+id/action_order_alphabetic"
+        android:id="@+id/action_order"
         android:icon="@drawable/ic_menu_sort_alpha"
-        android:title="@string/menu_order_alphabetically"
-        app:showAsAction="always" />
-    <item
-        android:id="@+id/action_order_by_date"
-        android:icon="@drawable/ic_menu_sort_by_date"
-        android:title="@string/menu_order_date"
-        app:showAsAction="always" />
+        android:title="@string/menu_order"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/action_order_AZ"
+                android:icon="@drawable/ic_menu_sort_alpha"
+                android:title="@string/menu_order_AZ" />
+            <item
+                android:id="@+id/action_order_ZA"
+                android:icon="@drawable/ic_menu_sort_za"
+                android:title="@string/menu_order_ZA" />
+            <item
+                android:id="@+id/action_order_123"
+                android:icon="@drawable/ic_menu_sort_by_date"
+                android:title="@string/menu_order_123" />
+            <item
+                android:id="@+id/action_order_321"
+                android:icon="@drawable/ic_menu_sort_321"
+                android:title="@string/menu_order_321" />
+            <item
+                android:id="@+id/action_order_random"
+                android:icon="@drawable/ic_menu_sort_random"
+                android:title="@string/menu_order_random" />
+        </menu>
+    </item>
 </menu>

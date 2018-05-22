@@ -13,6 +13,8 @@ import android.webkit.WebView;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
+import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.ASMHentaiParser;
@@ -65,14 +67,12 @@ public class ASMHentaiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("//asmhentai.com/g/")) {
-                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI.getCode()+"");
-            }
-            else if (url.contains("//comics.asmhentai.com/g/")) {
-                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI_COMICS.getCode()+"");
+                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI.getCode() + "");
+            } else if (url.contains("//comics.asmhentai.com/g/")) {
+                executeAsyncTask(new HtmlLoader(), url, Site.ASMHENTAI_COMICS.getCode() + "");
             }
         }
 
-        @SuppressWarnings("deprecation") // From API 21 we should use another overload
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
@@ -81,7 +81,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("exosrv.com")|| url.contains("hentaigold.net")) {
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("exosrv.com") || url.contains("hentaigold.net")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -98,7 +98,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com")|| url.contains("exosrv.com")|| url.contains("hentaigold.net")) {
+            } else if (url.contains("exoclick.com") || url.contains("juicyadultads.com") || url.contains("exosrv.com") || url.contains("hentaigold.net")) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
@@ -113,8 +113,9 @@ public class ASMHentaiActivity extends BaseWebActivity {
             Site theSite = Site.searchByCode(Integer.parseInt(params[1]));
             try {
                 processContent(ASMHentaiParser.parseContent(url, theSite));
-            } catch (IOException e) {
+            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
                 Timber.e(e, "Error parsing content.");
+                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
             return null;

@@ -9,10 +9,10 @@ import android.util.DisplayMetrics;
  */
 public class Convert {
 
-    public static int dpToPixel(Context cxt, int dp) {
+    public static int dpToPixel(Context context, int dp) {
         float scaleFactor =
                 (1.0f / DisplayMetrics.DENSITY_DEFAULT)
-                        * cxt.getResources().getDisplayMetrics().densityDpi;
+                        * context.getResources().getDisplayMetrics().densityDpi;
 
         return (int) (dp * scaleFactor);
     }

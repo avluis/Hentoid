@@ -43,7 +43,7 @@ class FileUtil {
     }
 
     /**
-     * Get a DocumentFile corresponding to the given file.
+     * Get the DocumentFile corresponding to the given file.
      * If the file does not exist, it is created.
      *
      * @param file        The file.
@@ -53,7 +53,7 @@ class FileUtil {
     @Nullable
     private static DocumentFile getDocumentFile(final File file, final boolean isDirectory) {
         String baseFolder = FileHelper.getExtSdCardFolder(file);
-        boolean originalDirectory = false;
+        boolean returnSDRoot = false;
         if (baseFolder == null) {
             return null;
         }
@@ -64,43 +64,70 @@ class FileUtil {
             if (!baseFolder.equals(fullPath)) {
                 relativePath = fullPath.substring(baseFolder.length() + 1);
             } else {
-                originalDirectory = true;
+                returnSDRoot = true;
             }
         } catch (IOException e) {
             return null;
         } catch (Exception f) {
-            originalDirectory = true;
+            returnSDRoot = true;
             //continue
         }
 
-        String as = FileHelper.getStringUri();
-        Uri treeUri = null;
-        if (as != null) {
-            treeUri = Uri.parse(as);
-        }
-        if (treeUri == null) {
-            return null;
-        }
+        String sdStorageUriStr = FileHelper.getStringUri();
 
-        return documentFileHelper(treeUri, originalDirectory, relativePath, isDirectory);
+        Uri sdStorageUri;
+        if (sdStorageUriStr != null) {
+            sdStorageUri = Uri.parse(sdStorageUriStr);
+
+            // Shorten relativePath if part of it is already in sdStorageUri
+            String[] uriContents = sdStorageUri.getPath().split(":");
+            if (uriContents.length > 1) {
+                String relativeUriPath = sdStorageUri.getPath().split(":")[1];
+                if (relativePath.contains(relativeUriPath)) {
+                    relativePath = relativePath.substring(relativeUriPath.length() + 1);
+                }
+            }
+        }
+        else return null;
+
+        return documentFileHelper(sdStorageUri, returnSDRoot, relativePath, isDirectory);
     }
 
-    private static DocumentFile documentFileHelper(Uri treeUri, boolean originalDirectory,
+    /**
+     * Get the DocumentFile corresponding to the given file.
+     * If the file does not exist, it is created.
+     *
+     * @param rootURI Uri representing root
+     * @param returnRoot True if method has just to return the DocumentFile representing the given root
+     * @param relativePath Relative path to the Document to be found/created (relative to given root)
+     * @param isDirectory True if document is supposed to be a directory; false if document is supposed to be a file
+     * @return DocumentFile corresponding to the given file.
+     */
+    private static DocumentFile documentFileHelper(Uri rootURI, boolean returnRoot,
                                                    String relativePath, boolean isDirectory) {
-        // start with root of SD card and then parse through document tree.
-        Context cxt = HentoidApp.getAppContext();
-        DocumentFile document = DocumentFile.fromTreeUri(cxt, treeUri);
-        if (originalDirectory) {
+        // start with root and then parse through document tree.
+        Context context = HentoidApp.getAppContext();
+        DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
+
+        if (returnRoot) {
             return document;
         }
         String[] parts = relativePath.split("/");
         for (int i = 0; i < parts.length; i++) {
             DocumentFile nextDocument = document.findFile(parts[i]);
-            if (nextDocument == null) {
+            // The folder might exist in its capitalized version (might happen with legacy installs from the FakkuDroid era)
+            if (null == nextDocument) nextDocument = document.findFile(Helper.capitalize(parts[i]));
+
+            // The folder definitely doesn't exist at all
+            if (null == nextDocument) {
+                Timber.d("Document %s - part #%s : '%s' not found; creating", document.getName(), String.valueOf(i), parts[i]);
+
                 if ((i < parts.length - 1) || isDirectory) {
                     nextDocument = document.createDirectory(parts[i]);
+                    if (null == nextDocument) Timber.e("Failed to create subdirectory %s/%s", document.getName(), parts[i]);
                 } else {
                     nextDocument = document.createFile("image", parts[i]);
+                    if (null == nextDocument) Timber.e("Failed to create file %s/image%s", document.getName(), parts[i]);
                 }
             }
             document = nextDocument;
@@ -128,8 +155,8 @@ class FileUtil {
                 // Storage Access Framework
                 DocumentFile targetDocument = getDocumentFile(target, false);
                 if (targetDocument != null) {
-                    Context cxt = HentoidApp.getAppContext();
-                    return cxt.getContentResolver().openOutputStream(
+                    Context context = HentoidApp.getAppContext();
+                    return context.getContentResolver().openOutputStream(
                             targetDocument.getUri());
                 }
             }
