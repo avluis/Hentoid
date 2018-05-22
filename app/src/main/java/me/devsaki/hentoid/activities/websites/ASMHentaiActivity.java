@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities.websites;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
@@ -29,7 +28,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        ASMHentaiWebViewClient client = new ASMHentaiWebViewClient(this, "asmhentai.com/g/");
+        ASMViewClient client = new ASMViewClient(this, "asmhentai.com/g/");
         client.restrictTo("asmhentai.com");
 
         webView.setWebViewClient(client);
@@ -43,16 +42,10 @@ public class ASMHentaiActivity extends BaseWebActivity {
         executeAsyncTask(new HtmlLoader(this), extra);
     }
 
-    private class ASMHentaiWebViewClient extends CustomWebViewClient {
-        ASMHentaiWebViewClient(BaseWebActivity activity, String url) {
-            super(activity, url);
-        }
+    private class ASMViewClient extends CustomWebViewClient {
 
-        @Override
-        public void onReceivedError(WebView view, WebResourceRequest request,
-                                    WebResourceError error) {
-            /*Workaround for cache miss when re-submitting data to search form*/
-            view.loadUrl(view.getOriginalUrl());
+        ASMViewClient(BaseWebActivity activity, String filteredUrl) {
+            super(activity, filteredUrl);
         }
 
         @Override
