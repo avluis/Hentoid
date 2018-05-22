@@ -16,27 +16,7 @@ android {
         versionCode 52
         versionName '1.2.9'
         vectorDrawables.useSupportLibrary = true
-    }
-    flavorDimensions "buildType"
-    productFlavors {
-        dev {
-            buildConfigField('String', 'UPDATE_URL',
-                    '"https://avnet.ws/.apps/hentoid/debug/update.json"')
-            def appId = "me.devsaki.hentoid.dev"
-            resValue('string', 'app_id', appId)
-            resValue('string', 'app_name', 'Hentoid-dev')
-            applicationId appId
-            dimension "buildType"
-        }
-        prod {
-            buildConfigField('String', 'UPDATE_URL',
-                    '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"')
-            def appId = android.defaultConfig.applicationId
-            resValue('string', 'app_id', appId)
-            resValue('string', 'app_name', 'Hentoid')
-            applicationId appId
-            dimension "buildType"
-        }
+        buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"'
     }
     signingConfigs {
         release
@@ -45,6 +25,7 @@ android {
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            applicationIdSuffix ".dev"
             versionNameSuffix "-DEBUG"
         }
         release {
@@ -64,7 +45,6 @@ android {
             testProguardFile 'proguard-project-test.pro'
         }
     }
-    buildToolsVersion '27.0.3'
 }
 
 Properties props = new Properties()
@@ -112,7 +92,7 @@ dependencies {
     //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
     implementation 'com.github.apl-devs:appintro:9d5d046037'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
-    implementation 'com.google.android.gms:play-services-analytics:11.8.0'
+    implementation 'com.google.android.gms:play-services-analytics:15.0.2'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     implementation 'com.google.code.gson:gson:2.8.2'
     // Timber (Extensible Logger): github.com/JakeWharton/timber
