@@ -13,30 +13,10 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 51
-        versionName '1.2.8'
+        versionCode 52
+        versionName '1.2.9'
         vectorDrawables.useSupportLibrary = true
-    }
-    flavorDimensions "buildType"
-    productFlavors {
-        dev {
-            buildConfigField('String', 'UPDATE_URL',
-                    '"https://avnet.ws/.apps/hentoid/debug/update.json"')
-            def appId = "me.devsaki.hentoid.dev"
-            resValue('string', 'app_id', appId)
-            resValue('string', 'app_name', 'Hentoid-dev')
-            applicationId appId
-            dimension "buildType"
-        }
-        prod {
-            buildConfigField('String', 'UPDATE_URL',
-                    '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"')
-            def appId = android.defaultConfig.applicationId
-            resValue('string', 'app_id', appId)
-            resValue('string', 'app_name', 'Hentoid')
-            applicationId appId
-            dimension "buildType"
-        }
+        buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"'
     }
     signingConfigs {
         release
@@ -45,6 +25,7 @@ android {
         debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            applicationIdSuffix ".dev"
             versionNameSuffix "-DEBUG"
         }
         release {
@@ -64,7 +45,6 @@ android {
             testProguardFile 'proguard-project-test.pro'
         }
     }
-    buildToolsVersion '27.0.3'
 }
 
 Properties props = new Properties()
@@ -98,27 +78,25 @@ dependencies {
     implementation 'com.facebook.stetho:stetho:1.5.0'
 
     // Support libraries
-    implementation 'com.android.support:support-v4:27.1.1'
     implementation 'com.android.support:recyclerview-v7:27.1.1'
-    implementation 'com.android.support:support-v13:27.1.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support:cardview-v7:27.1.1'
     implementation 'com.android.support:design:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
 
     // Image loader: github.com/bumptech/glide
-    implementation 'com.github.bumptech.glide:glide:4.4.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.4.0'
+    implementation 'com.github.bumptech.glide:glide:4.7.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.4.0'
     // Intro screens or slides: https://github.com/apl-devs/AppIntro
     //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
     implementation 'com.github.apl-devs:appintro:9d5d046037'
     // Google Play Services Analytics: developers.google.com/android/guides/setup
-    implementation 'com.google.android.gms:play-services-analytics:11.8.0'
+    implementation 'com.google.android.gms:play-services-analytics:15.0.2'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     implementation 'com.google.code.gson:gson:2.8.2'
     // Timber (Extensible Logger): github.com/JakeWharton/timber
-    implementation 'com.jakewharton.timber:timber:4.6.1'
+    implementation 'com.jakewharton.timber:timber:4.7.0'
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
     implementation 'com.mani:ThinDownloadManager:1.3.0'
     // HTTP & HTTP/2 client: github.com/square/okhttp
