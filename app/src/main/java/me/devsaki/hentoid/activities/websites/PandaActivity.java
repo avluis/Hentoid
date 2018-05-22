@@ -11,16 +11,16 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
  * Created by avluis on 07/21/2016.
  * Implements Hentai Cafe source
  */
-public class HentaiCafeActivity extends BaseWebActivity {
+public class PandaActivity extends BaseWebActivity {
 
     Site getStartSite() {
-        return Site.HENTAICAFE;
+        return Site.PANDA;
     }
 
     @Override
     void setWebView(ObservableWebView webView) {
-        HentaiCafeWebViewClient client = new HentaiCafeWebViewClient(this, "//hentai.cafe/");
-        client.restrictTo("hentai.cafe");
+        PandaWebViewClient client = new PandaWebViewClient(this, "mangapanda.com/[A-Za-z0-9\\-_]+/[0-9]+");
+        client.restrictTo("mangapanda.com");
 
         webView.setWebViewClient(client);
         super.setWebView(webView);
@@ -33,9 +33,9 @@ public class HentaiCafeActivity extends BaseWebActivity {
         executeAsyncTask(new HtmlLoader(this), extra);
     }
 
-    private class HentaiCafeWebViewClient extends CustomWebViewClient {
+    private class PandaWebViewClient extends CustomWebViewClient {
 
-        HentaiCafeWebViewClient(BaseWebActivity activity, String filteredUrl) {
+        PandaWebViewClient(BaseWebActivity activity, String filteredUrl) {
             super(activity, filteredUrl);
         }
     }

@@ -18,12 +18,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.parsers.ASMHentaiParser;
-import me.devsaki.hentoid.parsers.HentaiCafeParser;
-import me.devsaki.hentoid.parsers.HitomiParser;
-import me.devsaki.hentoid.parsers.NhentaiParser;
-import me.devsaki.hentoid.parsers.PururinParser;
-import me.devsaki.hentoid.parsers.TsuminoParser;
+import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.NetworkStatus;
@@ -36,6 +32,7 @@ import timber.log.Timber;
  * TODO: Implement download job tracking: https://github.com/avluis/Hentoid/issues/110
  * 1 image = 1 task, n images = 1 chapter = 1 job = 1 bundled task.
  */
+@Deprecated
 public class DownloadService extends IntentService {
 
     public static boolean paused;
@@ -177,7 +174,7 @@ public class DownloadService extends IntentService {
             Timber.e(e, "Error saving JSON: %s", currentContent.getTitle());
         }
 
-        HentoidApp.downloadComplete();
+        ContentQueueManager.getInstance().downloadComplete();
         updateActivity(-1);
         Timber.d("Content download finished: %s", currentContent.getTitle());
 
@@ -203,35 +200,13 @@ public class DownloadService extends IntentService {
     }
 
     private void updateActivity(double percent) {
-        EventBus.getDefault().post(new DownloadEvent(percent));
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, percent));
     }
 
     // TODO: Implement null handling as fail/retry state
     private void parseImageFiles(Content currentContent) {
-        List<String> aUrls = new ArrayList<>();
-        switch (currentContent.getSite()) {
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                aUrls = ASMHentaiParser.parseImageList(currentContent);
-                break;
-            case HENTAICAFE:
-                aUrls = HentaiCafeParser.parseImageList(currentContent);
-                break;
-            case HITOMI:
-                aUrls = HitomiParser.parseImageList(currentContent);
-                break;
-            case NHENTAI:
-                aUrls = NhentaiParser.parseImageList(currentContent);
-                break;
-            case TSUMINO:
-                aUrls = TsuminoParser.parseImageList(currentContent);
-                break;
-            case PURURIN:
-                aUrls = PururinParser.parseImageList(currentContent);
-                break;
-            default:
-                break;
-        }
+        ContentParser parser = ContentParserFactory.getInstance().getParser(currentContent);
+        List<String> aUrls = parser.parseImageList(currentContent);
 
         int i = 1;
         List<ImageFile> imageFileList = new ArrayList<>();

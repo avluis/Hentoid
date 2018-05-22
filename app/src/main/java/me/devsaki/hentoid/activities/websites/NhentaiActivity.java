@@ -9,14 +9,12 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.NhentaiParser;
+import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -38,7 +36,7 @@ public class NhentaiActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        NhentaiWebViewClient client = new NhentaiWebViewClient();
+        NhentaiWebViewClient client = new NhentaiWebViewClient(this);
         client.restrictTo("nhentai.net");
 
         webView.setWebViewClient(client);
@@ -46,7 +44,9 @@ public class NhentaiActivity extends BaseWebActivity {
     }
 
     private class NhentaiWebViewClient extends CustomWebViewClient {
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        NhentaiWebViewClient(BaseWebActivity activity) {
+            super(activity);
+        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -66,7 +66,7 @@ public class NhentaiActivity extends BaseWebActivity {
                 return getWebResourceResponseFromAsset(getStartSite(), "main_js.js", TYPE.JS);
             } else if (url.contains("//static.nhentai.net/css/")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main_style.css", TYPE.CSS);
-            } else if (url.contains("ads.contentabc.com")) {
+            } else if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -82,7 +82,7 @@ public class NhentaiActivity extends BaseWebActivity {
                 return getWebResourceResponseFromAsset(getStartSite(), "main_js.js", TYPE.JS);
             } else if (url.contains("//static.nhentai.net/css/")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main_style.css", TYPE.CSS);
-            } else if (url.contains("ads2.contentabc.com")) {
+            } else if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
@@ -95,7 +95,8 @@ public class NhentaiActivity extends BaseWebActivity {
         protected Content doInBackground(String... params) {
             String url = params[0];
             try {
-                processContent(NhentaiParser.parseContent(HttpClientHelper.call(url)));
+                ContentParser parser = ContentParserFactory.getInstance().getParser(Site.NHENTAI);
+                processContent(parser.parseContent(HttpClientHelper.call(url)));
             } catch (Exception e) {
                 Timber.e(e, "Error parsing content.");
                 runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));

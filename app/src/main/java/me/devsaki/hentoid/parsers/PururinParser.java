@@ -1,34 +1,27 @@
 package me.devsaki.hentoid.parsers;
 
-import android.text.TextUtils;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.HttpClientHelper;
-import timber.log.Timber;
-
-import static me.devsaki.hentoid.enums.Site.PURURIN;
 
 /**
  * Created by robb_w on 01/31/2018.
  * Handles parsing of content from pururin.io
  */
-public class PururinParser {
+public class PururinParser extends BaseParser {
 
-    public static Content parseContent(String urlString) throws IOException {
-        Document doc = Jsoup.connect(urlString).get();
+    @Override
+    protected Content parseContent(Document doc) {
+        Content result = new Content();
 
         Elements content = doc.select("div.gallery-info");
         if (content.size() > 0) {
@@ -36,16 +29,20 @@ public class PururinParser {
                     .select("a")
                     .attr("href")
                     .replace("http://pururin.io/read", "");
+            result.setUrl(url);
 
             String coverUrl = doc.select("div.cover")
                     .select("a")
                     .select("img")
                     .attr("src");
+            result.setCoverImageUrl(coverUrl);
 
             String title = doc.select("div.title").first().text();
+            result.setTitle(title);
 
             Elements rows = content.select("tr");
             AttributeMap attributes = new AttributeMap();
+            result.setAttributes(attributes);
 
             int pages = 0;
 
@@ -70,90 +67,39 @@ public class PururinParser {
                 }
             }
 
-            String author = "";
-            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
-                author = attributes.get(AttributeType.ARTIST).get(0).getName();
-            if (author.equals("")) // Try and get Circle
-            {
-                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
-                    author = attributes.get(AttributeType.CIRCLE).get(0).getName();
-            }
-
-            return new Content()
-                    .setTitle(title)
-                    .setAuthor(author)
-                    .setUrl(url)
-                    .setCoverImageUrl(coverUrl)
-                    .setAttributes(attributes)
-                    .setQtyPages(pages)
-                    .setStatus(StatusContent.SAVED)
-                    .setSite(PURURIN);
+            result.setQtyPages(pages)
+                    .setSite(Site.PURURIN);
         }
 
-        return null;
+        return result;
     }
 
-    private static void parseAttributes(AttributeMap map, AttributeType type, Elements elements) {
-        for (Element a : elements) {
-            Attribute attribute = new Attribute();
-            attribute.setType(type);
-            attribute.setUrl(a.attr("href"));
-            attribute.setName(a.text());
-            map.add(attribute);
-        }
-    }
 
-    public static List<String> parseImageList(Content content) {
-        int pages = content.getQtyPages();
-        String readerUrl = content.getReaderUrl();
-        List<String> imgUrls = new ArrayList<>();
+    @Override
+    protected List<String> parseImages(Content content) throws Exception {
+        List<String> result = new ArrayList<>();
 
-        Document doc;
-        Elements js;
-        String ext;
+        Document doc = Jsoup.connect(content.getReaderUrl()).get();
+        Elements js = doc.select("script");
         int startPos, endPos;
 
-        try {
-            //doc = Jsoup.connect(readerUrl).get();
-            doc = Jsoup.parse(HttpClientHelper.call(content.getReaderUrl()));
-            js = doc.select("script");
+        for (Element a : js) {
+            if (a.toString().contains("\"image\":")) // That's the one
+            {
+                String[] parts = a.toString().split(",");
 
-            for (Element a : js) {
-                if (a.toString().contains("\"image\":")) // That's the one
-                {
-                    String[] parts = a.toString().split(",");
-
-                    for (String s : parts) {
-                        if (s.startsWith("\"image\":")) {
-                            startPos = s.indexOf("http");
-                            endPos = s.indexOf("\"}");
-                            imgUrls.add(s.substring(startPos, endPos).replace("\\/", "/"));
-                        }
+                for (String s : parts) {
+                    if (s.startsWith("\"image\":")) {
+                        startPos = s.indexOf("http");
+                        endPos = s.indexOf("\"}");
+                        result.add(s.substring(startPos, endPos).replace("\\/", "/"));
                     }
-
-                    break;
                 }
+
+                break;
             }
-
-            /*
-            String imgUrl = "http:" +
-                    doc.select("div.images-holder")
-                            .select("img")
-                            .attr("src");
-
-            ext = imgUrl.substring(imgUrl.length() - 4);
-
-            for (int i = 0; i < pages; i++) {
-                String img = imgUrl.substring(0, imgUrl.length() - 4) + (i + 1) + ext;
-                imgUrls.add(img);
-            }
-            */
-
-        } catch (Exception e) {
-            Timber.e(e, "Error while attempting to connect to: " + readerUrl);
         }
-        Timber.d(TextUtils.join(",", imgUrls));
 
-        return imgUrls;
+        return result;
     }
 }

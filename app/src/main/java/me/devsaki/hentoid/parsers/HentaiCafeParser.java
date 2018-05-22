@@ -16,10 +16,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.AttributeMap;
 import timber.log.Timber;
 
@@ -29,17 +28,17 @@ import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
  * Created by avluis on 07/26/2016.
  * Handles parsing of content from Hentai Cafe
  */
-public class HentaiCafeParser {
+public class HentaiCafeParser extends BaseParser {
 
-    private static final int TIMEOUT = 5000; // 5 seconds
-
-    public static Content parseContent(String urlString) throws IOException {
-        Document doc = Jsoup.connect(urlString).timeout(TIMEOUT).get();
+    @Override
+    protected Content parseContent(Document doc) {
+        Content result = new Content();
 
         Elements content = doc.select("div.entry-content.content");
 
-        if (urlString.contains(HENTAICAFE.getUrl() + "/78-2/") ||           // ignore tags page
-                urlString.contains(HENTAICAFE.getUrl() + "/artists/")) {    // ignore artist page
+        Timber.d("URI : %s", doc.baseUri());
+        if (doc.baseUri().contains(HENTAICAFE.getUrl() + "/78-2/") ||           // ignore tags page
+                doc.baseUri().contains(HENTAICAFE.getUrl() + "/artists/")) {    // ignore artist page
 
             return null;
         }
@@ -49,17 +48,21 @@ public class HentaiCafeParser {
                     .select("article")
                     .attr("id")
                     .replace("post-", "/?p=");
+            result.setUrl(url);
 
             String coverUrl = doc.select("div.x-column.x-sm.x-1-2")
                     .select("img")
                     .attr("src");
+            result.setCoverImageUrl(coverUrl);
 
             String title = doc.select("div.x-column.x-sm.x-1-2.last")
                     .select("h3")
                     .first()
                     .text();
+            result.setTitle(title);
 
             AttributeMap attributes = new AttributeMap();
+            result.setAttributes(attributes);
 
             String info = content.select("div.x-column.x-sm.x-1-2.last")
                     .select("p").html();
@@ -76,65 +79,29 @@ public class HentaiCafeParser {
             parseAttributes(attributes, AttributeType.TAG, tagElements);
             parseAttributes(attributes, AttributeType.ARTIST, artistElements);
 
-            String author = "";
-            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
-                author = attributes.get(AttributeType.ARTIST).get(0).getName();
-            if (author.equals("")) // Try and get Circle
-            {
-                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
-                    author = attributes.get(AttributeType.CIRCLE).get(0).getName();
-            }
-
-            return new Content()
-                    .setTitle(title)
-                    .setAuthor(author)
-                    .setUrl(url)
-                    .setCoverImageUrl(coverUrl)
-                    .setAttributes(attributes)
-                    .setQtyPages(-1)
-                    .setStatus(StatusContent.SAVED)
-                    .setSite(HENTAICAFE);
+            result.setQtyPages(-1)
+                    .setSite(Site.HENTAICAFE);
         }
 
-        return null;
+        return result;
     }
 
-    private static void parseAttributes(AttributeMap map, AttributeType type, Elements elements) {
-        for (Element a : elements) {
-            map.add(new Attribute()
-                    .setType(type)
-                    .setUrl(a.attr("href"))
-                    .setName(a.text()));
-        }
-    }
+    @Override
+    protected List<String> parseImages(Content content) throws IOException {
+        List<String> result = new ArrayList<>();
 
-    public static List<String> parseImageList(Content content) {
-        String galleryUrl = content.getReaderUrl();
-        List<String> imgUrls = new ArrayList<>();
-        Timber.d("Gallery URL: %s", galleryUrl);
+        Document doc = Jsoup.connect(content.getReaderUrl()).timeout(TIMEOUT).get();
+        Elements links = doc.select("a.x-btn");
 
-        Document readerDoc = null;
-        Elements links = null;
-        try {
-            readerDoc = Jsoup.connect(galleryUrl).timeout(TIMEOUT).get();
-        } catch (IOException e) {
-            Timber.e(e, "Error parsing content page");
-        }
-
-        if (readerDoc != null) {
-            links = readerDoc.select("a.x-btn");
-
-            if (links.size() > 1) {
-                Timber.d("Multiple chapters found!");
-            }
-        }
-
-        Document doc;
         Elements contents;
         Element js;
         int pages = 0;
 
         if (links != null) {
+            if (links.size() > 1) {
+                Timber.d("Multiple chapters found!");
+            }
+
             for (int i = 0; i < links.size(); i++) {
 
                 String url = links.get(i).attr("href");
@@ -155,7 +122,7 @@ public class HentaiCafeParser {
                             if (array != null) {
                                 for (int j = 0; j < array.length(); j++) {
                                     try {
-                                        imgUrls.add(array.getJSONObject(j).getString("url"));
+                                        result.add(array.getJSONObject(j).getString("url"));
                                     } catch (JSONException e) {
                                         Timber.e(e, "Error while reading from array");
                                     }
@@ -172,9 +139,8 @@ public class HentaiCafeParser {
             Timber.d("Total Pages: %s", pages);
             content.setQtyPages(pages);
         }
-        Timber.d("%s", imgUrls);
 
-        return imgUrls;
+        return result;
     }
 
     private static JSONArray getJSONArrayFromString(String s) {

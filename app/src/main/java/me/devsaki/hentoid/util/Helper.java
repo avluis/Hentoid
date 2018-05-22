@@ -115,6 +115,7 @@ public final class Helper {
         toast(context, null, resource, duration);
     }
 
+    @SuppressLint("ShowToast")
     private static void toast(@NonNull Context context, @Nullable String text, int res,
                               DURATION duration) {
         String message = null;
@@ -250,14 +251,18 @@ public final class Helper {
             int glowDrawableId = context.getResources().getIdentifier("overscroll_glow", "drawable",
                     "android");
             Drawable androidGlow = ContextCompat.getDrawable(context, glowDrawableId);
-            androidGlow.setColorFilter(ContextCompat.getColor(context, glowColor),
-                    PorterDuff.Mode.SRC_ATOP);
+            if (androidGlow != null) {
+                androidGlow.setColorFilter(ContextCompat.getColor(context, glowColor),
+                        PorterDuff.Mode.SRC_ATOP);
+            }
             // Android < 5.0 - OverScroll Edge Line
             final int edgeDrawableId = context.getResources().getIdentifier("overscroll_edge",
                     "drawable", "android");
             final Drawable overScrollEdge = ContextCompat.getDrawable(context, edgeDrawableId);
-            overScrollEdge.setColorFilter(ContextCompat.getColor(context, lineColor),
-                    PorterDuff.Mode.SRC_ATOP);
+            if (overScrollEdge != null) {
+                overScrollEdge.setColorFilter(ContextCompat.getColor(context, lineColor),
+                        PorterDuff.Mode.SRC_ATOP);
+            }
         }
     }
 
@@ -316,16 +321,20 @@ public final class Helper {
     public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+        if (d != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
             d = (DrawableCompat.wrap(d)).mutate();
         }
 
-        Bitmap b = Bitmap.createBitmap(d.getIntrinsicWidth(), d.getIntrinsicHeight(), ARGB_8888);
-        Canvas c = new Canvas(b);
-        d.setBounds(0, 0, c.getWidth(), c.getHeight());
-        d.draw(c);
+        if (d != null) {
+            Bitmap b = Bitmap.createBitmap(d.getIntrinsicWidth(), d.getIntrinsicHeight(), ARGB_8888);
+            Canvas c = new Canvas(b);
+            d.setBounds(0, 0, c.getWidth(), c.getHeight());
+            d.draw(c);
 
-        return b;
+            return b;
+        } else {
+            return Bitmap.createBitmap(0,0, Bitmap.Config.ARGB_8888);
+        }
     }
 
     public static Bitmap tintBitmap(Bitmap bitmap, int color) {
@@ -423,7 +432,7 @@ public final class Helper {
         }
     }
 
-    public static String capitalize(String s)
+    public static String capitalizeString(String s)
     {
         if (null == s || 0 == s.length()) return s;
         else if (1 == s.length()) return s.toUpperCase();
@@ -431,5 +440,42 @@ public final class Helper {
         {
             return s.substring(0,1).toUpperCase() + s.substring(1);
         }
+    }
+
+    private static String padRight(String s, int n, char paddingChar) {
+        return String.format("%1$-" + n + "s", s).replace(' ', paddingChar);
+    }
+
+    private static String padLeft(String s, int n, char paddingChar) {
+        return String.format("%1$" + n + "s", s).replace(' ', paddingChar);
+    }
+
+    /**
+     * Transforms the given string to format with a given length
+     *  - If the given length is shorter than the actual length of the string, it will be truncated
+     *  - If the given length is longer than the actual length of the string, it will be right/left-padded with a given character
+     * @param value String to transform
+     * @param length Target length of the final string
+     * @param paddingChar Character to use if padding is needed
+     * @param padRight True if the padding has to be done on the right-side of the target string; false if the padding has to be done on the left-side (optional; default value = true)
+     * @return Reprocessed string of given length, according to rules documented in the method description
+     */
+    public static String fixedLengthString(String value, int length, char paddingChar, boolean padRight)
+    {
+        String result = (null == value) ? "" : value;
+
+        if (result.length() > length) result = result.substring(0, length);
+        else if (result.length() < length)
+        {
+            if (padRight) result = padRight(result, length, paddingChar);
+            else result = padLeft(result, length, paddingChar);
+        }
+
+        return result;
+    }
+
+    public static String fixedLengthInt(int value, int length)
+    {
+        return fixedLengthString(String.valueOf(value), length, '0', false);
     }
 }

@@ -34,7 +34,6 @@ public class HentoidApp extends Application {
 
     private static boolean beginImport;
     private static boolean donePressed;
-    private static int downloadCount = 0;
     private static HentoidApp instance;
     private RefWatcher refWatcher;
 
@@ -46,18 +45,6 @@ public class HentoidApp extends Application {
 
     public static Context getAppContext() {
         return instance.getApplicationContext();
-    }
-
-    public static int getDownloadCount() {
-        return downloadCount;
-    }
-
-    public static void setDownloadCount(int downloadCount) {
-        HentoidApp.downloadCount = downloadCount;
-    }
-
-    public static void downloadComplete() {
-        HentoidApp.downloadCount++;
     }
 
     public static boolean isImportComplete() {
@@ -187,7 +174,7 @@ public class HentoidApp extends Application {
 
         HentoidDB db = HentoidDB.getInstance(this);
         Timber.d("Content item(s) count: %s", db.countContent());
-        db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
+        db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
         try {
             UpgradeTo(Helper.getAppVersionCode(this), db);
         } catch (PackageManager.NameNotFoundException e) {
@@ -229,7 +216,7 @@ public class HentoidApp extends Application {
             if (contents != null && contents.size() > 0) {
                 for (int i = 0; i < contents.size(); i++) {
                     Content content = contents.get(i);
-                    content.setStorageFolder("/" + content.getSite().getDescription() + "/" + content.getOldUniqueSiteId());
+                    content.setStorageFolder("/" + content.getSite().getDescription() + "/" + content.getOldUniqueSiteId()); // This line must use deprecated code, as it migrates it to newest version
                     db.updateContentStorageFolder(content);
                 }
             }
