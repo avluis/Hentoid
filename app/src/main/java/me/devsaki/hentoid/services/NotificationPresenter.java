@@ -30,7 +30,7 @@ import timber.log.Timber;
 /**
  * Created by Shiro on 3/18/2016.
  * Responsible for handling download service notifications
- * Methods are intended to have default level accessors for use with DownloadService class only
+ * Methods are intended to have default level accessors for use with ContentDownloadService class only
  */
 final class NotificationPresenter {
 

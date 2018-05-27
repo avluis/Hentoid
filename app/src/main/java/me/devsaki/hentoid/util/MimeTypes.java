@@ -34,14 +34,11 @@ import java.util.regex.Pattern;
  */
 public final class MimeTypes {
 
-    public static final String ALL_MIME_TYPES = "*/*";
+    private static final String ALL_MIME_TYPES = "*/*";
 
     private static final HashMap<String, String> MIME_TYPES = new HashMap<>();
 
     static {
-  /*
-         * ================= MIME TYPES ====================
-   */
         MIME_TYPES.put("asm", "text/x-asm");
         MIME_TYPES.put("def", "text/plain");
         MIME_TYPES.put("in", "text/plain");
@@ -122,10 +119,10 @@ public final class MimeTypes {
             return null;
         }
 
-        String type = "*/*";
+        String type = ALL_MIME_TYPES;
         final String extension = getExtension(file.getName());
 
-        if (extension != null && !extension.isEmpty()) {
+        if (!extension.isEmpty()) {
             final String extensionLowerCase = extension.toLowerCase(Locale.getDefault());
             final MimeTypeMap mime = MimeTypeMap.getSingleton();
             type = mime.getMimeTypeFromExtension(extensionLowerCase);
@@ -136,7 +133,7 @@ public final class MimeTypes {
         }
 
         if (type == null) {
-            type = "*/*";
+            type = ALL_MIME_TYPES;
         }
 
         return type;
@@ -158,7 +155,7 @@ public final class MimeTypes {
         return "";
     }
 
-    public static String getExtension(String a) {
+    private static String getExtension(String a) {
         return a.contains(".") ? a.substring(a.lastIndexOf(".") + 1)
                 .toLowerCase(Locale.getDefault()) : "";
     }

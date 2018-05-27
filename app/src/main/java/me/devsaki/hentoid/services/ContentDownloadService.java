@@ -128,6 +128,9 @@ public class ContentDownloadService extends IntentService {
             return;
         }
 
+        // Tracking Event (Download Added)
+        HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Start");
+
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
         downloadSkipped = false;
@@ -240,7 +243,7 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Download error - Image %s not retrieved", img.getUrl());
             error.printStackTrace();
             finalizeImage(img, false);
-        }, null);
+        });
     }
 
     private static void saveImage(ImageFile img, File dir, Map.Entry<byte[], Map<String, String>> response) throws IOException {

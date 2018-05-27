@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.enums;
 
+import javax.annotation.Nullable;
+
 /**
  * Created by DevSaki on 10/05/2015.
  * Attribute Type enumerator
@@ -16,6 +18,7 @@ public enum AttributeType {
         this.code = code;
     }
 
+    @Nullable
     public static AttributeType searchByCode(int code) {
         for (AttributeType s : AttributeType.values()) {
             if (s.getCode() == code) {
