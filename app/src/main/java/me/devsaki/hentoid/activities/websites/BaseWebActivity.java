@@ -24,6 +24,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -577,8 +578,11 @@ public abstract class BaseWebActivity extends BaseActivity {
             try {
                 ContentParser parser = ContentParserFactory.getInstance().getParser(activity.getStartSite());
                 activity.processContent(parser.parseContent(url));
+            } catch (IOException e) { // Most I/O errors being timeouts...
+                Timber.e(e, "I/O Error while parsing content.");
+                //activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             } catch (Exception e) {
-                Timber.e(e, "Error parsing content.");
+                Timber.e(e, "Error while parsing content.");
                 activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
