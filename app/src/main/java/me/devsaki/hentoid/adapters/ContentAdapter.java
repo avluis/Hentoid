@@ -49,12 +49,14 @@ import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOption
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private static final int VISIBLE_THRESHOLD = 10;
+
     private final Context context;
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
+    // Total count of book in entire collection (Adapter is in charge of updating it)
     private int mTotalCount;
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
