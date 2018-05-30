@@ -21,28 +21,25 @@ android {
         versionCode 53
         versionName '1.3.0'
         vectorDrawables.useSupportLibrary = true
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"'
     }
     buildTypes {
         debug {
             minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
             applicationIdSuffix ".dev"
             versionNameSuffix "-DEBUG"
+
+            proguardFile 'proguard-rules-debug.pro'
         }
         release {
             debuggable false
             minifyEnabled true
 
+            proguardFile 'proguard-rules-release.pro'
+            testProguardFile 'proguard-rules-test.pro'
             // Library specific proguard files
             proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
-
-            // Default proguard files & project app specific rules
-            proguardFile getDefaultProguardFile('proguard-android.txt')
-            proguardFile 'proguard-project-app.pro'
-
-            // As of Gradle Android plugin 1.1.0, the test APK has a separate config
-            testProguardFile 'proguard-project-test.pro'
         }
     }
 }
