@@ -183,18 +183,16 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void attachArtist(ViewHolder holder, Content content) {
         String templateArtist = context.getString(R.string.work_artist);
         StringBuilder artists = new StringBuilder();
-        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (null == artistAttributes) artistAttributes = new ArrayList<>();
+        List<Attribute> artistAttributes = new ArrayList<>(content.getAttributes().get(AttributeType.ARTIST));
         List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
         if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
 
+        boolean first = true;
         if (!artistAttributes.isEmpty()) {
-            for (int i = 0; i < artistAttributes.size(); i++) {
-                Attribute attribute = artistAttributes.get(i);
+            for (Attribute attribute : artistAttributes)
+            {
+                if (first) first = false; else artists.append(", ");
                 artists.append(attribute.getName());
-                if (i != artistAttributes.size() - 1) {
-                    artists.append(", ");
-                }
             }
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artists)));

@@ -554,6 +554,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         {
             if (url.contains(s)) return true;
         }
+        if (localBlockedContent != null)
         for(String s : localBlockedContent)
         {
             if (url.contains(s)) return true;

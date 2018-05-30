@@ -249,20 +249,18 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private void attachArtist(ContentHolder holder, Content content) {
         String templateArtist = context.getResources().getString(R.string.work_artist);
         StringBuilder artistsBuilder = new StringBuilder();
-        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (null == artistAttributes) artistAttributes = new ArrayList<>();
+        List<Attribute> artistAttributes = new ArrayList<>(content.getAttributes().get(AttributeType.ARTIST));
         List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
         if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
 
         if (artistAttributes.isEmpty()) {
             holder.tvArtist.setVisibility(View.GONE);
         } else {
-            for (int i = 0; i < artistAttributes.size(); i++) {
-                Attribute attribute = artistAttributes.get(i);
+            boolean first = true;
+            for (Attribute attribute : artistAttributes)
+            {
+                if (first) first = false; else artistsBuilder.append(", ");
                 artistsBuilder.append(attribute.getName());
-                if (i != artistAttributes.size() - 1) {
-                    artistsBuilder.append(", ");
-                }
             }
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
