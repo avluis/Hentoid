@@ -142,5 +142,12 @@
             android:summaryOff="@string/pref_analytics_tracking_summary_off"
             android:summaryOn="@string/pref_analytics_tracking_summary_on"
             android:title="@string/pref_analytics_tracking_title" />
+        <CheckBoxPreference
+            android:defaultValue="@string/pref_use_sfw_default"
+            android:icon="@null"
+            android:key="pref_use_sfw"
+            android:summaryOff="@string/pref_use_sfw_summary_off"
+            android:summaryOn="@string/pref_use_sfw_summary_on"
+            android:title="@string/pref_use_sfw_title" />
     </PreferenceCategory>
 </PreferenceScreen>

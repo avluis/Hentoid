@@ -27,6 +27,7 @@ import timber.log.Timber;
  * Handles image download tasks and batch operations
  * Intended to have default access level for use with DownloadService class only
  */
+@Deprecated
 final class ImageDownloadBatch {
 
     private static final int BUFFER_SIZE = 10 * 1024;

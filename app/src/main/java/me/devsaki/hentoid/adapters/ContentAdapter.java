@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +35,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
-import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.services.ContentDownloadService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
@@ -115,15 +117,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         return false;
     }
 
+    @NonNull
     @Override
-    public ContentHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
         return new ContentHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ContentHolder holder, final int pos) {
+    public void onBindViewHolder(@NonNull ContentHolder holder, final int pos) {
         Content content = mSortedList.get(pos);
 
         // Initializes the ViewHolder that contains the books
@@ -245,7 +248,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         String templateArtist = context.getResources().getString(R.string.work_artist);
         StringBuilder artistsBuilder = new StringBuilder();
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (artistAttributes == null) {
+        if (null == artistAttributes) artistAttributes = new ArrayList<>();
+        List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
+        if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
+
+        if (artistAttributes.isEmpty()) {
             holder.tvArtist.setVisibility(View.GONE);
         } else {
             for (int i = 0; i < artistAttributes.size(); i++) {
@@ -259,7 +266,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artistsBuilder.toString())));
 
-        if (artistAttributes == null) {
+        if (artistAttributes.isEmpty()) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
@@ -445,11 +452,18 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
                             item.setStatus(StatusContent.DOWNLOADING);
                             item.setDownloadDate(new Date().getTime());
-
                             db.updateContentStatus(item);
 
-                            Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
-                                    DownloadService.class);
+                            List<Pair<Integer,Integer>> queue = db.selectQueue();
+                            int lastIndex = 1;
+                            if (queue.size() > 0)
+                            {
+                                lastIndex = queue.get(queue.size()-1).second + 1;
+                            }
+                            db.insertQueue(item.getId(), lastIndex);
+
+
+                            Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
                             context.startService(intent);
 
                             Helper.toast(context, R.string.add_to_queue);
@@ -674,7 +688,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     public void removeAll()
     {
-        replaceAll(new ArrayList<Content>());
+        replaceAll(new ArrayList<>());
         mTotalCount = 0;
     }
 

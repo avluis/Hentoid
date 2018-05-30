@@ -21,9 +21,15 @@ import static me.devsaki.hentoid.enums.Site.NHENTAI;
  * Created by Shiro on 1/5/2016.
  * Handles parsing of content from nhentai
  */
-public class NhentaiParser {
+public class NhentaiParser implements ContentParser {
 
-    public static Content parseContent(String json) throws JSONException {
+    private class Tag {
+        String url;
+        String name;
+        String type;
+    }
+
+    public Content parseContent(String json) throws JSONException {
         JSONObject jsonContent = new JSONObject(json);
         String title = jsonContent.getJSONObject("title").getString("pretty");
         String url = "/" + jsonContent.getInt("id") + '/';
@@ -113,7 +119,7 @@ public class NhentaiParser {
                 .setSite(NHENTAI);
     }
 
-    public static List<String> parseImageList(Content content) {
+    public List<String> parseImageList(Content content) {
         String url = content.getGalleryUrl();
         url = url.replace("/g", "/api/gallery");
         url = url.substring(0, url.length() - 1);
@@ -151,11 +157,5 @@ public class NhentaiParser {
         Timber.d("%s", imgUrls);
 
         return imgUrls;
-    }
-
-    private static class Tag {
-        String url;
-        String name;
-        String type;
     }
 }

@@ -58,7 +58,7 @@
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.BaseWebActivity"
+            android:name=".activities.websites.PandaActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
@@ -199,10 +199,21 @@
                     android:pathPrefix="/"
                     android:scheme="http" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://mangapanda.com/" -->
+                <data
+                    android:host="www.mangapanda.com"
+                    android:pathPrefix="/"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <service
-            android:name=".services.DownloadService"
+            android:name=".services.ContentDownloadService"
             android:enabled="true"
             android:exported="false" />
 

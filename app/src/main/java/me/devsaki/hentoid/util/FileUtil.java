@@ -116,7 +116,7 @@ class FileUtil {
         for (int i = 0; i < parts.length; i++) {
             DocumentFile nextDocument = document.findFile(parts[i]);
             // The folder might exist in its capitalized version (might happen with legacy installs from the FakkuDroid era)
-            if (null == nextDocument) nextDocument = document.findFile(Helper.capitalize(parts[i]));
+            if (null == nextDocument) nextDocument = document.findFile(Helper.capitalizeString(parts[i]));
 
             // The folder definitely doesn't exist at all
             if (null == nextDocument) {

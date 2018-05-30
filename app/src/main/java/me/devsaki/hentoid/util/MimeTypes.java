@@ -24,6 +24,8 @@ import android.webkit.MimeTypeMap;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -43,7 +45,6 @@ public final class MimeTypes {
         MIME_TYPES.put("asm", "text/x-asm");
         MIME_TYPES.put("def", "text/plain");
         MIME_TYPES.put("in", "text/plain");
-        MIME_TYPES.put("rc", "text/plain");
         MIME_TYPES.put("list", "text/plain");
         MIME_TYPES.put("log", "text/plain");
         MIME_TYPES.put("pl", "text/plain");
@@ -91,6 +92,9 @@ public final class MimeTypes {
         MIME_TYPES.put("xif", "image/vnd.xiff");
         MIME_TYPES.put("pct", "image/x-pict");
         MIME_TYPES.put("pic", "image/x-pict");
+        MIME_TYPES.put("jpg", "image/jpeg");
+        MIME_TYPES.put("png", "image/png");
+        MIME_TYPES.put("gif", "image/gif");
 
         MIME_TYPES.put("adp", "audio/adpcm");
         MIME_TYPES.put("au", "audio/basic");
@@ -140,6 +144,18 @@ public final class MimeTypes {
 
     public static boolean mimeTypeMatch(String mime, String input) {
         return Pattern.matches(mime.replace("*", ".*"), input);
+    }
+
+    public static String getExtensionFromMimeType(String mime)
+    {
+        Set<Map.Entry<String, String>> set = MIME_TYPES.entrySet();
+
+        for(Map.Entry<String, String> entry : set)
+        {
+            if (entry.getValue().equals(mime)) return entry.getKey();
+        }
+
+        return "";
     }
 
     public static String getExtension(String a) {
