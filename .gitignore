@@ -1,3 +1,8 @@
+# Built application files
+*.apk
+*.ap_
+app/**/output.json
+
 # Gradle files
 .gradle/
 build/
@@ -26,8 +31,11 @@ Thumbs.db
 # OSX files
 .DS_Store
 
-# Signing files
+# Legacy Signing files (remove this rule after 29/05/2019)
 .signing/
+
+# Signing files
+signing.gradle
 
 # Android keystores
 *.keystore
