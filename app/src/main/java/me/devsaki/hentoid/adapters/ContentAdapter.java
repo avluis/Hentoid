@@ -249,15 +249,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private void attachArtist(ContentHolder holder, Content content) {
         String templateArtist = context.getResources().getString(R.string.work_artist);
         StringBuilder artistsBuilder = new StringBuilder();
-        List<Attribute> artistAttributes = new ArrayList<>(content.getAttributes().get(AttributeType.ARTIST));
+        List<Attribute> attributes = new ArrayList<>();
+        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
+        if (artistAttributes != null) attributes.addAll(artistAttributes);
         List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
-        if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
+        if (circleAttributes != null) attributes.addAll(circleAttributes);
 
-        if (artistAttributes.isEmpty()) {
+        if (attributes.isEmpty()) {
             holder.tvArtist.setVisibility(View.GONE);
         } else {
             boolean first = true;
-            for (Attribute attribute : artistAttributes)
+            for (Attribute attribute : attributes)
             {
                 if (first) first = false; else artistsBuilder.append(", ");
                 artistsBuilder.append(attribute.getName());
@@ -266,7 +268,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artistsBuilder.toString())));
 
-        if (artistAttributes.isEmpty()) {
+        if (attributes.isEmpty()) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);

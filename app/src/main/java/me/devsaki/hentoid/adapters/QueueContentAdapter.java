@@ -183,13 +183,15 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void attachArtist(ViewHolder holder, Content content) {
         String templateArtist = context.getString(R.string.work_artist);
         StringBuilder artists = new StringBuilder();
-        List<Attribute> artistAttributes = new ArrayList<>(content.getAttributes().get(AttributeType.ARTIST));
+        List<Attribute> attributes = new ArrayList<>();
+        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
+        if (artistAttributes != null) attributes.addAll(artistAttributes);
         List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
-        if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
+        if (circleAttributes != null) attributes.addAll(circleAttributes);
 
         boolean first = true;
-        if (!artistAttributes.isEmpty()) {
-            for (Attribute attribute : artistAttributes)
+        if (!attributes.isEmpty()) {
+            for (Attribute attribute : attributes)
             {
                 if (first) first = false; else artists.append(", ");
                 artists.append(attribute.getName());
@@ -197,7 +199,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artists)));
 
-        if (artistAttributes.isEmpty()) {
+        if (attributes.isEmpty()) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);

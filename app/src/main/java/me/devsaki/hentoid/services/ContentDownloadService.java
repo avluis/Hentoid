@@ -276,7 +276,7 @@ public class ContentDownloadService extends IntentService {
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryContent)) {
-            try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
+            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
 
                 while ((count = input.read(buffer)) != -1) {
                     output.write(buffer, 0, count);
