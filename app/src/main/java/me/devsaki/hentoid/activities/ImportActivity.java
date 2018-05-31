@@ -565,7 +565,7 @@ public class ImportActivity extends BaseActivity {
                                 if (currentRootDir != null) {
                                     FileHelper.validateFolder(currentRootDir.getAbsolutePath());
                                 }
-                                Timber.d("Restart needed: " + false);
+                                Timber.d("Restart needed: %s", false);
 
                                 result = ConstsImport.EXISTING_LIBRARY_FOUND;
                                 Intent returnIntent = new Intent();

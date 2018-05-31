@@ -89,7 +89,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public long countContent() {
-        long count = 0;
+        long count;
 
         SQLiteDatabase db = null;
         try {
@@ -283,7 +283,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     @Nullable
     public Content selectContentById(int id) {
-        Content result = null; // Should stay that way unless all callers are updated
+        Content result;
         synchronized (locker) {
             Timber.d("selectContentById");
             SQLiteDatabase db = null;

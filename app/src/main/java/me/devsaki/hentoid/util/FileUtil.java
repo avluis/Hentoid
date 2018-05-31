@@ -173,7 +173,7 @@ class FileUtil {
      * @param file The file to be created.
      * @return true if creation was successful.
      */
-    static boolean makeFile(@NonNull final File file) throws IOException {
+    static boolean makeFile(@NonNull final File file) {
         if (file.exists()) {
             // nothing to create.
             return !file.isDirectory();

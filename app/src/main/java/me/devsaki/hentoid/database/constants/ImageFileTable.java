@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.database.constants;
 
-import me.devsaki.hentoid.enums.StatusContent;
-
 /**
  * Created by DevSaki on 10/05/2015.
  * db Image File Table

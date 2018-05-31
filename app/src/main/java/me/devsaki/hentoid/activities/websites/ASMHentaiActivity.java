@@ -22,7 +22,7 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
  */
 public class ASMHentaiActivity extends BaseWebActivity {
 
-    private static String[] blockedContent = {"f.js"};
+    private static final String[] blockedContent = {"f.js"};
 
     Site getStartSite() {
         return Site.ASMHENTAI;

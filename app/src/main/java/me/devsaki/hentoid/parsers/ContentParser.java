@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.parsers;
 
-import java.io.IOException;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;

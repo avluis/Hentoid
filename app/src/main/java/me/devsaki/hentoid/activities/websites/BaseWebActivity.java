@@ -76,7 +76,7 @@ public abstract class BaseWebActivity extends BaseActivity {
     private boolean fabReadEnabled, fabDownloadEnabled;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
-    private static List<String> universalBlockedContent = new ArrayList<>();    // Universal list (applied to all sites)
+    private static final List<String> universalBlockedContent = new ArrayList<>();    // Universal list (applied to all sites)
     private List<String> localBlockedContent;                                   // Local list (applied to current site)
 
     static
@@ -565,7 +565,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     protected static class HtmlLoader extends AsyncTask<String, Integer, Content> {
 
-        private WeakReference<BaseWebActivity> activityReference;
+        private final WeakReference<BaseWebActivity> activityReference;
 
         // only retain a weak reference to the activity
         HtmlLoader(BaseWebActivity context) {

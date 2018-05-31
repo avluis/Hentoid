@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.facebook.stetho.Stetho;
@@ -146,7 +147,7 @@ public class HentoidApp extends Application {
         } else {
             Timber.plant(new Timber.Tree() {
                 @Override
-                protected void log(int priority, String tag, String message, Throwable t) {
+                protected void log(int priority, String tag, @NonNull String message, Throwable t) {
                     if (priority >= Log.INFO && t != null) {
                         trackException((Exception) t);
                     }

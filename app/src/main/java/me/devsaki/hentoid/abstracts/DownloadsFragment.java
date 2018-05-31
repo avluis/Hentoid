@@ -143,7 +143,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // == UTIL OBJECTS
     private ObjectAnimator animator;
     // Handler for text searches; needs to be there to be cancelable upon new key press
-    private Handler searchHandler = new Handler();
+    private final Handler searchHandler = new Handler();
 
     // == VARIABLES TAKEN FROM SETTINGS / PREFERENCES
     // Books per page
@@ -182,7 +182,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // True if search mode is active
     private boolean isSearchMode = false;
     // Active tag filters
-    private Map<String, Integer> tagFilters = new HashMap<>();
+    private final Map<String, Integer> tagFilters = new HashMap<>();
     // Active site filters
     private ArrayList<Integer> siteFilters = new ArrayList<>();
     // Favourite filter active

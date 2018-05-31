@@ -179,24 +179,22 @@ public class IntroActivity extends AppIntro2 {
 
         if (requestCode == ConstsImport.RQST_IMPORT_RESULTS) {
             Timber.d("REQUEST RESULT RECEIVED");
-            if (data != null) {
-                if (data.getStringExtra(ConstsImport.RESULT_KEY) != null) {
-                    String result = data.getStringExtra(ConstsImport.RESULT_KEY);
-                    if (resultCode == RESULT_OK) {
-                        resultHandler(true, result);
-                    }
-                    if (resultCode == RESULT_CANCELED) {
-                        resultHandler(false, result);
-                    }
-                } else {
-                    Timber.d("Error: Data not received! Bad resultKey.");
-                    // Try again!
-                    initImport();
-                }
-            } else {
+            if (data == null) {
                 Timber.d("Data is null!");
                 // Try again!
                 initImport();
+            } else if (data.getStringExtra(ConstsImport.RESULT_KEY) == null) {
+                Timber.d("Error: Data not received! Bad resultKey.");
+                // Try again!
+                initImport();
+            } else {
+                String result = data.getStringExtra(ConstsImport.RESULT_KEY);
+                if (resultCode == RESULT_OK) {
+                    resultHandler(true, result);
+                }
+                if (resultCode == RESULT_CANCELED) {
+                    resultHandler(false, result);
+                }
             }
         } else if (requestCode == ConstsImport.RQST_APP_SETTINGS) {
             // Back from app settings
