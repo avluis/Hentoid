@@ -12,13 +12,14 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -83,33 +84,35 @@ public class ContentDownloadService extends IntentService {
 
         Timber.d("New intent processed");
 
-        downloadFirstInQueue();
+        Content content = downloadFirstInQueue();
+        if (content != null) watchProgress(content);
     }
 
     /**
      * Start the download of the 1st book of the download queue
+     *
+     * @return 1st book of the download queue
      */
-    private void downloadFirstInQueue() {
-        ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
-
+    @Nullable
+    private Content downloadFirstInQueue() {
         // Check if queue is already paused
-        if (contentQueueManager.isQueuePaused()) {
+        if (ContentQueueManager.getInstance().isQueuePaused()) {
             Timber.w("Queue is paused. Aborting download.");
-            return;
+            return null;
         }
 
         // Works on first item of queue
         List<Pair<Integer, Integer>> queue = db.selectQueue();
         if (0 == queue.size()) {
             Timber.w("Queue is empty. Aborting download.");
-            return;
+            return null;
         }
 
         Content content = db.selectContentById(queue.get(0).first);
 
         if (null == content || StatusContent.DOWNLOADED == content.getStatus()) {
             Timber.w("Content is unavailable, or already downloaded. Aborting download.");
-            return;
+            return null;
         }
 
         content.setStatus(StatusContent.DOWNLOADING);
@@ -119,14 +122,14 @@ public class ContentDownloadService extends IntentService {
         List<ImageFile> images = content.getImageFiles();
         if (0 == images.size()) {
             // Create image list in DB
-            images = fetchImageFiles(content);
+            images = fetchImageURLs(content);
             content.setImageFiles(images);
             db.insertImageFiles(content);
         }
 
         if (0 == images.size()) {
             Timber.w("Image list is empty. Aborting download.");
-            return;
+            return null;
         }
 
         // Tracking Event (Download Added)
@@ -151,10 +154,22 @@ public class ContentDownloadService extends IntentService {
                 RequestQueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir));
         }
 
-        // Watch progression
-        // NB : download pause is managed at the Volley queue level (see RequestQueueManager.pauseQueue / startQueue)
+        return content;
+    }
+
+    /**
+     * Watch download progress
+     *
+     * NB : download pause is managed at the Volley queue level (see RequestQueueManager.pauseQueue / startQueue)
+     *
+     * @param content Content to watch (1st book of the download queue)
+     */
+    private void watchProgress(Content content) {
         double dlRate;
         int pagesOK, pagesKO;
+        List<ImageFile> images = content.getImageFiles();
+        ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
+
         do {
             pagesOK = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode()});
             pagesKO = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode()});
@@ -166,9 +181,30 @@ public class ContentDownloadService extends IntentService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
+        }
+        while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
 
-        if (!downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()) { // Download properly completed
+        if (contentQueueManager.isQueuePaused()) {
+            Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
+        } else {
+            downloadCompleted(content, pagesOK, pagesKO);
+        }
+    }
+
+    /**
+     * Completes the download of a book when all images have been processed
+     * Then launches a new IntentService
+     *
+     * @param content Content to mark as downloaded
+     */
+    private void downloadCompleted(Content content, int pagesOK, int pagesKO)
+    {
+        ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
+
+        if (!downloadCanceled && !downloadSkipped) {
+            File dir = FileHelper.getContentDownloadDir(this, content);
+            List<ImageFile> images = content.getImageFiles();
+
             // Save JSON file
             try {
                 JsonHelper.saveJson(content, dir);
@@ -196,17 +232,13 @@ public class ContentDownloadService extends IntentService {
             HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
         } else if (downloadCanceled) {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
-        } else if (downloadSkipped) {
+        } else {
             Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
-        } else if (contentQueueManager.isQueuePaused()) {
-            Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
         }
 
-        if (!contentQueueManager.isQueuePaused()) {
-            // Download next content in a new Intent
-            Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-            startService(intentService);
-        }
+        // Download next content in a new Intent
+        Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
+        startService(intentService);
     }
 
     /**
@@ -215,7 +247,7 @@ public class ContentDownloadService extends IntentService {
      * @param content Book whose pages to retrieve
      * @return List of pages with original URLs and file name
      */
-    private static List<ImageFile> fetchImageFiles(Content content) {
+    private static List<ImageFile> fetchImageURLs(Content content) {
         // Use ContentParser to query the source
         ContentParser parser = ContentParserFactory.getInstance().getParser(content);
         List<String> aUrls = parser.parseImageList(content);

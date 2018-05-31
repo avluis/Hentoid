@@ -319,7 +319,7 @@ public abstract class BaseWebActivity extends BaseActivity {
     }
 
     /**
-     * Adds current content (i.e. content of the currently viewed book) to the download queue
+     * Add current content (i.e. content of the currently viewed book) to the download queue
      */
     void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
