@@ -146,7 +146,7 @@ public class QueueFragment extends BaseFragment {
 
                 // Update information bar
                 StringBuilder message = new StringBuilder();
-                String processedPagesFmt = Helper.fixedLengthInt(pagesOK, String.valueOf(totalPages).length());
+                String processedPagesFmt = Helper.fixedLengthString(pagesOK, String.valueOf(totalPages).length());
                 message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
 
                 queueInfo.setText(message.toString());

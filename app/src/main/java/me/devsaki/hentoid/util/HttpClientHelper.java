@@ -28,12 +28,7 @@ public class HttpClientHelper {
         HttpURLConnection urlConnection = null;
         InputStream is = null;
 
-        String userAgent;
-        try {
-            userAgent = Helper.getAppUserAgent(HentoidApp.getAppContext());
-        } catch (PackageManager.NameNotFoundException e) {
-            userAgent = Consts.USER_AGENT;
-        }
+        String userAgent = Helper.getAppUserAgent();
 
         try {
             URL url = new URL(urlString);

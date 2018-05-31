@@ -176,11 +176,7 @@ public class HentoidApp extends Application {
         HentoidDB db = HentoidDB.getInstance(this);
         Timber.d("Content item(s) count: %s", db.countContent());
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-        try {
-            UpgradeTo(Helper.getAppVersionCode(this), db);
-        } catch (PackageManager.NameNotFoundException e) {
-            Timber.d("Package Name NOT Found");
-        }
+        UpgradeTo(BuildConfig.VERSION_CODE, db);
 
         UpdateCheck(!Preferences.getMobileUpdate());
 

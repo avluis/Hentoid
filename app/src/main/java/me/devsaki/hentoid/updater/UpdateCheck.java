@@ -360,7 +360,7 @@ public class UpdateCheck {
                 JSONObject jsonObject = new JsonHelper().jsonReader(params[0]);
                 if (jsonObject != null) {
                     int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
-                    if (Helper.getAppVersionCode(context) < updateVersionCode) {
+                    if (BuildConfig.VERSION_CODE < updateVersionCode) {
                         if (updateCheckResult != null) {
                             updateCheckResult.onUpdateAvailable();
                         }
@@ -390,8 +390,6 @@ public class UpdateCheck {
             } catch (JSONException e) {
                 Timber.e(e, "Error with JSON File");
                 mHandler.post(() -> Helper.toast(context, R.string.error_dependency));
-            } catch (PackageManager.NameNotFoundException e) {
-                Timber.e(e, "Package Name NOT Found");
             }
 
             return null;
