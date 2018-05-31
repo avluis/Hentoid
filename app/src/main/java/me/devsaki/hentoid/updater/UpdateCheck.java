@@ -5,7 +5,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -112,7 +111,7 @@ public class UpdateCheck {
         }
 
         Timber.d("Update URL: %s", updateURL);
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.HONEYCOMB)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             new UpdateCheckTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, updateURL);
         } else {
             new UpdateCheckTask().execute(updateURL);
@@ -216,7 +215,7 @@ public class UpdateCheck {
     void installUpdate() {
         Intent intent;
 
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.JELLY_BEAN)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
             intent = new Intent(Intent.ACTION_INSTALL_PACKAGE);
         } else {
             intent = new Intent(Intent.ACTION_VIEW);

@@ -229,11 +229,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         webSettings.setDisplayZoomControls(false);
 
         String userAgent;
-        try {
-            userAgent = Helper.getAppUserAgent(this);
-        } catch (PackageManager.NameNotFoundException e) {
-            userAgent = Consts.USER_AGENT;
-        }
+        userAgent = Helper.getAppUserAgent();
         webSettings.setUserAgentString(userAgent);
 
         webSettings.setDomStorageEnabled(true);

@@ -19,7 +19,6 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.BaseSlide;
 import me.devsaki.hentoid.util.ConstsImport;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -48,7 +47,7 @@ public class IntroActivity extends AppIntro2 {
         super.onCreate(savedInstanceState);
 
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_01));
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(BaseSlide.newInstance(R.layout.intro_slide_02));
             // Ask Storage permission in the second slide,
             // but only for Android M+ users.

@@ -2,8 +2,8 @@ package me.devsaki.hentoid;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
@@ -21,7 +21,6 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.updater.UpdateCheck;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
 import timber.log.Timber;
@@ -171,7 +170,8 @@ public class HentoidApp extends Application {
             Stetho.initializeWithDefaults(this);
         }
 
-        Helper.ignoreSslErrors();
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+        StrictMode.setThreadPolicy(policy);
 
         HentoidDB db = HentoidDB.getInstance(this);
         Timber.d("Content item(s) count: %s", db.countContent());
@@ -180,7 +180,7 @@ public class HentoidApp extends Application {
 
         UpdateCheck(!Preferences.getMobileUpdate());
 
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.N_MR1)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             ShortcutHelper.buildShortcuts(this);
         }
     }
@@ -204,7 +204,7 @@ public class HentoidApp extends Application {
      * Handles complex DB version updates at startup
      *
      * @param versionCode Current app version
-     * @param db Hentoid DB
+     * @param db          Hentoid DB
      */
     private void UpgradeTo(int versionCode, HentoidDB db) {
         if (versionCode > 43) // Update all "storage_folder" fields in CONTENT table (mandatory)

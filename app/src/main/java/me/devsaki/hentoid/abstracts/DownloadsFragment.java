@@ -321,7 +321,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             shouldUpdate = true;
         }
 
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             checkStorage();
         }
 

@@ -16,7 +16,6 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -55,14 +54,6 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
  */
 public final class Helper {
     private static Toast toast;
-
-    /**
-     * @param apiLevel minimum API level version that has to support the device
-     * @return true when the caller API version is at least apiLevel
-     */
-    public static boolean isAtLeastAPI(int apiLevel) {
-        return Build.VERSION.SDK_INT >= apiLevel;
-    }
 
     public static void viewContent(final Context context, Content content) {
         Intent intent = new Intent(context, content.getWebActivityClass());
@@ -151,11 +142,6 @@ public final class Helper {
     @SafeVarargs
     public static <T> void executeAsyncTask(AsyncTask<T, ?, ?> task, T... params) {
         task.execute(params);
-    }
-
-    public static void ignoreSslErrors() {
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
     }
 
     public static void launchMainActivity(Context context) {
@@ -309,7 +295,7 @@ public final class Helper {
     }
 
     public static Spanned fromHtml(String source) {
-        if (isAtLeastAPI(Build.VERSION_CODES.N)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY, null, null);
         } else {
             //noinspection deprecation
@@ -352,31 +338,8 @@ public final class Helper {
     }
 
     public static String capitalizeString(String s) {
-        if (null == s || 0 == s.length()) return s;
-        else if (1 == s.length()) return s.toUpperCase();
-        else {
-            return s.substring(0, 1).toUpperCase() + s.substring(1);
-        }
-    }
-
-    /**
-     * Transforms the given string to format with a given length
-     * - If the given length is shorter than the actual length of the string, it will be truncated
-     * - If the given length is longer than the actual length of the string, it will be right/left-padded with a given character
-     *
-     * @param value  String to transform
-     * @param length Target length of the final string
-     * @return Reprocessed string of given length, according to rules documented in the method description
-     */
-    public static String fixedLengthString(int value, int length) {
-        String result = String.valueOf(value);
-
-        if (result.length() > length) {
-            result = result.substring(0, length);
-        } else if (result.length() < length) {
-            result = String.format("%1$" + length + "s", result).replace(' ', '0');
-        }
-
-        return result;
+        if (s == null || s.length() == 0) return s;
+        else if (s.length() == 1) return s.toUpperCase();
+        else return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 }

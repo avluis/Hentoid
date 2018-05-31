@@ -29,7 +29,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentDownloadService;
 import me.devsaki.hentoid.services.ContentQueueManager;
-import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
@@ -106,17 +105,17 @@ public class QueueFragment extends BaseFragment {
         Timber.d("Event received : %s", event.eventType);
 
         switch (event.eventType) {
-            case DownloadEvent.EV_PROGRESS :
+            case DownloadEvent.EV_PROGRESS:
                 updateProgress(event.pagesOK, event.pagesKO, event.pagesTotal);
                 break;
-            case DownloadEvent.EV_UNPAUSE :
+            case DownloadEvent.EV_UNPAUSE:
                 ContentQueueManager.getInstance().unpauseQueue();
                 getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
                 Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
                 context.startService(intent);
                 update(event.eventType);
                 break;
-            case DownloadEvent.EV_SKIP :
+            case DownloadEvent.EV_SKIP:
                 // Books switch / display handled directly by the adapter
                 Content content = mAdapter.getItem(0);
                 if (content != null) {
@@ -124,7 +123,7 @@ public class QueueFragment extends BaseFragment {
                     queueInfo.setText("");
                 }
                 break;
-            default :
+            default:
                 update(event.eventType);
         }
     }
@@ -132,8 +131,8 @@ public class QueueFragment extends BaseFragment {
     /**
      * Update main progress bar and bottom progress panel for current (1st in queue) book
      *
-     * @param pagesOK Number of pages successfully downloaded for current (1st in queue) book
-     * @param pagesKO Number of pages whose download has failed for current (1st in queue) book
+     * @param pagesOK    Number of pages successfully downloaded for current (1st in queue) book
+     * @param pagesKO    Number of pages whose download has failed for current (1st in queue) book
      * @param totalPages Total pages of current (1st in queue) book
      */
     private void updateProgress(int pagesOK, int pagesKO, int totalPages) {
@@ -146,7 +145,7 @@ public class QueueFragment extends BaseFragment {
 
                 // Update information bar
                 StringBuilder message = new StringBuilder();
-                String processedPagesFmt = Helper.fixedLengthString(pagesOK, String.valueOf(totalPages).length());
+                String processedPagesFmt = compensateStringLength(pagesOK, String.valueOf(totalPages).length());
                 message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
 
                 queueInfo.setText(message.toString());
@@ -155,15 +154,39 @@ public class QueueFragment extends BaseFragment {
     }
 
     /**
+     * Transforms the given string to format with a given length
+     * - If the given length is shorter than the actual length of the string, it will be truncated
+     * - If the given length is longer than the actual length of the string, it will be right/left-padded with a given character
+     *
+     * @param value  String to transform
+     * @param length Target length of the final string
+     * @return Reprocessed string of given length, according to rules documented in the method description
+     */
+    private static String compensateStringLength(int value, int length) {
+        String result = String.valueOf(value);
+
+        if (result.length() > length) {
+            result = result.substring(0, length);
+        } else if (result.length() < length) {
+            result = String.format("%1$" + length + "s", result).replace(' ', '0');
+        }
+
+        return result;
+    }
+
+    /**
      * Update book title in bottom progress panel
      *
      * @param bookTitle Book title to display
      */
     private void updateBookTitle(String bookTitle) {
-        queueStatus.setText(MessageFormat.format( context.getString(R.string.queue_dl), bookTitle) );
+        queueStatus.setText(MessageFormat.format(context.getString(R.string.queue_dl), bookTitle));
     }
 
-    public void update() { update(-1); }
+    public void update() {
+        update(-1);
+    }
+
     /**
      * Update the entire Download queue screen
      *
@@ -173,7 +196,7 @@ public class QueueFragment extends BaseFragment {
         List<Content> contents = getDB().selectQueueContents();
 
         boolean isEmpty = (0 == contents.size());
-        boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused()) );
+        boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused()));
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, contents.size());

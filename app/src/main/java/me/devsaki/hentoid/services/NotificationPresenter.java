@@ -22,7 +22,6 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
@@ -55,11 +54,11 @@ final class NotificationPresenter {
      */
     void downloadStarted(final Content content) {
         int icon = R.drawable.ic_stat_hentoid;
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             icon = content.getSite().getIco();
         }
 
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.N_MR1)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             builder = new NotificationCompat.Builder(instance, NotificationChannel.DEFAULT_CHANNEL_ID)
                     .setContentText(content.getTitle())
                     .setSmallIcon(icon)

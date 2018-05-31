@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.net.Uri;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.provider.DocumentFile;
@@ -151,7 +152,7 @@ class FileUtil {
         }
 
         try {
-            if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
                 // Storage Access Framework
                 DocumentFile targetDocument = getDocumentFile(target, false);
                 if (targetDocument != null) {
@@ -186,7 +187,7 @@ class FileUtil {
             // Fail silently
         }
         // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
             DocumentFile document = getDocumentFile(file.getParentFile(), true);
             // getDocumentFile implicitly creates the directory.
             try {
@@ -220,7 +221,7 @@ class FileUtil {
         }
 
         // Try with Storage Access Framework.
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
             DocumentFile document = getDocumentFile(file, true);
             // getDocumentFile implicitly creates the directory.
             if (document != null) {
@@ -242,7 +243,7 @@ class FileUtil {
     }
 
     static boolean deleteWithSAF(File file) {
-        if (Helper.isAtLeastAPI(LOLLIPOP)) {
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
             DocumentFile document = getDocumentFile(file, true);
             if (document != null) {
                 return document.delete();
