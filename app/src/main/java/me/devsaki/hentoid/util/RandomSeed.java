@@ -17,8 +17,7 @@ public class RandomSeed {
         return randomNumber;
     }
 
-    public void renewSeed()
-    {
+    public void renewSeed() {
         randomNumber = Math.random();
     }
 }

@@ -12,7 +12,6 @@ import org.greenrobot.eventbus.Subscribe;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -166,7 +165,8 @@ public class ContentDownloadService extends IntentService {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-        } while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
+        }
+        while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
 
         if (!downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()) { // Download properly completed
             // Save JSON file
@@ -236,6 +236,7 @@ public class ContentDownloadService extends IntentService {
 
     /**
      * Create an image download request an its handler from a given image URL, file name and destination folder
+     *
      * @param img Image to download
      * @param dir Destination folder
      * @return Volley request and its handler
@@ -263,9 +264,9 @@ public class ContentDownloadService extends IntentService {
     /**
      * Create the given file in the given destination folder, and write binary data to it
      *
-     * @param fileName Name of the file to write
-     * @param dir Destination folder
-     * @param contentType Content type of the image
+     * @param fileName      Name of the file to write
+     * @param dir           Destination folder
+     * @param contentType   Content type of the image
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
@@ -290,7 +291,7 @@ public class ContentDownloadService extends IntentService {
     /**
      * Update given image status in DB
      *
-     * @param img Image to update
+     * @param img     Image to update
      * @param success True if download is successful; false if download failed
      */
     private void updateImageStatus(ImageFile img, boolean success) {
@@ -301,8 +302,8 @@ public class ContentDownloadService extends IntentService {
     /**
      * Notify a download progress event to the app using the event bus
      *
-     * @param pagesOK Number of pages downloaded successfully on current book
-     * @param pagesKO Number of pages whose download failed on current book
+     * @param pagesOK    Number of pages downloaded successfully on current book
+     * @param pagesKO    Number of pages whose download failed on current book
      * @param totalPages Total pages of current book
      */
     private static void notifyProgress(int pagesOK, int pagesKO, int totalPages) {
@@ -313,8 +314,8 @@ public class ContentDownloadService extends IntentService {
     /**
      * Notify a download completed event to the app using the event bus
      *
-     * @param pagesOK Number of pages downloaded successfully on current book
-     * @param pagesKO Number of pages whose download failed on current book
+     * @param pagesOK    Number of pages downloaded successfully on current book
+     * @param pagesKO    Number of pages whose download failed on current book
      * @param totalPages Total pages of current book
      */
     private static void notifyComplete(int pagesOK, int pagesKO, int totalPages) {

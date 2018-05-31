@@ -116,7 +116,7 @@ public class DirChooserFragment extends DialogFragment implements
         fabCreateDir.setOnClickListener(this);
         selectDirBtn.setOnClickListener(this);
 
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.KITKAT) && FileHelper.isSDPresent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSDPresent) {
             fabRequestSD.setOnClickListener(this);
             fabRequestSD.setVisibility(View.VISIBLE);
         }

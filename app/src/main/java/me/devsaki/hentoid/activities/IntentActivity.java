@@ -74,11 +74,11 @@ public class IntentActivity extends BaseActivity {
                     break;
                 case ASMHENTAI_COMICS:
                     site = Site.ASMHENTAI_COMICS;
-                    parsedString = toParse.replace("/g", "").concat("/"); // '/' required
+                    parsedString = toParse.replace("/g", "") + "/"; // '/' required
                     break;
                 case ASMHENTAI:
                     site = Site.ASMHENTAI;
-                    parsedString = toParse.replace("/g", "").concat("/"); // '/' required
+                    parsedString = toParse.replace("/g", "") + "/"; // '/' required
                     break;
                 case HENTAICAFE:
                     site = Site.HENTAICAFE;
@@ -88,7 +88,7 @@ public class IntentActivity extends BaseActivity {
                     break;
                 case PURURIN:
                     site = Site.PURURIN;
-                    parsedString = toParse.replace("/gallery", "").concat("/");
+                    parsedString = toParse.replace("/gallery", "") + "/";
                     break;
                 default:
                     Timber.d("Unknown host!");

@@ -19,7 +19,6 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.fragments.BaseSlide;
 import me.devsaki.hentoid.util.ConstsImport;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -48,7 +47,7 @@ public class IntroActivity extends AppIntro2 {
         super.onCreate(savedInstanceState);
 
         addSlide(BaseSlide.newInstance(R.layout.intro_slide_01));
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             addSlide(BaseSlide.newInstance(R.layout.intro_slide_02));
             // Ask Storage permission in the second slide,
             // but only for Android M+ users.
@@ -179,24 +178,22 @@ public class IntroActivity extends AppIntro2 {
 
         if (requestCode == ConstsImport.RQST_IMPORT_RESULTS) {
             Timber.d("REQUEST RESULT RECEIVED");
-            if (data != null) {
-                if (data.getStringExtra(ConstsImport.RESULT_KEY) != null) {
-                    String result = data.getStringExtra(ConstsImport.RESULT_KEY);
-                    if (resultCode == RESULT_OK) {
-                        resultHandler(true, result);
-                    }
-                    if (resultCode == RESULT_CANCELED) {
-                        resultHandler(false, result);
-                    }
-                } else {
-                    Timber.d("Error: Data not received! Bad resultKey.");
-                    // Try again!
-                    initImport();
-                }
-            } else {
+            if (data == null) {
                 Timber.d("Data is null!");
                 // Try again!
                 initImport();
+            } else if (data.getStringExtra(ConstsImport.RESULT_KEY) == null) {
+                Timber.d("Error: Data not received! Bad resultKey.");
+                // Try again!
+                initImport();
+            } else {
+                String result = data.getStringExtra(ConstsImport.RESULT_KEY);
+                if (resultCode == RESULT_OK) {
+                    resultHandler(true, result);
+                }
+                if (resultCode == RESULT_CANCELED) {
+                    resultHandler(false, result);
+                }
             }
         } else if (requestCode == ConstsImport.RQST_APP_SETTINGS) {
             // Back from app settings

@@ -21,7 +21,7 @@ public class SearchContent {
     private List<Content> contentList = new ArrayList<>();
     private int totalContent;
 
-    private ContentListener mListener;
+    private final ContentListener mListener;
 
     private String mTitleQuery;
     private String mAuthorQuery;
@@ -29,8 +29,8 @@ public class SearchContent {
     private int mBooksPerPage;
     private int mOrderStyle;
     private boolean mFilterFavourites;
-    private List<String> mTagFilter = new ArrayList<>();
-    private List<Integer> mSiteFilter = new ArrayList<>();
+    private final List<String> mTagFilter = new ArrayList<>();
+    private final List<Integer> mSiteFilter = new ArrayList<>();
 
     public SearchContent(final Context context, final ContentListener listener) {
         db = HentoidDB.getInstance(context);
@@ -105,7 +105,7 @@ public class SearchContent {
 
     private static class SearchTask extends AsyncTask<Void, Void, State> {
 
-        private WeakReference<SearchContent> activityReference;
+        private final WeakReference<SearchContent> activityReference;
 
         // only retain a weak reference to the activity
         SearchTask(SearchContent context) {

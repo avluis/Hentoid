@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities.websites;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -76,11 +75,10 @@ public abstract class BaseWebActivity extends BaseActivity {
     private boolean fabReadEnabled, fabDownloadEnabled;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
-    private static List<String> universalBlockedContent = new ArrayList<>();    // Universal list (applied to all sites)
+    private static final List<String> universalBlockedContent = new ArrayList<>();    // Universal list (applied to all sites)
     private List<String> localBlockedContent;                                   // Local list (applied to current site)
 
-    static
-    {
+    static {
         universalBlockedContent.add("exoclick.com");
         universalBlockedContent.add("juicyadultads.com");
         universalBlockedContent.add("juicyads.com");
@@ -112,8 +110,7 @@ public abstract class BaseWebActivity extends BaseActivity {
      *
      * @param filter Filter to add to content block system
      */
-    protected void addContentBlockFilter(String[] filter)
-    {
+    protected void addContentBlockFilter(String[] filter) {
         if (null == localBlockedContent) localBlockedContent = new ArrayList<>();
         Collections.addAll(localBlockedContent, filter);
     }
@@ -229,11 +226,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         webSettings.setDisplayZoomControls(false);
 
         String userAgent;
-        try {
-            userAgent = Helper.getAppUserAgent(this);
-        } catch (PackageManager.NameNotFoundException e) {
-            userAgent = Consts.USER_AGENT;
-        }
+        userAgent = Helper.getAppUserAgent();
         webSettings.setUserAgentString(userAgent);
 
         webSettings.setDomStorageEnabled(true);
@@ -335,11 +328,10 @@ public abstract class BaseWebActivity extends BaseActivity {
                 .setStatus(StatusContent.DOWNLOADING);
         db.updateContentStatus(currentContent);
 
-        List<Pair<Integer,Integer>> queue = db.selectQueue();
+        List<Pair<Integer, Integer>> queue = db.selectQueue();
         int lastIndex = 1;
-        if (queue.size() > 0)
-        {
-            lastIndex = queue.get(queue.size()-1).second + 1;
+        if (queue.size() > 0) {
+            lastIndex = queue.get(queue.size() - 1).second + 1;
         }
         db.insertQueue(currentContent.getId(), lastIndex);
 
@@ -469,13 +461,12 @@ public abstract class BaseWebActivity extends BaseActivity {
             domainName = s;
         }
 
-        CustomWebViewClient(BaseWebActivity activity, String filteredUrl)
-        {
+        CustomWebViewClient(BaseWebActivity activity, String filteredUrl) {
             this.activity = activity;
             this.filteredUrl = filteredUrl;
         }
-        CustomWebViewClient(BaseWebActivity activity)
-        {
+
+        CustomWebViewClient(BaseWebActivity activity) {
             this.activity = activity;
             this.filteredUrl = "";
         }
@@ -502,8 +493,7 @@ public abstract class BaseWebActivity extends BaseActivity {
             hideFab(fabDownload);
             hideFab(fabRead);
 
-            if (filteredUrl.length() > 0)
-            {
+            if (filteredUrl.length() > 0) {
                 Pattern pattern = Pattern.compile(filteredUrl);
                 Matcher matcher = pattern.matcher(url);
 
@@ -548,24 +538,21 @@ public abstract class BaseWebActivity extends BaseActivity {
      * @param url URL to be examinated
      * @return True if URL is forbidden according to current filters; false if not
      */
-    protected boolean isUrlForbidden(String url)
-    {
-        for(String s : universalBlockedContent)
-        {
+    protected boolean isUrlForbidden(String url) {
+        for (String s : universalBlockedContent) {
             if (url.contains(s)) return true;
         }
         if (localBlockedContent != null)
-        for(String s : localBlockedContent)
-        {
-            if (url.contains(s)) return true;
-        }
+            for (String s : localBlockedContent) {
+                if (url.contains(s)) return true;
+            }
 
         return false;
     }
 
     protected static class HtmlLoader extends AsyncTask<String, Integer, Content> {
 
-        private WeakReference<BaseWebActivity> activityReference;
+        private final WeakReference<BaseWebActivity> activityReference;
 
         // only retain a weak reference to the activity
         HtmlLoader(BaseWebActivity context) {

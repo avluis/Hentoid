@@ -67,8 +67,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         selectedItems = new SparseBooleanArray();
     }
 
-    public void setComparator(Comparator<Content> comparator)
-    {
+    public void setComparator(Comparator<Content> comparator) {
         mComparator = comparator;
     }
 
@@ -132,9 +131,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         Content content = mSortedList.get(pos);
 
         // Initializes the ViewHolder that contains the books
-        updateLayoutVisibility( holder, content, pos);
-        populateLayout( holder, content, pos);
-        attachOnClickListeners( holder, content, pos);
+        updateLayoutVisibility(holder, content, pos);
+        populateLayout(holder, content, pos);
+        attachOnClickListeners(holder, content, pos);
 
     }
 
@@ -259,9 +258,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.tvArtist.setVisibility(View.GONE);
         } else {
             boolean first = true;
-            for (Attribute attribute : attributes)
-            {
-                if (first) first = false; else artistsBuilder.append(", ");
+            for (Attribute attribute : attributes) {
+                if (first) first = false;
+                else artistsBuilder.append(", ");
                 artistsBuilder.append(attribute.getName());
             }
             holder.tvArtist.setVisibility(View.VISIBLE);
@@ -456,11 +455,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             item.setDownloadDate(new Date().getTime());
                             db.updateContentStatus(item);
 
-                            List<Pair<Integer,Integer>> queue = db.selectQueue();
+                            List<Pair<Integer, Integer>> queue = db.selectQueue();
                             int lastIndex = 1;
-                            if (queue.size() > 0)
-                            {
-                                lastIndex = queue.get(queue.size()-1).second + 1;
+                            if (queue.size() > 0) {
+                                lastIndex = queue.get(queue.size() - 1).second + 1;
                             }
                             db.insertQueue(item.getId(), lastIndex);
 
@@ -539,10 +537,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     @Override
-    public int getItemCount() { return mSortedList.size(); }
+    public int getItemCount() {
+        return mSortedList.size();
+    }
 
-    public void setTotalCount(int count) { this.mTotalCount = count; }
-    public int getTotalCount() { return this.mTotalCount; }
+    public void setTotalCount(int count) {
+        this.mTotalCount = count;
+    }
+
+    public int getTotalCount() {
+        return this.mTotalCount;
+    }
 
     public void sharedSelectedItems() {
         int itemCount = getSelectedItemCount();
@@ -678,8 +683,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         Helper.toast(context, "Selected items have been deleted.");
     }
 
-    private void remove(Content content)
-    {
+    private void remove(Content content) {
         mTotalCount--;
         mSortedList.remove(content);
         if (0 == mSortedList.size() && contentsWipedListener != null) {
@@ -688,8 +692,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         if (listener != null) listener.onItemClear(0);
     }
 
-    public void removeAll()
-    {
+    public void removeAll() {
         replaceAll(new ArrayList<>());
         mTotalCount = 0;
     }
@@ -730,7 +733,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         @Override
-        public void onInserted(int position, int count) { notifyItemRangeInserted(position, count); }
+        public void onInserted(int position, int count) {
+            notifyItemRangeInserted(position, count);
+        }
 
         @Override
         public void onRemoved(int position, int count) {
@@ -738,7 +743,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         @Override
-        public void onMoved(int fromPosition, int toPosition) { notifyItemMoved(fromPosition, toPosition); }
+        public void onMoved(int fromPosition, int toPosition) {
+            notifyItemMoved(fromPosition, toPosition);
+        }
 
         @Override
         public void onChanged(int position, int count) {

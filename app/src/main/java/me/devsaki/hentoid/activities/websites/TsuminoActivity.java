@@ -22,7 +22,7 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private boolean downloadFabPressed = false;
     private int historyIndex;
-    private static String[] blockedContent = {"/content/"};
+    private static final String[] blockedContent = {"/content/"};
 
 
     private static int ordinalIndexOf(String str) {

@@ -26,5 +26,5 @@ public abstract class QueueTable {
             + TABLE_NAME + " SET " + ORDER_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
 
     // SELECT
-    public static final String SELECT_QUEUE = "SELECT * FROM " + TABLE_NAME + " C ORDER BY "+ORDER_COLUMN+" ASC";
+    public static final String SELECT_QUEUE = "SELECT * FROM " + TABLE_NAME + " C ORDER BY " + ORDER_COLUMN + " ASC";
 }

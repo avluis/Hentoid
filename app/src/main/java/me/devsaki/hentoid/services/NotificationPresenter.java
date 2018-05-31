@@ -22,7 +22,6 @@ import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
@@ -55,11 +54,11 @@ final class NotificationPresenter {
      */
     void downloadStarted(final Content content) {
         int icon = R.drawable.ic_stat_hentoid;
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             icon = content.getSite().getIco();
         }
 
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.N_MR1)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             builder = new NotificationCompat.Builder(instance, NotificationChannel.DEFAULT_CHANNEL_ID)
                     .setContentText(content.getTitle())
                     .setSmallIcon(icon)
@@ -81,21 +80,20 @@ final class NotificationPresenter {
      */
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
-        switch (event.eventType)
-        {
+        switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
                 notifyProgress((event.pagesKO + event.pagesOK) * 100.0 / event.pagesTotal);
                 break;
-            case DownloadEvent.EV_PAUSE :
+            case DownloadEvent.EV_PAUSE:
                 notifyPause();
                 break;
-            case DownloadEvent.EV_CANCEL :
+            case DownloadEvent.EV_CANCEL:
                 notifyCancel(event.content);
                 break;
-            case DownloadEvent.EV_SKIP :
+            case DownloadEvent.EV_SKIP:
                 notifySkip();
                 break;
-            case DownloadEvent.EV_COMPLETE :
+            case DownloadEvent.EV_COMPLETE:
                 notifyComplete(0 == event.pagesKO);
                 break;
 //            case DownloadEvent.EV_UNPAUSE : <-- nothing; used to restart download queue activity that will produce a Progress event
@@ -107,8 +105,7 @@ final class NotificationPresenter {
      *
      * @param percent % of download complete
      */
-    private void notifyProgress(double percent)
-    {
+    private void notifyProgress(double percent) {
         Timber.d("Event notified : progress / %s percent", String.valueOf(percent));
 
         builder.setContentIntent(getDefaultIntent());
@@ -134,8 +131,7 @@ final class NotificationPresenter {
      *
      * @param isSuccess True if completed download is successful; false if there is at least 1 page whose download has failed
      */
-    private void notifyComplete(boolean isSuccess)
-    {
+    private void notifyComplete(boolean isSuccess) {
         Timber.d("Event notified : complete with status %s", isSuccess);
 
         builder.setContentIntent(getDefaultIntent());
@@ -162,8 +158,7 @@ final class NotificationPresenter {
     /**
      * Notify paused download
      */
-    private void notifyPause()
-    {
+    private void notifyPause() {
         Timber.d("Event notified : paused");
 
         builder.setContentIntent(getPausedIntent());
@@ -177,8 +172,7 @@ final class NotificationPresenter {
      *
      * @param content Canceled book
      */
-    private void notifyCancel(Content content)
-    {
+    private void notifyCancel(Content content) {
         Timber.d("Event notified : cancelled");
 
         builder.setContentIntent(getCanceledIntent(content));
@@ -198,8 +192,7 @@ final class NotificationPresenter {
     /**
      * Notify skipped download
      */
-    private void notifySkip()
-    {
+    private void notifySkip() {
         Timber.d("Event notified : skipped");
 
         builder.setContentIntent(getPausedIntent());
