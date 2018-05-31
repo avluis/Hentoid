@@ -577,8 +577,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 // Show toolbar:
                 if (!override && mAdapter.getItemCount() > 0) {
                     // At top of list
-                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
-                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
+                    int firstVisibleItemPos = llm.findFirstVisibleItemPosition();
+                    View topView = llm.findViewByPosition(firstVisibleItemPos);
+                    if (topView != null && topView.getTop() == 0 && firstVisibleItemPos == 0) {
                         showToolbar(true, false);
                         if (isNewContentAvailable) {
                             newContentToolTip.setVisibility(View.VISIBLE);
