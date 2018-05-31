@@ -88,8 +88,7 @@ class FileUtil {
                     relativePath = relativePath.substring(relativeUriPath.length() + 1);
                 }
             }
-        }
-        else return null;
+        } else return null;
 
         return documentFileHelper(sdStorageUri, returnSDRoot, relativePath, isDirectory);
     }
@@ -98,10 +97,10 @@ class FileUtil {
      * Get the DocumentFile corresponding to the given file.
      * If the file does not exist, it is created.
      *
-     * @param rootURI Uri representing root
-     * @param returnRoot True if method has just to return the DocumentFile representing the given root
+     * @param rootURI      Uri representing root
+     * @param returnRoot   True if method has just to return the DocumentFile representing the given root
      * @param relativePath Relative path to the Document to be found/created (relative to given root)
-     * @param isDirectory True if document is supposed to be a directory; false if document is supposed to be a file
+     * @param isDirectory  True if document is supposed to be a directory; false if document is supposed to be a file
      * @return DocumentFile corresponding to the given file.
      */
     private static DocumentFile documentFileHelper(Uri rootURI, boolean returnRoot,
@@ -117,7 +116,8 @@ class FileUtil {
         for (int i = 0; i < parts.length; i++) {
             DocumentFile nextDocument = document.findFile(parts[i]);
             // The folder might exist in its capitalized version (might happen with legacy installs from the FakkuDroid era)
-            if (null == nextDocument) nextDocument = document.findFile(Helper.capitalizeString(parts[i]));
+            if (null == nextDocument)
+                nextDocument = document.findFile(Helper.capitalizeString(parts[i]));
 
             // The folder definitely doesn't exist at all
             if (null == nextDocument) {
@@ -125,10 +125,12 @@ class FileUtil {
 
                 if ((i < parts.length - 1) || isDirectory) {
                     nextDocument = document.createDirectory(parts[i]);
-                    if (null == nextDocument) Timber.e("Failed to create subdirectory %s/%s", document.getName(), parts[i]);
+                    if (null == nextDocument)
+                        Timber.e("Failed to create subdirectory %s/%s", document.getName(), parts[i]);
                 } else {
                     nextDocument = document.createFile("image", parts[i]);
-                    if (null == nextDocument) Timber.e("Failed to create file %s/image%s", document.getName(), parts[i]);
+                    if (null == nextDocument)
+                        Timber.e("Failed to create file %s/image%s", document.getName(), parts[i]);
                 }
             }
             document = nextDocument;

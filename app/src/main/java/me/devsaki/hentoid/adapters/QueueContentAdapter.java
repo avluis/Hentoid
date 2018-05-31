@@ -89,7 +89,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the entire book layout using the designated Content properties
      *
-     * @param holder Holder to populate
+     * @param holder  Holder to populate
      * @param content Content to display
      */
     private void populateLayout(ViewHolder holder, Content content) {
@@ -105,7 +105,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the title layout of the book viewholder using the designated Content properties
      *
-     * @param holder Holder to populate
+     * @param holder  Holder to populate
      * @param content Content to display
      */
     private void attachTitle(ViewHolder holder, Content content) {
@@ -120,7 +120,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the cover layout of the book viewholder using the designated Content properties
      *
-     * @param holder Holder to populate
+     * @param holder  Holder to populate
      * @param content Content to display
      */
     private void attachCover(ViewHolder holder, Content content) {
@@ -146,7 +146,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the series layout of the book viewholder using the designated Content properties
      *
-     * @param holder Holder to populate
+     * @param holder  Holder to populate
      * @param content Content to display
      */
     private void attachSeries(ViewHolder holder, Content content) {
@@ -177,7 +177,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the artist layout of the book viewholder using the designated Content properties
      *
-     * @param holder Holder to populate
+     * @param holder  Holder to populate
      * @param content Content to display
      */
     private void attachArtist(ViewHolder holder, Content content) {
@@ -191,9 +191,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
         boolean first = true;
         if (!attributes.isEmpty()) {
-            for (Attribute attribute : attributes)
-            {
-                if (first) first = false; else artists.append(", ");
+            for (Attribute attribute : attributes) {
+                if (first) first = false;
+                else artists.append(", ");
                 artists.append(attribute.getName());
             }
         }
@@ -209,7 +209,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the tags layout of the book viewholder using the designated Content properties
      *
-     * @param holder Holder to populate
+     * @param holder  Holder to populate
      * @param content Content to display
      */
     private void attachTags(ViewHolder holder, Content content) {
@@ -233,20 +233,20 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Build the buttons of the book viewholder using the designated Content properties
      *
-     * @param view View to populate
-     * @param content Designated content
+     * @param view        View to populate
+     * @param content     Designated content
      * @param isFirstItem True if designated Content is the first item of the queue; false if not
-     * @param isLastItem True if designated Content is the last item of the queue; false if not
+     * @param isLastItem  True if designated Content is the last item of the queue; false if not
      */
     private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem) {
         View btnUp = view.findViewById(R.id.queueUpBtn);
-        ((ImageView)btnUp).setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
-        btnUp.setVisibility(isFirstItem?View.INVISIBLE:View.VISIBLE);
+        ((ImageView) btnUp).setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
+        btnUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
         btnUp.setOnClickListener(v -> moveUp(content));
 
         View btnDown = view.findViewById(R.id.queueDownBtn);
-        ((ImageView)btnDown).setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
-        btnDown.setVisibility(isLastItem?View.INVISIBLE:View.VISIBLE);
+        ((ImageView) btnDown).setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
+        btnDown.setVisibility(isLastItem ? View.INVISIBLE : View.VISIBLE);
         btnDown.setOnClickListener(v -> moveDown(content));
 
         Button btnCancel = view.findViewById(R.id.btnCancel);
@@ -256,7 +256,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Update progress bar according to progress and status of designated Content
      *
-     * @param view Progress bar to use
+     * @param view    Progress bar to use
      * @param content Content whose progress is to be displayed
      */
     private void updateProgress(View view, Content content) {
@@ -282,21 +282,20 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void moveUp(Content content) {
         HentoidDB db = HentoidDB.getInstance(context);
-        List<Pair<Integer,Integer>> queue = db.selectQueue();
+        List<Pair<Integer, Integer>> queue = db.selectQueue();
 
         int prevItemId = 0;
         int prevItemQueuePosition = -1;
         int prevItemPosition = -1;
         int loopPosition = 0;
 
-        for (Pair<Integer,Integer> p : queue)
-        {
-            if (p.first.equals(content.getId()) && prevItemId != 0)
-            {
+        for (Pair<Integer, Integer> p : queue) {
+            if (p.first.equals(content.getId()) && prevItemId != 0) {
                 db.udpateQueue(p.first, prevItemQueuePosition);
                 db.udpateQueue(prevItemId, p.second);
                 Collections.swap(contents, prevItemPosition, loopPosition);
-                if (0 == prevItemPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                if (0 == prevItemPosition)
+                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             } else {
                 prevItemId = p.first;
@@ -316,27 +315,24 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void moveDown(Content content) {
         HentoidDB db = HentoidDB.getInstance(context);
-        List<Pair<Integer,Integer>> queue = db.selectQueue();
+        List<Pair<Integer, Integer>> queue = db.selectQueue();
 
         int itemId = 0;
         int itemQueuePosition = -1;
         int itemPosition = -1;
         int loopPosition = 0;
 
-        for (Pair<Integer,Integer> p : queue)
-        {
-            if (p.first.equals(content.getId()))
-            {
+        for (Pair<Integer, Integer> p : queue) {
+            if (p.first.equals(content.getId())) {
                 itemId = p.first;
                 itemQueuePosition = p.second;
                 itemPosition = loopPosition;
-            }
-            else if (itemId != 0)
-            {
+            } else if (itemId != 0) {
                 db.udpateQueue(p.first, itemQueuePosition);
                 db.udpateQueue(itemId, p.second);
                 Collections.swap(contents, itemPosition, loopPosition);
-                if (0 == itemPosition) EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                if (0 == itemPosition)
+                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             }
             loopPosition++;

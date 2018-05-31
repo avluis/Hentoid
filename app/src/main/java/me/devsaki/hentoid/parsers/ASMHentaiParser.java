@@ -75,8 +75,7 @@ public class ASMHentaiParser extends BaseParser {
                     .select("a");
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements, true);
 
-            if (doc.baseUri().contains("comics"))
-            {
+            if (doc.baseUri().contains("comics")) {
                 result.setSite(Site.ASMHENTAI_COMICS);
             } else {
                 result.setSite(Site.ASMHENTAI);

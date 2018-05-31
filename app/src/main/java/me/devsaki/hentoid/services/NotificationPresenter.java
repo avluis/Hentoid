@@ -80,21 +80,20 @@ final class NotificationPresenter {
      */
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
-        switch (event.eventType)
-        {
+        switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
                 notifyProgress((event.pagesKO + event.pagesOK) * 100.0 / event.pagesTotal);
                 break;
-            case DownloadEvent.EV_PAUSE :
+            case DownloadEvent.EV_PAUSE:
                 notifyPause();
                 break;
-            case DownloadEvent.EV_CANCEL :
+            case DownloadEvent.EV_CANCEL:
                 notifyCancel(event.content);
                 break;
-            case DownloadEvent.EV_SKIP :
+            case DownloadEvent.EV_SKIP:
                 notifySkip();
                 break;
-            case DownloadEvent.EV_COMPLETE :
+            case DownloadEvent.EV_COMPLETE:
                 notifyComplete(0 == event.pagesKO);
                 break;
 //            case DownloadEvent.EV_UNPAUSE : <-- nothing; used to restart download queue activity that will produce a Progress event
@@ -106,8 +105,7 @@ final class NotificationPresenter {
      *
      * @param percent % of download complete
      */
-    private void notifyProgress(double percent)
-    {
+    private void notifyProgress(double percent) {
         Timber.d("Event notified : progress / %s percent", String.valueOf(percent));
 
         builder.setContentIntent(getDefaultIntent());
@@ -133,8 +131,7 @@ final class NotificationPresenter {
      *
      * @param isSuccess True if completed download is successful; false if there is at least 1 page whose download has failed
      */
-    private void notifyComplete(boolean isSuccess)
-    {
+    private void notifyComplete(boolean isSuccess) {
         Timber.d("Event notified : complete with status %s", isSuccess);
 
         builder.setContentIntent(getDefaultIntent());
@@ -161,8 +158,7 @@ final class NotificationPresenter {
     /**
      * Notify paused download
      */
-    private void notifyPause()
-    {
+    private void notifyPause() {
         Timber.d("Event notified : paused");
 
         builder.setContentIntent(getPausedIntent());
@@ -176,8 +172,7 @@ final class NotificationPresenter {
      *
      * @param content Canceled book
      */
-    private void notifyCancel(Content content)
-    {
+    private void notifyCancel(Content content) {
         Timber.d("Event notified : cancelled");
 
         builder.setContentIntent(getCanceledIntent(content));
@@ -197,8 +192,7 @@ final class NotificationPresenter {
     /**
      * Notify skipped download
      */
-    private void notifySkip()
-    {
+    private void notifySkip() {
         Timber.d("Event notified : skipped");
 
         builder.setContentIntent(getPausedIntent());

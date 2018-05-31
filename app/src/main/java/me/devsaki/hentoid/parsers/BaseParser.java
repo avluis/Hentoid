@@ -23,6 +23,7 @@ public abstract class BaseParser implements ContentParser {
     static final int TIMEOUT = 30000; // 30 seconds
 
     protected abstract Content parseContent(Document doc);
+
     protected abstract List<String> parseImages(Content content) throws Exception;
 
     public Content parseContent(String urlString) throws IOException {
@@ -46,7 +47,10 @@ public abstract class BaseParser implements ContentParser {
         return content;
     }
 
-    void parseAttributes(AttributeMap map, AttributeType type, Elements elements) { parseAttributes(map, type, elements, false); }
+    void parseAttributes(AttributeMap map, AttributeType type, Elements elements) {
+        parseAttributes(map, type, elements, false);
+    }
+
     void parseAttributes(AttributeMap map, AttributeType type, Elements elements, boolean filterCount) {
         for (Element a : elements) {
             Attribute attribute = new Attribute();

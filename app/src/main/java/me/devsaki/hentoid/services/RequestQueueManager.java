@@ -23,7 +23,10 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
         mRequestQueue = getRequestQueue(context);
     }
 
-    public static synchronized RequestQueueManager getInstance() { return getInstance(null); }
+    public static synchronized RequestQueueManager getInstance() {
+        return getInstance(null);
+    }
+
     public static synchronized RequestQueueManager getInstance(Context context) {
         if (mInstance == null) {
             mInstance = new RequestQueueManager(context);
@@ -47,6 +50,7 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
 
     /**
      * Add a request to the app's queue
+     *
      * @param req Request to add to the queue
      * @param <T> Request content
      */
@@ -61,8 +65,7 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
      *
      * @param request Completed request
      */
-    public void onRequestFinished(Request request)
-    {
+    public void onRequestFinished(Request request) {
         nbRequests--;
         Timber.d("RequestQueue ::: request removed - current total %s", nbRequests);
     }
@@ -70,8 +73,7 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
     /**
      * Cancel the app's request queue : cancel all requests remaining in the queue
      */
-    public void cancelQueue()
-    {
+    public void cancelQueue() {
         RequestQueue.RequestFilter filterForAll = request -> true;
         mRequestQueue.cancelAll(filterForAll);
         Timber.d("RequestQueue ::: canceled");

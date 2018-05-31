@@ -85,7 +85,8 @@ public class HitomiParser extends BaseParser {
         // New Hitomi image URLs starting from mid-april 2018
         //  If book ID is even or < 4, starts with 'aa'; else starts with 'ba'
         int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
-        if (1 == referenceId || 3 == referenceId) referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
+        if (1 == referenceId || 3 == referenceId)
+            referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
         String imageHostname = Character.toString((char) (HOSTNAME_PREFIX_BASE + referenceId % NUMBER_OF_FRONTENDS)) + HOSTNAME_SUFFIX;
 
         for (Element element : imgElements) {

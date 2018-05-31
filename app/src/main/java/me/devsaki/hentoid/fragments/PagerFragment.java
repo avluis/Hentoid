@@ -56,8 +56,7 @@ public class PagerFragment extends DownloadsFragment {
 
     @Override
     protected void checkResults() {
-        if (0 == mAdapter.getItemCount())
-        {
+        if (0 == mAdapter.getItemCount()) {
             if (!isLoaded) update();
             checkContent(true);
         } else {

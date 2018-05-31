@@ -329,15 +329,23 @@ public class Content implements Serializable {
         return this;
     }
 
-    public boolean isFavourite() { return favourite; }
+    public boolean isFavourite() {
+        return favourite;
+    }
 
     public Content setFavourite(boolean favourite) {
         this.favourite = favourite;
         return this;
     }
 
-    private int getQueryOrder() { return queryOrder; }
-    public Content setQueryOrder(int order) { queryOrder = order; return this; }
+    private int getQueryOrder() {
+        return queryOrder;
+    }
+
+    public Content setQueryOrder(int order) {
+        queryOrder = order;
+        return this;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -358,7 +366,9 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
 
-    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> { return Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; /* Inverted - last download date first */ };
+    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> {
+        return Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; /* Inverted - last download date first */
+    };
 
     public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
 

@@ -7,13 +7,17 @@ public class ContentParserFactory {
 
     private static final ContentParserFactory mInstance = new ContentParserFactory();
 
-    private ContentParserFactory() { }
+    private ContentParserFactory() {
+    }
 
     public static ContentParserFactory getInstance() {
         return mInstance;
     }
 
-    public ContentParser getParser(Content content) { return (null == content)?new DummyParser():getParser(content.getSite()); }
+    public ContentParser getParser(Content content) {
+        return (null == content) ? new DummyParser() : getParser(content.getSite());
+    }
+
     public ContentParser getParser(Site site) {
         switch (site) {
             case ASMHENTAI:

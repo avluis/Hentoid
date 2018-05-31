@@ -94,16 +94,16 @@ public abstract class ContentTable {
     // SEARCH QUERIES "TOOLBOX"
 
     public static final String SELECT_DOWNLOADS_BASE = "SELECT C.*" +
-            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C."+SITE_COLUMN+" in (%1) ";
+            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C." + SITE_COLUMN + " in (%1) ";
 
-    public static final String SELECT_DOWNLOADS_FAVS = " AND C."+FAVOURITE_COLUMN+" = 1 ";
+    public static final String SELECT_DOWNLOADS_FAVS = " AND C." + FAVOURITE_COLUMN + " = 1 ";
 
     public static final String SELECT_DOWNLOADS_TITLE = " lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
 
     public static final String SELECT_DOWNLOADS_JOINS = " C." + ID_COLUMN
-            + " in (SELECT "+ContentAttributeTable.CONTENT_ID_COLUMN+" FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM "
+            + " in (SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM "
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
-            + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A."+ AttributeTable.ID_COLUMN + " WHERE ";
+            + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
 
     public static final String SELECT_DOWNLOADS_AUTHOR = "(lower(A." + AttributeTable.NAME_COLUMN + ") LIKE '%3' AND A."
             + AttributeTable.TYPE_COLUMN + " in (0, 7))";

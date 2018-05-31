@@ -22,28 +22,44 @@ public class DownloadEvent {
 
     /**
      * Use for EV_PROGRESS events
-     * @param eventType event type code (among DownloadEvent public static EV_ values)
-     * @param pagesOK pages downloaded successfully
-     * @param pagesKO pages downloaded with errors
+     *
+     * @param eventType  event type code (among DownloadEvent public static EV_ values)
+     * @param pagesOK    pages downloaded successfully
+     * @param pagesKO    pages downloaded with errors
      * @param pagesTotal total pages to download
      */
     public DownloadEvent(int eventType, int pagesOK, int pagesKO, int pagesTotal) {
-        this.content = null; this.eventType = eventType; this.pagesOK = pagesOK; this.pagesKO = pagesKO; this.pagesTotal = pagesTotal;
+        this.content = null;
+        this.eventType = eventType;
+        this.pagesOK = pagesOK;
+        this.pagesKO = pagesKO;
+        this.pagesTotal = pagesTotal;
     }
+
     /**
      * Use for EV_CANCEL events
-     * @param content Canceled or completed content
+     *
+     * @param content   Canceled or completed content
      * @param eventType event type code (among DownloadEvent public static EV_ values)
      */
     public DownloadEvent(Content content, int eventType) {
-        this.content = content; this.eventType = eventType; this.pagesOK = 0; this.pagesKO = 0; this.pagesTotal = 0;
+        this.content = content;
+        this.eventType = eventType;
+        this.pagesOK = 0;
+        this.pagesKO = 0;
+        this.pagesTotal = 0;
     }
 
     /**
      * Use for EV_PAUSE, EV_UNPAUSE and EV_SKIP events
+     *
      * @param eventType event type code (among DownloadEvent public static EV_ values)
      */
     public DownloadEvent(int eventType) {
-        this.content = null; this.eventType = eventType; this.pagesOK = 0; this.pagesKO = 0; this.pagesTotal = 0;
+        this.content = null;
+        this.eventType = eventType;
+        this.pagesOK = 0;
+        this.pagesKO = 0;
+        this.pagesTotal = 0;
     }
 }
