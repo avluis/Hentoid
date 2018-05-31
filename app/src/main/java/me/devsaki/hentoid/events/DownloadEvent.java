@@ -46,9 +46,4 @@ public class DownloadEvent {
     public DownloadEvent(int eventType) {
         this.content = null; this.eventType = eventType; this.pagesOK = 0; this.pagesKO = 0; this.pagesTotal = 0;
     }
-
-    @Deprecated
-    public DownloadEvent(int eventType, double percent) {
-        this.content = null; this.eventType = eventType; this.pagesOK = 0; this.pagesKO = 0; this.pagesTotal = 0;
-    }
 }

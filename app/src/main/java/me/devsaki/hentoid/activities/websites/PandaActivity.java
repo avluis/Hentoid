@@ -8,8 +8,8 @@ import timber.log.Timber;
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
 /**
- * Created by avluis on 07/21/2016.
- * Implements Hentai Cafe source
+ * Created by Robb_w on 2018/04
+ * Implements MangaPanda source
  */
 public class PandaActivity extends BaseWebActivity {
 

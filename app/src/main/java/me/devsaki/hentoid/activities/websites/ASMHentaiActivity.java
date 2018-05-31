@@ -22,9 +22,12 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
  */
 public class ASMHentaiActivity extends BaseWebActivity {
 
+    private static String[] blockedContent = {"f.js"};
+
     Site getStartSite() {
         return Site.ASMHENTAI;
     }
+
 
     @Override
     void setWebView(ObservableWebView webView) {
@@ -46,12 +49,13 @@ public class ASMHentaiActivity extends BaseWebActivity {
 
         ASMViewClient(BaseWebActivity activity, String filteredUrl) {
             super(activity, filteredUrl);
+            addContentBlockFilter(blockedContent);
         }
 
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("f.js") || isUrlForbidden(url) ) {
+            if (isUrlForbidden(url) ) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
@@ -65,7 +69,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            if (url.contains("f.js") || isUrlForbidden(url)) {
+            if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else if (url.contains("main.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);

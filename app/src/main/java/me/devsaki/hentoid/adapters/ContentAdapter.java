@@ -49,12 +49,14 @@ import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOption
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private static final int VISIBLE_THRESHOLD = 10;
+
     private final Context context;
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
+    // Total count of book in entire collection (Adapter is in charge of updating it)
     private int mTotalCount;
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
@@ -247,26 +249,26 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private void attachArtist(ContentHolder holder, Content content) {
         String templateArtist = context.getResources().getString(R.string.work_artist);
         StringBuilder artistsBuilder = new StringBuilder();
+        List<Attribute> attributes = new ArrayList<>();
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (null == artistAttributes) artistAttributes = new ArrayList<>();
+        if (artistAttributes != null) attributes.addAll(artistAttributes);
         List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
-        if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
+        if (circleAttributes != null) attributes.addAll(circleAttributes);
 
-        if (artistAttributes.isEmpty()) {
+        if (attributes.isEmpty()) {
             holder.tvArtist.setVisibility(View.GONE);
         } else {
-            for (int i = 0; i < artistAttributes.size(); i++) {
-                Attribute attribute = artistAttributes.get(i);
+            boolean first = true;
+            for (Attribute attribute : attributes)
+            {
+                if (first) first = false; else artistsBuilder.append(", ");
                 artistsBuilder.append(attribute.getName());
-                if (i != artistAttributes.size() - 1) {
-                    artistsBuilder.append(", ");
-                }
             }
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artistsBuilder.toString())));
 
-        if (artistAttributes.isEmpty()) {
+        if (attributes.isEmpty()) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);

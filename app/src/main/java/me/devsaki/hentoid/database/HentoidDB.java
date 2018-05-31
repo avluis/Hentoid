@@ -321,36 +321,6 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public Content selectContentByStatus(StatusContent statusContent) {
-        Content result = null;
-
-        synchronized (locker) {
-            Timber.d("selectContentByStatus");
-
-            SQLiteDatabase db = null;
-            Cursor cursorContent = null;
-            try {
-                db = getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_BY_STATUS,
-                        new String[]{statusContent.getCode() + ""});
-
-                if (cursorContent.moveToFirst()) {
-                    result = populateContent(cursorContent, db);
-                }
-            } finally {
-                if (cursorContent != null) {
-                    cursorContent.close();
-                }
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
-        }
-
-        return result;
-    }
-
     public List<Content> selectContentEmptyFolder() {
         List<Content> result;
         synchronized (locker) {
@@ -835,8 +805,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     db.endTransaction();
                 }
             } finally {
-                Timber.d("Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }
@@ -868,8 +837,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     db.endTransaction();
                 }
             } finally {
-                Timber.d("Closing db connection. Condition: "
-                        + (db != null && db.isOpen()));
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
                 if (statement != null) {
                     statement.close();
                 }

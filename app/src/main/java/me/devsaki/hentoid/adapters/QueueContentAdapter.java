@@ -86,6 +86,12 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         return v;
     }
 
+    /**
+     * Build the entire book layout using the designated Content properties
+     *
+     * @param holder Holder to populate
+     * @param content Content to display
+     */
     private void populateLayout(ViewHolder holder, Content content) {
         attachTitle(holder, content);
         attachCover(holder, content);
@@ -96,6 +102,12 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         holder.ivSource.setImageResource(content.getSite().getIco());
     }
 
+    /**
+     * Build the title layout of the book viewholder using the designated Content properties
+     *
+     * @param holder Holder to populate
+     * @param content Content to display
+     */
     private void attachTitle(ViewHolder holder, Content content) {
         if (content.getTitle() == null) {
             holder.tvTitle.setText(R.string.work_untitled);
@@ -105,6 +117,12 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
     }
 
+    /**
+     * Build the cover layout of the book viewholder using the designated Content properties
+     *
+     * @param holder Holder to populate
+     * @param content Content to display
+     */
     private void attachCover(ViewHolder holder, Content content) {
         RequestBuilder<Drawable> thumb = Glide.with(context).load(content.getCoverImageUrl());
 
@@ -125,6 +143,12 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 .into(holder.ivCover);
     }
 
+    /**
+     * Build the series layout of the book viewholder using the designated Content properties
+     *
+     * @param holder Holder to populate
+     * @param content Content to display
+     */
     private void attachSeries(ViewHolder holder, Content content) {
         String templateSeries = context.getString(R.string.work_series);
         StringBuilder series = new StringBuilder();
@@ -150,32 +174,44 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
     }
 
+    /**
+     * Build the artist layout of the book viewholder using the designated Content properties
+     *
+     * @param holder Holder to populate
+     * @param content Content to display
+     */
     private void attachArtist(ViewHolder holder, Content content) {
         String templateArtist = context.getString(R.string.work_artist);
         StringBuilder artists = new StringBuilder();
+        List<Attribute> attributes = new ArrayList<>();
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (null == artistAttributes) artistAttributes = new ArrayList<>();
+        if (artistAttributes != null) attributes.addAll(artistAttributes);
         List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
-        if (circleAttributes != null) artistAttributes.addAll(circleAttributes);
+        if (circleAttributes != null) attributes.addAll(circleAttributes);
 
-        if (!artistAttributes.isEmpty()) {
-            for (int i = 0; i < artistAttributes.size(); i++) {
-                Attribute attribute = artistAttributes.get(i);
+        boolean first = true;
+        if (!attributes.isEmpty()) {
+            for (Attribute attribute : attributes)
+            {
+                if (first) first = false; else artists.append(", ");
                 artists.append(attribute.getName());
-                if (i != artistAttributes.size() - 1) {
-                    artists.append(", ");
-                }
             }
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artists)));
 
-        if (artistAttributes.isEmpty()) {
+        if (attributes.isEmpty()) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
     }
 
+    /**
+     * Build the tags layout of the book viewholder using the designated Content properties
+     *
+     * @param holder Holder to populate
+     * @param content Content to display
+     */
     private void attachTags(ViewHolder holder, Content content) {
         String templateTags = context.getString(R.string.work_tags);
         StringBuilder tags = new StringBuilder();
@@ -194,6 +230,14 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         holder.tvTags.setText(Helper.fromHtml(tags.toString()));
     }
 
+    /**
+     * Build the buttons of the book viewholder using the designated Content properties
+     *
+     * @param view View to populate
+     * @param content Designated content
+     * @param isFirstItem True if designated Content is the first item of the queue; false if not
+     * @param isLastItem True if designated Content is the last item of the queue; false if not
+     */
     private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem) {
         View btnUp = view.findViewById(R.id.queueUpBtn);
         ((ImageView)btnUp).setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
@@ -209,6 +253,12 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         btnCancel.setOnClickListener(v -> cancel(content));
     }
 
+    /**
+     * Update progress bar according to progress and status of designated Content
+     *
+     * @param view Progress bar to use
+     * @param content Content whose progress is to be displayed
+     */
     private void updateProgress(View view, Content content) {
         ProgressBar pb = view.findViewById(R.id.pbDownload);
 
@@ -225,6 +275,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
     }
 
+    /**
+     * Move designated content up in the download queue (= raise its priority)
+     *
+     * @param content Content whose priority has to be raised
+     */
     private void moveUp(Content content) {
         HentoidDB db = HentoidDB.getInstance(context);
         List<Pair<Integer,Integer>> queue = db.selectQueue();
@@ -254,6 +309,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         notifyDataSetChanged();
     }
 
+    /**
+     * Move designated content down in the download queue (= lower its priority)
+     *
+     * @param content Content whose priority has to be lowered
+     */
     private void moveDown(Content content) {
         HentoidDB db = HentoidDB.getInstance(context);
         List<Pair<Integer,Integer>> queue = db.selectQueue();
@@ -285,6 +345,12 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         notifyDataSetChanged();
     }
 
+    /**
+     * Cancel download of designated Content
+     * NB : Contrary to Pause command, Cancel removes the Content from the download queue
+     *
+     * @param content Content whose download has to be canceled
+     */
     private void cancel(Content content) {
         // Remove content altogether from the DB (including queue)
         HentoidDB db = HentoidDB.getInstance(context);

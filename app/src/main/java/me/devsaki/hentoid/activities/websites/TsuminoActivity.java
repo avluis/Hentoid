@@ -22,6 +22,8 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private boolean downloadFabPressed = false;
     private int historyIndex;
+    private static String[] blockedContent = {"/content/"};
+
 
     private static int ordinalIndexOf(String str) {
         int i = 5;
@@ -41,6 +43,7 @@ public class TsuminoActivity extends BaseWebActivity {
     void setWebView(ObservableWebView webView) {
         TsuminoWebViewClient client = new TsuminoWebViewClient(this);
         client.restrictTo("tsumino.com");
+        addContentBlockFilter(blockedContent);
 
         webView.setWebViewClient(client);
         super.setWebView(webView);
@@ -91,7 +94,7 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("/static/") || isUrlForbidden(url)) {
+            if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -103,7 +106,7 @@ public class TsuminoActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            if (url.contains("/static/") || isUrlForbidden(url)) {
+            if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);

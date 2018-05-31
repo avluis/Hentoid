@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
@@ -21,7 +20,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.Helper;
@@ -30,31 +28,32 @@ import timber.log.Timber;
 /**
  * Created by Shiro on 3/18/2016.
  * Responsible for handling download service notifications
- * Methods are intended to have default level accessors for use with DownloadService class only
+ * Methods are intended to have default level accessors for use with ContentDownloadService class only
  */
 final class NotificationPresenter {
 
+    // Unique notification ID for the Hentoid app
     private static final int NOTIFICATION_ID = 0;
+    // Hentoid instance
     private final HentoidApp instance;
-    private final Resources res;
+    // NotificationManager used to spawn and update phone notifications
     private final NotificationManager manager;
-
-    private int count;
+    // Notification builder
     private NotificationCompat.Builder builder = null;
+
 
     NotificationPresenter() {
         instance = HentoidApp.getInstance();
-        res = instance.getResources();
-        count = ContentQueueManager.getInstance().getDownloadCount();
         manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancelAll();
-
-        Timber.d("Download Counter: %s", count);
+        if (manager != null) manager.cancelAll();
     }
 
+    /**
+     * Signal the starting of a new download
+     *
+     * @param content Book to display in the download notification
+     */
     void downloadStarted(final Content content) {
-        count++;
-
         int icon = R.drawable.ic_stat_hentoid;
         if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
             icon = content.getSite().getIco();
@@ -73,39 +72,42 @@ final class NotificationPresenter {
                     .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.accent))
                     .setLocalOnly(true);
         }
-
-        Timber.d("Download Counter: %s", count);
     }
 
-    // TODO remove
-    void downloadInterrupted(final Content content) {
-        //updateNotification(0, content);
-    }
-
+    /**
+     * Download event handler called by the event bus
+     *
+     * @param event Handled event
+     */
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
         switch (event.eventType)
         {
             case DownloadEvent.EV_PROGRESS:
-                updateProgress((event.pagesKO + event.pagesOK) * 100.0 / event.pagesTotal);
+                notifyProgress((event.pagesKO + event.pagesOK) * 100.0 / event.pagesTotal);
                 break;
             case DownloadEvent.EV_PAUSE :
-                updatePause();
+                notifyPause();
                 break;
             case DownloadEvent.EV_CANCEL :
-                updateCancel(event.content);
+                notifyCancel(event.content);
                 break;
             case DownloadEvent.EV_SKIP :
-                updateSkip();
+                notifySkip();
                 break;
             case DownloadEvent.EV_COMPLETE :
-                updateComplete(0 == event.pagesKO);
+                notifyComplete(0 == event.pagesKO);
                 break;
 //            case DownloadEvent.EV_UNPAUSE : <-- nothing; used to restart download queue activity that will produce a Progress event
         }
     }
 
-    private void updateProgress(double percent)
+    /**
+     * Notify download progress
+     *
+     * @param percent % of download complete
+     */
+    private void notifyProgress(double percent)
     {
         Timber.d("Event notified : progress / %s percent", String.valueOf(percent));
 
@@ -115,19 +117,24 @@ final class NotificationPresenter {
                     .setOngoing(true)
                     .setAutoCancel(false)
                     .setContentInfo("Processing...")
-                    .setContentTitle(res.getString(R.string.downloading));
+                    .setContentTitle(instance.getString(R.string.downloading));
         } else {
             builder.setProgress(100, (int) percent, false)
                     .setOngoing(true)
                     .setAutoCancel(false)
                     .setContentInfo(String.format(Locale.US, " %.2f", percent) + "%")
-                    .setContentTitle(res.getString(R.string.downloading));
+                    .setContentTitle(instance.getString(R.string.downloading));
         }
 
         manager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    private void updateComplete(boolean isSuccess)
+    /**
+     * Notify a complete download
+     *
+     * @param isSuccess True if completed download is successful; false if there is at least 1 page whose download has failed
+     */
+    private void notifyComplete(boolean isSuccess)
     {
         Timber.d("Event notified : complete with status %s", isSuccess);
 
@@ -139,29 +146,38 @@ final class NotificationPresenter {
                 .setDeleteIntent(getDeleteIntent());
 
         if (isSuccess) {
-            builder.setContentTitle(res.getQuantityString(R.plurals.download_completed,
-                    count).replace("%d", String.valueOf(count)));
+            int downloadCount = ContentQueueManager.getInstance().getDownloadCount();
+            builder.setContentTitle(instance.getResources().getQuantityString(R.plurals.download_completed,
+                    downloadCount).replace("%d", String.valueOf(downloadCount)));
 
             // Tracking Event (Download Completed)
             instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Success.");
         } else {
-            builder.setContentTitle(res.getString(R.string.download_error));
+            builder.setContentTitle(instance.getString(R.string.download_error));
             // Tracking Event (Download Error)
             instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Error.");
         }
     }
 
-    private void updatePause()
+    /**
+     * Notify paused download
+     */
+    private void notifyPause()
     {
         Timber.d("Event notified : paused");
 
         builder.setContentIntent(getPausedIntent());
-        builder.setContentTitle(res.getString(R.string.download_paused));
+        builder.setContentTitle(instance.getString(R.string.download_paused));
 
         manager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    private void updateCancel(Content content)
+    /**
+     * Notify canceled download
+     *
+     * @param content Canceled book
+     */
+    private void notifyCancel(Content content)
     {
         Timber.d("Event notified : cancelled");
 
@@ -171,15 +187,18 @@ final class NotificationPresenter {
                 .setAutoCancel(true)
                 .setContentInfo("")
                 .setDefaults(Notification.DEFAULT_LIGHTS)
-                .setContentTitle(res.getString(R.string.download_cancelled));
+                .setContentTitle(instance.getString(R.string.download_cancelled));
 
-        // Tracking Event (Download Cancelled)
+        // Tracking Event (Download Canceled)
         instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Cancelled.");
 
         manager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    private void updateSkip()
+    /**
+     * Notify skipped download
+     */
+    private void notifySkip()
     {
         Timber.d("Event notified : skipped");
 
@@ -189,7 +208,7 @@ final class NotificationPresenter {
                 .setAutoCancel(true)
                 .setContentInfo("")
                 .setDefaults(Notification.DEFAULT_LIGHTS)
-                .setContentTitle(res.getString(R.string.download_cancelled));
+                .setContentTitle(instance.getString(R.string.download_cancelled));
 
         // Tracking Event (Download Skipped)
         instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Skipped.");
@@ -197,6 +216,11 @@ final class NotificationPresenter {
         manager.notify(NOTIFICATION_ID, builder.build());
     }
 
+    /**
+     * Creates an intent pointing to the library screen (DownloadsActivity)
+     *
+     * @return Intent pointing to the library screen (DownloadsActivity)
+     */
     private PendingIntent getDefaultIntent() {
         Intent resultIntent = new Intent(instance, DownloadsActivity.class);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP |
@@ -208,11 +232,21 @@ final class NotificationPresenter {
         return PendingIntent.getActivity(instance, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
+    /**
+     * Creates an intent pointing to the downloads queue
+     *
+     * @return Intent pointing to the downloads queue
+     */
     private PendingIntent getPausedIntent() {
         Intent resultIntent = new Intent(instance, QueueActivity.class);
         return PendingIntent.getActivity(instance, 0, resultIntent, PendingIntent.FLAG_ONE_SHOT);
     }
 
+    /**
+     * Creates an intent pointing to the book web page
+     *
+     * @return Intent pointing to the book web page
+     */
     private PendingIntent getCanceledIntent(Content content) {
         Intent resultIntent = new Intent(instance, content.getWebActivityClass());
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

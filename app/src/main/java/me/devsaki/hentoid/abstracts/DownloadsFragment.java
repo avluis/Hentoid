@@ -775,14 +775,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // == SEARCH PANE
 
         // Attaches listeners to website filters
-        initSiteButton(activity.findViewById(R.id.filter_nhentai), Site.NHENTAI.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_hitomi), Site.HITOMI.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_hentaicafe), Site.HENTAICAFE.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_asm), Site.ASMHENTAI.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_asmcomics), Site.ASMHENTAI_COMICS.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_tsumino), Site.TSUMINO.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_pururin), Site.PURURIN.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_fakku), Site.FAKKU.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_nhentai), Site.NHENTAI);
+        initSiteButton(activity.findViewById(R.id.filter_hitomi), Site.HITOMI);
+        initSiteButton(activity.findViewById(R.id.filter_hentaicafe), Site.HENTAICAFE);
+        initSiteButton(activity.findViewById(R.id.filter_asm), Site.ASMHENTAI);
+        initSiteButton(activity.findViewById(R.id.filter_asmcomics), Site.ASMHENTAI_COMICS);
+        initSiteButton(activity.findViewById(R.id.filter_tsumino), Site.TSUMINO);
+        initSiteButton(activity.findViewById(R.id.filter_pururin), Site.PURURIN);
+        initSiteButton(activity.findViewById(R.id.filter_fakku), Site.FAKKU);
 
         // Attaches listener to favourite filters
         final ImageButton favouriteButton = activity.findViewById(R.id.filter_favs);
@@ -820,10 +820,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private void initSiteButton(ImageButton button, int siteCode)
+    /**
+     * Initialize the site filter button in the search panel
+     *   - Set proper color
+     *   - Set proper onClick listener
+     *
+     * @param button Button to initialize
+     * @param site Corresponding site
+     */
+    private void initSiteButton(ImageButton button, Site site)
     {
-        if (siteFilters.contains(siteCode)) button.clearColorFilter(); else button.setColorFilter(Color.BLACK);
-        button.setOnClickListener(v -> toggleSiteFilter(button, siteCode));
+        if (siteFilters.contains(site.getCode())) button.clearColorFilter(); else button.setColorFilter(Color.BLACK);
+        button.setOnClickListener(v -> toggleSiteFilter(button, site.getCode()));
     }
 
     @Override
@@ -840,7 +848,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Callback method used when a sort method is selected in the sort drop-down menu
-     * => Updates the GUI according to the chosen sort method
+     * => Updates the UI according to the chosen sort method
      *
      * @param item MenuItem that has been selected
      * @return true if the order has been successfuly processed
@@ -929,7 +937,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Toggles the chosen source (website) filter and updates the GUI accordingly
+     * Toggles the chosen source (website) filter and updates the UI accordingly
      *
      * @param button Source (website) filter button that has been pressed
      * @param siteCode Code of the corresponding site
@@ -950,7 +958,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Toggles favourite filter and updates the GUI accordingly
+     * Toggles favourite filter on a book and updates the UI accordingly
      *
      * @param button Filter button that has been pressed
      */
@@ -965,6 +973,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchContent();
     }
 
+    /**
+     * Update favourite filter button appearance (icon and color) on a book
+     *
+     * @param button Button to update
+     */
     private void updateFavouriteFilter(ImageButton button)
     {
         if (filterFavourites)
@@ -978,7 +991,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Updates the GUI according to the chosen filters
+     * Updates the UI according to the chosen filters
      *
      * @param filterByTitle True if filter by title is activated
      * @param filterByArtist True if filter by artist is activated
@@ -1050,6 +1063,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchContent();
     }
 
+    /**
+     * Restore tag mosaic UI according to available tags in book library and selected filters
+     */
     private void restoreTagMosaic()
     {
         List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), Collections.emptyList(), siteFilters, filterFavourites);

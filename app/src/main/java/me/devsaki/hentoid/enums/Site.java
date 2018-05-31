@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.enums;
 
+import javax.annotation.Nullable;
+
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
@@ -32,6 +34,7 @@ public enum Site {
         this.ico = ico;
     }
 
+    @Nullable
     public static Site searchByCode(int code) {
         if (code == -1) {
             Timber.w("Invalid site code!");

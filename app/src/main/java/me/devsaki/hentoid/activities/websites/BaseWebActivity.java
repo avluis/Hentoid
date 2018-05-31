@@ -24,8 +24,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -72,24 +74,26 @@ public abstract class BaseWebActivity extends BaseActivity {
     private boolean webViewIsLoading;
     // Indicates if corresponding action buttons are enabled
     private boolean fabReadEnabled, fabDownloadEnabled;
-    // List of blocked domains (ads or annoying images)
-    private static List<String> blockedAds = new ArrayList<>();
+
+    // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
+    private static List<String> universalBlockedContent = new ArrayList<>();    // Universal list (applied to all sites)
+    private List<String> localBlockedContent;                                   // Local list (applied to current site)
 
     static
     {
-        blockedAds.add("exoclick.com");
-        blockedAds.add("juicyadultads.com");
-        blockedAds.add("juicyads.com");
-        blockedAds.add("exosrv.com");
-        blockedAds.add("hentaigold.net");
-        blockedAds.add("ads.php");
-        blockedAds.add("ads.js");
-        blockedAds.add("pop.js");
-        blockedAds.add("trafficsan.com");
-        blockedAds.add("contentabc.com");
-        blockedAds.add("bebi.com");
-        blockedAds.add("aftv-serving.bid");
-        blockedAds.add("smatoo.net");
+        universalBlockedContent.add("exoclick.com");
+        universalBlockedContent.add("juicyadultads.com");
+        universalBlockedContent.add("juicyads.com");
+        universalBlockedContent.add("exosrv.com");
+        universalBlockedContent.add("hentaigold.net");
+        universalBlockedContent.add("ads.php");
+        universalBlockedContent.add("ads.js");
+        universalBlockedContent.add("pop.js");
+        universalBlockedContent.add("trafficsan.com");
+        universalBlockedContent.add("contentabc.com");
+        universalBlockedContent.add("bebi.com");
+        universalBlockedContent.add("aftv-serving.bid");
+        universalBlockedContent.add("smatoo.net");
     }
 
     ObservableWebView getWebView() {
@@ -101,6 +105,18 @@ public abstract class BaseWebActivity extends BaseActivity {
     }
 
     abstract Site getStartSite();
+
+
+    /**
+     * Add an content block filter to current site
+     *
+     * @param filter Filter to add to content block system
+     */
+    protected void addContentBlockFilter(String[] filter)
+    {
+        if (null == localBlockedContent) localBlockedContent = new ArrayList<>();
+        Collections.addAll(localBlockedContent, filter);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -265,10 +281,20 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Listener for Home floating action button : go back to Library view
+     *
+     * @param view Calling view (part of the mandatory signature)
+     */
     public void onHomeFabClick(View view) {
         goHome();
     }
 
+    /**
+     * Listener for Read floating action button : open content when it is already part of the library
+     *
+     * @param view Calling view (part of the mandatory signature)
+     */
     public void onReadFabClick(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
@@ -283,10 +309,18 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Listener for Download floating action button : start content download
+     *
+     * @param view Calling view (part of the mandatory signature)
+     */
     public void onDownloadFabClick(View view) {
         processDownload();
     }
 
+    /**
+     * Adds current content (i.e. content of the currently viewed book) to the download queue
+     */
     void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
         if (currentContent != null && StatusContent.DOWNLOADED == currentContent.getStatus()) {
@@ -315,6 +349,11 @@ public abstract class BaseWebActivity extends BaseActivity {
         hideFab(fabDownload);
     }
 
+    /**
+     * Hide designated Floating Action Button
+     *
+     * @param fab Reference to the floating action button to hide
+     */
     private void hideFab(FloatingActionButton fab) {
         fab.hide();
         if (fab.equals(fabDownload)) {
@@ -324,6 +363,11 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Show designated Floating Action Button
+     *
+     * @param fab Reference to the floating action button to show
+     */
     private void showFab(FloatingActionButton fab) {
         fab.show();
         if (fab.equals(fabDownload)) {
@@ -355,6 +399,11 @@ public abstract class BaseWebActivity extends BaseActivity {
         return false;
     }
 
+    /**
+     * Display webview controls according to designated content
+     *
+     * @param content Currently displayed content
+     */
     void processContent(Content content) {
         if (content == null) {
             return;
@@ -384,6 +433,11 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Add designated Content to the Hentoid DB
+     *
+     * @param content Content to be added to the DB
+     */
     private void addContentToDB(Content content) {
         Content contentDB = db.selectContentById(content.getUrl().hashCode());
         if (contentDB != null) {
@@ -488,9 +542,20 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Indicates if the given URL is forbidden by the current content filters
+     *
+     * @param url URL to be examinated
+     * @return True if URL is forbidden according to current filters; false if not
+     */
     protected boolean isUrlForbidden(String url)
     {
-        for(String s : blockedAds)
+        for(String s : universalBlockedContent)
+        {
+            if (url.contains(s)) return true;
+        }
+        if (localBlockedContent != null)
+        for(String s : localBlockedContent)
         {
             if (url.contains(s)) return true;
         }
@@ -514,8 +579,11 @@ public abstract class BaseWebActivity extends BaseActivity {
             try {
                 ContentParser parser = ContentParserFactory.getInstance().getParser(activity.getStartSite());
                 activity.processContent(parser.parseContent(url));
+            } catch (IOException e) { // Most I/O errors being timeouts...
+                Timber.e(e, "I/O Error while parsing content.");
+                //activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             } catch (Exception e) {
-                Timber.e(e, "Error parsing content.");
+                Timber.e(e, "Error while parsing content.");
                 activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 

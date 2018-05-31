@@ -38,16 +38,16 @@ import timber.log.Timber;
  */
 public class QueueFragment extends BaseFragment {
 
-    private Context context;
-    private QueueContentAdapter mAdapter;
+    private Context context;                // App context
+    private QueueContentAdapter mAdapter;   // Adapter for queue management
 
     // UI ELEMENTS
-    private ListView mListView;
-    private TextView mEmptyText;
-    private ImageButton btnStart;
-    private ImageButton btnPause;
-    private TextView queueStatus; // 1st line of text displayed on the right of the queue pause / play button
-    private TextView queueInfo; // 2nd line of text displayed on the right of the queue pause / play button
+    private TextView mEmptyText;    // "Empty queue" message panel
+    private ListView mListView;     // Book list container
+    private ImageButton btnStart;   // Start / Resume button
+    private ImageButton btnPause;   // Pause button
+    private TextView queueStatus;   // 1st line of text displayed on the right of the queue pause / play button
+    private TextView queueInfo;     // 2nd line of text displayed on the right of the queue pause / play button
 
 
     public static QueueFragment newInstance() {
@@ -84,16 +84,22 @@ public class QueueFragment extends BaseFragment {
         queueStatus = rootView.findViewById(R.id.queueStatus);
         queueInfo = rootView.findViewById(R.id.queueInfo);
 
-        // Remplace placeholder text by empty strings
+        // Remplace placeholder text used in UI designer by empty strings
         queueStatus.setText(R.string.queue_empty2);
         queueInfo.setText(R.string.queue_empty2);
 
+        // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
 
         return rootView;
     }
 
+    /**
+     * Download event handler
+     *
+     * @param event Broadcasted event
+     */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
 
@@ -123,6 +129,13 @@ public class QueueFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Update main progress bar and bottom progress panel for current (1st in queue) book
+     *
+     * @param pagesOK Number of pages successfully downloaded for current (1st in queue) book
+     * @param pagesKO Number of pages whose download has failed for current (1st in queue) book
+     * @param totalPages Total pages of current (1st in queue) book
+     */
     private void updateProgress(int pagesOK, int pagesKO, int totalPages) {
         if (!ContentQueueManager.getInstance().isQueuePaused() && mAdapter != null && mAdapter.getCount() > 0) {
             Content content = mAdapter.getItem(0);
@@ -141,11 +154,21 @@ public class QueueFragment extends BaseFragment {
         }
     }
 
+    /**
+     * Update book title in bottom progress panel
+     *
+     * @param bookTitle Book title to display
+     */
     private void updateBookTitle(String bookTitle) {
         queueStatus.setText(MessageFormat.format( context.getString(R.string.queue_dl), bookTitle) );
     }
 
     public void update() { update(-1); }
+    /**
+     * Update the entire Download queue screen
+     *
+     * @param eventType Event type that triggered the update, if any (See types described in DownloadEvent); -1 if none
+     */
     public void update(int eventType) {
         List<Content> contents = getDB().selectQueueContents();
 
@@ -165,6 +188,8 @@ public class QueueFragment extends BaseFragment {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
             updateBookTitle(contents.get(0).getTitle());
+
+            // Stop blinking animation, if any
             queueInfo.clearAnimation();
             queueStatus.clearAnimation();
         } else {
@@ -174,6 +199,7 @@ public class QueueFragment extends BaseFragment {
                 btnStart.setVisibility(View.VISIBLE);
                 queueStatus.setText(R.string.queue_paused);
 
+                // Set blinking animation when queue is paused
                 Animation anim = new AlphaAnimation(0.0f, 1.0f);
                 anim.setDuration(750);
                 anim.setStartOffset(20);
@@ -189,7 +215,7 @@ public class QueueFragment extends BaseFragment {
         }
 
         // Update adapter
-        // TODO - this is kinda shabby
+        // TODO - re-creating a brand new adapter from scratch is kinda shabby
         mAdapter = new QueueContentAdapter(context, contents);
         mListView.setAdapter(mAdapter);
     }

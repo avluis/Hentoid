@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.database.constants;
 
 /**
- * Created by DevSaki on 10/05/2015.
+ * Created by Robb_w on 2018/04
  * db Queue table
  */
 public abstract class QueueTable {

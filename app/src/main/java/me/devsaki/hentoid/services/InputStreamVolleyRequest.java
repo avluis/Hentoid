@@ -6,30 +6,30 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 
 import java.util.AbstractMap;
-import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Created by Robb_w on 2018/04
+ *
+ * Specific Volley Request intended at transmitting :
+ *  - content as byte array
+ *  - raw HTTP response headers
+ *
+ *  to the download callback routine
+ */
 class InputStreamVolleyRequest extends Request<byte[]> {
+    // Callback
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mListener;
-    private Map<String, String> mParams;
-
-    //create a static map for directly accessing headers
+    // Temporary storage for HTTP response headers
     private Map<String, String> responseHeaders ;
 
     InputStreamVolleyRequest(int method, String mUrl, Response.Listener<Map.Entry<byte[], Map<String, String>>> listener,
-                             Response.ErrorListener errorListener, HashMap<String, String> params) {
+                             Response.ErrorListener errorListener) {
         super(method, mUrl, errorListener);
         // this request would never use cache.
         setShouldCache(false);
         mListener = listener;
-        mParams=params;
     }
-
-    @Override
-    protected Map<String, String> getParams() {
-        return mParams;
-    }
-
 
     @Override
     protected void deliverResponse(byte[] response) {

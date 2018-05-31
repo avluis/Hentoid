@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
@@ -36,12 +35,18 @@ import me.devsaki.hentoid.util.NetworkStatus;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
+
+/**
+ * Created by Robb_w on 2018/04
+ * Book download service; 1 instance everytime a new book of the queue has to be downloaded
+ * NB : As per IntentService behaviour, only one thread can be active at a time (no parallel runs of ContentDownloadService)
+ */
 public class ContentDownloadService extends IntentService {
 
-    private HentoidDB db;
-    private NotificationPresenter notificationPresenter;
-    private boolean downloadCanceled;
-    private boolean downloadSkipped;
+    private HentoidDB db;                                   // Hentoid database
+    private NotificationPresenter notificationPresenter;    // Link to the notification presenter
+    private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
+    private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
 
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
@@ -78,36 +83,32 @@ public class ContentDownloadService extends IntentService {
 
         Timber.d("New intent processed");
 
-        downloadQueueHead();
+        downloadFirstInQueue();
     }
 
-    private void downloadQueueHead() {
-/*
-        // Exits if download queue is already running - there can only be one service active at a time
-        if (!RequestQueueManager.getInstance(this).isQueueEmpty()) {
-            Timber.d("Download still active. Aborting");
-            return;
-        }
-*/
+    /**
+     * Start the download of the 1st book of the download queue
+     */
+    private void downloadFirstInQueue() {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
         // Check if queue is already paused
         if (contentQueueManager.isQueuePaused()) {
-            Timber.w("Queue is paused. Aborting.");
+            Timber.w("Queue is paused. Aborting download.");
             return;
         }
 
         // Works on first item of queue
         List<Pair<Integer, Integer>> queue = db.selectQueue();
         if (0 == queue.size()) {
-            Timber.w("Queue is empty. Aborting.");
+            Timber.w("Queue is empty. Aborting download.");
             return;
         }
 
         Content content = db.selectContentById(queue.get(0).first);
 
         if (null == content || StatusContent.DOWNLOADED == content.getStatus()) {
-            Timber.w("Content is unavailable, or already downloaded. Aborting.");
+            Timber.w("Content is unavailable, or already downloaded. Aborting download.");
             return;
         }
 
@@ -118,15 +119,18 @@ public class ContentDownloadService extends IntentService {
         List<ImageFile> images = content.getImageFiles();
         if (0 == images.size()) {
             // Create image list in DB
-            images = parseImageFiles(content);
+            images = fetchImageFiles(content);
             content.setImageFiles(images);
             db.insertImageFiles(content);
         }
 
         if (0 == images.size()) {
-            Timber.w("Image list is empty");
+            Timber.w("Image list is empty. Aborting download.");
             return;
         }
+
+        // Tracking Event (Download Added)
+        HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Start");
 
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
@@ -139,7 +143,7 @@ public class ContentDownloadService extends IntentService {
         content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
         db.updateContentStorageFolder(content);
 
-        // Plan download actions
+        // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
         RequestQueueManager.getInstance(this).addToRequestQueue(buildStringRequest(cover, dir));
         for (ImageFile img : images) {
@@ -147,7 +151,7 @@ public class ContentDownloadService extends IntentService {
                 RequestQueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir));
         }
 
-        // Watches progression
+        // Watch progression
         // NB : download pause is managed at the Volley queue level (see RequestQueueManager.pauseQueue / startQueue)
         double dlRate;
         int pagesOK, pagesKO;
@@ -155,7 +159,7 @@ public class ContentDownloadService extends IntentService {
             pagesOK = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode()});
             pagesKO = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode()});
             dlRate = (pagesOK + pagesKO) * 1.0 / images.size();
-            updateActivity(pagesOK, pagesKO, images.size());
+            notifyProgress(pagesOK, pagesKO, images.size());
 
             try {
                 Thread.sleep(1000);
@@ -164,7 +168,7 @@ public class ContentDownloadService extends IntentService {
             }
         } while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
 
-        if (!downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()) {
+        if (!downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()) { // Download properly completed
             // Save JSON file
             try {
                 JsonHelper.saveJson(content, dir);
@@ -183,7 +187,7 @@ public class ContentDownloadService extends IntentService {
             db.deleteQueueById(content.getId());
 
             // Signals current download as completed
-            completeActivity(pagesOK, pagesKO, images.size());
+            notifyComplete(pagesOK, pagesKO, images.size());
 
             // Increase downloads count
             contentQueueManager.downloadComplete();
@@ -205,7 +209,14 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    private static List<ImageFile> parseImageFiles(Content content) {
+    /**
+     * Query source to fetch all image file names and URLs of a given book
+     *
+     * @param content Book whose pages to retrieve
+     * @return List of pages with original URLs and file name
+     */
+    private static List<ImageFile> fetchImageFiles(Content content) {
+        // Use ContentParser to query the source
         ContentParser parser = ContentParserFactory.getInstance().getParser(content);
         List<String> aUrls = parser.parseImageList(content);
 
@@ -223,40 +234,52 @@ public class ContentDownloadService extends IntentService {
         return imageFileList;
     }
 
+    /**
+     * Create an image download request an its handler from a given image URL, file name and destination folder
+     * @param img Image to download
+     * @param dir Destination folder
+     * @return Volley request and its handler
+     */
     private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir) {
         return new InputStreamVolleyRequest(Request.Method.GET, img.getUrl(),
                 response -> {
                     try {
                         if (response != null) {
-                            saveImage(img, dir, response);
-                            finalizeImage(img, true);
+                            saveImage(img.getName(), dir, response.getValue().get("Content-Type"), response.getKey());
+                            updateImageStatus(img, true);
                         }
                     } catch (IOException e) {
                         Timber.d("I/O error - Image %s not saved", img.getUrl());
                         e.printStackTrace();
-                        finalizeImage(img, false);
+                        updateImageStatus(img, false);
                     }
                 }, error -> {
             Timber.d("Download error - Image %s not retrieved", img.getUrl());
             error.printStackTrace();
-            finalizeImage(img, false);
-        }, null);
+            updateImageStatus(img, false);
+        });
     }
 
-    private static void saveImage(ImageFile img, File dir, Map.Entry<byte[], Map<String, String>> response) throws IOException {
-        // Create a file on desired path and write stream data to it
-        String contentType = response.getValue().get("Content-Type");
-        File file = new File(dir, img.getName() + "." + MimeTypes.getExtensionFromMimeType(contentType));
-        Timber.d("Write image %s to %s", img.getUrl(), file.getPath());
+    /**
+     * Create the given file in the given destination folder, and write binary data to it
+     *
+     * @param fileName Name of the file to write
+     * @param dir Destination folder
+     * @param contentType Content type of the image
+     * @param binaryContent Binary content of the image
+     * @throws IOException IOException if image cannot be saved at given location
+     */
+    private static void saveImage(String fileName, File dir, String contentType, byte[] binaryContent) throws IOException {
+        File file = new File(dir, fileName + "." + MimeTypes.getExtensionFromMimeType(contentType));
 
-        byte data[] = new byte[1024];
+        byte buffer[] = new byte[1024];
         int count;
 
-        try (InputStream input = new ByteArrayInputStream(response.getKey())) {
-            try (BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file))) {
+        try (InputStream input = new ByteArrayInputStream(binaryContent)) {
+            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
 
-                while ((count = input.read(data)) != -1) {
-                    output.write(data, 0, count);
+                while ((count = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, count);
                 }
 
                 output.flush();
@@ -264,21 +287,46 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    private void finalizeImage(ImageFile img, boolean success) {
+    /**
+     * Update given image status in DB
+     *
+     * @param img Image to update
+     * @param success True if download is successful; false if download failed
+     */
+    private void updateImageStatus(ImageFile img, boolean success) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         db.updateImageFileStatus(img);
     }
 
-    private static void updateActivity(int pagesOK, int pagesKO, int totalPages) {
+    /**
+     * Notify a download progress event to the app using the event bus
+     *
+     * @param pagesOK Number of pages downloaded successfully on current book
+     * @param pagesKO Number of pages whose download failed on current book
+     * @param totalPages Total pages of current book
+     */
+    private static void notifyProgress(int pagesOK, int pagesKO, int totalPages) {
         Timber.d("UpdateActivity : OK : %s - KO : %s - Total : %s > %s pc.", pagesOK, pagesKO, totalPages, String.valueOf((pagesOK + pagesKO) * 100.0 / totalPages));
         EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
     }
 
-    private static void completeActivity(int pagesOK, int pagesKO, int pagesTotal) {
+    /**
+     * Notify a download completed event to the app using the event bus
+     *
+     * @param pagesOK Number of pages downloaded successfully on current book
+     * @param pagesKO Number of pages whose download failed on current book
+     * @param totalPages Total pages of current book
+     */
+    private static void notifyComplete(int pagesOK, int pagesKO, int totalPages) {
         Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
-        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, pagesTotal));
+        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, totalPages));
     }
 
+    /**
+     * Download event handler called by the event bus
+     *
+     * @param event Download event
+     */
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
         switch (event.eventType) {
