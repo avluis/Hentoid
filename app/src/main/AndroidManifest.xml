@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- TODO is this necessary? -->
     <!-- Get permission for reliable local dispatching on non-Google Play devices. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -247,42 +248,6 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!--<meta-data-->
-            <!--android:name="com.google.android.gms.version"-->
-            <!--android:value="@integer/google_play_services_version" />-->
-
-        <!--
-         Register AnalyticsReceiver and AnalyticsService to support background
-         dispatching on non-Google Play devices.
-        -->
-        <!--<receiver-->
-            <!--android:name="com.google.android.gms.analytics.AnalyticsReceiver"-->
-            <!--android:enabled="true"-->
-            <!--tools:ignore="ExportedReceiver">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="com.google.android.gms.analytics.ANALYTICS_DISPATCH" />-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
-
-        <!--<service-->
-            <!--android:name="com.google.android.gms.analytics.AnalyticsService"-->
-            <!--android:enabled="true"-->
-            <!--android:exported="false" />-->
-
-        <!--
-             Register CampaignTrackingReceiver and CampaignTrackingService to enable
-             installation campaign reporting
-        -->
-        <!--<receiver-->
-            <!--android:name="com.google.android.gms.analytics.CampaignTrackingReceiver"-->
-            <!--android:exported="true"-->
-            <!--tools:ignore="ExportedReceiver">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="com.android.vending.INSTALL_REFERRER" />-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
-
-        <!--<service android:name="com.google.android.gms.analytics.CampaignTrackingService" />-->
     </application>
 
 </manifest>

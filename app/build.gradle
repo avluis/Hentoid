@@ -65,8 +65,6 @@ dependencies {
     // Intro screens or slides: https://github.com/apl-devs/AppIntro
     //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
     implementation 'com.github.apl-devs:appintro:9d5d046037'
-    // Google Play Services Analytics: developers.google.com/android/guides/setup
-//    implementation 'com.google.android.gms:play-services-analytics:15.0.2'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     implementation 'com.google.code.gson:gson:2.8.2'
     // Timber (Extensible Logger): github.com/JakeWharton/timber
@@ -95,5 +93,3 @@ dependencies {
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
 }
-
-//apply plugin: 'com.google.gms.google-services'
