@@ -22,15 +22,25 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 /**
- * Created by Robb_w in 2018/04; heavily inspired by https://gist.github.com/alashow/c96c09320899e4caa06b
+ * Created by Robb_w in 2018/04; heavily inspired by
+ *      https://gist.github.com/LOG-TAG/3ad1c191b3ca7eab3ea6834386e30eb9
+ *     and
+ *      https://gist.github.com/JakeWharton/5616899
  *
  *  okhttp wrapper for Volley; allows the use of okhttp as low-level network operations handler by Volley
  *  The main reason being okhttp's ability to automatically follow 301 & 302's while default Volley handler cannot
  */
 public class VolleyOkHttp3Stack extends BaseHttpStack {
 
-    public VolleyOkHttp3Stack() {
+    private final OkHttpClient client;
 
+    public VolleyOkHttp3Stack(int timeoutMs) {
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
+        clientBuilder.connectTimeout(timeoutMs, TimeUnit.MILLISECONDS);
+        clientBuilder.readTimeout(timeoutMs, TimeUnit.MILLISECONDS);
+        clientBuilder.writeTimeout(timeoutMs, TimeUnit.MILLISECONDS);
+
+        client = clientBuilder.build();
     }
 
     private static void setConnectionParametersForRequest(okhttp3.Request.Builder builder, Request<?> request)
@@ -82,13 +92,6 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
 
     @Override
     public HttpResponse executeRequest(Request<?> request, Map<String, String> additionalHeaders) throws IOException, AuthFailureError {
-        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
-        int timeoutMs = request.getTimeoutMs();
-
-        clientBuilder.connectTimeout(timeoutMs, TimeUnit.MILLISECONDS);
-        clientBuilder.readTimeout(timeoutMs, TimeUnit.MILLISECONDS);
-        clientBuilder.writeTimeout(timeoutMs, TimeUnit.MILLISECONDS);
-
         okhttp3.Request.Builder okHttpRequestBuilder = new okhttp3.Request.Builder();
         okHttpRequestBuilder.url(request.getUrl());
 
@@ -102,7 +105,6 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
 
         setConnectionParametersForRequest(okHttpRequestBuilder, request);
 
-        OkHttpClient client = clientBuilder.build();
         okhttp3.Request okHttpRequest = okHttpRequestBuilder.build();
         Call okHttpCall = client.newCall(okHttpRequest);
         Response okHttpResponse = okHttpCall.execute();
