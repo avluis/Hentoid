@@ -129,7 +129,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Tracking Event (Download Added)
-        // TODO: 6/3/2018 ANALYTICS Log download added event
+        HentoidApp.trackDownloadEvent("Added");
 
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
@@ -193,7 +193,7 @@ public class ContentDownloadService extends IntentService {
             contentQueueManager.downloadComplete();
 
             // Tracking Event (Download Completed)
-            // TODO: 6/3/2018 ANALYTICS Log download completed event
+            HentoidApp.trackDownloadEvent("Completed");
         } else if (downloadCanceled) {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
         } else if (downloadSkipped) {

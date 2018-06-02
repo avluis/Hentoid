@@ -3,9 +3,11 @@ package me.devsaki.hentoid;
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.StrictMode;
 
 import com.facebook.stetho.Stetho;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
@@ -14,6 +16,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
@@ -62,6 +65,12 @@ public class HentoidApp extends Application {
         return app.refWatcher;
     }
 
+    public static void trackDownloadEvent(String tag) {
+        Bundle bundle = new Bundle();
+        bundle.putString("tag", tag);
+        FirebaseAnalytics.getInstance(instance).logEvent("Download", bundle);
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -78,14 +87,14 @@ public class HentoidApp extends Application {
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         } else {
-            // TODO: 6/3/2018 ANALYTICS have timber forward exceptions to Firebase
+            Timber.plant(new CrashlyticsTree());
         }
 
         instance = this;
         Preferences.init(this);
 
         boolean isAnalyticsDisabled = Preferences.isAnalyticsDisabled();
-        // TODO: 6/3/2018 ANALYTICS opt out of analytics based on boolean value
+        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!isAnalyticsDisabled);
 
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this);

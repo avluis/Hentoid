@@ -147,11 +147,11 @@ final class NotificationPresenter {
                     downloadCount).replace("%d", String.valueOf(downloadCount)));
 
             // Tracking Event (Download Success)
-            // TODO: 6/3/2018 ANALYTICS Log download success event
+            HentoidApp.trackDownloadEvent("Success");
         } else {
             builder.setContentTitle(instance.getString(R.string.download_error));
             // Tracking Event (Download Error)
-            // TODO: 6/3/2018 ANALYTICS Log download error event
+            HentoidApp.trackDownloadEvent("Error");
         }
     }
 
@@ -184,7 +184,7 @@ final class NotificationPresenter {
                 .setContentTitle(instance.getString(R.string.download_cancelled));
 
         // Tracking Event (Download Canceled)
-        // TODO: 6/3/2018 ANALYTICS Log download cancelled event
+        HentoidApp.trackDownloadEvent("Cancelled");
 
         manager.notify(NOTIFICATION_ID, builder.build());
     }
@@ -204,7 +204,7 @@ final class NotificationPresenter {
                 .setContentTitle(instance.getString(R.string.download_cancelled));
 
         // Tracking Event (Download Skipped)
-        // TODO: 6/3/2018 ANALYTICS Log download skipped event
+        HentoidApp.trackDownloadEvent("Skipped");
 
         manager.notify(NOTIFICATION_ID, builder.build());
     }
