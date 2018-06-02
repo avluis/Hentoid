@@ -84,11 +84,8 @@ public class HentoidApp extends Application {
         refWatcher = LeakCanary.install(this);
 
         // Timber
-        if (BuildConfig.DEBUG) {
-            Timber.plant(new Timber.DebugTree());
-        } else {
-            Timber.plant(new CrashlyticsTree());
-        }
+        if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());
+        Timber.plant(new CrashlyticsTree());
 
         instance = this;
         Preferences.init(this);
