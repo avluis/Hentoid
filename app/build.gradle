@@ -1,4 +1,5 @@
 apply plugin: 'com.android.application'
+apply plugin: 'io.fabric'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
@@ -27,7 +28,7 @@ android {
     buildTypes {
         debug {
             minifyEnabled false
-            applicationIdSuffix ".dev"
+            applicationIdSuffix ".debug"
             versionNameSuffix "-DEBUG"
 
             proguardFile 'proguard-rules-debug.pro'
@@ -50,6 +51,10 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+    // Firebase
+    implementation 'com.google.firebase:firebase-core:16.0.0'
+    // Crashlytics
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.3'
     // Stetho core
     implementation 'com.facebook.stetho:stetho:1.5.0'
     // Support libraries
@@ -65,8 +70,6 @@ dependencies {
     // Intro screens or slides: https://github.com/apl-devs/AppIntro
     //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
     implementation 'com.github.apl-devs:appintro:9d5d046037'
-    // Google Play Services Analytics: developers.google.com/android/guides/setup
-    implementation 'com.google.android.gms:play-services-analytics:15.0.2'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     implementation 'com.google.code.gson:gson:2.8.2'
     // Timber (Extensible Logger): github.com/JakeWharton/timber

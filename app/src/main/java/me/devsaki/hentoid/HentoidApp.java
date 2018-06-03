@@ -3,15 +3,11 @@ package me.devsaki.hentoid;
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.StrictMode;
-import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.facebook.stetho.Stetho;
-import com.google.android.gms.analytics.GoogleAnalytics;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.StandardExceptionParser;
-import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
@@ -20,6 +16,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
@@ -68,64 +65,10 @@ public class HentoidApp extends Application {
         return app.refWatcher;
     }
 
-    private synchronized Tracker getGoogleAnalyticsTracker() {
-        return GoogleAnalytics.getInstance(this).newTracker(R.xml.app_tracker);
-    }
-
-    /***
-     * Tracking screen view
-     *
-     * @param screenName screen name to be displayed on GA dashboard
-     */
-    public void trackScreenView(String screenName) {
-        Tracker tracker = getGoogleAnalyticsTracker();
-
-        // Set screen name.
-        tracker.setScreenName(screenName);
-
-        // Send a screen view.
-        tracker.send(new HitBuilders.ScreenViewBuilder().build());
-
-        GoogleAnalytics.getInstance(this).dispatchLocalHits();
-    }
-
-    /***
-     * Tracking exception
-     * Note: Timber will track exceptions as well,
-     * so no need to call if making use of Timber with a throwable.
-     *
-     * @param e exception to be tracked
-     */
-    public void trackException(Exception e) {
-        if (e != null) {
-            getGoogleAnalyticsTracker().send(
-                    new HitBuilders.ExceptionBuilder()
-                            .setDescription(
-                                    new StandardExceptionParser(this, null)
-                                            .getDescription(Thread.currentThread().getName(), e)
-                            )
-                            .setFatal(false)
-                            .build()
-            );
-        }
-    }
-
-    /***
-     * Tracking event
-     *
-     * @param clazz  event category based on class name
-     * @param action action of the event
-     * @param label  label
-     */
-    public void trackEvent(Class clazz, String action, String label) {
-        // Build and send an Event.
-        getGoogleAnalyticsTracker().send(
-                new HitBuilders.EventBuilder()
-                        .setCategory(clazz.getSimpleName())
-                        .setAction(action)
-                        .setLabel(label)
-                        .build()
-        );
+    public static void trackDownloadEvent(String tag) {
+        Bundle bundle = new Bundle();
+        bundle.putString("tag", tag);
+        FirebaseAnalytics.getInstance(instance).logEvent("Download", bundle);
     }
 
     @Override
@@ -141,32 +84,16 @@ public class HentoidApp extends Application {
         refWatcher = LeakCanary.install(this);
 
         // Timber
-        if (BuildConfig.DEBUG) {
-            Timber.plant(new Timber.DebugTree());
-        } else {
-            Timber.plant(new Timber.Tree() {
-                @Override
-                protected void log(int priority, String tag, @NonNull String message, Throwable t) {
-                    if (priority >= Log.INFO && t != null) {
-                        trackException((Exception) t);
-                    }
-                }
-            });
-        }
+        if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());
+        Timber.plant(new CrashlyticsTree());
 
         instance = this;
         Preferences.init(this);
 
-        // When dry run is set, hits will not be dispatched,
-        // but will still be logged as though they were dispatched.
-        GoogleAnalytics.getInstance(this).setDryRun(BuildConfig.DEBUG);
-
-        // Analytics Opt-Out
         boolean isAnalyticsDisabled = Preferences.isAnalyticsDisabled();
-        GoogleAnalytics.getInstance(this).setAppOptOut(isAnalyticsDisabled);
+        FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!isAnalyticsDisabled);
 
         if (BuildConfig.DEBUG) {
-            // Stetho init
             Stetho.initializeWithDefaults(this);
         }
 

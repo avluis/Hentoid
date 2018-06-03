@@ -146,12 +146,12 @@ final class NotificationPresenter {
             builder.setContentTitle(instance.getResources().getQuantityString(R.plurals.download_completed,
                     downloadCount).replace("%d", String.valueOf(downloadCount)));
 
-            // Tracking Event (Download Completed)
-            instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Success.");
+            // Tracking Event (Download Success)
+            HentoidApp.trackDownloadEvent("Success");
         } else {
             builder.setContentTitle(instance.getString(R.string.download_error));
             // Tracking Event (Download Error)
-            instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Error.");
+            HentoidApp.trackDownloadEvent("Error");
         }
     }
 
@@ -184,7 +184,7 @@ final class NotificationPresenter {
                 .setContentTitle(instance.getString(R.string.download_cancelled));
 
         // Tracking Event (Download Canceled)
-        instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Cancelled.");
+        HentoidApp.trackDownloadEvent("Cancelled");
 
         manager.notify(NOTIFICATION_ID, builder.build());
     }
@@ -204,7 +204,7 @@ final class NotificationPresenter {
                 .setContentTitle(instance.getString(R.string.download_cancelled));
 
         // Tracking Event (Download Skipped)
-        instance.trackEvent(NotificationPresenter.class, "Download", "Download Content: Skipped.");
+        HentoidApp.trackDownloadEvent("Skipped");
 
         manager.notify(NOTIFICATION_ID, builder.build());
     }
