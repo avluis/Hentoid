@@ -9,10 +9,6 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- TODO is this necessary? -->
-    <!-- Get permission for reliable local dispatching on non-Google Play devices. -->
-    <uses-permission android:name="android.permission.WAKE_LOCK" />
-
     <application
         android:name=".HentoidApp"
         android:allowBackup="false"
