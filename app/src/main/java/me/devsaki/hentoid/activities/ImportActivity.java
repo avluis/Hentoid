@@ -369,7 +369,7 @@ public class ImportActivity extends BaseActivity {
     private void resolveDirs(String[] externalDirs, List<File> writeableDirs) {
         if (writeableDirs.isEmpty()) {
             Timber.d("Received no write-able external directories.");
-            if (Helper.isAtLeastAPI(LOLLIPOP)) {
+            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
                 if (externalDirs.length > 0) {
                     Helper.toast("Attempting SAF");
                     requestWritePermission();
@@ -392,7 +392,7 @@ public class ImportActivity extends BaseActivity {
                     if (Build.VERSION.SDK_INT == KITKAT) {
                         Timber.d("Unable to write to SD Card.");
                         showKitkatRationale();
-                    } else if (Helper.isAtLeastAPI(LOLLIPOP)) {
+                    } else if (Build.VERSION.SDK_INT >= LOLLIPOP) {
                         PackageManager manager = this.getPackageManager();
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
@@ -470,7 +470,7 @@ public class ImportActivity extends BaseActivity {
     @RequiresApi(api = LOLLIPOP)
     private void newSAFIntent() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.M)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             intent.putExtra(DocumentsContract.EXTRA_PROMPT, "Allow Write Permission");
         }
         // http://stackoverflow.com/a/31334967/1615876
@@ -512,7 +512,7 @@ public class ImportActivity extends BaseActivity {
             if (FileHelper.getExtSdCardPaths().length > 0) {
                 String[] paths = FileHelper.getExtSdCardPaths();
                 String[] uriContents = treeUri.getPath().split(":");
-                String folderStr = paths[0] + "/" + ((uriContents.length > 1)?(uriContents[1]+"/"):"") +Consts.DEFAULT_LOCAL_DIRECTORY;
+                String folderStr = paths[0] + "/" + ((uriContents.length > 1) ? (uriContents[1] + "/") : "") + Consts.DEFAULT_LOCAL_DIRECTORY;
 
                 File folder = new File(folderStr);
                 Timber.d("Directory created successfully: %s", FileHelper.createDirectory(folder));
@@ -565,7 +565,7 @@ public class ImportActivity extends BaseActivity {
                                 if (currentRootDir != null) {
                                     FileHelper.validateFolder(currentRootDir.getAbsolutePath());
                                 }
-                                Timber.d("Restart needed: " + false);
+                                Timber.d("Restart needed: %s", false);
 
                                 result = ConstsImport.EXISTING_LIBRARY_FOUND;
                                 Intent returnIntent = new Intent();

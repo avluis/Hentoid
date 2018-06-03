@@ -66,8 +66,7 @@ public class DrawerMenuContents {
             clazz = activityClass[i];
             title = activityName[i].toUpperCase(Locale.US);
             // Hide panda if not explicitely enabled
-            if (title.equals("PANDA") && !Preferences.isUseSfw())
-            {
+            if (title.equals("PANDA") && !Preferences.isUseSfw()) {
                 continue;
             }
 

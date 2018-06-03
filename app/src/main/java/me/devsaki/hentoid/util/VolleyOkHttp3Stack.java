@@ -26,7 +26,7 @@ import okhttp3.ResponseBody;
  *      https://gist.github.com/LOG-TAG/3ad1c191b3ca7eab3ea6834386e30eb9
  *     and
  *      https://gist.github.com/JakeWharton/5616899
- *
+ *  <p>
  *  okhttp wrapper for Volley; allows the use of okhttp as low-level network operations handler by Volley
  *  The main reason being okhttp's ability to automatically follow 301 & 302's while default Volley handler cannot
  */

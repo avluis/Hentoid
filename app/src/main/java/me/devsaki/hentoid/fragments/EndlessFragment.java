@@ -31,8 +31,7 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
 
     @Override
     protected void checkResults() {
-        if (0 == mAdapter.getItemCount())
-        {
+        if (0 == mAdapter.getItemCount()) {
             if (!isLoaded) update();
             else checkContent(true);
         } else {
@@ -65,11 +64,9 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
     protected void displayResults(List<Content> results) {
         toggleUI(SHOW_DEFAULT);
 
-        if (isSearchReplaceResults)
-        {
+        if (isSearchReplaceResults) {
             mAdapter.replaceAll(results);
-        }
-        else {
+        } else {
             mAdapter.add(results);
         }
 

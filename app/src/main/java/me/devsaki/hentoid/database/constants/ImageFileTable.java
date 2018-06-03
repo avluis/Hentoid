@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.database.constants;
 
-import me.devsaki.hentoid.enums.StatusContent;
-
 /**
  * Created by DevSaki on 10/05/2015.
  * db Image File Table
@@ -40,5 +38,5 @@ public abstract class ImageFileTable {
             + ", " + NAME_COLUMN + " FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN
             + " = ? ORDER BY " + ORDER_COLUMN;
 
-    public static final String SELECT_PROCESSED_BY_CONTENT_ID = "SELECT COUNT(*) FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN + " = ? AND C."+STATUS_COLUMN + " IN (?,?)";
+    public static final String SELECT_PROCESSED_BY_CONTENT_ID = "SELECT COUNT(*) FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN + " = ? AND C." + STATUS_COLUMN + " IN (?,?)";
 }

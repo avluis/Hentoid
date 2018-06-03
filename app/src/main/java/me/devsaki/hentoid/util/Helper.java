@@ -7,11 +7,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -20,7 +16,6 @@ import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -28,10 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.Html;
 import android.text.Spanned;
-import android.view.View;
 import android.webkit.WebResourceResponse;
-import android.widget.AbsListView;
-import android.widget.EdgeEffect;
 import android.widget.Toast;
 
 import java.io.File;
@@ -41,6 +33,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Locale;
 
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AppLockActivity;
@@ -61,14 +54,6 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
  */
 public final class Helper {
     private static Toast toast;
-
-    /**
-     * @param apiLevel minimum API level version that has to support the device
-     * @return true when the caller API version is at least apiLevel
-     */
-    public static boolean isAtLeastAPI(int apiLevel) {
-        return Build.VERSION.SDK_INT >= apiLevel;
-    }
 
     public static void viewContent(final Context context, Content content) {
         Intent intent = new Intent(context, content.getWebActivityClass());
@@ -159,11 +144,6 @@ public final class Helper {
         task.execute(params);
     }
 
-    public static void ignoreSslErrors() {
-        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-        StrictMode.setThreadPolicy(policy);
-    }
-
     public static void launchMainActivity(Context context) {
         if (Preferences.getAppLockPin().isEmpty()) {
             Intent intent = new Intent(context, DownloadsActivity.class);
@@ -226,72 +206,6 @@ public final class Helper {
         }
     }
 
-    // Mainly for use with Android < 5.0 - sets OverScroll Glow and Edge Line
-    @SuppressLint("NewApi")
-    public static void changeEdgeEffect(Context context, View list, int glowColor, int lineColor) {
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
-            EdgeEffect edgeEffectTop = new EdgeEffect(context);
-            edgeEffectTop.setColor(glowColor);
-            EdgeEffect edgeEffectBottom = new EdgeEffect(context);
-            edgeEffectBottom.setColor(glowColor);
-
-            try {
-                Field f1 = AbsListView.class.getDeclaredField("mEdgeGlowTop");
-                f1.setAccessible(true);
-                f1.set(list, edgeEffectTop);
-
-                Field f2 = AbsListView.class.getDeclaredField("mEdgeGlowBottom");
-                f2.setAccessible(true);
-                f2.set(list, edgeEffectBottom);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        } else {
-            // Android < 5.0 - OverScroll Glow
-            int glowDrawableId = context.getResources().getIdentifier("overscroll_glow", "drawable",
-                    "android");
-            Drawable androidGlow = ContextCompat.getDrawable(context, glowDrawableId);
-            if (androidGlow != null) {
-                androidGlow.setColorFilter(ContextCompat.getColor(context, glowColor),
-                        PorterDuff.Mode.SRC_ATOP);
-            }
-            // Android < 5.0 - OverScroll Edge Line
-            final int edgeDrawableId = context.getResources().getIdentifier("overscroll_edge",
-                    "drawable", "android");
-            final Drawable overScrollEdge = ContextCompat.getDrawable(context, edgeDrawableId);
-            if (overScrollEdge != null) {
-                overScrollEdge.setColorFilter(ContextCompat.getColor(context, lineColor),
-                        PorterDuff.Mode.SRC_ATOP);
-            }
-        }
-    }
-
-    /**
-     * Get a color value from a theme attribute.
-     *
-     * @param context      used for getting the color.
-     * @param attribute    theme attribute.
-     * @param defaultColor default to use.
-     * @return color value
-     */
-    public static int getThemeColor(Context context, int attribute, int defaultColor) {
-        int themeColor = 0;
-        String packageName = context.getPackageName();
-        try {
-            Context packageContext = context.createPackageContext(packageName, 0);
-            ApplicationInfo applicationInfo =
-                    context.getPackageManager().getApplicationInfo(packageName, 0);
-            packageContext.setTheme(applicationInfo.theme);
-            Resources.Theme theme = packageContext.getTheme();
-            TypedArray ta = theme.obtainStyledAttributes(new int[]{attribute});
-            themeColor = ta.getColor(0, defaultColor);
-            ta.recycle();
-        } catch (NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return themeColor;
-    }
-
     public static String getActivityName(Context context, int attribute) {
         String activityName = context.getString(attribute);
         if (!activityName.isEmpty()) {
@@ -333,10 +247,11 @@ public final class Helper {
 
             return b;
         } else {
-            return Bitmap.createBitmap(0,0, Bitmap.Config.ARGB_8888);
+            return Bitmap.createBitmap(0, 0, Bitmap.Config.ARGB_8888);
         }
     }
 
+    // TODO: 6/3/2018 move this function to a more local scope
     public static Bitmap tintBitmap(Bitmap bitmap, int color) {
         Paint p = new Paint();
         p.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
@@ -347,17 +262,8 @@ public final class Helper {
         return b;
     }
 
-    public static int getAppVersionCode(@NonNull Context context) throws NameNotFoundException {
-        return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionCode;
-    }
-
-    public static String getAppVersionInfo(@NonNull Context context) throws NameNotFoundException {
-        return context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
-    }
-
-    public static String getAppUserAgent(@NonNull Context context) throws NameNotFoundException {
-        return Consts.USER_AGENT + " Hentoid/v" +
-                context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+    public static String getAppUserAgent() {
+        return String.format("%s Hentoid/v%s", Consts.USER_AGENT, BuildConfig.VERSION_NAME);
     }
 
     public static WebResourceResponse getWebResourceResponseFromAsset(Site site, String filename,
@@ -390,7 +296,7 @@ public final class Helper {
     }
 
     public static Spanned fromHtml(String source) {
-        if (isAtLeastAPI(Build.VERSION_CODES.N)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return Html.fromHtml(source, Html.FROM_HTML_MODE_LEGACY, null, null);
         } else {
             //noinspection deprecation
@@ -432,50 +338,9 @@ public final class Helper {
         }
     }
 
-    public static String capitalizeString(String s)
-    {
-        if (null == s || 0 == s.length()) return s;
-        else if (1 == s.length()) return s.toUpperCase();
-        else
-        {
-            return s.substring(0,1).toUpperCase() + s.substring(1);
-        }
-    }
-
-    private static String padRight(String s, int n, char paddingChar) {
-        return String.format("%1$-" + n + "s", s).replace(' ', paddingChar);
-    }
-
-    private static String padLeft(String s, int n, char paddingChar) {
-        return String.format("%1$" + n + "s", s).replace(' ', paddingChar);
-    }
-
-    /**
-     * Transforms the given string to format with a given length
-     *  - If the given length is shorter than the actual length of the string, it will be truncated
-     *  - If the given length is longer than the actual length of the string, it will be right/left-padded with a given character
-     * @param value String to transform
-     * @param length Target length of the final string
-     * @param paddingChar Character to use if padding is needed
-     * @param padRight True if the padding has to be done on the right-side of the target string; false if the padding has to be done on the left-side (optional; default value = true)
-     * @return Reprocessed string of given length, according to rules documented in the method description
-     */
-    public static String fixedLengthString(String value, int length, char paddingChar, boolean padRight)
-    {
-        String result = (null == value) ? "" : value;
-
-        if (result.length() > length) result = result.substring(0, length);
-        else if (result.length() < length)
-        {
-            if (padRight) result = padRight(result, length, paddingChar);
-            else result = padLeft(result, length, paddingChar);
-        }
-
-        return result;
-    }
-
-    public static String fixedLengthInt(int value, int length)
-    {
-        return fixedLengthString(String.valueOf(value), length, '0', false);
+    public static String capitalizeString(String s) {
+        if (s == null || s.length() == 0) return s;
+        else if (s.length() == 1) return s.toUpperCase();
+        else return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 }

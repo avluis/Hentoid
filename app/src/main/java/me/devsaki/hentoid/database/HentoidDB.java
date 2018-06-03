@@ -89,7 +89,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public long countContent() {
-        long count = 0;
+        long count;
 
         SQLiteDatabase db = null;
         try {
@@ -283,7 +283,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     @Nullable
     public Content selectContentById(int id) {
-        Content result = null; // Should stay that way unless all callers are updated
+        Content result;
         synchronized (locker) {
             Timber.d("selectContentById");
             SQLiteDatabase db = null;
@@ -353,8 +353,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 db = getReadableDatabase();
                 String sql = buildContentSearchQuery(title, author, tags, sites, filterFavourites);
 
-                switch(orderStyle)
-                {
+                switch (orderStyle) {
                     case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
                         sql += ContentTable.ORDER_BY_DATE + " DESC";
                         break;
@@ -368,13 +367,13 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeed.getInstance().getRandomNumber()) );
+                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeed.getInstance().getRandomNumber()));
                         break;
-                    default :
+                    default:
                         // Nothing
                 }
 
-                Timber.d("Query : %s; %s, %s",sql, start, booksPerPage);
+                Timber.d("Query : %s; %s, %s", sql, start, booksPerPage);
 
                 if (booksPerPage < 0) {
                     cursorContent = db.rawQuery(sql,
@@ -397,8 +396,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public int countContentByQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites)
-    {
+    public int countContentByQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites) {
         int count = 0;
         SQLiteDatabase db = null;
         Cursor cursorCount = null;
@@ -428,8 +426,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return count;
     }
 
-    private String buildContentSearchQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites)
-    {
+    private String buildContentSearchQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites) {
         boolean hasTitleFilter = (title != null && title.length() > 0);
         boolean hasAuthorFilter = (author != null && author.length() > 0);
         boolean hasTagFilter = (tags != null && tags.size() > 0);
@@ -447,7 +444,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         // Title filter -> continue querying Content table
         if (hasTitleFilter) {
             sql += ContentTable.SELECT_DOWNLOADS_TITLE;
-            title = '%'+title.replace("'","''")+'%';
+            title = '%' + title.replace("'", "''") + '%';
             sql = sql.replace("%2", title);
         }
 
@@ -556,10 +553,9 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             String status1 = "";
             String status2 = "";
-            if (status != null)
-            {
-                if (status.length > 0) status1 = status[0]+"";
-                if (status.length > 1) status2 = status[1]+"";
+            if (status != null) {
+                if (status.length > 0) status1 = status[0] + "";
+                if (status.length > 1) status2 = status[1] + "";
             }
 
             try {
@@ -610,8 +606,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Pair<String,Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites, boolean filterFavourites) {
-        ArrayList<Pair<String,Integer>> result = new ArrayList<>();
+    public List<Pair<String, Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites, boolean filterFavourites) {
+        ArrayList<Pair<String, Integer>> result = new ArrayList<>();
 
         synchronized (locker) {
             Timber.d("selectAllAttributesByUsage");
@@ -627,7 +623,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             if (tags != null && tags.size() > 0) {
                 sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
                 sql = sql.replace("%2", buildListQuery(tags));
-                sql = sql.replace("%3", tags.size()+"");
+                sql = sql.replace("%3", tags.size() + "");
             }
 
             sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
@@ -640,7 +636,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add( new Pair<>(cursorAttributes.getString(0),cursorAttributes.getInt(1)) );
+                        result.add(new Pair<>(cursorAttributes.getString(0), cursorAttributes.getInt(1)));
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
@@ -686,7 +682,10 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    private void deleteContent(SQLiteDatabase db, Content content) { deleteContent(db, content, true); }
+    private void deleteContent(SQLiteDatabase db, Content content) {
+        deleteContent(db, content, true);
+    }
+
     private void deleteContent(SQLiteDatabase db, Content content, boolean deletefromQueue) {
         SQLiteStatement statement = null;
         SQLiteStatement statementImages = null;
@@ -879,8 +878,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    private String buildListQuery(List<?> list)
-    {
+    private String buildListQuery(List<?> list) {
         StringBuilder str = new StringBuilder("");
         if (list != null) {
             boolean first = true;
@@ -894,8 +892,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         return str.toString();
     }
 
-    public List<Pair<Integer,Integer>> selectQueue() {
-        ArrayList<Pair<Integer,Integer>> result = new ArrayList<>();
+    public List<Pair<Integer, Integer>> selectQueue() {
+        ArrayList<Pair<Integer, Integer>> result = new ArrayList<>();
 
         synchronized (locker) {
             Timber.d("selectQueue");
@@ -909,7 +907,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 // looping through all rows and adding to list
                 if (cursorQueue.moveToFirst()) {
                     do {
-                        result.add(new Pair<>(cursorQueue.getInt(0), cursorQueue.getInt(1)) );
+                        result.add(new Pair<>(cursorQueue.getInt(0), cursorQueue.getInt(1)));
                     } while (cursorQueue.moveToNext());
                 }
             } finally {

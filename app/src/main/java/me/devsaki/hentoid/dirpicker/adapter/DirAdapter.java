@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.dirpicker.adapter;
 
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,15 +28,16 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.ViewHolder> {
         this.bus = bus;
     }
 
+    @NonNull
     @Override
-    public DirAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public DirAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View root = LayoutInflater.from(
                 parent.getContext()).inflate(R.layout.item_dir_picker, parent, false);
         return new ViewHolder(root);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         File file = dirList.get(position);
         holder.textView.setText(file.getName());
     }

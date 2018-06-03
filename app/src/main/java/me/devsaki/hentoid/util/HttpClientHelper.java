@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.content.pm.PackageManager;
 import android.webkit.CookieManager;
 
 import java.io.BufferedInputStream;
@@ -11,7 +10,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import me.devsaki.hentoid.HentoidApp;
 import timber.log.Timber;
 
 /**
@@ -28,12 +26,7 @@ public class HttpClientHelper {
         HttpURLConnection urlConnection = null;
         InputStream is = null;
 
-        String userAgent;
-        try {
-            userAgent = Helper.getAppUserAgent(HentoidApp.getAppContext());
-        } catch (PackageManager.NameNotFoundException e) {
-            userAgent = Consts.USER_AGENT;
-        }
+        String userAgent = Helper.getAppUserAgent();
 
         try {
             URL url = new URL(urlString);

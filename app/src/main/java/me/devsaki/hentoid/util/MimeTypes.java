@@ -143,12 +143,10 @@ public final class MimeTypes {
         return Pattern.matches(mime.replace("*", ".*"), input);
     }
 
-    public static String getExtensionFromMimeType(String mime)
-    {
+    public static String getExtensionFromMimeType(String mime) {
         Set<Map.Entry<String, String>> set = MIME_TYPES.entrySet();
 
-        for(Map.Entry<String, String> entry : set)
-        {
+        for (Map.Entry<String, String> entry : set) {
             if (entry.getValue().equals(mime)) return entry.getKey();
         }
 

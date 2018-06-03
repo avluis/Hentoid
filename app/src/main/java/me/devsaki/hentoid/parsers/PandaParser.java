@@ -14,7 +14,6 @@ import java.util.regex.Pattern;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.AttributeMap;
-import timber.log.Timber;
 
 public class PandaParser extends BaseParser {
 

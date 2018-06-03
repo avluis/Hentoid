@@ -133,7 +133,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Tracking Event (Download Added)
-        HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Start");
+        HentoidApp.trackDownloadEvent("Added");
 
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
@@ -229,7 +229,7 @@ public class ContentDownloadService extends IntentService {
             contentQueueManager.downloadComplete();
 
             // Tracking Event (Download Completed)
-            HentoidApp.getInstance().trackEvent(ContentDownloadService.class, "Download", "Download Content: Complete");
+            HentoidApp.trackDownloadEvent("Completed");
         } else if (downloadCanceled) {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
         } else {
@@ -268,6 +268,7 @@ public class ContentDownloadService extends IntentService {
 
     /**
      * Create an image download request an its handler from a given image URL, file name and destination folder
+     *
      * @param img Image to download
      * @param dir Destination folder
      * @return Volley request and its handler
@@ -295,9 +296,9 @@ public class ContentDownloadService extends IntentService {
     /**
      * Create the given file in the given destination folder, and write binary data to it
      *
-     * @param fileName Name of the file to write
-     * @param dir Destination folder
-     * @param contentType Content type of the image
+     * @param fileName      Name of the file to write
+     * @param dir           Destination folder
+     * @param contentType   Content type of the image
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
@@ -322,7 +323,7 @@ public class ContentDownloadService extends IntentService {
     /**
      * Update given image status in DB
      *
-     * @param img Image to update
+     * @param img     Image to update
      * @param success True if download is successful; false if download failed
      */
     private void updateImageStatus(ImageFile img, boolean success) {
@@ -333,8 +334,8 @@ public class ContentDownloadService extends IntentService {
     /**
      * Notify a download progress event to the app using the event bus
      *
-     * @param pagesOK Number of pages downloaded successfully on current book
-     * @param pagesKO Number of pages whose download failed on current book
+     * @param pagesOK    Number of pages downloaded successfully on current book
+     * @param pagesKO    Number of pages whose download failed on current book
      * @param totalPages Total pages of current book
      */
     private static void notifyProgress(int pagesOK, int pagesKO, int totalPages) {
@@ -345,8 +346,8 @@ public class ContentDownloadService extends IntentService {
     /**
      * Notify a download completed event to the app using the event bus
      *
-     * @param pagesOK Number of pages downloaded successfully on current book
-     * @param pagesKO Number of pages whose download failed on current book
+     * @param pagesOK    Number of pages downloaded successfully on current book
+     * @param pagesKO    Number of pages whose download failed on current book
      * @param totalPages Total pages of current book
      */
     private static void notifyComplete(int pagesOK, int pagesKO, int totalPages) {

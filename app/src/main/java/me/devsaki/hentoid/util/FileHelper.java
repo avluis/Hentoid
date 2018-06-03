@@ -145,16 +145,6 @@ public class FileHelper {
     }
 
     /**
-     * Checks if file could be read or created
-     *
-     * @param file - The file.
-     * @return true if file's is writable.
-     */
-    private static boolean isReadable(@NonNull final File file) {
-        return file.exists() && file.isFile() && file.canRead();
-    }
-
-    /**
      * Method ensures file creation from stream.
      *
      * @param stream - OutputStream
@@ -228,19 +218,14 @@ public class FileHelper {
         File nomedia = new File(folder, ".nomedia");
         boolean hasPermission;
         // Clean up (if any) nomedia file
-        try {
-            if (nomedia.exists()) {
-                boolean deleted = FileUtil.deleteFile(nomedia);
-                if (deleted) {
-                    Timber.d(".nomedia file deleted");
-                }
+        if (nomedia.exists()) {
+            boolean deleted = FileUtil.deleteFile(nomedia);
+            if (deleted) {
+                Timber.d(".nomedia file deleted");
             }
-            // Re-create nomedia file to confirm write permissions
-            hasPermission = FileUtil.makeFile(nomedia);
-        } catch (IOException e) {
-            hasPermission = false;
-            Timber.e(e, "We couldn't confirm write permissions to this location: ");
         }
+        // Re-create nomedia file to confirm write permissions
+        hasPermission = FileUtil.makeFile(nomedia);
 
         if (!hasPermission) {
             if (notify) {
@@ -264,21 +249,10 @@ public class FileHelper {
         String settingDir = Preferences.getRootFolderName();
         File noMedia = new File(settingDir, ".nomedia");
 
-        try {
-            if (FileUtil.makeFile(noMedia)) {
-                Helper.toast(R.string.nomedia_file_created);
-            } else {
-                Timber.d(".nomedia file already exists.");
-            }
-        } catch (IOException io) {
-            if (!isReadable(noMedia)) {
-                Timber.e(io, "Failed to create file.");
-                Helper.toast(R.string.error_creating_nomedia_file);
-
-                return false;
-            } else {
-                Helper.toast(R.string.nomedia_file_created);
-            }
+        if (FileUtil.makeFile(noMedia)) {
+            Helper.toast(R.string.nomedia_file_created);
+        } else {
+            Timber.d(".nomedia file already exists.");
         }
 
         return true;

@@ -9,7 +9,7 @@ public class ContentQueueManager {
 
     private boolean isQueuePaused;                  // True if queue paused; false if active
     private int downloadCount = 0;                  // Used to store the number of downloads completed during current session
-                                                    // in order to display notifications correctly ("download completed" vs. "N downloads completed")
+    // in order to display notifications correctly ("download completed" vs. "N downloads completed")
 
     private ContentQueueManager() {
         isQueuePaused = false;
