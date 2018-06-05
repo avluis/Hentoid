@@ -237,8 +237,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Download next content in a new Intent
-        Intent intentService = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-        startService(intentService);
+        ContentQueueManager.getInstance().resumeQueue(this);
     }
 
     /**
