@@ -484,11 +484,8 @@ public class FileHelper {
             }
 
             // Build destination file
-            File dest = new File(context.getExternalCacheDir() + "/shared/%s",
-                    content.getTitle()
-                            .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
-                            .replaceAll("\\s+", "_")  // white space as underscores
-                            + ".zip");
+            File dest = new File(context.getExternalCacheDir() + "/shared",
+                    content.getTitle().replaceAll(FORBIDDEN_CHARS, "_") + ".zip");
             Timber.d("Destination file: %s", dest);
 
             // Convert ArrayList to Array
