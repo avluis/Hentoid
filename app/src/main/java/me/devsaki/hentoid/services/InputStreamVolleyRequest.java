@@ -18,28 +18,31 @@ import java.util.Map;
  * to the download callback routine
  */
 class InputStreamVolleyRequest extends Request<byte[]> {
-    // Callback
-    private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mListener;
-    // Temporary storage for HTTP response headers
-    private Map<String, String> responseHeaders;
+    // Callback listeners
+    private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mParseListener;
 
-    InputStreamVolleyRequest(int method, String mUrl, Response.Listener<Map.Entry<byte[], Map<String, String>>> listener,
-                             Response.ErrorListener errorListener) {
+    InputStreamVolleyRequest(
+            int method,
+            String mUrl,
+            Response.Listener<Map.Entry<byte[], Map<String, String>>> parseListener,
+            Response.ErrorListener errorListener) {
         super(method, mUrl, errorListener);
         // this request would never use cache.
         setShouldCache(false);
-        mListener = listener;
+        mParseListener = parseListener;
     }
 
     @Override
     protected void deliverResponse(byte[] response) {
-        mListener.onResponse(new AbstractMap.SimpleEntry<>(response, responseHeaders));
+        // Nothing; all the work is done in Volley's worker thread, since it is time consuming (picture saving + DB operations)
     }
 
     @Override
     protected Response<byte[]> parseNetworkResponse(NetworkResponse response) {
         //Initialise local responseHeaders map with response headers received
-        responseHeaders = response.headers;
+        Map<String, String> responseHeaders = response.headers;
+
+        mParseListener.onResponse(new AbstractMap.SimpleEntry<>(response.data, responseHeaders));
 
         //Pass the response data here
         return Response.success(response.data, HttpHeaderParser.parseCacheHeaders(response));

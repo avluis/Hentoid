@@ -273,23 +273,24 @@ public class ContentDownloadService extends IntentService {
      * @return Volley request and its handler
      */
     private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir) {
-        return new InputStreamVolleyRequest(Request.Method.GET, img.getUrl(),
-                response -> {
+        return new InputStreamVolleyRequest(
+                Request.Method.GET,
+                img.getUrl(),
+                parse -> {
                     try {
-                        if (response != null) {
-                            saveImage(img.getName(), dir, response.getValue().get("Content-Type"), response.getKey());
-                            updateImageStatus(img, true);
-                        }
+                        updateImageStatus(img, (parse != null));
+                        if (parse != null) saveImage(img.getName(), dir, parse.getValue().get("Content-Type"), parse.getKey());
                     } catch (IOException e) {
-                        Timber.d("I/O error - Image %s not saved", img.getUrl());
+                        Timber.w("I/O error - Image %s not saved", img.getUrl());
                         e.printStackTrace();
                         updateImageStatus(img, false);
                     }
-                }, error -> {
-            Timber.d("Download error - Image %s not retrieved", img.getUrl());
-            error.printStackTrace();
-            updateImageStatus(img, false);
-        });
+                },
+                error -> {
+                    Timber.w("Download error - Image %s not retrieved", img.getUrl());
+                    error.printStackTrace();
+                    updateImageStatus(img, false);
+                });
     }
 
     /**
