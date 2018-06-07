@@ -1,12 +1,10 @@
 package me.devsaki.hentoid.fragments;
 
-import android.app.Activity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.NumberPicker;
 
-import java.net.Inet4Address;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
