@@ -1,8 +1,12 @@
 package me.devsaki.hentoid.fragments;
 
+import android.app.Activity;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.NumberPicker;
 
+import java.net.Inet4Address;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -22,6 +26,7 @@ public class PagerFragment extends DownloadsFragment {
         super.attachOnClickListeners(rootView);
         attachPrevious(rootView);
         attachNext(rootView);
+        attachPageSelector(rootView);
     }
 
     private void attachPrevious(View rootView) {
@@ -51,6 +56,30 @@ public class PagerFragment extends DownloadsFragment {
                     Helper.toast(mContext, R.string.not_next_page);
                 }
             }
+        });
+    }
+
+    private void attachPageSelector(View rootView) {
+        Button btnPageNumber = rootView.findViewById(R.id.btnPage);
+        Button btnOkPage = rootView.findViewById(R.id.btnOk);
+        NumberPicker numberPicker = rootView.findViewById(R.id.numberPicker);
+
+        btnPageNumber.setOnClickListener(v -> {
+            numberPicker.setMinValue(1);
+            numberPicker.setMaxValue((int)Math.ceil(mAdapter.getTotalCount()*1.0/booksPerPage));
+            numberPicker.setWrapSelectorWheel(true);
+            numberPicker.setValue(currentPage);
+            btnPageNumber.setVisibility(View.GONE);
+            btnOkPage.setVisibility(View.VISIBLE);
+            numberPicker.setVisibility(View.VISIBLE);
+        });
+
+        btnOkPage.setOnClickListener(v -> {
+            numberPicker.setVisibility(View.GONE);
+            btnOkPage.setVisibility(View.GONE);
+            btnPageNumber.setVisibility(View.VISIBLE);
+            currentPage = numberPicker.getValue();
+            update();
         });
     }
 
