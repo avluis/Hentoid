@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentActivity;
@@ -27,7 +26,6 @@ import me.devsaki.hentoid.adapters.QueueContentAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
-import me.devsaki.hentoid.services.ContentDownloadService;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import timber.log.Timber;
 
@@ -111,8 +109,7 @@ public class QueueFragment extends BaseFragment {
             case DownloadEvent.EV_UNPAUSE:
                 ContentQueueManager.getInstance().unpauseQueue();
                 getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
-                Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
-                context.startService(intent);
+                ContentQueueManager.getInstance().resumeQueue(context);
                 update(event.eventType);
                 break;
             case DownloadEvent.EV_SKIP:
@@ -196,7 +193,7 @@ public class QueueFragment extends BaseFragment {
         List<Content> contents = getDB().selectQueueContents();
 
         boolean isEmpty = (0 == contents.size());
-        boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused()));
+        boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, contents.size());

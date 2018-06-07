@@ -150,7 +150,7 @@ class FileUtil {
         try {
             return FileUtils.openOutputStream(target);
         } catch (IOException e) {
-            Timber.d(e, "Could not open file");
+            Timber.d(e, "Could not open file"); // TODO do something for not displaying that exception on logcat, since it is "expected"
         }
 
         try {

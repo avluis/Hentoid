@@ -103,7 +103,7 @@
     <string name="pin_ok">PIN OK!</string>
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
-    <string name="about2">In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
+    <string name="about2">In regards to Tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
     <string name="about_community" translatable="false"><u>Google+</u></string>
     <string name="about_community_url" translatable="false">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github" translatable="false"><u>GitHub</u></string>

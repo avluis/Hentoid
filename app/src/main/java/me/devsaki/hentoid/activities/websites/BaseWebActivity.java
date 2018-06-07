@@ -44,6 +44,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.services.ContentDownloadService;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -75,8 +76,8 @@ public abstract class BaseWebActivity extends BaseActivity {
     private boolean fabReadEnabled, fabDownloadEnabled;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
-    private static final List<String> universalBlockedContent = new ArrayList<>();    // Universal list (applied to all sites)
-    private List<String> localBlockedContent;                                   // Local list (applied to current site)
+    private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
+    private List<String> localBlockedContent;                                           // Local list (applied to current site)
 
     static {
         universalBlockedContent.add("exoclick.com");
@@ -312,7 +313,7 @@ public abstract class BaseWebActivity extends BaseActivity {
     }
 
     /**
-     * Adds current content (i.e. content of the currently viewed book) to the download queue
+     * Add current content (i.e. content of the currently viewed book) to the download queue
      */
     void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
@@ -335,8 +336,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
         db.insertQueue(currentContent.getId(), lastIndex);
 
-        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, ContentDownloadService.class);
-        startService(intent);
+        ContentQueueManager.getInstance().resumeQueue(this);
 
         hideFab(fabDownload);
     }

@@ -83,13 +83,6 @@ public abstract class ContentTable {
 
     public static final String SELECT_NULL_FOLDERS = "SELECT * FROM " + TABLE_NAME + " WHERE " + STORAGE_FOLDER_COLUMN + " is null";
 
-    public static final String SELECT_BY_STATUS = "SELECT * FROM " + TABLE_NAME + " C WHERE C."
-            + STATUS_COLUMN + " = ? ORDER BY C." + DOWNLOAD_DATE_COLUMN;
-
-    public static final String SELECT_IN_DOWNLOAD_MANAGER = "SELECT * FROM " + TABLE_NAME + " C WHERE C."
-            + STATUS_COLUMN + " in (?, ?) ORDER BY C." + STATUS_COLUMN + ", C."
-            + DOWNLOAD_DATE_COLUMN;
-
 
     // SEARCH QUERIES "TOOLBOX"
 

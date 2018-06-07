@@ -42,7 +42,8 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
      */
     private RequestQueue getRequestQueue(Context ctx) {
         if (mRequestQueue == null) {
-            mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext(), new VolleyOkHttp3Stack());
+            int TIMEOUT_MS = 15000;
+            mRequestQueue = Volley.newRequestQueue(ctx.getApplicationContext(), new VolleyOkHttp3Stack(TIMEOUT_MS));
             mRequestQueue.addRequestFinishedListener(this);
         }
         return mRequestQueue;

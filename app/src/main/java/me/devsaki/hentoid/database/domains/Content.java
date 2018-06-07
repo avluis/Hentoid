@@ -19,6 +19,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.FileHelper;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -108,7 +109,7 @@ public class Content implements Serializable {
             case HITOMI:
                 paths = url.split("/");
                 return paths[1].replace(".html", "") + "-" +
-                        title.replaceAll("[^a-zA-Z0-9.-]", "_");
+                        title.replaceAll(FileHelper.FORBIDDEN_CHARS, "_");
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
@@ -219,7 +220,7 @@ public class Content implements Serializable {
 
     public void populateAuthor() {
         String author = "";
-        if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
+        if (getAttributes().containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
             author = attributes.get(AttributeType.ARTIST).get(0).getName();
         if (author.equals("")) // Try and get Circle
         {

@@ -35,7 +35,7 @@ public class AboutActivity extends BaseActivity {
         bindTextViewLink(R.id.tv_reddit, R.string.about_reddit_url);
 
         TextView tvVersionName = findViewById(R.id.tv_version_name);
-        tvVersionName.setText("Hentoid ver: " + BuildConfig.VERSION_NAME);
+        tvVersionName.setText(String.format("Hentoid ver: %s", BuildConfig.VERSION_NAME));
 
         WebView webView = new WebView(this);
         webView.loadUrl("file:///android_asset/licenses.html");
