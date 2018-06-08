@@ -61,7 +61,7 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
     }
 
     @Override
-    protected void displayResults(List<Content> results) {
+    protected void displayResults(List<Content> results, int totalContent) {
         toggleUI(SHOW_DEFAULT);
 
         if (isSearchReplaceResults) {

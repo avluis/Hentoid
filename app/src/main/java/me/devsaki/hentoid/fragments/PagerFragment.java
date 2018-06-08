@@ -73,8 +73,6 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     private void attachPageSelector() {
-        pager.setPageCount((int)Math.ceil(mAdapter.getTotalCount()*1.0/booksPerPage));
-        pager.setCurrentPage(currentPage);
         pager.setOnPageChangeListener(this::onPageChange);
     }
 
@@ -113,7 +111,7 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     @Override
-    protected void displayResults(List<Content> results) {
+    protected void displayResults(List<Content> results, int totalContent) {
         if (0 == results.size()) {
             Timber.d("Result: Nothing to match.");
             displayNoResults();
@@ -124,6 +122,7 @@ public class PagerFragment extends DownloadsFragment {
 
             toggleUI(SHOW_RESULT);
         }
+        pager.setPageCount((int)Math.ceil(totalContent*1.0/booksPerPage));
     }
 
     /**

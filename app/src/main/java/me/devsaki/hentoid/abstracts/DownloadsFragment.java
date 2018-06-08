@@ -1394,7 +1394,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void showToolbar(boolean show, boolean override);
 
-    protected abstract void displayResults(List<Content> results);
+    protected abstract void displayResults(List<Content> results, int totalContent);
 
     protected abstract void checkResults();
 
@@ -1426,7 +1426,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             isLoaded = true;
 
             // Display new results
-            displayResults(results);
+            displayResults(results, totalContent);
 
             mAdapter.setTotalCount(totalContent);
         }
