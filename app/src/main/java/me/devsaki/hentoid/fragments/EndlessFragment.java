@@ -85,4 +85,9 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
             Timber.d("Endless Scrolling disabled.");
         }
     }
+
+    @Override
+    protected void setCurrentPage() {
+        // Nothing
+    }
 }

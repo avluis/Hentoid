@@ -137,8 +137,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private TextView emptyText;
     // Bottom toolbar with page numbers
     protected Toolbar pagerToolbar;
-    // Button containing the page number on Paged view
-    private Button btnPage;
 
     // == UTIL OBJECTS
     private ObjectAnimator animator;
@@ -502,7 +500,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         return rootView;
     }
 
-    private void initUI(View rootView) {
+    protected void initUI(View rootView) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
 
@@ -555,7 +553,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         });
 
-        btnPage = rootView.findViewById(R.id.btnPage);
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
@@ -1311,13 +1308,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         setCurrentPage();
     }
 
-    /**
-     * Updates the page number on the bottom toolbar
-     */
-    private void setCurrentPage() {
-        btnPage.setText(String.valueOf(currentPage));
-    }
-
     protected void toggleUI(int mode) {
         switch (mode) {
             case SHOW_LOADING:
@@ -1407,6 +1397,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected abstract void displayResults(List<Content> results);
 
     protected abstract void checkResults();
+
+    protected abstract void setCurrentPage();
 
     protected boolean isLastPage() {
         return (currentPage * booksPerPage >= mAdapter.getTotalCount());

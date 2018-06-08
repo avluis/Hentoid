@@ -1,15 +1,15 @@
 package me.devsaki.hentoid.fragments;
 
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.NumberPicker;
 
 import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.ui.CarouselDecorator;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
@@ -19,12 +19,27 @@ import timber.log.Timber;
  */
 public class PagerFragment extends DownloadsFragment {
 
+    // Button containing the page number on Paged view
+    private CarouselDecorator pager;
+
+
+    @Override
+    protected void initUI(View rootView) {
+        super.initUI(rootView);
+
+        RecyclerView pageCarousel = rootView.findViewById(R.id.pager);
+        pageCarousel.setHasFixedSize(true);
+
+        pager = new CarouselDecorator(mContext, R.layout.item_pagecarousel);
+        pager.decorate(pageCarousel);
+    }
+
     @Override
     protected void attachOnClickListeners(View rootView) {
         super.attachOnClickListeners(rootView);
         attachPrevious(rootView);
         attachNext(rootView);
-        attachPageSelector(rootView);
+        attachPageSelector();
     }
 
     private void attachPrevious(View rootView) {
@@ -57,28 +72,15 @@ public class PagerFragment extends DownloadsFragment {
         });
     }
 
-    private void attachPageSelector(View rootView) {
-        Button btnPageNumber = rootView.findViewById(R.id.btnPage);
-        Button btnOkPage = rootView.findViewById(R.id.btnOk);
-        NumberPicker numberPicker = rootView.findViewById(R.id.numberPicker);
+    private void attachPageSelector() {
+        pager.setPageCount((int)Math.ceil(mAdapter.getTotalCount()*1.0/booksPerPage));
+        pager.setCurrentPage(currentPage);
+        pager.setOnPageChangeListener(this::onPageChange);
+    }
 
-        btnPageNumber.setOnClickListener(v -> {
-            numberPicker.setMinValue(1);
-            numberPicker.setMaxValue((int)Math.ceil(mAdapter.getTotalCount()*1.0/booksPerPage));
-            numberPicker.setWrapSelectorWheel(true);
-            numberPicker.setValue(currentPage);
-            btnPageNumber.setVisibility(View.GONE);
-            btnOkPage.setVisibility(View.VISIBLE);
-            numberPicker.setVisibility(View.VISIBLE);
-        });
-
-        btnOkPage.setOnClickListener(v -> {
-            numberPicker.setVisibility(View.GONE);
-            btnOkPage.setVisibility(View.GONE);
-            btnPageNumber.setVisibility(View.VISIBLE);
-            currentPage = numberPicker.getValue();
-            update();
-        });
+    private void onPageChange(int page) {
+        currentPage = page;
+        update();
     }
 
     @Override
@@ -122,5 +124,13 @@ public class PagerFragment extends DownloadsFragment {
 
             toggleUI(SHOW_RESULT);
         }
+    }
+
+    /**
+     * Updates the page number on the bottom toolbar
+     */
+    @Override
+    protected void setCurrentPage() {
+        pager.setCurrentPage(currentPage);
     }
 }
