@@ -142,8 +142,16 @@
             android:orientation="horizontal">
 
             <ImageView
+                android:id="@+id/queueTopBtn"
+                android:layout_width="70dp"
+                android:layout_height="40dp"
+                android:scaleType="fitXY"
+                tools:ignore="ContentDescription"
+                tools:src="@drawable/ic_doublearrowup" />
+
+            <ImageView
                 android:id="@+id/queueUpBtn"
-                android:layout_width="100dp"
+                android:layout_width="70dp"
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
@@ -151,7 +159,7 @@
 
             <ImageView
                 android:id="@+id/queueDownBtn"
-                android:layout_width="100dp"
+                android:layout_width="70dp"
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
@@ -160,7 +168,7 @@
             <Button
                 android:id="@+id/btnCancel"
                 style="?android:attr/borderlessButtonStyle"
-                android:layout_width="100dp"
+                android:layout_width="80dp"
                 android:layout_height="40dp"
                 android:text="@string/cancel"
                 android:textColor="@android:color/black"
