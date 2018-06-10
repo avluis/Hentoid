@@ -86,7 +86,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // ======== CONSTANTS
 
-    protected static final int SHOW_DEFAULT = 0;
     protected static final int SHOW_LOADING = 1;
     protected static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
