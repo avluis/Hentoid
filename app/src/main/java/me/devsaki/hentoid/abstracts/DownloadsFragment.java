@@ -79,7 +79,6 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 /**
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
- * TODO: Dismiss 'new content' tooltip upon search
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
@@ -1420,6 +1419,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (success) {
             Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
             isLoaded = true;
+
+            if (isSearchReplaceResults && isNewContentAvailable)
+            {
+                newContentToolTip.setVisibility(View.GONE);
+                isNewContentAvailable = false;
+            }
 
             // Display new results
             displayResults(results, totalContent);
