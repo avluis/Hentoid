@@ -136,7 +136,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Pane saying "Why am I empty ?"
     private TextView emptyText;
     // Bottom toolbar with page numbers
-    protected Toolbar pagerToolbar;
+    protected LinearLayout pagerToolbar;
 
     // == UTIL OBJECTS
     private ObjectAnimator animator;
