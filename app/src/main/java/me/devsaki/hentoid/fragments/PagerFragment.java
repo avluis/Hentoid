@@ -77,37 +77,15 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     private void onPageChange(int page) {
-        currentPage = page;
-        update();
-    }
-
-    @Override
-    protected void checkResults() {
-        if (0 == mAdapter.getItemCount()) {
-            if (!isLoaded) update();
-            checkContent(true);
-        } else {
-            if (isLoaded) update();
-            checkContent(false);
-            mAdapter.setContentsWipedListener(this);
-        }
-
-        if (!query.isEmpty()) {
-            Timber.d("Saved Query: %s", query);
-            if (isLoaded) update();
+        if (page != currentPage) {
+            currentPage = page;
+            update();
         }
     }
 
-
     @Override
-    protected void showToolbar(boolean show, boolean override) {
-        this.override = override;
-
-        if (show) {
-            pagerToolbar.setVisibility(View.VISIBLE);
-        } else {
-            pagerToolbar.setVisibility(View.GONE);
-        }
+    protected void showToolbar(boolean show) {
+        pagerToolbar.setVisibility(show?View.VISIBLE:View.GONE);
     }
 
     @Override
@@ -116,20 +94,10 @@ public class PagerFragment extends DownloadsFragment {
             Timber.d("Result: Nothing to match.");
             displayNoResults();
         } else {
-            toggleUI(SHOW_DEFAULT);
-
             mAdapter.replaceAll(results);
-
             toggleUI(SHOW_RESULT);
         }
         pager.setPageCount((int)Math.ceil(totalContent*1.0/booksPerPage));
-    }
-
-    /**
-     * Updates the page number on the bottom toolbar
-     */
-    @Override
-    protected void setCurrentPage() {
         pager.setCurrentPage(currentPage);
     }
 }

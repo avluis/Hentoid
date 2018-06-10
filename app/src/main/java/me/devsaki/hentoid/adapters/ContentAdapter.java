@@ -57,7 +57,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
     // Total count of book in entire collection (Adapter is in charge of updating it)
-    private int mTotalCount;
+    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
         this.context = context;
@@ -201,7 +201,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         RequestOptions myOptions = new RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .fitCenter()
+                .centerInside()
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder);
 
