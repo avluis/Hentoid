@@ -82,22 +82,23 @@ final class NotificationPresenter {
     public void onDownloadEvent(DownloadEvent event) {
         switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
-                notifyProgress((event.pagesKO + event.pagesOK) * 100.0 / event.pagesTotal);
+                buildProgressNotification((event.pagesKO + event.pagesOK) * 100.0 / event.pagesTotal);
                 break;
             case DownloadEvent.EV_PAUSE:
-                notifyPause();
+                buildPauseNotification();
                 break;
             case DownloadEvent.EV_CANCEL:
-                notifyCancel(event.content);
+                buildCancelNotification(event.content);
                 break;
             case DownloadEvent.EV_SKIP:
-                notifySkip();
+                buildSkipNotification();
                 break;
             case DownloadEvent.EV_COMPLETE:
-                notifyComplete(0 == event.pagesKO);
+                buildCompleteNotification(0 == event.pagesKO);
                 break;
 //            case DownloadEvent.EV_UNPAUSE : <-- nothing; used to restart download queue activity that will produce a Progress event
         }
+        manager.notify(NOTIFICATION_ID, builder.build());
     }
 
     /**
@@ -105,7 +106,7 @@ final class NotificationPresenter {
      *
      * @param percent % of download complete
      */
-    private void notifyProgress(double percent) {
+    private void buildProgressNotification(double percent) {
         Timber.d("Event notified : progress / %s percent", String.valueOf(percent));
 
         builder.setContentIntent(getDefaultIntent());
@@ -122,8 +123,6 @@ final class NotificationPresenter {
                     .setContentInfo(String.format(Locale.US, " %.2f", percent) + "%")
                     .setContentTitle(instance.getString(R.string.downloading));
         }
-
-        manager.notify(NOTIFICATION_ID, builder.build());
     }
 
     /**
@@ -131,7 +130,7 @@ final class NotificationPresenter {
      *
      * @param isSuccess True if completed download is successful; false if there is at least 1 page whose download has failed
      */
-    private void notifyComplete(boolean isSuccess) {
+    private void buildCompleteNotification(boolean isSuccess) {
         Timber.d("Event notified : complete with status %s", isSuccess);
 
         builder.setContentIntent(getDefaultIntent());
@@ -158,13 +157,11 @@ final class NotificationPresenter {
     /**
      * Notify paused download
      */
-    private void notifyPause() {
+    private void buildPauseNotification() {
         Timber.d("Event notified : paused");
 
         builder.setContentIntent(getPausedIntent());
         builder.setContentTitle(instance.getString(R.string.download_paused));
-
-        manager.notify(NOTIFICATION_ID, builder.build());
     }
 
     /**
@@ -172,7 +169,7 @@ final class NotificationPresenter {
      *
      * @param content Canceled book
      */
-    private void notifyCancel(Content content) {
+    private void buildCancelNotification(Content content) {
         Timber.d("Event notified : cancelled");
 
         builder.setContentIntent(getCanceledIntent(content));
@@ -185,14 +182,12 @@ final class NotificationPresenter {
 
         // Tracking Event (Download Canceled)
         HentoidApp.trackDownloadEvent("Cancelled");
-
-        manager.notify(NOTIFICATION_ID, builder.build());
     }
 
     /**
      * Notify skipped download
      */
-    private void notifySkip() {
+    private void buildSkipNotification() {
         Timber.d("Event notified : skipped");
 
         builder.setContentIntent(getPausedIntent());
@@ -205,8 +200,6 @@ final class NotificationPresenter {
 
         // Tracking Event (Download Skipped)
         HentoidApp.trackDownloadEvent("Skipped");
-
-        manager.notify(NOTIFICATION_ID, builder.build());
     }
 
     /**
