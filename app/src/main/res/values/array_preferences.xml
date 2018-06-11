@@ -15,6 +15,22 @@
         <item>100</item>
     </string-array>
 
+    <string-array name="pref_worker_threads_quantity_entries">
+        <item>2</item>
+        <item>4</item>
+        <item>6</item>
+        <item>8</item>
+        <item>10</item>
+    </string-array>
+    <string-array name="pref_worker_threads_quantity_values">
+        <item>2</item>
+        <item>4</item>
+        <item>6</item>
+        <item>8</item>
+        <item>10</item>
+    </string-array>
+
+
     <string-array name="pref_read_content_entries">
         <item>Default image viewer</item>
         <item>Perfect Viewer</item>

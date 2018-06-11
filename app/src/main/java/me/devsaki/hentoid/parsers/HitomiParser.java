@@ -82,12 +82,11 @@ public class HitomiParser extends BaseParser {
         Timber.d("Parsing: %s", url);
         Document doc = Jsoup.parse(html);
         Elements imgElements = doc.select(".img-url");
-        // New Hitomi image URLs starting from mid-april 2018
-        //  If book ID is even or < 4, starts with 'aa'; else starts with 'ba'
+        // New Hitomi image URLs starting from june 2018
+        //  If book ID is even, starts with 'aa'; else starts with 'ba'
         int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
-        if (1 == referenceId || 3 == referenceId)
-            referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
-        String imageHostname = Character.toString((char) (HOSTNAME_PREFIX_BASE + referenceId % NUMBER_OF_FRONTENDS)) + HOSTNAME_SUFFIX;
+        if (1 == referenceId) referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
+        String imageHostname = Character.toString((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS) )) + HOSTNAME_SUFFIX;
 
         for (Element element : imgElements) {
             result.add("https:" + element.text().replace("//g.", "//" + imageHostname + "."));

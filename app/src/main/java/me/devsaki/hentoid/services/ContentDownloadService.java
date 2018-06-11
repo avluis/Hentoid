@@ -287,7 +287,7 @@ public class ContentDownloadService extends IntentService {
                     }
                 },
                 error -> {
-                    Timber.w("Download error - Image %s not retrieved", img.getUrl());
+                    Timber.w("Download error - Image %s not retrieved (HTTP status code %s)", img.getUrl(), error.networkResponse.statusCode);
                     error.printStackTrace();
                     updateImageStatus(img, false);
                 });

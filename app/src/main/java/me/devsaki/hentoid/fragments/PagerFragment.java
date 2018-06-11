@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments;
 
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
 
@@ -8,6 +9,7 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.ui.CarouselDecorator;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
@@ -17,11 +19,27 @@ import timber.log.Timber;
  */
 public class PagerFragment extends DownloadsFragment {
 
+    // Button containing the page number on Paged view
+    private CarouselDecorator pager;
+
+
+    @Override
+    protected void initUI(View rootView) {
+        super.initUI(rootView);
+
+        RecyclerView pageCarousel = rootView.findViewById(R.id.pager);
+        pageCarousel.setHasFixedSize(true);
+
+        pager = new CarouselDecorator(mContext, R.layout.item_pagecarousel);
+        pager.decorate(pageCarousel);
+    }
+
     @Override
     protected void attachOnClickListeners(View rootView) {
         super.attachOnClickListeners(rootView);
         attachPrevious(rootView);
         attachNext(rootView);
+        attachPageSelector();
     }
 
     private void attachPrevious(View rootView) {
@@ -54,6 +72,15 @@ public class PagerFragment extends DownloadsFragment {
         });
     }
 
+    private void attachPageSelector() {
+        pager.setOnPageChangeListener(this::onPageChange);
+    }
+
+    private void onPageChange(int page) {
+        currentPage = page;
+        update();
+    }
+
     @Override
     protected void checkResults() {
         if (0 == mAdapter.getItemCount()) {
@@ -84,7 +111,7 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     @Override
-    protected void displayResults(List<Content> results) {
+    protected void displayResults(List<Content> results, int totalContent) {
         if (0 == results.size()) {
             Timber.d("Result: Nothing to match.");
             displayNoResults();
@@ -95,5 +122,14 @@ public class PagerFragment extends DownloadsFragment {
 
             toggleUI(SHOW_RESULT);
         }
+        pager.setPageCount((int)Math.ceil(totalContent*1.0/booksPerPage));
+    }
+
+    /**
+     * Updates the page number on the bottom toolbar
+     */
+    @Override
+    protected void setCurrentPage() {
+        pager.setCurrentPage(currentPage);
     }
 }

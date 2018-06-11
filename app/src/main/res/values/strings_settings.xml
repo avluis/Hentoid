@@ -15,6 +15,9 @@
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
     <string name="pref_quantity_per_page_summary">Number of items per page in download list.\nCurrently: %s items.</string>
     <string name="pref_quantity_per_page_default" translatable="false">20</string>
+    <string name="pref_worker_threads_quantity_title">Number of download threads</string>
+    <string name="pref_worker_threads_quantity_summary">Number of threads used to download images simultaneously.\nCurrently: %s threads.</string>
+    <string name="pref_worker_threads_quantity_default" translatable="false">4</string>
     <!-- Library -->
     <string name="pref_library_category">Library</string>
     <string name="pref_read_content_title">Read Content Action</string>

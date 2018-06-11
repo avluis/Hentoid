@@ -442,8 +442,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         }
 
-        String message = context.getString(R.string.download_again_dialog_message).replace(
-                "@error", imgErrors + "").replace("@total", images + "");
+        String message = context.getString(R.string.download_again_dialog_message).replace("@clean", images-imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.download_again_dialog_title)
                 .setMessage(message)

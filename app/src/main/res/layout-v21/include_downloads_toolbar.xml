@@ -1,49 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     style="@style/Toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:elevation="@dimen/toolbar_layout_elevation"
-    android:minHeight="?attr/actionBarSize"
+    android:minHeight="?android:attr/actionBarSize"
     android:theme="@style/Base.Theme.AppCompat.CompactMenu"
+    android:gravity="center"
+    android:orientation="horizontal"
     app:contentInsetEnd="0dp"
     app:contentInsetStart="0dp">
 
-    <LinearLayout
-        android:id="@+id/downloads_nav"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="horizontal">
+    <ImageButton
+        android:id="@+id/btnPrevious"
+        android:layout_width="?android:attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="@drawable/btn_content_selector"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/ic_action_previous_item"
+        tools:ignore="ContentDescription" />
 
-        <ImageButton
-            android:id="@+id/btnPrevious"
-            android:layout_width="?android:attr/actionBarSize"
-            android:layout_height="?android:attr/actionBarSize"
-            android:background="@drawable/btn_content_selector"
-            android:scaleType="fitXY"
-            app:srcCompat="@drawable/ic_action_previous_item"
-            tools:ignore="ContentDescription" />
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/pager"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:textIsSelectable="false"
+        tools:listitem="@layout/item_pagecarousel"
+        />
 
-        <Button
-            android:id="@+id/btnPage"
-            android:layout_width="?android:attr/actionBarSize"
-            android:layout_height="?android:attr/actionBarSize"
-            android:clickable="false"
-            android:textIsSelectable="false"
-            tools:text="1" />
+    <ImageButton
+        android:id="@+id/btnNext"
+        android:layout_width="?android:attr/actionBarSize"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="@drawable/btn_content_selector"
+        android:scaleType="fitXY"
+        app:srcCompat="@drawable/ic_action_next_item"
+        tools:ignore="ContentDescription" />
 
-        <ImageButton
-            android:id="@+id/btnNext"
-            android:layout_width="?android:attr/actionBarSize"
-            android:layout_height="?android:attr/actionBarSize"
-            android:background="@drawable/btn_content_selector"
-            android:scaleType="fitXY"
-            app:srcCompat="@drawable/ic_action_next_item"
-            tools:ignore="ContentDescription" />
-
-    </LinearLayout>
-
-</android.support.v7.widget.Toolbar>
+</LinearLayout>
