@@ -152,8 +152,8 @@ public final class Preferences {
     }
 
     public static int getDownloadThreadsQuantity() {
-        return Integer.parseInt(sharedPreferences.getString(Key.PREF_WORKER_THREADS_QUANTITY_LISTS,
-                Default.PREF_WORKER_THREADS_QUANTITY_DEFAULT + ""));
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
+                Default.PREF_DL_THREADS_QUANTITY_DEFAULT + ""));
     }
 
     public static final class Key {
@@ -177,7 +177,7 @@ public final class Preferences {
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         public static final String PREF_USE_SFW = "pref_use_sfw";
-        static final String PREF_WORKER_THREADS_QUANTITY_LISTS = "pref_worker_threads_quantity_lists";
+        public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
     }
 
     public static final class Default {
@@ -193,7 +193,7 @@ public final class Preferences {
         static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         static final boolean PREF_USE_SFW_DEFAULT = false;
-        static final int PREF_WORKER_THREADS_QUANTITY_DEFAULT = 4;
+        static final int PREF_DL_THREADS_QUANTITY_DEFAULT = 4;
     }
 
     public static final class Constant {

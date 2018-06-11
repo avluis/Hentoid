@@ -27,8 +27,8 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
 
 
     private RequestQueueManager(Context context) {
-        int workerThreads = Preferences.getDownloadThreadsQuantity();
-        mRequestQueue = getRequestQueue(context, workerThreads);
+        int nbDlThreads = Preferences.getDownloadThreadsQuantity();
+        mRequestQueue = getRequestQueue(context, nbDlThreads);
     }
 
     public static synchronized RequestQueueManager getInstance() {
@@ -55,12 +55,12 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
         }
         return mRequestQueue;
     }
-    private RequestQueue getRequestQueue(Context ctx, int workerThreads) { // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
+    private RequestQueue getRequestQueue(Context ctx, int nbDlThreads) { // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
         if (mRequestQueue == null) {
             BasicNetwork network = new BasicNetwork(new VolleyOkHttp3Stack(TIMEOUT_MS));
 
             File cacheDir = new File(ctx.getCacheDir(), "volley"); // NB : this is dirty, as this value is supposed to be private in Volley.java
-            mRequestQueue = new RequestQueue(new DiskBasedCache(cacheDir), network, workerThreads);
+            mRequestQueue = new RequestQueue(new DiskBasedCache(cacheDir), network, nbDlThreads);
             mRequestQueue.addRequestFinishedListener(this);
             mRequestQueue.start();
         }
