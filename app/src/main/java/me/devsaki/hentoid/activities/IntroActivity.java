@@ -103,37 +103,43 @@ public class IntroActivity extends AppIntro2 {
         if (pager.getCurrentItem() == IMPORT_SLIDE) {
             setProgressButtonEnabled(false);
 
-            TextView defaultTv = findViewById(R.id.tv_library_default);
             TextView customTv = findViewById(R.id.tv_library_custom);
+            if (customTv != null)
+            {
+                customTv.setCompoundDrawablesWithIntrinsicBounds(
+                        R.drawable.ic_action_sd_storage, 0, 0, 0);
+                customTv.setCompoundDrawablePadding(10);
 
-            defaultTv.setCompoundDrawablesWithIntrinsicBounds(
-                    R.drawable.ic_action_sd_storage, 0, 0, 0);
-            defaultTv.setCompoundDrawablePadding(10);
-            customTv.setCompoundDrawablesWithIntrinsicBounds(
-                    R.drawable.ic_action_sd_storage, 0, 0, 0);
-            customTv.setCompoundDrawablePadding(10);
+                customTv.setOnClickListener(view -> {
+                    // TODO: Create activity listing possible storage locations
+                    if (HentoidApp.isImportComplete()) {
 
-            defaultTv.setOnClickListener(view -> {
-                if (HentoidApp.isImportComplete()) {
+                        Intent customDir = new Intent(
+                                getApplicationContext(), ImportActivity.class);
+                        startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
+                    }
+                    HentoidApp.setBeginImport(true);
+                });
+            }
 
-                    Intent defaultDir = new Intent(
-                            getApplicationContext(), ImportActivity.class);
-                    defaultDir.setAction(Intent.ACTION_GET_CONTENT);
-                    startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
-                }
-                HentoidApp.setBeginImport(true);
-            });
+            TextView defaultTv = findViewById(R.id.tv_library_default);
+            if (defaultTv != null) {
+                defaultTv.setCompoundDrawablesWithIntrinsicBounds(
+                        R.drawable.ic_action_sd_storage, 0, 0, 0);
+                defaultTv.setCompoundDrawablePadding(10);
 
-            customTv.setOnClickListener(view -> {
-                // TODO: Create activity listing possible storage locations
-                if (HentoidApp.isImportComplete()) {
 
-                    Intent customDir = new Intent(
-                            getApplicationContext(), ImportActivity.class);
-                    startActivityForResult(customDir, ConstsImport.RQST_IMPORT_RESULTS);
-                }
-                HentoidApp.setBeginImport(true);
-            });
+                defaultTv.setOnClickListener(view -> {
+                    if (HentoidApp.isImportComplete()) {
+
+                        Intent defaultDir = new Intent(
+                                getApplicationContext(), ImportActivity.class);
+                        defaultDir.setAction(Intent.ACTION_GET_CONTENT);
+                        startActivityForResult(defaultDir, ConstsImport.RQST_IMPORT_RESULTS);
+                    }
+                    HentoidApp.setBeginImport(true);
+                });
+            }
         }
     }
 

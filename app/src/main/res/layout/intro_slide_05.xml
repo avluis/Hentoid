@@ -44,20 +44,23 @@
             android:id="@+id/tv_library_default"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
+            android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
+            android:focusable="true"
             android:gravity="center_vertical"
             android:padding="20dp"
             android:text="@string/slide_05_library_default"
             android:textColor="@color/white"
-            tools:ignore="RtlSymmetry" />
+            tools:ignore="RtlSymmetry"
+            />
 
         <TextView
             android:id="@+id/tv_library_custom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/selectableItemBackground"
+            android:background="?android:attr/selectableItemBackground"
             android:clickable="true"
+            android:focusable="true"
             android:gravity="center_vertical"
             android:padding="20dp"
             android:text="@string/slide_05_library_custom"
