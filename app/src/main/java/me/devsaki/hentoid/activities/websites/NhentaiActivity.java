@@ -27,6 +27,8 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 /**
  * Created by Shiro on 1/20/2016.
  * Implements nhentai source
+ *
+ * NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
  */
 public class NhentaiActivity extends BaseWebActivity {
 
