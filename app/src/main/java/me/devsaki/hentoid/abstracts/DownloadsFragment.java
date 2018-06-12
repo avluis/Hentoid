@@ -720,12 +720,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 setSearchPaneVisibility(false);
-
+/* New behaviour
                 if (!("").equals(query)) {
                     query = "";
                     submitSearchQuery(query, 300);
                 }
-
+*/
                 return true;
             }
         });
@@ -1311,7 +1311,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.GONE);
                 loadingText.setVisibility(View.VISIBLE);
-                showToolbar(false);
+                //showToolbar(false);
                 startAnimation();
                 break;
             case SHOW_BLANK:

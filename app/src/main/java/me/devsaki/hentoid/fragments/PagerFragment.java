@@ -47,6 +47,7 @@ public class PagerFragment extends DownloadsFragment {
         btnPrevious.setOnClickListener(v -> {
             if (currentPage > 1 && isLoaded) {
                 currentPage--;
+                pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
                 update();
             } else if (booksPerPage > 0 && isLoaded) {
                 Helper.toast(mContext, R.string.not_previous_page);
@@ -64,6 +65,7 @@ public class PagerFragment extends DownloadsFragment {
             } else {
                 if (!isLastPage() && isLoaded) {
                     currentPage++;
+                    pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
                     update();
                 } else if (isLastPage()) {
                     Helper.toast(mContext, R.string.not_next_page);
