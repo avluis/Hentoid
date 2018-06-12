@@ -43,7 +43,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.services.ContentDownloadService;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -567,10 +566,10 @@ public abstract class BaseWebActivity extends BaseActivity {
                 ContentParser parser = ContentParserFactory.getInstance().getParser(activity.getStartSite());
                 activity.processContent(parser.parseContent(url));
             } catch (IOException e) { // Most I/O errors being timeouts...
-                Timber.e(e, "I/O Error while parsing content.");
+                Timber.e(e, "I/O Error while parsing content @ %s", url);
                 //activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             } catch (Exception e) {
-                Timber.e(e, "Error while parsing content.");
+                Timber.e(e, "Error while parsing content @ %s", url);
                 activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
