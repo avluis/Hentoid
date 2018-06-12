@@ -35,7 +35,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
-import me.devsaki.hentoid.services.ContentDownloadService;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
@@ -461,9 +461,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             }
                             db.insertQueue(item.getId(), lastIndex);
 
-
-                            Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
-                            context.startService(intent);
+                            ContentQueueManager.getInstance().resumeQueue(context);
 
                             Helper.toast(context, R.string.add_to_queue);
                             remove(item);
