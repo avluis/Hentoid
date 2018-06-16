@@ -27,6 +27,8 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 /**
  * Created by Shiro on 1/20/2016.
  * Implements nhentai source
+ *
+ * NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
  */
 public class NhentaiActivity extends BaseWebActivity {
 
@@ -43,6 +45,21 @@ public class NhentaiActivity extends BaseWebActivity {
         super.setWebView(webView);
     }
 
+    private static String getGalleryId(String url)
+    {
+        String[] parts = url.split("/");
+        boolean gFound = false;
+        for (String s : parts)
+        {
+            if (gFound)
+            {
+                return s;
+            }
+            if (s.equals("g")) gFound = true;
+        }
+        return "";
+    }
+
     private class NhentaiWebViewClient extends CustomWebViewClient {
         NhentaiWebViewClient(BaseWebActivity activity) {
             super(activity);
@@ -53,9 +70,7 @@ public class NhentaiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("nhentai.net/g/")) {
-                String newURL = url.replace("/g", "/api/gallery");
-                newURL = newURL.substring(0, newURL.length() - 1);
-                executeAsyncTask(new JsonLoader(), newURL);
+                executeAsyncTask(new JsonLoader(), "https://nhentai.net/api/gallery/"+getGalleryId(url));
             }
         }
 

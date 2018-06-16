@@ -53,6 +53,10 @@ public class PrefsActivity extends BaseActivity {
                     .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
             preferenceScreen
+                    .findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)
+                    .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+
+            preferenceScreen
                     .findPreference(Preferences.Key.PREF_ADD_NO_MEDIA_FILE)
                     .setOnPreferenceClickListener(preference -> FileHelper.createNoMedia());
 

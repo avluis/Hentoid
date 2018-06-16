@@ -350,34 +350,37 @@ public class FileHelper {
      * Method is used by onBindViewHolder(), speed is key
      */
     public static String getThumb(Content content) {
-        String settingDir = Preferences.getRootFolderName();
-        Timber.d("GetThumb %s --- %s", settingDir, content.getStorageFolder());
-        File dir = new File(settingDir, content.getStorageFolder());
-
-        String coverUrl = content.getCoverImageUrl();
-
         String rootFolderName = Preferences.getRootFolderName();
+        String coverUrl = content.getCoverImageUrl();
+        Timber.d("GetThumb %s --- %s", rootFolderName, content.getStorageFolder());
+
+        // If trying to access a non-downloaded book cover (e.g. viewing the download queue)
+        if (content.getStorageFolder().equals("")) return coverUrl;
+
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
-            Timber.d("File not found!! Returning online resource.");
+            Timber.d("Hentoid root folder not found in SD card!! Returning online resource.");
             return coverUrl;
         }
 
-        String thumbExt = coverUrl.substring(coverUrl.length() - 3);
+        File bookFolder = new File(rootFolderName, content.getStorageFolder());
+
+        String thumbExt = coverUrl.substring(coverUrl.length() - 3).toLowerCase();
         String thumb;
 
         switch (thumbExt) {
             case "jpg":
             case "png":
             case "gif":
-                thumb = new File(dir, "thumb" + "." + thumbExt).getAbsolutePath();
+                File f = new File(bookFolder, "thumb" + "." + thumbExt);
+                thumb = f.exists() ? f.getAbsolutePath() : coverUrl;
                 // Some thumbs from nhentai were saved as jpg instead of png
                 // Follow through to scan the directory instead
                 // TODO: Rename the file instead
                 if (!content.getSite().equals(Site.NHENTAI)) {
                     break;
                 }
-            default:
-                File[] fileList = dir.listFiles(
+            default: // Scan files; takes longer -> last option
+                File[] fileList = bookFolder.listFiles(
                         pathname -> pathname.getName().contains("thumb")
                 );
                 thumb = (fileList != null && fileList.length > 0) ? fileList[0].getAbsolutePath() : coverUrl;

@@ -40,7 +40,7 @@ public class HitomiActivity extends BaseWebActivity {
         if (bWebViewOverview) {
             webView.getSettings().setLoadWithOverviewMode(false);
             webView.setInitialScale(webViewInitialZoom);
-            Timber.d("WebView Initial Scale: %s%", webViewInitialZoom);
+            Timber.d("WebView Initial Scale: %s%%", webViewInitialZoom);
         } else {
             webView.setInitialScale(Preferences.Default.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);

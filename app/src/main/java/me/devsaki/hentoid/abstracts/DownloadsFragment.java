@@ -23,7 +23,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -80,14 +79,12 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 /**
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
- * TODO: Dismiss 'new content' tooltip upon search
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
 
     // ======== CONSTANTS
 
-    protected static final int SHOW_DEFAULT = 0;
     protected static final int SHOW_LOADING = 1;
     protected static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
@@ -138,12 +135,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Bottom toolbar with page numbers
     protected LinearLayout pagerToolbar;
 
-    // == UTIL OBJECTS
+    // ======== UTIL OBJECTS
     private ObjectAnimator animator;
     // Handler for text searches; needs to be there to be cancelable upon new key press
     private final Handler searchHandler = new Handler();
 
-    // == VARIABLES TAKEN FROM SETTINGS / PREFERENCES
+    // ======== VARIABLES TAKEN FROM SETTINGS / PREFERENCES
     // Books per page
     protected int booksPerPage;
     // Hentoid directory
@@ -152,31 +149,35 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int order;
 
 
-    // == VARIABLES
+    // ======== VARIABLES
 
+    // === MISC. USAGE
     protected Context mContext;
     // Current state of left drawer (see constants in DrawerLayout class)
     private int mDrawerState;
     // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
     protected int currentPage = 1;
-    // Async content search utility class; has to be instanciated class-wide because of asynchronous callbacks
-    private SearchContent search;
     // Adapter in charge of book list display
     protected ContentAdapter mAdapter;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
     protected boolean isNewContentAvailable;
-
     // True if book list has finished loading; used for synchronization between threads
     protected boolean isLoaded;
-    // True if search results need to replace displayed books (set before calling a search to be used during results display)
-    protected boolean isSearchReplaceResults;
     // Indicates whether or not one of the books has been selected
     private boolean isSelected;
     // True if sort order has been updated
     private boolean orderUpdated;
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
+    // True if bottom toolbar visibility is fixed and should not change regardless of scrolling; false if bottom toolbar visibility changes according to scrolling
+    protected boolean overrideBottomToolbarVisibility;
+    // True if storage permissions have been checked at least once
+    private boolean storagePermissionChecked = false;
 
+
+    // === SEARCH
+    // Async content search utility class; has to be instanciated class-wide because of asynchronous callbacks
+    private SearchContent search;
     // True if search mode is active
     private boolean isSearchMode = false;
     // Active tag filters
@@ -187,19 +188,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private boolean filterFavourites = false;
     // Expression typed in the search bar
     protected String query = "";
+    // True if search results need to replace displayed books (set before calling a search to be used during results display)
+    protected boolean isSearchReplaceResults;
 
     // States for search bar buttons
     private boolean filterByTitle = true;
     private boolean filterByArtist = true;
     private boolean filterByTag = false;
 
+
     // To be documented
     private ActionMode mActionMode;
     private boolean shouldHide;
     private Parcelable mListState;
     private boolean selectTrigger = false;
-    private boolean storagePermissionChecked;
-    protected boolean override;
 
 
     // == METHODS
@@ -269,22 +271,26 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onResume() {
         super.onResume();
 
-        checkPermissions();
+        loadLibrary();
 
         if (mListState != null) {
             llm.onRestoreInstanceState(mListState);
         }
     }
 
-    // Validate permissions
-    private void checkPermissions() {
+    /**
+     * Check write permissions on target storage and load library
+     */
+    private void loadLibrary() {
         if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
-            queryPrefs();
-            checkResults();
+            boolean shouldUpdate = queryPrefs();
+            if (shouldUpdate || -1 == mAdapter.getTotalCount()) update();
+            if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
+            showToolbar(true);
         } else {
             Timber.d("Storage permission denied!");
             if (storagePermissionChecked) {
-                reset();
+                resetApp();
             }
             storagePermissionChecked = true;
         }
@@ -293,7 +299,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     /**
      * Updates class variables with Hentoid user preferences
      */
-    protected void queryPrefs() {
+    protected boolean queryPrefs() {
         Timber.d("Querying Prefs.");
         boolean shouldUpdate = false;
 
@@ -303,7 +309,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             FragmentActivity activity = getActivity();
             if (null == activity) {
                 Timber.e("Activity unreachable !");
-                return;
+                return false;
             }
             Intent intent = new Intent(activity, ImportActivity.class);
             startActivity(intent);
@@ -340,9 +346,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.order = order;
         }
 
-        if (shouldUpdate) {
-            update();
-        }
+        return shouldUpdate;
     }
 
     private void checkStorage() {
@@ -405,7 +409,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private void reset() {
+    /**
+     * Reset the app (to get write permissions)
+     */
+    private void resetApp() {
         Helper.reset(HentoidApp.getAppContext(), getActivity());
     }
 
@@ -529,6 +536,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         mAdapter = new ContentAdapter(mContext, this, comparator);
+        mAdapter.setContentsWipedListener(this);
         mListView.setAdapter(mAdapter);
 
         if (mAdapter.getItemCount() == 0) {
@@ -571,12 +579,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 super.onScrolled(recyclerView, dx, dy);
 
                 // Show toolbar:
-                if (!override && mAdapter.getItemCount() > 0) {
+                if (!overrideBottomToolbarVisibility && mAdapter.getItemCount() > 0) {
                     // At top of list
                     int firstVisibleItemPos = llm.findFirstVisibleItemPosition();
                     View topView = llm.findViewByPosition(firstVisibleItemPos);
                     if (topView != null && topView.getTop() == 0 && firstVisibleItemPos == 0) {
-                        showToolbar(true, false);
+                        showToolbar(true);
                         if (isNewContentAvailable) {
                             newContentToolTip.setVisibility(View.VISIBLE);
                         }
@@ -584,20 +592,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                     // Last item in list
                     if (llm.findLastVisibleItemPosition() == mAdapter.getItemCount() - 1) {
-                        showToolbar(true, false);
+                        showToolbar(true);
                         if (isNewContentAvailable) {
                             newContentToolTip.setVisibility(View.VISIBLE);
                         }
                     } else {
                         // When scrolling up
                         if (dy < -10) {
-                            showToolbar(true, false);
+                            showToolbar(true);
                             if (isNewContentAvailable) {
                                 newContentToolTip.setVisibility(View.VISIBLE);
                             }
                             // When scrolling down
                         } else if (dy > 100) {
-                            showToolbar(false, false);
+                            showToolbar(false);
                             if (isNewContentAvailable) {
                                 newContentToolTip.setVisibility(View.GONE);
                             }
@@ -661,7 +669,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Called by pressing the "New Content" button that appear on new downloads
+     * Refresh the whole screen
+     *  - Called by pressing the "New Content" button that appear on new downloads
+     *  - Called by scrolling up when being on top of the list ("force reload" command)
      */
     protected void commitRefresh() {
         newContentToolTip.setVisibility(View.GONE);
@@ -710,12 +720,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 setSearchPaneVisibility(false);
-
+/* New behaviour
                 if (!("").equals(query)) {
                     query = "";
                     submitSearchQuery(query, 300);
                 }
-
+*/
                 return true;
             }
         });
@@ -1247,21 +1257,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    protected void checkContent(boolean clear) {
-        if (clear) {
-            resetCount();
-        } else {
-            if (ContentQueueManager.getInstance().getDownloadCount() > 0) {
-                if (isLoaded) {
-                    showReloadToolTip();
-                }
-            } else {
-                setCurrentPage();
-                showToolbar(true, false);
-            }
-        }
-    }
-
     private void showReloadToolTip() {
         if (newContentToolTip.getVisibility() == View.GONE) {
             newContentToolTip.setVisibility(View.VISIBLE);
@@ -1296,16 +1291,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (mListView.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
                 mAdapter.clearSelections();
                 selectTrigger = false;
-                showToolbar(true, false);
+                showToolbar(true);
             }
             isSelected = false;
         }
     }
 
+    /**
+     * Update screen with book of current page
+     */
     protected void update() {
         toggleUI(SHOW_LOADING);
         searchContent();
-        setCurrentPage();
     }
 
     protected void toggleUI(int mode) {
@@ -1314,20 +1311,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.GONE);
                 loadingText.setVisibility(View.VISIBLE);
-                showToolbar(false, false);
+                //showToolbar(false);
                 startAnimation();
                 break;
             case SHOW_BLANK:
                 mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.VISIBLE);
                 loadingText.setVisibility(View.GONE);
-                showToolbar(false, false);
+                showToolbar(false);
                 break;
             case SHOW_RESULT:
                 mListView.setVisibility(View.VISIBLE);
                 emptyText.setVisibility(View.GONE);
                 loadingText.setVisibility(View.GONE);
-                showToolbar(true, false);
+                showToolbar(true);
                 break;
             default:
                 stopAnimation();
@@ -1392,13 +1389,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         search.retrieveResults(filterByTitle ? query : "", filterByArtist ? query : "", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
     }
 
-    protected abstract void showToolbar(boolean show, boolean override);
+    protected abstract void showToolbar(boolean show);
 
     protected abstract void displayResults(List<Content> results, int totalContent);
 
-    protected abstract void checkResults();
-
-    protected abstract void setCurrentPage();
+//    protected abstract void setCurrentPage();
 
     protected boolean isLastPage() {
         return (currentPage * booksPerPage >= mAdapter.getTotalCount());
@@ -1425,6 +1420,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
             isLoaded = true;
 
+            if (isSearchReplaceResults && isNewContentAvailable)
+            {
+                newContentToolTip.setVisibility(View.GONE);
+                isNewContentAvailable = false;
+            }
+
             // Display new results
             displayResults(results, totalContent);
 
@@ -1446,7 +1447,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onItemSelected(int selectedCount) {
         isSelected = true;
-        showToolbar(false, true);
+        showToolbar(false);
+        overrideBottomToolbarVisibility = true;
 
         if (selectedCount == 1) {
             mAdapter.notifyDataSetChanged();
@@ -1490,7 +1492,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (itemCount < 1) {
             clearSelection();
-            showToolbar(true, false);
+            showToolbar(true);
+            overrideBottomToolbarVisibility = false;
 
             if (mActionMode != null) {
                 mActionMode.finish();

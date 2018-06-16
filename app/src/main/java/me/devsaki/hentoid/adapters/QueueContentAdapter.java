@@ -79,7 +79,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         final Content content = getItem(pos);
         if (content != null) {
             populateLayout(holder, content);
-            attachButtons(v, content, (0 == pos), (getCount() - 1 == pos));
+            attachButtons(v, content, (0 == pos), (getCount() - 1 == pos), getCount());
             updateProgress(v, content);
         }
         // Return the completed view to render on screen
@@ -238,11 +238,16 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param isFirstItem True if designated Content is the first item of the queue; false if not
      * @param isLastItem  True if designated Content is the last item of the queue; false if not
      */
-    private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem) {
+    private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem, int itemCount) {
         View btnUp = view.findViewById(R.id.queueUpBtn);
         ((ImageView) btnUp).setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
         btnUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
         btnUp.setOnClickListener(v -> moveUp(content));
+
+        View btnTop = view.findViewById(R.id.queueTopBtn);
+        ((ImageView) btnTop).setImageResource(R.drawable.ic_doublearrowup);
+        btnTop.setVisibility((isFirstItem || itemCount < 3) ? View.INVISIBLE : View.VISIBLE);
+        btnTop.setOnClickListener(v -> moveTop(content));
 
         View btnDown = view.findViewById(R.id.queueDownBtn);
         ((ImageView) btnDown).setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
@@ -301,6 +306,46 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 prevItemId = p.first;
                 prevItemQueuePosition = p.second;
                 prevItemPosition = loopPosition;
+            }
+            loopPosition++;
+        }
+
+        notifyDataSetChanged();
+    }
+
+    /**
+     * Move designated content on the top of the download queue (= raise its priority)
+     *
+     * @param content Content whose priority has to be raised to the top
+     */
+    private void moveTop(Content content) {
+        HentoidDB db = HentoidDB.getInstance(context);
+        List<Pair<Integer, Integer>> queue = db.selectQueue();
+
+        int topItemId = 0;
+        int topItemQueuePosition = -1;
+        int topItemPosition = -1;
+        int loopPosition = 0;
+
+        for (Pair<Integer, Integer> p : queue) {
+            if (0 == topItemId)
+            {
+                topItemId = p.first;
+                topItemQueuePosition = p.second;
+                topItemPosition = loopPosition;
+            }
+
+            if (p.first.equals(content.getId()) && topItemId != 0) {
+                db.udpateQueue(p.first, topItemQueuePosition);
+
+                contents.add(0, contents.get(loopPosition));
+                contents.remove(loopPosition + 1);
+
+                if (0 == topItemPosition)
+                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                break;
+            } else {
+                db.udpateQueue(p.first, p.second + 1); // Depriorize every item by 1
             }
             loopPosition++;
         }

@@ -114,6 +114,16 @@
             app:layout_constraintTop_toTopOf="@id/redditIcon" />
 
         <TextView
+            android:id="@+id/tv_version_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textSize="@dimen/about_textSize"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/redditIcon"
+            tools:text="Hentoid X.X.X" />
+
+        <TextView
             android:id="@+id/aboutText1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -122,7 +132,7 @@
             android:textSize="@dimen/about_textSize"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/redditIcon" />
+            app:layout_constraintTop_toBottomOf="@id/tv_version_name" />
 
         <TextView
             android:id="@+id/aboutText2"
@@ -136,14 +146,37 @@
             app:layout_constraintTop_toBottomOf="@id/aboutText1" />
 
         <TextView
-            android:id="@+id/tv_version_name"
-            android:layout_width="wrap_content"
+            android:id="@+id/personalDataStatement1"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
+            android:text="@string/personalDataStatement1"
             android:textSize="@dimen/about_textSize"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/aboutText2"
-            tools:text="Hentoid 1.2.4" />
+            app:layout_constraintTop_toBottomOf="@id/aboutText2" />
+
+        <TextView
+            android:id="@+id/personalDataStatement2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/personalDataStatement2"
+            android:textSize="@dimen/about_textSize"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/personalDataStatement1" />
+
+        <TextView
+            android:id="@+id/personalDataStatement3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/personalDataStatement3"
+            android:textSize="@dimen/about_textSize"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/personalDataStatement2" />
 
         <Button
             android:id="@+id/btn_about_licenses"
@@ -156,7 +189,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_version_name" />
+            app:layout_constraintTop_toBottomOf="@id/personalDataStatement3" />
 
     </android.support.constraint.ConstraintLayout>
 

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Pair;
+import android.util.SparseIntArray;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -542,8 +543,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public int countProcessedImagesById(int contentId, int[] status) {
-        int result = 0;
+    public SparseIntArray countProcessedImagesById(int contentId) {
+        SparseIntArray result = new SparseIntArray();
 
         synchronized (locker) {
             Timber.d("countProcessedImagesById");
@@ -551,20 +552,14 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteDatabase db = null;
             Cursor cursorContent = null;
 
-            String status1 = "";
-            String status2 = "";
-            if (status != null) {
-                if (status.length > 0) status1 = status[0] + "";
-                if (status.length > 1) status2 = status[1] + "";
-            }
-
             try {
                 db = getReadableDatabase();
-                cursorContent = db.rawQuery(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID,
-                        new String[]{contentId + "", status1, status2});
+                cursorContent = db.rawQuery(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID, new String[]{contentId + ""});
 
                 if (cursorContent.moveToFirst()) {
-                    result = cursorContent.getInt(0);
+                    do {
+                        result.append(cursorContent.getInt(0),cursorContent.getInt(1));
+                    } while (cursorContent.moveToNext());
                 }
             } finally {
                 if (cursorContent != null) {

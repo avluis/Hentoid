@@ -3,6 +3,7 @@ package me.devsaki.hentoid.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Pair;
+import android.util.SparseIntArray;
 
 import com.android.volley.Request;
 
@@ -19,6 +20,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -148,10 +150,10 @@ public class ContentDownloadService extends IntentService {
 
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
-        RequestQueueManager.getInstance(this).addToRequestQueue(buildStringRequest(cover, dir));
+        RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(cover, dir));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED) || img.getStatus().equals(StatusContent.ERROR))
-                RequestQueueManager.getInstance(this).addToRequestQueue(buildStringRequest(img, dir));
+                RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(img, dir));
         }
 
         return content;
@@ -171,8 +173,10 @@ public class ContentDownloadService extends IntentService {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
         do {
-            pagesOK = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.DOWNLOADED.getCode()});
-            pagesKO = db.countProcessedImagesById(content.getId(), new int[]{StatusContent.ERROR.getCode()});
+            SparseIntArray statuses = db.countProcessedImagesById(content.getId());
+            pagesOK = statuses.get(StatusContent.DOWNLOADED.getCode());
+            pagesKO = statuses.get(StatusContent.ERROR.getCode());
+
             dlRate = (pagesOK + pagesKO) * 1.0 / images.size();
             notifyProgress(pagesOK, pagesKO, images.size());
 
@@ -205,17 +209,17 @@ public class ContentDownloadService extends IntentService {
             File dir = FileHelper.getContentDownloadDir(this, content);
             List<ImageFile> images = content.getImageFiles();
 
+            // Mark content as downloaded
+            content.setDownloadDate(new Date().getTime());
+            content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+            db.updateContentStatus(content);
+
             // Save JSON file
             try {
                 JsonHelper.saveJson(content, dir);
             } catch (IOException e) {
                 Timber.e(e, "Error saving JSON: %s", content.getTitle());
             }
-
-            // Mark content as downloaded
-            content.setDownloadDate(new Date().getTime());
-            content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-            db.updateContentStatus(content);
 
             Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
 
@@ -272,7 +276,7 @@ public class ContentDownloadService extends IntentService {
      * @param dir Destination folder
      * @return Volley request and its handler
      */
-    private InputStreamVolleyRequest buildStringRequest(ImageFile img, File dir) {
+    private InputStreamVolleyRequest buildDownloadRequest(ImageFile img, File dir) {
         return new InputStreamVolleyRequest(
                 Request.Method.GET,
                 img.getUrl(),
@@ -281,13 +285,14 @@ public class ContentDownloadService extends IntentService {
                         updateImageStatus(img, (parse != null));
                         if (parse != null) saveImage(img.getName(), dir, parse.getValue().get("Content-Type"), parse.getKey());
                     } catch (IOException e) {
-                        Timber.w("I/O error - Image %s not saved", img.getUrl());
+                        Timber.w("I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
                         e.printStackTrace();
                         updateImageStatus(img, false);
                     }
                 },
                 error -> {
-                    Timber.w("Download error - Image %s not retrieved (HTTP status code %s)", img.getUrl(), error.networkResponse.statusCode);
+                    String statusCode =  (error.networkResponse != null)?error.networkResponse.statusCode+"" : "N/A";
+                    Timber.w("Download error - Image %s not retrieved (HTTP status code %s)", img.getUrl(), statusCode);
                     error.printStackTrace();
                     updateImageStatus(img, false);
                 });

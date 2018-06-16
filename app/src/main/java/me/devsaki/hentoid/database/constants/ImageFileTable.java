@@ -38,5 +38,6 @@ public abstract class ImageFileTable {
             + ", " + NAME_COLUMN + " FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN
             + " = ? ORDER BY " + ORDER_COLUMN;
 
-    public static final String SELECT_PROCESSED_BY_CONTENT_ID = "SELECT COUNT(*) FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN + " = ? AND C." + STATUS_COLUMN + " IN (?,?)";
+    //public static final String SELECT_PROCESSED_BY_CONTENT_ID = "SELECT COUNT(*) FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN + " = ? AND C." + STATUS_COLUMN + " IN (?,?)";
+    public static final String SELECT_PROCESSED_BY_CONTENT_ID = "SELECT " + STATUS_COLUMN + ", COUNT(*) FROM " + TABLE_NAME + " WHERE " + CONTENT_ID_COLUMN + " = ? GROUP BY 1";
 }

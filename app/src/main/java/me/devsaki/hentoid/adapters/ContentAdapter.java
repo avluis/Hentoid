@@ -35,7 +35,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
-import me.devsaki.hentoid.services.ContentDownloadService;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
@@ -57,7 +57,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
     // Total count of book in entire collection (Adapter is in charge of updating it)
-    private int mTotalCount;
+    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
         this.context = context;
@@ -201,7 +201,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         RequestOptions myOptions = new RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .fitCenter()
+                .centerInside()
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder);
 
@@ -293,6 +293,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     private void attachSite(ContentHolder holder, final Content content, int pos) {
+        // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             holder.ivSite.setImageResource(img);
@@ -307,6 +308,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
         }
 
+        // Set source color
         if (content.getStatus() != null) {
             StatusContent status = content.getStatus();
             int bg;
@@ -461,9 +463,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                             }
                             db.insertQueue(item.getId(), lastIndex);
 
-
-                            Intent intent = new Intent(Intent.ACTION_SYNC, null, context, ContentDownloadService.class);
-                            context.startService(intent);
+                            ContentQueueManager.getInstance().resumeQueue(context);
 
                             Helper.toast(context, R.string.add_to_queue);
                             remove(item);
