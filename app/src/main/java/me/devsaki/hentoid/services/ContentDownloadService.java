@@ -209,17 +209,17 @@ public class ContentDownloadService extends IntentService {
             File dir = FileHelper.getContentDownloadDir(this, content);
             List<ImageFile> images = content.getImageFiles();
 
+            // Mark content as downloaded
+            content.setDownloadDate(new Date().getTime());
+            content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+            db.updateContentStatus(content);
+
             // Save JSON file
             try {
                 JsonHelper.saveJson(content, dir);
             } catch (IOException e) {
                 Timber.e(e, "Error saving JSON: %s", content.getTitle());
             }
-
-            // Mark content as downloaded
-            content.setDownloadDate(new Date().getTime());
-            content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-            db.updateContentStatus(content);
 
             Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
 

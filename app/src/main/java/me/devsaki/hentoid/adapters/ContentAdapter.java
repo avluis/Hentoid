@@ -293,6 +293,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     private void attachSite(ContentHolder holder, final Content content, int pos) {
+        // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             holder.ivSite.setImageResource(img);
@@ -307,6 +308,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
         }
 
+        // Set source color
         if (content.getStatus() != null) {
             StatusContent status = content.getStatus();
             int bg;

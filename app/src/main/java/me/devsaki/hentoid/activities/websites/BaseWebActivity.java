@@ -402,16 +402,23 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         addContentToDB(content);
 
+        // Set Download action button visibility
         StatusContent contentStatus = content.getStatus();
-        if (contentStatus != StatusContent.DOWNLOADED
-                && contentStatus != StatusContent.DOWNLOADING) {
+        if (    contentStatus != StatusContent.DOWNLOADED
+                && contentStatus != StatusContent.DOWNLOADING
+                && contentStatus != StatusContent.MIGRATED)
+        {
             currentContent = content;
             runOnUiThread(() -> showFab(fabDownload));
         } else {
             runOnUiThread(() -> hideFab(fabDownload));
         }
-        if (contentStatus == StatusContent.DOWNLOADED
-                || contentStatus == StatusContent.ERROR) {
+
+        // Set Read action button visibility
+        if (    contentStatus == StatusContent.DOWNLOADED
+                || contentStatus == StatusContent.MIGRATED
+                || contentStatus == StatusContent.ERROR)
+        {
             currentContent = content;
             runOnUiThread(() -> showFab(fabRead));
         } else {
