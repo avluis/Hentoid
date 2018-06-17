@@ -42,10 +42,13 @@ public class TsuminoParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-        Content result = new Content();
+        Content result = null;
 
         Elements content = doc.select("div.book-line");
+
         if (content.size() > 0) {
+            result = new Content();
+
             String url = doc
                     .select("div.book-page-cover a")
                     .attr("href")

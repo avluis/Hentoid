@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -22,27 +24,30 @@ public abstract class BaseParser implements ContentParser {
 
     static final int TIMEOUT = 30000; // 30 seconds
 
+    @Nullable
     protected abstract Content parseContent(Document doc);
 
     protected abstract List<String> parseImages(Content content) throws Exception;
 
+    @Nullable
     public Content parseContent(String urlString) throws IOException {
         Document doc = Jsoup.connect(urlString).timeout(TIMEOUT).get();
 
         Content content = parseContent(doc);
 
-        AttributeMap attributes = content.getAttributes();
-        String author = "";
-        if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
-            author = attributes.get(AttributeType.ARTIST).get(0).getName();
-        if (author.equals("")) // Try and get Circle
-        {
-            if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
-                author = attributes.get(AttributeType.CIRCLE).get(0).getName();
-        }
+        if (content != null) {
+            AttributeMap attributes = content.getAttributes();
+            String author = "";
+            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
+                author = attributes.get(AttributeType.ARTIST).get(0).getName();
+            if (author.equals("")) // Try and get Circle
+            {
+                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
+                    author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+            }
 
-        content.setAuthor(author)
-                .setStatus(StatusContent.SAVED);
+            content.setAuthor(author).setStatus(StatusContent.SAVED);
+        }
 
         return content;
     }
