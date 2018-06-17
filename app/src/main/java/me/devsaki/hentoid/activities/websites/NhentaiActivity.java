@@ -9,6 +9,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import java.lang.ref.WeakReference;
+
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
@@ -70,7 +72,7 @@ public class NhentaiActivity extends BaseWebActivity {
             super.onPageStarted(view, url, favicon);
 
             if (url.contains("nhentai.net/g/")) {
-                executeAsyncTask(new JsonLoader(), "https://nhentai.net/api/gallery/"+getGalleryId(url));
+                executeAsyncTask(new JsonLoader(activity), "https://nhentai.net/api/gallery/"+getGalleryId(url));
             }
         }
 
@@ -105,16 +107,25 @@ public class NhentaiActivity extends BaseWebActivity {
         }
     }
 
-    private class JsonLoader extends AsyncTask<String, Integer, Content> {
+    private static class JsonLoader extends AsyncTask<String, Integer, Content> {
+
+        private final WeakReference<BaseWebActivity> activityReference;
+
+        // only retain a weak reference to the activity
+        JsonLoader(BaseWebActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
         @Override
         protected Content doInBackground(String... params) {
             String url = params[0];
+            BaseWebActivity activity = activityReference.get();
             try {
                 ContentParser parser = ContentParserFactory.getInstance().getParser(Site.NHENTAI);
-                processContent(parser.parseContent(HttpClientHelper.call(url)));
+                activity.processContent(parser.parseContent(HttpClientHelper.call(url)));
             } catch (Exception e) {
                 Timber.e(e, "Error parsing content.");
-                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+                activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
             }
 
             return null;
