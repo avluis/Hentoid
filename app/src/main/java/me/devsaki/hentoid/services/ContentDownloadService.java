@@ -148,12 +148,14 @@ public class ContentDownloadService extends IntentService {
         content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
         db.updateContentStorageFolder(content);
 
+        // Reset ERROR status of images to  count them as "to be downloaded"
+        db.updateImageFileStatus(content, StatusContent.ERROR, StatusContent.SAVED);
+
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
         RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(cover, dir));
         for (ImageFile img : images) {
-            if (img.getStatus().equals(StatusContent.SAVED) || img.getStatus().equals(StatusContent.ERROR))
-                RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(img, dir));
+            if (img.getStatus().equals(StatusContent.SAVED)) RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(img, dir));
         }
 
         return content;

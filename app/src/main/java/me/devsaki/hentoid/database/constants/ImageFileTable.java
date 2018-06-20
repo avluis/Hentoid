@@ -29,8 +29,8 @@ public abstract class ImageFileTable {
             + CONTENT_ID_COLUMN + " = ?";
 
     // UDPATE
-    public static final String UPDATE_IMAGE_FILE_STATUS_STATEMENT = "UPDATE " + TABLE_NAME + " SET "
-            + STATUS_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
+    public static final String UPDATE_IMAGE_FILE_STATUS_FROM_ID = "UPDATE " + TABLE_NAME + " SET " + STATUS_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
+    public static final String UPDATE_IMAGE_FILE_STATUS_FROM_ID_AND_STATUS = "UPDATE " + TABLE_NAME + " SET " + STATUS_COLUMN + " = ? WHERE " + ID_COLUMN + " = ? AND "+STATUS_COLUMN +" = ?";
 
     // SELECT
     public static final String SELECT_BY_CONTENT_ID = "SELECT " + ID_COLUMN + ", "
