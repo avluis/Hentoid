@@ -138,6 +138,7 @@ final class NotificationPresenter {
         builder.setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.accent))
                 .setContentText("")
+                .setOngoing(false)
                 .setDeleteIntent(getDeleteIntent());
 
         if (isSuccess) {
