@@ -228,11 +228,11 @@ public class ContentDownloadService extends IntentService {
             // Delete book from queue
             db.deleteQueueById(content.getId());
 
-            // Signals current download as completed
-            notifyComplete(pagesOK, pagesKO, images.size());
-
             // Increase downloads count
             contentQueueManager.downloadComplete();
+
+            // Signals current download as completed
+            notifyComplete(pagesOK, pagesKO, images.size());
 
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");
