@@ -31,7 +31,8 @@ public class PururinParser extends BaseParser {
             String url = doc.select("div.cover")
                     .select("a")
                     .attr("href")
-                    .replace("http://pururin.io/read", "");
+                    .replace("http://pururin.io/read", "")
+                    .replace("/01","");
             result.setUrl(url);
 
             String coverUrl = doc.select("div.cover")
