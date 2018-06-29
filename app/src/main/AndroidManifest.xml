@@ -69,6 +69,13 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity
+            android:name=".activities.MikanSearchActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_mikan"
+            android:theme="@style/AppTheme.DarkBackground"
+            tools:ignore="UnusedAttribute">
+        </activity>
+        <activity
             android:name=".activities.QueueActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_queue"

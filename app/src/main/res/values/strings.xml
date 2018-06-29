@@ -5,6 +5,7 @@
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
+    <string name="title_activity_mikan">Mikan Search</string>
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>

@@ -17,6 +17,7 @@
         <item>tsumino</item>
         <item>Pururin</item>
         <item>Panda</item>
+        <item>Mikan</item>
         <item>Home</item>
         <item>Queue</item>
         <item>Prefs</item>
@@ -30,6 +31,7 @@
         <item>Tsumino</item>
         <item>Pururin</item>
         <item>Panda</item>
+        <item>Mikan Search</item>
         <item>Downloads</item>
         <item>Queue</item>
         <item>Prefs</item>
@@ -43,6 +45,7 @@
         <item>me.devsaki.hentoid.activities.websites.TsuminoActivity</item>
         <item>me.devsaki.hentoid.activities.websites.PururinActivity</item>
         <item>me.devsaki.hentoid.activities.websites.PandaActivity</item>
+        <item>me.devsaki.hentoid.activities.MikanSearchActivity</item>
         <item>me.devsaki.hentoid.activities.DownloadsActivity</item>
         <item>me.devsaki.hentoid.activities.QueueActivity</item>
         <item>me.devsaki.hentoid.activities.PrefsActivity</item>
