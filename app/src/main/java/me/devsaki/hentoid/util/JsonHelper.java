@@ -56,12 +56,12 @@ public class JsonHelper {
 
     public static <T> T jsonToObject(File f, Class<T> type) throws IOException {
         BufferedReader br = null;
-        String json = "";
+        StringBuilder json = new StringBuilder();
         try {
             String sCurrentLine;
             br = new BufferedReader(new FileReader(f));
             while ((sCurrentLine = br.readLine()) != null) {
-                json += sCurrentLine;
+                json.append(sCurrentLine);
             }
         } finally {
             if (br != null) {
@@ -73,10 +73,10 @@ public class JsonHelper {
             }
         }
 
-        return new Gson().fromJson(json, type);
+        return new Gson().fromJson(json.toString(), type);
     }
 
-    public JSONObject jsonReader(String jsonURL) throws IOException {
+    public static JSONObject jsonReader(String jsonURL) throws IOException {
         HttpsURLConnection https = null;
         InputStream stream = null;
         try {
@@ -117,7 +117,7 @@ public class JsonHelper {
         return null;
     }
 
-    private String readInputStream(InputStream stream) throws IOException {
+    private static String readInputStream(InputStream stream) throws IOException {
         StringBuilder builder = new StringBuilder(stream.available());
         BufferedReader reader = new BufferedReader(new InputStreamReader(stream,
                 Charset.forName("UTF-8")));
