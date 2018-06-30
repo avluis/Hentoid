@@ -72,8 +72,11 @@
             android:name=".activities.MikanSearchActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_mikan"
-            android:theme="@style/AppTheme.DarkBackground"
-            tools:ignore="UnusedAttribute">
+            android:launchMode="singleTop"
+            android:theme="@style/AppTheme.DarkBackgroundNoActionBar">
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
         </activity>
         <activity
             android:name=".activities.QueueActivity"
