@@ -16,8 +16,13 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.nio.charset.Charset;
 
+import javax.annotation.Nullable;
 import javax.net.ssl.HttpsURLConnection;
 
+import okhttp3.Call;
+import okhttp3.Request;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 /**
@@ -25,6 +30,8 @@ import timber.log.Timber;
  * JSON related utility class
  */
 public class JsonHelper {
+
+    private static final int TIMEOUT_MS = 15000;
 
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
@@ -76,14 +83,15 @@ public class JsonHelper {
         return new Gson().fromJson(json.toString(), type);
     }
 
-    public static JSONObject jsonReader(String jsonURL) throws IOException {
+    @Deprecated
+    public static JSONObject jsonReaderOld(String jsonURL) throws IOException {
         HttpsURLConnection https = null;
         InputStream stream = null;
         try {
             URL url = new URL(jsonURL);
             https = (HttpsURLConnection) url.openConnection();
-            https.setReadTimeout(10000);
-            https.setConnectTimeout(15000);
+            https.setReadTimeout(TIMEOUT_MS);
+            https.setConnectTimeout(TIMEOUT_MS);
             https.setRequestMethod("GET");
             https.setDoInput(true);
 
@@ -112,6 +120,39 @@ public class JsonHelper {
             if (https != null) {
                 https.disconnect();
             }
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static JSONObject jsonReader(String jsonURL) throws IOException {
+        InputStream stream = null;
+        try {
+            Request request = new Request.Builder()
+                    .url(jsonURL)
+                    .addHeader("User-Agent", Helper.getAppUserAgent())
+                    .addHeader("Data-type", "application/json")
+                    .build();
+
+            Call okHttpCall = OkHttpClientSingleton.getInstance(TIMEOUT_MS).newCall(request);
+
+            Response okHttpResponse = okHttpCall.execute();
+
+            int responseCode = okHttpResponse.code();
+            Timber.d("HTTP Response: %s", responseCode);
+            if (404 == responseCode) {
+                return null;
+            }
+
+            ResponseBody body = okHttpResponse.body();
+            if (body != null) {
+                return new JSONObject(readInputStream(body.byteStream()));
+            } else {
+                return null;
+            }
+        } catch (JSONException e) {
+            Timber.e(e, "JSON file not properly formatted");
         }
 
         return null;

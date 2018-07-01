@@ -56,6 +56,10 @@ public abstract class DrawerActivity extends BaseActivity {
     private boolean itemTapped;
     private DrawerLayout.DrawerListener mDrawerListener;
 
+    public final static int MODE_LIBRARY = 0;
+    public final static int MODE_MIKAN = 1;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +72,7 @@ public abstract class DrawerActivity extends BaseActivity {
 
         if (fragment == null) {
             fragment = buildFragment();
+            fragment.setArguments(getCreationArguments());
 
             manager.beginTransaction()
                     .add(R.id.content_frame, fragment, getFragmentTag())
@@ -75,7 +80,20 @@ public abstract class DrawerActivity extends BaseActivity {
         }
     }
 
-    protected abstract Fragment buildFragment();
+    protected Fragment buildFragment() {
+        try {
+            return getFragment().newInstance();
+        } catch (InstantiationException e) {
+            Timber.e(e, "Error: Could not access constructor");
+        } catch (IllegalAccessException e) {
+            Timber.e(e, "Error: Field or method is not accessible");
+        }
+        return null;
+    }
+
+    protected abstract Class<? extends BaseFragment> getFragment();
+    protected Bundle getCreationArguments() { return new Bundle(); }
+
 
     protected String getToolbarTitle() {
         return Helper.getActivityName(context, R.string.app_name);
@@ -115,8 +133,7 @@ public abstract class DrawerActivity extends BaseActivity {
         mToolbar = findViewById(R.id.toolbar);
         if (mToolbar == null) {
             throw new IllegalStateException(
-                    "Layout is required to include a Toolbar with id " +
-                            "'toolbar'");
+                    "Layout is required to include a Toolbar with id 'toolbar'");
         } else {
             setSupportActionBar(mToolbar);
             setupActionBarDrawerToggle();

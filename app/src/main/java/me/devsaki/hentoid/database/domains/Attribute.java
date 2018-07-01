@@ -17,6 +17,15 @@ public class Attribute {
     @Expose
     private AttributeType type;
 
+    public Attribute() {}
+
+    public Attribute(AttributeType type, String name, String url)
+    {
+        this.type = type;
+        this.name = name;
+        this.url = url;
+    }
+
     public Integer getId() {
         return url.hashCode();
     }

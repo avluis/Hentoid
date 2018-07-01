@@ -58,10 +58,6 @@ public abstract class BaseParser implements ContentParser {
 
     void parseAttributes(AttributeMap map, AttributeType type, Elements elements, boolean filterCount) {
         for (Element a : elements) {
-            Attribute attribute = new Attribute();
-            attribute.setType(type);
-            attribute.setUrl(a.attr("href"));
-
             String name = a.text();
             if (filterCount) {
                 // Remove counters from metadata (e.g. "Futanari (2660)" => "Futanari")
@@ -69,7 +65,7 @@ public abstract class BaseParser implements ContentParser {
                 if (bracketPos > 1 && ' ' == name.charAt(bracketPos - 1)) bracketPos--;
                 if (bracketPos > -1) name = name.substring(0, bracketPos);
             }
-            attribute.setName(name);
+            Attribute attribute = new Attribute(type, name, a.attr("href"));
 
             map.add(attribute);
         }

@@ -29,7 +29,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.RandomSeed;
+import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
 
 /**
@@ -368,7 +368,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeed.getInstance().getRandomNumber()));
+                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
                         break;
                     default:
                         // Nothing

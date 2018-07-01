@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.listener.ContentListener;
 import timber.log.Timber;
 
 /**
@@ -128,9 +129,4 @@ public class SearchContent {
         }
     }
 
-    public interface ContentListener {
-        void onContentReady(boolean success, List<Content> contentList, int totalContent);
-
-        void onContentFailed(boolean failure);
-    }
 }

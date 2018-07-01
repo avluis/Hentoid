@@ -30,18 +30,7 @@ public class MikanSearchActivity extends DrawerActivity implements BackInterface
     private Context context;
 
     @Override
-    protected Fragment buildFragment() {
-        try {
-            return getFragment().newInstance();
-        } catch (InstantiationException e) {
-            Timber.e(e, "Error: Could not access constructor");
-        } catch (IllegalAccessException e) {
-            Timber.e(e, "Error: Field or method is not accessible");
-        }
-        return null;
-    }
-
-    private Class<? extends BaseFragment> getFragment() {
+    protected Class<? extends BaseFragment> getFragment() {
         if (Preferences.getEndlessScroll()) {
             Timber.d("getFragment: EndlessFragment.");
             return EndlessFragment.class;
@@ -49,6 +38,14 @@ public class MikanSearchActivity extends DrawerActivity implements BackInterface
             Timber.d("getFragment: PagerFragment.");
             return PagerFragment.class;
         }
+    }
+
+    @Override
+    protected Bundle getCreationArguments()
+    {
+        Bundle result = new Bundle();
+        result.putInt("mode", MODE_MIKAN);
+        return result;
     }
 
     @Override
@@ -92,8 +89,11 @@ public class MikanSearchActivity extends DrawerActivity implements BackInterface
         fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment != null) {
+            /*
             Fragment selectedFragment = buildFragment();
             String selectedFragmentTag = selectedFragment.getClass().getSimpleName();
+            */
+            String selectedFragmentTag = getFragment().getSimpleName();
 
             if (!selectedFragmentTag.equals(fragment.getTag())) {
                 Helper.doRestart(this);

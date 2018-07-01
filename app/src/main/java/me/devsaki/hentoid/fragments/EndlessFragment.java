@@ -50,7 +50,7 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
         if (query.isEmpty()) {
             if (!isLastPage()) { // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
                 currentPage++;
-                searchContent(false);
+                searchLibrary(false);
                 Timber.d("Load more data now~");
             }
         } else {

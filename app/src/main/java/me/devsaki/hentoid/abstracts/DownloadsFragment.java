@@ -57,21 +57,24 @@ import java.util.Set;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
+import me.devsaki.hentoid.activities.MikanSearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.SearchContent;
-import me.devsaki.hentoid.database.SearchContent.ContentListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.parsers.mikan.MikanParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.RandomSeed;
+import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
@@ -173,6 +176,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected boolean overrideBottomToolbarVisibility;
     // True if storage permissions have been checked at least once
     private boolean storagePermissionChecked = false;
+    // Mode : show library or show Mikan search
+    private int mode = DrawerActivity.MODE_LIBRARY;
 
 
     // === SEARCH
@@ -282,17 +287,23 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * Check write permissions on target storage and load library
      */
     private void loadLibrary() {
-        if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
-            boolean shouldUpdate = queryPrefs();
-            if (shouldUpdate || -1 == mAdapter.getTotalCount()) update();
-            if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
-            showToolbar(true);
-        } else {
-            Timber.d("Storage permission denied!");
-            if (storagePermissionChecked) {
-                resetApp();
+
+        if (DrawerActivity.MODE_LIBRARY == mode) {
+            if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
+                boolean shouldUpdate = queryPrefs();
+                if (shouldUpdate || -1 == mAdapter.getTotalCount()) update();
+                if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
+                showToolbar(true);
+            } else {
+                Timber.d("Storage permission denied!");
+                if (storagePermissionChecked) {
+                    resetApp();
+                }
+                storagePermissionChecked = true;
             }
-            storagePermissionChecked = true;
+        } else if (DrawerActivity.MODE_MIKAN == mode) {
+            toggleUI(SHOW_LOADING);
+            MikanParser.getRecentBooks(Site.HITOMI, booksPerPage, Language.ANY, currentPage, MikanParser.SORT_MOST_RECENT_FIRST, this);
         }
     }
 
@@ -499,6 +510,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
+
+        if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
 
         initUI(rootView);
         attachScrollListener();
@@ -907,7 +920,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 orderUpdated = true;
                 order = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
                 mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
-                RandomSeed.getInstance().renewSeed();
+                RandomSeedSingleton.getInstance().renewSeed();
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
                 update();
 
@@ -955,7 +968,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
         if (filterByTag) updateTagMosaic();
 
-        searchContent();
+        searchLibrary();
     }
 
     /**
@@ -970,7 +983,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (filterByTag) updateTagMosaic();
 
-        searchContent();
+        searchLibrary();
     }
 
     /**
@@ -1052,7 +1065,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.filterByTitle = filterByTitle;
             this.filterByArtist = filterByArtist;
         }
-        searchContent();
+        searchLibrary();
     }
 
     /**
@@ -1220,7 +1233,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             // Update filtered books
             if (doSearch) {
-                searchContent();
+                searchLibrary();
                 Handler handler = new Handler();
                 handler.post(() -> updateTagMosaic(false));
             }
@@ -1302,7 +1315,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     protected void update() {
         toggleUI(SHOW_LOADING);
-        searchContent();
+        searchLibrary();
     }
 
     protected void toggleUI(int mode) {
@@ -1367,11 +1380,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * or
      * * Selected tags in tag mosaic
      */
-    protected void searchContent() {
-        searchContent(isSearchMode);
+    protected void searchLibrary() {
+        searchLibrary(isSearchMode);
     }
 
-    protected void searchContent(boolean searchMode) {
+    protected void searchLibrary(boolean searchMode) {
         List<String> selectedTags = new ArrayList<>();
         String query = this.getQuery();
 

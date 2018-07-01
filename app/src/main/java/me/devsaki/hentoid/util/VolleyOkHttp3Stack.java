@@ -35,12 +35,7 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
     private final OkHttpClient client;
 
     public VolleyOkHttp3Stack(int timeoutMs) {
-        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
-        clientBuilder.connectTimeout(timeoutMs, TimeUnit.MILLISECONDS);
-        clientBuilder.readTimeout(timeoutMs, TimeUnit.MILLISECONDS);
-        clientBuilder.writeTimeout(timeoutMs, TimeUnit.MILLISECONDS);
-
-        client = clientBuilder.build();
+        client = OkHttpClientSingleton.getInstance(timeoutMs);
     }
 
     private static void setConnectionParametersForRequest(okhttp3.Request.Builder builder, Request<?> request)
