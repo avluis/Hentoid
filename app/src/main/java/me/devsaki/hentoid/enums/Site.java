@@ -28,11 +28,11 @@ public enum Site {
     private final String url;
     private final int ico;
 
-    Site(int code, String description, String uniqueKeyword, String url, int ico) {
+    Site(int code, String description, String url, String uniqueKeyword, int ico) {
         this.code = code;
         this.description = description;
-        this.uniqueKeyword = uniqueKeyword;
         this.url = url;
+        this.uniqueKeyword = uniqueKeyword;
         this.ico = ico;
     }
 
