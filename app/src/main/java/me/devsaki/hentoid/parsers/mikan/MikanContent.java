@@ -2,9 +2,6 @@ package me.devsaki.hentoid.parsers.mikan;
 
 import com.google.gson.annotations.Expose;
 
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,11 +11,12 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 public class MikanContent implements Serializable {
 
-    public class MikanProperty implements Serializable {
+    public class MikanAttribute implements Serializable {
         @Expose
         public String name;
         @Expose
@@ -34,7 +32,15 @@ public class MikanContent implements Serializable {
     @Expose
     public List<String> images = new ArrayList<>();
     @Expose
-    public List<MikanProperty> artist = new ArrayList<>();
+    public List<MikanAttribute> artist = new ArrayList<>();
+    @Expose
+    public List<MikanAttribute> series = new ArrayList<>();
+    @Expose
+    public List<MikanAttribute> tags = new ArrayList<>();
+    @Expose
+    public MikanAttribute type;
+    @Expose
+    public MikanAttribute language;
     // TODO
     @Expose
     public Date time;
@@ -50,12 +56,20 @@ public class MikanContent implements Serializable {
         AttributeMap attributes = new AttributeMap();
         result.setAttributes(attributes);
 
-        attributes.add(new Attribute(AttributeType.ARTIST, name, url));
+        for (MikanAttribute a : artist) attributes.add(new Attribute(AttributeType.ARTIST, a.name, a.url));
+        for (MikanAttribute a : series) attributes.add(new Attribute(AttributeType.SERIE, a.name, a.url));
+        for (MikanAttribute a : tags) attributes.add(new Attribute(AttributeType.TAG, a.name, a.url));
+        if (type != null) attributes.add(new Attribute(AttributeType.CATEGORY, type.name, type.url));
+        if (language != null) attributes.add(new Attribute(AttributeType.LANGUAGE, language.name, language.url));
+
+
+        // Cover = 1st image of the set
         if (images.size() > 0) result.setCoverImageUrl(images.get(0));
 
         // TODO
 
         result.setSite(Site.searchByUrl(url));
+        result.setStatus(StatusContent.ONLINE);
 
 
         return result;

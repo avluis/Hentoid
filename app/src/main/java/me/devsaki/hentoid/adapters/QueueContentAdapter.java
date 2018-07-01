@@ -240,7 +240,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem, int itemCount) {
         View btnUp = view.findViewById(R.id.queueUpBtn);
-        ((ImageView) btnUp).setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
+        ((ImageView) btnUp).setImageResource(R.drawable.ic_arrow_up);
         btnUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
         btnUp.setOnClickListener(v -> moveUp(content));
 
@@ -250,7 +250,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         btnTop.setOnClickListener(v -> moveTop(content));
 
         View btnDown = view.findViewById(R.id.queueDownBtn);
-        ((ImageView) btnDown).setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
+        ((ImageView) btnDown).setImageResource(R.drawable.ic_arrow_down);
         btnDown.setVisibility(isLastItem ? View.INVISIBLE : View.VISIBLE);
         btnDown.setOnClickListener(v -> moveDown(content));
 

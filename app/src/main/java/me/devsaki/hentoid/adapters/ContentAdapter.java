@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -322,6 +323,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 case MIGRATED:
                     bg = R.color.card_item_src_migrated;
                     break;
+                case ONLINE:
+                    bg = R.color.card_item_src_other;
+                    break;
                 default:
                     Timber.d("Position: %s %s - Status: %s", pos, content.getTitle(), status);
                     bg = R.color.card_item_src_other;
@@ -329,38 +333,55 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
             holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, bg));
 
-            // Favourite toggle
-            if (content.isFavourite()) {
-                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
-            } else {
-                holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-            }
-            holder.ivFavourite.setOnClickListener(v -> {
-                if (getSelectedItemCount() >= 1) {
-                    clearSelections();
-                    listener.onItemClear(0);
-                }
+            holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
+            holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
+            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE);
+            holder.ivGallery.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE);
+
+            if (DownloadsFragment.MODE_LIBRARY == mode) {
+                // Favourite toggle
                 if (content.isFavourite()) {
-                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                } else {
                     holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                } else {
+                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
                 }
-                favToggleItem(content);
-            });
-
-
-            // Error icon
-            if (status == StatusContent.ERROR) {
-                holder.ivError.setVisibility(View.VISIBLE);
-                holder.ivError.setOnClickListener(v -> {
+                holder.ivFavourite.setOnClickListener(v -> {
                     if (getSelectedItemCount() >= 1) {
                         clearSelections();
                         listener.onItemClear(0);
                     }
-                    downloadAgain(content);
+                    if (content.isFavourite()) {
+                        holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                    } else {
+                        holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                    }
+                    favToggleItem(content);
                 });
-            } else {
-                holder.ivError.setVisibility(View.GONE);
+
+                // Error icon
+                if (status == StatusContent.ERROR) {
+                    holder.ivError.setVisibility(View.VISIBLE);
+                    holder.ivError.setOnClickListener(v -> {
+                        if (getSelectedItemCount() >= 1) {
+                            clearSelections();
+                            listener.onItemClear(0);
+                        }
+                        downloadAgain(content);
+                    });
+                } else {
+                    holder.ivError.setVisibility(View.GONE);
+                }
+            } else { // Mikan mode
+
+                // Download icon
+                holder.ivDownload.setImageResource(R.drawable.ic_action_download);
+                holder.ivDownload.setOnClickListener(v -> downloadContent(content)); // TODO define images first
+
+                // View gallery icon
+                holder.ivGallery.setImageResource(R.drawable.ic_arrow_forward);
+                holder.ivGallery.setOnClickListener(v -> {
+                    // TODO
+                });
             }
 
         } else {
@@ -453,26 +474,31 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
-                            HentoidDB db = HentoidDB.getInstance(context);
-
-                            item.setStatus(StatusContent.DOWNLOADING);
-                            item.setDownloadDate(new Date().getTime());
-                            db.updateContentStatus(item);
-
-                            List<Pair<Integer, Integer>> queue = db.selectQueue();
-                            int lastIndex = 1;
-                            if (queue.size() > 0) {
-                                lastIndex = queue.get(queue.size() - 1).second + 1;
-                            }
-                            db.insertQueue(item.getId(), lastIndex);
-
-                            ContentQueueManager.getInstance().resumeQueue(context);
-
-                            Helper.toast(context, R.string.add_to_queue);
+                           downloadContent(item);
                             remove(item);
                         })
                 .setNegativeButton(android.R.string.no, null)
                 .create().show();
+    }
+
+    private void downloadContent(final Content item)
+    {
+        HentoidDB db = HentoidDB.getInstance(context);
+
+        item.setStatus(StatusContent.DOWNLOADING);
+        item.setDownloadDate(new Date().getTime());
+        db.updateContentStatus(item);
+
+        List<Pair<Integer, Integer>> queue = db.selectQueue();
+        int lastIndex = 1;
+        if (queue.size() > 0) {
+            lastIndex = queue.get(queue.size() - 1).second + 1;
+        }
+        db.insertQueue(item.getId(), lastIndex);
+
+        ContentQueueManager.getInstance().resumeQueue(context);
+
+        Helper.toast(context, R.string.add_to_queue);
     }
 
     private void shareContent(final Content item) {

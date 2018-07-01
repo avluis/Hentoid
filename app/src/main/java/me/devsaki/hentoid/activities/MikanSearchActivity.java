@@ -13,6 +13,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
 import me.devsaki.hentoid.abstracts.BaseFragment;
+import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.EndlessFragment;
 import me.devsaki.hentoid.fragments.PagerFragment;
@@ -44,7 +45,7 @@ public class MikanSearchActivity extends DrawerActivity implements BackInterface
     protected Bundle getCreationArguments()
     {
         Bundle result = new Bundle();
-        result.putInt("mode", MODE_MIKAN);
+        result.putInt("mode", DownloadsFragment.MODE_MIKAN);
         return result;
     }
 

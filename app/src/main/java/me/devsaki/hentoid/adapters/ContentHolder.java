@@ -25,6 +25,8 @@ class ContentHolder extends RecyclerView.ViewHolder {
     final ImageView ivSite;
     final ImageView ivError;
     final ImageView ivFavourite;
+    final ImageView ivDownload; // Mikan mode only
+    final ImageView ivGallery; // Mikan mode only
 
     ContentHolder(final View itemView) {
         super(itemView);
@@ -39,5 +41,7 @@ class ContentHolder extends RecyclerView.ViewHolder {
         ivSite = itemView.findViewById(R.id.ivSite);
         ivError = itemView.findViewById(R.id.ivError);
         ivFavourite = itemView.findViewById(R.id.ivFavourite);
+        ivDownload = itemView.findViewById(R.id.ivDownload);
+        ivGallery = itemView.findViewById(R.id.ivGallery);
     }
 }

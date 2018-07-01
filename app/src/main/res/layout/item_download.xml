@@ -19,24 +19,52 @@
         android:layout_height="wrap_content"
         android:background="@drawable/row_item_selector">
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/row_details"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
             android:paddingBottom="5dp"
             android:paddingEnd="1dp"
             android:paddingLeft="8dp"
             android:paddingRight="1dp"
             android:paddingStart="8dp">
 
+            <ImageView
+                android:id="@+id/ivGallery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentEnd="true"
+                android:adjustViewBounds="true"
+                android:background="@color/transparent"
+                android:clickable="true"
+                android:focusable="true"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_arrow_forward"
+                android:tint="@color/card_item_src_other"
+                tools:ignore="ContentDescription"
+                />
+
             <include
                 android:id="@+id/tvTitle"
-                layout="@layout/include_item_title" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:layout_toLeftOf="@id/ivGallery"
+                android:layout_toStartOf="@id/ivGallery"
+                layout="@layout/include_item_title"
+                />
 
-            <include layout="@layout/include_item_details" />
+            <include
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tvTitle"
+                layout="@layout/include_item_details" />
 
-        </LinearLayout>
+        </RelativeLayout>
 
         <ImageView
             android:id="@+id/ivSite"
@@ -87,6 +115,23 @@
             android:focusable="true"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_fav_empty"
+            android:tint="@color/card_item_src_other"
+            tools:ignore="ContentDescription"
+            />
+
+        <ImageView
+            android:id="@+id/ivDownload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/row_details"
+            android:layout_alignEnd="@+id/row_details"
+            android:layout_alignRight="@+id/row_details"
+            android:adjustViewBounds="true"
+            android:background="@color/transparent"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            app:srcCompat="@drawable/ic_action_download"
             android:tint="@color/card_item_src_other"
             tools:ignore="ContentDescription"
             />
