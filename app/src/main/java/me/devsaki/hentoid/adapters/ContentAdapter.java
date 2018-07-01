@@ -53,15 +53,18 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private final Context context;
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
+    private final int mode;
+
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
     // Total count of book in entire collection (Adapter is in charge of updating it)
     private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
-    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
+    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator, int mode) {
         this.context = context;
         this.listener = listener;
+        this.mode = mode;
         mComparator = comparator;
 
         selectedItems = new SparseBooleanArray();

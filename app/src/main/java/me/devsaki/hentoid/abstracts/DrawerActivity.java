@@ -56,10 +56,6 @@ public abstract class DrawerActivity extends BaseActivity {
     private boolean itemTapped;
     private DrawerLayout.DrawerListener mDrawerListener;
 
-    public final static int MODE_LIBRARY = 0;
-    public final static int MODE_MIKAN = 1;
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -57,7 +57,6 @@ import java.util.Set;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
-import me.devsaki.hentoid.activities.MikanSearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.SearchContent;
@@ -95,6 +94,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected static final int TAGFILTER_ACTIVE = 0;
     protected static final int TAGFILTER_SELECTED = 1;
     protected static final int TAGFILTER_INACTIVE = 3;
+
+    public final static int MODE_LIBRARY = 0;
+    public final static int MODE_MIKAN = 1;
+
 
     // Save state constants
     private static final String LIST_STATE_KEY = "list_state";
@@ -177,7 +180,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // True if storage permissions have been checked at least once
     private boolean storagePermissionChecked = false;
     // Mode : show library or show Mikan search
-    private int mode = DrawerActivity.MODE_LIBRARY;
+    private int mode = MODE_LIBRARY;
 
 
     // === SEARCH
@@ -288,7 +291,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private void loadLibrary() {
 
-        if (DrawerActivity.MODE_LIBRARY == mode) {
+        if (MODE_LIBRARY == mode) {
             if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
                 boolean shouldUpdate = queryPrefs();
                 if (shouldUpdate || -1 == mAdapter.getTotalCount()) update();
@@ -301,7 +304,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 }
                 storagePermissionChecked = true;
             }
-        } else if (DrawerActivity.MODE_MIKAN == mode) {
+        } else if (MODE_MIKAN == mode) {
             toggleUI(SHOW_LOADING);
             MikanParser.getRecentBooks(Site.HITOMI, booksPerPage, Language.ANY, currentPage, MikanParser.SORT_MOST_RECENT_FIRST, this);
         }
@@ -548,7 +551,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
-        mAdapter = new ContentAdapter(mContext, this, comparator);
+        mAdapter = new ContentAdapter(mContext, this, comparator, mode);
         mAdapter.setContentsWipedListener(this);
         mListView.setAdapter(mAdapter);
 
@@ -720,8 +723,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         final SearchManager searchManager = (SearchManager)
                 mContext.getSystemService(Context.SEARCH_SERVICE);
 
-        searchMenu = menu.findItem(R.id.action_search);
         orderMenu = menu.findItem(R.id.action_order);
+        orderMenu.setVisible(MODE_LIBRARY == mode);
+
+        searchMenu = menu.findItem(R.id.action_search);
         searchMenu.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {

@@ -13,6 +13,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
+import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.EndlessFragment;
 import me.devsaki.hentoid.fragments.PagerFragment;
@@ -45,7 +46,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     protected Bundle getCreationArguments()
     {
         Bundle result = new Bundle();
-        result.putInt("mode", MODE_LIBRARY);
+        result.putInt("mode", DownloadsFragment.MODE_LIBRARY);
         return result;
     }
 
