@@ -16,7 +16,7 @@ import timber.log.Timber;
 
 public class MikanParser {
 
-    private static final int USAGE_RECENT_BOOKS = 0;
+    private static final String USAGE_RECENT_BOOKS = "recentBooks";
 
     public static final int SORT_MOST_RECENT_FIRST = 0;
     public static final int SORT_MOST_POPULAR_FIRST = 1;
@@ -35,33 +35,11 @@ public class MikanParser {
 
 
     public static void getRecentBooks(Site site, int nbItems, Language language, int page, int sort, ContentListener listener) {
-        AsyncTask.execute(() -> {
-            try {
-                launchRequest(buildRecentBooksRequest(site, nbItems, language, page, sort), USAGE_RECENT_BOOKS, listener);
-            } catch (IOException e) {
-                listener.onContentFailed(true);
-            }
-        });
+        launchRequest(buildRecentBooksRequest(site, nbItems, language, page, sort), USAGE_RECENT_BOOKS, listener);
     }
 
-    private static void launchRequest(String url, int usage, ContentListener listener) throws IOException {
-        JSONObject json = JsonHelper.jsonReader(url);
-
-        if (null == json)
-        {
-            Timber.w("No content available for url %s", url);
-            listener.onContentFailed(true);
-            return;
-        }
-
-        switch (usage)
-        {
-            case USAGE_RECENT_BOOKS:
-                MikanResponse response = new Gson().fromJson(json.toString(), MikanResponse.class);
-                int maxItems = response.maxpage * response.result.size(); // Roughly : number of pages * number of books per page
-                listener.onContentReady(true, response.toContentList(), maxItems);
-                break;
-        }
+    private static synchronized void launchRequest(String url, String usage, ContentListener listener) {
+        new SearchTask(listener, usage).execute(url);
     }
 
     private static String buildRecentBooksRequest(Site site, int nbItems, Language language, int page, int sort) {
@@ -76,5 +54,48 @@ public class MikanParser {
         queryUrl.append("&short=").append(SORT_MOST_POPULAR_FIRST == sort); // sort ??
 
         return queryUrl.toString();
+    }
+
+
+    private static class SearchTask extends AsyncTask<String, String, JSONObject> {
+
+        private final ContentListener listener;
+        private String usage;
+
+        // only retain a weak reference to the activity
+        SearchTask(ContentListener listener, String usage) {
+            this.listener = listener;
+            this.usage = usage;
+        }
+
+        @Override
+        protected JSONObject doInBackground(String... params) {
+            JSONObject json = null;
+            try {
+                json = JsonHelper.jsonReader(params[0]);
+            } catch (IOException e)  {
+                Timber.w("JSON retrieval failed at URL %s", params[0]);
+            }
+
+            if (null == json)
+            {
+                Timber.w("No content available for URL %s", params[0]);
+                listener.onContentFailed(true);
+            }
+
+            return json;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject json) {
+            switch (usage)
+            {
+                case MikanParser.USAGE_RECENT_BOOKS:
+                    MikanResponse response = new Gson().fromJson(json.toString(), MikanResponse.class);
+                    int maxItems = response.maxpage * response.result.size(); // Roughly : number of pages * number of books per page
+                    listener.onContentReady(true, response.toContentList(), maxItems);
+                    break;
+            }
+        }
     }
 }

@@ -127,7 +127,6 @@ public class JsonHelper {
 
     @Nullable
     public static JSONObject jsonReader(String jsonURL) throws IOException {
-        InputStream stream = null;
         try {
             Request request = new Request.Builder()
                     .url(jsonURL)
