@@ -2,6 +2,8 @@ package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
 
+import java.util.Locale;
+
 import me.devsaki.hentoid.enums.StatusContent;
 
 /**
@@ -18,6 +20,18 @@ public class ImageFile {
     private String name;
     @Expose
     private StatusContent status;
+
+
+    public ImageFile() {};
+
+    public ImageFile(int order, String url, StatusContent status)
+    {
+        this.order = order;
+        this.name = String.format(Locale.US, "%03d", order);
+        this.url = url;
+        this.status = status;
+    }
+
 
     public Integer getId() {
         return url.hashCode();

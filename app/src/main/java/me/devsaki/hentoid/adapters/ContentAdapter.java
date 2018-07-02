@@ -34,8 +34,10 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.parsers.mikan.MikanParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -47,7 +49,7 @@ import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOption
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
  */
-public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
+public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements ContentListener {
 
     private static final int VISIBLE_THRESHOLD = 10;
 
@@ -375,7 +377,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
                 // Download icon
                 holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                holder.ivDownload.setOnClickListener(v -> downloadContent(content)); // TODO define images first
+                holder.ivDownload.setOnClickListener(v -> {
+                    MikanParser.getPages(content, this);
+                });
 
                 // View gallery icon
                 holder.ivGallery.setImageResource(R.drawable.ic_arrow_forward);
@@ -481,13 +485,23 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 .create().show();
     }
 
-    private void downloadContent(final Content item)
+    private void downloadContent(Content item)
     {
         HentoidDB db = HentoidDB.getInstance(context);
 
-        item.setStatus(StatusContent.DOWNLOADING);
         item.setDownloadDate(new Date().getTime());
-        db.updateContentStatus(item);
+
+        if (StatusContent.ONLINE == item.getStatus())
+        {
+            item.setStatus(StatusContent.DOWNLOADING);
+            for (ImageFile im : item.getImageFiles()) im.setStatus(StatusContent.SAVED);
+
+            db.insertContent(item);
+//            db.updateImageFileStatus(item, StatusContent.ONLINE, StatusContent.SAVED);
+        } else {
+            item.setStatus(StatusContent.DOWNLOADING);
+            db.updateContentStatus(item);
+        }
 
         List<Pair<Integer, Integer>> queue = db.selectQueue();
         int lastIndex = 1;
@@ -746,6 +760,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         mSortedList.endBatchedUpdates();
     }
 
+    // ContentListener implementation
+    @Override
+    public void onContentReady(boolean success, List<Content> contentList, int totalContent) { // Listener for pages retrieval
+        if (success && 1 == contentList.size())
+        {
+            downloadContent(contentList.get(0));
+        }
+    }
+
+    @Override
+    public void onContentFailed(boolean failure) {
+        Timber.w("Page loading failed");
+    }
+
+    // Public interfaces
     public interface EndlessScrollListener {
         void onLoadMore();
     }

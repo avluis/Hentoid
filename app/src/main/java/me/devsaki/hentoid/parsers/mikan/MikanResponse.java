@@ -9,8 +9,10 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 public class MikanResponse implements Serializable {
@@ -22,6 +24,8 @@ public class MikanResponse implements Serializable {
     @Expose
     public int maxpage;
     @Expose
+    public List<String> pages = new ArrayList<>();
+    @Expose
     public List<MikanContent> result = new ArrayList<>();
 
 
@@ -32,6 +36,20 @@ public class MikanResponse implements Serializable {
         for (MikanContent mikanContent : result)
         {
             res.add(mikanContent.toContent());
+        }
+
+        return res;
+    }
+
+    public List<ImageFile> toImageFileList()
+    {
+        int i=0;
+        List<ImageFile> res = new ArrayList<>();
+
+        for (String s : pages)
+        {
+            res.add(new ImageFile(i, s, StatusContent.ONLINE));
+            i++;
         }
 
         return res;

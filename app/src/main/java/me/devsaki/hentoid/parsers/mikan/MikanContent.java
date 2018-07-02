@@ -50,7 +50,8 @@ public class MikanContent implements Serializable {
     {
         Content result = new Content();
 
-        result.setUrl(url);
+        String[] urlStr = url.split("/");
+        result.setUrl("/"+urlStr[urlStr.length-1]);
         result.setTitle(name);
 
         AttributeMap attributes = new AttributeMap();
