@@ -251,8 +251,7 @@ public final class Helper {
         }
     }
 
-    // TODO: 6/3/2018 move this function to a more local scope
-    public static Bitmap tintBitmap(Bitmap bitmap, int color) {
+    static Bitmap tintBitmap(Bitmap bitmap, int color) {
         Paint p = new Paint();
         p.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
         Bitmap b = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), ARGB_8888);

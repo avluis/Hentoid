@@ -88,9 +88,9 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case TSUMINO:
-                return url.replace("/", "") + "-" + site.getDescription();
+                return url.replace("/", "");
             case HENTAICAFE:
-                return url.replace("/?p=", "") + "-" + site.getDescription();
+                return url.replace("/?p=", "");
             default:
                 return "";
         }
@@ -109,7 +109,7 @@ public class Content implements Serializable {
             case HITOMI:
                 paths = url.split("/");
                 return paths[1].replace(".html", "") + "-" +
-                        title.replaceAll(FileHelper.FORBIDDEN_CHARS, "_");
+                        title.replaceAll("[^a-zA-Z0-9.-]", "_");
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
