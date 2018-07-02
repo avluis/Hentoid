@@ -343,4 +343,25 @@ public final class Helper {
         else if (s.length() == 1) return s.toUpperCase();
         else return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
+
+    /**
+     * Transforms the given string to format with a given length
+     * - If the given length is shorter than the actual length of the string, it will be truncated
+     * - If the given length is longer than the actual length of the string, it will be right/left-padded with a given character
+     *
+     * @param value  String to transform
+     * @param length Target length of the final string
+     * @return Reprocessed string of given length, according to rules documented in the method description
+     */
+    public static String compensateStringLength(int value, int length) {
+        String result = String.valueOf(value);
+
+        if (result.length() > length) {
+            result = result.substring(0, length);
+        } else if (result.length() < length) {
+            result = String.format("%1$" + length + "s", result).replace(' ', '0');
+        }
+
+        return result;
+    }
 }
