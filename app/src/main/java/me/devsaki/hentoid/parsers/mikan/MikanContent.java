@@ -30,7 +30,9 @@ public class MikanContent implements Serializable {
     @Expose
     public String url;
     @Expose
-    public List<String> images = new ArrayList<>();
+    public String image;
+    @Expose
+    public List<String> images = new ArrayList<>(); // Deprecated ?
     @Expose
     public List<MikanAttribute> artist = new ArrayList<>();
     @Expose
@@ -50,6 +52,9 @@ public class MikanContent implements Serializable {
     {
         Content result = new Content();
 
+        if (null == url) return result; // Corrupted result
+
+
         String[] urlStr = url.split("/");
         result.setUrl("/"+urlStr[urlStr.length-1]);
         result.setTitle(name);
@@ -64,8 +69,8 @@ public class MikanContent implements Serializable {
         if (language != null) attributes.add(new Attribute(AttributeType.LANGUAGE, language.name, language.url));
 
 
-        // Cover = 1st image of the set
-        if (images.size() > 0) result.setCoverImageUrl(images.get(0));
+        // Cover = 1st image of the set -- deprecated ?
+        if (images.size() > 0) result.setCoverImageUrl(images.get(0)); else result.setCoverImageUrl(image);
 
         // TODO
 

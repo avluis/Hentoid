@@ -23,6 +23,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.Pair;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
 
@@ -31,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Locale;
 
 import me.devsaki.hentoid.BuildConfig;

@@ -279,7 +279,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onResume() {
         super.onResume();
 
-        loadLibrary();
+        defaultLoad();
 
         if (mListState != null) {
             llm.onRestoreInstanceState(mListState);
@@ -289,7 +289,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     /**
      * Check write permissions on target storage and load library
      */
-    private void loadLibrary() {
+    private void defaultLoad() {
 
         if (MODE_LIBRARY == mode) {
             if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
@@ -305,8 +305,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 storagePermissionChecked = true;
             }
         } else if (MODE_MIKAN == mode) {
-            toggleUI(SHOW_LOADING);
-            MikanParser.getRecentBooks(Site.HITOMI, booksPerPage, Language.ANY, currentPage, MikanParser.SORT_MOST_RECENT_FIRST, this);
+            if (-1 == mAdapter.getTotalCount()) update();
+            showToolbar(true);
         }
     }
 
@@ -710,7 +710,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && isLoaded) {
+        if (event.eventType == DownloadEvent.EV_COMPLETE && isLoaded && MODE_LIBRARY == mode) {
             showReloadToolTip();
         }
     }
@@ -1390,21 +1390,27 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     protected void searchLibrary(boolean searchMode) {
-        List<String> selectedTags = new ArrayList<>();
         String query = this.getQuery();
 
-        // Populate tag filter if tag filtering is active
-        if (filterByTag) {
-            for (String key : tagFilters.keySet()) {
-                if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
-            }
-            // Tag filter is incompatible with search by keyword
-            query = "";
-        }
+        if (MODE_LIBRARY == mode) {
+            List<String> selectedTags = new ArrayList<>();
 
-        isLoaded = false;
-        isSearchReplaceResults = searchMode;
-        search.retrieveResults(filterByTitle ? query : "", filterByArtist ? query : "", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
+            // Populate tag filter if tag filtering is active
+            if (filterByTag) {
+                for (String key : tagFilters.keySet()) {
+                    if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
+                }
+                // Tag filter is incompatible with search by keyword
+                query = "";
+            }
+
+            isLoaded = false;
+            isSearchReplaceResults = searchMode;
+            search.retrieveResults(filterByTitle ? query : "", filterByArtist ? query : "", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
+        } else {
+            if (searchMode) MikanParser.searchBooks(Site.HITOMI, query, this);
+            else MikanParser.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, true, this);
+        }
     }
 
     protected abstract void showToolbar(boolean show);

@@ -20,8 +20,6 @@ public class MikanResponse implements Serializable {
     @Expose
     public String request;
     @Expose
-    public boolean nextpage;
-    @Expose
     public int maxpage;
     @Expose
     public List<String> pages = new ArrayList<>();
@@ -35,7 +33,7 @@ public class MikanResponse implements Serializable {
 
         for (MikanContent mikanContent : result)
         {
-            res.add(mikanContent.toContent());
+            if (mikanContent.url != null) res.add(mikanContent.toContent());
         }
 
         return res;
