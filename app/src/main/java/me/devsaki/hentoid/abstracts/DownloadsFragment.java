@@ -1481,7 +1481,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Override
     public void onContentFailed() {
-        Timber.d("Content results failed to load.");
+        Timber.w("Content results failed to load.");
+        Helper.toast("Content results failed to load.");
         isLoaded = false;
     }
 

@@ -115,6 +115,8 @@ public class MikanParser {
                 json = JsonHelper.jsonReader(url);
             } catch (IOException e)  {
                 Timber.w("JSON retrieval failed at URL %s", url);
+                listener.onContentFailed();
+                return null;
             }
 
             if (null == json)
