@@ -38,4 +38,11 @@
                 android:title="@string/menu_order_random" />
         </menu>
     </item>
+    <item
+        android:id="@+id/action_about_mikan"
+        android:icon="@drawable/ic_menu_about"
+        android:title="@string/menu_search"
+        app:showAsAction="always"
+        android:visible="false"
+        />
 </menu>

@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ContentListener;
 import timber.log.Timber;
 
@@ -61,12 +62,10 @@ public class SearchContent {
         Timber.d("Retrieving results.");
 
         if (mCurrentState == State.READY) {
-            mListener.onContentReady(true, contentList, totalContent);
-            mListener.onContentFailed(false);
+            mListener.onContentReady(contentList, totalContent);
             return;
         } else if (mCurrentState == State.FAILED) {
-            mListener.onContentReady(false, contentList, totalContent);
-            mListener.onContentFailed(true);
+            mListener.onContentFailed();
             return;
         }
 
@@ -123,8 +122,8 @@ public class SearchContent {
         protected void onPostExecute(State current) {
             SearchContent activity = activityReference.get();
             if (activity != null && activity.mListener != null) {
-                activity.mListener.onContentReady(current == State.READY, activity.contentList, activity.totalContent);
-                activity.mListener.onContentFailed(current == State.FAILED);
+                if (current == State.READY) activity.mListener.onContentReady(activity.contentList, activity.totalContent);
+                else if (current == State.FAILED) activity.mListener.onContentFailed();
             }
         }
     }

@@ -23,6 +23,7 @@
     <string name="menu_delete_multi">Delete Items</string>
     <string name="menu_share">Share</string>
     <string name="menu_archive">Archive</string>
+    <string name="menu_about_mikan">About Mikan</string>
     <string name="search_hint">Title, Tag, Series or Artist</string>
     <string name="send_to">Share with:</string>
     <!-- Queue -->
@@ -114,7 +115,7 @@
     <string name="about_github_url" translatable="false">https://github.com/AVnetWS/Hentoid</string>
     <string name="about_github_wiki_url" translatable="false">https://github.com/AVnetWS/Hentoid/wiki</string>
     <string name="about_discord" translatable="false"><u>Discord</u></string>
-    <string name="about_discord_url" translatable="false">https://discord.gg/QEZ3qk9</string>
+    <string name="about_discord_url" translatable="false">https://discord.gg/QEZ3qk9</string> <!-- to update on about_mikan.html too -->
     <string name="about_reddit" translatable="false"><u>Reddit</u></string>
     <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
     <string name="about_licenses">Display Licenses</string>

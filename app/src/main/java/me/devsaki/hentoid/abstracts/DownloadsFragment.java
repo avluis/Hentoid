@@ -32,6 +32,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -722,6 +723,29 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // Associate searchable configuration with the SearchView
         final SearchManager searchManager = (SearchManager)
                 mContext.getSystemService(Context.SEARCH_SERVICE);
+
+        MenuItem aboutMikanMenu = menu.findItem(R.id.action_about_mikan);
+        aboutMikanMenu.setVisible(MODE_MIKAN == mode);
+        if (MODE_MIKAN == mode) {
+            aboutMikanMenu.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    WebView webView = new WebView(mContext);
+                    webView.loadUrl("file:///android_asset/about_mikan.html");
+                    webView.setInitialScale(95);
+
+                    android.support.v7.app.AlertDialog mikanDialog = new android.support.v7.app.AlertDialog.Builder(mContext)
+                            .setTitle("About Mikan Search")
+                            .setView(webView)
+                            .setPositiveButton(android.R.string.ok, null)
+                            .create();
+
+                    mikanDialog.show();
+
+                    return true;
+                }
+            });
+        }
 
         orderMenu = menu.findItem(R.id.action_order);
         orderMenu.setVisible(MODE_LIBRARY == mode);
@@ -1439,30 +1463,26 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     ContentListener implementation
      */
     @Override
-    public void onContentReady(boolean success, List<Content> results, int totalContent) {
-        if (success) {
-            Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
-            isLoaded = true;
+    public void onContentReady(List<Content> results, int totalContent) {
+        Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
+        isLoaded = true;
 
-            if (isSearchReplaceResults && isNewContentAvailable)
-            {
-                newContentToolTip.setVisibility(View.GONE);
-                isNewContentAvailable = false;
-            }
-
-            // Display new results
-            displayResults(results, totalContent);
-
-            mAdapter.setTotalCount(totalContent);
+        if (isSearchReplaceResults && isNewContentAvailable)
+        {
+            newContentToolTip.setVisibility(View.GONE);
+            isNewContentAvailable = false;
         }
+
+        // Display new results
+        displayResults(results, totalContent);
+
+        mAdapter.setTotalCount(totalContent);
     }
 
     @Override
-    public void onContentFailed(boolean failure) {
-        if (failure) {
-            Timber.d("Content results failed to load.");
-            isLoaded = false;
-        }
+    public void onContentFailed() {
+        Timber.d("Content results failed to load.");
+        isLoaded = false;
     }
 
     /*

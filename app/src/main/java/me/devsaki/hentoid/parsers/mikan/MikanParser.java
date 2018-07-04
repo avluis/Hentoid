@@ -120,7 +120,7 @@ public class MikanParser {
             if (null == json)
             {
                 Timber.w("No content available for URL %s", url);
-                listener.onContentFailed(true);
+                listener.onContentFailed();
                 return null;
             }
 
@@ -136,14 +136,14 @@ public class MikanParser {
                 case MikanParser.USAGE_RECENT_BOOKS:
                 case MikanParser.USAGE_SEARCH:
                     int maxItems = response.maxpage * response.result.size(); // Roughly : number of pages * number of books per page
-                    listener.onContentReady(true, response.toContentList(), maxItems);
+                    listener.onContentReady(response.toContentList(), maxItems);
                     break;
                 case MikanParser.USAGE_BOOK_PAGES:
-                    if (null == content) listener.onContentFailed(true);
+                    if (null == content) listener.onContentFailed();
                     else {
                         List<Content> list = new ArrayList<Content>() {{ add(content); }};
                         content.setImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
-                        listener.onContentReady(true, list, 1);
+                        listener.onContentReady(list, 1);
                     }
                     break;
             }

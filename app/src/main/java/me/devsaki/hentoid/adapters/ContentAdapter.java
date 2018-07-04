@@ -762,15 +762,15 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     // ContentListener implementation
     @Override
-    public void onContentReady(boolean success, List<Content> contentList, int totalContent) { // Listener for pages retrieval
-        if (success && 1 == contentList.size())
+    public void onContentReady(List<Content> contentList, int totalContent) { // Listener for pages retrieval
+        if (1 == contentList.size())
         {
             downloadContent(contentList.get(0));
         }
     }
 
     @Override
-    public void onContentFailed(boolean failure) {
+    public void onContentFailed() {
         Timber.w("Page loading failed");
     }
 
