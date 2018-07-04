@@ -24,7 +24,7 @@ public class MikanParser {
     private static final String USAGE_BOOK_PAGES = "bookPages";
     private static final String USAGE_SEARCH = "search";
 
-    private static final String MIKAN_BASE_URL = "http://api.initiate.host/v1/";
+    private static final String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
 
 
     private static String getMikanCodeForSite(Site s) {
