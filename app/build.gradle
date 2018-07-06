@@ -19,8 +19,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 58
-        versionName '1.3.5'
+        versionCode 59
+        versionName '1.3.6'
         vectorDrawables.useSupportLibrary = true
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"'
@@ -69,7 +69,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.4.0'
     // Intro screens or slides: https://github.com/apl-devs/AppIntro
     //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
-    implementation 'com.github.apl-devs:appintro:9d5d046037'
+    implementation 'com.github.apl-devs:appintro:v4.2.3'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     implementation 'com.google.code.gson:gson:2.8.2'
     // Timber (Extensible Logger): github.com/JakeWharton/timber
