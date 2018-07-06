@@ -534,12 +534,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         llm = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(llm);
 
+        if (MODE_MIKAN == mode) order = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
+
         Comparator<Content> comparator;
         switch (order) {
-            case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
                 comparator = Content.DLDATE_COMPARATOR;
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED:
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                 comparator = Content.DLDATE_INV_COMPARATOR;
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
@@ -547,6 +549,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
                 comparator = Content.TITLE_ALPHA_INV_COMPARATOR;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST:
+                comparator = Content.ULDATE_COMPARATOR;
                 break;
             default:
                 comparator = Content.QUERY_ORDER_COMPARATOR;
@@ -727,23 +732,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         MenuItem aboutMikanMenu = menu.findItem(R.id.action_about_mikan);
         aboutMikanMenu.setVisible(MODE_MIKAN == mode);
         if (MODE_MIKAN == mode) {
-            aboutMikanMenu.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    WebView webView = new WebView(mContext);
-                    webView.loadUrl("file:///android_asset/about_mikan.html");
-                    webView.setInitialScale(95);
+            aboutMikanMenu.setOnMenuItemClickListener(item -> {
+                WebView webView = new WebView(mContext);
+                webView.loadUrl("file:///android_asset/about_mikan.html");
+                webView.setInitialScale(95);
 
-                    android.support.v7.app.AlertDialog mikanDialog = new android.support.v7.app.AlertDialog.Builder(mContext)
-                            .setTitle("About Mikan Search")
-                            .setView(webView)
-                            .setPositiveButton(android.R.string.ok, null)
-                            .create();
+                android.support.v7.app.AlertDialog mikanDialog = new android.support.v7.app.AlertDialog.Builder(mContext)
+                        .setTitle("About Mikan Search")
+                        .setView(webView)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .create();
 
-                    mikanDialog.show();
+                mikanDialog.show();
 
-                    return true;
-                }
+                return true;
             });
         }
 
@@ -846,10 +848,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // Sets the right starting icon according to the starting sort order
         switch (order) {
-            case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED:
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
@@ -917,7 +919,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_321:
                 cleanResults();
                 orderUpdated = true;
-                order = Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE;
+                order = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST;
                 mAdapter.setComparator(Content.DLDATE_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
                 update();
@@ -937,7 +939,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_123:
                 cleanResults();
                 orderUpdated = true;
-                order = Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED;
+                order = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST;
                 mAdapter.setComparator(Content.DLDATE_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
                 update();

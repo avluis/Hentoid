@@ -355,10 +355,10 @@ public class HentoidDB extends SQLiteOpenHelper {
                 String sql = buildContentSearchQuery(title, author, tags, sites, filterFavourites);
 
                 switch (orderStyle) {
-                    case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
+                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
                         sql += ContentTable.ORDER_BY_DATE + " DESC";
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED:
+                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                         sql += ContentTable.ORDER_BY_DATE;
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:

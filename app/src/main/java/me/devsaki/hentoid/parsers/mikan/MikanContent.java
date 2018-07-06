@@ -72,6 +72,8 @@ public class MikanContent implements Serializable {
         // Cover = 1st image of the set -- deprecated ?
         if (images.size() > 0) result.setCoverImageUrl(images.get(0)); else result.setCoverImageUrl(image);
 
+        result.setUploadDate(time.getTime());
+
         // TODO
 
         result.setSite(Site.searchByUrl(url));

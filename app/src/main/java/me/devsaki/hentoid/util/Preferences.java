@@ -198,10 +198,11 @@ public final class Preferences {
 
     public static final class Constant {
         public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
-        public static final int PREF_ORDER_CONTENT_BY_DATE = 1;
+        public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC_INVERTED = 2;
-        public static final int PREF_ORDER_CONTENT_BY_DATE_INVERTED = 3;
+        public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
         public static final int PREF_ORDER_CONTENT_RANDOM = 4;
+        public static final int PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
