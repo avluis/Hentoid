@@ -69,7 +69,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.4.0'
     // Intro screens or slides: https://github.com/apl-devs/AppIntro
     //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
-    implementation 'com.github.apl-devs:appintro:9d5d046037'
+    implementation 'com.github.apl-devs:appintro:v4.2.3'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     implementation 'com.google.code.gson:gson:2.8.2'
     // Timber (Extensible Logger): github.com/JakeWharton/timber
