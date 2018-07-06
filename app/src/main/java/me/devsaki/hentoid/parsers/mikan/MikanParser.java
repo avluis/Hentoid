@@ -108,7 +108,7 @@ public class MikanParser {
 
         @Override
         protected JSONObject doInBackground(String... params) {
-            JSONObject json = null;
+            JSONObject json;
             String url = params[0];
             Timber.d("Querying Mikan at URL %s", url);
             try {
