@@ -27,6 +27,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
+import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
@@ -142,33 +143,12 @@ public class QueueFragment extends BaseFragment {
 
                 // Update information bar
                 StringBuilder message = new StringBuilder();
-                String processedPagesFmt = compensateStringLength(pagesOK, String.valueOf(totalPages).length());
+                String processedPagesFmt = Helper.compensateStringLength(pagesOK, String.valueOf(totalPages).length());
                 message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
 
                 queueInfo.setText(message.toString());
             }
         }
-    }
-
-    /**
-     * Transforms the given string to format with a given length
-     * - If the given length is shorter than the actual length of the string, it will be truncated
-     * - If the given length is longer than the actual length of the string, it will be right/left-padded with a given character
-     *
-     * @param value  String to transform
-     * @param length Target length of the final string
-     * @return Reprocessed string of given length, according to rules documented in the method description
-     */
-    private static String compensateStringLength(int value, int length) {
-        String result = String.valueOf(value);
-
-        if (result.length() > length) {
-            result = result.substring(0, length);
-        } else if (result.length() < length) {
-            result = String.format("%1$" + length + "s", result).replace(' ', '0');
-        }
-
-        return result;
     }
 
     /**

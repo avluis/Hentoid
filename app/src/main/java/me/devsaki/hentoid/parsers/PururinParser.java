@@ -21,14 +21,18 @@ public class PururinParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-        Content result = new Content();
+        Content result = null;
 
         Elements content = doc.select("div.gallery-info");
+
         if (content.size() > 0) {
+            result = new Content();
+
             String url = doc.select("div.cover")
                     .select("a")
                     .attr("href")
-                    .replace("http://pururin.io/read", "");
+                    .replace("http://pururin.io/read", "")
+                    .replace("/01","");
             result.setUrl(url);
 
             String coverUrl = doc.select("div.cover")

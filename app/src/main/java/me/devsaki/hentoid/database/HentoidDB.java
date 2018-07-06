@@ -654,12 +654,44 @@ public class HentoidDB extends SQLiteOpenHelper {
             SQLiteStatement statement = null;
             try {
                 db = getWritableDatabase();
-                statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_STATEMENT);
+                statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_FROM_ID);
                 db.beginTransaction();
                 try {
                     statement.clearBindings();
                     statement.bindLong(1, row.getStatus().getCode());
                     statement.bindLong(2, row.getId());
+                    statement.execute();
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+            } finally {
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
+                if (statement != null) {
+                    statement.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+    }
+
+    public void updateImageFileStatus(Content content, StatusContent updateFrom, StatusContent updateTo) {
+        synchronized (locker) {
+            Timber.d("updateImageFileStatus2");
+            SQLiteDatabase db = null;
+            SQLiteStatement statement = null;
+
+            try {
+                db = getWritableDatabase();
+                statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_FROM_ID_AND_STATUS);
+                db.beginTransaction();
+                try {
+                    statement.clearBindings();
+                    statement.bindLong(1, updateTo.getCode());
+                    statement.bindLong(2, content.getId());
+                    statement.bindLong(3, updateFrom.getCode());
                     statement.execute();
                     db.setTransactionSuccessful();
                 } finally {

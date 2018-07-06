@@ -32,7 +32,7 @@ public class HentaiCafeParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-        Content result = new Content();
+        Content result = null;
 
         Elements content = doc.select("div.entry-content.content");
 
@@ -44,6 +44,8 @@ public class HentaiCafeParser extends BaseParser {
         }
 
         if (content.size() > 0) {
+            result = new Content();
+
             String url = doc.select("div.x-main.full")
                     .select("article")
                     .attr("id")

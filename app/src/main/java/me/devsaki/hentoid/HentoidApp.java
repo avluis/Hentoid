@@ -1,6 +1,7 @@
 package me.devsaki.hentoid;
 
 import android.app.Application;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
@@ -110,6 +111,10 @@ public class HentoidApp extends Application {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             ShortcutHelper.buildShortcuts(this);
         }
+
+        // Clears all previous notifications
+        NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
+        if (manager != null) manager.cancelAll();
     }
 
     private void UpdateCheck(boolean onlyWifi) {

@@ -28,10 +28,12 @@ public class HitomiParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-        Content result = new Content();
+        Content result = null;
 
         Elements content = doc.select(".content");
         if (content.size() > 0) {
+            result = new Content();
+
             String coverImageUrl = "https:" + content.select(".cover img").attr("src");
             result.setCoverImageUrl(coverImageUrl);
             Element info = content.select(".gallery").first();
