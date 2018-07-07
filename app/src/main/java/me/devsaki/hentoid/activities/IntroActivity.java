@@ -86,7 +86,6 @@ public class IntroActivity extends AppIntro2 {
 
     @Override
     public void onDonePressed(Fragment currentFragment) {
-        HentoidApp.setDonePressed(true);
         Preferences.setIsFirstRun(false);
         Intent intent = new Intent(this, DownloadsActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP
