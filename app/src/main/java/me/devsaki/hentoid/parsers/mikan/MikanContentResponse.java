@@ -15,7 +15,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
-public class MikanResponse implements Serializable {
+public class MikanContentResponse implements Serializable {
 
     @Expose
     public String request;

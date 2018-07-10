@@ -16,6 +16,8 @@ public class Attribute {
     private String name;
     @Expose
     private AttributeType type;
+    private int count;
+    private int externalId = 0;
 
     public Attribute() {}
 
@@ -27,7 +29,7 @@ public class Attribute {
     }
 
     public Integer getId() {
-        return url.hashCode();
+        return (0 == externalId)? url.hashCode() : externalId;
     }
 
     public String getUrl() {
@@ -48,12 +50,23 @@ public class Attribute {
         return this;
     }
 
-    public AttributeType getType() {
-        return type;
-    }
+    public AttributeType getType() { return type; }
 
     public Attribute setType(AttributeType type) {
         this.type = type;
+        return this;
+    }
+
+    public int getCount() { return count; }
+
+    public Attribute setCount(int count) {
+        this.count = count;
+        return this;
+    }
+
+
+    public Attribute setExternalId(int id) {
+        this.externalId = id;
         return this;
     }
 }

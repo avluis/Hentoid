@@ -61,11 +61,13 @@ import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.SearchContent;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.parsers.mikan.MikanParser;
@@ -84,7 +86,7 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Common elements for use by EndlessFragment and PagerFragment
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
-        ContentsWipedListener, ItemSelectListener {
+        ContentsWipedListener, ItemSelectListener, AttributeListener {
 
     // ======== CONSTANTS
 
@@ -592,6 +594,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchPane = rootView.findViewById(R.id.tag_filter_view);
 
         search = new SearchContent(mContext, this);
+
+        MikanParser.getLanguages(this);
     }
 
     protected void attachScrollListener() {
@@ -1486,6 +1490,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         Timber.w("Content results failed to load.");
         Helper.toast("Content results failed to load.");
         isLoaded = false;
+    }
+
+    /*
+    AttributeListener implementation
+     */
+    @Override
+    public void onAttributesReady(List<Attribute> results, int totalContent) {
+        // TODO
+    }
+
+    @Override
+    public void onAttributesFailed() {
+        Timber.w("Attributes failed to load.");
+        Helper.toast("Attributes failed to load.");
     }
 
     /*

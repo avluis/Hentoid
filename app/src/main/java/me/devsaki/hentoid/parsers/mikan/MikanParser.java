@@ -13,7 +13,9 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.util.AttributeCache;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.UrlBuilder;
 import timber.log.Timber;
@@ -23,6 +25,7 @@ public class MikanParser {
     private static final String USAGE_RECENT_BOOKS = "recentBooks";
     private static final String USAGE_BOOK_PAGES = "bookPages";
     private static final String USAGE_SEARCH = "search";
+    private static final String USAGE_REF_LANGUAGES = "ref_languages";
 
     private static final String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
 
@@ -52,6 +55,10 @@ public class MikanParser {
 
     public static void searchBooks(Site site, String query, ContentListener listener) {
         launchRequest(buildSimpleSearchRequest(site, query), USAGE_SEARCH, null, listener);
+    }
+
+    public static void getLanguages(AttributeListener listener) {
+        launchRequest(buildGetLanguagesRequest(), USAGE_REF_LANGUAGES, listener);
     }
 
     private static String buildRecentBooksRequest(Site site, Language language, int page, boolean showMostRecentFirst) {
@@ -90,17 +97,27 @@ public class MikanParser {
         return queryUrl.toString();
     }
 
-    private static synchronized void launchRequest(String url, String usage, Content content, ContentListener listener) {
-        new SearchTask(listener, content, usage).execute(url);
+    private static String buildGetLanguagesRequest() {
+        return MIKAN_BASE_URL + getMikanCodeForSite(Site.HITOMI) + // Forced HITOMI until the endpoint moves to root URL
+                "/info/languages";
     }
 
-    private static class SearchTask extends AsyncTask<String, String, JSONObject> {
+    private static synchronized void launchRequest(String url, String usage, Content content, ContentListener listener) {
+        new ContentFetchTask(listener, content, usage).execute(url);
+    }
+
+    private static synchronized void launchRequest(String url, String usage, AttributeListener listener) {
+        new AttributesFetchTask(listener, usage).execute(url);
+    }
+
+
+    private static class ContentFetchTask extends AsyncTask<String, String, JSONObject> {
 
         private final ContentListener listener;
         private final String usage;
         private final Content content;
 
-        SearchTask(ContentListener listener, Content content, String usage) {
+        ContentFetchTask(ContentListener listener, Content content, String usage) {
             this.listener = listener;
             this.usage = usage;
             this.content = content;
@@ -108,11 +125,12 @@ public class MikanParser {
 
         @Override
         protected JSONObject doInBackground(String... params) {
-            JSONObject json;
+            JSONObject json = null;
             String url = params[0];
             Timber.d("Querying Mikan at URL %s", url);
             try {
-                json = JsonHelper.jsonReader(url);
+                JsonHelper.JSONResponse response = JsonHelper.jsonReader(url);
+                if (response != null) json = response.object;
             } catch (IOException e)  {
                 Timber.w("JSON retrieval failed at URL %s", url);
                 listener.onContentFailed();
@@ -131,8 +149,12 @@ public class MikanParser {
 
         @Override
         protected void onPostExecute(JSONObject json) {
-            if (null == json) return;
-            MikanResponse response = new Gson().fromJson(json.toString(), MikanResponse.class);
+            if (null == json) {
+                Timber.w("Empty response");
+                listener.onContentFailed();
+                return;
+            }
+            MikanContentResponse response = new Gson().fromJson(json.toString(), MikanContentResponse.class);
             switch (usage)
             {
                 case MikanParser.USAGE_RECENT_BOOKS:
@@ -152,4 +174,66 @@ public class MikanParser {
             Timber.d("Mikan response [%s] : %s", response.request, json.toString());
         }
     }
+
+    private static class AttributesFetchTask extends AsyncTask<String, String, JSONObject> {
+
+        private final AttributeListener listener;
+        private final String usage;
+
+        AttributesFetchTask(AttributeListener listener, String usage) {
+            this.listener = listener;
+            this.usage = usage;
+        }
+
+        @Override
+        protected JSONObject doInBackground(String... params) {
+
+            // Try and get response from cache
+            JSONObject cachedAttrs = AttributeCache.getFromCache(USAGE_REF_LANGUAGES);
+            if (cachedAttrs != null) return cachedAttrs;
+
+            // If not cached (or cache expired), get it from network
+            JSONObject json = null;
+            JsonHelper.JSONResponse response;
+            String url = params[0];
+            Timber.d("Querying Mikan at URL %s", url);
+            try {
+                response = JsonHelper.jsonReader(url);
+                if (response != null) json = response.object;
+            } catch (IOException e)  {
+                Timber.w("JSON retrieval failed at URL %s", url);
+                listener.onAttributesFailed();
+                return null;
+            }
+
+            if (null == json)
+            {
+                Timber.w("No content available for URL %s", url);
+                listener.onAttributesFailed();
+                return null;
+            }
+
+            AttributeCache.setCache(usage, json, response.expiryDate);
+
+            return json;
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject json) {
+            if (null == json) {
+                Timber.w("Empty response");
+                listener.onAttributesFailed();
+                return;
+            }
+            MikanAttributeResponse response = new Gson().fromJson(json.toString(), MikanAttributeResponse.class);
+            switch (usage)
+            {
+                case MikanParser.USAGE_REF_LANGUAGES:
+                    listener.onAttributesReady(response.toAttributeList(), response.result.size());
+                    break;
+            }
+            Timber.d("Mikan response [%s] : %s", response.request, json.toString());
+        }
+    }
+
 }

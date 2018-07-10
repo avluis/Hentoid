@@ -356,7 +356,9 @@ public class UpdateCheck {
         @Override
         protected Void doInBackground(String... params) {
             try {
-                JSONObject jsonObject = new JsonHelper().jsonReader(params[0]);
+                JSONObject jsonObject = null;
+                JsonHelper.JSONResponse response = JsonHelper.jsonReader(params[0]);
+                if (response != null) jsonObject = response.object;
                 if (jsonObject != null) {
                     int updateVersionCode = jsonObject.getInt(KEY_VERSION_CODE);
                     if (BuildConfig.VERSION_CODE < updateVersionCode) {

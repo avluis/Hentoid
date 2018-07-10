@@ -15,14 +15,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 public class MikanContent implements Serializable {
-
-    public class MikanAttribute implements Serializable {
-        @Expose
-        public String name;
-        @Expose
-        public String url;
-    }
-
     @Expose
     public long id;
     @Expose
@@ -32,11 +24,13 @@ public class MikanContent implements Serializable {
     @Expose
     public String image;
     @Expose
-    public List<String> images = new ArrayList<>(); // Deprecated ?
-    @Expose
     public List<MikanAttribute> artist = new ArrayList<>();
     @Expose
+    public List<MikanAttribute> group = new ArrayList<>();
+    @Expose
     public List<MikanAttribute> series = new ArrayList<>();
+    @Expose
+    public List<MikanAttribute> characters = new ArrayList<>();
     @Expose
     public List<MikanAttribute> tags = new ArrayList<>();
     @Expose
@@ -63,23 +57,18 @@ public class MikanContent implements Serializable {
         result.setAttributes(attributes);
 
         for (MikanAttribute a : artist) attributes.add(new Attribute(AttributeType.ARTIST, a.name, a.url));
+        for (MikanAttribute a : group) attributes.add(new Attribute(AttributeType.CIRCLE, a.name, a.url));
         for (MikanAttribute a : series) attributes.add(new Attribute(AttributeType.SERIE, a.name, a.url));
+        for (MikanAttribute a : characters) attributes.add(new Attribute(AttributeType.CHARACTER, a.name, a.url));
         for (MikanAttribute a : tags) attributes.add(new Attribute(AttributeType.TAG, a.name, a.url));
         if (type != null) attributes.add(new Attribute(AttributeType.CATEGORY, type.name, type.url));
         if (language != null) attributes.add(new Attribute(AttributeType.LANGUAGE, language.name, language.url));
 
-
-        // Cover = 1st image of the set -- deprecated ?
-        if (images.size() > 0) result.setCoverImageUrl(images.get(0)); else result.setCoverImageUrl(image);
-
+        result.setCoverImageUrl(image);
         result.setUploadDate(time.getTime());
-
-        // TODO
 
         result.setSite(Site.searchByUrl(url));
         result.setStatus(StatusContent.ONLINE);
-
-
         return result;
     }
 }
