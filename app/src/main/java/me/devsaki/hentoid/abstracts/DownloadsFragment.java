@@ -594,8 +594,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchPane = rootView.findViewById(R.id.tag_filter_view);
 
         search = new SearchContent(mContext, this);
-
-        MikanParser.getLanguages(this);
     }
 
     protected void attachScrollListener() {
