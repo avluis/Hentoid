@@ -26,6 +26,8 @@ import static android.support.design.widget.Snackbar.LENGTH_LONG;
 
 public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
 
+    public static final int PERMISSION_REQUEST_CODE = 0;
+
     private IntroActivity parentActivity;
 
     @Override
@@ -57,9 +59,10 @@ public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode != 0) return;
+        if (requestCode != PERMISSION_REQUEST_CODE) return;
+        if (permissions.length == 0) return;
         if (!permissions[0].equals(Manifest.permission.WRITE_EXTERNAL_STORAGE)) return;
-
+        if (grantResults.length == 0) return;
         if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             parentActivity.onPermissionGranted();
         } else if (shouldShowRequestPermissionRationale(Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -86,7 +89,7 @@ public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
     }
 
     private void invokeAskPermission() {
-        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 0);
+        requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
     }
 
     private void invokeOpenSettings() {

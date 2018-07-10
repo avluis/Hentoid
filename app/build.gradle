@@ -19,9 +19,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 59
-        versionName '1.3.6'
-        vectorDrawables.useSupportLibrary = true
+        versionCode 60
+        versionName '1.3.7'
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"'
     }

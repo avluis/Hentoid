@@ -31,7 +31,6 @@ import timber.log.Timber;
 public class HentoidApp extends Application {
 
     private static boolean beginImport;
-    private static boolean donePressed;
     private static HentoidApp instance;
     private RefWatcher refWatcher;
 
@@ -51,14 +50,6 @@ public class HentoidApp extends Application {
 
     public static void setBeginImport(boolean started) {
         HentoidApp.beginImport = started;
-    }
-
-    public static boolean isDonePressed() {
-        return donePressed;
-    }
-
-    public static void setDonePressed(boolean pressed) {
-        HentoidApp.donePressed = pressed;
     }
 
     public static RefWatcher getRefWatcher(Context context) {
