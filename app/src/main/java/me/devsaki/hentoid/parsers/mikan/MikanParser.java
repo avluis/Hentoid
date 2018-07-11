@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.AttributeListener;
@@ -25,7 +26,6 @@ public class MikanParser {
     private static final String USAGE_RECENT_BOOKS = "recentBooks";
     private static final String USAGE_BOOK_PAGES = "bookPages";
     private static final String USAGE_SEARCH = "search";
-    private static final String USAGE_REF_LANGUAGES = "ref_languages";
 
     private static final String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
 
@@ -57,8 +57,8 @@ public class MikanParser {
         launchRequest(buildSimpleSearchRequest(site, query), USAGE_SEARCH, null, listener);
     }
 
-    public static void getLanguages(AttributeListener listener) {
-        launchRequest(buildGetLanguagesRequest(), USAGE_REF_LANGUAGES, listener);
+    public static void getAttributeMasterData(AttributeType attr, AttributeListener listener) {
+        launchRequest(buildGetAttrRequest(attr), attr.name(), listener);
     }
 
     private static String buildRecentBooksRequest(Site site, Language language, int page, boolean showMostRecentFirst) {
@@ -97,9 +97,19 @@ public class MikanParser {
         return queryUrl.toString();
     }
 
-    private static String buildGetLanguagesRequest() {
-        return MIKAN_BASE_URL + getMikanCodeForSite(Site.HITOMI) + // Forced HITOMI until the endpoint moves to root URL
-                "/info/languages";
+    private static String buildGetAttrRequest(AttributeType attr) {
+        String result = MIKAN_BASE_URL + getMikanCodeForSite(Site.HITOMI) + // Forced HITOMI until the endpoint moves to root URL
+                "/info/";
+
+        switch(attr) {
+            case ARTIST:result+="artists"; break;
+            case CHARACTER:result+="characters"; break;
+            case TAG:result+="tags"; break;
+            case LANGUAGE:result+="languages"; break;
+            case CIRCLE:result+="groups"; break;
+        }
+
+        return result;
     }
 
     private static synchronized void launchRequest(String url, String usage, Content content, ContentListener listener) {
@@ -189,7 +199,7 @@ public class MikanParser {
         protected JSONObject doInBackground(String... params) {
 
             // Try and get response from cache
-            JSONObject cachedAttrs = AttributeCache.getFromCache(USAGE_REF_LANGUAGES);
+            JSONObject cachedAttrs = AttributeCache.getFromCache(usage);
             if (cachedAttrs != null) return cachedAttrs;
 
             // If not cached (or cache expired), get it from network
@@ -226,12 +236,7 @@ public class MikanParser {
                 return;
             }
             MikanAttributeResponse response = new Gson().fromJson(json.toString(), MikanAttributeResponse.class);
-            switch (usage)
-            {
-                case MikanParser.USAGE_REF_LANGUAGES:
-                    listener.onAttributesReady(response.toAttributeList(), response.result.size());
-                    break;
-            }
+            listener.onAttributesReady(response.toAttributeList(), response.result.size());
             Timber.d("Mikan response [%s] : %s", response.request, json.toString());
         }
     }

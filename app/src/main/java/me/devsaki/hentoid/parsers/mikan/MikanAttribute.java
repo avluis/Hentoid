@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.AttributeType;
 
 public class MikanAttribute {
     // Published by both Collection and Attributes endpoints
@@ -30,6 +31,16 @@ public class MikanAttribute {
         result.setUrl(url);
         result.setCount(count);
         result.setExternalId(id);
+
+        AttributeType type;
+        switch (this.type) {
+            case "language" : type = AttributeType.LANGUAGE; break;
+            case "character" : type = AttributeType.CHARACTER; break;
+            case "artist" : type = AttributeType.ARTIST; break;
+            case "group" : type = AttributeType.CIRCLE; break;
+            default : type = AttributeType.TAG;
+        }
+        result.setType(type);
 
         return result;
     }
