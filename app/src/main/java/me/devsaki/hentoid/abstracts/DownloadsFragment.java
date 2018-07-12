@@ -101,7 +101,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public final static int MODE_LIBRARY = 0;
     public final static int MODE_MIKAN = 1;
 
-    protected static final int MAX_ATTRIBUTES_DISPLAYED = 30;
+    protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
 
 
     // Save state constants

@@ -1,9 +1,6 @@
 package me.devsaki.hentoid.util;
 
-import org.json.JSONObject;
-
 import java.io.File;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,9 +20,9 @@ public class AttributeCache {
 
     private static File cacheDir;
     private static Map<String, Date> collectionExpiry;
-    private static Map<String, JSONObject> collection;
+    private static Map<String, List<Attribute>> collection;
 
-    public static JSONObject getFromCache(String key)
+    public static List<Attribute> getFromCache(String key)
     {
         if (null == collectionExpiry) return null;
 
@@ -33,7 +30,7 @@ public class AttributeCache {
         else return null;
     }
 
-    public static void setCache(String key, JSONObject value, Date expiryDateUTC)
+    public static void setCache(String key, List<Attribute> value, Date expiryDateUTC)
     {
         if (null == collectionExpiry)
         {

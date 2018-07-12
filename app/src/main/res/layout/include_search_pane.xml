@@ -1,5 +1,4 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:f="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
@@ -45,41 +44,27 @@
                 />
 
             <LinearLayout
-                android:layout_width="match_parent"
+                android:id="@+id/attr_selector"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 >
-                <LinearLayout
-                    android:id="@+id/attr_selector"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
 
-                    <!-- programmatically added attribute sections here -->
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    >
-
-                    <android.support.v7.widget.SearchView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <org.apmem.tools.layouts.FlowLayout
-                        android:id="@+id/filter_options"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="start"
-                        android:orientation="horizontal"
-                        />
-                </LinearLayout>
+                <!-- programmatically added attribute sections here -->
 
             </LinearLayout>
+
+            <android.support.v7.widget.SearchView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <org.apmem.tools.layouts.FlowLayout
+                android:id="@+id/filter_options"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="fill"
+                android:orientation="horizontal"
+                />
 
         </LinearLayout>
 

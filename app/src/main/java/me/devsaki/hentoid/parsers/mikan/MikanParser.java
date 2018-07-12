@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
@@ -121,7 +122,7 @@ public class MikanParser {
     }
 
 
-    private static class ContentFetchTask extends AsyncTask<String, String, JSONObject> {
+    private static class ContentFetchTask extends AsyncTask<String, String, MikanContentResponse> {
 
         private final ContentListener listener;
         private final String usage;
@@ -134,7 +135,7 @@ public class MikanParser {
         }
 
         @Override
-        protected JSONObject doInBackground(String... params) {
+        protected MikanContentResponse doInBackground(String... params) {
             JSONObject json = null;
             String url = params[0];
             Timber.d("Querying Mikan at URL %s", url);
@@ -143,28 +144,30 @@ public class MikanParser {
                 if (response != null) json = response.object;
             } catch (IOException e)  {
                 Timber.w("JSON retrieval failed at URL %s", url);
-                listener.onContentFailed();
                 return null;
             }
 
             if (null == json)
             {
                 Timber.w("No content available for URL %s", url);
-                listener.onContentFailed();
                 return null;
             }
 
-            return json;
+            MikanContentResponse response = new Gson().fromJson(json.toString(), MikanContentResponse.class);
+
+            Timber.d("Mikan response [%s] : %s", response.request, json.toString());
+
+            return response;
         }
 
         @Override
-        protected void onPostExecute(JSONObject json) {
-            if (null == json) {
+        protected void onPostExecute(MikanContentResponse response) {
+            if (null == response) {
                 Timber.w("Empty response");
                 listener.onContentFailed();
                 return;
             }
-            MikanContentResponse response = new Gson().fromJson(json.toString(), MikanContentResponse.class);
+
             switch (usage)
             {
                 case MikanParser.USAGE_RECENT_BOOKS:
@@ -181,11 +184,10 @@ public class MikanParser {
                     }
                     break;
             }
-            Timber.d("Mikan response [%s] : %s", response.request, json.toString());
         }
     }
 
-    private static class AttributesFetchTask extends AsyncTask<String, String, JSONObject> {
+    private static class AttributesFetchTask extends AsyncTask<String, String, List<Attribute>> {
 
         private final AttributeListener listener;
         private final String usage;
@@ -196,10 +198,10 @@ public class MikanParser {
         }
 
         @Override
-        protected JSONObject doInBackground(String... params) {
+        protected List<Attribute> doInBackground(String... params) {
 
             // Try and get response from cache
-            JSONObject cachedAttrs = AttributeCache.getFromCache(usage);
+            List<Attribute> cachedAttrs = AttributeCache.getFromCache(usage);
             if (cachedAttrs != null) return cachedAttrs;
 
             // If not cached (or cache expired), get it from network
@@ -212,32 +214,33 @@ public class MikanParser {
                 if (response != null) json = response.object;
             } catch (IOException e)  {
                 Timber.w("JSON retrieval failed at URL %s", url);
-                listener.onAttributesFailed();
                 return null;
             }
 
             if (null == json)
             {
                 Timber.w("No content available for URL %s", url);
-                listener.onAttributesFailed();
                 return null;
             }
 
-            AttributeCache.setCache(usage, json, response.expiryDate);
+            MikanAttributeResponse attrResponse = new Gson().fromJson(json.toString(), MikanAttributeResponse.class);
+            List<Attribute> attributes = attrResponse.toAttributeList();
 
-            return json;
+            AttributeCache.setCache(usage, attributes, response.expiryDate);
+
+            Timber.d("Mikan response [%s] : %s", attrResponse.request, json.toString());
+
+            return attributes;
         }
 
         @Override
-        protected void onPostExecute(JSONObject json) {
-            if (null == json) {
+        protected void onPostExecute(List<Attribute> response) {
+            if (null == response) {
                 Timber.w("Empty response");
                 listener.onAttributesFailed();
                 return;
             }
-            MikanAttributeResponse response = new Gson().fromJson(json.toString(), MikanAttributeResponse.class);
-            listener.onAttributesReady(response.toAttributeList(), response.result.size());
-            Timber.d("Mikan response [%s] : %s", response.request, json.toString());
+            listener.onAttributesReady(response, response.size());
         }
     }
 
