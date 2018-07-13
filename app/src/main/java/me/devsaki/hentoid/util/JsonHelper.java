@@ -36,12 +36,17 @@ public class JsonHelper {
         OutputStream output = null;
         try {
             output = FileHelper.getOutputStream(file);
-            // build
-            byte[] bytes = json.getBytes();
-            // write
-            output.write(bytes);
-            FileHelper.sync(output);
-            output.flush();
+
+            if (output != null) {
+                // build
+                byte[] bytes = json.getBytes();
+                // write
+                output.write(bytes);
+                FileHelper.sync(output);
+                output.flush();
+            } else {
+                Timber.w("JSON file creation failed for %s", file.getPath());
+            }
         } finally {
             // finished
             if (output != null) {
@@ -56,12 +61,12 @@ public class JsonHelper {
 
     public static <T> T jsonToObject(File f, Class<T> type) throws IOException {
         BufferedReader br = null;
-        String json = "";
+        StringBuilder json = new StringBuilder();
         try {
             String sCurrentLine;
             br = new BufferedReader(new FileReader(f));
             while ((sCurrentLine = br.readLine()) != null) {
-                json += sCurrentLine;
+                json.append(sCurrentLine);
             }
         } finally {
             if (br != null) {
@@ -73,7 +78,7 @@ public class JsonHelper {
             }
         }
 
-        return new Gson().fromJson(json, type);
+        return new Gson().fromJson(json.toString(), type);
     }
 
     public JSONObject jsonReader(String jsonURL) throws IOException {
