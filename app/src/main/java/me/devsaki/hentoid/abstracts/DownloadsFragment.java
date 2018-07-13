@@ -2,6 +2,7 @@ package me.devsaki.hentoid.abstracts;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.SearchManager;
@@ -130,7 +131,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private SearchView searchView;
     // Search pane that shows up on top when using search function
     protected View searchPane;
-    // Container where all attributes are loaded
+    // Container where selected attributed are displayed
+    private ViewGroup searchTags;
+    // Container where all available attributes are loaded
     private ViewGroup attributeMosaic;
     // Layout containing the list of books
     private SwipeRefreshLayout refreshLayout;
@@ -599,6 +602,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         searchPane = rootView.findViewById(R.id.tag_filter_view);
         attributeMosaic = rootView.findViewById(R.id.tag_suggestion);
+        searchTags = rootView.findViewById(R.id.search_tags);
 
         search = new SearchContent(mContext, this);
     }
@@ -1258,10 +1262,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
 
-    private Button createTagSuggestionButton(Attribute attribute) {
+    private Button createTagSuggestionButton(Attribute attribute, boolean isSelected) {
         Button button = new Button(mContext);
         button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
-        button.setTextColor(Color.WHITE);
         button.setBackgroundResource(R.drawable.btn_attribute_selector);
         button.setMinHeight(0);
         button.setMinimumHeight(0);
@@ -1271,9 +1274,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (tagFilters.containsKey(label)) tagState = tagFilters.get(label);
         colorButton(button, tagState);
 */
+        // TEMP
+        colorButton(button, TAGFILTER_ACTIVE);
+        // TEMP
 
-        button.setOnClickListener(v -> selectTagSuggestion(button));
         button.setTag(attribute);
+        if (!isSelected) button.setId(attribute.getId());
+
+        if (isSelected) button.setOnClickListener(v -> removeTagSuggestion(button));
+        else button.setOnClickListener(v -> addTagSuggestion(button));
 
         return button;
     }
@@ -1336,8 +1345,27 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private void selectTagSuggestion(Button b) {
-        // TODO
+    private void addTagSuggestion(Button b) {
+        searchTags.addView(createTagSuggestionButton((Attribute)b.getTag(), true));
+        colorButton(b, TAGFILTER_SELECTED);
+        // TODO trigger book search
+    }
+
+    private void removeTagSuggestion(Button b) {
+        Attribute a = (Attribute)b.getTag();
+        searchTags.removeView(b);
+
+        Activity activity = getActivity();
+        if (null == activity)
+        {
+            Timber.w("Activity unreachable");
+            return;
+        }
+        Button tagButton = activity.findViewById(a.getId());
+        if (tagButton != null) colorButton(tagButton, TAGFILTER_ACTIVE);
+
+        // TODO if displayed, change color of corresponding button in tags mosaic
+        // TODO trigger book search
     }
 
     private void submitContentSearchQuery(String s) {
@@ -1578,7 +1606,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // TODO handle display Alpha vs. display by count
         if (totalContent <= MAX_ATTRIBUTES_DISPLAYED) {
             for (Attribute attr : results) {
-                attributeMosaic.addView(createTagSuggestionButton(attr));
+                attributeMosaic.addView(createTagSuggestionButton(attr, false));
             }
         }
     }
