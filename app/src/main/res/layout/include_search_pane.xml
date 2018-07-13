@@ -36,7 +36,7 @@
             android:orientation="vertical">
 
             <org.apmem.tools.layouts.FlowLayout
-                android:id="@+id/filter_selection"
+                android:id="@+id/search_tags"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start"
@@ -44,7 +44,7 @@
                 />
 
             <LinearLayout
-                android:id="@+id/attr_selector"
+                android:id="@+id/search_tabs"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -55,11 +55,12 @@
             </LinearLayout>
 
             <android.support.v7.widget.SearchView
+                android:id="@+id/tag_filter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <org.apmem.tools.layouts.FlowLayout
-                android:id="@+id/filter_options"
+                android:id="@+id/tag_suggestion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="fill"

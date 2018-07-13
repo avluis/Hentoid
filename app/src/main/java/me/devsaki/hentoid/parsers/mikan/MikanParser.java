@@ -59,7 +59,11 @@ public class MikanParser {
     }
 
     public static void getAttributeMasterData(AttributeType attr, AttributeListener listener) {
-        launchRequest(buildGetAttrRequest(attr), attr.name(), listener);
+        getAttributeMasterData(attr, null, listener);
+    }
+
+    public static void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
+        launchRequest(buildGetAttrRequest(attr), attr.name(), filter, listener);
     }
 
     private static String buildRecentBooksRequest(Site site, Language language, int page, boolean showMostRecentFirst) {
@@ -117,8 +121,8 @@ public class MikanParser {
         new ContentFetchTask(listener, content, usage).execute(url);
     }
 
-    private static synchronized void launchRequest(String url, String usage, AttributeListener listener) {
-        new AttributesFetchTask(listener, usage).execute(url);
+    private static synchronized void launchRequest(String url, String usage, String filter, AttributeListener listener) {
+        new AttributesFetchTask(listener, usage, filter).execute(url);
     }
 
 
@@ -191,10 +195,12 @@ public class MikanParser {
 
         private final AttributeListener listener;
         private final String usage;
+        private final String filter;
 
-        AttributesFetchTask(AttributeListener listener, String usage) {
+        AttributesFetchTask(AttributeListener listener, String usage, String filter) {
             this.listener = listener;
             this.usage = usage;
+            this.filter = filter;
         }
 
         @Override
@@ -230,7 +236,15 @@ public class MikanParser {
 
             Timber.d("Mikan response [%s] : %s", attrResponse.request, json.toString());
 
-            return attributes;
+            List<Attribute> result = attributes;
+            if (filter != null)
+            {
+                result = new ArrayList<>();
+                for (Attribute a : attributes) if (a.getName().contains(filter)) result.add(a);
+                attributes.clear();
+            }
+
+            return result;
         }
 
         @Override

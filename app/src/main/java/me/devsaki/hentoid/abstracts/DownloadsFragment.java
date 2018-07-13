@@ -62,7 +62,6 @@ import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.dirpicker.util.Convert;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
@@ -213,6 +212,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private boolean filterByArtist = true;
     @Deprecated
     private boolean filterByTag = false;
+
+    // Currently selected tab
+    private AttributeType selectedTab = AttributeType.TAG;
 
     // To be documented
     private ActionMode mActionMode;
@@ -596,7 +598,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout = rootView.findViewById(R.id.swipe_container);
 
         searchPane = rootView.findViewById(R.id.tag_filter_view);
-        attributeMosaic = rootView.findViewById(R.id.filter_options);
+        attributeMosaic = rootView.findViewById(R.id.tag_suggestion);
 
         search = new SearchContent(mContext, this);
     }
@@ -796,7 +798,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                submitSearchQuery(s);
+                submitContentSearchQuery(s);
                 searchView.clearFocus();
 
                 return true;
@@ -805,7 +807,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onQueryTextChange(String s) {
                 if (shouldHide && (!s.isEmpty())) {
-                    submitSearchQuery(s, 1000);
+                    submitContentSearchQuery(s, 1000);
                 }
 
                 if (shouldHide && orderUpdated) {
@@ -831,7 +833,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // == SEARCH PANE
 
         // Create category buttons
-        LinearLayout attrSelector = activity.findViewById(R.id.attr_selector);
+        LinearLayout attrSelector = activity.findViewById(R.id.search_tabs);
         // TODO - color for selected button
         attrSelector.addView(createAttributeSectionButton(AttributeType.LANGUAGE));
         attrSelector.addView(createAttributeSectionButton(AttributeType.ARTIST));
@@ -843,6 +845,33 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         updateFavouriteFilter(favouriteButton);
         favouriteButton.setOnClickListener(v -> toggleFavouriteFilter(favouriteButton));
 */
+
+        SearchView tagSearchView = activity.findViewById(R.id.tag_filter);
+        if (searchManager != null) {
+            tagSearchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
+        }
+        tagSearchView.setIconifiedByDefault(false);
+        tagSearchView.setQueryHint("Search " + selectedTab.name());
+        tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                submitAttributeSearchQuery(selectedTab, s);
+                tagSearchView.clearFocus();
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                if (shouldHide && (!s.isEmpty())) {
+                    submitAttributeSearchQuery(selectedTab, s, 1000);
+                }
+
+                return true;
+            }
+        });
+
+
 
         // == BOOKS SORT
 
@@ -890,7 +919,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         {
             // Something
         } else {
-            MikanParser.getAttributeMasterData((AttributeType)button.getTag(), this);
+            selectedTab = (AttributeType)button.getTag();
+            MikanParser.getAttributeMasterData(selectedTab, this);
         }
     }
 
@@ -1228,9 +1258,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
 
-    private Button createAttributeButton(Attribute attribute) {
+    private Button createTagSuggestionButton(Attribute attribute) {
         Button button = new Button(mContext);
         button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
+        button.setTextColor(Color.WHITE);
         button.setBackgroundResource(R.drawable.btn_attribute_selector);
         button.setMinHeight(0);
         button.setMinimumHeight(0);
@@ -1241,7 +1272,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         colorButton(button, tagState);
 */
 
-        button.setOnClickListener(v -> selectAttributeFilter(button));
+        button.setOnClickListener(v -> selectTagSuggestion(button));
         button.setTag(attribute);
 
         return button;
@@ -1305,16 +1336,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private void selectAttributeFilter(Button b) {
+    private void selectTagSuggestion(Button b) {
         // TODO
     }
 
-
-    private void submitSearchQuery(String s) {
-        submitSearchQuery(s, 0);
+    private void submitContentSearchQuery(String s) {
+        submitContentSearchQuery(s, 0);
     }
 
-    private void submitSearchQuery(final String s, long delay) {
+    private void submitContentSearchQuery(final String s, long delay) {
         if (!filterByTag) { // Search actual books based on query
             query = s;
             searchHandler.removeCallbacksAndMessages(null);
@@ -1337,6 +1367,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 */
             }
         }
+    }
+
+    private void submitAttributeSearchQuery(AttributeType a, String s) {
+        submitAttributeSearchQuery(a, s, 0);
+    }
+
+    private void submitAttributeSearchQuery(AttributeType a, final String s, long delay) {
+        query = s;
+        searchHandler.removeCallbacksAndMessages(null);
+        searchHandler.postDelayed(() -> {
+            MikanParser.getAttributeMasterData(a, s, this);
+        }, delay);
     }
 
     private void showReloadToolTip() {
@@ -1536,7 +1578,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // TODO handle display Alpha vs. display by count
         if (totalContent <= MAX_ATTRIBUTES_DISPLAYED) {
             for (Attribute attr : results) {
-                attributeMosaic.addView(createAttributeButton(attr));
+                attributeMosaic.addView(createTagSuggestionButton(attr));
             }
         }
     }
