@@ -53,12 +53,17 @@ public class JsonHelper {
         OutputStream output = null;
         try {
             output = FileHelper.getOutputStream(file);
-            // build
-            byte[] bytes = json.getBytes();
-            // write
-            output.write(bytes);
-            FileHelper.sync(output);
-            output.flush();
+
+            if (output != null) {
+                // build
+                byte[] bytes = json.getBytes();
+                // write
+                output.write(bytes);
+                FileHelper.sync(output);
+                output.flush();
+            } else {
+                Timber.w("JSON file creation failed for %s", file.getPath());
+            }
         } finally {
             // finished
             if (output != null) {

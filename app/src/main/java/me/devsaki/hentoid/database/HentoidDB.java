@@ -966,7 +966,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorQueue.moveToFirst()) {
                     do {
                         Integer i = cursorQueue.getInt(0);
-                        result.add(selectContentById(db, i));
+                        Content content = selectContentById(db, i);
+                        if (content != null) result.add(content);
                     } while (cursorQueue.moveToNext());
                 }
             } finally {

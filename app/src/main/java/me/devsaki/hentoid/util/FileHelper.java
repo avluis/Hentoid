@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -162,6 +163,7 @@ public class FileHelper {
      * @param target The file.
      * @return FileOutputStream.
      */
+    @Nullable
     public static OutputStream getOutputStream(@NonNull final File target) {
         return FileUtil.getOutputStream(target);
     }
