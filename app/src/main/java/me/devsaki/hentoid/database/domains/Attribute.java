@@ -64,9 +64,13 @@ public class Attribute {
         return this;
     }
 
-
     public Attribute setExternalId(int id) {
         this.externalId = id;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return getId().toString();
     }
 }

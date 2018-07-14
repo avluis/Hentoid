@@ -28,6 +28,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
@@ -434,7 +435,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         // Base criteria in Content table
         String sql = ContentTable.SELECT_DOWNLOADS_BASE;
-        sql = sql.replace("%1", buildListQuery(sites));
+        sql = sql.replace("%1", Helper.buildListAsString(sites,"'"));
 
         if (filterFavourites) sql += ContentTable.SELECT_DOWNLOADS_FAVS;
 
@@ -463,7 +464,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             if (hasTitleFilter || hasAuthorFilter) sql += " OR ";
             sql += ContentTable.SELECT_DOWNLOADS_JOINS;
             sql += ContentTable.SELECT_DOWNLOADS_TAGS;
-            sql = sql.replace("%4", buildListQuery(tags));
+            sql = sql.replace("%4", Helper.buildListAsString(tags,"'"));
             sql = sql.replace("%5", tags.size() + "");
             sql += "))";
         }
@@ -611,13 +612,13 @@ public class HentoidDB extends SQLiteOpenHelper {
             Cursor cursorAttributes = null;
 
             String sql = AttributeTable.SELECT_ALL_BY_USAGE_BASE;
-            sql = sql.replace("%1", buildListQuery(sites));
+            sql = sql.replace("%1", Helper.buildListAsString(sites, "'"));
 
             if (filterFavourites) sql += AttributeTable.SELECT_ALL_BY_USAGE_FAVS;
 
             if (tags != null && tags.size() > 0) {
                 sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
-                sql = sql.replace("%2", buildListQuery(tags));
+                sql = sql.replace("%2", Helper.buildListAsString(tags,"'"));
                 sql = sql.replace("%3", tags.size() + "");
             }
 
@@ -903,20 +904,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                 }
             }
         }
-    }
-
-    private String buildListQuery(List<?> list) {
-        StringBuilder str = new StringBuilder("");
-        if (list != null) {
-            boolean first = true;
-            for (Object o : list) {
-                if (!first) str.append(",");
-                else first = false;
-                str.append("'").append(o.toString().toLowerCase()).append("'");
-            }
-        }
-
-        return str.toString();
     }
 
     public List<Pair<Integer, Integer>> selectQueue() {

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers.mikan;
+package me.devsaki.hentoid.collection.mikan;
 
 import com.google.gson.annotations.Expose;
 

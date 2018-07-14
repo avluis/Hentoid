@@ -1,9 +1,8 @@
-package me.devsaki.hentoid.parsers.mikan;
+package me.devsaki.hentoid.collection.mikan;
 
 import com.google.gson.annotations.Expose;
 
 import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 
 public class MikanAttribute {

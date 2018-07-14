@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers.mikan;
+package me.devsaki.hentoid.collection.mikan;
 
 import android.os.AsyncTask;
 
@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.collection.BaseCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -18,15 +19,12 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.util.AttributeCache;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.UrlBuilder;
 import timber.log.Timber;
 
-public class MikanParser {
-
-    private static final String USAGE_RECENT_BOOKS = "recentBooks";
-    private static final String USAGE_BOOK_PAGES = "bookPages";
-    private static final String USAGE_SEARCH = "search";
+public class MikanAccessor extends BaseCollectionAccessor {
 
     private static final String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
 
@@ -46,25 +44,27 @@ public class MikanParser {
     }
 
 
-    public static void getRecentBooks(Site site, Language language, int page, boolean showMostRecentFirst, ContentListener listener) {
+    // === ACCESSORS
+
+    public void getRecentBooks(Site site, Language language, int page, boolean showMostRecentFirst, ContentListener listener) {
         launchRequest(buildRecentBooksRequest(site, language, page, showMostRecentFirst), USAGE_RECENT_BOOKS, null, listener);
     }
 
-    public static void getPages(Content content, ContentListener listener) {
+    public void getPages(Content content, ContentListener listener) {
         launchRequest(buildBookPagesRequest(content), USAGE_BOOK_PAGES, content, listener);
     }
 
-    public static void searchBooks(Site site, String query, ContentListener listener) {
-        launchRequest(buildSimpleSearchRequest(site, query), USAGE_SEARCH, null, listener);
+    public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, ContentListener listener) {
+        // NB : Mikan does not support booksPerPage and orderStyle params
+        launchRequest(buildSearchRequest(metadata, query, page), USAGE_SEARCH, null, listener);
     }
 
-    public static void getAttributeMasterData(AttributeType attr, AttributeListener listener) {
-        getAttributeMasterData(attr, null, listener);
-    }
-
-    public static void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
+    public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
         launchRequest(buildGetAttrRequest(attr), attr.name(), filter, listener);
     }
+
+
+    // === REQUEST BUILDERS
 
     private static String buildRecentBooksRequest(Site site, Language language, int page, boolean showMostRecentFirst) {
         if (isSiteUnsupported(site)) {
@@ -91,15 +91,42 @@ public class MikanParser {
         return queryUrl.toString();
     }
 
-    private static String buildSimpleSearchRequest(Site site, String query) {
+    private static String buildSearchRequest(List<Attribute> metadata, String query, int page) {
+
+        List<Attribute> sites = extractByType(metadata, AttributeType.SOURCE);
+
+        if (sites.size() > 1) {
+            throw new UnsupportedOperationException("Searching through multiple sites not supported yet by Mikan search");
+        }
+        Site site = (1 == sites.size()) ? Site.searchByCode(sites.get(0).getId()) : Site.HITOMI;
+        if (null == site) {
+            throw new UnsupportedOperationException("Unrecognized site ID " + sites.get(0).getId());
+        }
         if (isSiteUnsupported(site)) {
             throw new UnsupportedOperationException("Site "+site.getDescription()+" not supported yet by Mikan search");
         }
 
-        StringBuilder queryUrl = new StringBuilder(MIKAN_BASE_URL).append(getMikanCodeForSite(site));
-        queryUrl.append("/search/").append(query);
+        String titleQuery = (query != null && query.length() > 0)? "/search/" + query : "";
+        UrlBuilder url = new UrlBuilder(MIKAN_BASE_URL + getMikanCodeForSite(site) + titleQuery);
 
-        return queryUrl.toString();
+        url.addParam("page",page);
+
+        List<Attribute> params = extractByType(metadata, AttributeType.ARTIST);
+        if (params.size() > 0) url.addParam("artist", Helper.buildListAsString(params));
+
+        params = extractByType(metadata, AttributeType.CIRCLE);
+        if (params.size() > 0) url.addParam("group", Helper.buildListAsString(params));
+
+        params = extractByType(metadata, AttributeType.CHARACTER);
+        if (params.size() > 0) url.addParam("character", Helper.buildListAsString(params));
+
+        params = extractByType(metadata, AttributeType.TAG);
+        if (params.size() > 0) url.addParam("tag", Helper.buildListAsString(params));
+
+        params = extractByType(metadata, AttributeType.LANGUAGE);
+        if (params.size() > 0) url.addParam("language", Helper.buildListAsString(params));
+
+        return url.toString();
     }
 
     private static String buildGetAttrRequest(AttributeType attr) {
@@ -117,6 +144,9 @@ public class MikanParser {
         return result;
     }
 
+
+    // === REQUEST LAUNCHERS
+
     private static synchronized void launchRequest(String url, String usage, Content content, ContentListener listener) {
         new ContentFetchTask(listener, content, usage).execute(url);
     }
@@ -125,6 +155,8 @@ public class MikanParser {
         new AttributesFetchTask(listener, usage, filter).execute(url);
     }
 
+
+    // === ASYNC TASKS
 
     private static class ContentFetchTask extends AsyncTask<String, String, MikanContentResponse> {
 
@@ -174,12 +206,12 @@ public class MikanParser {
 
             switch (usage)
             {
-                case MikanParser.USAGE_RECENT_BOOKS:
-                case MikanParser.USAGE_SEARCH:
+                case USAGE_RECENT_BOOKS:
+                case USAGE_SEARCH:
                     int maxItems = response.maxpage * response.result.size(); // Roughly : number of pages * number of books per page
                     listener.onContentReady(response.toContentList(), maxItems);
                     break;
-                case MikanParser.USAGE_BOOK_PAGES:
+                case USAGE_BOOK_PAGES:
                     if (null == content) listener.onContentFailed();
                     else {
                         List<Content> list = new ArrayList<Content>() {{ add(content); }};
@@ -207,41 +239,41 @@ public class MikanParser {
         protected List<Attribute> doInBackground(String... params) {
 
             // Try and get response from cache
-            List<Attribute> cachedAttrs = AttributeCache.getFromCache(usage);
-            if (cachedAttrs != null) return cachedAttrs;
+            List<Attribute> attributes = AttributeCache.getFromCache(usage);
 
             // If not cached (or cache expired), get it from network
-            JSONObject json = null;
-            JsonHelper.JSONResponse response;
-            String url = params[0];
-            Timber.d("Querying Mikan at URL %s", url);
-            try {
-                response = JsonHelper.jsonReader(url);
-                if (response != null) json = response.object;
-            } catch (IOException e)  {
-                Timber.w("JSON retrieval failed at URL %s", url);
-                return null;
+            if (null == attributes) {
+
+                JSONObject json = null;
+                JsonHelper.JSONResponse response;
+                String url = params[0];
+                Timber.d("Querying Mikan at URL %s", url);
+                try {
+                    response = JsonHelper.jsonReader(url);
+                    if (response != null) json = response.object;
+                } catch (IOException e) {
+                    Timber.w("JSON retrieval failed at URL %s", url);
+                    return null;
+                }
+
+                if (null == json) {
+                    Timber.w("No content available for URL %s", url);
+                    return null;
+                }
+
+                MikanAttributeResponse attrResponse = new Gson().fromJson(json.toString(), MikanAttributeResponse.class);
+                attributes = attrResponse.toAttributeList();
+
+                AttributeCache.setCache(usage, attributes, response.expiryDate);
+
+                Timber.d("Mikan response [%s] : %s", attrResponse.request, json.toString());
             }
-
-            if (null == json)
-            {
-                Timber.w("No content available for URL %s", url);
-                return null;
-            }
-
-            MikanAttributeResponse attrResponse = new Gson().fromJson(json.toString(), MikanAttributeResponse.class);
-            List<Attribute> attributes = attrResponse.toAttributeList();
-
-            AttributeCache.setCache(usage, attributes, response.expiryDate);
-
-            Timber.d("Mikan response [%s] : %s", attrResponse.request, json.toString());
 
             List<Attribute> result = attributes;
             if (filter != null)
             {
                 result = new ArrayList<>();
                 for (Attribute a : attributes) if (a.getName().contains(filter)) result.add(a);
-                attributes.clear();
             }
 
             return result;

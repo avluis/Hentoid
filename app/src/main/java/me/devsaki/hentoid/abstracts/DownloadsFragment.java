@@ -60,6 +60,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
+import me.devsaki.hentoid.collection.CollectionAccessor;
+import me.devsaki.hentoid.collection.mikan.MikanAccessor;
+import me.devsaki.hentoid.database.DatabaseAccessor;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -70,7 +73,6 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
-import me.devsaki.hentoid.parsers.mikan.MikanParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -188,6 +190,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private boolean storagePermissionChecked = false;
     // Mode : show library or show Mikan search
     private int mode = MODE_LIBRARY;
+    // Collection accessor (DB or external, depending on mode)
+    private CollectionAccessor collectionAccessor;
 
 
     // === SEARCH
@@ -218,6 +222,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // Currently selected tab
     private AttributeType selectedTab = AttributeType.TAG;
+    // Current search tags
+    private List<Attribute> currentSearchTags = new ArrayList<>();
+
 
     // To be documented
     private ActionMode mActionMode;
@@ -529,6 +536,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
+        if (MODE_LIBRARY == mode) collectionAccessor = new DatabaseAccessor(); else collectionAccessor = new MikanAccessor();
 
         initUI(rootView);
         attachScrollListener();
@@ -570,7 +578,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
-        mAdapter = new ContentAdapter(mContext, this, comparator, mode);
+        mAdapter = new ContentAdapter(mContext, this, comparator, collectionAccessor,  mode);
         mAdapter.setContentsWipedListener(this);
         mListView.setAdapter(mAdapter);
 
@@ -840,7 +848,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         LinearLayout attrSelector = activity.findViewById(R.id.search_tabs);
         // TODO - color for selected button
         attrSelector.addView(createAttributeSectionButton(AttributeType.LANGUAGE));
-        attrSelector.addView(createAttributeSectionButton(AttributeType.ARTIST));
+        attrSelector.addView(createAttributeSectionButton(AttributeType.ARTIST)); // TODO circle in the same tag
+        attrSelector.addView(createAttributeSectionButton(AttributeType.TAG));
         attrSelector.addView(createAttributeSectionButton(AttributeType.CHARACTER));
 
 /*
@@ -924,7 +933,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             // Something
         } else {
             selectedTab = (AttributeType)button.getTag();
-            MikanParser.getAttributeMasterData(selectedTab, this);
+            collectionAccessor.getAttributeMasterData(selectedTab, this);
         }
     }
 
@@ -1346,15 +1355,22 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void addTagSuggestion(Button b) {
-        searchTags.addView(createTagSuggestionButton((Attribute)b.getTag(), true));
+        Attribute a = (Attribute)b.getTag();
+        searchTags.addView(createTagSuggestionButton(a, true));
         colorButton(b, TAGFILTER_SELECTED);
-        // TODO trigger book search
+        currentSearchTags.add(a);
+
+        // Launch book search
+        //collectionAccessor.searchBooks("", currentSearchTags, 0, 0, this);
+        searchLibrary();
     }
 
     private void removeTagSuggestion(Button b) {
         Attribute a = (Attribute)b.getTag();
+        currentSearchTags.remove(a);
         searchTags.removeView(b);
 
+        // If displayed, change color of the corresponding button in tag suggestions
         Activity activity = getActivity();
         if (null == activity)
         {
@@ -1364,8 +1380,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         Button tagButton = activity.findViewById(a.getId());
         if (tagButton != null) colorButton(tagButton, TAGFILTER_ACTIVE);
 
-        // TODO if displayed, change color of corresponding button in tags mosaic
-        // TODO trigger book search
+        // Launch book search
+        searchLibrary();
     }
 
     private void submitContentSearchQuery(String s) {
@@ -1402,10 +1418,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void submitAttributeSearchQuery(AttributeType a, final String s, long delay) {
-        query = s;
         searchHandler.removeCallbacksAndMessages(null);
         searchHandler.postDelayed(() -> {
-            MikanParser.getAttributeMasterData(a, s, this);
+            collectionAccessor.getAttributeMasterData(a, s, this);
         }, delay);
     }
 
@@ -1525,6 +1540,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected void searchLibrary(boolean searchMode) {
         String query = this.getQuery();
+        isSearchReplaceResults = searchMode;
+        isLoaded = false;
 
         if (MODE_LIBRARY == mode) {
             List<String> selectedTags = new ArrayList<>();
@@ -1538,12 +1555,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 query = "";
             }
 
-            isLoaded = false;
-            isSearchReplaceResults = searchMode;
             search.retrieveResults(filterByTitle ? query : "", filterByArtist ? query : "", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
         } else {
-            if (searchMode) MikanParser.searchBooks(Site.HITOMI, query, this);
-            else MikanParser.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, true, this);
+            if (searchMode) collectionAccessor.searchBooks(query, currentSearchTags, 0, 0, this); // TODO CENTRALIZE
+            else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, true, this);
         }
     }
 

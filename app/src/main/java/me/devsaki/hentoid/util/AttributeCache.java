@@ -2,6 +2,7 @@ package me.devsaki.hentoid.util;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +48,6 @@ public class AttributeCache {
 //            expiryDateLocal = simpleDateFormat.parse(expiryDateUTC.toString());
 
         collectionExpiry.put(key, expiryDateLocal);
-        collection.put(key, value);
+        collection.put(key, new ArrayList<>(value));
     }
 }

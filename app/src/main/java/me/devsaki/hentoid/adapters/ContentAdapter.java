@@ -28,6 +28,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
+import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -37,7 +38,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
-import me.devsaki.hentoid.parsers.mikan.MikanParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -56,6 +56,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final Context context;
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
+    private final CollectionAccessor collectionAccessor;
     private final int mode;
 
     private ContentsWipedListener contentsWipedListener;
@@ -64,9 +65,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     // Total count of book in entire collection (Adapter is in charge of updating it)
     private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
-    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator, int mode) {
+    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator, CollectionAccessor collectionAccessor, int mode) {
         this.context = context;
         this.listener = listener;
+        this.collectionAccessor = collectionAccessor;
         this.mode = mode;
         mComparator = comparator;
 
@@ -378,7 +380,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 // Download icon
                 holder.ivDownload.setImageResource(R.drawable.ic_action_download);
                 holder.ivDownload.setOnClickListener(v -> {
-                    MikanParser.getPages(content, this);
+                    collectionAccessor.getPages(content, this);
                 });
 
                 // View gallery icon

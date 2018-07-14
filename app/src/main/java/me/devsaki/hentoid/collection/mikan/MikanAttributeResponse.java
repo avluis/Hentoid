@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers.mikan;
+package me.devsaki.hentoid.collection.mikan;
 
 import com.google.gson.annotations.Expose;
 
@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.Content;
 
 public class MikanAttributeResponse {
     @Expose
