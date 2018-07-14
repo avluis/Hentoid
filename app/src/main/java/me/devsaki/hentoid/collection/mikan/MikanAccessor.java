@@ -28,6 +28,9 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     private static final String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
 
+    private static final String contentSynch = "";
+    private static final String attrSynch = "";
+
 
     private static String getMikanCodeForSite(Site s) {
         switch (s) {
@@ -147,12 +150,16 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     // === REQUEST LAUNCHERS
 
-    private static synchronized void launchRequest(String url, String usage, Content content, ContentListener listener) {
-        new ContentFetchTask(listener, content, usage).execute(url);
+    private static void launchRequest(String url, String usage, Content content, ContentListener listener) {
+        synchronized (contentSynch) {
+            new ContentFetchTask(listener, content, usage).execute(url);
+        }
     }
 
-    private static synchronized void launchRequest(String url, String usage, String filter, AttributeListener listener) {
-        new AttributesFetchTask(listener, usage, filter).execute(url);
+    private static void launchRequest(String url, String usage, String filter, AttributeListener listener) {
+        synchronized (attrSynch) {
+            new AttributesFetchTask(listener, usage, filter).execute(url);
+        }
     }
 
 
