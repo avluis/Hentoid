@@ -59,8 +59,8 @@ public final class NetworkStatus {
                         (new URL("http://clients3.google.com/generate_204").openConnection());
                 url.setRequestProperty("User-Agent", "Android");
                 url.setRequestProperty("Connection", "close");
-                url.setConnectTimeout(100);
-                url.setReadTimeout(100);
+                url.setConnectTimeout(1500);
+                url.setReadTimeout(1500);
                 url.connect();
 
                 return (url.getResponseCode() == 204 && url.getContentLength() == 0);

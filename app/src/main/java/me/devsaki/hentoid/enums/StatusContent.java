@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.enums;
 
+import javax.annotation.Nullable;
+
 /**
  * Created by DevSaki on 10/05/2015.
  * Content Status enumerator
@@ -18,6 +20,7 @@ public enum StatusContent {
         this.description = description;
     }
 
+    @Nullable
     public static StatusContent searchByCode(int code) {
         for (StatusContent s : StatusContent.values()) {
             if (s.getCode() == code)

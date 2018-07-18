@@ -4,10 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
+import android.util.Pair;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,7 +35,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
-import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
@@ -47,13 +49,15 @@ import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOption
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private static final int VISIBLE_THRESHOLD = 10;
+
     private final Context context;
     private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
-    private int mTotalCount;
+    // Total count of book in entire collection (Adapter is in charge of updating it)
+    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
         this.context = context;
@@ -63,8 +67,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         selectedItems = new SparseBooleanArray();
     }
 
-    public void setComparator(Comparator<Content> comparator)
-    {
+    public void setComparator(Comparator<Content> comparator) {
         mComparator = comparator;
     }
 
@@ -115,21 +118,22 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         return false;
     }
 
+    @NonNull
     @Override
-    public ContentHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
         return new ContentHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ContentHolder holder, final int pos) {
+    public void onBindViewHolder(@NonNull ContentHolder holder, final int pos) {
         Content content = mSortedList.get(pos);
 
         // Initializes the ViewHolder that contains the books
-        updateLayoutVisibility( holder, content, pos);
-        populateLayout( holder, content, pos);
-        attachOnClickListeners( holder, content, pos);
+        updateLayoutVisibility(holder, content, pos);
+        populateLayout(holder, content, pos);
+        attachOnClickListeners(holder, content, pos);
 
     }
 
@@ -197,7 +201,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
         RequestOptions myOptions = new RequestOptions()
                 .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .fitCenter()
+                .centerInside()
                 .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder);
 
@@ -244,22 +248,26 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private void attachArtist(ContentHolder holder, Content content) {
         String templateArtist = context.getResources().getString(R.string.work_artist);
         StringBuilder artistsBuilder = new StringBuilder();
+        List<Attribute> attributes = new ArrayList<>();
         List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
-        if (artistAttributes == null) {
+        if (artistAttributes != null) attributes.addAll(artistAttributes);
+        List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
+        if (circleAttributes != null) attributes.addAll(circleAttributes);
+
+        if (attributes.isEmpty()) {
             holder.tvArtist.setVisibility(View.GONE);
         } else {
-            for (int i = 0; i < artistAttributes.size(); i++) {
-                Attribute attribute = artistAttributes.get(i);
+            boolean first = true;
+            for (Attribute attribute : attributes) {
+                if (first) first = false;
+                else artistsBuilder.append(", ");
                 artistsBuilder.append(attribute.getName());
-                if (i != artistAttributes.size() - 1) {
-                    artistsBuilder.append(", ");
-                }
             }
             holder.tvArtist.setVisibility(View.VISIBLE);
         }
         holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@", artistsBuilder.toString())));
 
-        if (artistAttributes == null) {
+        if (attributes.isEmpty()) {
             holder.tvArtist.setText(Helper.fromHtml(templateArtist.replace("@artist@",
                     context.getResources().getString(R.string.work_untitled))));
             holder.tvArtist.setVisibility(View.VISIBLE);
@@ -285,6 +293,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     private void attachSite(ContentHolder holder, final Content content, int pos) {
+        // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
             holder.ivSite.setImageResource(img);
@@ -299,6 +308,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             holder.ivSite.setImageResource(R.drawable.ic_stat_hentoid);
         }
 
+        // Set source color
         if (content.getStatus() != null) {
             StatusContent status = content.getStatus();
             int bg;
@@ -434,8 +444,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
         }
 
-        String message = context.getString(R.string.download_again_dialog_message).replace(
-                "@error", imgErrors + "").replace("@total", images + "");
+        String message = context.getString(R.string.download_again_dialog_message).replace("@clean", images-imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.download_again_dialog_title)
                 .setMessage(message)
@@ -445,12 +454,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
                             item.setStatus(StatusContent.DOWNLOADING);
                             item.setDownloadDate(new Date().getTime());
-
                             db.updateContentStatus(item);
 
-                            Intent intent = new Intent(Intent.ACTION_SYNC, null, context,
-                                    DownloadService.class);
-                            context.startService(intent);
+                            List<Pair<Integer, Integer>> queue = db.selectQueue();
+                            int lastIndex = 1;
+                            if (queue.size() > 0) {
+                                lastIndex = queue.get(queue.size() - 1).second + 1;
+                            }
+                            db.insertQueue(item.getId(), lastIndex);
+
+                            ContentQueueManager.getInstance().resumeQueue(context);
 
                             Helper.toast(context, R.string.add_to_queue);
                             remove(item);
@@ -523,10 +536,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     @Override
-    public int getItemCount() { return mSortedList.size(); }
+    public int getItemCount() {
+        return mSortedList.size();
+    }
 
-    public void setTotalCount(int count) { this.mTotalCount = count; }
-    public int getTotalCount() { return this.mTotalCount; }
+    public void setTotalCount(int count) {
+        this.mTotalCount = count;
+    }
+
+    public int getTotalCount() {
+        return this.mTotalCount;
+    }
 
     public void sharedSelectedItems() {
         int itemCount = getSelectedItemCount();
@@ -662,8 +682,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         Helper.toast(context, "Selected items have been deleted.");
     }
 
-    private void remove(Content content)
-    {
+    private void remove(Content content) {
         mTotalCount--;
         mSortedList.remove(content);
         if (0 == mSortedList.size() && contentsWipedListener != null) {
@@ -672,9 +691,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         if (listener != null) listener.onItemClear(0);
     }
 
-    public void removeAll()
-    {
-        replaceAll(new ArrayList<Content>());
+    public void removeAll() {
+        replaceAll(new ArrayList<>());
         mTotalCount = 0;
     }
 
@@ -714,7 +732,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         @Override
-        public void onInserted(int position, int count) { notifyItemRangeInserted(position, count); }
+        public void onInserted(int position, int count) {
+            notifyItemRangeInserted(position, count);
+        }
 
         @Override
         public void onRemoved(int position, int count) {
@@ -722,7 +742,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
 
         @Override
-        public void onMoved(int fromPosition, int toPosition) { notifyItemMoved(fromPosition, toPosition); }
+        public void onMoved(int fromPosition, int toPosition) {
+            notifyItemMoved(fromPosition, toPosition);
+        }
 
         @Override
         public void onChanged(int position, int count) {

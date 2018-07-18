@@ -3,6 +3,7 @@ package me.devsaki.hentoid.database.domains;
 import com.google.gson.annotations.Expose;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -11,12 +12,14 @@ import me.devsaki.hentoid.activities.websites.BaseWebActivity;
 import me.devsaki.hentoid.activities.websites.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.websites.HitomiActivity;
 import me.devsaki.hentoid.activities.websites.NhentaiActivity;
+import me.devsaki.hentoid.activities.websites.PandaActivity;
 import me.devsaki.hentoid.activities.websites.PururinActivity;
 import me.devsaki.hentoid.activities.websites.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.FileHelper;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -44,14 +47,14 @@ public class Content implements Serializable {
     private StatusContent status;
     @Expose
     private List<ImageFile> imageFiles;
-    @Expose(serialize = false, deserialize = false)
-    private double percent;
     @Expose
     private Site site;
     private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
     @Expose
     private boolean favourite;
-    private int queryOrder; // Runtime attribute; no need to expose it
+    // Runtime attributes; no need to expose them
+    private double percent;
+    private int queryOrder;
 
 
     public AttributeMap getAttributes() {
@@ -83,6 +86,7 @@ public class Content implements Serializable {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
+            case PANDA:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
             case HENTAICAFE:
@@ -105,10 +109,11 @@ public class Content implements Serializable {
             case HITOMI:
                 paths = url.split("/");
                 return paths[1].replace(".html", "") + "-" +
-                        title.replaceAll("[^a-zA-Z0-9.-]", "_");
+                        title.replaceAll(FileHelper.FORBIDDEN_CHARS, "_");
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
+            case PANDA:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
             case HENTAICAFE:
@@ -133,6 +138,8 @@ public class Content implements Serializable {
                 return TsuminoActivity.class;
             case PURURIN:
                 return PururinActivity.class;
+            case PANDA:
+                return PandaActivity.class;
             default:
                 return BaseWebActivity.class; // Fallback for FAKKU
         }
@@ -180,6 +187,7 @@ public class Content implements Serializable {
                 galleryConst = "/Book/Info";
                 break;
             case HENTAICAFE:
+            case PANDA:
             default:
                 galleryConst = "";
                 break; // Includes FAKKU & Hentai Cafe
@@ -201,6 +209,7 @@ public class Content implements Serializable {
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
             case HENTAICAFE:
+            case PANDA:
                 return getGalleryUrl();
             case PURURIN:
                 return site.getUrl() + "/read" + url;
@@ -211,7 +220,7 @@ public class Content implements Serializable {
 
     public void populateAuthor() {
         String author = "";
-        if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
+        if (getAttributes().containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
             author = attributes.get(AttributeType.ARTIST).get(0).getName();
         if (author.equals("")) // Try and get Circle
         {
@@ -285,6 +294,7 @@ public class Content implements Serializable {
     }
 
     public List<ImageFile> getImageFiles() {
+        if (null == imageFiles) imageFiles = Collections.emptyList();
         return imageFiles;
     }
 
@@ -320,15 +330,23 @@ public class Content implements Serializable {
         return this;
     }
 
-    public boolean isFavourite() { return favourite; }
+    public boolean isFavourite() {
+        return favourite;
+    }
 
     public Content setFavourite(boolean favourite) {
         this.favourite = favourite;
         return this;
     }
 
-    private int getQueryOrder() { return queryOrder; }
-    public Content setQueryOrder(int order) { queryOrder = order; return this; }
+    private int getQueryOrder() {
+        return queryOrder;
+    }
+
+    public Content setQueryOrder(int order) {
+        queryOrder = order;
+        return this;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -337,8 +355,7 @@ public class Content implements Serializable {
 
         Content content = (Content) o;
 
-        if (url != null ? !url.equals(content.url) : content.url != null) return false;
-        return site == content.site;
+        return (url != null ? url.equals(content.url) : content.url == null) && site == content.site;
     }
 
     @Override
@@ -350,11 +367,13 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
 
-    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> { return Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate()) * -1; /* Inverted - last download date first */ };
+    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> {
+        return Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; /* Inverted - last download date first */
+    };
 
     public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
 
-    public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.valueOf(a.getDownloadDate()).compareTo(b.getDownloadDate());
+    public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
 
-    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.valueOf(a.getQueryOrder()).compareTo(b.getQueryOrder());
+    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
 }

@@ -8,7 +8,7 @@
     <string name="slide_02_text">Got Marshmallows?\nWe need to ask you for permission to device storage.</string>
     <!-- Slide 02 Alt -->
     <string name="slide_02_alt_header">What to expect?</string>
-    <string name="slide_02_alt_text">Hentoid supports:\nNhentai, Hitomi, Tsumino\n&amp; archived content from\nFAKKU and Pururin.</string>
+    <string name="slide_02_alt_text">Hentoid supports:\nNhentai, Hitomi, Tsumino, Hentai Cafe, ASM Hentai (manga &amp; comics) and Pururin\n&amp; archived content from\nFAKKU and Pururin.</string>
     <!-- Slide 03 -->
     <string name="slide_03_header">Storage Folder</string>
     <string name="slide_03_text">Hentoid requires a dedicated folder for storing your media.</string>

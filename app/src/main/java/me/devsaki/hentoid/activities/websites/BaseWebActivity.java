@@ -3,23 +3,34 @@ package me.devsaki.hentoid.activities.websites;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -30,19 +41,17 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.parsers.ASMHentaiParser;
-import me.devsaki.hentoid.parsers.HentaiCafeParser;
-import me.devsaki.hentoid.parsers.HitomiParser;
-import me.devsaki.hentoid.parsers.NhentaiParser;
-import me.devsaki.hentoid.parsers.PururinParser;
-import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.services.DownloadService;
+import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
+
+import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -51,13 +60,39 @@ import timber.log.Timber;
  */
 public abstract class BaseWebActivity extends BaseActivity {
 
-    private Content currentContent;
-    private HentoidDB db;
-    private ObservableWebView webView;
-    private boolean webViewIsLoading;
-    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;
-    private boolean fabReadEnabled, fabDownloadEnabled;
+    // UI
+    private ObservableWebView webView;                                              // Associated webview
+    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;   // Action buttons
     private SwipeRefreshLayout swipeLayout;
+
+    // Content currently viewed
+    private Content currentContent;
+    // Database
+    private HentoidDB db;
+    // Indicates if webView is loading
+    private boolean webViewIsLoading;
+    // Indicates if corresponding action buttons are enabled
+    private boolean fabReadEnabled, fabDownloadEnabled;
+
+    // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
+    private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
+    private List<String> localBlockedContent;                                           // Local list (applied to current site)
+
+    static {
+        universalBlockedContent.add("exoclick.com");
+        universalBlockedContent.add("juicyadultads.com");
+        universalBlockedContent.add("juicyads.com");
+        universalBlockedContent.add("exosrv.com");
+        universalBlockedContent.add("hentaigold.net");
+        universalBlockedContent.add("ads.php");
+        universalBlockedContent.add("ads.js");
+        universalBlockedContent.add("pop.js");
+        universalBlockedContent.add("trafficsan.com");
+        universalBlockedContent.add("contentabc.com");
+        universalBlockedContent.add("bebi.com");
+        universalBlockedContent.add("aftv-serving.bid");
+        universalBlockedContent.add("smatoo.net");
+    }
 
     ObservableWebView getWebView() {
         return webView;
@@ -68,6 +103,17 @@ public abstract class BaseWebActivity extends BaseActivity {
     }
 
     abstract Site getStartSite();
+
+
+    /**
+     * Add an content block filter to current site
+     *
+     * @param filter Filter to add to content block system
+     */
+    protected void addContentBlockFilter(String[] filter) {
+        if (null == localBlockedContent) localBlockedContent = new ArrayList<>();
+        Collections.addAll(localBlockedContent, filter);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,10 +155,11 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-
         webView.removeAllViews();
         webView.destroy();
+        webView = null;
+
+        super.onDestroy();
     }
 
     // Validate permissions
@@ -135,7 +182,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         webView.setOnLongClickListener(v -> {
             WebView.HitTestResult result = webView.getHitTestResult();
             if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
-                if (result.getExtra().contains(getStartSite().getUrl())) {
+                if (result.getExtra() != null && result.getExtra().contains(getStartSite().getUrl())) {
                     backgroundRequest(result.getExtra());
                 }
             } else {
@@ -179,11 +226,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         webSettings.setDisplayZoomControls(false);
 
         String userAgent;
-        try {
-            userAgent = Helper.getAppUserAgent(this);
-        } catch (PackageManager.NameNotFoundException e) {
-            userAgent = Consts.USER_AGENT;
-        }
+        userAgent = Helper.getAppUserAgent();
         webSettings.setUserAgentString(userAgent);
 
         webSettings.setDomStorageEnabled(true);
@@ -231,45 +274,77 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Listener for Home floating action button : go back to Library view
+     *
+     * @param view Calling view (part of the mandatory signature)
+     */
     public void onHomeFabClick(View view) {
         goHome();
     }
 
+    /**
+     * Listener for Read floating action button : open content when it is already part of the library
+     *
+     * @param view Calling view (part of the mandatory signature)
+     */
     public void onReadFabClick(View view) {
         if (currentContent != null) {
             currentContent = db.selectContentById(currentContent.getId());
-            if (StatusContent.DOWNLOADED == currentContent.getStatus()
-                    || StatusContent.ERROR == currentContent.getStatus()) {
-                FileHelper.openContent(this, currentContent);
-            } else {
-                hideFab(fabRead);
+            if (currentContent != null) {
+                if (StatusContent.DOWNLOADED == currentContent.getStatus()
+                        || StatusContent.ERROR == currentContent.getStatus()) {
+                    FileHelper.openContent(this, currentContent);
+                } else {
+                    hideFab(fabRead);
+                }
             }
         }
     }
 
+    /**
+     * Listener for Download floating action button : start content download
+     *
+     * @param view Calling view (part of the mandatory signature)
+     */
     public void onDownloadFabClick(View view) {
         processDownload();
     }
 
+    /**
+     * Add current content (i.e. content of the currently viewed book) to the download queue
+     */
     void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
-        if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
+        if (currentContent != null && StatusContent.DOWNLOADED == currentContent.getStatus()) {
             Helper.toast(this, R.string.already_downloaded);
             hideFab(fabDownload);
 
             return;
         }
         Helper.toast(this, R.string.add_to_queue);
+
         currentContent.setDownloadDate(new Date().getTime())
                 .setStatus(StatusContent.DOWNLOADING);
-
         db.updateContentStatus(currentContent);
-        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, DownloadService.class);
 
-        startService(intent);
+        List<Pair<Integer, Integer>> queue = db.selectQueue();
+        int lastIndex = 1;
+        if (queue.size() > 0) {
+            lastIndex = queue.get(queue.size() - 1).second + 1;
+        }
+        db.insertQueue(currentContent.getId(), lastIndex);
+
+        ContentQueueManager.getInstance().resumeQueue(this);
+
         hideFab(fabDownload);
     }
 
+    /**
+     * Hide designated Floating Action Button
+     *
+     * @param fab Reference to the floating action button to hide
+     */
     private void hideFab(FloatingActionButton fab) {
         fab.hide();
         if (fab.equals(fabDownload)) {
@@ -279,6 +354,11 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Show designated Floating Action Button
+     *
+     * @param fab Reference to the floating action button to show
+     */
     private void showFab(FloatingActionButton fab) {
         fab.show();
         if (fab.equals(fabDownload)) {
@@ -310,6 +390,11 @@ public abstract class BaseWebActivity extends BaseActivity {
         return false;
     }
 
+    /**
+     * Display webview controls according to designated content
+     *
+     * @param content Currently displayed content
+     */
     void processContent(Content content) {
         if (content == null) {
             return;
@@ -317,16 +402,23 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         addContentToDB(content);
 
+        // Set Download action button visibility
         StatusContent contentStatus = content.getStatus();
-        if (contentStatus != StatusContent.DOWNLOADED
-                && contentStatus != StatusContent.DOWNLOADING) {
+        if (    contentStatus != StatusContent.DOWNLOADED
+                && contentStatus != StatusContent.DOWNLOADING
+                && contentStatus != StatusContent.MIGRATED)
+        {
             currentContent = content;
             runOnUiThread(() -> showFab(fabDownload));
         } else {
             runOnUiThread(() -> hideFab(fabDownload));
         }
-        if (contentStatus == StatusContent.DOWNLOADED
-                || contentStatus == StatusContent.ERROR) {
+
+        // Set Read action button visibility
+        if (    contentStatus == StatusContent.DOWNLOADED
+                || contentStatus == StatusContent.MIGRATED
+                || contentStatus == StatusContent.ERROR)
+        {
             currentContent = content;
             runOnUiThread(() -> showFab(fabRead));
         } else {
@@ -339,6 +431,11 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Add designated Content to the Hentoid DB
+     *
+     * @param content Content to be added to the DB
+     */
     private void addContentToDB(Content content) {
         Content contentDB = db.selectContentById(content.getUrl().hashCode());
         if (contentDB != null) {
@@ -351,29 +448,8 @@ public abstract class BaseWebActivity extends BaseActivity {
     }
 
     private void attachToDebugger(Content content) {
-        switch (content.getSite()) {
-            case HITOMI:
-                HitomiParser.parseImageList(content);
-                break;
-            case NHENTAI:
-                NhentaiParser.parseImageList(content);
-                break;
-            case TSUMINO:
-                TsuminoParser.parseImageList(content);
-                break;
-            case ASMHENTAI:
-            case ASMHENTAI_COMICS:
-                ASMHentaiParser.parseImageList(content);
-                break;
-            case HENTAICAFE:
-                HentaiCafeParser.parseImageList(content);
-                break;
-            case PURURIN:
-                PururinParser.parseImageList(content);
-                break;
-            default:
-                break;
-        }
+        ContentParser parser = ContentParserFactory.getInstance().getParser(content);
+        parser.parseImageList(content);
     }
 
     void backgroundRequest(String extra) {
@@ -383,9 +459,22 @@ public abstract class BaseWebActivity extends BaseActivity {
     class CustomWebViewClient extends WebViewClient {
 
         private String domainName = "";
+        private final String filteredUrl;
+        protected final BaseWebActivity activity;
+        protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         void restrictTo(String s) {
             domainName = s;
+        }
+
+        CustomWebViewClient(BaseWebActivity activity, String filteredUrl) {
+            this.activity = activity;
+            this.filteredUrl = filteredUrl;
+        }
+
+        CustomWebViewClient(BaseWebActivity activity) {
+            this.activity = activity;
+            this.filteredUrl = "";
         }
 
         @Override
@@ -409,12 +498,89 @@ public abstract class BaseWebActivity extends BaseActivity {
             fabHome.show();
             hideFab(fabDownload);
             hideFab(fabRead);
+
+            if (filteredUrl.length() > 0) {
+                Pattern pattern = Pattern.compile(filteredUrl);
+                Matcher matcher = pattern.matcher(url);
+
+                if (matcher.find()) {
+                    executeAsyncTask(new HtmlLoader(activity), url);
+                }
+            }
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
             webViewIsLoading = false;
             fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
+        }
+
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull String url) {
+            if (isUrlForbidden(url)) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
+            } else {
+                return super.shouldInterceptRequest(view, url);
+            }
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull WebResourceRequest request) {
+            String url = request.getUrl().toString();
+            if (isUrlForbidden(url)) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
+            } else {
+                return super.shouldInterceptRequest(view, request);
+            }
+        }
+    }
+
+    /**
+     * Indicates if the given URL is forbidden by the current content filters
+     *
+     * @param url URL to be examinated
+     * @return True if URL is forbidden according to current filters; false if not
+     */
+    protected boolean isUrlForbidden(String url) {
+        for (String s : universalBlockedContent) {
+            if (url.contains(s)) return true;
+        }
+        if (localBlockedContent != null)
+            for (String s : localBlockedContent) {
+                if (url.contains(s)) return true;
+            }
+
+        return false;
+    }
+
+    protected static class HtmlLoader extends AsyncTask<String, Integer, Content> {
+
+        private final WeakReference<BaseWebActivity> activityReference;
+
+        // only retain a weak reference to the activity
+        HtmlLoader(BaseWebActivity context) {
+            activityReference = new WeakReference<>(context);
+        }
+
+        @Override
+        protected Content doInBackground(String... params) {
+            String url = params[0];
+            BaseWebActivity activity = activityReference.get();
+            try {
+                ContentParser parser = ContentParserFactory.getInstance().getParser(activity.getStartSite());
+                activity.processContent(parser.parseContent(url));
+            } catch (IOException e) { // Most I/O errors being timeouts...
+                Timber.e(e, "I/O Error while parsing content @ %s", url);
+                //activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+            } catch (Exception e) {
+                Timber.e(e, "Error while parsing content @ %s", url);
+                activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+            }
+
+            return null;
         }
     }
 }

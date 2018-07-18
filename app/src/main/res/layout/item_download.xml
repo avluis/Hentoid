@@ -9,7 +9,7 @@
     android:layout_marginRight="@dimen/default_cardview_margin"
     android:clickable="true"
     android:focusable="true"
-    android:foreground="?attr/selectableItemBackground"
+    android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="2dp"
     app:cardElevation="@dimen/cardview_default_elevation">
 
@@ -98,7 +98,7 @@
         android:layout_height="wrap_content"
         android:background="@drawable/row_item_selector"
         android:baselineAligned="false"
-        android:minHeight="?listPreferredItemHeightSmall"
+        android:minHeight="?android:listPreferredItemHeightSmall"
         android:orientation="horizontal"
         android:paddingBottom="5dp"
         android:paddingEnd="1dp"

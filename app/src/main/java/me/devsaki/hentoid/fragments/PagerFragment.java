@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments;
 
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
 
@@ -8,6 +9,7 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.ui.CarouselDecorator;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
@@ -17,11 +19,27 @@ import timber.log.Timber;
  */
 public class PagerFragment extends DownloadsFragment {
 
+    // Button containing the page number on Paged view
+    private CarouselDecorator pager;
+
+
+    @Override
+    protected void initUI(View rootView) {
+        super.initUI(rootView);
+
+        RecyclerView pageCarousel = rootView.findViewById(R.id.pager);
+        pageCarousel.setHasFixedSize(true);
+
+        pager = new CarouselDecorator(mContext, R.layout.item_pagecarousel);
+        pager.decorate(pageCarousel);
+    }
+
     @Override
     protected void attachOnClickListeners(View rootView) {
         super.attachOnClickListeners(rootView);
         attachPrevious(rootView);
         attachNext(rootView);
+        attachPageSelector();
     }
 
     private void attachPrevious(View rootView) {
@@ -29,6 +47,7 @@ public class PagerFragment extends DownloadsFragment {
         btnPrevious.setOnClickListener(v -> {
             if (currentPage > 1 && isLoaded) {
                 currentPage--;
+                pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
                 update();
             } else if (booksPerPage > 0 && isLoaded) {
                 Helper.toast(mContext, R.string.not_previous_page);
@@ -46,6 +65,7 @@ public class PagerFragment extends DownloadsFragment {
             } else {
                 if (!isLastPage() && isLoaded) {
                     currentPage++;
+                    pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
                     update();
                 } else if (isLastPage()) {
                     Helper.toast(mContext, R.string.not_next_page);
@@ -54,47 +74,32 @@ public class PagerFragment extends DownloadsFragment {
         });
     }
 
-    @Override
-    protected void checkResults() {
-        if (0 == mAdapter.getItemCount())
-        {
-            if (!isLoaded) update();
-            checkContent(true);
-        } else {
-            if (isLoaded) update();
-            checkContent(false);
-            mAdapter.setContentsWipedListener(this);
-        }
-
-        if (!query.isEmpty()) {
-            Timber.d("Saved Query: %s", query);
-            if (isLoaded) update();
-        }
+    private void attachPageSelector() {
+        pager.setOnPageChangeListener(this::onPageChange);
     }
 
-
-    @Override
-    protected void showToolbar(boolean show, boolean override) {
-        this.override = override;
-
-        if (show) {
-            pagerToolbar.setVisibility(View.VISIBLE);
-        } else {
-            pagerToolbar.setVisibility(View.GONE);
+    private void onPageChange(int page) {
+        if (page != currentPage) {
+            currentPage = page;
+            update();
         }
     }
 
     @Override
-    protected void displayResults(List<Content> results) {
+    protected void showToolbar(boolean show) {
+        pagerToolbar.setVisibility(show?View.VISIBLE:View.GONE);
+    }
+
+    @Override
+    protected void displayResults(List<Content> results, int totalContent) {
         if (0 == results.size()) {
             Timber.d("Result: Nothing to match.");
             displayNoResults();
         } else {
-            toggleUI(SHOW_DEFAULT);
-
             mAdapter.replaceAll(results);
-
             toggleUI(SHOW_RESULT);
         }
+        pager.setPageCount((int)Math.ceil(totalContent*1.0/booksPerPage));
+        pager.setCurrentPage(currentPage);
     }
 }

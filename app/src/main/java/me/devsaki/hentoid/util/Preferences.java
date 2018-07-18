@@ -141,6 +141,21 @@ public final class Preferences {
                 Default.PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT);
     }
 
+    public static boolean isUseSfw() {
+        return sharedPreferences.getBoolean(Key.PREF_USE_SFW, Default.PREF_USE_SFW_DEFAULT);
+    }
+
+    public static void setIsUseSfw(boolean useSfw) {
+        sharedPreferences.edit()
+                .putBoolean(Key.PREF_USE_SFW, useSfw)
+                .apply();
+    }
+
+    public static int getDownloadThreadsQuantity() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
+                Default.PREF_DL_THREADS_QUANTITY_DEFAULT + ""));
+    }
+
     public static final class Key {
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
@@ -161,6 +176,8 @@ public final class Preferences {
         static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
+        public static final String PREF_USE_SFW = "pref_use_sfw";
+        public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
     }
 
     public static final class Default {
@@ -175,6 +192,8 @@ public final class Preferences {
         static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_DEFAULT;
         static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
+        static final boolean PREF_USE_SFW_DEFAULT = false;
+        static final int PREF_DL_THREADS_QUANTITY_DEFAULT = 4;
     }
 
     public static final class Constant {

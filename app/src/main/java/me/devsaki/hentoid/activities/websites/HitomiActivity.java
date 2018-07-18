@@ -1,22 +1,13 @@
 package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.HitomiParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.ObservableWebView;
@@ -38,7 +29,7 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        HitomiWebViewClient client = new HitomiWebViewClient();
+        HitomiWebViewClient client = new HitomiWebViewClient(this, "//hitomi.la/galleries/");
         client.restrictTo("hitomi.la");
 
         webView.setWebViewClient(client);
@@ -49,7 +40,7 @@ public class HitomiActivity extends BaseWebActivity {
         if (bWebViewOverview) {
             webView.getSettings().setLoadWithOverviewMode(false);
             webView.setInitialScale(webViewInitialZoom);
-            Timber.d("WebView Initial Scale: %s%", webViewInitialZoom);
+            Timber.d("WebView Initial Scale: %s%%", webViewInitialZoom);
         } else {
             webView.setInitialScale(Preferences.Default.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
             webView.getSettings().setLoadWithOverviewMode(true);
@@ -62,19 +53,12 @@ public class HitomiActivity extends BaseWebActivity {
     void backgroundRequest(String extra) {
         Timber.d(extra);
         Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(), extra);
+        executeAsyncTask(new HtmlLoader(this), extra);
     }
 
     private class HitomiWebViewClient extends CustomWebViewClient {
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains("//hitomi.la/galleries/")) {
-                executeAsyncTask(new HtmlLoader(), url);
-            }
+        HitomiWebViewClient(BaseWebActivity activity, String filteredUrl) {
+            super(activity, filteredUrl);
         }
 
         @Override
@@ -82,7 +66,7 @@ public class HitomiActivity extends BaseWebActivity {
                                                           @NonNull String url) {
             if (url.contains("hitomi.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "hitomi.js", TYPE.JS);
-            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js")) {
+            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js") || isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -96,26 +80,11 @@ public class HitomiActivity extends BaseWebActivity {
             String url = request.getUrl().toString();
             if (url.contains("hitomi.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "hitomi.js", TYPE.JS);
-            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js")) {
+            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js") || isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
             }
-        }
-    }
-
-    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-            try {
-                processContent(HitomiParser.parseContent(url));
-            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
-                Timber.e(e, "Error parsing content.");
-                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
-            }
-
-            return null;
         }
     }
 }

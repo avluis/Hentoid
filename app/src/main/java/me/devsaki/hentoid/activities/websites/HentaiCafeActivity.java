@@ -1,16 +1,6 @@
 package me.devsaki.hentoid.activities.websites;
 
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
-import android.webkit.WebView;
-
-import java.io.IOException;
-
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.HentaiCafeParser;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
@@ -29,7 +19,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        HentaiCafeWebViewClient client = new HentaiCafeWebViewClient();
+        HentaiCafeWebViewClient client = new HentaiCafeWebViewClient(this, "//hentai.cafe/");
         client.restrictTo("hentai.cafe");
 
         webView.setWebViewClient(client);
@@ -40,33 +30,13 @@ public class HentaiCafeActivity extends BaseWebActivity {
     void backgroundRequest(String extra) {
         Timber.d(extra);
         Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(), extra);
+        executeAsyncTask(new HtmlLoader(this), extra);
     }
 
     private class HentaiCafeWebViewClient extends CustomWebViewClient {
 
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains("//hentai.cafe/")) {
-                executeAsyncTask(new HtmlLoader(), url);
-            }
-        }
-    }
-
-    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-            try {
-                processContent(HentaiCafeParser.parseContent(url));
-            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
-                Timber.e(e, "Error parsing content.");
-                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
-            }
-
-            return null;
+        HentaiCafeWebViewClient(BaseWebActivity activity, String filteredUrl) {
+            super(activity, filteredUrl);
         }
     }
 }

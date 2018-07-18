@@ -2,7 +2,6 @@ package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -10,17 +9,8 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.TsuminoParser;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
-import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
@@ -32,6 +22,8 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private boolean downloadFabPressed = false;
     private int historyIndex;
+    private static final String[] blockedContent = {"/static/"};
+
 
     private static int ordinalIndexOf(String str) {
         int i = 5;
@@ -49,8 +41,9 @@ public class TsuminoActivity extends BaseWebActivity {
 
     @Override
     void setWebView(ObservableWebView webView) {
-        TsuminoWebViewClient client = new TsuminoWebViewClient();
+        TsuminoWebViewClient client = new TsuminoWebViewClient(this);
         client.restrictTo("tsumino.com");
+        addContentBlockFilter(blockedContent);
 
         webView.setWebViewClient(client);
         super.setWebView(webView);
@@ -68,7 +61,9 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        TsuminoWebViewClient(BaseWebActivity activity) {
+            super(activity);
+        }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -87,7 +82,7 @@ public class TsuminoActivity extends BaseWebActivity {
             super.onPageFinished(view, url);
 
             if (url.contains("//www.tsumino.com/Book/Info/")) {
-                executeAsyncTask(new HtmlLoader(), url);
+                executeAsyncTask(new HtmlLoader(activity), url);
             } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;
                 int currentIndex = getWebView().copyBackForwardList().getCurrentIndex();
@@ -99,7 +94,7 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
-            if (url.contains("pop.js") || url.contains("/static/")) {
+            if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -111,26 +106,11 @@ public class TsuminoActivity extends BaseWebActivity {
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull WebResourceRequest request) {
             String url = request.getUrl().toString();
-            if (url.contains("pop.js") || url.contains("/static/")) {
+            if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);
             }
-        }
-    }
-
-    private class HtmlLoader extends AsyncTask<String, Integer, Content> {
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-            try {
-                processContent(TsuminoParser.parseContent(url));
-            } catch (IOException|NullPointerException|IndexOutOfBoundsException e) {
-                Timber.e(e, "Error parsing content.");
-                runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
-            }
-
-            return null;
         }
     }
 }

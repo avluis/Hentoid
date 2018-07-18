@@ -15,6 +15,9 @@
     <string name="pref_quantity_per_page_title">Quantity Per Page</string>
     <string name="pref_quantity_per_page_summary">Number of items per page in download list.\nCurrently: %s items.</string>
     <string name="pref_quantity_per_page_default" translatable="false">20</string>
+    <string name="pref_dl_threads_quantity_title">Number of parallel downloads</string>
+    <string name="pref_dl_threads_quantity_summary">Number of images downloaded simultaneously.\nCurrently: %s.</string>
+    <string name="pref_dl_threads_quantity_default" translatable="false">4</string>
     <!-- Library -->
     <string name="pref_library_category">Library</string>
     <string name="pref_read_content_title">Read Content Action</string>
@@ -59,4 +62,8 @@
     <string name="pref_analytics_tracking_summary_off">Analytics Tracking is currently enabled.\nThanks for helping us improve Hentoid!</string>
     <string name="pref_analytics_tracking_summary_on">Tap to enable Analytics Tracking.\nHelp us improve the app by tracking crashes &amp; exceptions.</string>
     <string name="pref_analytics_tracking_default" translatable="false">false</string>
+    <string name="pref_use_sfw_title">Use safe-for-work/wife/gf source</string>
+    <string name="pref_use_sfw_summary_off">Going 100% hentai</string>
+    <string name="pref_use_sfw_summary_on">A non-hentai source is available</string>
+    <string name="pref_use_sfw_default" translatable="false">false</string>
 </resources>

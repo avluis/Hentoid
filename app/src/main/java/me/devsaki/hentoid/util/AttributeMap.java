@@ -31,7 +31,7 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
 
     @SuppressLint("NewApi")
     public void add(List<Attribute> attributeList) {
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.N)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             attributeList.forEach(this::add);
         } else {
             //noinspection Convert2streamapi

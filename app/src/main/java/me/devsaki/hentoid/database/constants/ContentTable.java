@@ -65,7 +65,7 @@ public abstract class ContentTable {
     public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE " + ID_COLUMN + " = ?";
 
 
-    // UPDATE8
+    // UPDATE
     public static final String UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT = "UPDATE "
             + TABLE_NAME + " SET " + DOWNLOAD_DATE_COLUMN + " = ?, " + STATUS_COLUMN
             + " = ? WHERE " + ID_COLUMN + " = ?";
@@ -83,30 +83,23 @@ public abstract class ContentTable {
 
     public static final String SELECT_NULL_FOLDERS = "SELECT * FROM " + TABLE_NAME + " WHERE " + STORAGE_FOLDER_COLUMN + " is null";
 
-    public static final String SELECT_BY_STATUS = "SELECT * FROM " + TABLE_NAME + " C WHERE C."
-            + STATUS_COLUMN + " = ? ORDER BY C." + DOWNLOAD_DATE_COLUMN;
-
-    public static final String SELECT_IN_DOWNLOAD_MANAGER = "SELECT * FROM " + TABLE_NAME + " C WHERE C."
-            + STATUS_COLUMN + " in (?, ?) ORDER BY C." + STATUS_COLUMN + ", C."
-            + DOWNLOAD_DATE_COLUMN;
-
 
     // SEARCH QUERIES "TOOLBOX"
 
     public static final String SELECT_DOWNLOADS_BASE = "SELECT C.*" +
-            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C."+SITE_COLUMN+" in (%1) ";
+            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C." + SITE_COLUMN + " in (%1) ";
 
-    public static final String SELECT_DOWNLOADS_FAVS = " AND C."+FAVOURITE_COLUMN+" = 1 ";
+    public static final String SELECT_DOWNLOADS_FAVS = " AND C." + FAVOURITE_COLUMN + " = 1 ";
 
     public static final String SELECT_DOWNLOADS_TITLE = " lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
 
     public static final String SELECT_DOWNLOADS_JOINS = " C." + ID_COLUMN
-            + " in (SELECT "+ContentAttributeTable.CONTENT_ID_COLUMN+" FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM "
+            + " in (SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM "
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
-            + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A."+ AttributeTable.ID_COLUMN + " WHERE ";
+            + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
 
     public static final String SELECT_DOWNLOADS_AUTHOR = "(lower(A." + AttributeTable.NAME_COLUMN + ") LIKE '%3' AND A."
-            + AttributeTable.TYPE_COLUMN + " in (0, 7))";
+            + AttributeTable.TYPE_COLUMN + " in (0, 7)) GROUP BY 1";
 
     public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
             + AttributeTable.TYPE_COLUMN + " = 3) GROUP BY 1 HAVING COUNT(*)=%5";

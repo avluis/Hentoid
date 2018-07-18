@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import timber.log.Timber;
-
 public class RandomSeed {
     private static final RandomSeed ourInstance = new RandomSeed();
 
@@ -19,8 +17,7 @@ public class RandomSeed {
         return randomNumber;
     }
 
-    public void renewSeed()
-    {
+    public void renewSeed() {
         randomNumber = Math.random();
     }
 }

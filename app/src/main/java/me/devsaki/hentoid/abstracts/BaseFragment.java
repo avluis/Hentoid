@@ -20,15 +20,16 @@ import me.devsaki.hentoid.events.DownloadEvent;
  */
 public abstract class BaseFragment extends Fragment {
 
-    private static HentoidDB db;
+    private HentoidDB db;
 
     private BackInterface backInterface;
 
-    protected static HentoidDB getDB() {
+    public abstract boolean onBackPressed();
+
+
+    protected HentoidDB getDB() {
         return db;
     }
-
-    public abstract boolean onBackPressed();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

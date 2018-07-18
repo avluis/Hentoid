@@ -1,4 +1,6 @@
 <resources>
+    <string name="app_name">Hentoid</string>
+    <string name="app_id">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
@@ -26,6 +28,11 @@
     <string name="cancel">Cancel</string>
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="queue_empty2" />
+    <string name="queue_paused">Queue paused</string>
+    <string name="queue_dl">Downloading {0}</string>
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series"><![CDATA[<b>Series:</b> @series@]]></string>
@@ -34,8 +41,8 @@
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
     <string name="permission_granted">Permission set, restarting library import.</string>
-    <string name="permission_denied">Hentoid requires write access to device storage.</string>
-    <string name="permission_denied_forced">Write storage permission denied!\nManually grant storage permission.</string>
+    <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
+    <string name="permissioncomplaint_snackbar_manual">You must manually grant permissions before you can continue</string>
     <string name="existing_library_error">Please select a custom location.</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
@@ -52,7 +59,7 @@
     <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it from Google Play.</string>
 
     <string name="download_again_dialog_title">Try downloading again?</string>
-    <string name="download_again_dialog_message">Total images in download: @total\nImages with error: @error</string>
+    <string name="download_again_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
     <string name="ask_delete">Are you sure you wish to delete this?</string>
     <string name="ask_delete_multiple">Are you sure you wish to delete the selected items?</string>
     <string name="deleted">\@content deleted.</string>
@@ -96,7 +103,10 @@
     <string name="pin_ok">PIN OK!</string>
     <!-- About Activity -->
     <string name="about1"><b>Hentoid</b> is a Doujinshi &amp; H-Manga archiving app. Hentoid was originally created by <b>Cesar Arasaki</b>.</string>
-    <string name="about2">In regards to tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
+    <string name="about2">In regards to Tsumino - you will need to solve the captcha for now, but we are experimenting with other methods as well.</string>
+    <string name="personalDataStatement1"><b>PERSONAL DATA PRIVACY STATEMENT</b>\n\nHentoid is a free and open-source software maintained by the Hentoid Community (join us on Discord - see link above)</string>
+    <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library :\n  - Session ID\n  - IP address</string>
+    <string name="personalDataStatement3">The abovementioned data is removed from Firebase live and backup system within 180 days (see https://firebase.google.com/support/privacy/ for more details)\n\nNo other personal data is collected nor sent to any other party.</string>
     <string name="about_community" translatable="false"><u>Google+</u></string>
     <string name="about_community_url" translatable="false">https://plus.google.com/communities/110496467189870321840</string>
     <string name="about_github" translatable="false"><u>GitHub</u></string>
@@ -109,7 +119,4 @@
     <string name="about_licenses">Display Licenses</string>
     <!-- Web viewer -->
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

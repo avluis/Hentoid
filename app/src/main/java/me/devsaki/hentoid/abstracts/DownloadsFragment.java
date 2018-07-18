@@ -23,7 +23,6 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.ActionMode;
@@ -67,6 +66,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -79,14 +79,12 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 /**
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
- * TODO: Dismiss 'new content' tooltip upon search
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentsWipedListener, ItemSelectListener {
 
     // ======== CONSTANTS
 
-    protected static final int SHOW_DEFAULT = 0;
     protected static final int SHOW_LOADING = 1;
     protected static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
@@ -135,16 +133,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Pane saying "Why am I empty ?"
     private TextView emptyText;
     // Bottom toolbar with page numbers
-    protected Toolbar pagerToolbar;
-    // Button containing the page number on Paged view
-    private Button btnPage;
+    protected LinearLayout pagerToolbar;
 
-    // == UTIL OBJECTS
+    // ======== UTIL OBJECTS
     private ObjectAnimator animator;
     // Handler for text searches; needs to be there to be cancelable upon new key press
-    private Handler searchHandler = new Handler();
+    private final Handler searchHandler = new Handler();
 
-    // == VARIABLES TAKEN FROM SETTINGS / PREFERENCES
+    // ======== VARIABLES TAKEN FROM SETTINGS / PREFERENCES
     // Books per page
     protected int booksPerPage;
     // Hentoid directory
@@ -153,54 +149,59 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int order;
 
 
-    // == VARIABLES
+    // ======== VARIABLES
 
+    // === MISC. USAGE
     protected Context mContext;
     // Current state of left drawer (see constants in DrawerLayout class)
     private int mDrawerState;
     // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
     protected int currentPage = 1;
-    // Async content search utility class; has to be instanciated class-wide because of asynchronous callbacks
-    private SearchContent search;
     // Adapter in charge of book list display
     protected ContentAdapter mAdapter;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
     protected boolean isNewContentAvailable;
-
     // True if book list has finished loading; used for synchronization between threads
     protected boolean isLoaded;
-    // True if search results need to replace displayed books (set before calling a search to be used during results display)
-    protected boolean isSearchReplaceResults;
     // Indicates whether or not one of the books has been selected
     private boolean isSelected;
     // True if sort order has been updated
     private boolean orderUpdated;
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
+    // True if bottom toolbar visibility is fixed and should not change regardless of scrolling; false if bottom toolbar visibility changes according to scrolling
+    protected boolean overrideBottomToolbarVisibility;
+    // True if storage permissions have been checked at least once
+    private boolean storagePermissionChecked = false;
 
+
+    // === SEARCH
+    // Async content search utility class; has to be instanciated class-wide because of asynchronous callbacks
+    private SearchContent search;
     // True if search mode is active
     private boolean isSearchMode = false;
     // Active tag filters
-    private Map<String, Integer> tagFilters = new HashMap<>();
+    private final Map<String, Integer> tagFilters = new HashMap<>();
     // Active site filters
     private ArrayList<Integer> siteFilters = new ArrayList<>();
     // Favourite filter active
     private boolean filterFavourites = false;
     // Expression typed in the search bar
     protected String query = "";
+    // True if search results need to replace displayed books (set before calling a search to be used during results display)
+    protected boolean isSearchReplaceResults;
 
     // States for search bar buttons
     private boolean filterByTitle = true;
     private boolean filterByArtist = true;
     private boolean filterByTag = false;
 
+
     // To be documented
     private ActionMode mActionMode;
     private boolean shouldHide;
     private Parcelable mListState;
     private boolean selectTrigger = false;
-    private boolean storagePermissionChecked;
-    protected boolean override;
 
 
     // == METHODS
@@ -270,22 +271,26 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onResume() {
         super.onResume();
 
-        checkPermissions();
+        loadLibrary();
 
         if (mListState != null) {
             llm.onRestoreInstanceState(mListState);
         }
     }
 
-    // Validate permissions
-    private void checkPermissions() {
+    /**
+     * Check write permissions on target storage and load library
+     */
+    private void loadLibrary() {
         if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
-            queryPrefs();
-            checkResults();
+            boolean shouldUpdate = queryPrefs();
+            if (shouldUpdate || -1 == mAdapter.getTotalCount()) update();
+            if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
+            showToolbar(true);
         } else {
             Timber.d("Storage permission denied!");
             if (storagePermissionChecked) {
-                reset();
+                resetApp();
             }
             storagePermissionChecked = true;
         }
@@ -294,7 +299,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     /**
      * Updates class variables with Hentoid user preferences
      */
-    protected void queryPrefs() {
+    protected boolean queryPrefs() {
         Timber.d("Querying Prefs.");
         boolean shouldUpdate = false;
 
@@ -304,7 +309,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             FragmentActivity activity = getActivity();
             if (null == activity) {
                 Timber.e("Activity unreachable !");
-                return;
+                return false;
             }
             Intent intent = new Intent(activity, ImportActivity.class);
             startActivity(intent);
@@ -320,7 +325,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             shouldUpdate = true;
         }
 
-        if (Helper.isAtLeastAPI(Build.VERSION_CODES.LOLLIPOP)) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             checkStorage();
         }
 
@@ -341,9 +346,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.order = order;
         }
 
-        if (shouldUpdate) {
-            update();
-        }
+        return shouldUpdate;
     }
 
     private void checkStorage() {
@@ -406,7 +409,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private void reset() {
+    /**
+     * Reset the app (to get write permissions)
+     */
+    private void resetApp() {
         Helper.reset(HentoidApp.getAppContext(), getActivity());
     }
 
@@ -444,7 +450,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             mListState = state.getParcelable(LIST_STATE_KEY);
             isSearchMode = state.getBoolean(IS_SEARCH_MODE, false);
             filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
-            query = state.getString(QUERY,"");
+            query = state.getString(QUERY, "");
             siteFilters = state.getIntegerArrayList(SITE_FILTERS);
             filterByTitle = state.getBoolean(FILTER_BY_TITLE, true);
             filterByArtist = state.getBoolean(FILTER_BY_ARTIST, true);
@@ -461,14 +467,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         } else {
             // Init site filters; all on by default
-            siteFilters.add(Site.NHENTAI.getCode());
-            siteFilters.add(Site.HITOMI.getCode());
-            siteFilters.add(Site.ASMHENTAI.getCode());
-            siteFilters.add(Site.ASMHENTAI_COMICS.getCode());
-            siteFilters.add(Site.HENTAICAFE.getCode());
-            siteFilters.add(Site.PURURIN.getCode());
-            siteFilters.add(Site.TSUMINO.getCode());
-            siteFilters.add(Site.FAKKU.getCode());
+            for (Site s : Site.values()) {
+                siteFilters.add(s.getCode());
+            }
         }
     }
 
@@ -506,7 +507,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         return rootView;
     }
 
-    private void initUI(View rootView) {
+    protected void initUI(View rootView) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
 
@@ -517,8 +518,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mListView.setLayoutManager(llm);
 
         Comparator<Content> comparator;
-        switch(order)
-        {
+        switch (order) {
             case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
                 comparator = Content.DLDATE_COMPARATOR;
                 break;
@@ -531,11 +531,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
                 comparator = Content.TITLE_ALPHA_INV_COMPARATOR;
                 break;
-            default :
+            default:
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
         mAdapter = new ContentAdapter(mContext, this, comparator);
+        mAdapter.setContentsWipedListener(this);
         mListView.setAdapter(mAdapter);
 
         if (mAdapter.getItemCount() == 0) {
@@ -560,7 +561,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         });
 
-        btnPage = rootView.findViewById(R.id.btnPage);
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
@@ -579,11 +579,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 super.onScrolled(recyclerView, dx, dy);
 
                 // Show toolbar:
-                if (!override && mAdapter.getItemCount() > 0) {
+                if (!overrideBottomToolbarVisibility && mAdapter.getItemCount() > 0) {
                     // At top of list
-                    if (llm.findViewByPosition(llm.findFirstVisibleItemPosition())
-                            .getTop() == 0 && llm.findFirstVisibleItemPosition() == 0) {
-                        showToolbar(true, false);
+                    int firstVisibleItemPos = llm.findFirstVisibleItemPosition();
+                    View topView = llm.findViewByPosition(firstVisibleItemPos);
+                    if (topView != null && topView.getTop() == 0 && firstVisibleItemPos == 0) {
+                        showToolbar(true);
                         if (isNewContentAvailable) {
                             newContentToolTip.setVisibility(View.VISIBLE);
                         }
@@ -591,20 +592,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                     // Last item in list
                     if (llm.findLastVisibleItemPosition() == mAdapter.getItemCount() - 1) {
-                        showToolbar(true, false);
+                        showToolbar(true);
                         if (isNewContentAvailable) {
                             newContentToolTip.setVisibility(View.VISIBLE);
                         }
                     } else {
                         // When scrolling up
                         if (dy < -10) {
-                            showToolbar(true, false);
+                            showToolbar(true);
                             if (isNewContentAvailable) {
                                 newContentToolTip.setVisibility(View.VISIBLE);
                             }
                             // When scrolling down
                         } else if (dy > 100) {
-                            showToolbar(false, false);
+                            showToolbar(false);
                             if (isNewContentAvailable) {
                                 newContentToolTip.setVisibility(View.GONE);
                             }
@@ -668,7 +669,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Called by pressing the "New Content" button that appear on new downloads
+     * Refresh the whole screen
+     *  - Called by pressing the "New Content" button that appear on new downloads
+     *  - Called by scrolling up when being on top of the list ("force reload" command)
      */
     protected void commitRefresh() {
         newContentToolTip.setVisibility(View.GONE);
@@ -682,8 +685,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void resetCount() {
-        Timber.d("Download Count: %s", HentoidApp.getDownloadCount());
-        HentoidApp.setDownloadCount(0);
+        Timber.d("Download Count: %s", ContentQueueManager.getInstance().getDownloadCount());
+        ContentQueueManager.getInstance().setDownloadCount(0);
 
         NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) manager.cancel(0);
@@ -691,10 +694,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        Double percent = event.percent;
-        if (percent >= 0) {
-            Timber.d("Download Progress: %s", percent);
-        } else if (isLoaded) {
+        if (event.eventType == DownloadEvent.EV_COMPLETE && isLoaded) {
             showReloadToolTip();
         }
     }
@@ -720,12 +720,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 setSearchPaneVisibility(false);
-
+/* New behaviour
                 if (!("").equals(query)) {
                     query = "";
                     submitSearchQuery(query, 300);
                 }
-
+*/
                 return true;
             }
         });
@@ -766,10 +766,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     clearQuery(1);
                 }
 
-                if (s.isEmpty() && filterByTag)
-                {
-                    for (String tag : tagFilters.keySet())
-                    {
+                if (s.isEmpty() && filterByTag) {
+                    for (String tag : tagFilters.keySet()) {
                         Button btn = tagMosaic.findViewWithTag(tag);
                         if (btn != null) btn.setVisibility(View.VISIBLE);
                     }
@@ -782,14 +780,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // == SEARCH PANE
 
         // Attaches listeners to website filters
-        initSiteButton(activity.findViewById(R.id.filter_nhentai), Site.NHENTAI.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_hitomi), Site.HITOMI.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_hentaicafe), Site.HENTAICAFE.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_asm), Site.ASMHENTAI.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_asmcomics), Site.ASMHENTAI_COMICS.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_tsumino), Site.TSUMINO.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_pururin), Site.PURURIN.getCode());
-        initSiteButton(activity.findViewById(R.id.filter_fakku), Site.FAKKU.getCode());
+        initSiteButton(activity.findViewById(R.id.filter_nhentai), Site.NHENTAI);
+        initSiteButton(activity.findViewById(R.id.filter_hitomi), Site.HITOMI);
+        initSiteButton(activity.findViewById(R.id.filter_hentaicafe), Site.HENTAICAFE);
+        initSiteButton(activity.findViewById(R.id.filter_asm), Site.ASMHENTAI);
+        initSiteButton(activity.findViewById(R.id.filter_asmcomics), Site.ASMHENTAI_COMICS);
+        initSiteButton(activity.findViewById(R.id.filter_tsumino), Site.TSUMINO);
+        initSiteButton(activity.findViewById(R.id.filter_pururin), Site.PURURIN);
+        initSiteButton(activity.findViewById(R.id.filter_fakku), Site.FAKKU);
 
         // Attaches listener to favourite filters
         final ImageButton favouriteButton = activity.findViewById(R.id.filter_favs);
@@ -805,8 +803,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // == BOOKS SORT
 
         // Sets the right starting icon according to the starting sort order
-        switch(order)
-        {
+        switch (order) {
             case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
                 break;
@@ -822,15 +819,23 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
                 break;
-            default :
+            default:
                 // Nothing
         }
     }
 
-    private void initSiteButton(ImageButton button, int siteCode)
-    {
-        if (siteFilters.contains(siteCode)) button.clearColorFilter(); else button.setColorFilter(Color.BLACK);
-        button.setOnClickListener(v -> toggleSiteFilter(button, siteCode));
+    /**
+     * Initialize the site filter button in the search panel
+     * - Set proper color
+     * - Set proper onClick listener
+     *
+     * @param button Button to initialize
+     * @param site   Corresponding site
+     */
+    private void initSiteButton(ImageButton button, Site site) {
+        if (siteFilters.contains(site.getCode())) button.clearColorFilter();
+        else button.setColorFilter(Color.BLACK);
+        button.setOnClickListener(v -> toggleSiteFilter(button, site.getCode()));
     }
 
     @Override
@@ -847,7 +852,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Callback method used when a sort method is selected in the sort drop-down menu
-     * => Updates the GUI according to the chosen sort method
+     * => Updates the UI according to the chosen sort method
      *
      * @param item MenuItem that has been selected
      * @return true if the order has been successfuly processed
@@ -923,28 +928,25 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *
      * @param visible True if search pane has to become visible; false if not
      */
-    private void setSearchPaneVisibility(boolean visible)
-    {
-        if(visible) {
-            if (getQuery().length() > 0) clearQuery(1); // Clears any previously active query (search bar)
+    private void setSearchPaneVisibility(boolean visible) {
+        if (visible) {
+            if (getQuery().length() > 0)
+                clearQuery(1); // Clears any previously active query (search bar)
             searchPane.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             searchPane.setVisibility(View.GONE);
         }
         isSearchMode = visible;
     }
 
     /**
-     * Toggles the chosen source (website) filter and updates the GUI accordingly
+     * Toggles the chosen source (website) filter and updates the UI accordingly
      *
-     * @param button Source (website) filter button that has been pressed
+     * @param button   Source (website) filter button that has been pressed
      * @param siteCode Code of the corresponding site
      */
-    private void toggleSiteFilter(ImageButton button, int siteCode)
-    {
-        if (siteFilters.contains(siteCode))
-        {
+    private void toggleSiteFilter(ImageButton button, int siteCode) {
+        if (siteFilters.contains(siteCode)) {
             siteFilters.remove(Integer.valueOf(siteCode));
             button.setColorFilter(Color.BLACK);
         } else {
@@ -957,12 +959,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Toggles favourite filter and updates the GUI accordingly
+     * Toggles favourite filter on a book and updates the UI accordingly
      *
      * @param button Filter button that has been pressed
      */
-    private void toggleFavouriteFilter(ImageButton button)
-    {
+    private void toggleFavouriteFilter(ImageButton button) {
         filterFavourites = !filterFavourites;
 
         updateFavouriteFilter(button);
@@ -972,10 +973,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchContent();
     }
 
-    private void updateFavouriteFilter(ImageButton button)
-    {
-        if (filterFavourites)
-        {
+    /**
+     * Update favourite filter button appearance (icon and color) on a book
+     *
+     * @param button Button to update
+     */
+    private void updateFavouriteFilter(ImageButton button) {
+        if (filterFavourites) {
             button.setImageResource(R.drawable.ic_fav_full);
             button.clearColorFilter();
         } else {
@@ -985,35 +989,32 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Updates the GUI according to the chosen filters
+     * Updates the UI according to the chosen filters
      *
-     * @param filterByTitle True if filter by title is activated
+     * @param filterByTitle  True if filter by title is activated
      * @param filterByArtist True if filter by artist is activated
-     * @param filterByTag True if filter by tag is activated
+     * @param filterByTag    True if filter by tag is activated
      */
-    private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag)
-    {
+    private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag) {
         selectFieldFilter(filterByTitle, filterByArtist, filterByTag, false);
     }
-    private void forceSelectTagFilter()
-    {
+
+    private void forceSelectTagFilter() {
         selectFieldFilter(filterByTitle, filterByArtist, filterByTag, true);
     }
-    private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag, boolean overrideDisplayTags)
-    {
+
+    private void selectFieldFilter(boolean filterByTitle, boolean filterByArtist, boolean filterByTag, boolean overrideDisplayTags) {
         FragmentActivity activity = getActivity();
-        if (null == activity)
-        {
+        if (null == activity) {
             Timber.e("Activity unreachable !");
             return;
         }
 
-        if ((filterByTag && !this.filterByTag) || overrideDisplayTags)
-        {
+        if ((filterByTag && !this.filterByTag) || overrideDisplayTags) {
             this.filterByTitle = false;
-            ((ToggleButton)activity.findViewById(R.id.search_filter_title)).setChecked(false);
+            ((ToggleButton) activity.findViewById(R.id.search_filter_title)).setChecked(false);
             this.filterByArtist = false;
-            ((ToggleButton)activity.findViewById(R.id.search_filter_artist)).setChecked(false);
+            ((ToggleButton) activity.findViewById(R.id.search_filter_artist)).setChecked(false);
 
             // Enable tag mosaic
             ViewGroup.LayoutParams params = searchPane.getLayoutParams();
@@ -1025,8 +1026,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.filterByTag = true;
             setQuery("");
             searchView.setQuery("", false);
-        }
-        else if (this.filterByTag && (!filterByTag || filterByTitle || filterByArtist)) {
+        } else if (this.filterByTag && (!filterByTag || filterByTitle || filterByArtist)) {
 
             // Get back to the default filter = title
             if (!filterByTag && !this.filterByTitle && !this.filterByArtist) {
@@ -1048,66 +1048,68 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             tagFilters.clear();
             setQuery("");
             searchView.setQuery("", false);
-        }
-        else
-        {
+        } else {
             this.filterByTitle = filterByTitle;
             this.filterByArtist = filterByArtist;
         }
         searchContent();
     }
 
-    private void restoreTagMosaic()
-    {
-        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), Collections.emptyList(), siteFilters, filterFavourites);
+    /**
+     * Restore tag mosaic UI according to available tags in book library and selected filters
+     */
+    private void restoreTagMosaic() {
+        List<Pair<String, Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), Collections.emptyList(), siteFilters, filterFavourites);
 
         tagMosaic.removeAllViews();
 
-        for(Pair<String,Integer> val : tags)
-        {
-            if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
-            else if (tagFilters.get(val.first) > 9) tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
+        for (Pair<String, Integer> val : tags) {
+            if (!tagFilters.containsKey(val.first))
+                tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
+            else if (tagFilters.get(val.first) > 9)
+                tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
 
             addTagButton(val.first, val.second);
         }
     }
 
-    private void updateTagMosaic() { updateTagMosaic(true); }
+    private void updateTagMosaic() {
+        updateTagMosaic(true);
+    }
+
     /**
      * Updates the displayed tags in the tag mosaic, according to :
-     *   - owned books and their tags
-     *   - selected source (website) filters
-     *   - selected tags
-     *
-     *   Two behaviours :
-     *      removeNotFound = true -> tag button does not appear when not found in results
-     *      removeNotFound = false -> tag button appears as disabled when not found in results
+     * - owned books and their tags
+     * - selected source (website) filters
+     * - selected tags
+     * <p>
+     * Two behaviours :
+     * removeNotFound = true -> tag button does not appear when not found in results
+     * removeNotFound = false -> tag button appears as disabled when not found in results
      *
      * @param removeNotFound Indicated whether a tag not found in results is invisible or visible + disabled
      */
-    private void updateTagMosaic(boolean removeNotFound)
-    {
+    private void updateTagMosaic(boolean removeNotFound) {
         List<String> selectedTags = new ArrayList<>();
         for (String key : tagFilters.keySet()) {
             if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
         }
-        List<Pair<String,Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), selectedTags, siteFilters, filterFavourites);
+        List<Pair<String, Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), selectedTags, siteFilters, filterFavourites);
 
         // Remove all tag buttons that do not appear in results
-        if (removeNotFound)
-        {
+        if (removeNotFound) {
             tagMosaic.removeAllViews();
 
             // Set all buttons to be removed
-            for(String key : tagFilters.keySet())
-            {
+            for (String key : tagFilters.keySet()) {
                 tagFilters.put(key, tagFilters.get(key) + 10);
             }
 
-            for(Pair<String,Integer> val : tags)
-            {
-                if (!tagFilters.containsKey(val.first)) tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
-                else if (tagFilters.get(val.first) > 9) tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
+            for (Pair<String, Integer> val : tags) {
+                if (!tagFilters.containsKey(val.first))
+                    tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
+                else if (tagFilters.get(val.first) > 9)
+                    tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
 
                 addTagButton(val.first, val.second);
             }
@@ -1119,8 +1121,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         } else { // Disable all tag buttons that do not appear in results _and_ are not selected
             Map<String, Integer> availableTags = new HashMap<>();
-            for(Pair<String,Integer> val : tags)
-            {
+            for (Pair<String, Integer> val : tags) {
                 availableTags.put(val.first, val.second);
             }
 
@@ -1134,8 +1135,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                         tagFilters.put(key, TAGFILTER_ACTIVE);
                         colorButton(b, TAGFILTER_ACTIVE);
                     }
-                }
-                else {
+                } else {
                     if (TAGFILTER_SELECTED != tagFilters.get(key)) {
                         tagFilters.put(key, TAGFILTER_INACTIVE);
                         colorButton(b, TAGFILTER_INACTIVE);
@@ -1154,8 +1154,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @param label Label to display on the button to add
      * @param count Count to display on the button to add
      */
-    private void addTagButton(String label, Integer count)
-    {
+    private void addTagButton(String label, Integer count) {
         Button button = new Button(mContext);
         button.setText(MessageFormat.format("{0}({1})", label, count));
         button.setBackgroundResource(R.drawable.btn_buttonshape);
@@ -1166,7 +1165,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (tagFilters.containsKey(label)) tagState = tagFilters.get(label);
         colorButton(button, tagState);
 
-        button.setOnClickListener( v -> selectTagFilter(button, label) );
+        button.setOnClickListener(v -> selectTagFilter(button, label));
         button.setTag(label);
 
         tagMosaic.addView(button);
@@ -1175,17 +1174,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     /**
      * Applies to the edges and text of the given Button the color corresponding to the given state
      *
-     * @param b Button to be updated
+     * @param b        Button to be updated
      * @param tagState Tag state whose color has to be applied
      */
-    private void colorButton(Button b, int tagState)
-    {
-        GradientDrawable grad = (GradientDrawable)b.getBackground();
+    private void colorButton(Button b, int tagState) {
+        GradientDrawable grad = (GradientDrawable) b.getBackground();
         int color = Color.WHITE;
         if (TAGFILTER_SELECTED == tagState) {
             color = Color.RED;
-        }
-        else if (TAGFILTER_INACTIVE == tagState) {
+        } else if (TAGFILTER_INACTIVE == tagState) {
             color = Color.DKGRAY;
         }
         b.setTextColor(color);
@@ -1196,12 +1193,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * Updates visible books of the collection according to the selected tag filters
      * This method is fired every time a tag filter button is pressed
      *
-     * @param b Pressed button
+     * @param b   Pressed button
      * @param tag Tag represented by the pressed button
      */
-    private void selectTagFilter(Button b, String tag)
-    {
-        GradientDrawable grad = (GradientDrawable)b.getBackground();
+    private void selectTagFilter(Button b, String tag) {
+        GradientDrawable grad = (GradientDrawable) b.getBackground();
         boolean doSearch = true;
 
         if (tagFilters.containsKey(tag)) {
@@ -1228,9 +1224,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 Handler handler = new Handler();
                 handler.post(() -> updateTagMosaic(false));
             }
-        }
-        else
-        {
+        } else {
             Timber.d("Tag %s absent from tagFilter", tag);
         }
     }
@@ -1250,8 +1244,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 update();
             }, delay);
         } else { // Filter tag mosaic based on query
-            for (String tag : tagFilters.keySet())
-            {
+            for (String tag : tagFilters.keySet()) {
                 Button btn = tagMosaic.findViewWithTag(tag);
                 if (btn != null) {
                     if (tag.contains(s)) {
@@ -1264,28 +1257,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    protected void checkContent(boolean clear) {
-        if (clear) {
-            resetCount();
-        } else {
-            if (HentoidApp.getDownloadCount() > 0) {
-                if (isLoaded) {
-                    showReloadToolTip();
-                }
-            } else {
-                setCurrentPage();
-                showToolbar(true, false);
-            }
-        }
-    }
-
     private void showReloadToolTip() {
         if (newContentToolTip.getVisibility() == View.GONE) {
             newContentToolTip.setVisibility(View.VISIBLE);
             refreshLayout.setEnabled(true);
             isNewContentAvailable = true;
-        } else {
-            Timber.d("Tooltip visible.");
         }
     }
 
@@ -1307,7 +1283,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @return Current value of the query typed in the search toolbar; empty string if no query typed
      */
     private String getQuery() {
-        return query == null?"":query;
+        return query == null ? "" : query;
     }
 
     private void clearSelection() {
@@ -1315,23 +1291,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (mListView.getScrollState() == RecyclerView.SCROLL_STATE_IDLE) {
                 mAdapter.clearSelections();
                 selectTrigger = false;
-                showToolbar(true, false);
+                showToolbar(true);
             }
             isSelected = false;
         }
     }
 
+    /**
+     * Update screen with book of current page
+     */
     protected void update() {
         toggleUI(SHOW_LOADING);
         searchContent();
-        setCurrentPage();
-    }
-
-    /**
-     * Updates the page number on the bottom toolbar
-     */
-    private void setCurrentPage() {
-        btnPage.setText(String.valueOf(currentPage));
     }
 
     protected void toggleUI(int mode) {
@@ -1340,20 +1311,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.GONE);
                 loadingText.setVisibility(View.VISIBLE);
-                showToolbar(false, false);
+                //showToolbar(false);
                 startAnimation();
                 break;
             case SHOW_BLANK:
                 mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.VISIBLE);
                 loadingText.setVisibility(View.GONE);
-                showToolbar(false, false);
+                showToolbar(false);
                 break;
             case SHOW_RESULT:
                 mListView.setVisibility(View.VISIBLE);
                 emptyText.setVisibility(View.GONE);
                 loadingText.setVisibility(View.GONE);
-                showToolbar(true, false);
+                showToolbar(true);
                 break;
             default:
                 stopAnimation();
@@ -1390,20 +1361,22 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Runs a new search in the DB according to active filters :
-     *   - Selected source (website)
-     *   - Either
-     *      * Search string for Title or Artist
-     *      or
-     *      * Selected tags in tag mosaic
+     * - Selected source (website)
+     * - Either
+     * * Search string for Title or Artist
+     * or
+     * * Selected tags in tag mosaic
      */
-    protected void searchContent() { searchContent(isSearchMode); }
+    protected void searchContent() {
+        searchContent(isSearchMode);
+    }
+
     protected void searchContent(boolean searchMode) {
         List<String> selectedTags = new ArrayList<>();
         String query = this.getQuery();
 
         // Populate tag filter if tag filtering is active
-        if (filterByTag)
-        {
+        if (filterByTag) {
             for (String key : tagFilters.keySet()) {
                 if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
             }
@@ -1413,18 +1386,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         isLoaded = false;
         isSearchReplaceResults = searchMode;
-        search.retrieveResults(filterByTitle?query:"", filterByArtist?query:"", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
+        search.retrieveResults(filterByTitle ? query : "", filterByArtist ? query : "", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
     }
 
-    protected abstract void showToolbar(boolean show, boolean override);
+    protected abstract void showToolbar(boolean show);
 
-    protected abstract void displayResults(List<Content> results);
+    protected abstract void displayResults(List<Content> results, int totalContent);
 
-    protected abstract void checkResults();
+//    protected abstract void setCurrentPage();
 
-    protected boolean isLastPage()
-    {
-        return ( currentPage * booksPerPage >= mAdapter.getTotalCount() );
+    protected boolean isLastPage() {
+        return (currentPage * booksPerPage >= mAdapter.getTotalCount());
     }
 
     protected void displayNoResults() {
@@ -1448,8 +1420,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
             isLoaded = true;
 
+            if (isSearchReplaceResults && isNewContentAvailable)
+            {
+                newContentToolTip.setVisibility(View.GONE);
+                isNewContentAvailable = false;
+            }
+
             // Display new results
-            displayResults(results);
+            displayResults(results, totalContent);
 
             mAdapter.setTotalCount(totalContent);
         }
@@ -1469,7 +1447,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onItemSelected(int selectedCount) {
         isSelected = true;
-        showToolbar(false, true);
+        showToolbar(false);
+        overrideBottomToolbarVisibility = true;
 
         if (selectedCount == 1) {
             mAdapter.notifyDataSetChanged();
@@ -1513,7 +1492,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (itemCount < 1) {
             clearSelection();
-            showToolbar(true, false);
+            showToolbar(true);
+            overrideBottomToolbarVisibility = false;
 
             if (mActionMode != null) {
                 mActionMode.finish();

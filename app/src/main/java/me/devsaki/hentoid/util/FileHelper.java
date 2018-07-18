@@ -38,6 +38,8 @@ public class FileHelper {
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
+    public static final String FORBIDDEN_CHARS = "[^a-zA-Z0-9.-]";
+
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
     public static void saveUri(Uri uri) {
@@ -145,16 +147,6 @@ public class FileHelper {
     }
 
     /**
-     * Checks if file could be read or created
-     *
-     * @param file - The file.
-     * @return true if file's is writable.
-     */
-    private static boolean isReadable(@NonNull final File file) {
-        return file.exists() && file.isFile() && file.canRead();
-    }
-
-    /**
      * Method ensures file creation from stream.
      *
      * @param stream - OutputStream
@@ -228,19 +220,14 @@ public class FileHelper {
         File nomedia = new File(folder, ".nomedia");
         boolean hasPermission;
         // Clean up (if any) nomedia file
-        try {
-            if (nomedia.exists()) {
-                boolean deleted = FileUtil.deleteFile(nomedia);
-                if (deleted) {
-                    Timber.d(".nomedia file deleted");
-                }
+        if (nomedia.exists()) {
+            boolean deleted = FileUtil.deleteFile(nomedia);
+            if (deleted) {
+                Timber.d(".nomedia file deleted");
             }
-            // Re-create nomedia file to confirm write permissions
-            hasPermission = FileUtil.makeFile(nomedia);
-        } catch (IOException e) {
-            hasPermission = false;
-            Timber.e(e, "We couldn't confirm write permissions to this location: ");
         }
+        // Re-create nomedia file to confirm write permissions
+        hasPermission = FileUtil.makeFile(nomedia);
 
         if (!hasPermission) {
             if (notify) {
@@ -264,21 +251,10 @@ public class FileHelper {
         String settingDir = Preferences.getRootFolderName();
         File noMedia = new File(settingDir, ".nomedia");
 
-        try {
-            if (FileUtil.makeFile(noMedia)) {
-                Helper.toast(R.string.nomedia_file_created);
-            } else {
-                Timber.d(".nomedia file already exists.");
-            }
-        } catch (IOException io) {
-            if (!isReadable(noMedia)) {
-                Timber.e(io, "Failed to create file.");
-                Helper.toast(R.string.error_creating_nomedia_file);
-
-                return false;
-            } else {
-                Helper.toast(R.string.nomedia_file_created);
-            }
+        if (FileUtil.makeFile(noMedia)) {
+            Helper.toast(R.string.nomedia_file_created);
+        } else {
+            Timber.d(".nomedia file already exists.");
         }
 
         return true;
@@ -306,10 +282,10 @@ public class FileHelper {
         int folderNamingPreference = Preferences.getFolderNameFormat();
 
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
-            folderDir = folderDir + content.getAuthor().replaceAll("[^a-zA-Z0-9.-]", "_") + " - ";
+            folderDir = folderDir + content.getAuthor().replaceAll(FORBIDDEN_CHARS, "_") + " - ";
         }
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
-            folderDir = folderDir + content.getTitle().replaceAll("[^a-zA-Z0-9.-]", "_") + " - ";
+            folderDir = folderDir + content.getTitle().replaceAll(FORBIDDEN_CHARS, "_") + " - ";
         }
         folderDir = folderDir + "[" + content.getUniqueSiteId() + "]";
 
@@ -374,33 +350,37 @@ public class FileHelper {
      * Method is used by onBindViewHolder(), speed is key
      */
     public static String getThumb(Content content) {
-        String settingDir = Preferences.getRootFolderName();
-        File dir = new File(settingDir, content.getStorageFolder());
-
-        String coverUrl = content.getCoverImageUrl();
-
         String rootFolderName = Preferences.getRootFolderName();
+        String coverUrl = content.getCoverImageUrl();
+        Timber.d("GetThumb %s --- %s", rootFolderName, content.getStorageFolder());
+
+        // If trying to access a non-downloaded book cover (e.g. viewing the download queue)
+        if (content.getStorageFolder().equals("")) return coverUrl;
+
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
-            Timber.d("File not found!! Returning online resource.");
+            Timber.d("Hentoid root folder not found in SD card!! Returning online resource.");
             return coverUrl;
         }
 
-        String thumbExt = coverUrl.substring(coverUrl.length() - 3);
+        File bookFolder = new File(rootFolderName, content.getStorageFolder());
+
+        String thumbExt = coverUrl.substring(coverUrl.length() - 3).toLowerCase();
         String thumb;
 
         switch (thumbExt) {
             case "jpg":
             case "png":
             case "gif":
-                thumb = new File(dir, "thumb" + "." + thumbExt).getAbsolutePath();
+                File f = new File(bookFolder, "thumb" + "." + thumbExt);
+                thumb = f.exists() ? f.getAbsolutePath() : coverUrl;
                 // Some thumbs from nhentai were saved as jpg instead of png
                 // Follow through to scan the directory instead
                 // TODO: Rename the file instead
                 if (!content.getSite().equals(Site.NHENTAI)) {
                     break;
                 }
-            default:
-                File[] fileList = dir.listFiles(
+            default: // Scan files; takes longer -> last option
+                File[] fileList = bookFolder.listFiles(
                         pathname -> pathname.getName().contains("thumb")
                 );
                 thumb = (fileList != null && fileList.length > 0) ? fileList[0].getAbsolutePath() : coverUrl;
@@ -507,11 +487,8 @@ public class FileHelper {
             }
 
             // Build destination file
-            File dest = new File(context.getExternalCacheDir() + "/shared/%s",
-                    content.getTitle()
-                            .replaceAll("[\\?\\\\/:|<>\\*]", " ")  //filter ? \ / : | < > *
-                            .replaceAll("\\s+", "_")  // white space as underscores
-                            + ".zip");
+            File dest = new File(context.getExternalCacheDir() + "/shared",
+                    content.getTitle().replaceAll(FORBIDDEN_CHARS, "_") + ".zip");
             Timber.d("Destination file: %s", dest);
 
             // Convert ArrayList to Array

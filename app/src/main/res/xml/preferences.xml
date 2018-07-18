@@ -26,6 +26,15 @@
             android:key="pref_quantity_per_page_lists"
             android:summary="@string/pref_quantity_per_page_summary"
             android:title="@string/pref_quantity_per_page_title" />
+
+        <ListPreference
+            android:defaultValue="@string/pref_dl_threads_quantity_default"
+            android:entries="@array/pref_dl_threads_quantity_entries"
+            android:entryValues="@array/pref_dl_threads_quantity_values"
+            android:icon="@null"
+            android:key="pref_dl_threads_quantity_lists"
+            android:summary="@string/pref_dl_threads_quantity_summary"
+            android:title="@string/pref_dl_threads_quantity_title" />
     </PreferenceCategory>
     <PreferenceCategory
         android:key="pref_key_library_settings"
@@ -142,5 +151,12 @@
             android:summaryOff="@string/pref_analytics_tracking_summary_off"
             android:summaryOn="@string/pref_analytics_tracking_summary_on"
             android:title="@string/pref_analytics_tracking_title" />
+        <CheckBoxPreference
+            android:defaultValue="@string/pref_use_sfw_default"
+            android:icon="@null"
+            android:key="pref_use_sfw"
+            android:summaryOff="@string/pref_use_sfw_summary_off"
+            android:summaryOn="@string/pref_use_sfw_summary_on"
+            android:title="@string/pref_use_sfw_title" />
     </PreferenceCategory>
 </PreferenceScreen>

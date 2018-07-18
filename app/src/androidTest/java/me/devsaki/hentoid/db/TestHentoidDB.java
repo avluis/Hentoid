@@ -64,7 +64,7 @@ public class TestHentoidDB extends AndroidTestCase {
                     RenamingDelegatingContext context13 = new RenamingDelegatingContext(getContext(), "test_");
                     HentoidDB db13 = HentoidDB.getInstance(context13);
                     for (int i = 0; i < 100; i++) {
-                        db13.selectContentByQuery("", "", 1, 10, Collections.emptyList(), Collections.emptyList(), 0);
+//                        db13.selectContentByQuery("", "", 1, 10, Collections.emptyList(), Collections.emptyList(), 0);
                     }
                 } catch (Exception ex) {
                     Timber.e(ex, "Error");
@@ -76,7 +76,7 @@ public class TestHentoidDB extends AndroidTestCase {
                     RenamingDelegatingContext context14 = new RenamingDelegatingContext(getContext(), "test_");
                     HentoidDB db14 = HentoidDB.getInstance(context14);
                     for (int i = 0; i < 100; i++) {
-                        db14.selectContentByStatus(StatusContent.DOWNLOADED);
+//                        db14.selectContentByStatus(StatusContent.DOWNLOADED);
                     }
                 } catch (Exception ex) {
                     Timber.e(ex, "Error");

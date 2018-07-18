@@ -8,7 +8,6 @@ import com.google.gson.JsonParser;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.BufferedReader;
@@ -26,10 +25,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import timber.log.Timber;
@@ -40,27 +38,34 @@ import static me.devsaki.hentoid.enums.Site.TSUMINO;
  * Created by Shiro on 1/22/2016.
  * Handles parsing of content from tsumino
  */
-public class TsuminoParser {
+public class TsuminoParser extends BaseParser {
 
-    public static Content parseContent(String urlString) throws IOException {
-        Document doc = Jsoup.connect(urlString).get();
+    @Override
+    protected Content parseContent(Document doc) {
+        Content result = null;
 
         Elements content = doc.select("div.book-line");
+
         if (content.size() > 0) {
+            result = new Content();
+
             String url = doc
                     .select("div.book-page-cover a")
                     .attr("href")
                     .replace("/Read/View", "");
+            result.setUrl(url);
 
             String coverUrl = TSUMINO.getUrl()
                     + doc.select("img.book-page-image").attr("src");
+            result.setCoverImageUrl(coverUrl);
 
             String title = content
                     .select(":has(div.book-info:containsOwn(Title))")
                     .select("div.book-data")
                     .text();
+            result.setTitle(title);
 
-            int qtyPages =
+            int pages =
                     Integer.parseInt(content
                             .select(":has(div.book-info:containsOwn(Pages))")
                             .select("div.book-data")
@@ -68,6 +73,7 @@ public class TsuminoParser {
                     );
 
             AttributeMap attributes = new AttributeMap();
+            result.setAttributes(attributes);
 
             Elements artistElements = content
                     .select(":has(div.book-info:containsOwn(Artist))")
@@ -89,67 +95,29 @@ public class TsuminoParser {
                     .select("a.book-tag");
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
 
-            String author = "";
-            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
-                author = attributes.get(AttributeType.ARTIST).get(0).getName();
-            if (author.equals("")) // Try and get Circle
-            {
-                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
-                    author = attributes.get(AttributeType.CIRCLE).get(0).getName();
-            }
-
-            return new Content()
-                    .setTitle(title)
-                    .setAuthor(author)
-                    .setUrl(url)
-                    .setCoverImageUrl(coverUrl)
-                    .setAttributes(attributes)
-                    .setQtyPages(qtyPages)
-                    .setStatus(StatusContent.SAVED)
-                    .setSite(TSUMINO);
+            result.setQtyPages(pages)
+                    .setSite(Site.TSUMINO);
         }
 
-        return null;
+        return result;
     }
 
-    private static void parseAttributes(AttributeMap map, AttributeType type, Elements elements) {
-        for (Element a : elements) {
-            Attribute attribute = new Attribute();
-            attribute.setType(type);
-            attribute.setUrl(a.attr("href"));
-            attribute.setName(a.text());
-            map.add(attribute);
-        }
-    }
 
-    public static List<String> parseImageList(Content content) {
-        List<String> imgUrls = new ArrayList<>();
+    @Override
+    protected List<String> parseImages(Content content) throws Exception {
+        Document doc = Jsoup.parse(HttpClientHelper.call(content.getReaderUrl()));
+        Elements contents = doc.select("#image-container");
+        String dataUrl, dataOpt, dataObj;
 
-        Document doc;
-        Elements contents;
-        String dataUrl,
-                dataOpt,
-                dataObj;
+        dataUrl = contents.attr("data-url");
+        dataOpt = contents.attr("data-opt");
+        dataObj = contents.attr("data-obj");
 
-        try {
-            doc = Jsoup.parse(HttpClientHelper.call(content.getReaderUrl()));
-            contents = doc.select("#image-container");
+        Timber.d("Data URL: %s%s, Data Opt: %s, Data Obj: %s",
+                TSUMINO.getUrl(), dataUrl, dataOpt, dataObj);
 
-            dataUrl = contents.attr("data-url");
-            dataOpt = contents.attr("data-opt");
-            dataObj = contents.attr("data-obj");
-
-            Timber.d("Data URL: %s%s, Data Opt: %s, Data Obj: %s",
-                    TSUMINO.getUrl(), dataUrl, dataOpt, dataObj);
-
-            String request = sendPostRequest(dataUrl, dataOpt);
-            imgUrls = buildImageUrls(dataObj, request);
-        } catch (Exception e) {
-            Timber.e(e, "Couldn't complete html/parse request: ");
-        }
-        Timber.d("%s", imgUrls);
-
-        return imgUrls;
+        String request = sendPostRequest(dataUrl, dataOpt);
+        return buildImageUrls(dataObj, request);
     }
 
     private static String sendPostRequest(String dataUrl, String dataOpt) {

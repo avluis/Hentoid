@@ -17,10 +17,11 @@ import timber.log.Timber;
 public class EndlessFragment extends DownloadsFragment implements EndlessScrollListener {
 
     @Override
-    protected void queryPrefs() {
-        super.queryPrefs();
+    protected boolean queryPrefs() {
+        boolean result = super.queryPrefs();
 
         booksPerPage = Preferences.Default.PREF_QUANTITY_PER_PAGE_DEFAULT;
+        return result;
     }
 
     @Override
@@ -30,49 +31,17 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
     }
 
     @Override
-    protected void checkResults() {
-        if (0 == mAdapter.getItemCount())
-        {
-            if (!isLoaded) update();
-            else checkContent(true);
-        } else {
-            checkContent(false);
-            mAdapter.setContentsWipedListener(this);
-        }
-
-        if (!query.isEmpty()) {
-            Timber.d("Saved Query: %s", query);
-            if (isLoaded) update();
-        }
+    protected void showToolbar(boolean show) {
+        pagerToolbar.setVisibility(View.GONE);
     }
 
     @Override
-    protected void showToolbar(boolean show, boolean override) {
-        this.override = override;
-
-        if (override) {
-            if (show) {
-                pagerToolbar.setVisibility(View.VISIBLE);
-            } else {
-                pagerToolbar.setVisibility(View.GONE);
-            }
-        } else {
-            pagerToolbar.setVisibility(View.GONE);
-        }
-    }
-
-    @Override
-    protected void displayResults(List<Content> results) {
-        toggleUI(SHOW_DEFAULT);
-
-        if (isSearchReplaceResults)
-        {
+    protected void displayResults(List<Content> results, int totalContent) {
+        if (isSearchReplaceResults) {
             mAdapter.replaceAll(results);
-        }
-        else {
+        } else {
             mAdapter.add(results);
         }
-
         toggleUI(SHOW_RESULT);
     }
 

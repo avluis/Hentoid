@@ -10,6 +10,7 @@ import java.util.Map;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -33,7 +34,7 @@ public class DrawerMenuContents {
     private String[] activityCode;
     private String[] activityClass;
 
-    private Class[] activities;
+    private List<Class> activities;
     private ArrayList<Map<String, ?>> items;
 
     public DrawerMenuContents(Context context) {
@@ -51,7 +52,7 @@ public class DrawerMenuContents {
     }
 
     private void populateActivities() {
-        activities = new Class[activityCode.length];
+        activities = new ArrayList<>();
         items = new ArrayList<>(activityCode.length);
 
         String activity,
@@ -64,6 +65,11 @@ public class DrawerMenuContents {
             activity = activityCode[i];
             clazz = activityClass[i];
             title = activityName[i].toUpperCase(Locale.US);
+            // Hide panda if not explicitely enabled
+            if (title.equals("PANDA") && !Preferences.isUseSfw()) {
+                continue;
+            }
+
             resource = Helper.getId(resourcePrefix + activity.toLowerCase(Locale.US), R.drawable.class);
             try {
                 cls = Class.forName(clazz);
@@ -71,7 +77,8 @@ public class DrawerMenuContents {
                 Timber.e(e, "Class not found");
             }
 
-            activities[i] = cls;
+            activities.add(cls);
+
             items.add(populateDrawerItem(title, resource));
         }
     }
@@ -84,7 +91,7 @@ public class DrawerMenuContents {
     }
 
     public Class getActivity(int position) {
-        return activities[position];
+        return activities.get(position);
     }
 
     public List<Map<String, ?>> getItems() {
@@ -92,8 +99,8 @@ public class DrawerMenuContents {
     }
 
     public int getPosition(Class activityClass) {
-        for (int i = 0; i < activities.length; i++) {
-            if (activities[i].equals(activityClass)) {
+        for (int i = 0; i < activities.size(); i++) {
+            if (activities.get(i).equals(activityClass)) {
                 return i;
             }
         }
