@@ -42,6 +42,9 @@ android {
             proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
         }
     }
+    packagingOptions {
+        exclude 'META-INF/rxjava.properties'
+    }
 }
 
 dependencies {
@@ -97,6 +100,11 @@ dependencies {
     implementation 'org.apmem.tools:layouts:1.10@aar'
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
+
+    //    https://github.com/square/retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.4.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.4.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.4.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
