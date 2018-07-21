@@ -21,7 +21,7 @@ public abstract class ContentTable {
     private static final String TITLE_COLUMN = "title";
     private static final String QTY_PAGES_COLUMN = "qty_pages";
     private static final String UPLOAD_DATE_COLUMN = "upload_date";
-    private static final String DOWNLOAD_DATE_COLUMN = "download_date";
+    public static final String DOWNLOAD_DATE_COLUMN = "download_date";
     static final String STATUS_COLUMN = "status";
     private static final String COVER_IMAGE_URL_COLUMN = "cover_image_url";
     static final String SITE_COLUMN = "site";
