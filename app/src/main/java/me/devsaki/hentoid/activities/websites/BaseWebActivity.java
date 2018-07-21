@@ -569,6 +569,8 @@ public abstract class BaseWebActivity extends BaseActivity {
         protected Content doInBackground(String... params) {
             String url = params[0];
             BaseWebActivity activity = activityReference.get();
+            if (null == activity) return null;
+
             try {
                 ContentParser parser = ContentParserFactory.getInstance().getParser(activity.getStartSite());
                 activity.processContent(parser.parseContent(url));
