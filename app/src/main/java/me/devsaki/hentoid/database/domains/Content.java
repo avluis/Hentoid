@@ -55,6 +55,7 @@ public class Content implements Serializable {
     // Runtime attributes; no need to expose them
     private double percent;
     private int queryOrder;
+    private boolean selected = false;
 
 
     public AttributeMap getAttributes() {
@@ -347,6 +348,11 @@ public class Content implements Serializable {
         queryOrder = order;
         return this;
     }
+
+    public boolean isSelected() { return selected; }
+
+    public void setSelected(boolean selected) { this.selected = selected; }
+
 
     @Override
     public boolean equals(Object o) {
