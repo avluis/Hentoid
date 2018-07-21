@@ -983,6 +983,37 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    public List<Integer> selectContentsForQueueMigration() {
+        ArrayList<Integer> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectContentsForQueueMigration");
+            SQLiteDatabase db = null;
+            Cursor cursorQueue = null;
+
+            try {
+                db = getReadableDatabase();
+                cursorQueue = db.rawQuery(QueueTable.SELECT_CONTENT_FOR_QUEUE_MIGRATION, new String[]{});
+
+                // looping through all rows and adding to list
+                if (cursorQueue.moveToFirst()) {
+                    do {
+                        result.add(cursorQueue.getInt(0));
+                    } while (cursorQueue.moveToNext());
+                }
+            } finally {
+                if (cursorQueue != null) {
+                    cursorQueue.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
     public void insertQueue(int id, int order) {
         synchronized (locker) {
             Timber.d("insertQueue");
