@@ -381,18 +381,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             @Override
             public boolean onLongClick(View v) {
                 int itemPos = holder.getLayoutPosition();
-
-                if (isSelectedAt(itemPos)) {
-                    Timber.d("Item already selected, remove it.");
-
-                    toggleSelection(itemPos);
-                    setSelected(false, getSelectedItemsCount());
-                } else {
-                    Timber.d("Item not selected, add it.");
-
-                    toggleSelection(itemPos);
-                    setSelected(true, getSelectedItemsCount());
-                }
+                toggleSelection(itemPos);
+                setSelected(isSelectedAt(pos), getSelectedItemsCount());
 
                 super.onLongClick(v);
 
