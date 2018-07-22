@@ -109,9 +109,9 @@ class FileUtil {
         Context context = HentoidApp.getAppContext();
         DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
 
-        if (returnRoot) {
-            return document;
-        }
+        if (null == document) return null;
+        if (returnRoot) return document;
+
         String[] parts = relativePath.split("/");
         for (int i = 0; i < parts.length; i++) {
             DocumentFile nextDocument = document.findFile(parts[i]);
@@ -134,6 +134,7 @@ class FileUtil {
                 }
             }
             document = nextDocument;
+            if (null == document) break;
         }
 
         return document;
