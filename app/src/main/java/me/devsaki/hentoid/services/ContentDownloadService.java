@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -134,19 +133,26 @@ public class ContentDownloadService extends IntentService {
             return null;
         }
 
+        File dir = FileHelper.createContentDownloadDir(this, content);
+        if (!dir.exists()) {
+            Timber.w("Directory could not be created: %s.", dir.getAbsolutePath());
+            // Warn the user using a notification. Using a toast won't be enough since many users leave Hentoid running in the background while downloading
+            notificationPresenter.notifyWarning("Warning : download failed", "Cannot download "+content.getTitle()+" : unable to create folder "+dir.getAbsolutePath()+". Please check your Hentoid folder and retry downloading using the (!) button.");
+            // Download _will_ continue and images _will_ fail, so that user can retry downloading later
+        }
+
+        String fileRoot = Preferences.getRootFolderName();
+        content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
+        db.updateContentStorageFolder(content);
+
+
         // Tracking Event (Download Added)
         HentoidApp.trackDownloadEvent("Added");
 
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
         downloadSkipped = false;
-        notificationPresenter.downloadStarted(content);
-        File dir = FileHelper.getContentDownloadDir(this, content);
-        Timber.d("Directory created: %s", FileHelper.createDirectory(dir));
-
-        String fileRoot = Preferences.getRootFolderName();
-        content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
-        db.updateContentStorageFolder(content);
+        notificationPresenter.prepareDownloadNotifications(content);
 
         // Reset ERROR status of images to count them as "to be downloaded" (in DB and in memory)
         db.updateImageFileStatus(content, StatusContent.ERROR, StatusContent.SAVED);
@@ -211,7 +217,7 @@ public class ContentDownloadService extends IntentService {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
         if (!downloadCanceled && !downloadSkipped) {
-            File dir = FileHelper.getContentDownloadDir(this, content);
+            File dir = FileHelper.createContentDownloadDir(this, content);
             List<ImageFile> images = content.getImageFiles();
 
             // Mark content as downloaded
@@ -223,7 +229,7 @@ public class ContentDownloadService extends IntentService {
             try {
                 JsonHelper.saveJson(content, dir);
             } catch (IOException e) {
-                Timber.e(e, "Error saving JSON: %s", content.getTitle());
+                Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
             }
 
             Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
@@ -287,8 +293,8 @@ public class ContentDownloadService extends IntentService {
                 img.getUrl(),
                 parse -> {
                     try {
-                        updateImageStatus(img, (parse != null));
                         if (parse != null) saveImage(img.getName(), dir, parse.getValue().get("Content-Type"), parse.getKey());
+                        updateImageStatus(img, (parse != null));
                     } catch (IOException e) {
                         Timber.w("I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
                         e.printStackTrace();

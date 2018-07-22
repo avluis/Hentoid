@@ -146,8 +146,7 @@ class FileUtil {
      * @param target The file.
      * @return FileOutputStream.
      */
-    @Nullable
-    static OutputStream getOutputStream(@NonNull final File target) {
+    static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         try {
             return FileUtils.openOutputStream(target);
         } catch (IOException e) {
@@ -164,11 +163,11 @@ class FileUtil {
                             targetDocument.getUri());
                 }
             }
+            throw new IOException("Error while attempting to get file : " + target.getAbsolutePath());
         } catch (Exception e) {
             Timber.e(e, "Error while attempting to get file: %s", target.getAbsolutePath());
+            throw new IOException(e);
         }
-
-        return null;
     }
 
     /**

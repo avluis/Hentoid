@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -163,8 +162,7 @@ public class FileHelper {
      * @param target The file.
      * @return FileOutputStream.
      */
-    @Nullable
-    public static OutputStream getOutputStream(@NonNull final File target) {
+    public static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         return FileUtil.getOutputStream(target);
     }
 
@@ -277,10 +275,10 @@ public class FileHelper {
         }
     }
 
-    public static File getContentDownloadDir(Context context, Content content) {
-        File file;
+    public static File createContentDownloadDir(Context context, Content content) {
         String folderDir = content.getSite().getFolder();
 
+        // Format folder name according to preferences
         int folderNamingPreference = Preferences.getFolderNameFormat();
 
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
@@ -293,12 +291,12 @@ public class FileHelper {
 
         String settingDir = Preferences.getRootFolderName();
         if (settingDir.isEmpty()) {
-            return getDefaultDir(context, folderDir);
+            settingDir = getDefaultDir(context, folderDir).getAbsolutePath();
         }
 
         Timber.d("New book directory %s in %s", folderDir, settingDir);
 
-        file = new File(settingDir, folderDir);
+        File file = new File(settingDir, folderDir);
         if (!file.exists() && !FileUtil.makeDir(file)) {
             file = new File(settingDir + folderDir);
             if (!file.exists()) {
@@ -394,7 +392,6 @@ public class FileHelper {
 
     public static void openContent(final Context context, Content content) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
-        //        File dir = getContentDownloadDir(context, content);
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
 
@@ -461,7 +458,6 @@ public class FileHelper {
         Timber.d("Building file list for: %s", content.getTitle());
         // Build list of files
 
-        //File dir = getContentDownloadDir(context, content);
         String settingDir = Preferences.getRootFolderName();
         File dir = new File(settingDir, content.getStorageFolder());
 
