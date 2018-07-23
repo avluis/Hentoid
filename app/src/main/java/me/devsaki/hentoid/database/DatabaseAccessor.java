@@ -44,7 +44,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
 
     @Override
     public void getPages(Content content, ContentListener listener) {
-
+        // Not implemented
     }
 
     @Override
@@ -57,7 +57,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
     @Override
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
         synchronized (attrSynch) {
-            new AttributesFetchTask(db, listener, attr.getCode(), filter).execute();
+            new AttributesFetchTask(db, listener, attr, filter).execute();
         }
     }
 
@@ -91,10 +91,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
 
         @Override
         protected ContentQueryResult doInBackground(String... params) {
-
             ContentQueryResult result = new ContentQueryResult();
-
-
 
             result.pagedContents = db.selectContentByQuery(titleQuery, currentPage, booksPerPage, metadata, favouritesOnly, orderStyle);
             // Fetch total query count (since query are paged, query results count is always <= booksPerPage)
@@ -118,33 +115,19 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
 
         private final HentoidDB db;
         private final AttributeListener listener;
-        private final int attrCode;
+        private final AttributeType attrType;
         private final String filter;
 
-        AttributesFetchTask(HentoidDB db, AttributeListener listener, int attrCode, String filter) {
+        AttributesFetchTask(HentoidDB db, AttributeListener listener, AttributeType attrType, String filter) {
             this.db = db;
             this.listener = listener;
-            this.attrCode = attrCode;
+            this.attrType = attrType;
             this.filter = filter;
         }
 
         @Override
         protected List<Attribute> doInBackground(String... params) {
-
-            // TODO
-/*
-            List<Attribute> result = attributes;
-            if (filter != null)
-            {
-                result = new ArrayList<>();
-                for (Attribute a : attributes) if (a.getName().contains(filter)) result.add(a);
-                attributes.clear();
-            }
-
-            return result;
-*/
-
-            return null;
+            return db.selectAllAttributesByType(attrType, filter);
         }
 
         @Override

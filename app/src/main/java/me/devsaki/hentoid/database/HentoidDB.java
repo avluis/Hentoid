@@ -622,8 +622,13 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             Cursor cursorAttributes = null;
 
-            String sql = AttributeTable.SELECT_ALL_BY_USAGE_BASE;
-            sql = sql.replace("%1", Helper.buildListAsString(sites, "'"));
+            String sql = AttributeTable.SELECT_ALL_BY_TYPE;
+
+            if (sites != null && sites.size() > 0)
+            {
+                sql += AttributeTable.SELECT_ALL_BY_USAGE_SITE_FILTER;
+                sql = sql.replace("%1", Helper.buildListAsString(sites, "'"));
+            }
 
             if (filterFavourites) sql += AttributeTable.SELECT_ALL_BY_USAGE_FAVS;
 
@@ -644,6 +649,49 @@ public class HentoidDB extends SQLiteOpenHelper {
 
                     do {
                         result.add(new Pair<>(cursorAttributes.getString(0), cursorAttributes.getInt(1)));
+                    } while (cursorAttributes.moveToNext());
+                }
+            } finally {
+                if (cursorAttributes != null) {
+                    cursorAttributes.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public List<Attribute> selectAllAttributesByType(AttributeType type, String filter) {
+        ArrayList<Attribute> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectAllAttributesByType");
+            SQLiteDatabase db = null;
+
+            Cursor cursorAttributes = null;
+
+            String sql = AttributeTable.SELECT_ALL_BY_TYPE;
+
+            if (filter != null && filter.trim().length() > 0)
+            {
+                sql += AttributeTable.SELECT_ALL_BY_USAGE_ATTR_FILTER;
+                sql = sql.replace("%2", filter);
+            }
+
+            sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
+
+            try {
+                db = getReadableDatabase();
+                cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""});
+
+                // looping through all rows and adding to list
+                if (cursorAttributes.moveToFirst()) {
+
+                    do {
+                        result.add(new Attribute(type, cursorAttributes.getString(0), "").setCount(cursorAttributes.getInt(1)));
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {

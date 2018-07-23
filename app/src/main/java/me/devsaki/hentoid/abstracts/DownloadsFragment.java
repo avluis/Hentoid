@@ -928,13 +928,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     private void selectAttrButton(Button button)
     {
+        /*
         if (MODE_LIBRARY == mode)
         {
             // Something
-        } else {
+        } else {*/
             selectedTab = (AttributeType)button.getTag();
             collectionAccessor.getAttributeMasterData(selectedTab, this);
-        }
+        //}
     }
 
     @Override
