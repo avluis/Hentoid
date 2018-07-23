@@ -208,7 +208,7 @@ public class FileHelper {
         boolean isSuccess = true;
 
         for (File file : files) {
-            if (file.isDirectory()) tryCleanDirectory(file);
+            if (file.isDirectory() && !tryCleanDirectory(file)) isSuccess = false;
             if (!file.delete() && file.exists()) isSuccess = false;
         }
 
