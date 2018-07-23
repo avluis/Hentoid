@@ -5,12 +5,12 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
-import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -54,7 +54,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private static final int VISIBLE_THRESHOLD = 10;
 
     private final Context context;
-    private final SparseBooleanArray selectedItems;
     private final ItemSelectListener listener;
     private final CollectionAccessor collectionAccessor;
     private final int mode;
@@ -71,9 +70,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         this.collectionAccessor = collectionAccessor;
         this.mode = mode;
         mComparator = comparator;
-
-        selectedItems = new SparseBooleanArray();
     }
+
 
     public void setComparator(Comparator<Content> comparator) {
         mComparator = comparator;
@@ -88,42 +86,43 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void toggleSelection(int pos) {
-        if (selectedItems.get(pos, false)) {
-            selectedItems.delete(pos);
-            Timber.d("Removed item: %s", pos);
-        } else {
-            selectedItems.put(pos, true);
-            Timber.d("Added item: %s", pos);
+        Content c = getItemAt(pos);
+
+        if (c != null) {
+            c.setSelected(!c.isSelected());
+            notifyItemChanged(pos);
         }
-        notifyItemChanged(pos);
     }
 
     public void clearSelections() {
-        selectedItems.clear();
-        notifyDataSetChanged();
+        for (int i=0; i<mSortedList.size(); i++) {
+            mSortedList.get(i).setSelected(false);
+            notifyDataSetChanged();
+        }
     }
 
-    private int getSelectedItemCount() {
-        return selectedItems.size();
+    private int getSelectedItemsCount() {
+        int result = 0;
+        for (int i=0; i<mSortedList.size(); i++) {
+            if (mSortedList.get(i).isSelected()) result++;
+        }
+        return result;
     }
 
-    private List<Integer> getSelectedItems() {
-        List<Integer> items = new ArrayList<>(selectedItems.size());
-        for (int i = 0; i < selectedItems.size(); i++) {
-            items.add(selectedItems.keyAt(i));
+    private List<Content> getSelectedContents() {
+        List<Content> selectionList = new ArrayList<>();
+
+        for (int i=0;i<mSortedList.size();i++) {
+            if (mSortedList.get(i).isSelected()) selectionList.add(mSortedList.get(i));
+            Timber.d("Added: %s to list.", mSortedList.get(i).getTitle());
         }
 
-        return items;
+        return selectionList;
     }
 
-    private boolean getSelectedItem(int item) {
-        for (int i = 0; i < selectedItems.size(); i++) {
-            if (selectedItems.keyAt(i) == item) {
-                return selectedItems.get(item);
-            }
-        }
-
-        return false;
+    private boolean isSelectedAt(int pos) {
+        Content c = getItemAt(pos);
+        return null != c && c.isSelected();
     }
 
     @NonNull
@@ -150,16 +149,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             endlessScrollListener.onLoadMore();
         }
 
-        if (getSelectedItems() != null) {
-            int itemPos = holder.getLayoutPosition();
-            boolean selected = getSelectedItem(itemPos);
-
-            if (getSelectedItem(itemPos)) {
-                holder.itemView.setSelected(selected);
-            } else {
-                holder.itemView.setSelected(false);
-            }
-        }
+        int itemPos = holder.getLayoutPosition();
+        holder.itemView.setSelected(isSelectedAt(itemPos));
 
         final RelativeLayout items = holder.itemView.findViewById(R.id.item);
         LinearLayout minimal = holder.itemView.findViewById(R.id.item_minimal);
@@ -167,7 +158,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         if (holder.itemView.isSelected()) {
             Timber.d("Position: %s %s is a selected item currently in view.", pos, content.getTitle());
 
-            if (getSelectedItemCount() >= 1) {
+            if (getSelectedItemsCount() >= 1) {
                 items.setVisibility(View.GONE);
                 minimal.setVisibility(View.VISIBLE);
             }
@@ -306,7 +297,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             int img = content.getSite().getIco();
             holder.ivSite.setImageResource(img);
             holder.ivSite.setOnClickListener(v -> {
-                if (getSelectedItemCount() >= 1) {
+                if (getSelectedItemsCount() >= 1) {
                     clearSelections();
                     listener.onItemClear(0);
                 }
@@ -350,7 +341,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
                 }
                 holder.ivFavourite.setOnClickListener(v -> {
-                    if (getSelectedItemCount() >= 1) {
+                    if (getSelectedItemsCount() >= 1) {
                         clearSelections();
                         listener.onItemClear(0);
                     }
@@ -366,7 +357,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 if (status == StatusContent.ERROR) {
                     holder.ivError.setVisibility(View.VISIBLE);
                     holder.ivError.setOnClickListener(v -> {
-                        if (getSelectedItemCount() >= 1) {
+                        if (getSelectedItemsCount() >= 1) {
                             clearSelections();
                             listener.onItemClear(0);
                         }
@@ -400,33 +391,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
             @Override
             public void onClick(View v) {
-                if (getSelectedItems() != null) {
+                if (getSelectedItemsCount() > 0) { // Selection mode is on
                     int itemPos = holder.getLayoutPosition();
-                    boolean selected = getSelectedItem(itemPos);
-                    boolean selectionMode = getSelectedItemCount() > 0;
+                    toggleSelection(itemPos);
+                    setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                    onLongClick(v);
+                } else {
+                    clearSelections();
+                    setSelected(false, 0);
 
-                    if (selectionMode) {
-                        Timber.d("In Selection Mode - ignore open requests.");
-                        if (selected) {
-                            Timber.d("Item already selected, remove it.");
-
-                            toggleSelection(itemPos);
-                            setSelected(false, getSelectedItemCount());
-                        } else {
-                            Timber.d("Item not selected, add it.");
-
-                            toggleSelection(itemPos);
-                            setSelected(true, getSelectedItemCount());
-                        }
-                        onLongClick(v);
-                    } else {
-                        Timber.d("Not in selection mode, opening item.");
-
-                        clearSelections();
-                        setSelected(false, 0);
-
-                        super.onClick(v);
-                    }
+                    super.onClick(v);
                 }
             }
         });
@@ -435,29 +409,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
             @Override
             public boolean onLongClick(View v) {
-                if (getSelectedItems() != null) {
+                int itemPos = holder.getLayoutPosition();
+                toggleSelection(itemPos);
+                setSelected(isSelectedAt(pos), getSelectedItemsCount());
 
-                    int itemPos = holder.getLayoutPosition();
-                    boolean selected = getSelectedItem(itemPos);
+                super.onLongClick(v);
 
-                    if (selected) {
-                        Timber.d("Item already selected, remove it.");
-
-                        toggleSelection(itemPos);
-                        setSelected(false, getSelectedItemCount());
-                    } else {
-                        Timber.d("Item not selected, add it.");
-
-                        toggleSelection(itemPos);
-                        setSelected(true, getSelectedItemCount());
-                    }
-
-                    super.onLongClick(v);
-
-                    return true;
-                }
-
-                return false;
+                return true;
             }
         });
     }
@@ -585,6 +543,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         return mSortedList.size();
     }
 
+    @Nullable
+    private Content getItemAt(int pos)
+    {
+        if (mSortedList.size() <= pos) return null;
+        else return mSortedList.get(pos);
+    }
+
     public void setTotalCount(int count) {
         this.mTotalCount = count;
     }
@@ -594,13 +559,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     public void sharedSelectedItems() {
-        int itemCount = getSelectedItemCount();
+        int itemCount = getSelectedItemsCount();
         if (itemCount > 0) {
             if (itemCount == 1) {
                 Timber.d("Preparing to share selected item...");
 
                 List<Content> items;
-                items = processSelection();
+                items = getSelectedContents();
 
                 if (!items.isEmpty()) {
                     shareContent(items.get(0));
@@ -620,13 +585,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     public void purgeSelectedItems() {
-        int itemCount = getSelectedItemCount();
+        int itemCount = getSelectedItemsCount();
         if (itemCount > 0) {
             if (itemCount == 1) {
                 Timber.d("Preparing to delete selected item...");
 
                 List<Content> items;
-                items = processSelection();
+                items = getSelectedContents();
 
                 if (!items.isEmpty()) {
                     deleteContent(items.get(0));
@@ -638,7 +603,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 Timber.d("Preparing to delete selected items...");
 
                 List<Content> items;
-                items = processSelection();
+                items = getSelectedContents();
 
                 if (!items.isEmpty()) {
                     deleteContents(items);
@@ -654,13 +619,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     public void archiveSelectedItems() {
-        int itemCount = getSelectedItemCount();
+        int itemCount = getSelectedItemsCount();
         if (itemCount > 0) {
             if (itemCount == 1) {
                 Timber.d("Preparing to archive selected item...");
 
                 List<Content> items;
-                items = processSelection();
+                items = getSelectedContents();
 
                 if (!items.isEmpty()) {
                     archiveContent(items.get(0));
@@ -677,19 +642,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             listener.onItemClear(0);
             Timber.d("No items to archive!!");
         }
-    }
-
-    private List<Content> processSelection() {
-        List<Content> selectionList = new ArrayList<>();
-        List<Integer> selection = getSelectedItems();
-        Timber.d("Selected items: %s", selection);
-
-        for (int i = 0; i < selection.size(); i++) {
-            selectionList.add(i, mSortedList.get(selection.get(i)));
-            Timber.d("Added: %s to list.", mSortedList.get(selection.get(i)).getTitle());
-        }
-
-        return selectionList;
     }
 
     private void deleteItem(final Content item) {

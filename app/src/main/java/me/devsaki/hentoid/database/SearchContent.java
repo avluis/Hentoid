@@ -115,7 +115,9 @@ public class SearchContent {
         @Override
         protected State doInBackground(Void... params) {
             SearchContent activity = activityReference.get();
-            return activity.retrieveContent(activity.mTitleQuery, activity.mAuthorQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mSiteFilter, activity.mFilterFavourites, activity.mOrderStyle);
+            if (activity != null)
+                return activity.retrieveContent(activity.mTitleQuery, activity.mAuthorQuery, activity.mCurrentPage, activity.mBooksPerPage, activity.mTagFilter, activity.mSiteFilter, activity.mFilterFavourites, activity.mOrderStyle);
+            else return State.FAILED;
         }
 
         @Override

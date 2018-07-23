@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.NotificationCompat.Builder;
 import android.support.v4.content.ContextCompat;
 
 import org.greenrobot.eventbus.Subscribe;
@@ -33,12 +34,14 @@ final class NotificationPresenter {
 
     // Unique notification ID for the Hentoid app
     private static final int NOTIFICATION_ID = 0;
+    // Unique warning ID for the Hentoid app
+    private static final int WARNING_ID = 1;
     // Hentoid instance
     private final HentoidApp instance;
     // NotificationManager used to spawn and update phone notifications
     private final NotificationManager manager;
     // Notification builder
-    private NotificationCompat.Builder builder = null;
+    private Builder builder = null;
 
 
     NotificationPresenter() {
@@ -48,33 +51,55 @@ final class NotificationPresenter {
     }
 
     /**
-     * Signal the starting of a new download
+     * Prepare the context for signaling events relative to a new download
      *
      * @param content Book to display in the download notification
      */
-    void downloadStarted(final Content content) {
+    void prepareDownloadNotifications(final Content content) {
         int icon = R.drawable.ic_stat_hentoid;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             icon = content.getSite().getIco();
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            builder = new NotificationCompat.Builder(instance, NotificationChannel.DEFAULT_CHANNEL_ID)
-                    .setContentText(content.getTitle())
-                    .setSmallIcon(icon)
-                    .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.accent))
-                    .setLocalOnly(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            builder = new Builder(instance, NotificationChannel.DEFAULT_CHANNEL_ID);
         } else {
-            builder = new NotificationCompat.Builder(instance)
-                    .setContentText(content.getTitle())
-                    .setSmallIcon(icon)
-                    .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.accent))
-                    .setLocalOnly(true);
+            builder = new Builder(instance);
         }
+
+        builder = builder.setContentText(content.getTitle())
+                .setSmallIcon(icon)
+                .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.accent))
+                .setLocalOnly(true);
     }
 
     /**
-     * Download event handler called by the event bus
+     * Notify the user about a warning
+     * @param message Message to display for the user
+     */
+     void notifyWarning(final String title, final String message) {
+         int icon = R.drawable.ic_stat_hentoid_warning;
+
+         Builder builder;
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+             builder = new Builder(instance, NotificationChannel.DEFAULT_CHANNEL_ID);
+         } else {
+             builder = new Builder(instance);
+         }
+
+         builder = builder.setSmallIcon(icon)
+                 .setColor(ContextCompat.getColor(instance.getApplicationContext(), R.color.accent))
+                 .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                 .setOngoing(false)
+                 .setAutoCancel(true)
+                 .setContentTitle(title)
+                 .setLocalOnly(true);
+
+         manager.notify(WARNING_ID, builder.build());
+     }
+
+    /**
+     * Download event handler called by the event bus; fires events relative to current download
      *
      * @param event Handled event
      */

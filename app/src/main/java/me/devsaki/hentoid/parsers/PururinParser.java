@@ -32,6 +32,7 @@ public class PururinParser extends BaseParser {
                     .select("a")
                     .attr("href")
                     .replace("http://pururin.io/read", "")
+                    .replace("https://pururin.io/read", "")
                     .replace("/01","");
             result.setUrl(url);
 
