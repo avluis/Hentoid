@@ -101,6 +101,6 @@ public abstract class ContentTable {
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
 
-    public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
+    public static final String SELECT_DOWNLOADS_TAGS = "(A." + AttributeTable.ID_COLUMN + " in (%4) AND A."
             + AttributeTable.TYPE_COLUMN + " = %5) GROUP BY 1 HAVING COUNT(*)=%6";
 }

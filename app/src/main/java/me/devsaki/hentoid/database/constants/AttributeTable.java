@@ -23,7 +23,7 @@ public abstract class AttributeTable {
             + " VALUES (?,?,?,?);";
 
     // SELECT
-    public static final String SELECT_ALL_BY_TYPE = "select distinct lower(a." + NAME_COLUMN + "), count(*) " +
+    public static final String SELECT_ALL_BY_TYPE = "select distinct a."+ID_COLUMN+", lower(a." + NAME_COLUMN + "), count(*) " +
             "from " + TABLE_NAME + " a inner join " + ContentAttributeTable.TABLE_NAME + " ca on a." + ID_COLUMN + " = ca." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " " +
             "inner join " + ContentTable.TABLE_NAME + " c on ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN + " " +
             "where a." + TYPE_COLUMN + "=? and c." + ContentTable.STATUS_COLUMN + " in (1,4,5) ";
@@ -47,7 +47,7 @@ public abstract class AttributeTable {
             " from " + ContentAttributeTable.TABLE_NAME + " as ca1 inner join " + AttributeTable.TABLE_NAME + " as a1 on ca1." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = a1." + AttributeTable.ID_COLUMN +
             " where a1." + AttributeTable.TYPE_COLUMN + "=3 and lower(a1." + AttributeTable.NAME_COLUMN + ") in (%2) GROUP BY 1 HAVING COUNT(*) = %3) ) ) ";
 
-    public static final String SELECT_ALL_BY_USAGE_END = " group by 1 order by 2 desc, 1 asc";
+    public static final String SELECT_ALL_BY_USAGE_END = " group by 2 order by 3 desc, 2 asc";
 
     public static final String SELECT_BY_CONTENT_ID = "SELECT T." + ID_COLUMN + ", T." + URL_COLUMN
             + ", T." + NAME_COLUMN + ", T." + TYPE_COLUMN + " FROM " + TABLE_NAME + " T INNER JOIN "

@@ -470,7 +470,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     sql.append(ContentTable.SELECT_DOWNLOADS_JOINS);
                     sql.append(
                             ContentTable.SELECT_DOWNLOADS_TAGS
-                                    .replace("%4", Helper.buildListAsString(attrs, "'"))
+                                    .replace("%4", Helper.buildListAsString(attrs))
                                     .replace("%5", attrType.getCode() + "")
                                     .replace("%6", attrs.size() + "")
                     );
@@ -648,7 +648,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add(new Pair<>(cursorAttributes.getString(0), cursorAttributes.getInt(1)));
+                        result.add(new Pair<>(cursorAttributes.getString(1), cursorAttributes.getInt(2)));
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
@@ -691,7 +691,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add(new Attribute(type, cursorAttributes.getString(0), "").setCount(cursorAttributes.getInt(1)));
+                        result.add(new Attribute(type, cursorAttributes.getString(1), "").setExternalId(cursorAttributes.getInt(0)).setCount(cursorAttributes.getInt(2)));
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
