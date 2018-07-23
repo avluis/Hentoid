@@ -16,6 +16,7 @@ import timber.log.Timber;
  * Created by avluis on 04/12/2016.
  * Grabs content from db with provided query
  */
+@Deprecated
 public class SearchContent {
 
     private final HentoidDB db;
@@ -80,9 +81,9 @@ public class SearchContent {
             if (mCurrentState == State.INIT) {
                 mCurrentState = State.DONE;
 
-                contentList = db.selectContentByQuery(titleQuery, authorQuery, currentPage, booksPerPage, tagFilter, sites, filterFavourites, orderStyle);
+                //contentList = db.selectContentByQuery(titleQuery, authorQuery, currentPage, booksPerPage, tagFilter, sites, filterFavourites, orderStyle);
                 // Fetch total query count (since query are paged, query results count is always <= booksPerPage)
-                totalContent = db.countContentByQuery(titleQuery, authorQuery, tagFilter, sites, filterFavourites);
+                //totalContent = db.countContentByQuery(titleQuery, authorQuery, tagFilter, sites, filterFavourites);
 
                 mCurrentState = State.READY;
             }

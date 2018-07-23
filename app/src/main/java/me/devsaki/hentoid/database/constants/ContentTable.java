@@ -88,8 +88,9 @@ public abstract class ContentTable {
 
     // SEARCH QUERIES "TOOLBOX"
 
-    public static final String SELECT_DOWNLOADS_BASE = "SELECT C.*" +
-            " FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) AND C." + SITE_COLUMN + " in (%1) ";
+    public static final String SELECT_DOWNLOADS_BASE = "SELECT C.* FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) ";
+
+    public static final String SELECT_DOWNLOADS_SOURCE = " AND C." + SITE_COLUMN + " IN (%1) ";
 
     public static final String SELECT_DOWNLOADS_FAVS = " AND C." + FAVOURITE_COLUMN + " = 1 ";
 
@@ -100,9 +101,6 @@ public abstract class ContentTable {
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
 
-    public static final String SELECT_DOWNLOADS_AUTHOR = "(lower(A." + AttributeTable.NAME_COLUMN + ") LIKE '%3' AND A."
-            + AttributeTable.TYPE_COLUMN + " in ("+ AttributeType.ARTIST.getCode()+", "+AttributeType.CIRCLE.getCode()+")) GROUP BY 1";
-
     public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
-            + AttributeTable.TYPE_COLUMN + " = "+AttributeType.TAG.getCode()+") GROUP BY 1 HAVING COUNT(*)=%5";
+            + AttributeTable.TYPE_COLUMN + " = %5) GROUP BY 1 HAVING COUNT(*)=%6";
 }

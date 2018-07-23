@@ -536,7 +536,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        if (MODE_LIBRARY == mode) collectionAccessor = new DatabaseAccessor(); else collectionAccessor = new MikanAccessor();
+        if (MODE_LIBRARY == mode) collectionAccessor = new DatabaseAccessor(mContext); else collectionAccessor = new MikanAccessor();
 
         initUI(rootView);
         attachScrollListener();
@@ -1543,6 +1543,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isSearchReplaceResults = searchMode;
         isLoaded = false;
 
+        /*
         if (MODE_LIBRARY == mode) {
             List<String> selectedTags = new ArrayList<>();
 
@@ -1556,10 +1557,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
 
             search.retrieveResults(filterByTitle ? query : "", filterByArtist ? query : "", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
-        } else {
-            if (searchMode) collectionAccessor.searchBooks(query, currentSearchTags, 0, 0, this); // TODO CENTRALIZE
-            else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, true, this);
-        }
+        } else {*/
+            if (searchMode) collectionAccessor.searchBooks(query, currentSearchTags, booksPerPage, order, filterFavourites, this);
+            else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, order, filterFavourites, this);
+        //}
     }
 
     protected abstract void showToolbar(boolean show);

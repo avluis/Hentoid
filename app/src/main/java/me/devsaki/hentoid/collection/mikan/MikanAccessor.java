@@ -21,6 +21,7 @@ import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.util.AttributeCache;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.UrlBuilder;
 import timber.log.Timber;
 
@@ -49,15 +50,15 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     // === ACCESSORS
 
-    public void getRecentBooks(Site site, Language language, int page, boolean showMostRecentFirst, ContentListener listener) {
-        launchRequest(buildRecentBooksRequest(site, language, page, showMostRecentFirst), USAGE_RECENT_BOOKS, null, listener);
+    public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+        launchRequest(buildRecentBooksRequest(site, language, page, Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST == orderStyle), USAGE_RECENT_BOOKS, null, listener);
     }
 
     public void getPages(Content content, ContentListener listener) {
         launchRequest(buildBookPagesRequest(content), USAGE_BOOK_PAGES, content, listener);
     }
 
-    public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, ContentListener listener) {
+    public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         // NB : Mikan does not support booksPerPage and orderStyle params
         launchRequest(buildSearchRequest(metadata, query, page), USAGE_SEARCH, null, listener);
     }
@@ -96,7 +97,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     private static String buildSearchRequest(List<Attribute> metadata, String query, int page) {
 
-        List<Attribute> sites = extractByType(metadata, AttributeType.SOURCE);
+        List<Attribute> sites = Helper.extractAttributeByType(metadata, AttributeType.SOURCE);
 
         if (sites.size() > 1) {
             throw new UnsupportedOperationException("Searching through multiple sites not supported yet by Mikan search");
@@ -114,19 +115,19 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         url.addParam("page",page);
 
-        List<Attribute> params = extractByType(metadata, AttributeType.ARTIST);
+        List<Attribute> params = Helper.extractAttributeByType(metadata, AttributeType.ARTIST);
         if (params.size() > 0) url.addParam("artist", Helper.buildListAsString(params));
 
-        params = extractByType(metadata, AttributeType.CIRCLE);
+        params = Helper.extractAttributeByType(metadata, AttributeType.CIRCLE);
         if (params.size() > 0) url.addParam("group", Helper.buildListAsString(params));
 
-        params = extractByType(metadata, AttributeType.CHARACTER);
+        params = Helper.extractAttributeByType(metadata, AttributeType.CHARACTER);
         if (params.size() > 0) url.addParam("character", Helper.buildListAsString(params));
 
-        params = extractByType(metadata, AttributeType.TAG);
+        params = Helper.extractAttributeByType(metadata, AttributeType.TAG);
         if (params.size() > 0) url.addParam("tag", Helper.buildListAsString(params));
 
-        params = extractByType(metadata, AttributeType.LANGUAGE);
+        params = Helper.extractAttributeByType(metadata, AttributeType.LANGUAGE);
         if (params.size() > 0) url.addParam("language", Helper.buildListAsString(params));
 
         return url.toString();

@@ -32,6 +32,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,7 +42,9 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AppLockActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.IntroActivity;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
@@ -384,4 +387,19 @@ public final class Helper {
         return str.toString();
     }
 
+    public static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType type)
+    {
+        return extractAttributeByType(attrs, new AttributeType[] { type });
+    }
+    private static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType[] types) {
+        List<Attribute> result = new ArrayList<>();
+
+        for (Attribute a : attrs) {
+            for (AttributeType type : types) {
+                if (a.getType().equals(type)) result.add(a);
+            }
+        }
+
+        return result;
+    }
 }

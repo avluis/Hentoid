@@ -342,7 +342,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String title, String author, int page, int booksPerPage, List<String> tags, List<Integer> sites, boolean filterFavourites, int orderStyle) {
+    public List<Content> selectContentByQuery(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
         List<Content> result = Collections.emptyList();
 
         synchronized (locker) {
@@ -353,7 +353,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             int start = (page - 1) * booksPerPage;
             try {
                 db = getReadableDatabase();
-                String sql = buildContentSearchQuery(title, author, tags, sites, filterFavourites);
+                String sql = buildContentSearchQuery(title, tags, filterFavourites);
 
                 switch (orderStyle) {
                     case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
@@ -398,7 +398,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public int countContentByQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites) {
+    public int countContentByQuery(String title, List<Attribute> tags, boolean filterFavourites) {
         int count = 0;
         SQLiteDatabase db = null;
         Cursor cursorCount = null;
@@ -408,7 +408,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             try {
                 db = getReadableDatabase();
-                String sql = buildContentSearchQuery(title, author, tags, sites, filterFavourites);
+                String sql = buildContentSearchQuery(title, tags, filterFavourites);
                 sql = sql.replace("C.*", "COUNT(*)");
 
                 Timber.d("Query : %s", sql);
@@ -428,50 +428,61 @@ public class HentoidDB extends SQLiteOpenHelper {
         return count;
     }
 
-    private String buildContentSearchQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites) {
+    private String buildContentSearchQuery(String title, List<Attribute> metadata, boolean filterFavourites) {
+        List<Attribute> params;
+        // Reorganize metadata to facilitate processing
+        AttributeMap metadataMap = new AttributeMap();
+        metadataMap.add(metadata);
+
         boolean hasTitleFilter = (title != null && title.length() > 0);
-        boolean hasAuthorFilter = (author != null && author.length() > 0);
-        boolean hasTagFilter = (tags != null && tags.size() > 0);
+        boolean hasSourceFilter = metadataMap.containsKey(AttributeType.SOURCE);
+        boolean hasTagFilter = metadataMap.keySet().size() > (hasSourceFilter?1:0);
+        boolean isConstructingTagFilter = false;
 
         // Base criteria in Content table
-        String sql = ContentTable.SELECT_DOWNLOADS_BASE;
-        sql = sql.replace("%1", Helper.buildListAsString(sites,"'"));
+        StringBuilder sql = new StringBuilder();
+        sql.append(ContentTable.SELECT_DOWNLOADS_BASE);
 
-        if (filterFavourites) sql += ContentTable.SELECT_DOWNLOADS_FAVS;
+        if (hasSourceFilter) {
+            params = metadataMap.get(AttributeType.SOURCE);
+            if (params.size() > 0) sql.append(ContentTable.SELECT_DOWNLOADS_SOURCE.replace("%1",Helper.buildListAsString(params,"'")));
+        }
+
+        if (filterFavourites) sql.append(ContentTable.SELECT_DOWNLOADS_FAVS);
 
 
         // Title / Author / Tag filters
-        if (hasTitleFilter || hasAuthorFilter || hasTagFilter) sql += " AND (";
+        if (hasTitleFilter || hasTagFilter) sql.append(" AND (");
 
         // Title filter -> continue querying Content table
         if (hasTitleFilter) {
-            sql += ContentTable.SELECT_DOWNLOADS_TITLE;
             title = '%' + title.replace("'", "''") + '%';
-            sql = sql.replace("%2", title);
+            sql.append(ContentTable.SELECT_DOWNLOADS_TITLE.replace("%2", title));
         }
 
-        // Author & tags filter -> query attribute table through a join
-        if (hasAuthorFilter) {
-            if (hasTitleFilter) sql += " OR ";
-            sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-            sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
-            author = '%' + author.replace("'", "''") + '%';
-            sql = sql.replace("%3", author);
-            sql += "))";
-        }
-
+        // Tags filter -> query attribute table through a join
         if (hasTagFilter) {
-            if (hasTitleFilter || hasAuthorFilter) sql += " OR ";
-            sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-            sql += ContentTable.SELECT_DOWNLOADS_TAGS;
-            sql = sql.replace("%4", Helper.buildListAsString(tags,"'"));
-            sql = sql.replace("%5", tags.size() + "");
-            sql += "))";
+            for (AttributeType attrType : metadataMap.keySet()) {
+                List<Attribute> attrs = metadataMap.get(attrType);
+
+                if (attrs.size() > 0) {
+                    if (hasTitleFilter || isConstructingTagFilter) sql.append(" OR ");
+                    sql.append(ContentTable.SELECT_DOWNLOADS_JOINS);
+                    sql.append(
+                            ContentTable.SELECT_DOWNLOADS_TAGS
+                                    .replace("%4", Helper.buildListAsString(attrs, "'"))
+                                    .replace("%5", attrType.getCode() + "")
+                                    .replace("%6", attrs.size() + "")
+                    );
+                    sql.append("))");
+                    isConstructingTagFilter = true;
+                }
+            }
         }
 
-        if (hasTitleFilter || hasAuthorFilter || hasTagFilter) sql += " )";
+        if (hasTitleFilter || hasTagFilter) sql.append(" )");
 
-        return sql;
+        return sql.toString();
     }
 
     private List<Content> populateResult(Cursor cursorContent, SQLiteDatabase db) {

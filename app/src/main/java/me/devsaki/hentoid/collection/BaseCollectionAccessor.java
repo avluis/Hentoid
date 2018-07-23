@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.collection;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -17,39 +16,20 @@ public abstract class BaseCollectionAccessor implements CollectionAccessor {
     protected static final String USAGE_BOOK_PAGES = "bookPages";
     protected static final String USAGE_SEARCH = "search";
 
-    // Common Utils
-    protected static List<Attribute> extractByType(List<Attribute> attrs, AttributeType type)
-    {
-        return extractByType(attrs, new AttributeType[] { type });
-    }
-    protected static List<Attribute> extractByType(List<Attribute> attrs, AttributeType[] types)
-    {
-        List<Attribute> result = new ArrayList<>();
-
-        for (Attribute a : attrs) {
-            for (AttributeType type : types) {
-                if (a.getType().equals(type)) result.add(a);
-            }
-        }
-
-        return result;
-    }
-
-
     @Override
-    public abstract void getRecentBooks(Site site, Language language, int page, boolean showMostRecentFirst, ContentListener listener);
+    public abstract void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
 
     @Override
     public abstract void getPages(Content content, ContentListener listener);
 
     @Override
-    public void searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, ContentListener listener)
+    public void searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener)
     {
-        searchBooks(query, metadata, 1, booksPerPage, orderStyle, listener);
+        searchBooks(query, metadata, 1, booksPerPage, orderStyle, favouritesOnly, listener);
     }
 
     @Override
-    public abstract void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, ContentListener listener);
+    public abstract void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
 
     @Override
     public void getAttributeMasterData(AttributeType attr, AttributeListener listener) {

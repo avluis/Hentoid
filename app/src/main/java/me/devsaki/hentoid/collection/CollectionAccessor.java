@@ -12,13 +12,13 @@ import me.devsaki.hentoid.listener.ContentListener;
 
 public interface CollectionAccessor {
 
-    void getRecentBooks(Site site, Language language, int page, boolean showMostRecentFirst, ContentListener listener);
+    void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
 
     void getPages(Content content, ContentListener listener);
 
-    void searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, ContentListener listener);
+    void searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
 
-    void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, ContentListener listener);
+    void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
 
     void getAttributeMasterData(AttributeType attr, AttributeListener listener);
 
