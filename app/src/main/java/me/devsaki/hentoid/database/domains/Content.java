@@ -213,7 +213,7 @@ public class Content implements Serializable {
             case PANDA:
                 return getGalleryUrl();
             case PURURIN:
-                return site.getUrl() + "/read" + url;
+                return site.getUrl() + "/read/" + url.substring(1).replace("/","/01/");
             default:
                 return null;
         }
