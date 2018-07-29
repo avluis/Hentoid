@@ -12,7 +12,7 @@ import timber.log.Timber;
 public enum Site {
 
     FAKKU(0, "Fakku", "https://www.fakku.net", R.drawable.ic_menu_fakku),
-    PURURIN(1, "Pururin", "http://pururin.io", R.drawable.ic_menu_pururin),
+    PURURIN(1, "Pururin", "https://pururin.io", R.drawable.ic_menu_pururin),
     HITOMI(2, "hitomi", "https://hitomi.la", R.drawable.ic_menu_hitomi),
     NHENTAI(3, "nhentai", "https://nhentai.net", R.drawable.ic_menu_nhentai),
     TSUMINO(4, "tsumino", "http://www.tsumino.com", R.drawable.ic_menu_tsumino),

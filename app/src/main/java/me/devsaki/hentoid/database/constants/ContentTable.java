@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.constants;
 
+import me.devsaki.hentoid.enums.AttributeType;
+
 /**
  * Created by DevSaki on 10/05/2015.
  * db Content Table
@@ -99,8 +101,8 @@ public abstract class ContentTable {
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
 
     public static final String SELECT_DOWNLOADS_AUTHOR = "(lower(A." + AttributeTable.NAME_COLUMN + ") LIKE '%3' AND A."
-            + AttributeTable.TYPE_COLUMN + " in (0, 7)) GROUP BY 1";
+            + AttributeTable.TYPE_COLUMN + " in ("+ AttributeType.ARTIST.getCode()+", "+AttributeType.CIRCLE.getCode()+")) GROUP BY 1";
 
     public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
-            + AttributeTable.TYPE_COLUMN + " = 3) GROUP BY 1 HAVING COUNT(*)=%5";
+            + AttributeTable.TYPE_COLUMN + " = "+AttributeType.TAG.getCode()+") GROUP BY 1 HAVING COUNT(*)=%5";
 }
