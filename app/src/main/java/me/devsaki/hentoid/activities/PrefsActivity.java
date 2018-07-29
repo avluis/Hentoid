@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
+import android.support.v7.preference.Preference;
+import android.support.v7.preference.PreferenceFragmentCompat;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -25,48 +25,43 @@ public class PrefsActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getFragmentManager().beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .replace(android.R.id.content, new MyPreferenceFragment())
                 .commit();
     }
 
-    public static class MyPreferenceFragment extends PreferenceFragment {
+    public static class MyPreferenceFragment extends PreferenceFragmentCompat {
 
         @Override
-        public void onCreate(final Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
+        public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+            setPreferencesFromResource(R.xml.preferences, rootKey);
 
-            addPreferencesFromResource(R.xml.preferences);
-
-            PreferenceScreen preferenceScreen = getPreferenceScreen();
-
-            preferenceScreen
-                    .findPreference(Preferences.Key.PREF_HIDE_RECENT)
+            findPreference(Preferences.Key.PREF_HIDE_RECENT)
                     .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-            preferenceScreen
-                    .findPreference(Preferences.Key.PREF_ANALYTICS_TRACKING)
+            findPreference(Preferences.Key.PREF_ANALYTICS_TRACKING)
                     .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-            preferenceScreen
-                    .findPreference(Preferences.Key.PREF_USE_SFW)
+            findPreference(Preferences.Key.PREF_USE_SFW)
                     .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-            preferenceScreen
-                    .findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)
+            findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)
                     .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-            preferenceScreen
-                    .findPreference(Preferences.Key.PREF_ADD_NO_MEDIA_FILE)
-                    .setOnPreferenceClickListener(preference -> FileHelper.createNoMedia());
-
-            preferenceScreen
-                    .findPreference(Preferences.Key.PREF_APP_LOCK)
+            findPreference(Preferences.Key.PREF_APP_LOCK)
                     .setOnPreferenceChangeListener((preference, newValue) -> onAppLockPinChanged(newValue));
+        }
 
-            preferenceScreen
-                    .findPreference(Preferences.Key.PREF_CHECK_UPDATE_MANUAL)
-                    .setOnPreferenceClickListener(preference -> onCheckUpdatePrefClick());
+        @Override
+        public boolean onPreferenceTreeClick(Preference preference) {
+            switch (preference.getKey()) {
+                case Preferences.Key.PREF_ADD_NO_MEDIA_FILE:
+                    return FileHelper.createNoMedia();
+                case Preferences.Key.PREF_CHECK_UPDATE_MANUAL:
+                    return onCheckUpdatePrefClick();
+                default:
+                    return super.onPreferenceTreeClick(preference);
+            }
         }
 
         private boolean onCheckUpdatePrefClick() {
