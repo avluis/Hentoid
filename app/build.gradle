@@ -90,9 +90,9 @@ dependencies {
     //    https://github.com/aNNiMON/Lightweight-Stream-API
     implementation 'com.annimon:stream:1.2.0'
     // LeakCanary: https://github.com/square/leakcanary
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.1'
-    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
-    testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.1'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
+    testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
     // Specific UI layout for tag mosaic : https://github.com/ApmeM/android-flowlayout
     implementation 'org.apmem.tools:layouts:1.10@aar'
     // https://mvnrepository.com/artifact/commons-io/commons-io
