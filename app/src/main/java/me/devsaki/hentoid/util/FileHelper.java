@@ -377,7 +377,8 @@ public class FileHelper {
 
         File bookFolder = new File(rootFolderName, content.getStorageFolder());
 
-        String thumbExt = coverUrl.substring(coverUrl.length() - 3).toLowerCase();
+        String thumbExt = "";
+        if (coverUrl.length() > 3) thumbExt = coverUrl.substring(coverUrl.length() - 3).toLowerCase();
         String thumb;
 
         switch (thumbExt) {

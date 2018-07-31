@@ -1127,6 +1127,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             for (String key : tagFilters.keySet()) {
                 Button b = tagMosaic.findViewWithTag(key);
+                if (null == b) continue;
                 int count = 0;
 
                 if (availableTags.containsKey(key)) {
