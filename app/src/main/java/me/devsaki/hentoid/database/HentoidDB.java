@@ -684,6 +684,8 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
 
+Timber.v(sql);
+
             try {
                 db = getReadableDatabase();
                 cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""});
@@ -693,6 +695,43 @@ public class HentoidDB extends SQLiteOpenHelper {
 
                     do {
                         result.add(new Attribute(type, cursorAttributes.getString(1), "").setExternalId(cursorAttributes.getInt(0)).setCount(cursorAttributes.getInt(2)));
+                    } while (cursorAttributes.moveToNext());
+                }
+            } finally {
+                if (cursorAttributes != null) {
+                    cursorAttributes.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public List<Attribute> selectAvailableSources() {
+        ArrayList<Attribute> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectAvailableSources");
+            SQLiteDatabase db = null;
+
+            Cursor cursorAttributes = null;
+
+            try {
+                db = getReadableDatabase();
+                cursorAttributes = db.rawQuery(ContentTable.SELECT_SOURCES, new String[]{
+                        StatusContent.DOWNLOADED.getCode() + "",
+                        StatusContent.ERROR.getCode() + "",
+                        StatusContent.MIGRATED.getCode() + ""});
+
+                // looping through all rows and adding to list
+                if (cursorAttributes.moveToFirst()) {
+
+                    do {
+                        Site s = Site.searchByCode(cursorAttributes.getInt(0));
+                        if (null != s) result.add(new Attribute(AttributeType.SOURCE, s.getDescription(), "").setExternalId(s.getCode()).setCount(cursorAttributes.getInt(1)));
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {

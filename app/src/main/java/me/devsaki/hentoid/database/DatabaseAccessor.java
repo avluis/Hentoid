@@ -127,7 +127,12 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
 
         @Override
         protected List<Attribute> doInBackground(String... params) {
-            return db.selectAllAttributesByType(attrType, filter);
+            if (AttributeType.SOURCE == attrType) // Specific case
+            {
+                return db.selectAvailableSources();
+            } else {
+                return db.selectAllAttributesByType(attrType, filter);
+            }
         }
 
         @Override

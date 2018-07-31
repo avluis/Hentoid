@@ -143,6 +143,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
             case TAG:result+="tags"; break;
             case LANGUAGE:result+="languages"; break;
             case CIRCLE:result+="groups"; break;
+            case SERIE:result+="series"; break;
         }
 
         return result;

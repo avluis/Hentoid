@@ -2,7 +2,6 @@ package me.devsaki.hentoid.abstracts;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.SearchManager;
@@ -47,10 +46,8 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -141,6 +138,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private TextView emptyText;
     // Bottom toolbar with page numbers
     protected LinearLayout pagerToolbar;
+    // Bar containing attribute selectors
+    private LinearLayout attrSelector;
 
     // ======== UTIL OBJECTS
     private ObjectAnimator animator;
@@ -800,12 +799,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // == SEARCH PANE
 
         // Create category buttons
-        LinearLayout attrSelector = activity.findViewById(R.id.search_tabs);
-        // TODO - color for selected button
+        attrSelector = activity.findViewById(R.id.search_tabs);
         attrSelector.addView(createAttributeSectionButton(AttributeType.LANGUAGE));
         attrSelector.addView(createAttributeSectionButton(AttributeType.ARTIST)); // TODO circle in the same tag
         attrSelector.addView(createAttributeSectionButton(AttributeType.TAG));
         attrSelector.addView(createAttributeSectionButton(AttributeType.CHARACTER));
+        attrSelector.addView(createAttributeSectionButton(AttributeType.SERIE));
+        if(MODE_LIBRARY == mode) attrSelector.addView(createAttributeSectionButton(AttributeType.SOURCE));
 
 /*
         // Attaches listener to favourite filters
@@ -865,15 +865,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private Button createAttributeSectionButton(AttributeType attr)
+    private ImageButton createAttributeSectionButton(AttributeType attr)
     {
-        Button button = new Button(mContext);
-        button.setText(attr.name());
+        ImageButton button = new ImageButton(mContext);
         button.setBackgroundResource(R.drawable.btn_attribute_section_off);
+        button.setImageResource(attr.getIcon());
+
         button.setClickable(true);
         button.setFocusable(true);
-        button.setTextColor(Color.WHITE);
-        button.setTextSize(16);
 
         button.setOnClickListener(v -> selectAttrButton(button));
         button.setTag(attr);
@@ -881,16 +880,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         return button;
     }
 
-    private void selectAttrButton(Button button)
+    private void selectAttrButton(ImageButton button)
     {
-        /*
-        if (MODE_LIBRARY == mode)
-        {
-            // Something
-        } else {*/
-            selectedTab = (AttributeType)button.getTag();
-            collectionAccessor.getAttributeMasterData(selectedTab, this);
-        //}
+        selectedTab = (AttributeType)button.getTag();
+        // Reset color of every tab
+        for (View v : attrSelector.getTouchables()) v.setBackgroundResource(R.drawable.btn_attribute_section_off);
+        // Set color of selected tab
+        button.setBackgroundResource(R.drawable.btn_attribute_section_on);
+        // Run search
+        collectionAccessor.getAttributeMasterData(selectedTab, this);
     }
 
     @Override
@@ -1022,106 +1020,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    /**
-     * Updates the displayed tags in the tag mosaic, according to :
-     * - owned books and their tags
-     * - selected source (website) filters
-     * - selected tags
-     * <p>
-     * Two behaviours :
-     * removeNotFound = true -> tag button does not appear when not found in results
-     * removeNotFound = false -> tag button appears as disabled when not found in results
-     *
-     * @param removeNotFound Indicated whether a tag not found in results is invisible or visible + disabled
-     */
-    private void updateTagMosaic(boolean removeNotFound) {
-        List<String> selectedTags = new ArrayList<>();
-        for (String key : tagFilters.keySet()) {
-            if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
-        }
-//        List<Pair<String, Integer>> tags = getDB().selectAllAttributesByUsage(AttributeType.TAG.getCode(), selectedTags, siteFilters, filterFavourites);
-
-        // Remove all tag buttons that do not appear in results
-        if (removeNotFound) {
-//            tagMosaic.removeAllViews();
-
-            // Set all buttons to be removed
-            for (String key : tagFilters.keySet()) {
-                tagFilters.put(key, tagFilters.get(key) + 10);
-            }
-/*
-            for (Pair<String, Integer> val : tags) {
-                if (!tagFilters.containsKey(val.first))
-                    tagFilters.put(val.first, TAGFILTER_ACTIVE); // Brand new tag
-                else if (tagFilters.get(val.first) > 9)
-                    tagFilters.put(val.first, tagFilters.get(val.first) - 10); // Reuse of previous tag
-
-                addTagButton(val.first, val.second);
-            }
-*/
-            // Purge unused filter entries
-            Set<String> keySet = new HashSet<>(tagFilters.keySet());
-            for (String key : keySet) {
-                if (tagFilters.get(key) > 9) tagFilters.remove(key);
-            }
-        } else { // Disable all tag buttons that do not appear in results _and_ are not selected
-            Map<String, Integer> availableTags = new HashMap<>();
-            /*
-            for (Pair<String, Integer> val : tags) {
-                availableTags.put(val.first, val.second);
-            }
-            */
-
-            for (String key : tagFilters.keySet()) {
-                /*
-                Button b = tagMosaic.findViewWithTag(key);
-                if (null == b) continue;
-                int count = 0;
-
-                if (availableTags.containsKey(key)) {
-                    count = availableTags.get(key);
-                    if (TAGFILTER_INACTIVE == tagFilters.get(key)) {
-                        tagFilters.put(key, TAGFILTER_ACTIVE);
-  //                      colorButton(b, TAGFILTER_ACTIVE);
-                    }
-                } else {
-                    if (TAGFILTER_SELECTED != tagFilters.get(key)) {
-                        tagFilters.put(key, TAGFILTER_INACTIVE);
-    //                    colorButton(b, TAGFILTER_INACTIVE);
-                    }
-                }
-                */
-
-      //          b.setText(MessageFormat.format("{0}({1})", key, count));
-            }
-        }
-    }
-
-    /**
-     * Adds a tag filter button in the tag filter bottom sheet.
-     * The button displays "label (count)"
-     *
-     * @param label Label to display on the button to add
-     * @param count Count to display on the button to add
-     */
-    private void addTagButton(String label, Integer count) {
-        Button button = new Button(mContext);
-        button.setText(MessageFormat.format("{0}({1})", label, count));
-        button.setBackgroundResource(R.drawable.btn_attribute_selector);
-        button.setMinHeight(0);
-        button.setMinimumHeight(0);
-
-        int tagState = TAGFILTER_ACTIVE;
-        if (tagFilters.containsKey(label)) tagState = tagFilters.get(label);
-        colorButton(button, tagState);
-
-        button.setOnClickListener(v -> selectTagFilter(button, label));
-        button.setTag(label);
-
-//        tagMosaic.addView(button);
-    }
-
-
     private Button createTagSuggestionButton(Attribute attribute, boolean isSelected) {
         Button button = new Button(mContext);
         button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
@@ -1139,7 +1037,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // TEMP
 
         button.setTag(attribute);
-        if (!isSelected) button.setId(attribute.getId());
+        /*if (!isSelected)*/ button.setId(attribute.getId());
 
         if (isSelected) button.setOnClickListener(v -> removeTagSuggestion(button));
         else button.setOnClickListener(v -> addTagSuggestion(button));
@@ -1165,55 +1063,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         grad.setStroke(3, color);
     }
 
-    /**
-     * Updates visible books of the collection according to the selected tag filters
-     * This method is fired every time a tag filter button is pressed
-     *
-     * @param b   Pressed button
-     * @param tag Tag represented by the pressed button
-     */
-    private void selectTagFilter(Button b, String tag) {
-        GradientDrawable grad = (GradientDrawable) b.getBackground();
-        boolean doSearch = true;
-
-        if (tagFilters.containsKey(tag)) {
-
-            switch (tagFilters.get(tag)) {
-                case TAGFILTER_ACTIVE:
-                    b.setTextColor(Color.RED);
-                    grad.setStroke(3, Color.RED);
-                    tagFilters.put(tag, TAGFILTER_SELECTED);
-                    break;
-                case TAGFILTER_SELECTED:
-                    b.setTextColor(Color.WHITE);
-                    grad.setStroke(3, Color.WHITE);
-                    tagFilters.put(tag, TAGFILTER_ACTIVE);
-                    break;
-                default:
-                    // Inactive button
-                    doSearch = false;
-            }
-
-            // Update filtered books
-            if (doSearch) {
-                searchLibrary();
-                Handler handler = new Handler();
-                handler.post(() -> updateTagMosaic(false));
-            }
-        } else {
-            Timber.d("Tag %s absent from tagFilter", tag);
-        }
-    }
-
     private void addTagSuggestion(Button b) {
         Attribute a = (Attribute)b.getTag();
-        searchTags.addView(createTagSuggestionButton(a, true));
-        colorButton(b, TAGFILTER_SELECTED);
-        currentSearchTags.add(a);
 
-        // Launch book search
-        //collectionAccessor.searchBooks("", currentSearchTags, 0, 0, this);
-        searchLibrary();
+        if (!currentSearchTags.contains(a)) {
+            searchTags.addView(createTagSuggestionButton(a, true));
+            colorButton(b, TAGFILTER_SELECTED);
+            currentSearchTags.add(a);
+
+            // Launch book search
+            searchLibrary();
+        } else {
+            searchTags.removeView(searchTags.findViewById(a.getId()));
+            colorButton(b, TAGFILTER_ACTIVE);
+            currentSearchTags.remove(a);
+
+            // Launch book search
+            searchLibrary();
+        }
     }
 
     private void removeTagSuggestion(Button b) {
@@ -1222,13 +1089,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchTags.removeView(b);
 
         // If displayed, change color of the corresponding button in tag suggestions
-        Activity activity = getActivity();
-        if (null == activity)
-        {
-            Timber.w("Activity unreachable");
-            return;
-        }
-        Button tagButton = activity.findViewById(a.getId());
+        Button tagButton = attributeMosaic.findViewById(a.getId());
         if (tagButton != null) colorButton(tagButton, TAGFILTER_ACTIVE);
 
         // Launch book search

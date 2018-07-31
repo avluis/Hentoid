@@ -85,6 +85,8 @@ public abstract class ContentTable {
 
     public static final String SELECT_NULL_FOLDERS = "SELECT * FROM " + TABLE_NAME + " WHERE " + STORAGE_FOLDER_COLUMN + " is null";
 
+    public static final String SELECT_SOURCES = "SELECT "+SITE_COLUMN+", COUNT(*) FROM " + TABLE_NAME + " WHERE " + STATUS_COLUMN + " IN (?,?,?) GROUP BY 1";
+
 
     // SEARCH QUERIES "TOOLBOX"
 

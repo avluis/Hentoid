@@ -16,7 +16,7 @@ public enum AttributeType {
     LANGUAGE(2, R.drawable.ic_attribute_language),
     TAG(3, R.drawable.ic_attribute_tag),
     TRANSLATOR(4, R.drawable.ic_menu_fakku),
-    SERIE(5, R.drawable.ic_menu_fakku),
+    SERIE(5, R.drawable.ic_attribute_serie),
     UPLOADER(6, R.drawable.ic_menu_fakku),
     CIRCLE(7, R.drawable.ic_menu_fakku),
     CHARACTER(8, R.drawable.ic_attribute_character),
