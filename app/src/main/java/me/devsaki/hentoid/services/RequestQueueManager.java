@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.services;
 
+import android.app.ActivityManager;
 import android.content.Context;
 
 import com.android.volley.Request;
@@ -7,6 +8,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.BasicNetwork;
 import com.android.volley.toolbox.DiskBasedCache;
 import com.android.volley.toolbox.Volley;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 
@@ -20,15 +22,36 @@ import timber.log.Timber;
  */
 public class RequestQueueManager implements RequestQueue.RequestFinishedListener<Object> {
     private static RequestQueueManager mInstance;   // Instance of the singleton
-    private static int TIMEOUT_MS = 15000;
+    private static final int TIMEOUT_MS = 15000;
 
     private RequestQueue mRequestQueue;             // Volley download request queue
     private int nbRequests = 0;                     // Number of requests currently in the queue (for debug display)
 
 
     private RequestQueueManager(Context context) {
-        int nbDlThreads = Preferences.getDownloadThreadsQuantity();
+        int nbDlThreads = Preferences.getDownloadThreadCount();
+        if (nbDlThreads == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
+            nbDlThreads = getSuggestedThreadCount(context);
+        }
+        Crashlytics.setInt("Download thread count", nbDlThreads);
+
         mRequestQueue = getRequestQueue(context, nbDlThreads);
+    }
+
+    private int getSuggestedThreadCount(Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager == null) return 4;
+
+        int memoryClass = activityManager.getMemoryClass();
+        Crashlytics.setInt("Memory class", memoryClass);
+
+        if (memoryClass < 45) {
+            return 1;
+        } else if (memoryClass < 90) {
+            return 2;
+        } else {
+            return 4;
+        }
     }
 
     public static synchronized RequestQueueManager getInstance() {
@@ -55,6 +78,7 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
         }
         return mRequestQueue;
     }
+
     private RequestQueue getRequestQueue(Context ctx, int nbDlThreads) { // Freely inspired by inner workings of Volley.java and RequestQueue.java; to be watched closely as Volley evolves
         if (mRequestQueue == null) {
             BasicNetwork network = new BasicNetwork(new VolleyOkHttp3Stack(TIMEOUT_MS));

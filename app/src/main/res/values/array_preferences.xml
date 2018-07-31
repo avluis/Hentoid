@@ -16,13 +16,15 @@
     </string-array>
 
     <string-array name="pref_dl_threads_quantity_entries">
+        <item>Auto (default)</item>
         <item>2 (slow internet)</item>
-        <item>4 (default)</item>
+        <item>4</item>
         <item>6</item>
         <item>8</item>
         <item>10 (fast internet; high-end phone)</item>
     </string-array>
     <string-array name="pref_dl_threads_quantity_values">
+        <item>0</item>
         <item>2</item>
         <item>4</item>
         <item>6</item>
