@@ -219,7 +219,7 @@ public class Content implements Serializable {
         }
     }
 
-    public void populateAuthor() {
+    public Content populateAuthor() {
         String author = "";
         if (getAttributes().containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
             author = attributes.get(AttributeType.ARTIST).get(0).getName();
@@ -230,6 +230,7 @@ public class Content implements Serializable {
         }
         if (null == author) author = "";
         setAuthor(author);
+        return this;
     }
 
     public String getTitle() {
@@ -242,6 +243,7 @@ public class Content implements Serializable {
     }
 
     public String getAuthor() {
+        if (null == author) populateAuthor();
         return author;
     }
 
