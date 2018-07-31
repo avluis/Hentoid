@@ -93,8 +93,8 @@ dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.1'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
     testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
-    // Specific UI layout for tag mosaic : https://github.com/ApmeM/android-flowlayout
-    implementation 'org.apmem.tools:layouts:1.10@aar'
+    // Specific UI layout for tag mosaic : https://github.com/google/flexbox-layout
+    implementation 'com.google.android:flexbox:1.0.0'
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
 }

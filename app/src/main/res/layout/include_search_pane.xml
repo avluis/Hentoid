@@ -39,13 +39,22 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+<!--
             <org.apmem.tools.layouts.FlowLayout
-                android:id="@+id/search_tags"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="start"
                 android:orientation="horizontal"
                 />
+-->
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/search_tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:flexWrap="wrap"
+                app:alignItems="baseline"
+                app:alignContent="flex_start"/>
 
             <LinearLayout
                 android:id="@+id/search_tabs"
@@ -102,12 +111,22 @@
 
             </LinearLayout>
 
+            <!--
             <org.apmem.tools.layouts.FlowLayout
-                android:id="@+id/tag_suggestion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="fill"
                 android:orientation="horizontal"
+                />
+-->
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/tag_suggestion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:flexWrap="wrap"
+                app:alignItems="baseline"
+                app:alignContent="flex_start"
+                android:gravity="fill"
                 />
 
         </LinearLayout>

@@ -39,6 +39,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.android.flexbox.FlexboxLayout;
+
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -810,6 +812,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // Create category buttons
         attrSelector = activity.findViewById(R.id.search_tabs);
+        attrSelector.removeAllViews();
         attrSelector.addView(createAttributeSectionButton(AttributeType.LANGUAGE));
         attrSelector.addView(createAttributeSectionButton(AttributeType.ARTIST)); // TODO circle in the same tag
         attrSelector.addView(createAttributeSectionButton(AttributeType.TAG));
@@ -1345,7 +1348,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
         else if (totalContent <= MAX_ATTRIBUTES_DISPLAYED) {
             for (Attribute attr : results) {
-                attributeMosaic.addView(createTagSuggestionButton(attr, false));
+                View button = createTagSuggestionButton(attr, false);
+                attributeMosaic.addView(button);
+                FlexboxLayout.LayoutParams lp = (FlexboxLayout.LayoutParams) button.getLayoutParams();
+                lp.setFlexGrow(1);
+                button.setLayoutParams(lp);
             }
             tagWaitPanel.setVisibility(View.GONE);
         } else {
