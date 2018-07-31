@@ -151,7 +151,7 @@ public final class Preferences {
                 .apply();
     }
 
-    public static int getDownloadThreadsQuantity() {
+    public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + ""));
     }
@@ -193,10 +193,11 @@ public final class Preferences {
         static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         static final boolean PREF_USE_SFW_DEFAULT = false;
-        static final int PREF_DL_THREADS_QUANTITY_DEFAULT = 4;
+        static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
     }
 
     public static final class Constant {
+        public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
         public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC_INVERTED = 2;

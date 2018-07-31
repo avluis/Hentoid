@@ -1,5 +1,8 @@
 package me.devsaki.hentoid.parsers;
 
+import com.google.gson.Gson;
+import com.google.gson.annotations.Expose;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -19,27 +22,35 @@ import me.devsaki.hentoid.util.AttributeMap;
  */
 public class PururinParser extends BaseParser {
 
+    private final static String IMAGE_PATH = "//pururin.io/assets/images/data/";
+
+    private class PururinInfo
+    {
+        @Expose
+        String image_extension;
+        @Expose
+        String id;
+    }
+
     @Override
     protected Content parseContent(Document doc) {
         Content result = null;
 
-        Elements content = doc.select("div.gallery-info");
+        Elements content = doc.select("div.gallery-wrapper");
 
         if (content.size() > 0) {
             result = new Content();
 
-            String url = doc.select("div.cover")
-                    .select("a")
-                    .attr("href")
-                    .replace("http://pururin.io/read", "")
-                    .replace("https://pururin.io/read", "")
-                    .replace("/01","");
+            String url = doc.baseUri();
+            String protocol = url.substring(0,5);
+            if ("https".equals(protocol)) protocol = "https:";
+            url = url.replace(protocol+"//pururin.io/gallery","");
             result.setUrl(url);
 
-            String coverUrl = doc.select("div.cover")
-                    .select("a")
+            String coverUrl = doc.select("div.cover-wrapper")
                     .select("img")
                     .attr("src");
+            if (!coverUrl.startsWith("http")) coverUrl = protocol+coverUrl;
             result.setCoverImageUrl(coverUrl);
 
             String title = doc.select("div.title").first().text();
@@ -68,7 +79,10 @@ public class PururinParser extends BaseParser {
                 } else if (td.html().startsWith("Category")) {
                     parseAttributes(attributes, AttributeType.CATEGORY, element.select("a"));
                 } else if (td.html().startsWith("Pages")) {
-                    pages = Integer.parseInt(element.select("td").get(1).text().replace(" Pages", ""));
+                    String pagesStr = element.select("td").get(1).text(); // pages ( size M )
+                    int bracketPos = pagesStr.lastIndexOf("(");
+                    if (bracketPos > -1) pagesStr = pagesStr.substring(0, bracketPos).trim();
+                    pages = Integer.parseInt(pagesStr);
                 }
             }
 
@@ -83,26 +97,22 @@ public class PururinParser extends BaseParser {
     @Override
     protected List<String> parseImages(Content content) throws Exception {
         List<String> result = new ArrayList<>();
+        String url = content.getReaderUrl();
+        String protocol = url.substring(0,5);
+        if ("https".equals(protocol)) protocol = "https:";
 
-        Document doc = Jsoup.connect(content.getReaderUrl()).get();
-        Elements js = doc.select("script");
-        int startPos, endPos;
+        // The whole algorithm is in app.js
+        // 1- Get image extension from gallery data (JSON on HTML body)
+        // 2- Generate image URL from  imagePath constant, gallery ID, page number and extension
 
-        for (Element a : js) {
-            if (a.toString().contains("\"image\":")) // That's the one
-            {
-                String[] parts = a.toString().split(",");
+        // 1- Get image extension from gallery data (JSON on HTML body)
+        Document doc = Jsoup.connect(url).get();
+        String json = doc.select("gallery-read").attr(":gallery");
+        PururinInfo info = new Gson().fromJson(json, PururinInfo.class);
 
-                for (String s : parts) {
-                    if (s.startsWith("\"image\":")) {
-                        startPos = s.indexOf("http");
-                        endPos = s.indexOf("\"}");
-                        result.add(s.substring(startPos, endPos).replace("\\/", "/"));
-                    }
-                }
-
-                break;
-            }
+        // 2- Get imagePath from app.js => it is constant anyway, and app.js is 3 MB long => put it there as a const
+        for (int i = 0; i < content.getQtyPages(); i++) {
+            result.add(protocol+IMAGE_PATH+info.id+"/"+(i+1)+"."+info.image_extension);
         }
 
         return result;

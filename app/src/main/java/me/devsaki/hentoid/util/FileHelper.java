@@ -194,12 +194,25 @@ public class FileHelper {
      */
     static boolean cleanDirectory(@NonNull File target) {
         try {
-            FileUtils.cleanDirectory(target);
-            return true;
-        } catch (IOException e) {
+            return tryCleanDirectory(target);
+        } catch (Exception e) {
             Timber.e(e, "Failed to clean directory");
             return false;
         }
+    }
+
+    private static boolean tryCleanDirectory(@NonNull File directory) throws IOException, SecurityException {
+        File[] files = directory.listFiles();
+        if (files == null) throw new IOException("Failed to list contents of " + directory);
+
+        boolean isSuccess = true;
+
+        for (File file : files) {
+            if (file.isDirectory() && !tryCleanDirectory(file)) isSuccess = false;
+            if (!file.delete() && file.exists()) isSuccess = false;
+        }
+
+        return isSuccess;
     }
 
     public static boolean validateFolder(String folder) {
