@@ -30,9 +30,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -70,6 +73,7 @@ import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
@@ -119,7 +123,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // "Sort" button on top menu
     private MenuItem orderMenu;
     // Action view associated with search menu button
-    private SearchView searchView;
+    private SearchView mainSearchView;
     // Search pane that shows up on top when using search function
     protected View searchPane;
     // Container where selected attributed are displayed
@@ -140,6 +144,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected LinearLayout pagerToolbar;
     // Bar containing attribute selectors
     private LinearLayout attrSelector;
+    // TODO
+    private View tagWaitPanel;
+    private ImageView tagWaitImage;
+    private TextView tagWaitDescription;
+    private TextView tagWaitTitle;
 
     // ======== UTIL OBJECTS
     private ObjectAnimator animator;
@@ -665,9 +674,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected void clearQuery(int option) {
         Timber.d("Clearing query with option: %s", option);
-        if (searchView != null && option == 1) {
-            searchView.clearFocus();
-            searchView.setIconified(true);
+        if (mainSearchView != null && option == 1) {
+            mainSearchView.clearFocus();
+            mainSearchView.setIconified(true);
         }
         setQuery(query = "");
         update();
@@ -739,6 +748,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
                 setSearchPaneVisibility(true);
+                mainSearchView.clearFocus();
 
                 return true;
             }
@@ -762,17 +772,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             return;
         }
 
-        searchView = (SearchView) searchMenu.getActionView();
+        mainSearchView = (SearchView) searchMenu.getActionView();
         if (searchManager != null) {
-            searchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
+            mainSearchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
         }
-        searchView.setIconifiedByDefault(true);
-        searchView.setQueryHint(getString(R.string.search_hint));
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        mainSearchView.setIconifiedByDefault(true);
+        mainSearchView.setQueryHint(getString(R.string.search_hint));
+        mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 submitContentSearchQuery(s);
-                searchView.clearFocus();
+                mainSearchView.clearFocus();
 
                 return true;
             }
@@ -807,6 +817,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         attrSelector.addView(createAttributeSectionButton(AttributeType.SERIE));
         if(MODE_LIBRARY == mode) attrSelector.addView(createAttributeSectionButton(AttributeType.SOURCE));
 
+        tagWaitPanel = activity.findViewById(R.id.tag_wait_panel);
+        tagWaitPanel.setVisibility(View.GONE);
+        tagWaitImage = activity.findViewById(R.id.tag_wait_image);
+        tagWaitDescription = activity.findViewById(R.id.tag_wait_description);
+        tagWaitTitle = activity.findViewById(R.id.tag_wait_title);
+
 /*
         // Attaches listener to favourite filters
         final ImageButton favouriteButton = activity.findViewById(R.id.filter_favs);
@@ -823,7 +839,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
-                submitAttributeSearchQuery(selectedTab, s);
+
+                if (selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s))
+                {
+                    Helper.toast(mContext.getString(R.string.masterdata_illegal_tag));
+                } else if (!s.isEmpty()) {
+                    submitAttributeSearchQuery(selectedTab, s);
+                }
                 tagSearchView.clearFocus();
 
                 return true;
@@ -831,7 +853,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if (shouldHide && (!s.isEmpty())) {
+                if (selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s))
+                {
+                    Helper.toast(mContext.getString(R.string.masterdata_illegal_tag));
+                    searchHandler.removeCallbacksAndMessages(null);
+                } else if (shouldHide && (!s.isEmpty())) {
                     submitAttributeSearchQuery(selectedTab, s, 1000);
                 }
 
@@ -887,8 +913,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         for (View v : attrSelector.getTouchables()) v.setBackgroundResource(R.drawable.btn_attribute_section_off);
         // Set color of selected tab
         button.setBackgroundResource(R.drawable.btn_attribute_section_on);
+        // Set hint on search bar
+        SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
+        tagSearchView.setQueryHint("Search " + selectedTab.name().toLowerCase());
         // Run search
-        collectionAccessor.getAttributeMasterData(selectedTab, this);
+        searchMasterData(selectedTab, "");
     }
 
     @Override
@@ -1116,7 +1145,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     private void submitAttributeSearchQuery(AttributeType a, final String s, long delay) {
         searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(() -> collectionAccessor.getAttributeMasterData(a, s, this), delay);
+        searchHandler.postDelayed(() -> searchMasterData(a, s), delay);
     }
 
     private void showReloadToolTip() {
@@ -1174,7 +1203,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 emptyText.setVisibility(View.GONE);
                 loadingText.setVisibility(View.VISIBLE);
                 //showToolbar(false);
-                startAnimation();
+                startLoadingTextAnimation();
                 break;
             case SHOW_BLANK:
                 mListView.setVisibility(View.GONE);
@@ -1189,13 +1218,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 showToolbar(true);
                 break;
             default:
-                stopAnimation();
+                stopLoadingTextAnimation();
                 loadingText.setVisibility(View.GONE);
                 break;
         }
     }
 
-    private void startAnimation() {
+    private void startLoadingTextAnimation() {
         final int POWER_LEVEL = 9000;
 
         Drawable[] compoundDrawables = loadingText.getCompoundDrawables();
@@ -1211,7 +1240,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private void stopAnimation() {
+    private void stopLoadingTextAnimation() {
         Drawable[] compoundDrawables = loadingText.getCompoundDrawables();
         for (Drawable drawable : compoundDrawables) {
             if (drawable == null) {
@@ -1222,12 +1251,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Runs a new search in the DB according to active filters :
-     * - Selected source (website)
-     * - Either
-     * * Search string for Title or Artist
-     * or
-     * * Selected tags in tag mosaic
+     * Runs a new search in the DB according to active filters
      */
     protected void searchLibrary() {
         searchLibrary(isSearchMode);
@@ -1238,31 +1262,30 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isSearchReplaceResults = searchMode;
         isLoaded = false;
 
-        /*
-        if (MODE_LIBRARY == mode) {
-            List<String> selectedTags = new ArrayList<>();
+        if (searchMode) collectionAccessor.searchBooks(query, currentSearchTags, booksPerPage, order, filterFavourites, this);
+        else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, order, filterFavourites, this);
+    }
 
-            // Populate tag filter if tag filtering is active
-            if (filterByTag) {
-                for (String key : tagFilters.keySet()) {
-                    if (TAGFILTER_SELECTED == tagFilters.get(key)) selectedTags.add(key);
-                }
-                // Tag filter is incompatible with search by keyword
-                query = "";
-            }
+    protected void searchMasterData(AttributeType a, final String s) {
+        tagWaitImage.setImageResource(a.getIcon());
+        tagWaitTitle.setText(String.format("%s search", Helper.capitalizeString(a.name())) );
+        tagWaitDescription.setText(R.string.downloads_loading);
 
-            search.retrieveResults(filterByTitle ? query : "", filterByArtist ? query : "", currentPage, booksPerPage, selectedTags, siteFilters, filterFavourites, order);
-        } else {*/
-            if (searchMode) collectionAccessor.searchBooks(query, currentSearchTags, booksPerPage, order, filterFavourites, this);
-            else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, order, filterFavourites, this);
-        //}
+        // Set blinking animation
+        Animation anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(750);
+        anim.setStartOffset(20);
+        anim.setRepeatMode(Animation.REVERSE);
+        anim.setRepeatCount(Animation.INFINITE);
+        tagWaitDescription.startAnimation(anim);
+
+        tagWaitPanel.setVisibility(View.VISIBLE);
+        collectionAccessor.getAttributeMasterData(a, s, this);
     }
 
     protected abstract void showToolbar(boolean show);
 
     protected abstract void displayResults(List<Content> results, int totalContent);
-
-//    protected abstract void setCurrentPage();
 
     protected boolean isLastPage() {
         return (currentPage * booksPerPage >= mAdapter.getTotalCount());
@@ -1314,11 +1337,23 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onAttributesReady(List<Attribute> results, int totalContent) {
         attributeMosaic.removeAllViews();
 
+        tagWaitDescription.clearAnimation();
+
         // TODO handle display Alpha vs. display by count
-        if (totalContent <= MAX_ATTRIBUTES_DISPLAYED) {
+        if (0 == totalContent) {
+            tagWaitDescription.setText(R.string.masterdata_no_result);
+        }
+        else if (totalContent <= MAX_ATTRIBUTES_DISPLAYED) {
             for (Attribute attr : results) {
                 attributeMosaic.addView(createTagSuggestionButton(attr, false));
             }
+            tagWaitPanel.setVisibility(View.GONE);
+        } else {
+            SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
+            String searchQuery = tagSearchView.getQuery().toString();
+
+            String errMsg = (0 == searchQuery.length())? mContext.getString(R.string.masterdata_too_many_results_noquery):mContext.getString(R.string.masterdata_too_many_results_query);
+            tagWaitDescription.setText(errMsg.replace("%1",searchQuery));
         }
     }
 
@@ -1326,6 +1361,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onAttributesFailed() {
         Timber.w("Attributes failed to load.");
         Helper.toast("Attributes failed to load.");
+        tagWaitPanel.setVisibility(View.GONE);
     }
 
     /*

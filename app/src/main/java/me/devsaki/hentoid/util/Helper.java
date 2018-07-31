@@ -345,7 +345,7 @@ public final class Helper {
     public static String capitalizeString(String s) {
         if (s == null || s.length() == 0) return s;
         else if (s.length() == 1) return s.toUpperCase();
-        else return s.substring(0, 1).toUpperCase() + s.substring(1);
+        else return s.substring(0, 1).toUpperCase() + s.toLowerCase().substring(1);
     }
 
     /**

@@ -20,6 +20,7 @@ import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.util.AttributeCache;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.UrlBuilder;
@@ -31,9 +32,6 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     private static final String contentSynch = "";
     private static final String attrSynch = "";
-
-    private static final String[] ILLEGAL_TAGS = { "loli", "shota", "toddler", "baby" };
-
 
     private static String getMikanCodeForSite(Site s) {
         switch (s) {
@@ -56,14 +54,12 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         while (i < size)
         {
-            for (String s : ILLEGAL_TAGS)
-                if (list.get(i).getName().contains(s))
-                {
-                    list.remove(i);
-                    i--;
-                    size--;
-                    break;
-                }
+            if (IllegalTags.isIllegal(list.get(i).getName()))
+            {
+                list.remove(i);
+                i--;
+                size--;
+            }
             i++;
         }
     }

@@ -1,8 +1,10 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
-    android:layout_height="180dp"
+    android:maxHeight="180dp"
+    android:layout_height="120dp"
     android:background="#400000"
     android:clipToPadding="true"
     android:tag="TagFilter">
@@ -58,8 +60,47 @@
 
             <android.support.v7.widget.SearchView
                 android:id="@+id/tag_filter"
+
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:id="@+id/tag_wait_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                >
+
+                <TextView
+                    android:id="@+id/tag_wait_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/card_item_src_online"
+                    android:textSize="24sp"
+                    android:text="@string/app_intro" />
+
+                <ImageView
+                    android:id="@+id/tag_wait_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:tint="@color/card_item_src_online"
+                    android:src="@drawable/ic_action_pause"
+                    android:minWidth="110dp"
+                    android:minHeight="110dp"
+                    android:scaleType="fitCenter"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/tag_wait_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/card_item_src_online"
+                    android:textSize="18sp"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:text="@string/app_intro" />
+
+            </LinearLayout>
 
             <org.apmem.tools.layouts.FlowLayout
                 android:id="@+id/tag_suggestion"
