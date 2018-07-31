@@ -101,7 +101,7 @@ public final class Helper {
         toast(context, text, -1, duration);
     }
 
-    private static void toast(Context context, int resource, DURATION duration) {
+    public static void toast(Context context, int resource, DURATION duration) {
         toast(context, null, resource, duration);
     }
 
