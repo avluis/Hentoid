@@ -32,6 +32,8 @@ public class MikanAccessor extends BaseCollectionAccessor {
     private static final String contentSynch = "";
     private static final String attrSynch = "";
 
+    private static final String[] ILLEGAL_TAGS = { "loli", "shota", "toddler", "baby" };
+
 
     private static String getMikanCodeForSite(Site s) {
         switch (s) {
@@ -45,6 +47,25 @@ public class MikanAccessor extends BaseCollectionAccessor {
     private static boolean isSiteUnsupported(Site s)
     {
         return (s != Site.HITOMI);
+    }
+
+    private static void filterIllegalTags(List<Attribute> list)
+    {
+        int size = list.size();
+        int i = 0;
+
+        while (i < size)
+        {
+            for (String s : ILLEGAL_TAGS)
+                if (list.get(i).getName().contains(s))
+                {
+                    list.remove(i);
+                    i--;
+                    size--;
+                    break;
+                }
+            i++;
+        }
     }
 
 
@@ -64,7 +85,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
     }
 
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
-        launchRequest(buildGetAttrRequest(attr), attr.name(), filter, listener);
+        launchRequest(buildGetAttrRequest(attr), attr.toString(), filter, listener);
     }
 
 
@@ -272,6 +293,12 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
                 MikanAttributeResponse attrResponse = new Gson().fromJson(json.toString(), MikanAttributeResponse.class);
                 attributes = attrResponse.toAttributeList();
+
+                // Illegal tags filter
+                if (AttributeType.TAG.toString().equals(usage))
+                {
+                    filterIllegalTags(attributes);
+                }
 
                 AttributeCache.setCache(usage, attributes, response.expiryDate);
 
