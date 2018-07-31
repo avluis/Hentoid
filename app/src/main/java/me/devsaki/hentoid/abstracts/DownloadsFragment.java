@@ -1073,7 +1073,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             */
 
             for (String key : tagFilters.keySet()) {
-//                Button b = tagMosaic.findViewWithTag(key);
+                /*
+                Button b = tagMosaic.findViewWithTag(key);
+                if (null == b) continue;
                 int count = 0;
 
                 if (availableTags.containsKey(key)) {
@@ -1088,6 +1090,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     //                    colorButton(b, TAGFILTER_INACTIVE);
                     }
                 }
+                */
 
       //          b.setText(MessageFormat.format("{0}({1})", key, count));
             }
