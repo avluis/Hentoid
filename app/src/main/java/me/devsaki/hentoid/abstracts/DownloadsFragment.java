@@ -111,6 +111,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private static final String TAG_FILTERS_KEYS = "tag_filters_keys";
     private static final String TAG_FILTERS_VALUES = "tag_filters_values";
     private static final String FILTER_FAVOURITES = "filter_favs";
+    private static final String CURRENT_PAGE = "current_page";
     private static final String QUERY = "query";
 
 
@@ -197,8 +198,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
 
     // === SEARCH
-    // True if search mode is active
-    private boolean isSearchMode = false;
     // Active tag filters
     @Deprecated
     private final Map<String, Integer> tagFilters = new HashMap<>();
@@ -206,8 +205,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private boolean filterFavourites = false;
     // Expression typed in the search bar
     protected String query = "";
-    // True if search results need to replace displayed books (set before calling a search to be used during results display)
-    protected boolean isSearchReplaceResults;
 
     // Currently selected tab
     private AttributeType selectedTab = AttributeType.TAG;
@@ -453,9 +450,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         mListState = llm.onSaveInstanceState();
         outState.putParcelable(LIST_STATE_KEY, mListState);
-        outState.putBoolean(IS_SEARCH_MODE, isSearchMode);
         outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
         outState.putString(QUERY, query);
+        outState.putInt(CURRENT_PAGE,currentPage);
 
         // Save tag filters (key set on one variable; value set on the other)
         outState.putStringArrayList(TAG_FILTERS_KEYS, new ArrayList<>());
@@ -468,9 +465,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (state != null) {
             mListState = state.getParcelable(LIST_STATE_KEY);
-            isSearchMode = state.getBoolean(IS_SEARCH_MODE, false);
             filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
             query = state.getString(QUERY, "");
+            currentPage = state.getInt(CURRENT_PAGE);
 
             // Restore tag filters (key set on one variable; value set on the other)
             List<String> tagKeys = state.getStringArrayList(TAG_FILTERS_KEYS);
@@ -1021,7 +1018,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         } else {
             searchPane.setVisibility(View.GONE);
         }
-        isSearchMode = visible;
     }
 
     /**
@@ -1071,8 +1067,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setTag(attribute);
         button.setId(Math.abs(attribute.getId()));
 
-        if (isSelected) button.setOnClickListener(v -> removeTagSuggestion(button));
-        else button.setOnClickListener(v -> addTagSuggestion(button));
+        if (isSelected) button.setOnClickListener(v -> selectSearchTag(button));
+        else button.setOnClickListener(v -> selectTagSuggestion(button));
 
         return button;
     }
@@ -1095,10 +1091,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         grad.setStroke(3, color);
     }
 
-    private void addTagSuggestion(Button b) {
+    private void selectTagSuggestion(Button b) {
         Attribute a = (Attribute)b.getTag();
 
         if (!currentSearchTags.contains(a)) {
+            // Add corresponding button in search tags
             searchTags.addView(createTagSuggestionButton(a, true));
             colorButton(b, TAGFILTER_SELECTED);
             currentSearchTags.add(a);
@@ -1106,6 +1103,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             // Launch book search
             searchLibrary();
         } else {
+            // Remove corresponding button in search tags
             searchTags.removeView(searchTags.findViewById(Math.abs(a.getId())));
             colorButton(b, TAGFILTER_ACTIVE);
             currentSearchTags.remove(a);
@@ -1115,7 +1113,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private void removeTagSuggestion(Button b) {
+    private void selectSearchTag(Button b) {
         Attribute a = (Attribute)b.getTag();
         currentSearchTags.remove(a);
         searchTags.removeView(b);
@@ -1256,16 +1254,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     /**
      * Runs a new search in the DB according to active filters
      */
-    protected void searchLibrary() {
-        searchLibrary(isSearchMode);
+    private boolean isSearchMode()
+    {
+        return ( (query != null && query.length() > 0) || currentSearchTags.size() > 0);
     }
 
-    protected void searchLibrary(boolean searchMode) {
+    protected void searchLibrary() {
         String query = this.getQuery();
-        isSearchReplaceResults = searchMode;
         isLoaded = false;
 
-        if (searchMode) collectionAccessor.searchBooks(query, currentSearchTags, booksPerPage, order, filterFavourites, this);
+        if (isSearchMode()) collectionAccessor.searchBooks(query, currentSearchTags, currentPage, booksPerPage, order, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, order, filterFavourites, this);
     }
 
@@ -1314,7 +1312,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
         isLoaded = true;
 
-        if (isSearchReplaceResults && isNewContentAvailable)
+        if (isSearchMode() && isNewContentAvailable)
         {
             newContentToolTip.setVisibility(View.GONE);
             isNewContentAvailable = false;
