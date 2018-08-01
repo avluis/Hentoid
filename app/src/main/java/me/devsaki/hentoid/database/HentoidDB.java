@@ -466,7 +466,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 List<Attribute> attrs = metadataMap.get(attrType);
 
                 if (attrs.size() > 0) {
-                    if (hasTitleFilter || isConstructingTagFilter) sql.append(" OR ");
+                    if (hasTitleFilter || isConstructingTagFilter) sql.append(" AND ");
                     sql.append(ContentTable.SELECT_DOWNLOADS_JOINS);
                     sql.append(
                             ContentTable.SELECT_DOWNLOADS_TAGS

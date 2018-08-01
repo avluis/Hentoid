@@ -1069,7 +1069,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // TEMP
 
         button.setTag(attribute);
-        /*if (!isSelected)*/ button.setId(attribute.getId());
+        button.setId(Math.abs(attribute.getId()));
 
         if (isSelected) button.setOnClickListener(v -> removeTagSuggestion(button));
         else button.setOnClickListener(v -> addTagSuggestion(button));
@@ -1106,7 +1106,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             // Launch book search
             searchLibrary();
         } else {
-            searchTags.removeView(searchTags.findViewById(a.getId()));
+            searchTags.removeView(searchTags.findViewById(Math.abs(a.getId())));
             colorButton(b, TAGFILTER_ACTIVE);
             currentSearchTags.remove(a);
 
@@ -1121,7 +1121,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchTags.removeView(b);
 
         // If displayed, change color of the corresponding button in tag suggestions
-        Button tagButton = attributeMosaic.findViewById(a.getId());
+        Button tagButton = attributeMosaic.findViewById(Math.abs(a.getId()));
         if (tagButton != null) colorButton(tagButton, TAGFILTER_ACTIVE);
 
         // Launch book search
