@@ -29,23 +29,6 @@
             android:paddingRight="1dp"
             android:paddingStart="8dp">
 
-            <ImageView
-                android:id="@+id/ivGallery"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentRight="true"
-                android:layout_alignParentEnd="true"
-                android:adjustViewBounds="true"
-                android:background="@color/transparent"
-                android:clickable="true"
-                android:focusable="true"
-                android:padding="8dp"
-                app:srcCompat="@drawable/ic_arrow_forward"
-                android:tint="@color/card_item_src_other"
-                tools:ignore="ContentDescription"
-                />
-
             <include
                 android:id="@+id/tvTitle"
                 android:layout_width="wrap_content"
@@ -53,8 +36,6 @@
                 android:layout_alignParentTop="true"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:layout_toLeftOf="@id/ivGallery"
-                android:layout_toStartOf="@id/ivGallery"
                 android:layout_marginBottom="5dp"
                 layout="@layout/include_item_title"
                 />
@@ -99,7 +80,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
-            app:srcCompat="@drawable/ic_item_error_outline"
+            android:src="@drawable/ic_item_error_outline"
             tools:ignore="ContentDescription"
             />
 
@@ -115,7 +96,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
-            app:srcCompat="@drawable/ic_fav_empty"
+            android:src="@drawable/ic_fav_empty"
             android:tint="@color/card_item_src_other"
             tools:ignore="ContentDescription"
             />
@@ -132,7 +113,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
-            app:srcCompat="@drawable/ic_action_download"
+            android:src="@drawable/ic_action_download"
             android:tint="@color/card_item_src_other"
             tools:ignore="ContentDescription"
             />

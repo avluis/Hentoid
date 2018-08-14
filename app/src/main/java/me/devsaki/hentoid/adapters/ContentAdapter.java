@@ -330,8 +330,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
             holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
             holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
-            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE);
-            holder.ivGallery.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE);
+            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE); // TODO play icon when already in library; in progress when downloading
 
             if (DownloadsFragment.MODE_LIBRARY == mode) {
                 // Favourite toggle
@@ -372,12 +371,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 holder.ivDownload.setImageResource(R.drawable.ic_action_download);
                 holder.ivDownload.setOnClickListener(v -> {
                     collectionAccessor.getPages(content, this);
-                });
-
-                // View gallery icon
-                holder.ivGallery.setImageResource(R.drawable.ic_arrow_forward);
-                holder.ivGallery.setOnClickListener(v -> {
-                    // TODO
                 });
             }
 
