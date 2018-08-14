@@ -40,7 +40,7 @@ import timber.log.Timber;
 public class HentoidDB extends SQLiteOpenHelper {
 
     private static final Object locker = new Object();
-    private static final int DATABASE_VERSION = 4;
+    private static final int DATABASE_VERSION = 5;
     private static HentoidDB instance;
 
 
@@ -66,6 +66,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         db.execSQL(AttributeTable.CREATE_TABLE);
         db.execSQL(ContentAttributeTable.CREATE_TABLE);
         db.execSQL(ImageFileTable.CREATE_TABLE);
+        db.execSQL(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID_IDX);
         db.execSQL(QueueTable.CREATE_TABLE);
     }
 
@@ -87,6 +88,11 @@ public class HentoidDB extends SQLiteOpenHelper {
         {
             db.execSQL(QueueTable.CREATE_TABLE);
             Timber.i("Upgrading DB version to v4");
+        }
+        if (oldVersion < 5) // Updates to v5
+        {
+            db.execSQL(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID_IDX);
+            Timber.i("Upgrading DB version to v5");
         }
     }
 
