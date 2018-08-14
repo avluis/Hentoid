@@ -62,6 +62,7 @@
             android:title="@string/pref_read_content_title" />
         <Preference
             android:icon="@null"
+            android:key="folder"
             android:summary="@string/pref_select_folder_summary"
             android:title="@string/pref_select_folder_title">
 
