@@ -13,6 +13,7 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
+import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.database.HentoidDB;
@@ -32,6 +33,7 @@ import timber.log.Timber;
 public class HentoidApp extends Application {
 
     private static boolean beginImport;
+    private static Date lastCollectionRefresh;
     private static HentoidApp instance;
     private RefWatcher refWatcher;
 
@@ -52,6 +54,11 @@ public class HentoidApp extends Application {
     public static void setBeginImport(boolean started) {
         HentoidApp.beginImport = started;
     }
+
+    public static Date getLastCollectionRefresh() { return lastCollectionRefresh; }
+
+    public static void resetLastCollectionRefresh() { lastCollectionRefresh = new Date(); }
+
 
     public static RefWatcher getRefWatcher(Context context) {
         HentoidApp app = (HentoidApp) context.getApplicationContext();
@@ -107,6 +114,8 @@ public class HentoidApp extends Application {
         // Clears all previous notifications
         NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) manager.cancelAll();
+
+        resetLastCollectionRefresh();
     }
 
     private void UpdateCheck(boolean onlyWifi) {
