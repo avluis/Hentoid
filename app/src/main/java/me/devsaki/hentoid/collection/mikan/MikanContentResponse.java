@@ -6,6 +6,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.collection.LibraryMatcher;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -22,7 +23,7 @@ public class MikanContentResponse implements Serializable {
     public List<MikanContent> result = new ArrayList<>();
 
 
-    public List<Content> toContentList()
+    public List<Content> toContentList(LibraryMatcher matcher)
     {
         List<Content> res = new ArrayList<>();
 
@@ -30,6 +31,8 @@ public class MikanContentResponse implements Serializable {
         {
             if (mikanContent.url != null) res.add(mikanContent.toContent());
         }
+
+        res = matcher.matchContentToLibrary(res);
 
         return res;
     }

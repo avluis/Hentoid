@@ -189,7 +189,7 @@ public class ContentDownloadService extends IntentService {
             pagesKO = statuses.get(StatusContent.ERROR.getCode());
 
             dlRate = (pagesOK + pagesKO) * 1.0 / images.size();
-            notifyProgress(pagesOK, pagesKO, images.size());
+            notifyProgress(content, pagesOK, pagesKO, images.size());
 
             try {
                 Thread.sleep(1000);
@@ -241,7 +241,7 @@ public class ContentDownloadService extends IntentService {
             contentQueueManager.downloadComplete();
 
             // Signals current download as completed
-            notifyComplete(pagesOK, pagesKO, images.size());
+            notifyComplete(content, pagesOK, pagesKO, images.size());
 
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");
@@ -350,25 +350,27 @@ public class ContentDownloadService extends IntentService {
     /**
      * Notify a download progress event to the app using the event bus
      *
+     * @param content    Corresponding content
      * @param pagesOK    Number of pages downloaded successfully on current book
      * @param pagesKO    Number of pages whose download failed on current book
      * @param totalPages Total pages of current book
      */
-    private static void notifyProgress(int pagesOK, int pagesKO, int totalPages) {
+    private static void notifyProgress(Content content, int pagesOK, int pagesKO, int totalPages) {
         Timber.d("UpdateActivity : OK : %s - KO : %s - Total : %s > %s pc.", pagesOK, pagesKO, totalPages, String.valueOf((pagesOK + pagesKO) * 100.0 / totalPages));
-        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
     }
 
     /**
      * Notify a download completed event to the app using the event bus
      *
+     * @param content    Corresponding content
      * @param pagesOK    Number of pages downloaded successfully on current book
      * @param pagesKO    Number of pages whose download failed on current book
      * @param totalPages Total pages of current book
      */
-    private static void notifyComplete(int pagesOK, int pagesKO, int totalPages) {
+    private static void notifyComplete(Content content, int pagesOK, int pagesKO, int totalPages) {
         Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
-        EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, totalPages));
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, totalPages));
     }
 
     /**

@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.collection.mikan;
 
+import android.content.Context;
 import android.os.AsyncTask;
 
 import com.google.gson.Gson;
@@ -11,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.collection.BaseCollectionAccessor;
+import me.devsaki.hentoid.collection.LibraryMatcher;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -29,9 +31,20 @@ import timber.log.Timber;
 public class MikanAccessor extends BaseCollectionAccessor {
 
     private static final String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
+    private static final Object contentSynch = new Object();
+    private static final Object attrSynch = new Object();
 
-    private static final String contentSynch = "";
-    private static final String attrSynch = "";
+    private final LibraryMatcher libraryMatcher;
+
+    // == CONSTRUCTOR
+
+    public MikanAccessor(Context context)
+    {
+        libraryMatcher = new LibraryMatcher(context);
+    }
+
+
+    // == UTILS
 
     private static String getMikanCodeForSite(Site s) {
         switch (s) {
@@ -68,16 +81,16 @@ public class MikanAccessor extends BaseCollectionAccessor {
     // === ACCESSORS
 
     public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
-        launchRequest(buildRecentBooksRequest(site, language, page, Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST == orderStyle), USAGE_RECENT_BOOKS, null, listener);
+        launchRequest(buildRecentBooksRequest(site, language, page, Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST == orderStyle), USAGE_RECENT_BOOKS, null, listener, libraryMatcher);
     }
 
     public void getPages(Content content, ContentListener listener) {
-        launchRequest(buildBookPagesRequest(content), USAGE_BOOK_PAGES, content, listener);
+        launchRequest(buildBookPagesRequest(content), USAGE_BOOK_PAGES, content, listener, libraryMatcher);
     }
 
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         // NB : Mikan does not support booksPerPage and orderStyle params
-        launchRequest(buildSearchRequest(metadata, query, page), USAGE_SEARCH, null, listener);
+        launchRequest(buildSearchRequest(metadata, query, page), USAGE_SEARCH, null, listener, libraryMatcher);
     }
 
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
@@ -169,9 +182,9 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     // === REQUEST LAUNCHERS
 
-    private static void launchRequest(String url, String usage, Content content, ContentListener listener) {
+    private static void launchRequest(String url, String usage, Content content, ContentListener listener, LibraryMatcher matcher) {
         synchronized (contentSynch) {
-            new ContentFetchTask(listener, content, usage).execute(url);
+            new ContentFetchTask(listener, content, usage, matcher).execute(url);
         }
     }
 
@@ -189,11 +202,13 @@ public class MikanAccessor extends BaseCollectionAccessor {
         private final ContentListener listener;
         private final String usage;
         private final Content content;
+        private final LibraryMatcher matcher;
 
-        ContentFetchTask(ContentListener listener, Content content, String usage) {
+        ContentFetchTask(ContentListener listener, Content content, String usage, LibraryMatcher matcher) {
             this.listener = listener;
             this.usage = usage;
             this.content = content;
+            this.matcher = matcher;
         }
 
         @Override
@@ -235,7 +250,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
                 case USAGE_RECENT_BOOKS:
                 case USAGE_SEARCH:
                     int maxItems = response.maxpage * response.result.size(); // Roughly : number of pages * number of books per page
-                    listener.onContentReady(response.toContentList(), maxItems);
+                    listener.onContentReady(response.toContentList(matcher), maxItems);
                     break;
                 case USAGE_BOOK_PAGES:
                     if (null == content) listener.onContentFailed();
@@ -287,15 +302,17 @@ public class MikanAccessor extends BaseCollectionAccessor {
                     return null;
                 }
 
+                // Deserialize response
                 MikanAttributeResponse attrResponse = new Gson().fromJson(json.toString(), MikanAttributeResponse.class);
                 attributes = attrResponse.toAttributeList();
 
-                // Illegal tags filter
+                // Filter illegal tags
                 if (AttributeType.TAG.toString().equals(usage))
                 {
                     filterIllegalTags(attributes);
                 }
 
+                // Cache results
                 AttributeCache.setCache(usage, attributes, response.expiryDate);
 
                 Timber.d("Mikan response [%s] : %s", attrResponse.request, json.toString());

@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
@@ -14,6 +15,8 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -57,6 +60,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final ItemSelectListener listener;
     private final CollectionAccessor collectionAccessor;
     private final int mode;
+    private RecyclerView libraryView; // Kept as reference for querying by Content through ID
 
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
@@ -69,7 +73,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         this.listener = listener;
         this.collectionAccessor = collectionAccessor;
         this.mode = mode;
-        mComparator = comparator;
+        this.mComparator = comparator;
+        this.setHasStableIds(true);
     }
 
 
@@ -128,6 +133,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @NonNull
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (null == libraryView) libraryView = ((RecyclerView)parent);
+
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
         return new ContentHolder(view);
@@ -141,7 +148,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         updateLayoutVisibility(holder, content, pos);
         populateLayout(holder, content, pos);
         attachOnClickListeners(holder, content, pos);
-
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
@@ -174,7 +180,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
-        attachSite(holder, content, pos);
+        attachButtons(holder, content, pos);
     }
 
     private void attachTitle(ContentHolder holder, Content content) {
@@ -291,7 +297,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         holder.tvTags.setText(Helper.fromHtml(tagsBuilder.toString()));
     }
 
-    private void attachSite(ContentHolder holder, final Content content, int pos) {
+    private void attachButtons(ContentHolder holder, final Content content, int pos) {
         // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
@@ -330,7 +336,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
             holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
             holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
-            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE); // TODO play icon when already in library; in progress when downloading
+            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE);
 
             if (DownloadsFragment.MODE_LIBRARY == mode) {
                 // Favourite toggle
@@ -367,11 +373,32 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 }
             } else { // Mikan mode
 
-                // Download icon
-                holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                holder.ivDownload.setOnClickListener(v -> {
-                    collectionAccessor.getPages(content, this);
-                });
+                // "Available online" icon
+                if (status == StatusContent.ONLINE) {
+                    holder.ivDownload.setImageResource(R.drawable.ic_action_download);
+                    holder.ivDownload.setOnClickListener(v -> {
+                        animateBlink(holder.ivDownload);
+                        holder.ivDownload.setOnClickListener(w -> {
+                            Helper.viewQueue(context);
+                        });
+                        collectionAccessor.getPages(content, this);
+                    });
+                }
+                // "In queue" icon
+                else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
+                    holder.ivDownload.setImageResource(R.drawable.ic_action_download);
+                    animateBlink(holder.ivDownload);
+                    holder.ivDownload.setOnClickListener(v -> {
+                        Helper.viewQueue(context);
+                    });
+                }
+                // "In library" icon
+                else if (status == StatusContent.DOWNLOADED || status == StatusContent.MIGRATED || status == StatusContent.ERROR) {
+                    holder.ivDownload.setImageResource(R.drawable.ic_action_play);
+                    holder.ivDownload.setOnClickListener(v -> {
+                        FileHelper.openContent(context, content);
+                    });
+                }
             }
 
         } else {
@@ -379,38 +406,57 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
     }
 
-    private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
-        holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, listener) {
+    private void animateBlink(View view)
+    {
+        // Set blinking animation when book is being downloaded
+        Animation anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(500);
+        anim.setStartOffset(100);
+        anim.setRepeatMode(Animation.REVERSE);
+        anim.setRepeatCount(Animation.INFINITE);
+        view.startAnimation(anim);
+    }
 
-            @Override
-            public void onClick(View v) {
-                if (getSelectedItemsCount() > 0) { // Selection mode is on
+    private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
+
+        // Simple click = open book (library mode only)
+        // TODO : implement preview gallery for Mikan mode
+        if (DownloadsFragment.MODE_LIBRARY == mode) {
+            holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, listener) {
+
+                @Override
+                public void onClick(View v) {
+                    if (getSelectedItemsCount() > 0) { // Selection mode is on
+                        int itemPos = holder.getLayoutPosition();
+                        toggleSelection(itemPos);
+                        setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                        onLongClick(v);
+                    } else {
+                        clearSelections();
+                        setSelected(false, 0);
+
+                        super.onClick(v);
+                    }
+                }
+            });
+        }
+
+        // Long click = select item (library mode only)
+        if (DownloadsFragment.MODE_LIBRARY == mode) {
+            holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, listener) {
+
+                @Override
+                public boolean onLongClick(View v) {
                     int itemPos = holder.getLayoutPosition();
                     toggleSelection(itemPos);
                     setSelected(isSelectedAt(pos), getSelectedItemsCount());
-                    onLongClick(v);
-                } else {
-                    clearSelections();
-                    setSelected(false, 0);
 
-                    super.onClick(v);
+                    super.onLongClick(v);
+
+                    return true;
                 }
-            }
-        });
-
-        holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, listener) {
-
-            @Override
-            public boolean onLongClick(View v) {
-                int itemPos = holder.getLayoutPosition();
-                toggleSelection(itemPos);
-                setSelected(isSelectedAt(pos), getSelectedItemsCount());
-
-                super.onLongClick(v);
-
-                return true;
-            }
-        });
+            });
+        }
     }
 
     private void downloadAgain(final Content item) {
@@ -450,7 +496,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             for (ImageFile im : item.getImageFiles()) im.setStatus(StatusContent.SAVED);
 
             db.insertContent(item);
-//            db.updateImageFileStatus(item, StatusContent.ONLINE, StatusContent.SAVED);
         } else {
             item.setStatus(StatusContent.DOWNLOADING);
             db.updateContentStatus(item);
@@ -524,6 +569,24 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         // Persist in it DB
         final HentoidDB db = HentoidDB.getInstance(context);
         db.updateContentFavourite(item);
+    }
+
+    public void switchStateToDownloaded(Content item) {
+        ContentHolder holder = holderByContent(item);
+
+        if (holder != null) {
+            holder.ivDownload.setImageResource(R.drawable.ic_action_play);
+            holder.ivDownload.clearAnimation();
+            holder.ivDownload.setOnClickListener(v -> {
+                FileHelper.openContent(context, item);
+            });
+        }
+    }
+
+    @Nullable
+    private ContentHolder holderByContent(Content content)
+    {
+        return (ContentHolder)libraryView.findViewHolderForItemId(content.getId());
     }
 
     @Override
@@ -711,7 +774,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     // ContentListener implementation
     @Override
-    public void onContentReady(List<Content> contentList, int totalContent) { // Listener for pages retrieval
+    public void onContentReady(List<Content> contentList, int totalContent) { // Listener for pages retrieval in Mikan mode
         if (1 == contentList.size())
         {
             downloadContent(contentList.get(0));

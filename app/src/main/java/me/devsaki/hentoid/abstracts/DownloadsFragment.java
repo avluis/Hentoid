@@ -506,7 +506,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        if (MODE_LIBRARY == mode) collectionAccessor = new DatabaseAccessor(mContext); else collectionAccessor = new MikanAccessor();
+        if (MODE_LIBRARY == mode) collectionAccessor = new DatabaseAccessor(mContext); else collectionAccessor = new MikanAccessor(mContext);
 
         initUI(rootView);
         attachScrollListener();
@@ -704,8 +704,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && isLoaded && MODE_LIBRARY == mode) {
-            showReloadToolTip();
+        if (event.eventType == DownloadEvent.EV_COMPLETE && isLoaded) {
+            if (MODE_LIBRARY == mode) showReloadToolTip();
+            else mAdapter.switchStateToDownloaded(event.content);
         }
     }
 

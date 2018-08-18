@@ -491,6 +491,53 @@ public class HentoidDB extends SQLiteOpenHelper {
         return sql.toString();
     }
 
+    public List<Content> selectContentByExternalRef(Site site, List<String> uniqueIds)
+    {
+        List<Content> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectContentByExternalRef");
+            SQLiteDatabase db = null;
+
+            Cursor cursorContent = null;
+
+            String sql = ContentTable.SELECT_BY_EXTERNAL_REF;
+
+            sql = sql.replace("%1", Helper.buildListAsString(uniqueIds,"'"));
+
+            Timber.v(sql);
+
+            try {
+                db = getReadableDatabase();
+                cursorContent = db.rawQuery(sql, new String[]{
+                        site.getCode() + "",
+                        StatusContent.DOWNLOADED.getCode() + "",
+                        StatusContent.ERROR.getCode() + "",
+                        StatusContent.MIGRATED.getCode() + "",
+                        StatusContent.DOWNLOADING.getCode() + "",
+                        StatusContent.PAUSED.getCode() + ""
+                });
+
+                // looping through all rows and adding to list
+                if (cursorContent.moveToFirst()) {
+
+                    do {
+                        result.add(populateContent(cursorContent, db, false));
+                    } while (cursorContent.moveToNext());
+                }
+            } finally {
+                if (cursorContent != null) {
+                    cursorContent.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
     private List<Content> populateResult(Cursor cursorContent, SQLiteDatabase db) {
         List<Content> result = Collections.emptyList();
         if (cursorContent.moveToFirst()) {
@@ -513,7 +560,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    private Content populateContent(Cursor cursorContent, SQLiteDatabase db) {
+    private Content populateContent(Cursor cursorContent, SQLiteDatabase db) { return populateContent(cursorContent, db, true); }
+    private Content populateContent(Cursor cursorContent, SQLiteDatabase db, boolean getImages) {
         Content content = new Content()
                 .setUrl(cursorContent.getString(ContentTable.IDX_URL - 1))
                 .setTitle(cursorContent.getString(ContentTable.IDX_TITLE - 1))
@@ -529,7 +577,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setQueryOrder(cursorContent.getPosition())
                 .populateAuthor();
 
-        content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
+        if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
                 .setAttributes(selectAttributesByContentId(db, content.getId()));
 
         return content;
