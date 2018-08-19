@@ -9,7 +9,12 @@
         android:icon="@drawable/ic_menu_search"
         android:title="@string/menu_search"
         app:actionViewClass="android.support.v7.widget.SearchView"
-        app:showAsAction="collapseActionView|ifRoom" />
+        app:showAsAction="collapseActionView|always" />
+    <item
+        android:id="@+id/action_favourites"
+        android:icon="@drawable/ic_fav_empty"
+        android:title="@string/menu_fav"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/action_order"
         android:icon="@drawable/ic_menu_sort_alpha"

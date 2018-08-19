@@ -124,6 +124,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private DrawerLayout mDrawerLayout;
     // "Search" button on top menu
     private MenuItem searchMenu;
+    // "Toggle favourites" button on top menu
+    private MenuItem favsMenu;
     // "Sort" button on top menu
     private MenuItem orderMenu;
     // Action view associated with search menu button
@@ -764,6 +766,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         });
 
+        favsMenu = menu.findItem(R.id.action_favourites);
+        favsMenu.setVisible(MODE_LIBRARY == mode);
+        updateFavouriteFilter();
+        favsMenu.setOnMenuItemClickListener(item -> {
+            toggleFavouriteFilter();
+            return true;
+        });
+
         FragmentActivity activity = getActivity();
         if (null == activity) {
             Timber.e("Activity unreachable !");
@@ -1021,30 +1031,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Toggles favourite filter on a book and updates the UI accordingly
-     *
-     * @param button Filter button that has been pressed
      */
-    private void toggleFavouriteFilter(ImageButton button) {
+    private void toggleFavouriteFilter() {
         filterFavourites = !filterFavourites;
-
-        updateFavouriteFilter(button);
-
+        updateFavouriteFilter();
         searchLibrary();
     }
 
     /**
      * Update favourite filter button appearance (icon and color) on a book
-     *
-     * @param button Button to update
      */
-    private void updateFavouriteFilter(ImageButton button) {
-        if (filterFavourites) {
-            button.setImageResource(R.drawable.ic_fav_full);
-            button.clearColorFilter();
-        } else {
-            button.setImageResource(R.drawable.ic_fav_empty);
-            button.setColorFilter(Color.BLACK);
-        }
+    private void updateFavouriteFilter() {
+        favsMenu.setIcon(filterFavourites?R.drawable.ic_fav_full:R.drawable.ic_fav_empty);
     }
 
     private Button createTagSuggestionButton(Attribute attribute, boolean isSelected) {
