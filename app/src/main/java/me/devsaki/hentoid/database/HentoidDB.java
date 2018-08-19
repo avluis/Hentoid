@@ -668,11 +668,11 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Pair<String, Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites, boolean filterFavourites) {
-        ArrayList<Pair<String, Integer>> result = new ArrayList<>();
+    public List<Attribute> selectAvailableAttributes(int type, List<Attribute> attrs, List<Integer> sites, boolean filterFavourites) {
+        ArrayList<Attribute> result = new ArrayList<>();
 
         synchronized (locker) {
-            Timber.d("selectAllAttributesByUsage");
+            Timber.d("selectAvailableAttributes");
             SQLiteDatabase db = null;
 
             Cursor cursorAttributes = null;
@@ -687,13 +687,15 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             if (filterFavourites) sql += AttributeTable.SELECT_ALL_BY_USAGE_FAVS;
 
-            if (tags != null && tags.size() > 0) {
+            if (attrs != null && attrs.size() > 0) {
                 sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
-                sql = sql.replace("%2", Helper.buildListAsString(tags,"'"));
-                sql = sql.replace("%3", tags.size() + "");
+                sql = sql.replace("%2", Helper.buildListAsString(attrs,""));
+                sql = sql.replace("%3", attrs.size() + "");
             }
 
             sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
+
+            Timber.v(sql);
 
             try {
                 db = getReadableDatabase();
@@ -703,7 +705,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add(new Pair<>(cursorAttributes.getString(1), cursorAttributes.getInt(2)));
+                        result.add(new Attribute(AttributeType.searchByCode(type), cursorAttributes.getString(1), cursorAttributes.getString(2)).setCount(cursorAttributes.getInt(3)) );
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
@@ -748,7 +750,7 @@ Timber.v(sql);
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add(new Attribute(type, cursorAttributes.getString(1), "").setExternalId(cursorAttributes.getInt(0)).setCount(cursorAttributes.getInt(2)));
+                        result.add(new Attribute(type, cursorAttributes.getString(1), "").setExternalId(cursorAttributes.getInt(0)).setCount(cursorAttributes.getInt(3)));
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {

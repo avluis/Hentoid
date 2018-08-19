@@ -376,9 +376,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (this.attributesSortOrder != attrOrder) {
             Timber.d("attribute sort order updated.");
 
-            // Force the update of currently displayed attribute list
-            ImageButton selectedMetadataTab = attrSelector.findViewWithTag(selectedTab);
-            if (selectedMetadataTab != null) selectAttrButton(selectedMetadataTab);
+            // Force the update of currently displayed attribute list, if displayed
+            if (attrSelector != null) {
+                ImageButton selectedMetadataTab = attrSelector.findViewWithTag(selectedTab);
+                if (selectedMetadataTab != null) selectAttrButton(selectedMetadataTab);
+            }
 
             this.attributesSortOrder = attrOrder;
         }
@@ -1046,6 +1048,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         filterFavourites = !filterFavourites;
         updateFavouriteFilter();
         searchLibrary();
+        updateAttributeMosaic();
     }
 
     /**
@@ -1101,23 +1104,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void selectTagSuggestion(Button b) {
         Attribute a = (Attribute)b.getTag();
 
+        // Add new tag to the selection
         if (!currentSearchTags.contains(a)) {
-            // Add corresponding button in search tags
             searchTags.addView(createTagSuggestionButton(a, true));
             colorButton(b, TAGFILTER_SELECTED);
             currentSearchTags.add(a);
-
-            // Launch book search
-            searchLibrary();
-        } else {
-            // Remove corresponding button in search tags
+        } else { // Remove selected tag
             searchTags.removeView(searchTags.findViewById(Math.abs(a.getId())));
             colorButton(b, TAGFILTER_ACTIVE);
             currentSearchTags.remove(a);
-
-            // Launch book search
-            searchLibrary();
         }
+
+        // Launch book search according to new attribute selection
+        searchLibrary();
+        updateAttributeMosaic();
     }
 
     private void selectSearchTag(Button b) {
@@ -1129,8 +1129,59 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         Button tagButton = attributeMosaic.findViewById(Math.abs(a.getId()));
         if (tagButton != null) colorButton(tagButton, TAGFILTER_ACTIVE);
 
-        // Launch book search
+        // Launch book search according to new attribute selection
         searchLibrary();
+        updateAttributeMosaic();
+    }
+
+    private void updateAttributeMosaic()
+    {
+        // Refresh attributes list according to selected attributes (library mode only)
+        if (MODE_LIBRARY == mode)
+        {
+            List<Attribute> searchTags = new ArrayList<>();
+            List<Integer> searchSites = new ArrayList<>();
+
+            for (Attribute attr : currentSearchTags)
+            {
+                if (attr.getType().equals(AttributeType.SOURCE)) searchSites.add(attr.getId());
+                else searchTags.add(attr);
+            }
+
+            // TODO run DB transaction on a dedicated thread
+            List<Attribute> availableAttrs = getDB().selectAvailableAttributes(selectedTab.getCode(), searchTags, searchSites, filterFavourites);
+
+            // Refresh displayed tag buttons
+            boolean found, selected;
+            String label = "";
+            for (int i=0; i<attributeMosaic.getChildCount(); i++)
+            {
+                Button button = (Button)attributeMosaic.getChildAt(i);
+                Attribute displayedAttr = (Attribute)button.getTag();
+                if (displayedAttr != null)
+                {
+                    found = false;
+                    for (Attribute attr : availableAttrs)
+                        if (attr.getId().equals(displayedAttr.getId()))
+                        {
+                            found = true;
+                            label = attr.getName() + " ("+attr.getCount()+")";
+                            break;
+                        }
+                    if (!found) label = displayedAttr.getName() + " (0)";
+
+                    selected = false;
+                    for (Attribute attr : currentSearchTags)
+                        if (attr.getId().equals(displayedAttr.getId()))
+                        {
+                            selected = true;
+                            break;
+                        }
+                    colorButton(button, selected?TAGFILTER_SELECTED:found?TAGFILTER_ACTIVE:TAGFILTER_INACTIVE);
+                    button.setText(label);
+                }
+            }
+        }
     }
 
     private void submitContentSearchQuery(String s) {
@@ -1374,6 +1425,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 lp.setFlexGrow(1);
                 button.setLayoutParams(lp);
             }
+            updateAttributeMosaic();
             tagWaitPanel.setVisibility(View.GONE);
         }
     }
