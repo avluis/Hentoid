@@ -2,6 +2,8 @@ package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
 
+import java.util.Comparator;
+
 import me.devsaki.hentoid.enums.AttributeType;
 
 /**
@@ -73,4 +75,12 @@ public class Attribute {
     public String toString() {
         return getId().toString();
     }
+
+
+    public static final Comparator<Attribute> NAME_COMPARATOR = (a, b) -> a.getName().compareTo(b.getName());
+
+    public static final Comparator<Attribute> COUNT_COMPARATOR = (a, b) -> {
+        return Long.compare(a.getCount(), b.getCount()) * -1; /* Inverted - higher count first */
+    };
+
 }

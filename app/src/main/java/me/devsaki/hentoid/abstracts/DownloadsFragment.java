@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -150,11 +151,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected LinearLayout pagerToolbar;
     // Bar containing attribute selectors
     private LinearLayout attrSelector;
-    // TODO
+    // Panel that displays the "waiting for metadata info" visuals
     private View tagWaitPanel;
-    private ImageView tagWaitImage;
-    private TextView tagWaitDescription;
+    // Image that displays current metadata type title (e.g. "Character search")
     private TextView tagWaitTitle;
+    // Image that displays current metadata type icon (e.g. face icon for character)
+    private ImageView tagWaitImage;
+    // Image that displays metadata search message (e.g. loading up / too many results / no result)
+    private TextView tagWaitMessage;
 
     // ======== UTIL OBJECTS
     private ObjectAnimator animator;
@@ -165,7 +169,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Books per page
     protected int booksPerPage;
     // Books sort order
-    private int order;
+    private int bookSortOrder;
+    // Attributes sort order
+    private int attributesSortOrder;
     // Last collection refresh date
     private Date lastCollectionRefresh;
 
@@ -186,8 +192,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected boolean isLoaded;
     // Indicates whether or not one of the books has been selected
     private boolean isSelected;
-    // True if sort order has been updated
-    private boolean orderUpdated;
+    // True if book sort order has been updated
+    private boolean bookSortOrderUpdated;
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
     // True if bottom toolbar visibility is fixed and should not change regardless of scrolling; false if bottom toolbar visibility changes according to scrolling
@@ -359,12 +365,22 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             shouldUpdate = true;
         }
 
-        int order = Preferences.getContentSortOrder();
+        int bookOrder = Preferences.getContentSortOrder();
+        if (this.bookSortOrder != bookOrder) {
+            Timber.d("book sort order updated.");
+            bookSortOrderUpdated = true;
+            this.bookSortOrder = bookOrder;
+        }
 
-        if (this.order != order) {
-            Timber.d("order updated.");
-            orderUpdated = true;
-            this.order = order;
+        int attrOrder = Preferences.getAttributesSortOrder();
+        if (this.attributesSortOrder != attrOrder) {
+            Timber.d("attribute sort order updated.");
+
+            // Force the update of currently displayed attribute list
+            ImageButton selectedMetadataTab = attrSelector.findViewWithTag(selectedTab);
+            if (selectedMetadataTab != null) selectAttrButton(selectedMetadataTab);
+
+            this.attributesSortOrder = attrOrder;
         }
 
         return shouldUpdate;
@@ -497,7 +513,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         setHasOptionsMenu(true);
 
         mContext = getContext();
-        order = Preferences.getContentSortOrder();
+        bookSortOrder = Preferences.getContentSortOrder();
         booksPerPage = Preferences.getContentPageQuantity();
         lastCollectionRefresh = HentoidApp.getLastCollectionRefresh();
     }
@@ -527,10 +543,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         llm = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(llm);
 
-        if (MODE_MIKAN == mode) order = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
+        if (MODE_MIKAN == mode) bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
 
         Comparator<Content> comparator;
-        switch (order) {
+        switch (bookSortOrder) {
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
                 comparator = Content.DLDATE_COMPARATOR;
                 break;
@@ -801,9 +817,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     submitContentSearchQuery(s, 1000);
                 }
 
-                if (shouldHide && orderUpdated) {
+                if (shouldHide && bookSortOrderUpdated) {
                     clearQuery(0);
-                    orderUpdated = false;
+                    bookSortOrderUpdated = false;
                 }
 
                 if (!shouldHide && (!s.isEmpty())) {
@@ -829,15 +845,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         tagWaitPanel = activity.findViewById(R.id.tag_wait_panel);
         tagWaitPanel.setVisibility(View.GONE);
         tagWaitImage = activity.findViewById(R.id.tag_wait_image);
-        tagWaitDescription = activity.findViewById(R.id.tag_wait_description);
+        tagWaitMessage = activity.findViewById(R.id.tag_wait_description);
         tagWaitTitle = activity.findViewById(R.id.tag_wait_title);
-
-/*
-        // Attaches listener to favourite filters
-        final ImageButton favouriteButton = activity.findViewById(R.id.filter_favs);
-        updateFavouriteFilter(favouriteButton);
-        favouriteButton.setOnClickListener(v -> toggleFavouriteFilter(favouriteButton));
-*/
 
         SearchView tagSearchView = activity.findViewById(R.id.tag_filter);
         if (searchManager != null) {
@@ -879,7 +888,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // == BOOKS SORT
 
         // Sets the right starting icon according to the starting sort order
-        switch (order) {
+        switch (bookSortOrder) {
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
                 break;
@@ -900,6 +909,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    // TODO documentation of new methods
     private ImageButton createAttributeSectionButton(AttributeType attr)
     {
         ImageButton button = new ImageButton(mContext);
@@ -955,8 +965,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         switch (item.getItemId()) {
             case R.id.action_order_AZ:
                 cleanResults();
-                orderUpdated = true;
-                order = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
+                bookSortOrderUpdated = true;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
                 mAdapter.setComparator(Content.TITLE_ALPHA_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
                 update();
@@ -965,8 +975,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_321:
                 cleanResults();
-                orderUpdated = true;
-                order = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST;
+                bookSortOrderUpdated = true;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST;
                 mAdapter.setComparator(Content.DLDATE_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
                 update();
@@ -975,8 +985,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_ZA:
                 cleanResults();
-                orderUpdated = true;
-                order = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
+                bookSortOrderUpdated = true;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
                 mAdapter.setComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 update();
@@ -985,8 +995,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_123:
                 cleanResults();
-                orderUpdated = true;
-                order = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST;
+                bookSortOrderUpdated = true;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST;
                 mAdapter.setComparator(Content.DLDATE_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
                 update();
@@ -995,8 +1005,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_random:
                 cleanResults();
-                orderUpdated = true;
-                order = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
+                bookSortOrderUpdated = true;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
                 mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
                 RandomSeedSingleton.getInstance().renewSeed();
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
@@ -1009,7 +1019,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 result = super.onOptionsItemSelected(item);
         }
         // Save current sort order
-        Preferences.setContentSortOrder(order);
+        Preferences.setContentSortOrder(bookSortOrder);
 
         return result;
     }
@@ -1260,14 +1270,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         String query = this.getQuery();
         isLoaded = false;
 
-        if (isSearchMode()) collectionAccessor.searchBooks(query, currentSearchTags, currentPage, booksPerPage, order, filterFavourites, this);
-        else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, order, filterFavourites, this);
+        if (isSearchMode()) collectionAccessor.searchBooks(query, currentSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
+        else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
     }
 
     protected void searchMasterData(AttributeType a, final String s) {
         tagWaitImage.setImageResource(a.getIcon());
         tagWaitTitle.setText(String.format("%s search", Helper.capitalizeString(a.name())) );
-        tagWaitDescription.setText(R.string.downloads_loading);
+        tagWaitMessage.setText(R.string.downloads_loading);
 
         // Set blinking animation
         Animation anim = new AlphaAnimation(0.0f, 1.0f);
@@ -1275,7 +1285,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         anim.setStartOffset(20);
         anim.setRepeatMode(Animation.REVERSE);
         anim.setRepeatCount(Animation.INFINITE);
-        tagWaitDescription.startAnimation(anim);
+        tagWaitMessage.startAnimation(anim);
 
         tagWaitPanel.setVisibility(View.VISIBLE);
         collectionAccessor.getAttributeMasterData(a, s, this);
@@ -1335,14 +1345,29 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onAttributesReady(List<Attribute> results, int totalContent) {
         attributeMosaic.removeAllViews();
 
-        tagWaitDescription.clearAnimation();
+        tagWaitMessage.clearAnimation();
 
-        // TODO handle display Alpha vs. display by count
         if (0 == totalContent) {
-            tagWaitDescription.setText(R.string.masterdata_no_result);
-        }
-        else if (totalContent <= MAX_ATTRIBUTES_DISPLAYED) {
-            for (Attribute attr : results) {
+            tagWaitMessage.setText(R.string.masterdata_no_result);
+        } else if (totalContent > MAX_ATTRIBUTES_DISPLAYED) {
+            SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
+            String searchQuery = tagSearchView.getQuery().toString();
+
+            String errMsg = (0 == searchQuery.length())? mContext.getString(R.string.masterdata_too_many_results_noquery):mContext.getString(R.string.masterdata_too_many_results_query);
+            tagWaitMessage.setText(errMsg.replace("%1",searchQuery));
+        } else {
+            Comparator<Attribute> comparator;
+            switch (attributesSortOrder) {
+                case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
+                    comparator = Attribute.NAME_COMPARATOR;
+                    break;
+                default:
+                    comparator = Attribute.COUNT_COMPARATOR;
+            }
+            Attribute[] attrs = results.toArray(new Attribute[results.size()]); // Well, yes, since results.sort(comparator) requires API 24...
+            Arrays.sort(attrs, comparator);
+
+            for (Attribute attr : attrs) {
                 View button = createTagSuggestionButton(attr, false);
                 attributeMosaic.addView(button);
                 FlexboxLayout.LayoutParams lp = (FlexboxLayout.LayoutParams) button.getLayoutParams();
@@ -1350,12 +1375,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 button.setLayoutParams(lp);
             }
             tagWaitPanel.setVisibility(View.GONE);
-        } else {
-            SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
-            String searchQuery = tagSearchView.getQuery().toString();
-
-            String errMsg = (0 == searchQuery.length())? mContext.getString(R.string.masterdata_too_many_results_noquery):mContext.getString(R.string.masterdata_too_many_results_query);
-            tagWaitDescription.setText(errMsg.replace("%1",searchQuery));
         }
     }
 
