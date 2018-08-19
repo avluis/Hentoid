@@ -10,7 +10,7 @@ public abstract class AttributeTable {
 
     public static final String ID_COLUMN = "id";
     private static final String URL_COLUMN = "url";
-    public static final String NAME_COLUMN = "name";
+    private static final String NAME_COLUMN = "name";
     public static final String TYPE_COLUMN = "type";
 
     // CREATE
@@ -31,13 +31,6 @@ public abstract class AttributeTable {
     public static final String SELECT_ALL_BY_USAGE_SITE_FILTER = " AND c." + ContentTable.SITE_COLUMN + " IN (%1) ";
 
     public static final String SELECT_ALL_BY_USAGE_ATTR_FILTER = " AND lower(a." + NAME_COLUMN + ") LIKE lower('%%2%') ";
-
-/*
-    public static final String SELECT_ALL_BY_USAGE_BASE = "select distinct lower(a." + NAME_COLUMN + "), count(*) " +
-            "from " + TABLE_NAME + " a inner join " + ContentAttributeTable.TABLE_NAME + " ca on a." + ID_COLUMN + " = ca." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " " +
-            "inner join " + ContentTable.TABLE_NAME + " c on ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN + " " +
-            "where a." + TYPE_COLUMN + "=? and c." + ContentTable.STATUS_COLUMN + " in (1,4,5) and c." + ContentTable.SITE_COLUMN + " in (%1)";
-*/
 
     public static final String SELECT_ALL_BY_USAGE_FAVS = " and c." + ContentTable.FAVOURITE_COLUMN + " = 1 ";
 
