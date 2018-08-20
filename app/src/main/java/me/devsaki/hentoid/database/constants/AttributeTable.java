@@ -23,6 +23,8 @@ public abstract class AttributeTable {
             + " VALUES (?,?,?,?);";
 
     // SELECT
+    public static final String SELECT_BY_ID = "SELECT * FROM " + TABLE_NAME + " WHERE " + ID_COLUMN + " = ?";
+
     public static final String SELECT_ALL_BY_TYPE = "select distinct a."+ID_COLUMN+", lower(a." + NAME_COLUMN + "), a." + URL_COLUMN + ", count(*) " +
             "from " + TABLE_NAME + " a inner join " + ContentAttributeTable.TABLE_NAME + " ca on a." + ID_COLUMN + " = ca." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " " +
             "inner join " + ContentTable.TABLE_NAME + " c on ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN + " " +

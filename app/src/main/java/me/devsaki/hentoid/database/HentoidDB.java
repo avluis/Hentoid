@@ -668,6 +668,35 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    public Attribute selectAttributeById(int id) {
+        Attribute result = null;
+
+        synchronized (locker) {
+            Timber.d("selectAttributeById");
+
+            SQLiteDatabase db = null;
+            Cursor cursorAttributes = null;
+
+            try {
+                db = getReadableDatabase();
+                cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_ID, new String[]{id + ""});
+
+                if (cursorAttributes.moveToFirst()) {
+                    result = new Attribute()
+                            .setUrl(cursorAttributes.getString(1))
+                            .setName(cursorAttributes.getString(2))
+                            .setType(AttributeType.searchByCode(cursorAttributes.getInt(3)));
+                }
+            } finally {
+                if (cursorAttributes != null) cursorAttributes.close();
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
+                if (db != null && db.isOpen()) db.close();
+            }
+        }
+
+        return result;
+    }
+
     public List<Attribute> selectAvailableAttributes(int type, List<Attribute> attrs, List<Integer> sites, boolean filterFavourites) {
         ArrayList<Attribute> result = new ArrayList<>();
 
