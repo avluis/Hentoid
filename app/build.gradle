@@ -19,8 +19,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection OldTargetApi
         targetSdkVersion 23
-        versionCode 62
-        versionName '1.3.9'
+        versionCode 63
+        versionName '1.3.10'
         proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/update.json"'
     }
