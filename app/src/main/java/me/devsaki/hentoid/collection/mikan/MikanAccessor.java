@@ -220,7 +220,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
                 JsonHelper.JSONResponse response = JsonHelper.jsonReader(url);
                 if (response != null) json = response.object;
             } catch (IOException e)  {
-                Timber.w("JSON retrieval failed at URL %s", url);
+                Timber.w(e, "JSON retrieval failed at URL %s", url);
                 return null;
             }
 
@@ -293,7 +293,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
                     response = JsonHelper.jsonReader(url);
                     if (response != null) json = response.object;
                 } catch (IOException e) {
-                    Timber.w("JSON retrieval failed at URL %s", url);
+                    Timber.w(e, "JSON retrieval failed at URL %s", url);
                     return null;
                 }
 

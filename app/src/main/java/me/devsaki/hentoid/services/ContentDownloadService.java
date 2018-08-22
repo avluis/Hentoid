@@ -10,11 +10,8 @@ import com.android.volley.Request;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -296,8 +293,7 @@ public class ContentDownloadService extends IntentService {
                         if (parse != null) saveImage(img.getName(), dir, parse.getValue().get("Content-Type"), parse.getKey());
                         updateImageStatus(img, (parse != null));
                     } catch (IOException e) {
-                        Timber.w("I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
-                        e.printStackTrace();
+                        Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
                         updateImageStatus(img, false);
                     }
                 },
@@ -321,19 +317,7 @@ public class ContentDownloadService extends IntentService {
     private static void saveImage(String fileName, File dir, String contentType, byte[] binaryContent) throws IOException {
         File file = new File(dir, fileName + "." + MimeTypes.getExtensionFromMimeType(contentType));
 
-        byte buffer[] = new byte[1024];
-        int count;
-
-        try (InputStream input = new ByteArrayInputStream(binaryContent)) {
-            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
-
-                while ((count = input.read(buffer)) != -1) {
-                    output.write(buffer, 0, count);
-                }
-
-                output.flush();
-            }
-        }
+        FileHelper.saveBinaryInFile(file, binaryContent);
     }
 
     /**
