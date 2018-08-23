@@ -201,6 +201,16 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Cleans a directory without deleting it.
+     *
+     * Custom substitute for commons.io.FileUtils.cleanDirectory that supports devices without File.toPath
+     *
+     * @param directory directory to clean
+     * @return true if directory has been successfully cleaned
+     * @throws IOException              in case cleaning is unsuccessful
+     * @throws IllegalArgumentException if {@code directory} does not exist or is not a directory
+     */
     private static boolean tryCleanDirectory(@NonNull File directory) throws IOException, SecurityException {
         File[] files = directory.listFiles();
         if (files == null) throw new IOException("Failed to list contents of " + directory);
@@ -280,7 +290,7 @@ public class FileHelper {
             String settingDir = Preferences.getRootFolderName();
             File dir = new File(settingDir, content.getStorageFolder());
 
-            if (FileUtils.deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
+            if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.d("Directory %s removed.", dir);
             } else {
                 Timber.d("Failed to delete directory: %s", dir);
@@ -507,6 +517,39 @@ public class FileHelper {
             File[] fileArray = fileList.toArray(new File[fileList.size()]);
             // Compress files
             new AsyncUnzip(context, dest).execute(fileArray, dest);
+        }
+    }
+
+    /**
+     * Deletes a file, never throwing an exception. If file is a directory, delete it and all sub-directories.
+     * <p>
+     * The difference between File.delete() and this method are:
+     * <ul>
+     * <li>A directory to be deleted does not have to be empty.</li>
+     * <li>No exceptions are thrown when a file or directory cannot be deleted.</li>
+     * </ul>
+     *
+     * Custom substitute for commons.io.FileUtils.deleteQuietly that works with devices that doesn't support File.toPath
+     *
+     * @param file file or directory to delete, can be {@code null}
+     * @return {@code true} if the file or directory was deleted, otherwise
+     * {@code false}
+     */
+    private static boolean deleteQuietly(final File file) {
+        if (file == null) {
+            return false;
+        }
+        try {
+            if (file.isDirectory()) {
+                tryCleanDirectory(file);
+            }
+        } catch (final Exception ignored) {
+        }
+
+        try {
+            return file.delete();
+        } catch (final Exception ignored) {
+            return false;
         }
     }
 
