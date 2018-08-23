@@ -2,6 +2,9 @@ package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.Comparator;
 
 import me.devsaki.hentoid.enums.AttributeType;
@@ -11,6 +14,8 @@ import me.devsaki.hentoid.enums.AttributeType;
  * Attribute builder
  */
 public class Attribute {
+
+    private final static int ATTRIBUTE_FILE_VERSION = 1;
 
     @Expose
     private String url;
@@ -74,6 +79,27 @@ public class Attribute {
     @Override
     public String toString() {
         return getId().toString();
+    }
+
+    public void saveToStream(DataOutputStream output) throws IOException
+    {
+        output.write(ATTRIBUTE_FILE_VERSION);
+        output.writeUTF(url);
+        output.writeUTF(name);
+        output.write(type.getCode());
+        output.write(count);
+        output.write(externalId);
+    }
+
+    public Attribute loadFromStream(DataInputStream input) throws IOException
+    {
+        input.readInt(); // file version
+        url = input.readUTF();
+        name = input.readUTF();
+        type = AttributeType.searchByCode(input.readInt());
+        count = input.readInt();
+        externalId = input.readInt();
+        return this;
     }
 
 
