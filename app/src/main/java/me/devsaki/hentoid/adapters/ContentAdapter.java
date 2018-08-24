@@ -181,15 +181,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     private void attachCover(ContentHolder holder, Content content) {
-        // The following is needed due to RecyclerView recycling layouts and
-        // Glide not considering the layout invalid for the current image:
-        // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        Glide.with(context).clear(holder.ivCover);
-
         RequestOptions myOptions = new RequestOptions()
                 .centerInside()
                 .error(R.drawable.ic_placeholder);
 
+        // The following is needed due to RecyclerView recycling layouts and
+        // Glide not considering the layout invalid for the current image:
+        // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
+        Glide.with(context).clear(holder.ivCover);
         Glide.with(context)
                 .load(FileHelper.getThumb(content))
                 .apply(myOptions)

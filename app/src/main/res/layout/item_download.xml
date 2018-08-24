@@ -118,7 +118,7 @@
             android:padding="1dp"
             android:scaleType="fitCenter"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_placeholder" />
+            />
 
         <include
             android:id="@+id/tvTitle2"
