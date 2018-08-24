@@ -29,6 +29,8 @@
 -verbose
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 
+-keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule
+
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
 -keep public class * extends android.app.Service
