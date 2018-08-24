@@ -18,7 +18,6 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
@@ -39,8 +38,6 @@ import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
-
-import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 /**
  * Created by avluis on 04/23/2016.
@@ -134,7 +131,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         updateLayoutVisibility(holder, content, pos);
         populateLayout(holder, content, pos);
         attachOnClickListeners(holder, content, pos);
-
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
@@ -188,26 +184,22 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         // The following is needed due to RecyclerView recycling layouts and
         // Glide not considering the layout invalid for the current image:
         // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        holder.ivCover.layout(0, 0, 0, 0);
-        holder.ivCover2.layout(0, 0, 0, 0);
+        Glide.with(context).clear(holder.ivCover);
 
         RequestOptions myOptions = new RequestOptions()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .centerInside()
-                .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder);
 
-        Glide.with(context.getApplicationContext())
+        Glide.with(context)
                 .load(FileHelper.getThumb(content))
                 .apply(myOptions)
-                .transition(withCrossFade())
                 .into(holder.ivCover);
 
         if (holder.itemView.isSelected()) {
-            Glide.with(context.getApplicationContext())
+            Glide.with(context).clear(holder.ivCover2);
+            Glide.with(context)
                     .load(FileHelper.getThumb(content))
                     .apply(myOptions)
-                    .transition(withCrossFade())
                     .into(holder.ivCover2);
         }
     }

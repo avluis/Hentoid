@@ -51,12 +51,8 @@ public class FileHelper {
         Preferences.setSdStorageUri("");
     }
 
-    static String getStringUri() {
-        return Preferences.getSdStorageUri();
-    }
-
     public static boolean isSAF() {
-        return getStringUri() != null && !getStringUri().equals("");
+        return Preferences.getSdStorageUri() != null && !Preferences.getSdStorageUri().equals("");
     }
 
     /**
@@ -381,7 +377,7 @@ public class FileHelper {
         if (content.getStorageFolder().equals("")) return coverUrl;
 
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
-            Timber.d("Hentoid root folder not found in SD card!! Returning online resource.");
+            Timber.d("Hentoid root folder not found in SD card. Returning online resource.");
             return coverUrl;
         }
 
@@ -395,7 +391,7 @@ public class FileHelper {
             case "jpg":
             case "png":
             case "gif":
-                File f = new File(bookFolder, "thumb" + "." + thumbExt);
+                File f = new File(bookFolder, "thumb." + thumbExt);
                 thumb = f.exists() ? f.getAbsolutePath() : coverUrl;
                 // Some thumbs from nhentai were saved as jpg instead of png
                 // Follow through to scan the directory instead

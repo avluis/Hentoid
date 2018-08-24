@@ -70,7 +70,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
-            app:srcCompat="@drawable/ic_item_error_outline"
+            android:src="@drawable/ic_item_error_outline"
             tools:ignore="ContentDescription"
             />
 
@@ -86,7 +86,7 @@
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
-            app:srcCompat="@drawable/ic_fav_empty"
+            android:src="@drawable/ic_fav_empty"
             android:tint="@color/card_item_src_other"
             tools:ignore="ContentDescription"
             />
