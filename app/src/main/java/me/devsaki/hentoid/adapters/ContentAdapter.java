@@ -14,6 +14,7 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
@@ -185,22 +186,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 .centerInside()
                 .error(R.drawable.ic_placeholder);
 
+        ImageView image = holder.itemView.isSelected()?holder.ivCover2:holder.ivCover;
+
         // The following is needed due to RecyclerView recycling layouts and
         // Glide not considering the layout invalid for the current image:
         // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        Glide.with(context).clear(holder.ivCover);
+        Glide.with(context).clear(image);
         Glide.with(context)
                 .load(FileHelper.getThumb(content))
                 .apply(myOptions)
-                .into(holder.ivCover);
-
-        if (holder.itemView.isSelected()) {
-            Glide.with(context).clear(holder.ivCover2);
-            Glide.with(context)
-                    .load(FileHelper.getThumb(content))
-                    .apply(myOptions)
-                    .into(holder.ivCover2);
-        }
+                .into(image);
     }
 
     private void attachSeries(ContentHolder holder, Content content) {

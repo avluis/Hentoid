@@ -100,11 +100,13 @@ public class HentoidApp extends Application {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+        // DB housekeeping
         HentoidDB db = HentoidDB.getInstance(this);
         Timber.d("Content item(s) count: %s", db.countContent());
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
         UpgradeTo(BuildConfig.VERSION_CODE, db);
 
+        // Check for app updates
         UpdateCheck(!Preferences.getMobileUpdate());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
