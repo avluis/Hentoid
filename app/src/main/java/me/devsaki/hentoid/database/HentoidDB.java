@@ -769,7 +769,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
 
-Timber.v(sql);
+            Timber.v(sql);
 
             try {
                 db = getReadableDatabase();
