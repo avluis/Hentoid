@@ -1119,6 +1119,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // Launch book search according to new attribute selection
         searchLibrary();
+
+        // Update attribute mosaic buttons state according to available metadata
         updateAttributeMosaic();
     }
 
@@ -1137,7 +1139,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
 
             // TODO run DB transaction on a dedicated thread
-            List<Attribute> availableAttrs = getDB().selectAvailableAttributes(selectedTab.getCode(), searchTags, searchSites, filterFavourites);
+            List<Attribute> availableAttrs;
+            if (selectedTab.equals(AttributeType.SOURCE))
+            {
+                availableAttrs = getDB().selectAvailableSources();
+            } else {
+                availableAttrs = getDB().selectAvailableAttributes(selectedTab.getCode(), searchTags, searchSites, filterFavourites);
+            }
 
             // Refresh displayed tag buttons
             boolean found, selected;
@@ -1395,6 +1403,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             String errMsg = (0 == searchQuery.length())? mContext.getString(R.string.masterdata_too_many_results_noquery):mContext.getString(R.string.masterdata_too_many_results_query);
             tagWaitMessage.setText(errMsg.replace("%1",searchQuery));
         } else {
+            // Sort items according to prefs
             Comparator<Attribute> comparator;
             switch (attributesSortOrder) {
                 case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
@@ -1406,6 +1415,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             Attribute[] attrs = results.toArray(new Attribute[results.size()]); // Well, yes, since results.sort(comparator) requires API 24...
             Arrays.sort(attrs, comparator);
 
+            // Display buttons
             for (Attribute attr : attrs) {
                 View button = createTagSuggestionButton(attr, false);
                 attributeMosaic.addView(button);
@@ -1413,6 +1423,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 lp.setFlexGrow(1);
                 button.setLayoutParams(lp);
             }
+
+            // Update attribute mosaic buttons state according to available metadata
             updateAttributeMosaic();
             tagWaitPanel.setVisibility(View.GONE);
         }
