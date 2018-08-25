@@ -2,15 +2,10 @@ package me.devsaki.hentoid.util;
 
 import android.net.Uri;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectStreamException;
-import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,8 +21,6 @@ import timber.log.Timber;
 
 /**
  * Manage in-memory attribute cache with expiry date
- *
- * TODO - manage on-disk cache
  */
 public class AttributeCache {
 
@@ -38,22 +31,50 @@ public class AttributeCache {
     private static Map<String, Date> collectionExpiry;
     private static Map<String, List<Attribute>> collection;
 
+    private static void init()
+    {
+        collectionExpiry = new HashMap<>();
+        collection = new HashMap<>();
+
+        cacheDir = HentoidApp.getAppContext().getExternalCacheDir();
+
+        // Get expiry dates from cache
+        Uri destinationUri = Uri.parse(cacheDir + "/expiries.cache");
+        File file = new File(String.valueOf(destinationUri));
+        try {
+            try (DataInputStream input = new DataInputStream(FileHelper.getInputStream(file))) {
+                loadExpiriesFromStream(input);
+            }
+        } catch (IOException e) {
+            Timber.w(e, "Error when loading master data expiry cache");
+        }
+    }
+
     public static List<Attribute> getFromCache(String key)
     {
-        // TODO read cache from disk
-        if (null == collectionExpiry) return null;
+        if (null == collectionExpiry) init();
 
-        if (collection.containsKey(key) && collectionExpiry.get(key).after(new Date())) return collection.get(key);
+        if (collectionExpiry.get(key).after(new Date())) // Cache is not expired
+        {
+            if (!collection.containsKey(key)) {
+                // Load master data from cache
+                Uri destinationUri = Uri.parse(cacheDir + "/" + key + ".cache");
+                File file = new File(String.valueOf(destinationUri));
+                try {
+                    try (DataInputStream input = new DataInputStream(FileHelper.getInputStream(file))) {
+                        loadCacheFromStream(key, input);
+                    }
+                } catch (IOException e) {
+                    Timber.w(e, "Error when loading master data cache for key %s", key);
+                }
+            }
+            return collection.get(key);
+        }
         else return null;
     }
 
     public static void setCache(String key, List<Attribute> value, Date expiryDateUTC) {
-        // TODO common init with getFromCache where disk-cached data is fetched
-        if (null == collectionExpiry) {
-            collectionExpiry = new HashMap<>();
-            collection = new HashMap<>();
-            cacheDir = HentoidApp.getAppContext().getExternalCacheDir();
-        }
+        if (null == collectionExpiry) init();
 
         // Convert UTC to local timezone
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.US);

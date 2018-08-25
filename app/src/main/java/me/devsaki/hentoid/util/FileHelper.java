@@ -166,6 +166,10 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
+    public static InputStream getInputStream(@NonNull final File target) throws IOException {
+        return FileUtil.getInputStream(target);
+    }
+
     /**
      * Create a folder.
      *
