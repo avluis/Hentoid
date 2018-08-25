@@ -74,7 +74,7 @@ class FileUtil {
             //continue
         }
 
-        String sdStorageUriStr = FileHelper.getStringUri();
+        String sdStorageUriStr = Preferences.getSdStorageUri();
 
         Uri sdStorageUri;
         if (sdStorageUriStr != null) {

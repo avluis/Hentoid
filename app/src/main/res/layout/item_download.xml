@@ -137,7 +137,7 @@
         <ImageView
             android:id="@+id/ivCover2"
             android:layout_width="35dp"
-            android:layout_height="wrap_content"
+            android:layout_height="53dp"
             android:layout_marginEnd="5dp"
             android:layout_marginRight="5dp"
             android:layout_marginTop="5dp"
@@ -145,7 +145,7 @@
             android:padding="1dp"
             android:scaleType="fitCenter"
             tools:ignore="ContentDescription"
-            tools:src="@drawable/ic_placeholder" />
+            />
 
         <include
             android:id="@+id/tvTitle2"
