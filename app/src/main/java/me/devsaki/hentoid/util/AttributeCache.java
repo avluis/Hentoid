@@ -170,8 +170,7 @@ public class AttributeCache {
         input.readInt(); // File version
         int collectionSize = input.readInt();
 
-        for (int i=0; i<collectionSize; i++)
-        {
+        for (int i = 0; i < collectionSize; i++) {
             Attribute a = new Attribute();
             attrs.add(a.loadFromStream(input));
         }

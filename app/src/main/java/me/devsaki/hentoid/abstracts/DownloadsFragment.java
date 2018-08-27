@@ -850,7 +850,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             tagSearchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
         }
         tagSearchView.setIconifiedByDefault(false);
-        tagSearchView.setQueryHint("Search " + selectedTab.name());
+        tagSearchView.setQueryHint("Search " + selectedTab.name().toLowerCase());
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -931,7 +931,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setBackgroundResource(R.drawable.btn_attribute_section_on);
         // Set hint on search bar
         SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
+        tagSearchView.setQuery("", false);
         tagSearchView.setQueryHint("Search " + selectedTab.name().toLowerCase());
+        // Remove previous tag suggestions
+        attributeMosaic.removeAllViews();
         // Run search
         searchMasterData(selectedTab, "");
     }
