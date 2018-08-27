@@ -931,6 +931,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setBackgroundResource(R.drawable.btn_attribute_section_on);
         // Set hint on search bar
         SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
+        tagSearchView.setVisibility(View.VISIBLE);
         tagSearchView.setQuery("", false);
         tagSearchView.setQueryHint("Search " + selectedTab.name().toLowerCase());
         // Remove previous tag suggestions
