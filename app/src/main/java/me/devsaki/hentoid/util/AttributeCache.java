@@ -38,12 +38,14 @@ public class AttributeCache {
 
         cacheDir = HentoidApp.getAppContext().getExternalCacheDir();
 
-        // Get expiry dates from cache
+        // Load expiry dates from cache
         Uri destinationUri = Uri.parse(cacheDir + "/expiries.cache");
         File file = new File(String.valueOf(destinationUri));
         try {
-            try (DataInputStream input = new DataInputStream(FileHelper.getInputStream(file))) {
-                loadExpiriesFromStream(input);
+            if (file.exists()) {
+                try (DataInputStream input = new DataInputStream(FileHelper.getInputStream(file))) {
+                    loadExpiriesFromStream(input);
+                }
             }
         } catch (IOException e) {
             Timber.w(e, "Error when loading master data expiry cache");
@@ -54,15 +56,17 @@ public class AttributeCache {
     {
         if (null == collectionExpiry) init();
 
-        if (collectionExpiry.get(key).after(new Date())) // Cache is not expired
+        if (collectionExpiry.containsKey(key) && collectionExpiry.get(key).after(new Date())) // Cache is not expired
         {
             if (!collection.containsKey(key)) {
                 // Load master data from cache
                 Uri destinationUri = Uri.parse(cacheDir + "/" + key + ".cache");
                 File file = new File(String.valueOf(destinationUri));
                 try {
-                    try (DataInputStream input = new DataInputStream(FileHelper.getInputStream(file))) {
-                        loadCacheFromStream(key, input);
+                    if (file.exists()) {
+                        try (DataInputStream input = new DataInputStream(FileHelper.getInputStream(file))) {
+                            loadCacheFromStream(key, input);
+                        }
                     }
                 } catch (IOException e) {
                     Timber.w(e, "Error when loading master data cache for key %s", key);
@@ -81,41 +85,45 @@ public class AttributeCache {
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         Date expiryDateLocal = new Date(simpleDateFormat.format(expiryDateUTC));
 
-        collectionExpiry.put(key, expiryDateLocal);
-        collection.put(key, new ArrayList<>(value));
+//        expiryDateLocal = new Date(2020,1,1); // force future expiry date for testing
 
-        // Clean up cache directory
-        Timber.d("Cache directory cleaned successfully: %s", FileHelper.cleanDirectory(cacheDir));
+        // If data expiry date is not met yet, put it into cache
+        if (expiryDateLocal.after(new Date())) {
+            collectionExpiry.put(key, expiryDateLocal);
+            collection.put(key, new ArrayList<>(value));
 
-        // Put expiry dates in cache
-        Uri destinationUri = Uri.parse(cacheDir + "/expiries.cache");
-        File file = new File(String.valueOf(destinationUri));
-        try {
-            try (DataOutputStream output = new DataOutputStream(FileHelper.getOutputStream(file))) {
-                saveExpiriesToStream(output);
-                output.flush();
+            // Put expiry dates in cache
+            Uri destinationUri = Uri.parse(cacheDir + "/expiries.cache");
+            File file = new File(String.valueOf(destinationUri));
+            try {
+                if ((!file.exists() || file.delete()) && file.createNewFile())
+                    try (DataOutputStream output = new DataOutputStream(FileHelper.getOutputStream(file))) {
+                        saveExpiriesToStream(output);
+                        output.flush();
+                    }
+            } catch (IOException e) {
+                Timber.w(e, "Error when creating master data expiry cache");
             }
-        } catch (IOException e) {
-            Timber.w(e, "Error when creating master data expiry cache");
-        }
 
-        // Put master data in cache
-        destinationUri = Uri.parse(cacheDir + "/" + key + ".cache");
-        file = new File(String.valueOf(destinationUri));
-        try {
-            try (DataOutputStream output = new DataOutputStream(FileHelper.getOutputStream(file))) {
-                saveCacheToStream(key, output);
-                output.flush();
+            // Put master data in cache
+            destinationUri = Uri.parse(cacheDir + "/" + key + ".cache");
+            file = new File(String.valueOf(destinationUri));
+            try {
+                if ((!file.exists() || file.delete()) && file.createNewFile())
+                    try (DataOutputStream output = new DataOutputStream(FileHelper.getOutputStream(file))) {
+                        saveCacheToStream(key, output);
+                        output.flush();
+                    }
+            } catch (IOException e) {
+                Timber.w(e, "Error when creating master data cache for key %s", key);
             }
-        } catch (IOException e) {
-            Timber.w(e, "Error when creating master data cache for key %s", key);
         }
     }
 
     private static void saveExpiriesToStream(DataOutputStream output) throws IOException
     {
-        output.write(EXPIRY_FILE_VERSION);
-        output.write(collectionExpiry.size());
+        output.writeInt(EXPIRY_FILE_VERSION);
+        output.writeInt(collectionExpiry.size());
 
         for (String key : collectionExpiry.keySet())
         {
@@ -146,8 +154,8 @@ public class AttributeCache {
     {
         List<Attribute> cacheCollection = collection.get(key);
 
-        output.write(COLLECTION_FILE_VERSION);
-        output.write(collection.size());
+        output.writeInt(COLLECTION_FILE_VERSION);
+        output.writeInt(collection.size());
 
         for (Attribute a : cacheCollection)
         {

@@ -35,7 +35,7 @@ import timber.log.Timber;
  */
 public class JsonHelper {
 
-    private static final int TIMEOUT_MS = 15000;
+    private static final int TIMEOUT_MS = 20000;
 
     public static class JSONResponse
     {

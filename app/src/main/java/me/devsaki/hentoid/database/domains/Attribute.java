@@ -83,12 +83,12 @@ public class Attribute {
 
     public void saveToStream(DataOutputStream output) throws IOException
     {
-        output.write(ATTRIBUTE_FILE_VERSION);
-        output.writeUTF(url);
+        output.writeInt(ATTRIBUTE_FILE_VERSION);
+        output.writeUTF(null==url?"":url);
         output.writeUTF(name);
-        output.write(type.getCode());
-        output.write(count);
-        output.write(externalId);
+        output.writeInt(type.getCode());
+        output.writeInt(count);
+        output.writeInt(externalId);
     }
 
     public Attribute loadFromStream(DataInputStream input) throws IOException
