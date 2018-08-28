@@ -1109,6 +1109,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // Launch book search according to new attribute selection
         searchLibrary();
+        // Update attribute mosaic buttons state according to available metadata
         updateAttributeMosaic();
     }
 
@@ -1123,7 +1124,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // Launch book search according to new attribute selection
         searchLibrary();
-
         // Update attribute mosaic buttons state according to available metadata
         updateAttributeMosaic();
     }
@@ -1320,6 +1320,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void searchLibrary() {
         String query = this.getQuery();
         isLoaded = false;
+
+        if (MODE_MIKAN == mode) toggleUI(SHOW_LOADING);
 
         if (isSearchMode()) collectionAccessor.searchBooks(query, selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
