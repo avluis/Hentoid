@@ -8,6 +8,7 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.services.UpdateCheckService;
+import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -64,8 +65,10 @@ public class PrefsActivity extends BaseActivity {
         }
 
         private boolean onCheckUpdatePrefClick() {
-            Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
-            startActivity(intent);
+            if (!UpdateDownloadService.isRunning()) {
+                Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
+                startActivity(intent);
+            }
             return true;
         }
 
