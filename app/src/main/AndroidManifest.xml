@@ -214,17 +214,10 @@
             android:enabled="true"
             android:exported="false" />
 
-        <receiver
-            android:name=".updater.UpdateReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_UPDATE" />
-                <action android:name="me.devsaki.hentoid.updater.NOTIFICATION_REMOVED" />
-                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED" />
-                <action android:name="me.devsaki.hentoid.updater.INSTALL_UPDATE" />
-            </intent-filter>
-        </receiver>
+        <service android:name=".services.UpdateCheckService" />
+
+        <service android:name=".services.UpdateDownloadService" />
+
         <receiver
             android:name=".services.NotificationHelper"
             android:enabled="true"

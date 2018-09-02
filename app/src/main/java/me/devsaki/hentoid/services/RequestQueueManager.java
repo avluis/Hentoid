@@ -45,10 +45,12 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
         int memoryClass = activityManager.getMemoryClass();
         Crashlytics.setInt("Memory class", memoryClass);
 
-        if (memoryClass < 45) {
+        if (memoryClass <= 64) {
             return 1;
-        } else if (memoryClass < 90) {
+        } else if (memoryClass <= 96) {
             return 2;
+        } else if (memoryClass <= 128) {
+            return 3;
         } else {
             return 4;
         }
