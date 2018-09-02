@@ -1,17 +1,17 @@
 package me.devsaki.hentoid.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.updater.UpdateCheck;
+import me.devsaki.hentoid.services.UpdateCheckService;
+import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import timber.log.Timber;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -65,20 +65,10 @@ public class PrefsActivity extends BaseActivity {
         }
 
         private boolean onCheckUpdatePrefClick() {
-            Helper.toast("Checking for updates...");
-            new UpdateCheck().checkForUpdate(HentoidApp.getAppContext(), false, true,
-                    new UpdateCheck.UpdateCheckCallback() {
-                        @Override
-                        public void noUpdateAvailable() {
-                            Timber.d("Update Check: No update.");
-                        }
-
-                        @Override
-                        public void onUpdateAvailable() {
-                            Timber.d("Update Check: Update!");
-                        }
-                    });
-
+            if (!UpdateDownloadService.isRunning()) {
+                Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
+                startActivity(intent);
+            }
             return true;
         }
 
