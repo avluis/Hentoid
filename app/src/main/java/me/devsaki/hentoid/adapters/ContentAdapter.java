@@ -53,6 +53,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     private ContentsWipedListener contentsWipedListener;
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
+    // Total count of book in entire selected/queried collection (Adapter is in charge of updating it)
+    private int mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
     // Total count of book in entire collection (Adapter is in charge of updating it)
     private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
@@ -492,6 +494,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         else return mSortedList.get(pos);
     }
 
+    public void setTotalSelectedCount(int count) {
+        this.mTotalSelectedCount = count;
+    }
+
+    public int getTotalSelectedCount() {
+        return this.mTotalSelectedCount;
+    }
+
     public void setTotalCount(int count) {
         this.mTotalCount = count;
     }
@@ -603,6 +613,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         mSortedList.beginBatchedUpdates();
         for (Content content : contents) {
             mSortedList.remove(content);
+            mTotalSelectedCount--;
             mTotalCount--;
         }
         mSortedList.endBatchedUpdates();
@@ -622,6 +633,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     private void remove(Content content) {
+        mTotalSelectedCount--;
         mTotalCount--;
         mSortedList.remove(content);
         if (0 == mSortedList.size() && contentsWipedListener != null) {
@@ -632,6 +644,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     public void removeAll() {
         replaceAll(new ArrayList<>());
+        mTotalSelectedCount = 0;
         mTotalCount = 0;
     }
 
@@ -641,12 +654,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             final Content content = mSortedList.get(i);
             if (!contents.contains(content)) {
                 mSortedList.remove(content);
+                mTotalSelectedCount--;
                 mTotalCount--;
             } else {
                 contents.remove(content);
             }
         }
         mSortedList.addAll(contents);
+        mTotalSelectedCount += contents.size();
         mTotalCount += contents.size();
         mSortedList.endBatchedUpdates();
     }
@@ -654,6 +669,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     public void add(List<Content> contents) {
         mSortedList.beginBatchedUpdates();
         mSortedList.addAll(contents);
+        mTotalSelectedCount += contents.size();
         mTotalCount += contents.size();
         mSortedList.endBatchedUpdates();
     }

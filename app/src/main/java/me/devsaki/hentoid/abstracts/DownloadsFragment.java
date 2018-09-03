@@ -48,7 +48,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -146,9 +145,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected int booksPerPage;
     // Books sort order
     private int order;
-    // Last collection refresh date
-    private Date lastCollectionRefresh;
-
 
     // ======== VARIABLES
 
@@ -285,7 +281,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void loadLibrary() {
         if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
             boolean shouldUpdate = queryPrefs();
-            if (shouldUpdate || -1 == mAdapter.getTotalCount()) update();
+            if (shouldUpdate || -1 == mAdapter.getTotalSelectedCount()) update(); // If prefs changes detected or first run (-1 = uninitialized)
             if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
             showToolbar(true);
         } else {
@@ -317,10 +313,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             activity.finish();
         }
 
-        if (lastCollectionRefresh.compareTo(HentoidApp.getLastCollectionRefresh()) != 0) {
+        if (mAdapter.getTotalCount() != getDB().countAllContent() ) {
             Timber.d("Library has been refreshed!");
+            showReloadToolTip();
+            /*
             cleanResults();
             shouldUpdate = true;
+            */
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -490,7 +489,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mContext = getContext();
         order = Preferences.getContentSortOrder();
         booksPerPage = Preferences.getContentPageQuantity();
-        lastCollectionRefresh = HentoidApp.getLastCollectionRefresh();
     }
 
     @Override
@@ -682,6 +680,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         resetCount();
     }
 
+    /**
+     * Reset the download count (used to properly display the number of downloads in Notifications)
+     */
     private void resetCount() {
         Timber.d("Download Count: %s", ContentQueueManager.getInstance().getDownloadCount());
         ContentQueueManager.getInstance().setDownloadCount(0);
@@ -1395,7 +1396,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 //    protected abstract void setCurrentPage();
 
     protected boolean isLastPage() {
-        return (currentPage * booksPerPage >= mAdapter.getTotalCount());
+        return (currentPage * booksPerPage >= mAdapter.getTotalSelectedCount());
     }
 
     protected void displayNoResults() {
@@ -1414,9 +1415,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     ContentListener implementation
      */
     @Override
-    public void onContentReady(boolean success, List<Content> results, int totalContent) {
+    public void onContentReady(boolean success, List<Content> results, int totalSelectedContent, int totalContent) {
         if (success) {
-            Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
+            Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
             isLoaded = true;
 
             if (isSearchReplaceResults && isNewContentAvailable)
@@ -1428,7 +1429,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             // Display new results
             displayResults(results, totalContent);
 
-            mAdapter.setTotalCount(totalContent);
+            mAdapter.setTotalSelectedCount(totalSelectedContent);
+            mAdapter.setTotalSelectedCount(totalContent);
         }
     }
 

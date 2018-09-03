@@ -95,7 +95,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    public long countContent() {
+    public long countContentEntries() {
         long count;
 
         SQLiteDatabase db = null;
@@ -401,6 +401,10 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
 
         return result;
+    }
+
+    public int countAllContent() {
+        return countContentByQuery("", "", Collections.emptyList(), Collections.emptyList(), false);
     }
 
     public int countContentByQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites) {
