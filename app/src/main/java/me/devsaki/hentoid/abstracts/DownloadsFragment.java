@@ -2,6 +2,7 @@ package me.devsaki.hentoid.abstracts;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.SearchManager;
@@ -58,7 +59,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
-import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
+import me.devsaki.hentoid.adapters.ContentAdapter.ContentRemovedListener;
 import me.devsaki.hentoid.database.SearchContent;
 import me.devsaki.hentoid.database.SearchContent.ContentListener;
 import me.devsaki.hentoid.database.domains.Content;
@@ -81,7 +82,7 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Common elements for use by EndlessFragment and PagerFragment
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
-        ContentsWipedListener, ItemSelectListener {
+        ContentRemovedListener, ItemSelectListener {
 
     // ======== CONSTANTS
 
@@ -170,6 +171,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected boolean overrideBottomToolbarVisibility;
     // True if storage permissions have been checked at least once
     private boolean storagePermissionChecked = false;
+    // Total count of book in entire selected/queried collection (Adapter is in charge of updating it)
+    private int mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
+    // Total count of book in entire collection (Adapter is in charge of updating it)
+    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
 
     // === SEARCH
@@ -281,7 +286,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void loadLibrary() {
         if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
             boolean shouldUpdate = queryPrefs();
-            if (shouldUpdate || -1 == mAdapter.getTotalSelectedCount()) update(); // If prefs changes detected or first run (-1 = uninitialized)
+            if (shouldUpdate || -1 == mTotalSelectedCount) update(); // If prefs changes detected or first run (-1 = uninitialized)
             if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
             showToolbar(true);
         } else {
@@ -313,7 +318,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             activity.finish();
         }
 
-        if (mAdapter.getTotalCount() != getDB().countAllContent() ) {
+        if (mTotalCount > -1 && mTotalCount != getDB().countAllContent() ) {
             Timber.d("Library has been refreshed!");
             showReloadToolTip();
             /*
@@ -1391,12 +1396,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void showToolbar(boolean show);
 
-    protected abstract void displayResults(List<Content> results, int totalContent);
-
-//    protected abstract void setCurrentPage();
+    protected abstract void displayResults(List<Content> results, int totalSelectedContent);
 
     protected boolean isLastPage() {
-        return (currentPage * booksPerPage >= mAdapter.getTotalSelectedCount());
+        return (currentPage * booksPerPage >= mTotalSelectedCount);
     }
 
     protected void displayNoResults() {
@@ -1408,6 +1411,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             toggleUI(SHOW_BLANK);
         } else {
             Timber.w("Why are we in here?");
+        }
+    }
+
+    private void updateTitle()
+    {
+        Activity activity = getActivity();
+        if (null != activity) {
+            if (mTotalSelectedCount == mTotalCount) activity.setTitle("(" + mTotalCount + ")");
+            else activity.setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
         }
     }
 
@@ -1427,10 +1439,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
 
             // Display new results
-            displayResults(results, totalContent);
+            displayResults(results, totalSelectedContent);
 
-            mAdapter.setTotalSelectedCount(totalSelectedContent);
-            mAdapter.setTotalSelectedCount(totalContent);
+            mTotalSelectedCount = totalSelectedContent;
+            mTotalCount = totalContent;
+
+            updateTitle();
         }
     }
 
@@ -1503,13 +1517,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /*
-    ContentsWipedListener implementation
+    ContentRemovedListener implementation
      */
     @Override
-    public void onContentsWiped() {
+    public void onAllContentRemoved() {
         Timber.d("All items cleared!");
+        mTotalSelectedCount = 0;
+        mTotalCount = 0;
+        currentPage = 1;
+
         displayNoResults();
         clearSelection();
-        cleanResults();
+        updateTitle();
+    }
+
+    @Override
+    public void onContentRemoved(int i) {
+        mTotalSelectedCount = mTotalSelectedCount - i;
+        mTotalCount = mTotalCount - i;
+        updateTitle();
     }
 }

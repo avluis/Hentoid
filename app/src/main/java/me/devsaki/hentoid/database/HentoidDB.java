@@ -441,10 +441,14 @@ public class HentoidDB extends SQLiteOpenHelper {
         boolean hasTitleFilter = (title != null && title.length() > 0);
         boolean hasAuthorFilter = (author != null && author.length() > 0);
         boolean hasTagFilter = (tags != null && tags.size() > 0);
+        boolean hasSiteFilter = (sites != null && sites.size() > 0);
 
         // Base criteria in Content table
         String sql = ContentTable.SELECT_DOWNLOADS_BASE;
-        sql = sql.replace("%1", buildListQuery(sites));
+        if (hasSiteFilter) {
+            sql += ContentTable.SELECT_DOWNLOADS_SITES;
+            sql = sql.replace("%1", buildListQuery(sites));
+        }
 
         if (filterFavourites) sql += ContentTable.SELECT_DOWNLOADS_FAVS;
 
