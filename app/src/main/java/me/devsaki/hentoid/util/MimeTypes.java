@@ -120,7 +120,7 @@ public final class MimeTypes {
         }
 
         String type = ALL_MIME_TYPES;
-        final String extension = getExtension(file.getName());
+        final String extension = FileHelper.getExtension(file.getName());
 
         if (!extension.isEmpty()) {
             final String extensionLowerCase = extension.toLowerCase(Locale.getDefault());
@@ -151,10 +151,5 @@ public final class MimeTypes {
         }
 
         return "";
-    }
-
-    private static String getExtension(String a) {
-        return a.contains(".") ? a.substring(a.lastIndexOf(".") + 1)
-                .toLowerCase(Locale.getDefault()) : "";
     }
 }

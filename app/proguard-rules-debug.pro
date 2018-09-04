@@ -4,6 +4,7 @@
 
 # keep all classes in our package
 -keep class me.devsaki.hentoid.** { *; }
+-keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule
 
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
@@ -51,4 +52,3 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
-

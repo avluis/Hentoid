@@ -5,6 +5,7 @@ import android.os.AsyncTask;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -19,6 +20,7 @@ public class SearchContent {
     private final HentoidDB db;
     private volatile State mCurrentState;
     private List<Content> contentList = new ArrayList<>();
+    private int totalSelectedContent;
     private int totalContent;
 
     private final ContentListener mListener;
@@ -51,6 +53,7 @@ public class SearchContent {
 
         mCurrentState = State.NON_INIT;
         contentList.clear();
+        totalSelectedContent = 0;
         totalContent = 0;
 
         retrieveResults();
@@ -60,11 +63,11 @@ public class SearchContent {
         Timber.d("Retrieving results.");
 
         if (mCurrentState == State.READY) {
-            mListener.onContentReady(true, contentList, totalContent);
+            mListener.onContentReady(true, contentList, totalSelectedContent, totalContent);
             mListener.onContentFailed(false);
             return;
         } else if (mCurrentState == State.FAILED) {
-            mListener.onContentReady(false, contentList, totalContent);
+            mListener.onContentReady(false, contentList, totalSelectedContent, totalContent);
             mListener.onContentFailed(true);
             return;
         }
@@ -82,7 +85,9 @@ public class SearchContent {
 
                 contentList = db.selectContentByQuery(titleQuery, authorQuery, currentPage, booksPerPage, tagFilter, sites, filterFavourites, orderStyle);
                 // Fetch total query count (since query are paged, query results count is always <= booksPerPage)
-                totalContent = db.countContentByQuery(titleQuery, authorQuery, tagFilter, sites, filterFavourites);
+                totalSelectedContent = db.countContentByQuery(titleQuery, authorQuery, tagFilter, sites, filterFavourites);
+                // Fetch total book count (useful for displaying and comparing the total number of books)
+                totalContent = db.countAllContent();
 
                 mCurrentState = State.READY;
             }
@@ -124,14 +129,14 @@ public class SearchContent {
         protected void onPostExecute(State current) {
             SearchContent activity = activityReference.get();
             if (activity != null && activity.mListener != null) {
-                activity.mListener.onContentReady(current == State.READY, activity.contentList, activity.totalContent);
+                activity.mListener.onContentReady(current == State.READY, activity.contentList, activity.totalSelectedContent, activity.totalContent);
                 activity.mListener.onContentFailed(current == State.FAILED);
             }
         }
     }
 
     public interface ContentListener {
-        void onContentReady(boolean success, List<Content> contentList, int totalContent);
+        void onContentReady(boolean success, List<Content> contentList, int totalSelectedContent, int totalContent);
 
         void onContentFailed(boolean failure);
     }

@@ -14,11 +14,11 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.util.ArrayList;
@@ -40,8 +40,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
-import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
-
 /**
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
@@ -52,11 +50,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
 
     private final Context context;
     private final ItemSelectListener listener;
-    private ContentsWipedListener contentsWipedListener;
+    private ContentRemovedListener contentRemovedListener;
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
-    // Total count of book in entire collection (Adapter is in charge of updating it)
-    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
@@ -74,8 +70,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         this.endlessScrollListener = listener;
     }
 
-    public void setContentsWipedListener(ContentsWipedListener listener) {
-        this.contentsWipedListener = listener;
+    public void setContentsWipedListener(ContentRemovedListener listener) {
+        this.contentRemovedListener = listener;
     }
 
     private void toggleSelection(int pos) {
@@ -134,7 +130,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         updateLayoutVisibility(holder, content, pos);
         populateLayout(holder, content, pos);
         attachOnClickListeners(holder, content, pos);
-
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
@@ -185,31 +180,20 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     private void attachCover(ContentHolder holder, Content content) {
+        RequestOptions myOptions = new RequestOptions()
+                .centerInside()
+                .error(R.drawable.ic_placeholder);
+
+        ImageView image = holder.itemView.isSelected()?holder.ivCover2:holder.ivCover;
+
         // The following is needed due to RecyclerView recycling layouts and
         // Glide not considering the layout invalid for the current image:
         // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        holder.ivCover.layout(0, 0, 0, 0);
-        holder.ivCover2.layout(0, 0, 0, 0);
-
-        RequestOptions myOptions = new RequestOptions()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .centerInside()
-                .placeholder(R.drawable.ic_placeholder)
-                .error(R.drawable.ic_placeholder);
-
-        Glide.with(context.getApplicationContext())
+        Glide.with(context).clear(image);
+        Glide.with(context)
                 .load(FileHelper.getThumb(content))
                 .apply(myOptions)
-                .transition(withCrossFade())
-                .into(holder.ivCover);
-
-        if (holder.itemView.isSelected()) {
-            Glide.with(context.getApplicationContext())
-                    .load(FileHelper.getThumb(content))
-                    .apply(myOptions)
-                    .transition(withCrossFade())
-                    .into(holder.ivCover2);
-        }
+                .into(image);
     }
 
     private void attachSeries(ContentHolder holder, Content content) {
@@ -506,14 +490,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         else return mSortedList.get(pos);
     }
 
-    public void setTotalCount(int count) {
-        this.mTotalCount = count;
-    }
-
-    public int getTotalCount() {
-        return this.mTotalCount;
-    }
-
     public void sharedSelectedItems() {
         int itemCount = getSelectedItemsCount();
         if (itemCount > 0) {
@@ -617,8 +593,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         mSortedList.beginBatchedUpdates();
         for (Content content : contents) {
             mSortedList.remove(content);
-            mTotalCount--;
         }
+        contentRemovedListener.onContentRemoved(contents.size());
         mSortedList.endBatchedUpdates();
         listener.onItemClear(0);
 
@@ -636,17 +612,20 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     }
 
     private void remove(Content content) {
-        mTotalCount--;
         mSortedList.remove(content);
-        if (0 == mSortedList.size() && contentsWipedListener != null) {
-            contentsWipedListener.onContentsWiped();
+        if (contentRemovedListener != null) {
+            if (0 == mSortedList.size()) {
+                contentRemovedListener.onAllContentRemoved();
+            } else {
+                contentRemovedListener.onContentRemoved(1);
+            }
         }
         if (listener != null) listener.onItemClear(0);
     }
 
     public void removeAll() {
         replaceAll(new ArrayList<>());
-        mTotalCount = 0;
+        contentRemovedListener.onAllContentRemoved();
     }
 
     public void replaceAll(List<Content> contents) {
@@ -655,20 +634,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             final Content content = mSortedList.get(i);
             if (!contents.contains(content)) {
                 mSortedList.remove(content);
-                mTotalCount--;
             } else {
                 contents.remove(content);
             }
         }
         mSortedList.addAll(contents);
-        mTotalCount += contents.size();
         mSortedList.endBatchedUpdates();
     }
 
     public void add(List<Content> contents) {
         mSortedList.beginBatchedUpdates();
         mSortedList.addAll(contents);
-        mTotalCount += contents.size();
         mSortedList.endBatchedUpdates();
     }
 
@@ -676,8 +652,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         void onLoadMore();
     }
 
-    public interface ContentsWipedListener {
-        void onContentsWiped();
+    public interface ContentRemovedListener {
+        void onAllContentRemoved();
+        void onContentRemoved(int i);
     }
 
     private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedList.Callback<Content>() {

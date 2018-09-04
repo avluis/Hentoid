@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -51,12 +52,8 @@ public class FileHelper {
         Preferences.setSdStorageUri("");
     }
 
-    static String getStringUri() {
-        return Preferences.getSdStorageUri();
-    }
-
     public static boolean isSAF() {
-        return getStringUri() != null && !getStringUri().equals("");
+        return Preferences.getSdStorageUri() != null && !Preferences.getSdStorageUri().equals("");
     }
 
     /**
@@ -373,45 +370,13 @@ public class FileHelper {
      * Method is used by onBindViewHolder(), speed is key
      */
     public static String getThumb(Content content) {
-        String rootFolderName = Preferences.getRootFolderName();
         String coverUrl = content.getCoverImageUrl();
-        Timber.d("GetThumb %s --- %s", rootFolderName, content.getStorageFolder());
 
         // If trying to access a non-downloaded book cover (e.g. viewing the download queue)
         if (content.getStorageFolder().equals("")) return coverUrl;
 
-        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
-            Timber.d("Hentoid root folder not found in SD card!! Returning online resource.");
-            return coverUrl;
-        }
-
-        File bookFolder = new File(rootFolderName, content.getStorageFolder());
-
-        String thumbExt = "";
-        if (coverUrl.length() > 3) thumbExt = coverUrl.substring(coverUrl.length() - 3).toLowerCase();
-        String thumb;
-
-        switch (thumbExt) {
-            case "jpg":
-            case "png":
-            case "gif":
-                File f = new File(bookFolder, "thumb" + "." + thumbExt);
-                thumb = f.exists() ? f.getAbsolutePath() : coverUrl;
-                // Some thumbs from nhentai were saved as jpg instead of png
-                // Follow through to scan the directory instead
-                // TODO: Rename the file instead
-                if (!content.getSite().equals(Site.NHENTAI)) {
-                    break;
-                }
-            default: // Scan files; takes longer -> last option
-                File[] fileList = bookFolder.listFiles(
-                        pathname -> pathname.getName().contains("thumb")
-                );
-                thumb = (fileList != null && fileList.length > 0) ? fileList[0].getAbsolutePath() : coverUrl;
-                break;
-        }
-
-        return thumb;
+        File f = new File(Preferences.getRootFolderName(), content.getStorageFolder() + "/thumb." + getExtension(coverUrl));
+        return f.exists() ? f.getAbsolutePath() : coverUrl;
     }
 
     public static void openContent(final Context context, Content content) {
@@ -476,6 +441,10 @@ public class FileHelper {
         } catch (Exception e) {
             Helper.toast(context, R.string.error_open_perfect_viewer);
         }
+    }
+
+    public static String getExtension(String a) {
+        return a.contains(".") ? a.substring(a.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
     }
 
     public static void archiveContent(final Context context, Content content) {

@@ -578,7 +578,6 @@ public class ImportActivity extends BaseActivity {
         } else {
             // New library created - drop and recreate db (in case user is re-importing)
             cleanUpDB();
-            HentoidApp.resetLastCollectionRefresh();
             result = ConstsImport.NEW_LIBRARY_CREATED;
 
             Handler handler = new Handler();
@@ -606,7 +605,6 @@ public class ImportActivity extends BaseActivity {
         Intent returnIntent = new Intent();
         returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
         setResult(RESULT_OK, returnIntent);
-        HentoidApp.resetLastCollectionRefresh();
         finish();
 
         if (restartFlag && prefInit) {

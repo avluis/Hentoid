@@ -54,9 +54,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     // Firebase
-    implementation 'com.google.firebase:firebase-core:16.0.1'
+    implementation 'com.google.firebase:firebase-core:16.0.3'
     // Crashlytics
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.4'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.5'
     // Stetho core
     implementation 'com.facebook.stetho:stetho:1.5.0'
     // Support libraries
@@ -67,9 +67,9 @@ dependencies {
     implementation 'com.android.support:preference-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
     // Image loader: github.com/bumptech/glide
-    implementation 'com.github.bumptech.glide:glide:4.7.1'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
-    implementation 'com.github.bumptech.glide:okhttp3-integration:4.4.0'
+    implementation 'com.github.bumptech.glide:glide:4.8.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.8.0'
     // Intro screens or slides: https://github.com/apl-devs/AppIntro
     //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
     implementation 'com.github.apl-devs:appintro:v4.2.3'
@@ -90,9 +90,9 @@ dependencies {
     //    https://github.com/aNNiMON/Lightweight-Stream-API
     implementation 'com.annimon:stream:1.2.0'
     // LeakCanary: https://github.com/square/leakcanary
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.5.1'
-    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
-    testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.5.1'
+    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.1'
+    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
+    testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.1'
     //    https://github.com/ApmeM/android-flowlayout
     implementation 'org.apmem.tools:layouts:1.10@aar'
     // https://mvnrepository.com/artifact/commons-io/commons-io
