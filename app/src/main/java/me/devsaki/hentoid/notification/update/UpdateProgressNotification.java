@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification;
+package me.devsaki.hentoid.notification.update;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -7,13 +7,13 @@ import android.support.v4.app.NotificationCompat;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.notification.Notification;
 
-public class DownloadProgressNotification implements Notification {
+public class UpdateProgressNotification implements Notification {
 
     public static final int INDETERMINATE = -1;
 
     private final int progress;
 
-    public DownloadProgressNotification(int progress) {
+    public UpdateProgressNotification(int progress) {
         this.progress = progress;
     }
 

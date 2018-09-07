@@ -14,14 +14,14 @@ import com.thin.downloadmanager.ThinDownloadManager;
 
 import java.io.File;
 
-import me.devsaki.hentoid.notification.DownloadCompleteNotification;
-import me.devsaki.hentoid.notification.DownloadFailedNotification;
-import me.devsaki.hentoid.notification.DownloadProgressNotification;
+import me.devsaki.hentoid.notification.update.UpdateInstallNotification;
+import me.devsaki.hentoid.notification.update.UpdateFailedNotification;
+import me.devsaki.hentoid.notification.update.UpdateProgressNotification;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
 import static java.util.Objects.requireNonNull;
-import static me.devsaki.hentoid.notification.DownloadProgressNotification.INDETERMINATE;
+import static me.devsaki.hentoid.notification.update.UpdateProgressNotification.INDETERMINATE;
 
 /**
  * Service responsible for downloading an update APK.
@@ -85,7 +85,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
     private void downloadUpdate(Uri updateUri) {
         Timber.w("Starting download");
 
-        notificationManager.startForeground(new DownloadProgressNotification(INDETERMINATE));
+        notificationManager.startForeground(new UpdateProgressNotification(INDETERMINATE));
 
         File apkFile = new File(getExternalCacheDir(), "hentoid.apk");
         Uri destinationUri = Uri.fromFile(apkFile);
@@ -108,7 +108,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
         stopSelf();
 
         Uri apkUri = downloadRequest.getDestinationURI();
-        notificationManager.notify(new DownloadCompleteNotification(apkUri));
+        notificationManager.notify(new UpdateInstallNotification(apkUri));
     }
 
     @Override
@@ -119,7 +119,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
         stopSelf();
 
         Uri downloadUri = downloadRequest.getUri();
-        notificationManager.notify(new DownloadFailedNotification(downloadUri));
+        notificationManager.notify(new UpdateFailedNotification(downloadUri));
     }
 
     /**
@@ -133,7 +133,7 @@ public class UpdateDownloadService extends Service implements DownloadStatusList
 
     private void updateNotificationProgress() {
         Timber.w("Download progress: %s", progress);
-        notificationManager.notify(new DownloadProgressNotification(progress));
+        notificationManager.notify(new UpdateProgressNotification(progress));
         progressHandler.postDelayed(this::updateNotificationProgress, 1000);
     }
 }

@@ -18,7 +18,8 @@ import java.util.List;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.notification.UpdateNotificationChannel;
+import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
+import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
@@ -35,12 +36,6 @@ public class HentoidApp extends Application {
     private static boolean beginImport;
     private static HentoidApp instance;
     private RefWatcher refWatcher;
-
-    // Only for use when activity context cannot be passed or used e.g.;
-    // Notification resources, Analytics, etc.
-    public static synchronized HentoidApp getInstance() {
-        return instance;
-    }
 
     public static Context getAppContext() {
         return instance.getApplicationContext();
@@ -102,6 +97,7 @@ public class HentoidApp extends Application {
         UpgradeTo(BuildConfig.VERSION_CODE, db);
 
         UpdateNotificationChannel.init(this);
+        DownloadNotificationChannel.init(this);
         startService(UpdateCheckService.makeIntent(this, false));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {

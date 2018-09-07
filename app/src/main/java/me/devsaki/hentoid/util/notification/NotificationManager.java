@@ -19,4 +19,9 @@ public class NotificationManager {
         NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
         managerCompat.notify(notificationId, notification.onCreateNotification(context));
     }
+
+    public void cancel() {
+        NotificationManagerCompat managerCompat = NotificationManagerCompat.from(context);
+        managerCompat.cancel(notificationId);
+    }
 }
