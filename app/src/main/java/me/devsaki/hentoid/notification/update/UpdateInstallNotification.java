@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification;
+package me.devsaki.hentoid.notification.update;
 
 import android.app.PendingIntent;
 import android.content.Context;
@@ -8,33 +8,30 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.services.UpdateDownloadService;
-import me.devsaki.hentoid.util.PendingIntentCompat;
 import me.devsaki.hentoid.util.notification.Notification;
 
-public class DownloadFailedNotification implements Notification {
+public class UpdateInstallNotification implements Notification {
 
-    private final Uri downloadUri;
+    private final Uri apkUri;
 
-    public DownloadFailedNotification(Uri downloadUri) {
-        this.downloadUri = downloadUri;
+    public UpdateInstallNotification(Uri apkUri) {
+        this.apkUri = apkUri;
     }
 
     @NonNull
     @Override
     public android.app.Notification onCreateNotification(Context context) {
-        Intent intent = new Intent(context, UpdateDownloadService.class);
-        intent.setData(downloadUri);
+        Intent intent = new Intent(Intent.ACTION_INSTALL_PACKAGE, apkUri);
 
-        PendingIntent pendingIntent = PendingIntentCompat.getForegroundService(context, intent);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
         return new NotificationCompat.Builder(context, UpdateNotificationChannel.ID)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setVibrate(new long[]{1, 1, 1})
-                .setContentTitle("Update download failed")
-                .setContentText("Tap to retry")
+                .setContentTitle("Update ready")
+                .setContentText("Tap to install")
                 .setContentIntent(pendingIntent)
                 .build();
     }

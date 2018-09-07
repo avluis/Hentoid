@@ -1,8 +1,9 @@
-package me.devsaki.hentoid.notification;
+package me.devsaki.hentoid.notification.update;
 
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationCompat;
 
@@ -11,18 +12,19 @@ import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.PendingIntentCompat;
 import me.devsaki.hentoid.util.notification.Notification;
 
-public class UpdateAvailableNotification implements Notification {
+public class UpdateFailedNotification implements Notification {
 
-    private final String updateUrl;
+    private final Uri downloadUri;
 
-    public UpdateAvailableNotification(String updateUrl) {
-        this.updateUrl = updateUrl;
+    public UpdateFailedNotification(Uri downloadUri) {
+        this.downloadUri = downloadUri;
     }
 
     @NonNull
     @Override
     public android.app.Notification onCreateNotification(Context context) {
-        Intent intent = UpdateDownloadService.makeIntent(context, updateUrl);
+        Intent intent = new Intent(context, UpdateDownloadService.class);
+        intent.setData(downloadUri);
 
         PendingIntent pendingIntent = PendingIntentCompat.getForegroundService(context, intent);
 
@@ -31,8 +33,8 @@ public class UpdateAvailableNotification implements Notification {
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setCategory(NotificationCompat.CATEGORY_MESSAGE)
                 .setVibrate(new long[]{1, 1, 1})
-                .setContentTitle("An update is available!")
-                .setContentText("Tap to download")
+                .setContentTitle("Update download failed")
+                .setContentText("Tap to retry")
                 .setContentIntent(pendingIntent)
                 .build();
     }
