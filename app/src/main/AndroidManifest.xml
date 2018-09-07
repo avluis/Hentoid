@@ -129,14 +129,7 @@
 
         <service android:name=".services.UpdateDownloadService" />
 
-        <receiver
-            android:name=".services.NotificationHelper"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="me.devsaki.hentoid.services.NOTIFICATION_DELETED" />
-            </intent-filter>
-        </receiver>
+        <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

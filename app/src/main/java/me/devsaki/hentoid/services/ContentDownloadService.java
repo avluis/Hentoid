@@ -25,6 +25,10 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
+import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
+import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
+import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.FileHelper;
@@ -32,6 +36,7 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.MimeTypes;
 import me.devsaki.hentoid.util.NetworkStatus;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
 
 
@@ -43,7 +48,8 @@ import timber.log.Timber;
 public class ContentDownloadService extends IntentService {
 
     private HentoidDB db;                                   // Hentoid database
-    private NotificationPresenter notificationPresenter;    // Link to the notification presenter
+    private NotificationManager notificationManager;
+    private NotificationManager warningNotificationManager;
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
 
@@ -56,8 +62,12 @@ public class ContentDownloadService extends IntentService {
         super.onCreate();
         db = HentoidDB.getInstance(this);
 
-        notificationPresenter = new NotificationPresenter();
-        EventBus.getDefault().register(notificationPresenter);
+        notificationManager = new NotificationManager(this, 0);
+        notificationManager.cancel();
+
+        warningNotificationManager = new NotificationManager(this, 1);
+        warningNotificationManager.cancel();
+
         EventBus.getDefault().register(this);
 
         Timber.d("Download service created");
@@ -66,8 +76,6 @@ public class ContentDownloadService extends IntentService {
     @Override
     public void onDestroy() {
         EventBus.getDefault().unregister(this);
-        EventBus.getDefault().unregister(notificationPresenter);
-        notificationPresenter = null;
 
         Timber.d("Download service destroyed");
         super.onDestroy();
@@ -132,9 +140,10 @@ public class ContentDownloadService extends IntentService {
 
         File dir = FileHelper.createContentDownloadDir(this, content);
         if (!dir.exists()) {
-            Timber.w("Directory could not be created: %s.", dir.getAbsolutePath());
-            // Warn the user using a notification. Using a toast won't be enough since many users leave Hentoid running in the background while downloading
-            notificationPresenter.notifyWarning("Warning : download failed", "Cannot download "+content.getTitle()+" : unable to create folder "+dir.getAbsolutePath()+". Please check your Hentoid folder and retry downloading using the (!) button.");
+            String title = content.getTitle();
+            String absolutePath = dir.getAbsolutePath();
+            Timber.w("Directory could not be created: %s.", absolutePath);
+            warningNotificationManager.notify(new DownloadWarningNotification(title, absolutePath));
             // Download _will_ continue and images _will_ fail, so that user can retry downloading later
         }
 
@@ -149,7 +158,6 @@ public class ContentDownloadService extends IntentService {
         Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
         downloadSkipped = false;
-        notificationPresenter.prepareDownloadNotifications(content);
 
         // Reset ERROR status of images to count them as "to be downloaded" (in DB and in memory)
         db.updateImageFileStatus(content, StatusContent.ERROR, StatusContent.SAVED);
@@ -161,7 +169,8 @@ public class ContentDownloadService extends IntentService {
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
         RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(cover, dir));
         for (ImageFile img : images) {
-            if (img.getStatus().equals(StatusContent.SAVED)) RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(img, dir));
+            if (img.getStatus().equals(StatusContent.SAVED))
+                RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(img, dir));
         }
 
         return content;
@@ -169,13 +178,13 @@ public class ContentDownloadService extends IntentService {
 
     /**
      * Watch download progress
-     *
+     * <p>
      * NB : download pause is managed at the Volley queue level (see RequestQueueManager.pauseQueue / startQueue)
      *
      * @param content Content to watch (1st book of the download queue)
      */
     private void watchProgress(Content content) {
-        double dlRate;
+        boolean isDone;
         int pagesOK, pagesKO;
         List<ImageFile> images = content.getImageFiles();
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
@@ -185,8 +194,13 @@ public class ContentDownloadService extends IntentService {
             pagesOK = statuses.get(StatusContent.DOWNLOADED.getCode());
             pagesKO = statuses.get(StatusContent.ERROR.getCode());
 
-            dlRate = (pagesOK + pagesKO) * 1.0 / images.size();
-            notifyProgress(content, pagesOK, pagesKO, images.size());
+            String title = content.getTitle();
+            int totalPages = images.size();
+            int progress = pagesOK + pagesKO;
+            isDone = progress == totalPages;
+            Timber.d("Progress: OK:%s KO:%s Total:%s", pagesOK, pagesKO, totalPages);
+            notificationManager.notify(new DownloadProgressNotification(title, progress, totalPages));
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
 
             try {
                 Thread.sleep(1000);
@@ -194,7 +208,7 @@ public class ContentDownloadService extends IntentService {
                 e.printStackTrace();
             }
         }
-        while (dlRate < 1 && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
+        while (!isDone && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
 
         if (contentQueueManager.isQueuePaused()) {
             Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
@@ -209,8 +223,7 @@ public class ContentDownloadService extends IntentService {
      *
      * @param content Content to mark as downloaded
      */
-    private void downloadCompleted(Content content, int pagesOK, int pagesKO)
-    {
+    private void downloadCompleted(Content content, int pagesOK, int pagesKO) {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
         if (!downloadCanceled && !downloadSkipped) {
@@ -237,8 +250,22 @@ public class ContentDownloadService extends IntentService {
             // Increase downloads count
             contentQueueManager.downloadComplete();
 
+            if (0 == pagesKO) {
+                int downloadCount = contentQueueManager.getDownloadCount();
+                notificationManager.notify(new DownloadSuccessNotification(downloadCount));
+
+                // Tracking Event (Download Success)
+                HentoidApp.trackDownloadEvent("Success");
+            } else {
+                notificationManager.notify(new DownloadErrorNotification(content));
+
+                // Tracking Event (Download Error)
+                HentoidApp.trackDownloadEvent("Success");
+            }
+
             // Signals current download as completed
-            notifyComplete(content, pagesOK, pagesKO, images.size());
+            Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
+            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, images.size()));
 
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");
@@ -290,7 +317,8 @@ public class ContentDownloadService extends IntentService {
                 img.getUrl(),
                 parse -> {
                     try {
-                        if (parse != null) saveImage(img.getName(), dir, parse.getValue().get("Content-Type"), parse.getKey());
+                        if (parse != null)
+                            saveImage(img.getName(), dir, parse.getValue().get("Content-Type"), parse.getKey());
                         updateImageStatus(img, (parse != null));
                     } catch (IOException e) {
                         Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
@@ -298,7 +326,7 @@ public class ContentDownloadService extends IntentService {
                     }
                 },
                 error -> {
-                    String statusCode =  (error.networkResponse != null)?error.networkResponse.statusCode+"" : "N/A";
+                    String statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode + "" : "N/A";
                     Timber.w("Download error - Image %s not retrieved (HTTP status code %s)", img.getUrl(), statusCode);
                     error.printStackTrace();
                     updateImageStatus(img, false);
@@ -365,23 +393,23 @@ public class ContentDownloadService extends IntentService {
     @Subscribe
     public void onDownloadEvent(DownloadEvent event) {
         switch (event.eventType) {
-            // Nothing special in case of progress
-            // case DownloadEvent.EV_PROGRESS:
             case DownloadEvent.EV_PAUSE:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 RequestQueueManager.getInstance().cancelQueue();
                 ContentQueueManager.getInstance().pauseQueue();
                 break;
-            // Won't be active to catch that
-//          case DownloadEvent.EV_UNPAUSE :
             case DownloadEvent.EV_CANCEL:
                 RequestQueueManager.getInstance().cancelQueue();
                 downloadCanceled = true;
+                // Tracking Event (Download Canceled)
+                HentoidApp.trackDownloadEvent("Cancelled");
                 break;
             case DownloadEvent.EV_SKIP:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 RequestQueueManager.getInstance().cancelQueue();
                 downloadSkipped = true;
+                // Tracking Event (Download Skipped)
+                HentoidApp.trackDownloadEvent("Skipped");
                 break;
         }
     }

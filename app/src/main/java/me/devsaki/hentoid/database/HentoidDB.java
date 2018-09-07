@@ -96,7 +96,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    public long countContent() {
+    public long countContentEntries() {
         long count;
 
         SQLiteDatabase db = null;
@@ -404,6 +404,10 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
+    public int countAllContent() {
+        return countContentByQuery("", "", Collections.emptyList(), Collections.emptyList(), false);
+    }
+
     public int countContentByQuery(String title, List<Attribute> tags, boolean filterFavourites) {
         int count = 0;
         SQLiteDatabase db = null;
@@ -448,6 +452,10 @@ public class HentoidDB extends SQLiteOpenHelper {
         // Base criteria in Content table
         StringBuilder sql = new StringBuilder();
         sql.append(ContentTable.SELECT_DOWNLOADS_BASE);
+        if (hasSiteFilter) {
+            sql.append(ContentTable.SELECT_DOWNLOADS_SITES);
+            sql = sql.replace("%1", buildListQuery(sites));
+        }
 
         if (hasSourceFilter) {
             params = metadataMap.get(AttributeType.SOURCE);

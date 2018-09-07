@@ -91,7 +91,7 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     @Override
-    protected void displayResults(List<Content> results, int totalContent) {
+    protected void displayResults(List<Content> results, int totalSelectedContent) {
         if (0 == results.size()) {
             Timber.d("Result: Nothing to match.");
             displayNoResults();
@@ -99,7 +99,7 @@ public class PagerFragment extends DownloadsFragment {
             mAdapter.replaceAll(results);
             toggleUI(SHOW_RESULT);
         }
-        pager.setPageCount((int)Math.ceil(totalContent*1.0/booksPerPage));
+        pager.setPageCount((int)Math.ceil(totalSelectedContent *1.0/booksPerPage));
         pager.setCurrentPage(currentPage);
     }
 }

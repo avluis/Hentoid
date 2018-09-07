@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification;
+package me.devsaki.hentoid.notification.update;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

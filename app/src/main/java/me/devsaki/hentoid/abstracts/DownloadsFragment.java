@@ -2,6 +2,7 @@ package me.devsaki.hentoid.abstracts;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.SearchManager;
@@ -52,13 +53,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
-import me.devsaki.hentoid.adapters.ContentAdapter.ContentsWipedListener;
+import me.devsaki.hentoid.adapters.ContentAdapter.ContentRemovedListener;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanAccessor;
 import me.devsaki.hentoid.database.DatabaseAccessor;
@@ -87,7 +90,7 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * Common elements for use by EndlessFragment and PagerFragment
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
-        ContentsWipedListener, ItemSelectListener, AttributeListener {
+        ContentRemovedListener, ItemSelectListener, AttributeListener {
 
     // ======== CONSTANTS
 
@@ -169,9 +172,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int bookSortOrder;
     // Attributes sort order
     private int attributesSortOrder;
-    // Last collection refresh date
-    private Date lastCollectionRefresh;
-
 
     // ======== VARIABLES
 
@@ -201,6 +201,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int mode = MODE_LIBRARY;
     // Collection accessor (DB or external, depending on mode)
     private CollectionAccessor collectionAccessor;
+    // Total count of book in entire selected/queried collection (Adapter is in charge of updating it)
+    private int mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
+    // Total count of book in entire collection (Adapter is in charge of updating it)
+    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
+
 
 
     // === SEARCH
@@ -303,7 +308,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (MODE_LIBRARY == mode) {
             if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
                 boolean shouldUpdate = queryPrefs();
-                if (shouldUpdate || -1 == mAdapter.getTotalCount()) update();
+                if (shouldUpdate || -1 == mTotalSelectedCount) update(); // If prefs changes detected or first run (-1 = uninitialized)
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
                 showToolbar(true);
             } else {
@@ -339,10 +344,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             activity.finish();
         }
 
-        if (lastCollectionRefresh.compareTo(HentoidApp.getLastCollectionRefresh()) != 0) {
+        if (mTotalCount > -1 && mTotalCount != getDB().countAllContent() ) {
             Timber.d("Library has been refreshed!");
+            showReloadToolTip();
+            /*
             cleanResults();
             shouldUpdate = true;
+            */
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -512,7 +520,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mContext = getContext();
         bookSortOrder = Preferences.getContentSortOrder();
         booksPerPage = Preferences.getContentPageQuantity();
-        lastCollectionRefresh = HentoidApp.getLastCollectionRefresh();
     }
 
     @Override
@@ -709,6 +716,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         resetCount();
     }
 
+    /**
+     * Reset the download count (used to properly display the number of downloads in Notifications)
+     */
     private void resetCount() {
         Timber.d("Download Count: %s", ContentQueueManager.getInstance().getDownloadCount());
         ContentQueueManager.getInstance().setDownloadCount(0);
@@ -1346,10 +1356,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void showToolbar(boolean show);
 
-    protected abstract void displayResults(List<Content> results, int totalContent);
+    protected abstract void displayResults(List<Content> results, int totalSelectedContent);
 
     protected boolean isLastPage() {
-        return (currentPage * booksPerPage >= mAdapter.getTotalCount());
+        return (currentPage * booksPerPage >= mTotalSelectedCount);
     }
 
     protected void displayNoResults() {
@@ -1364,12 +1374,21 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    private void updateTitle()
+    {
+        Activity activity = getActivity();
+        if (null != activity) {
+            if (mTotalSelectedCount == mTotalCount) activity.setTitle("(" + mTotalCount + ")");
+            else activity.setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
+        }
+    }
+
     /*
     ContentListener implementation
      */
     @Override
-    public void onContentReady(List<Content> results, int totalContent) {
-        Timber.d("Content results have loaded : %s results; %s total count", results.size(), totalContent);
+    public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) {
+        Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
         isLoaded = true;
 
         if (isSearchMode() && isNewContentAvailable)
@@ -1379,9 +1398,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         // Display new results
-        displayResults(results, totalContent);
+        displayResults(results, totalSelectedContent);
 
-        mAdapter.setTotalCount(totalContent);
+        mTotalSelectedCount = totalSelectedContent;
+        mTotalCount = totalContent;
+
+        updateTitle();
     }
 
     @Override
@@ -1504,13 +1526,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /*
-    ContentsWipedListener implementation
+    ContentRemovedListener implementation
      */
     @Override
-    public void onContentsWiped() {
+    public void onAllContentRemoved() {
         Timber.d("All items cleared!");
+        mTotalSelectedCount = 0;
+        mTotalCount = 0;
+        currentPage = 1;
+
         displayNoResults();
         clearSelection();
-        cleanResults();
+        updateTitle();
+    }
+
+    @Override
+    public void onContentRemoved(int i) {
+        mTotalSelectedCount = mTotalSelectedCount - i;
+        mTotalCount = mTotalCount - i;
+        updateTitle();
     }
 }

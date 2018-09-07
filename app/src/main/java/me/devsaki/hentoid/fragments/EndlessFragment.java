@@ -38,7 +38,7 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
     }
 
     @Override
-    protected void displayResults(List<Content> results, int totalContent) {
+    protected void displayResults(List<Content> results, int totalSelectedContent) {
         if (isPaging) {
             mAdapter.add(results);
             isPaging = false;

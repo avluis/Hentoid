@@ -60,11 +60,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final int mode;
     private RecyclerView libraryView; // Kept as reference for querying by Content through ID
 
-    private ContentsWipedListener contentsWipedListener;
+    private ContentRemovedListener contentRemovedListener;
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
-    // Total count of book in entire collection (Adapter is in charge of updating it)
-    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator, CollectionAccessor collectionAccessor, int mode) {
         this.context = context;
@@ -84,8 +82,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         this.endlessScrollListener = listener;
     }
 
-    public void setContentsWipedListener(ContentsWipedListener listener) {
-        this.contentsWipedListener = listener;
+    public void setContentsWipedListener(ContentRemovedListener listener) {
+        this.contentRemovedListener = listener;
     }
 
     private void toggleSelection(int pos) {
@@ -593,14 +591,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         else return mSortedList.get(pos);
     }
 
-    public void setTotalCount(int count) {
-        this.mTotalCount = count;
-    }
-
-    public int getTotalCount() {
-        return this.mTotalCount;
-    }
-
     public void sharedSelectedItems() {
         int itemCount = getSelectedItemsCount();
         if (itemCount > 0) {
@@ -704,8 +694,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         mSortedList.beginBatchedUpdates();
         for (Content content : contents) {
             mSortedList.remove(content);
-            mTotalCount--;
         }
+        contentRemovedListener.onContentRemoved(contents.size());
         mSortedList.endBatchedUpdates();
         listener.onItemClear(0);
 
@@ -723,17 +713,20 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void remove(Content content) {
-        mTotalCount--;
         mSortedList.remove(content);
-        if (0 == mSortedList.size() && contentsWipedListener != null) {
-            contentsWipedListener.onContentsWiped();
+        if (contentRemovedListener != null) {
+            if (0 == mSortedList.size()) {
+                contentRemovedListener.onAllContentRemoved();
+            } else {
+                contentRemovedListener.onContentRemoved(1);
+            }
         }
         if (listener != null) listener.onItemClear(0);
     }
 
     public void removeAll() {
         replaceAll(new ArrayList<>());
-        mTotalCount = 0;
+        contentRemovedListener.onAllContentRemoved();
     }
 
     public void replaceAll(List<Content> contents) {
@@ -742,20 +735,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             final Content content = mSortedList.get(i);
             if (!contents.contains(content)) {
                 mSortedList.remove(content);
-                mTotalCount--;
             } else {
                 contents.remove(content);
             }
         }
         mSortedList.addAll(contents);
-        mTotalCount += contents.size();
         mSortedList.endBatchedUpdates();
     }
 
     public void add(List<Content> contents) {
         mSortedList.beginBatchedUpdates();
         mSortedList.addAll(contents);
-        mTotalCount += contents.size();
         mSortedList.endBatchedUpdates();
     }
 
@@ -778,8 +768,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         void onLoadMore();
     }
 
-    public interface ContentsWipedListener {
-        void onContentsWiped();
+    public interface ContentRemovedListener {
+        void onAllContentRemoved();
+        void onContentRemoved(int i);
     }
 
     private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedList.Callback<Content>() {

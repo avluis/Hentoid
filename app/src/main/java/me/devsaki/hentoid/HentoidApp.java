@@ -13,13 +13,13 @@ import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.leakcanary.LeakCanary;
 import com.squareup.leakcanary.RefWatcher;
 
-import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.notification.UpdateNotificationChannel;
+import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
+import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
 import me.devsaki.hentoid.util.Preferences;
@@ -34,15 +34,8 @@ import timber.log.Timber;
 public class HentoidApp extends Application {
 
     private static boolean beginImport;
-    private static Date lastCollectionRefresh;
     private static HentoidApp instance;
     private RefWatcher refWatcher;
-
-    // Only for use when activity context cannot be passed or used e.g.;
-    // Notification resources, Analytics, etc.
-    public static synchronized HentoidApp getInstance() {
-        return instance;
-    }
 
     public static Context getAppContext() {
         return instance.getApplicationContext();
@@ -55,10 +48,6 @@ public class HentoidApp extends Application {
     public static void setBeginImport(boolean started) {
         HentoidApp.beginImport = started;
     }
-
-    public static Date getLastCollectionRefresh() { return lastCollectionRefresh; }
-
-    public static void resetLastCollectionRefresh() { lastCollectionRefresh = new Date(); }
 
 
     public static RefWatcher getRefWatcher(Context context) {
@@ -103,11 +92,12 @@ public class HentoidApp extends Application {
 
         // DB housekeeping
         HentoidDB db = HentoidDB.getInstance(this);
-        Timber.d("Content item(s) count: %s", db.countContent());
+        Timber.d("Content item(s) count: %s", db.countContentEntries());
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
         UpgradeTo(BuildConfig.VERSION_CODE, db);
 
         UpdateNotificationChannel.init(this);
+        DownloadNotificationChannel.init(this);
         startService(UpdateCheckService.makeIntent(this, false));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
@@ -117,8 +107,6 @@ public class HentoidApp extends Application {
         // Clears all previous notifications
         NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) manager.cancelAll();
-
-        resetLastCollectionRefresh();
     }
 
     /**

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.notification;
+package me.devsaki.hentoid.notification.download;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,13 +7,13 @@ import android.os.Build;
 
 import java.util.Objects;
 
-public class UpdateNotificationChannel {
+public class DownloadNotificationChannel {
 
-    static final String ID = "update";
+    static final String ID = "download";
 
     public static void init(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            String name = "App updates";
+            String name = "Downloads";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(ID, name, importance);
             NotificationManager notificationManager = context.getSystemService(NotificationManager.class);

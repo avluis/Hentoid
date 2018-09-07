@@ -79,6 +79,11 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     }
 
     @Override
+    public void setTitle(CharSequence subtitle) {
+        super.setTitle(getToolbarTitle() + " " + subtitle);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
