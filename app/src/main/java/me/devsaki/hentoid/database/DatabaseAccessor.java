@@ -27,6 +27,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
     {
         public List<Content> pagedContents;
         public int totalContent;
+        public int totalSelectedContent;
     }
 
 
@@ -95,7 +96,9 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
 
             result.pagedContents = db.selectContentByQuery(titleQuery, currentPage, booksPerPage, metadata, favouritesOnly, orderStyle);
             // Fetch total query count (since query are paged, query results count is always <= booksPerPage)
-            result.totalContent = db.countContentByQuery(titleQuery, metadata, favouritesOnly);
+            result.totalSelectedContent = db.countContentByQuery(titleQuery, metadata, favouritesOnly);
+            // Fetch total book count (useful for displaying and comparing the total number of books)
+            result.totalContent = db.countAllContent();
 
             return result;
         }
@@ -107,7 +110,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
                 listener.onContentFailed();
                 return;
             }
-            listener.onContentReady(response.pagedContents, response.totalContent);
+            listener.onContentReady(response.pagedContents, response.totalSelectedContent, response.totalContent);
         }
     }
 

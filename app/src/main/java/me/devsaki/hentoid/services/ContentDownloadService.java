@@ -200,7 +200,7 @@ public class ContentDownloadService extends IntentService {
             isDone = progress == totalPages;
             Timber.d("Progress: OK:%s KO:%s Total:%s", pagesOK, pagesKO, totalPages);
             notificationManager.notify(new DownloadProgressNotification(title, progress, totalPages));
-            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
 
             try {
                 Thread.sleep(1000);
@@ -265,7 +265,7 @@ public class ContentDownloadService extends IntentService {
 
             // Signals current download as completed
             Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
-            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, images.size()));
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, images.size()));
 
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");

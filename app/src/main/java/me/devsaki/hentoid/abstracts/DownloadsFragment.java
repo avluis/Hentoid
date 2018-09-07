@@ -52,9 +52,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -319,7 +316,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 storagePermissionChecked = true;
             }
         } else if (MODE_MIKAN == mode) {
-            if (-1 == mAdapter.getTotalCount()) update();
+            if (-1 == mTotalSelectedCount) update();
             showToolbar(true);
         }
     }
@@ -1376,10 +1373,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     private void updateTitle()
     {
-        Activity activity = getActivity();
-        if (null != activity) {
-            if (mTotalSelectedCount == mTotalCount) activity.setTitle("(" + mTotalCount + ")");
-            else activity.setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
+        if (MODE_LIBRARY == mode) {
+            Activity activity = getActivity();
+            if (null != activity) {
+                if (mTotalSelectedCount == mTotalCount) activity.setTitle("(" + mTotalCount + ")");
+                else activity.setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
+            }
         }
     }
 

@@ -250,14 +250,14 @@ public class MikanAccessor extends BaseCollectionAccessor {
                 case USAGE_RECENT_BOOKS:
                 case USAGE_SEARCH:
                     int maxItems = response.maxpage * response.result.size(); // Roughly : number of pages * number of books per page
-                    listener.onContentReady(response.toContentList(matcher), maxItems);
+                    listener.onContentReady(response.toContentList(matcher), maxItems, maxItems);
                     break;
                 case USAGE_BOOK_PAGES:
                     if (null == content) listener.onContentFailed();
                     else {
                         List<Content> list = new ArrayList<Content>() {{ add(content); }};
                         content.setImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
-                        listener.onContentReady(list, 1);
+                        listener.onContentReady(list, 1, 1);
                     }
                     break;
             }

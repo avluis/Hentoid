@@ -405,7 +405,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public int countAllContent() {
-        return countContentByQuery("", "", Collections.emptyList(), Collections.emptyList(), false);
+        return countContentByQuery("", Collections.emptyList(), false);
     }
 
     public int countContentByQuery(String title, List<Attribute> tags, boolean filterFavourites) {
@@ -445,21 +445,17 @@ public class HentoidDB extends SQLiteOpenHelper {
         metadataMap.add(metadata);
 
         boolean hasTitleFilter = (title != null && title.length() > 0);
-        boolean hasSourceFilter = metadataMap.containsKey(AttributeType.SOURCE);
-        boolean hasTagFilter = metadataMap.keySet().size() > (hasSourceFilter?1:0);
+        boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE);
+        boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter?1:0);
         boolean isConstructingTagFilter = false;
 
         // Base criteria in Content table
         StringBuilder sql = new StringBuilder();
         sql.append(ContentTable.SELECT_DOWNLOADS_BASE);
-        if (hasSiteFilter) {
-            sql.append(ContentTable.SELECT_DOWNLOADS_SITES);
-            sql = sql.replace("%1", buildListQuery(sites));
-        }
 
-        if (hasSourceFilter) {
+        if (hasSiteFilter) {
             params = metadataMap.get(AttributeType.SOURCE);
-            if (params.size() > 0) sql.append(ContentTable.SELECT_DOWNLOADS_SOURCE.replace("%1",Helper.buildListAsString(params,"'")));
+            if (params.size() > 0) sql.append(ContentTable.SELECT_DOWNLOADS_SITES.replace("%1",Helper.buildListAsString(params,"'")));
         }
 
         if (filterFavourites) sql.append(ContentTable.SELECT_DOWNLOADS_FAVS);
