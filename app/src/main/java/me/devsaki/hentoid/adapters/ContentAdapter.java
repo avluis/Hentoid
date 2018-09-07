@@ -656,6 +656,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             if (!contents.contains(content)) {
                 mSortedList.remove(content);
                 mTotalCount--;
+            } else {
+                contents.remove(content);
             }
         }
         mSortedList.addAll(contents);
