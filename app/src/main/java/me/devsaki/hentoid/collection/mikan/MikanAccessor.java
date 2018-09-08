@@ -104,7 +104,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
         disposable = MikanServer.API.getRecent(getMikanCodeForSite(site), params, Helper.getAppUserAgent())
                 .timeout(20, TimeUnit.SECONDS)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentPostExecute(result, listener), v -> listener.onContentFailed());
+                .subscribe((result) -> onContentSuccess(result, listener), v -> listener.onContentFailed());
     }
 
     public void getPages(Content content, ContentListener listener) {
@@ -115,7 +115,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
         disposable = MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId(), Helper.getAppUserAgent())
                 .timeout(20, TimeUnit.SECONDS)
                 .observeOn(mainThread())
-                .subscribe((result) -> onPagesPostExecute(result, content, listener), v -> listener.onContentFailed());
+                .subscribe((result) -> onPagesSuccess(result, content, listener), v -> listener.onContentFailed());
     }
 
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
@@ -157,7 +157,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
         disposable = MikanServer.API.search(getMikanCodeForSite(site), suffix, params, Helper.getAppUserAgent())
                 .timeout(20, TimeUnit.SECONDS)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentPostExecute(result, listener), v -> listener.onContentFailed());
+                .subscribe((result) -> onContentSuccess(result, listener), v -> listener.onContentFailed());
     }
 
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
@@ -186,7 +186,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
                     .timeout(20, TimeUnit.SECONDS)
                     .observeOn(mainThread())
                     .subscribe((result) -> {
-                        onMasterDataPostExecute(result, attr.name(), filter, listener); // TODO handle caching in computing thread
+                        onMasterDataSuccess(result, attr.name(), filter, listener); // TODO handle caching in computing thread
                     }, v -> listener.onAttributesFailed());
         } else {
             List<Attribute> result = attributes;
@@ -202,7 +202,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     // === REQUEST BUILDERS
 
-    private void onContentPostExecute(MikanContentResponse response, ContentListener listener) {
+    private void onContentSuccess(MikanContentResponse response, ContentListener listener) {
         if (null == response)
         {
             Timber.w("Empty response");
@@ -214,7 +214,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
         listener.onContentReady(response.toContentList(libraryMatcher), maxItems, maxItems);
     }
 
-    private void onPagesPostExecute(MikanContentResponse response, Content content, ContentListener listener) {
+    private void onPagesSuccess(MikanContentResponse response, Content content, ContentListener listener) {
         if (null == response)
         {
             Timber.w("Empty response");
@@ -230,7 +230,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
         }
     }
 
-    private void onMasterDataPostExecute(Response<MikanAttributeResponse> response, String attrName, String filter, AttributeListener listener) {
+    private void onMasterDataSuccess(Response<MikanAttributeResponse> response, String attrName, String filter, AttributeListener listener) {
         MikanAttributeResponse result = response.body();
         if (null == result) {
             Timber.w("Empty response");
