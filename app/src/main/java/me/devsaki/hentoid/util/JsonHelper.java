@@ -14,12 +14,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Date;
-import java.util.Locale;
 
 import javax.annotation.Nullable;
 
@@ -36,12 +30,6 @@ import timber.log.Timber;
 public class JsonHelper {
 
     private static final int TIMEOUT_MS = 20000;
-
-    public static class JSONResponse
-    {
-        public JSONObject object;
-        public Date expiryDate;
-    }
 
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
@@ -99,7 +87,7 @@ public class JsonHelper {
     }
 
     @Nullable
-    public synchronized static JSONResponse jsonReader(String jsonURL) throws IOException {
+    public synchronized static JSONObject jsonReader(String jsonURL) throws IOException {
         try {
             Request request = new Request.Builder()
                     .url(jsonURL)
@@ -117,28 +105,15 @@ public class JsonHelper {
                 return null;
             }
 
-            JSONResponse response = new JSONResponse();
-            String xExpire = okHttpResponse.header("x-expire");
-            if (xExpire != null)
-            {
-                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
-                response.expiryDate = dateFormat.parse(xExpire);
-            } else {
-                response.expiryDate = new Date();
-            }
-
             ResponseBody body = okHttpResponse.body();
             if (body != null) {
-                response.object = new JSONObject(readInputStream(body.byteStream()));
-                return response;
+                return new JSONObject(readInputStream(body.byteStream()));
             } else {
                 Timber.e("JSON request body is null");
                 return null;
             }
         } catch (JSONException e) {
             Timber.e(e, "JSON file not properly formatted");
-        } catch (ParseException p) {
-            Timber.e(p, "Expiry date not properly formatted");
         }
 
         return null;

@@ -362,9 +362,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
                     holder.ivDownload.setOnClickListener(v -> {
                         animateBlink(holder.ivDownload);
-                        holder.ivDownload.setOnClickListener(w -> {
-                            Helper.viewQueue(context);
-                        });
+                        holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
                         collectionAccessor.getPages(content, this);
                     });
                 }
@@ -372,16 +370,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
                     animateBlink(holder.ivDownload);
-                    holder.ivDownload.setOnClickListener(v -> {
-                        Helper.viewQueue(context);
-                    });
+                    holder.ivDownload.setOnClickListener(v -> Helper.viewQueue(context));
                 }
                 // "In library" icon
                 else if (status == StatusContent.DOWNLOADED || status == StatusContent.MIGRATED || status == StatusContent.ERROR) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_play);
-                    holder.ivDownload.setOnClickListener(v -> {
-                        FileHelper.openContent(context, content);
-                    });
+                    holder.ivDownload.setOnClickListener(v -> FileHelper.openContent(context, content));
                 }
             }
 
@@ -561,9 +555,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         if (holder != null) {
             holder.ivDownload.setImageResource(R.drawable.ic_action_play);
             holder.ivDownload.clearAnimation();
-            holder.ivDownload.setOnClickListener(v -> {
-                FileHelper.openContent(context, item);
-            });
+            holder.ivDownload.setOnClickListener(v -> FileHelper.openContent(context, item));
         }
     }
 
@@ -759,7 +751,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     @Override
     public void onContentFailed() {
-        Timber.w("Page loading failed");
+        Timber.w("Page loading failed"); // TODO deactivate blinking button when failed
     }
 
     // Public interfaces
