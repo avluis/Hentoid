@@ -136,7 +136,7 @@ public class AssetsCache {
         @Override
         protected Void doInBackground(String... params) {
             try {
-                JSONObject jsonObject = new JsonHelper().jsonReader(params[0]);
+                JSONObject jsonObject = JsonHelper.jsonReader(params[0]);
                 if (jsonObject != null) {
                     remoteCacheVersion = jsonObject.getInt(KEY_VERSION_CODE);
                     downloadURL = jsonObject.getString(KEY_PACK_URL);

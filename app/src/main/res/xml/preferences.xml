@@ -60,6 +60,14 @@
             android:key="pref_read_content_lists"
             android:summary="@string/pref_read_content_summary"
             android:title="@string/pref_read_content_title" />
+        <ListPreference
+            android:entries="@array/pref_attribute_list_order_entries"
+            android:entryValues="@array/pref_attribute_list_order_values"
+            android:defaultValue="@string/pref_attributes_list_order_default"
+            android:icon="@null"
+            android:key="pref_order_attribute_lists"
+            android:title="@string/pref_attributes_list_order_title"
+            android:summary="@string/pref_attributes_list_order_summary" />
         <Preference
             android:icon="@null"
             android:key="folder"

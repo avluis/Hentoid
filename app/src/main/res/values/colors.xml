@@ -36,5 +36,6 @@
     <!-- Card View -->
     <color name="card_item_src_normal">@color/very_dark_red</color>
     <color name="card_item_src_migrated">@color/material_pink_300</color>
+    <color name="card_item_src_online">#888888</color>
     <color name="card_item_src_other">@color/red_accent_700</color>
 </resources>
