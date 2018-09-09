@@ -83,7 +83,11 @@ public abstract class ContentTable {
     // SELECT
     public static final String SELECT_BY_CONTENT_ID = "SELECT * FROM " + TABLE_NAME + " C WHERE C." + ID_COLUMN + " = ?";
 
+    public static final String SELECT_BY_EXTERNAL_REF = "SELECT * FROM " + TABLE_NAME + " WHERE " + SITE_COLUMN + "= ? AND " + UNIQUE_SITE_ID_COLUMN + " IN (%1) AND " + STATUS_COLUMN + " IN (?,?,?,?,?)";
+
     public static final String SELECT_NULL_FOLDERS = "SELECT * FROM " + TABLE_NAME + " WHERE " + STORAGE_FOLDER_COLUMN + " is null";
+
+    public static final String SELECT_SOURCES = "SELECT "+SITE_COLUMN+", COUNT(*) FROM " + TABLE_NAME + " WHERE " + STATUS_COLUMN + " IN (?,?,?) GROUP BY 1";
 
 
     // SEARCH QUERIES "TOOLBOX"
@@ -97,13 +101,10 @@ public abstract class ContentTable {
     public static final String SELECT_DOWNLOADS_TITLE = " lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
 
     public static final String SELECT_DOWNLOADS_JOINS = " C." + ID_COLUMN
-            + " in (SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM "
+            + " in (SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM " // TODO replace that IN by an INNER JOIN
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
 
-    public static final String SELECT_DOWNLOADS_AUTHOR = "(lower(A." + AttributeTable.NAME_COLUMN + ") LIKE '%3' AND A."
-            + AttributeTable.TYPE_COLUMN + " in ("+ AttributeType.ARTIST.getCode()+", "+AttributeType.CIRCLE.getCode()+")) GROUP BY 1";
-
-    public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
-            + AttributeTable.TYPE_COLUMN + " = "+AttributeType.TAG.getCode()+") GROUP BY 1 HAVING COUNT(*)=%5";
+    public static final String SELECT_DOWNLOADS_TAGS = "(A." + AttributeTable.ID_COLUMN + " in (%4) AND A."
+            + AttributeTable.TYPE_COLUMN + " = %5) GROUP BY 1 HAVING COUNT(*)=%6";
 }

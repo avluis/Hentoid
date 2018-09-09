@@ -155,7 +155,7 @@
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_arrow_drop_up_black_24dp" />
+                tools:src="@drawable/ic_arrow_up" />
 
             <ImageView
                 android:id="@+id/queueDownBtn"
@@ -163,7 +163,7 @@
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_arrow_drop_down_black_24dp" />
+                tools:src="@drawable/ic_arrow_down" />
 
             <Button
                 android:id="@+id/btnCancel"

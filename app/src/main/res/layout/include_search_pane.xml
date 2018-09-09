@@ -1,9 +1,10 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:f="http://schemas.android.com/apk/res-auto"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
-    android:layout_height="90dp"
+    android:maxHeight="180dp"
+    android:layout_height="120dp"
     android:background="#400000"
     android:clipToPadding="true"
     android:tag="TagFilter">
@@ -11,173 +12,110 @@
     <LinearLayout
         android:id="@+id/filter_wrapper"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="fill"
-        android:orientation="vertical">
-
-        <org.apmem.tools.layouts.FlowLayout
-            android:id="@+id/filter_sites1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="start"
-            f:weightDefault="1.0"
-            android:orientation="horizontal">
-
-            <ImageButton
-                android:id="@+id/filter_nhentai"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                f:srcCompat="@drawable/ic_menu_nhentai"
-                tools:ignore="ContentDescription" />
-            <ImageButton
-                android:id="@+id/filter_hitomi"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                f:srcCompat="@drawable/ic_menu_hitomi"
-                tools:ignore="ContentDescription" />
-            <ImageButton
-                android:id="@+id/filter_asm"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                f:srcCompat="@drawable/ic_menu_asmhentai"
-                tools:ignore="ContentDescription" />
-            <ImageButton
-                android:id="@+id/filter_asmcomics"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                f:srcCompat="@drawable/ic_menu_asmcomics"
-                tools:ignore="ContentDescription" />
-            <ImageButton
-                android:id="@+id/filter_hentaicafe"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                f:srcCompat="@drawable/ic_menu_hentaicafe"
-                tools:ignore="ContentDescription" />
-            <ImageButton
-                android:id="@+id/filter_tsumino"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                f:srcCompat="@drawable/ic_menu_tsumino"
-                tools:ignore="ContentDescription" />
-            <ImageButton
-                android:id="@+id/filter_pururin"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                f:srcCompat="@drawable/ic_menu_pururin"
-                tools:ignore="ContentDescription" />
-
-            <ImageButton
-                android:id="@+id/filter_fakku"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                android:layout_marginRight="8dp"
-                android:layout_marginEnd="8dp"
-                f:srcCompat="@drawable/ic_menu_fakku"
-                tools:ignore="ContentDescription" />
-
-            <ImageButton
-                android:id="@+id/filter_favs"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:background="@color/transparent"
-                android:minWidth="32dp"
-                android:minHeight="32dp"
-                android:scaleType="fitXY"
-                f:srcCompat="@drawable/ic_fav_empty"
-                tools:ignore="ContentDescription" />
-
-        </org.apmem.tools.layouts.FlowLayout>
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
 
         <LinearLayout
-            android:id="@+id/filter_fields"
+            android:id="@+id/simple_search"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="start"
-            android:orientation="horizontal">
+            android:layout_height="wrap_content">
 
-            <ToggleButton
-                android:id="@+id/search_filter_title"
-                android:layout_width="0dp"
+            <TextView
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="true"
-                android:textOn="Title"
-                android:textOff="Title"
-                android:text="Title" />
-            <ToggleButton
-                android:id="@+id/search_filter_artist"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:checked="true"
-                android:textOn="Artist"
-                android:textOff="Artist"
-                android:text="Artist" />
-            <ToggleButton
-                android:id="@+id/search_filter_tag"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textOn="Tag"
-                android:textOff="Tag"
-                android:text="Tag" />
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:text="Advanced search..."
+                tools:ignore="HardcodedText"
+                android:visibility="gone"
+                />
+
         </LinearLayout>
 
-        <org.apmem.tools.layouts.FlowLayout
-            android:id="@+id/filter_tags"
+        <LinearLayout
+            android:id="@+id/advanced_search"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            f:weightDefault="1.0"
-            android:gravity="fill"
-            android:orientation="horizontal"
-            android:visibility="gone"/>
+            android:orientation="vertical">
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/search_tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:flexWrap="wrap"
+                app:alignItems="baseline"
+                app:alignContent="flex_start"/>
+
+            <LinearLayout
+                android:id="@+id/search_tabs"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                >
+
+                <!-- programmatically added attribute sections here -->
+
+            </LinearLayout>
+
+            <android.support.v7.widget.SearchView
+                android:id="@+id/tag_filter"
+                android:minWidth="120dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                />
+
+            <LinearLayout
+                android:id="@+id/tag_wait_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:visibility="gone"
+                >
+
+                <TextView
+                    android:id="@+id/tag_wait_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/card_item_src_online"
+                    android:textSize="24sp"
+                    android:text="@string/app_intro" />
+
+                <ImageView
+                    android:id="@+id/tag_wait_image"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:tint="@color/card_item_src_online"
+                    android:src="@drawable/ic_action_pause"
+                    android:minWidth="110dp"
+                    android:minHeight="110dp"
+                    android:scaleType="fitCenter"
+                    tools:ignore="ContentDescription" />
+
+                <TextView
+                    android:id="@+id/tag_wait_description"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/card_item_src_online"
+                    android:textSize="18sp"
+                    android:gravity="center_vertical|center_horizontal"
+                    android:text="@string/app_intro" />
+
+            </LinearLayout>
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/tag_suggestion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:flexWrap="wrap"
+                app:alignItems="baseline"
+                app:alignContent="flex_start"
+                android:gravity="fill"
+                />
+
+        </LinearLayout>
 
     </LinearLayout>
 

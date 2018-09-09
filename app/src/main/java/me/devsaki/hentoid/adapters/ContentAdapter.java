@@ -14,6 +14,8 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -27,12 +29,15 @@ import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.abstracts.DownloadsFragment;
+import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -44,21 +49,27 @@ import timber.log.Timber;
  * Created by avluis on 04/23/2016.
  * RecyclerView based Content Adapter
  */
-public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
+public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements ContentListener {
 
     private static final int VISIBLE_THRESHOLD = 10;
 
     private final Context context;
     private final ItemSelectListener listener;
+    private final CollectionAccessor collectionAccessor;
+    private final int mode;
+    private RecyclerView libraryView; // Kept as reference for querying by Content through ID
+
     private ContentRemovedListener contentRemovedListener;
     private EndlessScrollListener endlessScrollListener;
     private Comparator<Content> mComparator;
 
-
-    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator) {
+    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator, CollectionAccessor collectionAccessor, int mode) {
         this.context = context;
         this.listener = listener;
-        mComparator = comparator;
+        this.collectionAccessor = collectionAccessor;
+        this.mode = mode;
+        this.mComparator = comparator;
+        this.setHasStableIds(true);
     }
 
 
@@ -117,6 +128,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
     @NonNull
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        if (null == libraryView) libraryView = ((RecyclerView)parent);
+
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
         return new ContentHolder(view);
@@ -162,7 +175,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
-        attachSite(holder, content, pos);
+        attachButtons(holder, content, pos);
     }
 
     private void attachTitle(ContentHolder holder, Content content) {
@@ -268,7 +281,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         holder.tvTags.setText(Helper.fromHtml(tagsBuilder.toString()));
     }
 
-    private void attachSite(ContentHolder holder, final Content content, int pos) {
+    private void attachButtons(ContentHolder holder, final Content content, int pos) {
         // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
@@ -295,6 +308,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 case MIGRATED:
                     bg = R.color.card_item_src_migrated;
                     break;
+                case ONLINE:
+                    bg = R.color.card_item_src_other;
+                    break;
                 default:
                     Timber.d("Position: %s %s - Status: %s", pos, content.getTitle(), status);
                     bg = R.color.card_item_src_other;
@@ -302,38 +318,65 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
             }
             holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, bg));
 
-            // Favourite toggle
-            if (content.isFavourite()) {
-                holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
-            } else {
-                holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-            }
-            holder.ivFavourite.setOnClickListener(v -> {
-                if (getSelectedItemsCount() >= 1) {
-                    clearSelections();
-                    listener.onItemClear(0);
-                }
+            holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
+            holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
+            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE);
+
+            if (DownloadsFragment.MODE_LIBRARY == mode) {
+                // Favourite toggle
                 if (content.isFavourite()) {
-                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                } else {
                     holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                } else {
+                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
                 }
-                favToggleItem(content);
-            });
-
-
-            // Error icon
-            if (status == StatusContent.ERROR) {
-                holder.ivError.setVisibility(View.VISIBLE);
-                holder.ivError.setOnClickListener(v -> {
+                holder.ivFavourite.setOnClickListener(v -> {
                     if (getSelectedItemsCount() >= 1) {
                         clearSelections();
                         listener.onItemClear(0);
                     }
-                    downloadAgain(content);
+                    if (content.isFavourite()) {
+                        holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                    } else {
+                        holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                    }
+                    favToggleItem(content);
                 });
-            } else {
-                holder.ivError.setVisibility(View.GONE);
+
+                // Error icon
+                if (status == StatusContent.ERROR) {
+                    holder.ivError.setVisibility(View.VISIBLE);
+                    holder.ivError.setOnClickListener(v -> {
+                        if (getSelectedItemsCount() >= 1) {
+                            clearSelections();
+                            listener.onItemClear(0);
+                        }
+                        downloadAgain(content);
+                    });
+                } else {
+                    holder.ivError.setVisibility(View.GONE);
+                }
+            } else { // Mikan mode
+
+                // "Available online" icon
+                if (status == StatusContent.ONLINE) {
+                    holder.ivDownload.setImageResource(R.drawable.ic_action_download);
+                    holder.ivDownload.setOnClickListener(v -> {
+                        animateBlink(holder.ivDownload);
+                        holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
+                        collectionAccessor.getPages(content, this);
+                    });
+                }
+                // "In queue" icon
+                else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
+                    holder.ivDownload.setImageResource(R.drawable.ic_action_download);
+                    animateBlink(holder.ivDownload);
+                    holder.ivDownload.setOnClickListener(v -> Helper.viewQueue(context));
+                }
+                // "In library" icon
+                else if (status == StatusContent.DOWNLOADED || status == StatusContent.MIGRATED || status == StatusContent.ERROR) {
+                    holder.ivDownload.setImageResource(R.drawable.ic_action_play);
+                    holder.ivDownload.setOnClickListener(v -> FileHelper.openContent(context, content));
+                }
             }
 
         } else {
@@ -341,38 +384,57 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         }
     }
 
-    private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
-        holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, listener) {
+    private void animateBlink(View view)
+    {
+        // Set blinking animation when book is being downloaded
+        Animation anim = new AlphaAnimation(0.0f, 1.0f);
+        anim.setDuration(500);
+        anim.setStartOffset(100);
+        anim.setRepeatMode(Animation.REVERSE);
+        anim.setRepeatCount(Animation.INFINITE);
+        view.startAnimation(anim);
+    }
 
-            @Override
-            public void onClick(View v) {
-                if (getSelectedItemsCount() > 0) { // Selection mode is on
+    private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
+
+        // Simple click = open book (library mode only)
+        // TODO : implement preview gallery for Mikan mode
+        if (DownloadsFragment.MODE_LIBRARY == mode) {
+            holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, listener) {
+
+                @Override
+                public void onClick(View v) {
+                    if (getSelectedItemsCount() > 0) { // Selection mode is on
+                        int itemPos = holder.getLayoutPosition();
+                        toggleSelection(itemPos);
+                        setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                        onLongClick(v);
+                    } else {
+                        clearSelections();
+                        setSelected(false, 0);
+
+                        super.onClick(v);
+                    }
+                }
+            });
+        }
+
+        // Long click = select item (library mode only)
+        if (DownloadsFragment.MODE_LIBRARY == mode) {
+            holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, listener) {
+
+                @Override
+                public boolean onLongClick(View v) {
                     int itemPos = holder.getLayoutPosition();
                     toggleSelection(itemPos);
                     setSelected(isSelectedAt(pos), getSelectedItemsCount());
-                    onLongClick(v);
-                } else {
-                    clearSelections();
-                    setSelected(false, 0);
 
-                    super.onClick(v);
+                    super.onLongClick(v);
+
+                    return true;
                 }
-            }
-        });
-
-        holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, listener) {
-
-            @Override
-            public boolean onLongClick(View v) {
-                int itemPos = holder.getLayoutPosition();
-                toggleSelection(itemPos);
-                setSelected(isSelectedAt(pos), getSelectedItemsCount());
-
-                super.onLongClick(v);
-
-                return true;
-            }
-        });
+            });
+        }
     }
 
     private void downloadAgain(final Content item) {
@@ -393,26 +455,40 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
-                            HentoidDB db = HentoidDB.getInstance(context);
-
-                            item.setStatus(StatusContent.DOWNLOADING);
-                            item.setDownloadDate(new Date().getTime());
-                            db.updateContentStatus(item);
-
-                            List<Pair<Integer, Integer>> queue = db.selectQueue();
-                            int lastIndex = 1;
-                            if (queue.size() > 0) {
-                                lastIndex = queue.get(queue.size() - 1).second + 1;
-                            }
-                            db.insertQueue(item.getId(), lastIndex);
-
-                            ContentQueueManager.getInstance().resumeQueue(context);
-
-                            Helper.toast(context, R.string.add_to_queue);
+                           downloadContent(item);
                             remove(item);
                         })
                 .setNegativeButton(android.R.string.no, null)
                 .create().show();
+    }
+
+    private void downloadContent(Content item)
+    {
+        HentoidDB db = HentoidDB.getInstance(context);
+
+        item.setDownloadDate(new Date().getTime());
+
+        if (StatusContent.ONLINE == item.getStatus())
+        {
+            item.setStatus(StatusContent.DOWNLOADING);
+            for (ImageFile im : item.getImageFiles()) im.setStatus(StatusContent.SAVED);
+
+            db.insertContent(item);
+        } else {
+            item.setStatus(StatusContent.DOWNLOADING);
+            db.updateContentStatus(item);
+        }
+
+        List<Pair<Integer, Integer>> queue = db.selectQueue();
+        int lastIndex = 1;
+        if (queue.size() > 0) {
+            lastIndex = queue.get(queue.size() - 1).second + 1;
+        }
+        db.insertQueue(item.getId(), lastIndex);
+
+        ContentQueueManager.getInstance().resumeQueue(context);
+
+        Helper.toast(context, R.string.add_to_queue);
     }
 
     private void shareContent(final Content item) {
@@ -471,6 +547,22 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         // Persist in it DB
         final HentoidDB db = HentoidDB.getInstance(context);
         db.updateContentFavourite(item);
+    }
+
+    public void switchStateToDownloaded(Content item) {
+        ContentHolder holder = holderByContent(item);
+
+        if (holder != null) {
+            holder.ivDownload.setImageResource(R.drawable.ic_action_play);
+            holder.ivDownload.clearAnimation();
+            holder.ivDownload.setOnClickListener(v -> FileHelper.openContent(context, item));
+        }
+    }
+
+    @Nullable
+    private ContentHolder holderByContent(Content content)
+    {
+        return (ContentHolder)libraryView.findViewHolderForItemId(content.getId());
     }
 
     @Override
@@ -648,6 +740,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> {
         mSortedList.endBatchedUpdates();
     }
 
+    // ContentListener implementation
+    @Override
+    public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) { // Listener for pages retrieval in Mikan mode
+        if (1 == results.size()) // 1 content with pages
+        {
+            downloadContent(results.get(0));
+        }
+    }
+
+    @Override
+    public void onContentFailed() {
+        Timber.w("Page loading failed"); // TODO deactivate blinking button when failed
+    }
+
+    // Public interfaces
     public interface EndlessScrollListener {
         void onLoadMore();
     }
