@@ -243,7 +243,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         // Filter illegal tags
         if (AttributeType.TAG.name().equals(attrName)) {
-            Stream.of(attributes)
+            attributes = Stream.of(attributes)
                     .filter(value -> !IllegalTags.isIllegal(value.getName()))
                     .collect(toList());
         }
