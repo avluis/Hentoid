@@ -26,15 +26,13 @@ public class HttpClientHelper {
         HttpURLConnection urlConnection = null;
         InputStream is = null;
 
-        String userAgent = Helper.getAppUserAgent();
-
         try {
             URL url = new URL(urlString);
             urlConnection = (HttpURLConnection) url.openConnection();
 
             urlConnection.setConnectTimeout(10000);
             urlConnection.setRequestMethod("GET");
-            urlConnection.setRequestProperty("User-Agent", userAgent);
+            urlConnection.setRequestProperty("User-Agent", Consts.USER_AGENT);
             urlConnection.setRequestProperty("Cookie", cookie);
 
             is = new BufferedInputStream(urlConnection.getInputStream());

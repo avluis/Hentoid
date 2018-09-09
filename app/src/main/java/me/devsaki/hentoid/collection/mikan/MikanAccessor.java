@@ -94,8 +94,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
         params.put("page", page + "");
         params.put("sort", showMostRecentFirst + "");
 
-        disposable = MikanServer.API.getRecent(getMikanCodeForSite(site), params, Helper.getAppUserAgent())
-                .timeout(20, TimeUnit.SECONDS)
+        disposable = MikanServer.API.getRecent(getMikanCodeForSite(site), params)
                 .observeOn(mainThread())
                 .subscribe((result) -> onContentSuccess(result, listener), v -> listener.onContentFailed());
     }
@@ -105,8 +104,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
             throw new UnsupportedOperationException("Site "+content.getSite().getDescription()+" not supported yet by Mikan search");
         }
 
-        disposable = MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId(), Helper.getAppUserAgent())
-                .timeout(20, TimeUnit.SECONDS)
+        disposable = MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId())
                 .observeOn(mainThread())
                 .subscribe((result) -> onPagesSuccess(result, content, listener), v -> listener.onContentFailed());
     }
@@ -147,8 +145,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
         if (attributes.size() > 0) params.put("language", Helper.buildListAsString(attributes));
 
 
-        disposable = MikanServer.API.search(getMikanCodeForSite(site), suffix, params, Helper.getAppUserAgent())
-                .timeout(20, TimeUnit.SECONDS)
+        disposable = MikanServer.API.search(getMikanCodeForSite(site), suffix, params)
                 .observeOn(mainThread())
                 .subscribe((result) -> onContentSuccess(result, listener), v -> listener.onContentFailed());
     }
@@ -175,8 +172,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         // If not cached (or cache expired), get it from network
         if (null == attributes) {
-            disposable = MikanServer.API.getMasterData(endpoint, Helper.getAppUserAgent())
-                    .timeout(20, TimeUnit.SECONDS)
+            disposable = MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())
                     .subscribe((result) -> {
                         onMasterDataSuccess(result, attr.name(), filter, listener); // TODO handle caching in computing thread

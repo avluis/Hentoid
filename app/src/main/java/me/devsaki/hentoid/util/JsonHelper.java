@@ -91,7 +91,7 @@ public class JsonHelper {
         try {
             Request request = new Request.Builder()
                     .url(jsonURL)
-                    .addHeader("User-Agent", Helper.getAppUserAgent())
+                    .addHeader("User-Agent", Consts.USER_AGENT)
                     .addHeader("Data-type", "application/json")
                     .build();
 
