@@ -102,7 +102,6 @@ public class MikanAccessor extends BaseCollectionAccessor {
         params.put("sort", showMostRecentFirst + "");
 
         disposable = MikanServer.API.getRecent(getMikanCodeForSite(site), params)
-                .timeout(20, TimeUnit.SECONDS)
                 .observeOn(mainThread())
                 .subscribe((result) -> onContentPostExecute(result, listener), v -> listener.onContentFailed());
     }
@@ -113,7 +112,6 @@ public class MikanAccessor extends BaseCollectionAccessor {
         }
 
         disposable = MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId())
-                .timeout(20, TimeUnit.SECONDS)
                 .observeOn(mainThread())
                 .subscribe((result) -> onPagesPostExecute(result, content, listener), v -> listener.onContentFailed());
     }
@@ -155,7 +153,6 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
 
         disposable = MikanServer.API.search(getMikanCodeForSite(site), suffix, params)
-                .timeout(20, TimeUnit.SECONDS)
                 .observeOn(mainThread())
                 .subscribe((result) -> onContentPostExecute(result, listener), v -> listener.onContentFailed());
     }
@@ -183,7 +180,6 @@ public class MikanAccessor extends BaseCollectionAccessor {
         // If not cached (or cache expired), get it from network
         if (null == attributes) {
             disposable = MikanServer.API.getMasterData(endpoint)
-                    .timeout(20, TimeUnit.SECONDS)
                     .observeOn(mainThread())
                     .subscribe((result) -> {
                         onMasterDataPostExecute(result, attr.name(), filter, listener); // TODO handle caching in computing thread

@@ -18,9 +18,13 @@ import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 public class MikanServer {
 
     private final static String MIKAN_BASE_URL = "https://api.initiate.host/v1/";
+    
+    private final static int TIMEOUT_S = 20;
 
     public static final Api API = new Retrofit.Builder()
             .baseUrl(MIKAN_BASE_URL)
@@ -33,6 +37,9 @@ public class MikanServer {
     private static OkHttpClient getClient() {
         return new OkHttpClient.Builder()
                 .addInterceptor(MikanServer::onIntercept)
+                .connectTimeout(TIMEOUT_S, SECONDS)
+                .readTimeout(TIMEOUT_S, SECONDS)
+                .writeTimeout(TIMEOUT_S, SECONDS)
                 .build();
     }
 
