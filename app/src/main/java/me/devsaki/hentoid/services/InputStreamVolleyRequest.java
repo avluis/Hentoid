@@ -9,7 +9,7 @@ import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.Consts;
 
 /**
  * Created by Robb_w on 2018/04
@@ -23,8 +23,6 @@ import me.devsaki.hentoid.util.Helper;
 class InputStreamVolleyRequest extends Request<byte[]> {
     // Callback listener
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mParseListener;
-    // Hentoid user agent
-    private static String userAgent = Helper.getAppUserAgent();
 
 
     InputStreamVolleyRequest(
@@ -57,7 +55,7 @@ class InputStreamVolleyRequest extends Request<byte[]> {
     @Override
     public Map<String, String> getHeaders() {
         Map<String, String>  params = new HashMap<>();
-        params.put("User-Agent", userAgent);
+        params.put("User-Agent", Consts.USER_AGENT);
 
         return params;
     }

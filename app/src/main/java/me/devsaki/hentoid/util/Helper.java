@@ -271,10 +271,6 @@ public final class Helper {
         return b;
     }
 
-    public static String getAppUserAgent() {
-        return String.format("%s Hentoid/v%s", Consts.USER_AGENT, BuildConfig.VERSION_NAME);
-    }
-
     public static WebResourceResponse getWebResourceResponseFromAsset(Site site, String filename,
                                                                       TYPE type) {
         Context context = HentoidApp.getAppContext();

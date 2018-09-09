@@ -225,9 +225,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        String userAgent;
-        userAgent = Helper.getAppUserAgent();
-        webSettings.setUserAgentString(userAgent);
+        webSettings.setUserAgentString(Consts.USER_AGENT);
 
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
