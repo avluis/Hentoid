@@ -26,6 +26,9 @@
     <string name="pref_folder_naming_content_title">Folder names</string>
     <string name="pref_folder_naming_content_summary">Book folder naming convention:\n%s</string>
     <string name="pref_folder_naming_content_default" translatable="false">0</string>
+    <string name="pref_attributes_list_order_title">Sort order of displayed metadata</string>
+    <string name="pref_attributes_list_order_default" translatable="false">1</string>
+    <string name="pref_attributes_list_order_summary">%s</string>
     <string name="pref_select_folder_title">Select Downloads Folder</string>
     <string name="pref_select_folder_summary">Select where Hentoid will store your downloads.</string>
     <string name="pref_add_no_media_file_title">Hide Downloaded Images</string>

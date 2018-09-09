@@ -10,11 +10,8 @@ import com.android.volley.Request;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -203,7 +200,7 @@ public class ContentDownloadService extends IntentService {
             isDone = progress == totalPages;
             Timber.d("Progress: OK:%s KO:%s Total:%s", pagesOK, pagesKO, totalPages);
             notificationManager.notify(new DownloadProgressNotification(title, progress, totalPages));
-            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
 
             try {
                 Thread.sleep(1000);
@@ -268,7 +265,7 @@ public class ContentDownloadService extends IntentService {
 
             // Signals current download as completed
             Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
-            EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, images.size()));
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, images.size()));
 
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");
@@ -324,8 +321,7 @@ public class ContentDownloadService extends IntentService {
                             saveImage(img.getName(), dir, parse.getValue().get("Content-Type"), parse.getKey());
                         updateImageStatus(img, (parse != null));
                     } catch (IOException e) {
-                        Timber.w("I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
-                        e.printStackTrace();
+                        Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
                         updateImageStatus(img, false);
                     }
                 },
@@ -349,19 +345,7 @@ public class ContentDownloadService extends IntentService {
     private static void saveImage(String fileName, File dir, String contentType, byte[] binaryContent) throws IOException {
         File file = new File(dir, fileName + "." + MimeTypes.getExtensionFromMimeType(contentType));
 
-        byte buffer[] = new byte[1024];
-        int count;
-
-        try (InputStream input = new ByteArrayInputStream(binaryContent)) {
-            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
-
-                while ((count = input.read(buffer)) != -1) {
-                    output.write(buffer, 0, count);
-                }
-
-                output.flush();
-            }
-        }
+        FileHelper.saveBinaryInFile(file, binaryContent);
     }
 
     /**
@@ -373,6 +357,32 @@ public class ContentDownloadService extends IntentService {
     private void updateImageStatus(ImageFile img, boolean success) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         db.updateImageFileStatus(img);
+    }
+
+    /**
+     * Notify a download progress event to the app using the event bus
+     *
+     * @param content    Corresponding content
+     * @param pagesOK    Number of pages downloaded successfully on current book
+     * @param pagesKO    Number of pages whose download failed on current book
+     * @param totalPages Total pages of current book
+     */
+    private static void notifyProgress(Content content, int pagesOK, int pagesKO, int totalPages) {
+        Timber.d("UpdateActivity : OK : %s - KO : %s - Total : %s > %s pc.", pagesOK, pagesKO, totalPages, String.valueOf((pagesOK + pagesKO) * 100.0 / totalPages));
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
+    }
+
+    /**
+     * Notify a download completed event to the app using the event bus
+     *
+     * @param content    Corresponding content
+     * @param pagesOK    Number of pages downloaded successfully on current book
+     * @param pagesKO    Number of pages whose download failed on current book
+     * @param totalPages Total pages of current book
+     */
+    private static void notifyComplete(Content content, int pagesOK, int pagesKO, int totalPages) {
+        Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, totalPages));
     }
 
     /**

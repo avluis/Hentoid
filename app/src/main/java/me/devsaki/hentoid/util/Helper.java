@@ -31,6 +31,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import me.devsaki.hentoid.BuildConfig;
@@ -39,7 +41,10 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AppLockActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.IntroActivity;
+import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
@@ -59,6 +64,11 @@ public final class Helper {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Consts.INTENT_URL, content.getGalleryUrl());
+        context.startActivity(intent);
+    }
+
+    public static void viewQueue(final Context context) {
+        Intent intent = new Intent(context, QueueActivity.class);
         context.startActivity(intent);
     }
 
@@ -96,7 +106,7 @@ public final class Helper {
         toast(context, text, -1, duration);
     }
 
-    private static void toast(Context context, int resource, DURATION duration) {
+    public static void toast(Context context, int resource, DURATION duration) {
         toast(context, null, resource, duration);
     }
 
@@ -251,8 +261,7 @@ public final class Helper {
         }
     }
 
-    // TODO: 6/3/2018 move this function to a more local scope
-    public static Bitmap tintBitmap(Bitmap bitmap, int color) {
+    static Bitmap tintBitmap(Bitmap bitmap, int color) {
         Paint p = new Paint();
         p.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
         Bitmap b = Bitmap.createBitmap(bitmap.getWidth(), bitmap.getHeight(), ARGB_8888);
@@ -341,7 +350,7 @@ public final class Helper {
     public static String capitalizeString(String s) {
         if (s == null || s.length() == 0) return s;
         else if (s.length() == 1) return s.toUpperCase();
-        else return s.substring(0, 1).toUpperCase() + s.substring(1);
+        else return s.substring(0, 1).toUpperCase() + s.toLowerCase().substring(1);
     }
 
     /**
@@ -360,6 +369,40 @@ public final class Helper {
             result = result.substring(0, length);
         } else if (result.length() < length) {
             result = String.format("%1$" + length + "s", result).replace(' ', '0');
+        }
+
+        return result;
+    }
+
+    public static String buildListAsString(List<?> list) {
+        return buildListAsString(list, "");
+    }
+    public static String buildListAsString(List<?> list, String valueDelimiter) {
+
+        StringBuilder str = new StringBuilder("");
+        if (list != null) {
+            boolean first = true;
+            for (Object o : list) {
+                if (!first) str.append(",");
+                else first = false;
+                str.append(valueDelimiter).append(o.toString().toLowerCase()).append(valueDelimiter);
+            }
+        }
+
+        return str.toString();
+    }
+
+    public static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType type)
+    {
+        return extractAttributeByType(attrs, new AttributeType[] { type });
+    }
+    private static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType[] types) {
+        List<Attribute> result = new ArrayList<>();
+
+        for (Attribute a : attrs) {
+            for (AttributeType type : types) {
+                if (a.getType().equals(type)) result.add(a);
+            }
         }
 
         return result;

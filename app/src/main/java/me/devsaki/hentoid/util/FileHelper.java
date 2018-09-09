@@ -11,9 +11,12 @@ import android.webkit.MimeTypeMap;
 
 import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +42,7 @@ public class FileHelper {
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
-    public static final String FORBIDDEN_CHARS = "[^a-zA-Z0-9.-]";
+    private static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
@@ -161,6 +164,10 @@ public class FileHelper {
      */
     public static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         return FileUtil.getOutputStream(target);
+    }
+
+    public static InputStream getInputStream(@NonNull final File target) throws IOException {
+        return FileUtil.getInputStream(target);
     }
 
     /**
@@ -302,10 +309,10 @@ public class FileHelper {
         int folderNamingPreference = Preferences.getFolderNameFormat();
 
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
-            folderDir = folderDir + content.getAuthor().replaceAll(FORBIDDEN_CHARS, "_") + " - ";
+            folderDir = folderDir + content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
-            folderDir = folderDir + content.getTitle().replaceAll(FORBIDDEN_CHARS, "_") + " - ";
+            folderDir = folderDir + content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
         folderDir = folderDir + "[" + content.getUniqueSiteId() + "]";
 
@@ -479,13 +486,30 @@ public class FileHelper {
 
             // Build destination file
             File dest = new File(context.getExternalCacheDir() + "/shared",
-                    content.getTitle().replaceAll(FORBIDDEN_CHARS, "_") + ".zip");
+                    content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + ".zip");
             Timber.d("Destination file: %s", dest);
 
             // Convert ArrayList to Array
             File[] fileArray = fileList.toArray(new File[fileList.size()]);
             // Compress files
             new AsyncUnzip(context, dest).execute(fileArray, dest);
+        }
+    }
+
+    // TODO doc
+    public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
+        byte buffer[] = new byte[1024];
+        int count;
+
+        try (InputStream input = new ByteArrayInputStream(binaryContent)) {
+            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
+
+                while ((count = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, count);
+                }
+
+                output.flush();
+            }
         }
     }
 

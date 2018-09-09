@@ -65,6 +65,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getAttributesSortOrder() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_ORDER_ATTRIBUTE_LISTS, Default.PREF_ORDER_ATTRIBUTES_DEFAULT + ""));
+    }
+
+    public static void setAttributesSortOrder(int sortOrder) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_ORDER_ATTRIBUTE_LISTS, sortOrder + "")
+                .apply();
+    }
+
     public static int getContentPageQuantity() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_QUANTITY_PER_PAGE_LISTS,
                 Default.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
@@ -166,6 +176,7 @@ public final class Preferences {
         static final String PREFS_VERSION_KEY = "prefs_version";
         static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
+        static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";
         static final String PREF_APP_LOCK_VIBRATE = "pref_app_lock_vibrate";
         static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
@@ -184,6 +195,7 @@ public final class Preferences {
         public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final int PREF_ORDER_CONTENT_DEFAULT = Constant.PREF_ORDER_CONTENT_ALPHABETIC;
+        static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.PREF_ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_APP_LOCK_VIBRATE_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
@@ -199,10 +211,13 @@ public final class Preferences {
     public static final class Constant {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
-        public static final int PREF_ORDER_CONTENT_BY_DATE = 1;
+        public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC_INVERTED = 2;
-        public static final int PREF_ORDER_CONTENT_BY_DATE_INVERTED = 3;
+        public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
         public static final int PREF_ORDER_CONTENT_RANDOM = 4;
+        public static final int PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
+        public static final int PREF_ORDER_ATTRIBUTES_ALPHABETIC = 0;
+        public static final int PREF_ORDER_ATTRIBUTES_COUNT = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;

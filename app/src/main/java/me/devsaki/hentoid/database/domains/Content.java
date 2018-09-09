@@ -19,7 +19,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.FileHelper;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -89,9 +88,9 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case TSUMINO:
-                return url.replace("/", "") + "-" + site.getDescription();
+                return url.replace("/", "");
             case HENTAICAFE:
-                return url.replace("/?p=", "") + "-" + site.getDescription();
+                return url.replace("/?p=", "");
             default:
                 return "";
         }
@@ -110,7 +109,7 @@ public class Content implements Serializable {
             case HITOMI:
                 paths = url.split("/");
                 return paths[1].replace(".html", "") + "-" +
-                        title.replaceAll(FileHelper.FORBIDDEN_CHARS, "_");
+                        title.replaceAll("[^a-zA-Z0-9.-]", "_");
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
@@ -378,6 +377,10 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> {
         return Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; /* Inverted - last download date first */
+    };
+
+    public static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> {
+        return Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; /* Inverted - last upload date first */
     };
 
     public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;

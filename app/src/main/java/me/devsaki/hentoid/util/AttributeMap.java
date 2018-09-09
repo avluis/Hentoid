@@ -17,6 +17,8 @@ import me.devsaki.hentoid.enums.AttributeType;
 public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
 
     public void add(Attribute attributeItem) {
+        if (null == attributeItem) return;
+
         List<Attribute> list;
         AttributeType type = attributeItem.getType();
 
@@ -31,6 +33,8 @@ public class AttributeMap extends HashMap<AttributeType, List<Attribute>> {
 
     @SuppressLint("NewApi")
     public void add(List<Attribute> attributeList) {
+        if (null == attributeList) return;
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             attributeList.forEach(this::add);
         } else {
