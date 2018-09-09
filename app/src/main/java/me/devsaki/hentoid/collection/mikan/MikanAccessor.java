@@ -62,20 +62,6 @@ public class MikanAccessor extends BaseCollectionAccessor {
         return (s != Site.HITOMI);
     }
 
-    private static void filterIllegalTags(List<Attribute> list) {
-        int size = list.size();
-        int i = 0;
-
-        while (i < size) {
-            if (IllegalTags.isIllegal(list.get(i).getName())) {
-                list.remove(i);
-                i--;
-                size--;
-            }
-            i++;
-        }
-    }
-
     private static List<Attribute> filter(List<Attribute> attributes, String filter) {
         if (filter == null) {
             return attributes;
@@ -204,11 +190,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
                         onMasterDataSuccess(result, attr.name(), filter, listener); // TODO handle caching in computing thread
                     }, v -> listener.onAttributesFailed());
         } else {
-            List<Attribute> result = attributes;
-            if (filter != null) {
-                result = new ArrayList<>();
-                for (Attribute a : attributes) if (a.getName().contains(filter)) result.add(a);
-            }
+            List<Attribute> result = filter(attributes, filter);
             listener.onAttributesReady(result, result.size());
         }
     }
@@ -261,7 +243,9 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         // Filter illegal tags
         if (AttributeType.TAG.name().equals(attrName)) {
-            filterIllegalTags(attributes);
+            Stream.of(attributes)
+                    .filter(value -> !IllegalTags.isIllegal(value.getName()))
+                    .collect(toList());
         }
 
         // Cache results
