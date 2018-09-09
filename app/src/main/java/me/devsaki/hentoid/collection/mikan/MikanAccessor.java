@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.collection.BaseCollectionAccessor;
@@ -40,8 +39,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     // == CONSTRUCTOR
 
-    public MikanAccessor(Context context)
-    {
+    public MikanAccessor(Context context) {
         libraryMatcher = new LibraryMatcher(context);
     }
 
@@ -57,20 +55,16 @@ public class MikanAccessor extends BaseCollectionAccessor {
         }
     }
 
-    private static boolean isSiteUnsupported(Site s)
-    {
+    private static boolean isSiteUnsupported(Site s) {
         return (s != Site.HITOMI);
     }
 
-    private static void filterIllegalTags(List<Attribute> list)
-    {
+    private static void filterIllegalTags(List<Attribute> list) {
         int size = list.size();
         int i = 0;
 
-        while (i < size)
-        {
-            if (IllegalTags.isIllegal(list.get(i).getName()))
-            {
+        while (i < size) {
+            if (IllegalTags.isIllegal(list.get(i).getName())) {
                 list.remove(i);
                 i--;
                 size--;
@@ -86,7 +80,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
         boolean showMostRecentFirst = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST == orderStyle;
 
         if (isSiteUnsupported(site)) {
-            throw new UnsupportedOperationException("Site "+site.getDescription()+"not supported yet by Mikan search");
+            throw new UnsupportedOperationException("Site " + site.getDescription() + "not supported yet by Mikan search");
         }
 
         Map<String, String> params = new HashMap<>();
@@ -101,7 +95,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     public void getPages(Content content, ContentListener listener) {
         if (isSiteUnsupported(content.getSite())) {
-            throw new UnsupportedOperationException("Site "+content.getSite().getDescription()+" not supported yet by Mikan search");
+            throw new UnsupportedOperationException("Site " + content.getSite().getDescription() + " not supported yet by Mikan search");
         }
 
         disposable = MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId())
@@ -121,10 +115,10 @@ public class MikanAccessor extends BaseCollectionAccessor {
             throw new UnsupportedOperationException("Unrecognized site ID " + sites.get(0).getId());
         }
         if (isSiteUnsupported(site)) {
-            throw new UnsupportedOperationException("Site "+site.getDescription()+" not supported yet by Mikan search");
+            throw new UnsupportedOperationException("Site " + site.getDescription() + " not supported yet by Mikan search");
         }
 
-        String suffix = (query != null && query.length() > 0)? "/search/" + query : "";
+        String suffix = (query != null && query.length() > 0) ? "/search/" + query : "";
 
         Map<String, String> params = new HashMap<>();
         params.put("page", page + "");
@@ -152,18 +146,30 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
         String endpoint;
-        switch(attr) {
-            case ARTIST:endpoint="artists"; break;
-            case CHARACTER:endpoint="characters"; break;
-            case TAG:endpoint="tags"; break;
-            case LANGUAGE:endpoint="languages"; break;
-            case CIRCLE:endpoint="groups"; break;
-            case SERIE:endpoint="series"; break;
-            default:endpoint = "";
+        switch (attr) {
+            case ARTIST:
+                endpoint = "artists";
+                break;
+            case CHARACTER:
+                endpoint = "characters";
+                break;
+            case TAG:
+                endpoint = "tags";
+                break;
+            case LANGUAGE:
+                endpoint = "languages";
+                break;
+            case CIRCLE:
+                endpoint = "groups";
+                break;
+            case SERIE:
+                endpoint = "series";
+                break;
+            default:
+                endpoint = "";
         }
 
-        if (endpoint.equals(""))
-        {
+        if (endpoint.equals("")) {
             throw new UnsupportedOperationException("Master data endpoint for " + attr.name() + "does not exist");
         }
 
@@ -179,8 +185,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
                     }, v -> listener.onAttributesFailed());
         } else {
             List<Attribute> result = attributes;
-            if (filter != null)
-            {
+            if (filter != null) {
                 result = new ArrayList<>();
                 for (Attribute a : attributes) if (a.getName().contains(filter)) result.add(a);
             }
@@ -197,8 +202,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
     // === CALLBACKS
 
     private void onContentSuccess(MikanContentResponse response, ContentListener listener) {
-        if (null == response)
-        {
+        if (null == response) {
             Timber.w("Empty response");
             listener.onContentFailed();
             return;
@@ -209,8 +213,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
     }
 
     private void onPagesSuccess(MikanContentResponse response, Content content, ContentListener listener) {
-        if (null == response)
-        {
+        if (null == response) {
             Timber.w("Empty response");
             listener.onContentFailed();
             return;
@@ -218,7 +221,9 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         if (null == content) listener.onContentFailed();
         else {
-            List<Content> list = new ArrayList<Content>() {{ add(content); }};
+            List<Content> list = new ArrayList<Content>() {{
+                add(content);
+            }};
             content.setImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
             listener.onContentReady(list, 1, 1);
         }
