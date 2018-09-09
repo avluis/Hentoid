@@ -2,6 +2,8 @@ package me.devsaki.hentoid.collection.mikan;
 
 import android.content.Context;
 
+import com.annimon.stream.Stream;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -30,6 +32,7 @@ import me.devsaki.hentoid.util.Preferences;
 import retrofit2.Response;
 import timber.log.Timber;
 
+import static com.annimon.stream.Collectors.toList;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
 public class MikanAccessor extends BaseCollectionAccessor {
@@ -70,6 +73,49 @@ public class MikanAccessor extends BaseCollectionAccessor {
                 size--;
             }
             i++;
+        }
+    }
+
+    private static List<Attribute> filter(List<Attribute> attributes, String filter) {
+        if (filter == null) {
+            return attributes;
+        } else {
+            return Stream.of(attributes)
+                    .filter(value -> value.getName().contains(filter))
+                    .collect(toList());
+        }
+    }
+
+    private static Date extractExpiry(Response response) {
+        String expiryDateStr = response.headers().get("x-expire");
+        if (expiryDateStr != null) {
+            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
+            try {
+                return dateFormat.parse(expiryDateStr);
+            } catch (ParseException e) {
+                Timber.i(e);
+            }
+        }
+
+        return new Date();
+    }
+
+    private static String getEndpointPath(AttributeType attr) {
+        switch (attr) {
+            case ARTIST:
+                return "artists";
+            case CHARACTER:
+                return "characters";
+            case TAG:
+                return "tags";
+            case LANGUAGE:
+                return "languages";
+            case CIRCLE:
+                return "groups";
+            case SERIE:
+                return "series";
+            default:
+                throw new UnsupportedOperationException("Master data endpoint for " + attr.name() + "does not exist");
         }
     }
 
@@ -145,39 +191,13 @@ public class MikanAccessor extends BaseCollectionAccessor {
     }
 
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
-        String endpoint;
-        switch (attr) {
-            case ARTIST:
-                endpoint = "artists";
-                break;
-            case CHARACTER:
-                endpoint = "characters";
-                break;
-            case TAG:
-                endpoint = "tags";
-                break;
-            case LANGUAGE:
-                endpoint = "languages";
-                break;
-            case CIRCLE:
-                endpoint = "groups";
-                break;
-            case SERIE:
-                endpoint = "series";
-                break;
-            default:
-                endpoint = "";
-        }
-
-        if (endpoint.equals("")) {
-            throw new UnsupportedOperationException("Master data endpoint for " + attr.name() + "does not exist");
-        }
 
         // Try and get response from cache
         List<Attribute> attributes = AttributeCache.getFromCache(attr.name());
 
         // If not cached (or cache expired), get it from network
         if (null == attributes) {
+            String endpoint = getEndpointPath(attr);
             disposable = MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())
                     .subscribe((result) -> {
@@ -245,31 +265,11 @@ public class MikanAccessor extends BaseCollectionAccessor {
         }
 
         // Cache results
-        Date expiryDate = null;
-        String expiryDateStr = response.headers().get("x-expire");
-        if (expiryDateStr != null) {
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US);
-            try {
-                expiryDate = dateFormat.parse(expiryDateStr);
-            } catch (ParseException e) {
-                Timber.i(e);
-            }
-        }
-
-        if (null == expiryDate) {
-            expiryDate = new Date();
-        }
-
-        AttributeCache.setCache(attrName, attributes, expiryDate); // TODO run that in a computing thread
+        AttributeCache.setCache(attrName, attributes, extractExpiry(response)); // TODO run that in a computing thread
 
 //        Timber.d("Mikan response [%s] : %s", attrResponse.request, json.toString());
 
-        List<Attribute> finalResult = attributes;
-        if (filter != null) {
-            finalResult = new ArrayList<>();
-            for (Attribute a : attributes) if (a.getName().contains(filter)) finalResult.add(a);
-        }
-
+        List<Attribute> finalResult = filter(attributes, filter);
         listener.onAttributesReady(finalResult, finalResult.size());
     }
 
