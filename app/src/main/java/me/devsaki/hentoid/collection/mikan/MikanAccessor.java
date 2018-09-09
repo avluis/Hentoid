@@ -46,13 +46,6 @@ public class MikanAccessor extends BaseCollectionAccessor {
     }
 
 
-    @Override
-    protected void finalize() throws Throwable {
-        if (disposable != null) disposable.dispose();
-        super.finalize();
-    }
-
-
     // == UTILS
 
     private static String getMikanCodeForSite(Site s) {
@@ -199,8 +192,13 @@ public class MikanAccessor extends BaseCollectionAccessor {
         }
     }
 
+    @Override
+    public void dispose() {
+        if (disposable != null) disposable.dispose();
+    }
 
-    // === REQUEST BUILDERS
+
+    // === CALLBACKS
 
     private void onContentSuccess(MikanContentResponse response, ContentListener listener) {
         if (null == response)

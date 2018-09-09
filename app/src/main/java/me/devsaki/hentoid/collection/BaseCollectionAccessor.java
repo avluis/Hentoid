@@ -12,10 +12,6 @@ import me.devsaki.hentoid.listener.ContentListener;
 
 public abstract class BaseCollectionAccessor implements CollectionAccessor {
 
-    protected static final String USAGE_RECENT_BOOKS = "recentBooks";
-    protected static final String USAGE_BOOK_PAGES = "bookPages";
-    protected static final String USAGE_SEARCH = "search";
-
     @Override
     public abstract void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
 

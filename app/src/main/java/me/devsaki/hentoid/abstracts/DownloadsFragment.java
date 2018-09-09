@@ -520,6 +520,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
+    public void onDestroy() {
+        collectionAccessor.dispose();
+        super.onDestroy();
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);

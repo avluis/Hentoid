@@ -39,7 +39,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
     @Override
     public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         synchronized (contentSynch) {
-            new ContentFetchTask(db, "", new ArrayList<>(), page, booksPerPage, orderStyle, favouritesOnly, listener, USAGE_SEARCH, null).execute();
+            new ContentFetchTask(db, "", new ArrayList<>(), page, booksPerPage, orderStyle, favouritesOnly, listener, null).execute();
         }
     }
 
@@ -51,7 +51,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
     @Override
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         synchronized (contentSynch) {
-            new ContentFetchTask(db, query, metadata, page, booksPerPage, orderStyle, favouritesOnly, listener, USAGE_SEARCH, null).execute();
+            new ContentFetchTask(db, query, metadata, page, booksPerPage, orderStyle, favouritesOnly, listener, null).execute();
         }
     }
 
@@ -60,6 +60,11 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
         synchronized (attrSynch) {
             new AttributesFetchTask(db, listener, attr, filter).execute();
         }
+    }
+
+    @Override
+    public void dispose() {
+        // Nothing special
     }
 
     // === ASYNC TASKS
@@ -74,10 +79,9 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
         private final int booksPerPage;
         private final int orderStyle;
         private final boolean favouritesOnly;
-        private final String usage;
         private final Content content;
 
-        ContentFetchTask(HentoidDB db, String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener, String usage, Content content) {
+        ContentFetchTask(HentoidDB db, String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener, Content content) {
             this.db = db;
             this.titleQuery = query;
             this.metadata = metadata;
@@ -86,7 +90,6 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
             this.orderStyle = orderStyle;
             this.favouritesOnly = favouritesOnly;
             this.listener = listener;
-            this.usage = usage;
             this.content = content;
         }
 
