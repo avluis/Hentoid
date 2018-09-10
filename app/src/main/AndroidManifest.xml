@@ -63,7 +63,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.DarkBackgroundNoActionBar">
+            android:theme="@style/AppTheme.Downloads">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -73,7 +73,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_mikan"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.DarkBackgroundNoActionBar">
+            android:theme="@style/AppTheme.Downloads">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
