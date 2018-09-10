@@ -212,6 +212,7 @@ public class ContentDownloadService extends IntentService {
 
         if (contentQueueManager.isQueuePaused()) {
             Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
+            if (downloadCanceled) notificationManager.cancel();
         } else {
             downloadCompleted(content, pagesOK, pagesKO);
         }
@@ -271,6 +272,7 @@ public class ContentDownloadService extends IntentService {
             HentoidApp.trackDownloadEvent("Completed");
         } else if (downloadCanceled) {
             Timber.d("Content download canceled: %s [%s]", content.getTitle(), content.getId());
+            notificationManager.cancel();
         } else {
             Timber.d("Content download skipped : %s [%s]", content.getTitle(), content.getId());
         }
