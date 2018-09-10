@@ -7,6 +7,6 @@ import me.devsaki.hentoid.database.domains.Attribute;
 public interface AttributeListener {
     void onAttributesReady(List<Attribute> attributeList, int totalAttributes);
 
-    void onAttributesFailed();
+    void onAttributesFailed(String message);
 }
 

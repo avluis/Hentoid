@@ -1412,9 +1412,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onContentFailed() {
-        Timber.w("Content results failed to load.");
-        Helper.toast("Content results failed to load.");
+    public void onContentFailed(String message) {
+        Timber.w(message);
+        Helper.toast(message); // TODO - use snackbar with retry button instead if "retryable"
+        toggleUI(SHOW_BLANK);
         isLoaded = false;
     }
 
@@ -1464,9 +1465,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onAttributesFailed() {
-        Timber.w("Attributes failed to load.");
-        Helper.toast("Attributes failed to load.");
+    public void onAttributesFailed(String message) {
+        Timber.w(message);
+        Helper.toast(message);  // TODO - use snackbar with retry button instead if "retryable"
         tagWaitPanel.setVisibility(View.GONE);
     }
 

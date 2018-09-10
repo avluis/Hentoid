@@ -122,7 +122,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         disposable = MikanServer.API.getRecent(getMikanCodeForSite(site), params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), v -> listener.onContentFailed());
+                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed("Recent books failed to load - " + throwable.getMessage()));
     }
 
     public void getPages(Content content, ContentListener listener) {
@@ -132,7 +132,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         disposable = MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId())
                 .observeOn(mainThread())
-                .subscribe((result) -> onPagesSuccess(result, content, listener), v -> listener.onContentFailed());
+                .subscribe((result) -> onPagesSuccess(result, content, listener), (throwable) -> listener.onContentFailed("Pages failed to load - " + throwable.getMessage()));
     }
 
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
@@ -173,7 +173,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         disposable = MikanServer.API.search(getMikanCodeForSite(site), suffix, params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), v -> listener.onContentFailed());
+                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed("Search failed to load - " + throwable.getMessage()));
     }
 
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
@@ -188,7 +188,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
                     .observeOn(mainThread())
                     .subscribe((result) -> {
                         onMasterDataSuccess(result, attr.name(), filter, listener); // TODO handle caching in computing thread
-                    }, v -> listener.onAttributesFailed());
+                    }, (throwable) -> listener.onAttributesFailed("Attributes failed to load - " + throwable.getMessage() ));
         } else {
             List<Attribute> result = filter(attributes, filter);
             listener.onAttributesReady(result, result.size());
@@ -205,8 +205,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     private void onContentSuccess(MikanContentResponse response, ContentListener listener) {
         if (null == response) {
-            Timber.w("Empty response");
-            listener.onContentFailed();
+            listener.onContentFailed("Content failed to load - Empty response");
             return;
         }
 
@@ -216,12 +215,11 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     private void onPagesSuccess(MikanContentResponse response, Content content, ContentListener listener) {
         if (null == response) {
-            Timber.w("Empty response");
-            listener.onContentFailed();
+            listener.onContentFailed("Pages failed to load - Empty response");
             return;
         }
 
-        if (null == content) listener.onContentFailed();
+        if (null == content) listener.onContentFailed("Pages failed to load - Unexpected empty content");
         else {
             List<Content> list = new ArrayList<Content>() {{
                 add(content);
@@ -234,8 +232,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
     private void onMasterDataSuccess(Response<MikanAttributeResponse> response, String attrName, String filter, AttributeListener listener) {
         MikanAttributeResponse result = response.body();
         if (null == result) {
-            Timber.w("Empty response");
-            listener.onAttributesFailed();
+            listener.onAttributesFailed("Attributes failed to load - Empty response");
             return;
         }
 

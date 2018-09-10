@@ -109,8 +109,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
         @Override
         protected void onPostExecute(ContentQueryResult response) {
             if (null == response) {
-                Timber.w("Empty response");
-                listener.onContentFailed();
+                listener.onContentFailed("Content failed to load - Empty response");
                 return;
             }
             listener.onContentReady(response.pagedContents, response.totalSelectedContent, response.totalContent);
@@ -144,8 +143,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
         @Override
         protected void onPostExecute(List<Attribute> response) {
             if (null == response) {
-                Timber.w("Empty response");
-                listener.onAttributesFailed();
+                listener.onAttributesFailed("Attributes failed to load - Empty response");
                 return;
             }
             listener.onAttributesReady(response, response.size());
