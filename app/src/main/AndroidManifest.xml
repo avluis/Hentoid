@@ -119,6 +119,105 @@
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.DarkBackgroundNoActionBar"
             android:windowSoftInputMode="stateAlwaysVisible" />
+        <activity
+            android:name=".activities.IntentActivity"
+            android:theme="@style/BrowserTheme">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <!-- Accepts all possible text sent via shared intent -->
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://hitomi.la/galleries" -->
+                <data
+                    android:host="hitomi.la"
+                    android:pathPrefix="/galleries"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://nhentai.net/g" -->
+                <data
+                    android:host="nhentai.net"
+                    android:pathPrefix="/g"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://www.tsumino.com/Book/Info" -->
+                <data
+                    android:host="www.tsumino.com"
+                    android:pathPrefix="/Book/Info"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://asmhentai.com/g" -->
+                <data
+                    android:host="asmhentai.com"
+                    android:pathPrefix="/g"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://comics.asmhentai.com/g" -->
+                <data
+                    android:host="comics.asmhentai.com"
+                    android:pathPrefix="/g"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://hentai.cafe/" -->
+                <data
+                    android:host="hentai.cafe"
+                    android:pathPrefix="/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "http://pururin.io/" -->
+                <data
+                    android:host="pururin.io"
+                    android:pathPrefix="/"
+                    android:scheme="http" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://mangapanda.com/" -->
+                <data
+                    android:host="www.mangapanda.com"
+                    android:pathPrefix="/"
+                    android:scheme="https" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".services.ContentDownloadService"

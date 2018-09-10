@@ -29,6 +29,7 @@
     <screenName name="me.devsaki.hentoid.activities.websites.PururinActivity">Source: Pururin</screenName>
     <screenName name="me.devsaki.hentoid.activities.MikanSearchActivity">Source: Mikan Search</screenName>
 
+    <screenName name="me.devsaki.hentoid.activities.IntentActivity">Launch: Intent</screenName>
     <screenName name="me.devsaki.hentoid.activities.SplashActivity">Launch: Splash</screenName>
     <screenName name="me.devsaki.hentoid.activities.IntroActivity">Launch: Intro</screenName>
     <screenName name="me.devsaki.hentoid.activities.AppLockActivity">Launch: App Lock</screenName>
