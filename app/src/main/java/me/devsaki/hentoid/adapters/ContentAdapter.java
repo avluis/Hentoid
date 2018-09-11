@@ -750,8 +750,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     @Override
-    public void onContentFailed() {
-        Timber.w("Page loading failed"); // TODO deactivate blinking button when failed
+    public void onContentFailed(String message) {
+        Timber.w(message);
+        Helper.toast(message);  // TODO - use snackbar with retry button instead if "retryable"
+        // TODO deactivate blinking download button when failed
     }
 
     // Public interfaces

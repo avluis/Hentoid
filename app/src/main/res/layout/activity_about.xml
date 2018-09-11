@@ -29,7 +29,7 @@
             app:layout_constraintBottom_toTopOf="@id/gplusIcon"
             app:layout_constraintStart_toEndOf="@id/iv_app_logo"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_favicon_github"
+            android:src="@drawable/ic_favicon_github"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -53,7 +53,7 @@
             app:layout_constraintBottom_toTopOf="@id/discordIcon"
             app:layout_constraintStart_toEndOf="@id/iv_app_logo"
             app:layout_constraintTop_toBottomOf="@id/githubIcon"
-            app:srcCompat="@drawable/ic_favicon_gplus"
+            android:src="@drawable/ic_favicon_gplus"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -76,7 +76,7 @@
             app:layout_constraintBottom_toTopOf="@id/redditIcon"
             app:layout_constraintStart_toEndOf="@id/iv_app_logo"
             app:layout_constraintTop_toBottomOf="@id/gplusIcon"
-            app:srcCompat="@drawable/ic_favicon_discord"
+            android:src="@drawable/ic_favicon_discord"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -98,7 +98,7 @@
             android:cropToPadding="true"
             app:layout_constraintStart_toEndOf="@id/iv_app_logo"
             app:layout_constraintTop_toBottomOf="@id/discordIcon"
-            app:srcCompat="@drawable/ic_favicon_reddit"
+            android:src="@drawable/ic_favicon_reddit"
             tools:ignore="ContentDescription" />
 
         <TextView

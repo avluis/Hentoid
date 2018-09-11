@@ -531,7 +531,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        if (MODE_LIBRARY == mode) collectionAccessor = new DatabaseAccessor(mContext); else collectionAccessor = new MikanAccessor(mContext);
+        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(mContext) : new MikanAccessor(mContext);
 
         initUI(rootView);
         attachScrollListener();
@@ -543,6 +543,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void initUI(View rootView) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
+        emptyText.setText((MODE_LIBRARY == mode)? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
 
         // Main view
         mListView = rootView.findViewById(R.id.list);
@@ -1370,7 +1371,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             emptyText.setText(R.string.search_entry_not_found);
             toggleUI(SHOW_BLANK);
         } else if (isLoaded) {
-            emptyText.setText(R.string.downloads_empty);
+            emptyText.setText((MODE_LIBRARY == mode)? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
             toggleUI(SHOW_BLANK);
         } else {
             Timber.w("Why are we in here?");
@@ -1412,9 +1413,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onContentFailed() {
-        Timber.w("Content results failed to load.");
-        Helper.toast("Content results failed to load.");
+    public void onContentFailed(String message) {
+        Timber.w(message);
+        Helper.toast(message); // TODO - use snackbar with retry button instead if "retryable"
+        toggleUI(SHOW_BLANK);
         isLoaded = false;
     }
 
@@ -1464,9 +1466,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onAttributesFailed() {
-        Timber.w("Attributes failed to load.");
-        Helper.toast("Attributes failed to load.");
+    public void onAttributesFailed(String message) {
+        Timber.w(message);
+        Helper.toast(message);  // TODO - use snackbar with retry button instead if "retryable"
         tagWaitPanel.setVisibility(View.GONE);
     }
 

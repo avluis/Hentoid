@@ -7,8 +7,7 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:editTextColor">@android:color/white</item>
-        <item name="android:textColorHint">@color/material_red_100</item>
-        <item name="android:textColorSecondary">@color/material_red_100</item>
+        <item name="android:textColorHint">@color/material_red_50</item>
     </style>
 
     <!-- Activities with Toolbar as ActionBar -->
@@ -17,8 +16,7 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:editTextColor">@android:color/white</item>
-        <item name="android:textColorHint">@color/material_red_100</item>
-        <item name="android:textColorSecondary">@color/material_red_100</item>
+        <item name="android:textColorHint">@color/material_red_50</item>
     </style>
 
     <!-- AppIntro Activity & Slides -->
@@ -63,5 +61,11 @@
     <style name="AppTheme.DarkBackgroundNoActionBar" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@color/primary_dark</item>
         <item name="windowActionModeOverlay">true</item>
+    </style>
+
+    <!-- Downloads -->
+    <style name="AppTheme.Downloads" parent="AppTheme.DarkBackgroundNoActionBar">
+        <item name="android:textColorHint">@color/material_red_100</item>
+        <item name="android:textColorSecondary">@color/material_red_100</item>
     </style>
 </resources>

@@ -51,15 +51,6 @@
         </FrameLayout>
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <include
-        android:id="@+id/tag_filter_view"
-        layout="@layout/include_search_pane"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:visibility="gone"
-        />
-
     <TextView
         android:id="@+id/empty"
         android:layout_width="wrap_content"
@@ -67,7 +58,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="150dp"
         android:gravity="center"
-        android:text="@string/downloads_empty"
+        android:text="@string/downloads_empty_library"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
         android:visibility="gone" />
@@ -87,4 +78,14 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
         android:visibility="gone" />
+
+    <include
+        android:id="@+id/tag_filter_view"
+        layout="@layout/include_search_pane"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:visibility="gone"
+        />
+
 </RelativeLayout>
