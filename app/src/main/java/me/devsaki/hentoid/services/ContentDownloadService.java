@@ -399,6 +399,7 @@ public class ContentDownloadService extends IntentService {
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 RequestQueueManager.getInstance().cancelQueue();
                 ContentQueueManager.getInstance().pauseQueue();
+                notificationManager.cancel();
                 break;
             case DownloadEvent.EV_CANCEL:
                 RequestQueueManager.getInstance().cancelQueue();
