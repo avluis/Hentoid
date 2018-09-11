@@ -123,13 +123,6 @@
             android:name=".activities.IntentActivity"
             android:theme="@style/BrowserTheme">
             <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <!-- Accepts all possible text sent via shared intent -->
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
@@ -145,10 +138,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://nhentai.net/g" -->
+                <!-- Accepts URIs that begin with "https://nhentai.net/g/" -->
                 <data
                     android:host="nhentai.net"
-                    android:pathPrefix="/g"
+                    android:pathPrefix="/g/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
