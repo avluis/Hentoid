@@ -11,6 +11,10 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
+import static android.content.Intent.ACTION_SEND;
+import static android.content.Intent.ACTION_VIEW;
+import static android.content.Intent.EXTRA_TEXT;
+
 /**
  * Created by avluis on 05/11/2016.
  * Responsible for resolving intents and sending them where appropriate
@@ -29,8 +33,10 @@ public class IntentActivity extends BaseActivity {
         String action = intent.getAction();
         Uri data = intent.getData();
 
-        if (Intent.ACTION_VIEW.equals(action) && data != null) {
+        if (ACTION_VIEW.equals(action) && data != null) {
             processIntent(data);
+        } else if (ACTION_SEND.equals(action) && intent.hasExtra(EXTRA_TEXT)) {
+            processIntent(Uri.parse(intent.getStringExtra(EXTRA_TEXT)));
         } else {
             Timber.d("Unrecognized intent. Cannot process.");
         }
