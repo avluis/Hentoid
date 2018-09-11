@@ -362,32 +362,6 @@ public class ContentDownloadService extends IntentService {
     }
 
     /**
-     * Notify a download progress event to the app using the event bus
-     *
-     * @param content    Corresponding content
-     * @param pagesOK    Number of pages downloaded successfully on current book
-     * @param pagesKO    Number of pages whose download failed on current book
-     * @param totalPages Total pages of current book
-     */
-    private static void notifyProgress(Content content, int pagesOK, int pagesKO, int totalPages) {
-        Timber.d("UpdateActivity : OK : %s - KO : %s - Total : %s > %s pc.", pagesOK, pagesKO, totalPages, String.valueOf((pagesOK + pagesKO) * 100.0 / totalPages));
-        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_PROGRESS, pagesOK, pagesKO, totalPages));
-    }
-
-    /**
-     * Notify a download completed event to the app using the event bus
-     *
-     * @param content    Corresponding content
-     * @param pagesOK    Number of pages downloaded successfully on current book
-     * @param pagesKO    Number of pages whose download failed on current book
-     * @param totalPages Total pages of current book
-     */
-    private static void notifyComplete(Content content, int pagesOK, int pagesKO, int totalPages) {
-        Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
-        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, totalPages));
-    }
-
-    /**
      * Download event handler called by the event bus
      *
      * @param event Download event
@@ -399,6 +373,7 @@ public class ContentDownloadService extends IntentService {
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
                 RequestQueueManager.getInstance().cancelQueue();
                 ContentQueueManager.getInstance().pauseQueue();
+                notificationManager.cancel();
                 break;
             case DownloadEvent.EV_CANCEL:
                 RequestQueueManager.getInstance().cancelQueue();
