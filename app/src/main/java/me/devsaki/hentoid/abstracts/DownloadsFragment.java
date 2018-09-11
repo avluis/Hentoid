@@ -17,6 +17,7 @@ import android.os.Handler;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -1415,7 +1416,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onContentFailed(String message) {
         Timber.w(message);
-        Helper.toast(message); // TODO - use snackbar with retry button instead if "retryable"
+        Snackbar.make(mListView, message, Snackbar.LENGTH_SHORT).show();  // TODO: 9/11/2018 consider retry button if applicable
         toggleUI(SHOW_BLANK);
         isLoaded = false;
     }
@@ -1468,7 +1469,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onAttributesFailed(String message) {
         Timber.w(message);
-        Helper.toast(message);  // TODO - use snackbar with retry button instead if "retryable"
+        Snackbar.make(mListView, message, Snackbar.LENGTH_SHORT).show(); // TODO: 9/11/2018 consider retry button if applicable
         tagWaitPanel.setVisibility(View.GONE);
     }
 
