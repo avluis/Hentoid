@@ -11,6 +11,7 @@ import timber.log.Timber;
  */
 public enum Site {
 
+    // TODO : https://hentai2read.com/
     FAKKU(0, "Fakku", "https://www.fakku.net", "fakku", R.drawable.ic_menu_fakku),
     PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin),
     HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi),
@@ -19,6 +20,7 @@ public enum Site {
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe),
     ASMHENTAI(6, "asmhentai", "http://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai),
     ASMHENTAI_COMICS(7, "asmhentai", "http://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics),
+    EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai),
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda); // Safe-for-work/wife/gf option
 
 

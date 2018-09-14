@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -73,6 +74,8 @@ public abstract class BaseWebActivity extends BaseActivity {
     private boolean webViewIsLoading;
     // Indicates if corresponding action buttons are enabled
     private boolean fabReadEnabled, fabDownloadEnabled;
+
+    protected CustomWebViewClient webClient;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -158,6 +161,9 @@ public abstract class BaseWebActivity extends BaseActivity {
         webView.removeAllViews();
         webView.destroy();
         webView = null;
+
+        webClient.destroy();
+        webClient = null;
 
         super.onDestroy();
     }
@@ -458,6 +464,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         private String domainName = "";
         private final String filteredUrl;
+        protected Disposable disposable;
         protected final BaseWebActivity activity;
         protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
@@ -473,6 +480,11 @@ public abstract class BaseWebActivity extends BaseActivity {
         CustomWebViewClient(BaseWebActivity activity) {
             this.activity = activity;
             this.filteredUrl = "";
+        }
+
+        void destroy()
+        {
+            if (disposable != null) disposable.dispose();
         }
 
         @Override

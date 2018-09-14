@@ -59,6 +59,10 @@
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
+            android:name=".activities.websites.EHentaiActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/BrowserTheme" />
+        <activity
             android:name=".activities.DownloadsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
@@ -212,6 +216,17 @@
                 <!-- Accepts URIs that begin with "https://mangapanda.com/" -->
                 <data
                     android:host="www.mangapanda.com"
+                    android:pathPrefix="/"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
+                <data
+                    android:host="e-hentai.org"
                     android:pathPrefix="/"
                     android:scheme="https" />
             </intent-filter>

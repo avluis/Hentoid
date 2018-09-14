@@ -17,6 +17,7 @@
         <item>tsumino</item>
         <item>Pururin</item>
         <item>Panda</item>
+        <item>E-Hentai</item>
         <item>Mikan Search</item>
         <item>Home</item>
         <item>Queue</item>
@@ -31,6 +32,7 @@
         <item>Tsumino</item>
         <item>Pururin</item>
         <item>Panda</item>
+        <item>EHentai</item>
         <item>Mikan</item>
         <item>Downloads</item>
         <item>Queue</item>
@@ -45,6 +47,7 @@
         <item>me.devsaki.hentoid.activities.websites.TsuminoActivity</item>
         <item>me.devsaki.hentoid.activities.websites.PururinActivity</item>
         <item>me.devsaki.hentoid.activities.websites.PandaActivity</item>
+        <item>me.devsaki.hentoid.activities.websites.EHentaiActivity</item>
         <item>me.devsaki.hentoid.activities.MikanSearchActivity</item>
         <item>me.devsaki.hentoid.activities.DownloadsActivity</item>
         <item>me.devsaki.hentoid.activities.QueueActivity</item>

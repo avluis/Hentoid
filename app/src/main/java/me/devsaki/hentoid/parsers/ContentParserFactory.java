@@ -33,6 +33,8 @@ public class ContentParserFactory {
                 return new TsuminoParser();
             case PURURIN:
                 return new PururinParser();
+            case EHENTAI:
+                return new EHentaiParser();
             case PANDA:
                 return new PandaParser();
             default:
