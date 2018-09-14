@@ -9,6 +9,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.websites.BaseWebActivity;
+import me.devsaki.hentoid.activities.websites.EHentaiActivity;
 import me.devsaki.hentoid.activities.websites.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.websites.HitomiActivity;
 import me.devsaki.hentoid.activities.websites.NhentaiActivity;
@@ -77,6 +78,8 @@ public class Content implements Serializable {
         switch (site) {
             case FAKKU:
                 return url.substring(url.lastIndexOf("/") + 1);
+            case EHENTAI:
+                return url;
             case PURURIN:
                 paths = url.split("/");
                 return paths[1];
@@ -114,6 +117,7 @@ public class Content implements Serializable {
             case ASMHENTAI_COMICS:
             case NHENTAI:
             case PANDA:
+            case EHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
             case HENTAICAFE:
@@ -138,6 +142,8 @@ public class Content implements Serializable {
                 return TsuminoActivity.class;
             case PURURIN:
                 return PururinActivity.class;
+            case EHENTAI:
+                return EHentaiActivity.class;
             case PANDA:
                 return PandaActivity.class;
             default:
@@ -180,6 +186,7 @@ public class Content implements Serializable {
                 break;
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
+            case EHENTAI:           // Won't work because of the temporary key
             case NHENTAI:
                 galleryConst = "/g";
                 break;
@@ -208,6 +215,8 @@ public class Content implements Serializable {
                 return site.getUrl() + "/gallery" + url + "1/";
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
+            case EHENTAI:
+                return "";      // Won't work because of the temporary key
             case HENTAICAFE:
             case PANDA:
                 return getGalleryUrl();
