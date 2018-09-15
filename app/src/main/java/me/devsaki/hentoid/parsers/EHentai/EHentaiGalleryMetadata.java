@@ -51,7 +51,7 @@ public class EHentaiGalleryMetadata {
     {
         Content result = new Content();
 
-        result.setUrl(gid) // The rest will not be useful anyway because of temporary keys
+        result.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
                 .setCoverImageUrl(thumb)
                 .setTitle(title)
                 .setQtyPages(Integer.parseInt(filecount))

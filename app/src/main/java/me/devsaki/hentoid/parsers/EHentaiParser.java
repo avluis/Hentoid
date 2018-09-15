@@ -20,38 +20,9 @@ public class EHentaiParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-
-
-        Content result = new Content();
-
-        result.setUrl(doc.baseUri().substring(doc.baseUri().indexOf('/', 9)));
-
-        String coverUrl = doc.select("div#imgholder")
-                .select("a")
-                .select("img")
-                .attr("src");
-        result.setCoverImageUrl(coverUrl);
-
-        String title = doc.select("div#mangainfo")
-                .select("div")
-                .select("h1")
-                .text();
-        result.setTitle(title);
-
-        String lastOptionUrl = doc.select("div#selectpage")
-                .select("select")
-                .select("option")
-                .last()
-                .attr("value");
-        int nbPages = Integer.parseInt(lastOptionUrl.substring(lastOptionUrl.lastIndexOf('/') + 1));
-        result.setQtyPages(nbPages);
-
-        AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
-
-        result.setSite(Site.EHENTAI);
-
-        return result;
+        // Nothing here; that part is directly handled in EHentaiActivity
+        // NB : that will become the norm once a refactoring is done
+        return new Content();
     }
 
     @Override
@@ -59,27 +30,58 @@ public class EHentaiParser extends BaseParser {
         List<String> result = new ArrayList<>();
 
         // TODO see ehViewer > GalleryDetailParser and GalleryPageParser
+        /**
+         * 1- Detect the number of pages of the gallery
+         *
+         * 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
+         *
+         * 3- Open all pages and grab the URL of the displayed image
+         */
 
-        String pageUrl;
-        for (int i = 0; i < content.getQtyPages(); i++) {
-            pageUrl = content.getReaderUrl() + "/" + i;
-            Document doc = Jsoup.connect(pageUrl).get();
+        // 1- Detect the number of pages of the gallery
+        Element e;
+        Document doc = Jsoup.connect(content.getGalleryUrl()).get();
+        Elements elements = doc.select("table.ptt");
+        if (null == elements || 0 == elements.size()) return result;
 
-            Elements scripts = doc.head().select("script");
-            for (Element e : scripts) {
-                if (e.toString().contains("document['pu']")) // That's the one
-                {
-                    Pattern pattern = Pattern.compile("document\\['pu'\\] = '(.+)'");
-                    Matcher matcher = pattern.matcher(e.toString());
+        e = elements.first();
+        e = e.select("tbody").first().select("tr").first();
+        int nbGalleryPages = e.children().size() - 2;
 
-                    if (matcher.find() && matcher.groupCount() > 0) {
-                        result.add(matcher.group(1));
-                    }
-                    break;
-                }
+        // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
+        List<String> pageUrls = new ArrayList<>();
+
+        fetchPageUrls(doc, pageUrls);
+
+        if (nbGalleryPages > 1) {
+            for (int i = 1; i < nbGalleryPages; i++) {
+                doc = Jsoup.connect(content.getGalleryUrl() + "/?p=" + (i - 1)).get();
+                fetchPageUrls(doc, pageUrls);
+            }
+        }
+
+        // 3- Open all pages and grab the URL of the displayed image
+        for (String s : pageUrls)
+        {
+            doc = Jsoup.connect(s).get();
+            elements = doc.select("img#img");
+            if (elements != null && elements.size() > 0)
+            {
+                e = elements.first();
+                result.add(e.attr("src"));
             }
         }
 
         return result;
+    }
+
+    private static void fetchPageUrls(Document doc, List<String> pageUrls) {
+        Elements imageLinks = doc.getElementsByClass("gdtm");
+
+        for (Element e : imageLinks)
+        {
+            e = e.select("div").first().select("a").first();
+            pageUrls.add(e.attr("href"));
+        }
     }
 }

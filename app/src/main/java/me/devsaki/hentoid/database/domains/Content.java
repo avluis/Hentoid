@@ -79,7 +79,6 @@ public class Content implements Serializable {
             case FAKKU:
                 return url.substring(url.lastIndexOf("/") + 1);
             case EHENTAI:
-                return url;
             case PURURIN:
                 paths = url.split("/");
                 return paths[1];
@@ -215,8 +214,7 @@ public class Content implements Serializable {
                 return site.getUrl() + "/gallery" + url + "1/";
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
-            case EHENTAI:
-                return "";      // Won't work because of the temporary key
+            case EHENTAI:               // Won't work anyway because of the temporary key
             case HENTAICAFE:
             case PANDA:
                 return getGalleryUrl();
