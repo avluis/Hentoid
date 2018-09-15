@@ -578,11 +578,12 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
                 .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
-                .setQueryOrder(cursorContent.getPosition())
-                .populateAuthor();
+                .setQueryOrder(cursorContent.getPosition());
 
         if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
                 .setAttributes(selectAttributesByContentId(db, content.getId()));
+
+        content.populateAuthor();
 
         return content;
     }
