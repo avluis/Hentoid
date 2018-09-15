@@ -162,7 +162,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         webView.destroy();
         webView = null;
 
-        webClient.destroy();
+        if (webClient != null) webClient.destroy();
         webClient = null;
 
         super.onDestroy();
