@@ -95,7 +95,7 @@ public class EHentaiGalleryMetadata {
                 }
             }
 
-            attributes.add(new Attribute(type, name, ""));
+            attributes.add(new Attribute(type, name, type.name()+"/"+name));
         }
 
         return result;
