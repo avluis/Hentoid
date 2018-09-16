@@ -22,20 +22,23 @@ import timber.log.Timber;
  */
 public class RequestQueueManager implements RequestQueue.RequestFinishedListener<Object> {
     private static RequestQueueManager mInstance;   // Instance of the singleton
+    private static Boolean isSlowMode = null;
     private static final int TIMEOUT_MS = 15000;
 
     private RequestQueue mRequestQueue;             // Volley download request queue
     private int nbRequests = 0;                     // Number of requests currently in the queue (for debug display)
 
 
-    private RequestQueueManager(Context context) {
+    private RequestQueueManager(Context context, boolean forceSlowMode) {
         int nbDlThreads = Preferences.getDownloadThreadCount();
-        if (nbDlThreads == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
+        if (forceSlowMode) nbDlThreads = 1;
+        else if (nbDlThreads == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
             nbDlThreads = getSuggestedThreadCount(context);
         }
         Crashlytics.setInt("Download thread count", nbDlThreads);
 
         mRequestQueue = getRequestQueue(context, nbDlThreads);
+        isSlowMode = forceSlowMode;
     }
 
     private int getSuggestedThreadCount(Context context) {
@@ -57,12 +60,12 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
     }
 
     public static synchronized RequestQueueManager getInstance() {
-        return getInstance(null);
+        return getInstance(null, false);
     }
 
-    public static synchronized RequestQueueManager getInstance(Context context) {
-        if (mInstance == null) {
-            mInstance = new RequestQueueManager(context);
+    public static synchronized RequestQueueManager getInstance(Context context, boolean forceSlowMode) {
+        if (context != null && (mInstance == null || (null == isSlowMode || isSlowMode != forceSlowMode))) {
+            mInstance = new RequestQueueManager(context, forceSlowMode);
         }
         return mInstance;
     }

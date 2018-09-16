@@ -12,16 +12,16 @@ import timber.log.Timber;
 public enum Site {
 
     // TODO : https://hentai2read.com/
-    FAKKU(0, "Fakku", "https://www.fakku.net", "fakku", R.drawable.ic_menu_fakku),
-    PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin),
-    HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi),
-    NHENTAI(3, "nhentai", "https://nhentai.net", "nhentai", R.drawable.ic_menu_nhentai),
-    TSUMINO(4, "tsumino", "http://www.tsumino.com", "tsumino", R.drawable.ic_menu_tsumino),
-    HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe),
-    ASMHENTAI(6, "asmhentai", "http://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai),
-    ASMHENTAI_COMICS(7, "asmhentai", "http://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics),
-    EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai),
-    PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda); // Safe-for-work/wife/gf option
+    FAKKU(0, "Fakku", "https://www.fakku.net", "fakku", R.drawable.ic_menu_fakku, false),
+    PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin, false),
+    HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi, false),
+    NHENTAI(3, "nhentai", "https://nhentai.net", "nhentai", R.drawable.ic_menu_nhentai, false),
+    TSUMINO(4, "tsumino", "http://www.tsumino.com", "tsumino", R.drawable.ic_menu_tsumino, false),
+    HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe, false),
+    ASMHENTAI(6, "asmhentai", "http://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai, false),
+    ASMHENTAI_COMICS(7, "asmhentai", "http://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, false),
+    EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, true),
+    PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, false); // Safe-for-work/wife/gf option
 
 
     private final int code;
@@ -29,13 +29,15 @@ public enum Site {
     private final String uniqueKeyword;
     private final String url;
     private final int ico;
+    private final boolean requiresSlowMode;
 
-    Site(int code, String description, String url, String uniqueKeyword, int ico) {
+    Site(int code, String description, String url, String uniqueKeyword, int ico, boolean requiresSlowMode) {
         this.code = code;
         this.description = description;
         this.url = url;
         this.uniqueKeyword = uniqueKeyword;
         this.ico = ico;
+        this.requiresSlowMode = requiresSlowMode;
     }
 
     @Nullable
@@ -81,6 +83,10 @@ public enum Site {
 
     public int getIco() {
         return ico;
+    }
+
+    public boolean isRequiresSlowMode() {
+        return requiresSlowMode;
     }
 
     public String getFolder() {
