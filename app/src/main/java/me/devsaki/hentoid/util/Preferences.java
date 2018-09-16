@@ -166,6 +166,11 @@ public final class Preferences {
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + ""));
     }
 
+    public static int getFolderTruncationNbChars() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_FOLDER_TRUNCATION_LISTS,
+                Default.PREF_FOLDER_TRUNCATION_DEFAULT + ""));
+    }
+
     public static final class Key {
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
@@ -189,6 +194,7 @@ public final class Preferences {
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         public static final String PREF_USE_SFW = "pref_use_sfw";
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
+        static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
     }
 
     public static final class Default {
@@ -206,6 +212,7 @@ public final class Preferences {
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         static final boolean PREF_USE_SFW_DEFAULT = false;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
+        static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
     }
 
     public static final class Constant {
@@ -223,5 +230,6 @@ public final class Preferences {
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
         static final int PREF_READ_CONTENT_DEFAULT = 0;
         static final int PREF_READ_CONTENT_PERFECT_VIEWER = 1;
+        static final int TRUNCATE_FOLDER_NONE = 0;
     }
 }

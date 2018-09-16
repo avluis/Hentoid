@@ -303,7 +303,8 @@ public class FileHelper {
     }
 
     public static File createContentDownloadDir(Context context, Content content) {
-        String folderDir = content.getSite().getFolder();
+        String siteFolder = content.getSite().getFolder();
+        String folderDir = siteFolder;
 
         // Format folder name according to preferences
         int folderNamingPreference = Preferences.getFolderNameFormat();
@@ -315,6 +316,13 @@ public class FileHelper {
             folderDir = folderDir + content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
         folderDir = folderDir + "[" + content.getUniqueSiteId() + "]";
+
+        // Truncate folder dir to something manageable for Windows
+        // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
+        int truncLength = Preferences.getFolderTruncationNbChars();
+        if (truncLength > 0) {
+            if (folderDir.length() - siteFolder.length() > truncLength) folderDir = folderDir.substring(0, siteFolder.length() + truncLength - 1);
+        }
 
         String settingDir = Preferences.getRootFolderName();
         if (settingDir.isEmpty()) {
