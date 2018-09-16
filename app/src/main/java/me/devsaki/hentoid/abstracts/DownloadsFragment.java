@@ -1332,11 +1332,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         return ( (query != null && query.length() > 0) || selectedSearchTags.size() > 0);
     }
 
+    private void updateSearchIcon(boolean isSearchMode)
+    {
+        if (searchMenu != null) searchMenu.setIcon(isSearchMode?R.drawable.ic_menu_search_found:R.drawable.ic_menu_search);
+    }
+
     protected void searchLibrary() {
         String query = this.getQuery();
         isLoaded = false;
 
         if (MODE_MIKAN == mode) toggleUI(SHOW_LOADING);
+        updateSearchIcon(isSearchMode());
 
         if (isSearchMode()) collectionAccessor.searchBooks(query, selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
