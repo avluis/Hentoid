@@ -23,6 +23,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
@@ -167,10 +168,10 @@ public class ContentDownloadService extends IntentService {
 
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
-        RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(cover, dir));
+        RequestQueueManager.getInstance(this, content.getSite().isRequiresSlowMode()).addToRequestQueue(buildDownloadRequest(cover, dir));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
-                RequestQueueManager.getInstance(this).addToRequestQueue(buildDownloadRequest(img, dir));
+                RequestQueueManager.getInstance().addToRequestQueue(buildDownloadRequest(img, dir));
         }
 
         return content;
