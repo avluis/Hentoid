@@ -872,7 +872,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                 if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s))
                 {
-                    Helper.toast(mContext, R.string.masterdata_illegal_tag, Helper.DURATION.LONG);
+                    Snackbar.make(mListView, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
                     submitAttributeSearchQuery(selectedTab, s);
                 }
@@ -885,7 +885,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             public boolean onQueryTextChange(String s) {
                 if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s))
                 {
-                    Helper.toast(mContext, R.string.masterdata_illegal_tag, Helper.DURATION.LONG);
+                    Snackbar.make(mListView, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchHandler.removeCallbacksAndMessages(null);
                 } else if (shouldHide && (!s.isEmpty())) {
                     submitAttributeSearchQuery(selectedTab, s, 1000);
