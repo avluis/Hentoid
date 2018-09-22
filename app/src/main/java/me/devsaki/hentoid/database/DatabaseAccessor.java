@@ -39,7 +39,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
     @Override
     public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         synchronized (contentSynch) {
-            new ContentFetchTask(db, "", new ArrayList<>(), page, booksPerPage, orderStyle, favouritesOnly, listener, null).execute();
+            new ContentFetchTask(db, "", new ArrayList<>(), page, booksPerPage, orderStyle, favouritesOnly, listener).execute();
         }
     }
 
@@ -51,7 +51,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
     @Override
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         synchronized (contentSynch) {
-            new ContentFetchTask(db, query, metadata, page, booksPerPage, orderStyle, favouritesOnly, listener, null).execute();
+            new ContentFetchTask(db, query, metadata, page, booksPerPage, orderStyle, favouritesOnly, listener).execute();
         }
     }
 
@@ -79,9 +79,8 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
         private final int booksPerPage;
         private final int orderStyle;
         private final boolean favouritesOnly;
-        private final Content content;
 
-        ContentFetchTask(HentoidDB db, String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener, Content content) {
+        ContentFetchTask(HentoidDB db, String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
             this.db = db;
             this.titleQuery = query;
             this.metadata = metadata;
@@ -90,7 +89,6 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
             this.orderStyle = orderStyle;
             this.favouritesOnly = favouritesOnly;
             this.listener = listener;
-            this.content = content;
         }
 
         @Override
@@ -109,7 +107,7 @@ public class DatabaseAccessor extends BaseCollectionAccessor {
         @Override
         protected void onPostExecute(ContentQueryResult response) {
             if (null == response) {
-                listener.onContentFailed("Content failed to load - Empty response");
+                listener.onContentFailed(null, "Content failed to load - Empty response");
                 return;
             }
             listener.onContentReady(response.pagedContents, response.totalSelectedContent, response.totalContent);

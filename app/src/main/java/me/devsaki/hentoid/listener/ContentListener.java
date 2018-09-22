@@ -7,6 +7,6 @@ import me.devsaki.hentoid.database.domains.Content;
 public interface ContentListener {
     void onContentReady(List<Content> results, int totalSelectedContent, int totalContent);
 
-    void onContentFailed(String message);
+    void onContentFailed(Content content, String message);
 }
 
