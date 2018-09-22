@@ -8,13 +8,8 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.AttributeMap;
 
 public class EHentaiParser extends BaseParser {
 
@@ -55,7 +50,7 @@ public class EHentaiParser extends BaseParser {
 
         if (nbGalleryPages > 1) {
             for (int i = 1; i < nbGalleryPages; i++) {
-                doc = Jsoup.connect(content.getGalleryUrl() + "/?p=" + (i - 1)).get();
+                doc = Jsoup.connect(content.getGalleryUrl() + "/?p=" + i).get();
                 fetchPageUrls(doc, pageUrls);
             }
         }
@@ -75,7 +70,7 @@ public class EHentaiParser extends BaseParser {
         return result;
     }
 
-    private static void fetchPageUrls(Document doc, List<String> pageUrls) {
+    private void fetchPageUrls(Document doc, List<String> pageUrls) {
         Elements imageLinks = doc.getElementsByClass("gdtm");
 
         for (Element e : imageLinks)
