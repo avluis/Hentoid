@@ -1420,9 +1420,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onContentFailed(String message) {
+    public void onContentFailed(Content content, String message) {
         Timber.w(message);
-        Snackbar.make(mListView, message, Snackbar.LENGTH_SHORT).show();  // TODO: 9/11/2018 consider retry button if applicable
+        Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
+                .setAction("RETRY", v-> searchLibrary() )
+                .show();
         toggleUI(SHOW_BLANK);
         isLoaded = false;
     }

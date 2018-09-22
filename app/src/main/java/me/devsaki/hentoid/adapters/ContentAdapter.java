@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
@@ -360,11 +361,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 // "Available online" icon
                 if (status == StatusContent.ONLINE) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                    holder.ivDownload.setOnClickListener(v -> {
-                        animateBlink(holder.ivDownload);
-                        holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
-                        collectionAccessor.getPages(content, this);
-                    });
+                    holder.ivDownload.setOnClickListener( v -> tryDownloadPages(content) );
                 }
                 // "In queue" icon
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
@@ -381,6 +378,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         } else {
             holder.ivSite.setVisibility(View.GONE);
+        }
+    }
+
+    private void tryDownloadPages(Content content)
+    {
+        ContentHolder holder = holderByContent(content);
+        if (holder != null) {
+            animateBlink(holder.ivDownload);
+            holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
+            collectionAccessor.getPages(content, this);
         }
     }
 
@@ -750,10 +757,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     @Override
-    public void onContentFailed(String message) {
+    public void onContentFailed(Content content, String message) {
         Timber.w(message);
-        Helper.toast(message);  // TODO - use snackbar with retry button instead if "retryable"
-        // TODO deactivate blinking download button when failed
+        Snackbar snackbar = Snackbar.make(libraryView, message, Snackbar.LENGTH_LONG);
+
+        if (content != null) {
+            ContentHolder holder = holderByContent(content);
+            if (holder != null) {
+                holder.ivDownload.clearAnimation();
+                holder.ivDownload.setOnClickListener( v -> tryDownloadPages(content) );
+            }
+            snackbar.setAction("RETRY", v -> tryDownloadPages(content) );
+        }
+        snackbar.show();
     }
 
     // Public interfaces

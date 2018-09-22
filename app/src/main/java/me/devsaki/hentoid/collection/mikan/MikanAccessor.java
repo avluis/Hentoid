@@ -122,7 +122,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         disposable = MikanServer.API.getRecent(getMikanCodeForSite(site), params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed("Recent books failed to load - " + throwable.getMessage()));
+                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed(null, "Recent books failed to load - " + throwable.getMessage()));
     }
 
     public void getPages(Content content, ContentListener listener) {
@@ -132,7 +132,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         disposable = MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId())
                 .observeOn(mainThread())
-                .subscribe((result) -> onPagesSuccess(result, content, listener), (throwable) -> listener.onContentFailed("Pages failed to load - " + throwable.getMessage()));
+                .subscribe((result) -> onPagesSuccess(result, content, listener), (throwable) -> listener.onContentFailed(content, "Pages failed to load - " + throwable.getMessage()));
     }
 
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
@@ -173,7 +173,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
         disposable = MikanServer.API.search(getMikanCodeForSite(site), suffix, params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed("Search failed to load - " + throwable.getMessage()));
+                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed(null, "Search failed to load - " + throwable.getMessage()));
     }
 
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
@@ -205,7 +205,7 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     private void onContentSuccess(MikanContentResponse response, ContentListener listener) {
         if (null == response) {
-            listener.onContentFailed("Content failed to load - Empty response");
+            listener.onContentFailed(null, "Content failed to load - Empty response");
             return;
         }
 
@@ -215,11 +215,11 @@ public class MikanAccessor extends BaseCollectionAccessor {
 
     private void onPagesSuccess(MikanContentResponse response, Content content, ContentListener listener) {
         if (null == response) {
-            listener.onContentFailed("Pages failed to load - Empty response");
+            listener.onContentFailed(content, "Pages failed to load - Empty response");
             return;
         }
 
-        if (null == content) listener.onContentFailed("Pages failed to load - Unexpected empty content");
+        if (null == content) listener.onContentFailed(null, "Pages failed to load - Unexpected empty content");
         else {
             List<Content> list = new ArrayList<Content>() {{
                 add(content);
