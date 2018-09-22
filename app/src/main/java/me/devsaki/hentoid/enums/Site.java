@@ -20,7 +20,7 @@ public enum Site {
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe, false),
     ASMHENTAI(6, "asmhentai", "http://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai, false),
     ASMHENTAI_COMICS(7, "asmhentai", "http://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, false),
-    EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, true),
+    EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, false),
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, false); // Safe-for-work/wife/gf option
 
 
@@ -29,15 +29,15 @@ public enum Site {
     private final String uniqueKeyword;
     private final String url;
     private final int ico;
-    private final boolean requiresSlowMode;
+    private final boolean noParallelDownloads;
 
-    Site(int code, String description, String url, String uniqueKeyword, int ico, boolean requiresSlowMode) {
+    Site(int code, String description, String url, String uniqueKeyword, int ico, boolean noParallelDownloads) {
         this.code = code;
         this.description = description;
         this.url = url;
         this.uniqueKeyword = uniqueKeyword;
         this.ico = ico;
-        this.requiresSlowMode = requiresSlowMode;
+        this.noParallelDownloads = noParallelDownloads;
     }
 
     @Nullable
@@ -85,8 +85,8 @@ public enum Site {
         return ico;
     }
 
-    public boolean isRequiresSlowMode() {
-        return requiresSlowMode;
+    public boolean isNoParallelDownloads() {
+        return noParallelDownloads;
     }
 
     public String getFolder() {

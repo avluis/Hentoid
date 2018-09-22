@@ -403,4 +403,15 @@ public final class Helper {
 
         return result;
     }
+
+    public static String getHostFromUrl(String url)
+    {
+        int beginning = url.indexOf("//") + 2;
+        int end = url.indexOf(":", beginning);
+        if (-1 == end) end = url.indexOf("?", beginning);
+        if (-1 == end) end = url.indexOf("/", beginning);
+        if (-1 == end) end = beginning;
+
+        return url.substring(beginning, end);
+    }
 }
