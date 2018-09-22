@@ -16,11 +16,7 @@ public interface CollectionAccessor {
 
     void getPages(Content content, ContentListener listener);
 
-    void searchBooks(String query, List<Attribute> metadata, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
-
     void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
-
-    void getAttributeMasterData(AttributeType attr, AttributeListener listener);
 
     void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener);
 
