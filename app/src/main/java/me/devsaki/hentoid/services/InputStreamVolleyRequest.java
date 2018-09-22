@@ -20,7 +20,7 @@ import me.devsaki.hentoid.util.Consts;
  * <p>
  * to the download callback routine
  */
-class InputStreamVolleyRequest extends Request<byte[]> {
+class InputStreamVolleyRequest extends Request<Object> {
     // Callback listener
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mParseListener;
 
@@ -37,12 +37,12 @@ class InputStreamVolleyRequest extends Request<byte[]> {
     }
 
     @Override
-    protected void deliverResponse(byte[] response) {
+    protected void deliverResponse(Object response) {
         // Nothing; all the work is done in Volley's worker thread, since it is time consuming (picture saving + DB operations)
     }
 
     @Override
-    protected Response<byte[]> parseNetworkResponse(NetworkResponse response) {
+    protected Response<Object> parseNetworkResponse(NetworkResponse response) {
         //Initialise local responseHeaders map with response headers received
         Map<String, String> responseHeaders = response.headers;
 

@@ -11,7 +11,12 @@ import com.android.volley.toolbox.Volley;
 import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.VolleyOkHttp3Stack;
 import timber.log.Timber;
@@ -22,25 +27,29 @@ import timber.log.Timber;
  *
  * NB : Class looks like a singleton but isn't really once, since it is reinstanciated everytime forceSlowMode changes
  */
-public class RequestQueueManager implements RequestQueue.RequestFinishedListener<Object> {
-    private static RequestQueueManager mInstance;   // Instance of the singleton
-    private static Boolean isSlowMode = null;       // True if current instance a "slow mode" (=1 thread) instance
+public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListener<T> {
+    private static RequestQueueManager mInstance;           // Instance of the singleton
+    private static Boolean isAntiParallelMode = null;       // True if current instance has anti-parallel mode on
     private static final int TIMEOUT_MS = 15000;
 
-    private RequestQueue mRequestQueue;             // Volley download request queue
-    private int nbRequests = 0;                     // Number of requests currently in the queue (for debug display)
+    private RequestQueue mRequestQueue;                     // Volley download request queue
+    private int nbRequests = 0;                             // Number of requests currently in the queue (for debug display)
+
+    // Anti-parallel downloads management
+    private Map<String, List<Request<T>>> serverRequests;  // Stores requests for all servers to be handed down to Volley during anti-parallel mode
 
 
-    private RequestQueueManager(Context context, boolean forceSlowMode) {
+    private RequestQueueManager(Context context, boolean antiParallelMode) {
+        isAntiParallelMode = antiParallelMode;
+        if (antiParallelMode) serverRequests = new HashMap<>();
+
         int nbDlThreads = Preferences.getDownloadThreadCount();
-        if (forceSlowMode) nbDlThreads = 1;
-        else if (nbDlThreads == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
+        if (nbDlThreads == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
             nbDlThreads = getSuggestedThreadCount(context);
         }
         Crashlytics.setInt("Download thread count", nbDlThreads);
 
         mRequestQueue = getRequestQueue(context, nbDlThreads);
-        isSlowMode = forceSlowMode;
     }
 
     private int getSuggestedThreadCount(Context context) {
@@ -61,13 +70,14 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
         }
     }
 
-    public static synchronized RequestQueueManager getInstance() {
+    public static synchronized <T> RequestQueueManager<T> getInstance() {
         return getInstance(null, false);
     }
 
-    public static synchronized RequestQueueManager getInstance(Context context, boolean forceSlowMode) {
-        if (context != null && (mInstance == null || (null == isSlowMode || isSlowMode != forceSlowMode))) {
-            mInstance = new RequestQueueManager(context, forceSlowMode);
+    @SuppressWarnings("unchecked")
+    public static synchronized <T> RequestQueueManager<T> getInstance(Context context, boolean forceSlowMode) {
+        if (context != null && (mInstance == null || (null == isAntiParallelMode || isAntiParallelMode != forceSlowMode))) {
+            mInstance = new RequestQueueManager<T>(context, forceSlowMode);
         }
         return mInstance;
     }
@@ -101,13 +111,32 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
     /**
      * Add a request to the app's queue
      *
-     * @param req Request to add to the queue
-     * @param <T> Request content
+     * @param request Request to add to the queue
      */
-    public <T> void addToRequestQueue(Request<T> req) {
-        mRequestQueue.add(req);
+    public void queueRequest(Request<T> request) {
+        if (isAntiParallelMode) {
+            String host = Helper.getHostFromUrl(request.getUrl());
+            List<Request<T>> requests;
+            if (serverRequests.containsKey(host))
+            {
+                requests = serverRequests.get(host);
+                requests.add(request); // Will wait until the 1st of the list has been completed
+                Timber.d("Host %s queue ::: request added - current total %s", host, requests.size());
+                return;
+            } else {
+                requests = new ArrayList<>();
+                serverRequests.put(host, requests);
+                // 1st request of any server is directly feeded to the global request queue
+                // hence it is not added to the requests list
+            }
+        }
+        addToRequestQueue(request);
+    }
+
+    private void addToRequestQueue(Request<T> request) {
+        mRequestQueue.add(request);
         nbRequests++;
-        Timber.d("RequestQueue ::: request added - current total %s", nbRequests);
+        Timber.d("Global requests queue ::: request added for host %s - current total %s", Helper.getHostFromUrl(request.getUrl()), nbRequests);
     }
 
     /**
@@ -115,9 +144,25 @@ public class RequestQueueManager implements RequestQueue.RequestFinishedListener
      *
      * @param request Completed request
      */
-    public void onRequestFinished(Request request) {
+    public void onRequestFinished(Request<T> request) {
         nbRequests--;
-        Timber.d("RequestQueue ::: request removed - current total %s", nbRequests);
+        Timber.d("Global requests queue ::: request removed for host %s - current total %s", Helper.getHostFromUrl(request.getUrl()), nbRequests);
+
+        if (isAntiParallelMode) {
+            // Feed the next request of the same server to the global queue
+            String host = Helper.getHostFromUrl(request.getUrl());
+            if (serverRequests.containsKey(host)) {
+                int hostQueueSize = serverRequests.get(host).size();
+                if (hostQueueSize > 0)
+                {
+                    Request<T> req = serverRequests.get(host).get(0);
+                    addToRequestQueue(req);
+                    serverRequests.get(host).remove(req);
+                    hostQueueSize--;
+                }
+                if (0 == hostQueueSize) serverRequests.remove(host);
+            }
+        }
     }
 
     /**
