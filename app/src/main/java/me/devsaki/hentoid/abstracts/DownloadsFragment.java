@@ -215,6 +215,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private AttributeType selectedTab = AttributeType.TAG;
     // Current search tags
     private List<Attribute> selectedSearchTags = new ArrayList<>();
+    // Last search parameters; used to determine whether or not page number should be reset to 1
+    private String lastSearchParams = "";
 
 
     // To be documented
@@ -1337,12 +1339,36 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (searchMenu != null) searchMenu.setIcon(isSearchMode?R.drawable.ic_menu_search_found:R.drawable.ic_menu_search);
     }
 
+    /**
+     * Create a "thumbprint" unique to the combination of current search parameters
+     * @return Search parameters thumbprint
+     */
+    private String getCurrentSearchParams()
+    {
+        StringBuilder result = new StringBuilder(mode == MODE_LIBRARY ? "L" : "M");
+        result.append(".").append(query);
+        for (Attribute a : selectedSearchTags) result.append(".").append(a.getName());
+        result.append(".").append(booksPerPage);
+        result.append(".").append(bookSortOrder);
+        result.append(".").append(filterFavourites);
+
+        return result.toString();
+    }
+
     protected void searchLibrary() {
         String query = this.getQuery();
         isLoaded = false;
 
         if (MODE_MIKAN == mode) toggleUI(SHOW_LOADING);
         updateSearchIcon(isSearchMode());
+
+        // New searches always start from page 1
+        String currentSearchParams = getCurrentSearchParams();
+        if (!currentSearchParams.equals(lastSearchParams))
+        {
+            currentPage = 1;
+        }
+        lastSearchParams = currentSearchParams;
 
         if (isSearchMode()) collectionAccessor.searchBooks(query, selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);

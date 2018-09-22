@@ -15,7 +15,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import io.reactivex.disposables.Disposable;
-import me.devsaki.hentoid.collection.BaseCollectionAccessor;
+import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.LibraryMatcher;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -35,7 +35,7 @@ import timber.log.Timber;
 import static com.annimon.stream.Collectors.toList;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
-public class MikanAccessor extends BaseCollectionAccessor {
+public class MikanAccessor implements CollectionAccessor {
 
     private final LibraryMatcher libraryMatcher;
     private Disposable disposable;

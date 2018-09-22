@@ -6,7 +6,7 @@ import android.os.AsyncTask;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.collection.BaseCollectionAccessor;
+import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -14,9 +14,8 @@ import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
-import timber.log.Timber;
 
-public class DatabaseAccessor extends BaseCollectionAccessor {
+public class DatabaseAccessor implements CollectionAccessor {
 
     private static final String contentSynch = "";
     private static final String attrSynch = "";
