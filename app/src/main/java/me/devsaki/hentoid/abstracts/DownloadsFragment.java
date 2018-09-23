@@ -183,8 +183,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected ContentAdapter mAdapter;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
     protected boolean isNewContentAvailable;
-    // True if book list has finished loading; used for synchronization between threads
-    protected boolean isLoaded;
+    // True if book list is being loaded; used for synchronization between threads
+    protected boolean isLoading;
     // Indicates whether or not one of the books has been selected
     private boolean isSelected;
     // True if book sort order has been updated
@@ -308,7 +308,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (MODE_LIBRARY == mode) {
             if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
                 boolean shouldUpdate = queryPrefs();
-                if (shouldUpdate || -1 == mTotalSelectedCount) update(); // If prefs changes detected or first run (-1 = uninitialized)
+                if (shouldUpdate || -1 == mTotalSelectedCount) searchLibrary(true); // If prefs changes detected or first run (-1 = uninitialized)
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
                 showToolbar(true);
             } else {
@@ -319,7 +319,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 storagePermissionChecked = true;
             }
         } else if (MODE_MIKAN == mode) {
-            if (-1 == mTotalSelectedCount) update();
+            if (-1 == mTotalSelectedCount) searchLibrary(true);
             showToolbar(true);
         }
     }
@@ -703,7 +703,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             mainSearchView.setIconified(true);
         }
         setQuery(query = "");
-        update();
+        searchLibrary(true);
     }
 
     /**
@@ -717,7 +717,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout.setEnabled(false);
         isNewContentAvailable = false;
         cleanResults();
-        update();
+        searchLibrary(true);
         resetCount();
     }
 
@@ -734,7 +734,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && isLoaded) {
+        if (event.eventType == DownloadEvent.EV_COMPLETE && !isLoading) {
             if (MODE_LIBRARY == mode) showReloadToolTip();
             else mAdapter.switchStateToDownloaded(event.content);
         }
@@ -993,7 +993,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
                 mAdapter.setComparator(Content.TITLE_ALPHA_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
-                update();
+                searchLibrary(true);
 
                 result = true;
                 break;
@@ -1003,7 +1003,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST;
                 mAdapter.setComparator(Content.DLDATE_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
-                update();
+                searchLibrary(true);
 
                 result = true;
                 break;
@@ -1013,7 +1013,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
                 mAdapter.setComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
-                update();
+                searchLibrary(true);
 
                 result = true;
                 break;
@@ -1023,7 +1023,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST;
                 mAdapter.setComparator(Content.DLDATE_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
-                update();
+                searchLibrary(true);
 
                 result = true;
                 break;
@@ -1034,7 +1034,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
                 RandomSeedSingleton.getInstance().renewSeed();
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
-                update();
+                searchLibrary(true);
 
                 result = true;
                 break;
@@ -1069,7 +1069,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void toggleFavouriteFilter() {
         filterFavourites = !filterFavourites;
         updateFavouriteFilter();
-        searchLibrary();
+        searchLibrary(true);
         updateAttributeMosaic();
     }
 
@@ -1131,7 +1131,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         // Launch book search according to new attribute selection
-        searchLibrary();
+        searchLibrary(MODE_MIKAN == mode);
         // Update attribute mosaic buttons state according to available metadata
         updateAttributeMosaic();
     }
@@ -1146,7 +1146,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (tagButton != null) colorButton(tagButton, TAGFILTER_ACTIVE);
 
         // Launch book search according to new attribute selection
-        searchLibrary();
+        searchLibrary(MODE_MIKAN == mode);
         // Update attribute mosaic buttons state according to available metadata
         updateAttributeMosaic();
     }
@@ -1217,7 +1217,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchHandler.postDelayed(() -> {
             setQuery(s);
             cleanResults();
-            update();
+            searchLibrary(true);
         }, delay);
     }
 
@@ -1268,14 +1268,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
             isSelected = false;
         }
-    }
-
-    /**
-     * Update screen with book of current page
-     */
-    protected void update() {
-        toggleUI(SHOW_LOADING);
-        searchLibrary();
     }
 
     protected void toggleUI(int mode) {
@@ -1361,11 +1353,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         return result.toString();
     }
 
-    protected void searchLibrary() {
-        String query = this.getQuery();
-        isLoaded = false;
+    protected void searchLibrary(boolean showLoadingPanel) {
+        isLoading = true;
 
-        if (MODE_MIKAN == mode) toggleUI(SHOW_LOADING);
+        if (showLoadingPanel) toggleUI(SHOW_LOADING);
         updateSearchIcon(isSearchMode());
 
         // New searches always start from page 1
@@ -1376,7 +1367,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
         lastSearchParams = currentSearchParams;
 
-        if (isSearchMode()) collectionAccessor.searchBooks(query, selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
+        if (isSearchMode()) collectionAccessor.searchBooks(getQuery(), selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
     }
 
@@ -1406,10 +1397,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     protected void displayNoResults() {
-        if (isLoaded && !("").equals(query)) {
+        if (!isLoading && !("").equals(query)) {
             emptyText.setText(R.string.search_entry_not_found);
             toggleUI(SHOW_BLANK);
-        } else if (isLoaded) {
+        } else if (!isLoading) {
             emptyText.setText((MODE_LIBRARY == mode)? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
             toggleUI(SHOW_BLANK);
         } else {
@@ -1434,7 +1425,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) {
         Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
-        isLoaded = true;
+        isLoading = false;
 
         if (isSearchMode() && isNewContentAvailable)
         {
@@ -1454,11 +1445,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onContentFailed(Content content, String message) {
         Timber.w(message);
+        isLoading = false;
+
         Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
-                .setAction("RETRY", v-> searchLibrary() )
+                .setAction("RETRY", v-> searchLibrary(MODE_MIKAN == mode) )
                 .show();
         toggleUI(SHOW_BLANK);
-        isLoaded = false;
     }
 
     /*
