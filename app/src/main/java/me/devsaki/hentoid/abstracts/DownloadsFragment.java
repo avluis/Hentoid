@@ -665,7 +665,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Override
     public boolean onBackPressed() {
-        // If the drawer is open, back will close it
+        // If the left drawer is open, close it
         if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawers();
             backButtonPressed = 0;
@@ -673,6 +673,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             return false;
         }
 
+        // If content is selected, deselect it
         if (isSelected) {
             clearSelection();
             backButtonPressed = 0;
@@ -680,6 +681,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             return false;
         }
 
+        // If none of the above, user is asking to leave => use double-tap
         if (backButtonPressed + 2000 > System.currentTimeMillis()) {
             return true;
         } else {
@@ -689,10 +691,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (llm != null) {
                 llm.scrollToPositionWithOffset(0, 0);
             }
-        }
-
-        if (!query.isEmpty()) {
-            clearQuery(1);
         }
 
         return false;
@@ -816,6 +814,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
         mainSearchView.setIconifiedByDefault(true);
         mainSearchView.setQueryHint(getString(R.string.search_hint));
+        // Collapse search view when pressing back button on main text filter
+        mainSearchView.setOnQueryTextFocusChangeListener((view, queryTextFocused) -> {
+            View tagFilter = searchPane.findViewById(R.id.tag_filter);
+            if (!queryTextFocused && tagFilter != null && !tagFilter.hasFocus()) {
+                searchMenu.collapseActionView();
+            }
+        });
+        // Change display when text query is typed
         mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
