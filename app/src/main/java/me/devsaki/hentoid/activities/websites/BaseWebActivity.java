@@ -14,6 +14,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -158,9 +159,15 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        webView.removeAllViews();
-        webView.destroy();
-        webView = null;
+        if (webView != null) {
+            // the WebView must be removed from the view hierarchy before calling destroy
+            // to prevent a memory leak
+            // See https://developer.android.com/reference/android/webkit/WebView.html#destroy%28%29
+            ((ViewGroup) webView.getParent()).removeView(webView);
+            webView.removeAllViews();
+            webView.destroy();
+            webView = null;
+        }
 
         if (webClient != null) webClient.destroy();
         webClient = null;
