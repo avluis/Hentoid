@@ -45,14 +45,14 @@ public class PagerFragment extends DownloadsFragment {
     private void attachPrevious(View rootView) {
         ImageButton btnPrevious = rootView.findViewById(R.id.btnPrevious);
         btnPrevious.setOnClickListener(v -> {
-            if (currentPage > 1 && isLoaded) {
+            if (currentPage > 1 && !isLoading) {
                 currentPage--;
                 pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
-                update();
-            } else if (booksPerPage > 0 && isLoaded) {
+                searchLibrary(true);
+            } else if (booksPerPage > 0 && !isLoading) {
                 Helper.toast(mContext, R.string.not_previous_page);
             } else {
-                Timber.d("Not limit per page.");
+                Timber.d("No limit per page.");
             }
         });
     }
@@ -61,12 +61,12 @@ public class PagerFragment extends DownloadsFragment {
         ImageButton btnNext = rootView.findViewById(R.id.btnNext);
         btnNext.setOnClickListener(v -> {
             if (booksPerPage <= 0) {
-                Timber.d("Not limit per page.");
+                Timber.d("No limit per page.");
             } else {
-                if (!isLastPage() && isLoaded) {
+                if (!isLastPage() && !isLoading) {
                     currentPage++;
                     pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
-                    update();
+                    searchLibrary(true);
                 } else if (isLastPage()) {
                     Helper.toast(mContext, R.string.not_next_page);
                 }
@@ -81,7 +81,7 @@ public class PagerFragment extends DownloadsFragment {
     private void onPageChange(int page) {
         if (page != currentPage) {
             currentPage = page;
-            update();
+            searchLibrary(true);
         }
     }
 

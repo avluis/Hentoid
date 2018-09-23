@@ -16,7 +16,9 @@ import timber.log.Timber;
  */
 public class EndlessFragment extends DownloadsFragment implements EndlessScrollListener {
 
-    boolean isPaging = false;
+    // True if the user is currently loading a page; false if not
+    boolean isPageLoading = false;
+
 
     @Override
     protected boolean queryPrefs() {
@@ -39,9 +41,9 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
 
     @Override
     protected void displayResults(List<Content> results, int totalSelectedContent) {
-        if (isPaging) {
+        if (isPageLoading) {
             mAdapter.add(results);
-            isPaging = false;
+            isPageLoading = false;
         } else {
             mAdapter.replaceAll(results);
         }
@@ -52,8 +54,8 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
     public void onLoadMore() {
         if (!isLastPage()) { // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
             currentPage++;
-            isPaging = true;
-            searchLibrary();
+            isPageLoading = true;
+            searchLibrary(false);
             Timber.d("Load more data now~");
         }
     }
