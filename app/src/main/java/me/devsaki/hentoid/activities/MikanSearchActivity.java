@@ -1,23 +1,19 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.view.WindowManager;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
+import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.BaseFragment;
+import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
-import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.EndlessFragment;
 import me.devsaki.hentoid.fragments.PagerFragment;
-import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -25,42 +21,52 @@ import timber.log.Timber;
 /**
  * Created by Robb on 06/2018
  */
-public class MikanSearchActivity extends DrawerActivity implements BackInterface {
+public class MikanSearchActivity extends BaseActivity implements BackInterface {
 
     private BaseFragment baseFragment;
-    private Context context;
+    private Fragment fragment;
 
-    @Override
-    protected Class<? extends BaseFragment> getFragment() {
+    private DownloadsFragment buildFragment() {
         if (Preferences.getEndlessScroll()) {
             Timber.d("getFragment: EndlessFragment.");
-            return EndlessFragment.class;
+            return new EndlessFragment();
         } else {
             Timber.d("getFragment: PagerFragment.");
-            return PagerFragment.class;
+            return new PagerFragment();
         }
-    }
-
-    @Override
-    protected Bundle getCreationArguments()
-    {
-        Bundle result = new Bundle();
-        result.putInt("mode", DownloadsFragment.MODE_MIKAN);
-        return result;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Preferences.getRecentVisibility()) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-        }
-        setContentView(mainLayout);
+        setContentView(R.layout.activity_mikan);
 
-        context = HentoidApp.getAppContext();
-        initializeToolbar();
-        setTitle(getToolbarTitle());
+        FragmentManager manager = getSupportFragmentManager();
+        fragment = manager.findFragmentById(R.id.content_frame);
+
+        if (fragment == null) {
+            fragment = buildFragment();
+            fragment.setArguments(getCreationArguments());
+
+            manager.beginTransaction()
+                    .add(R.id.content_frame, fragment, getFragmentTag())
+                    .commit();
+        }
+    }
+
+    private String getFragmentTag() {
+        if (fragment != null) {
+            return fragment.getClass().getSimpleName();
+        }
+        return null;
+    }
+
+    private Bundle getCreationArguments()
+    {
+        Bundle result = new Bundle();
+        result.putInt("mode", DownloadsFragment.MODE_MIKAN);
+        return result;
     }
 
     @Override
@@ -74,31 +80,6 @@ public class MikanSearchActivity extends DrawerActivity implements BackInterface
         if (baseFragment == null || baseFragment.onBackPressed()) {
             // Fragment did not consume onBackPressed.
             super.onBackPressed();
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        updateSelectedFragment();
-        updateDrawerPosition();
-    }
-
-    private void updateSelectedFragment() {
-        FragmentManager manager = getSupportFragmentManager();
-        fragment = manager.findFragmentById(R.id.content_frame);
-
-        if (fragment != null) {
-            /*
-            Fragment selectedFragment = buildFragment();
-            String selectedFragmentTag = selectedFragment.getClass().getSimpleName();
-            */
-            String selectedFragmentTag = getFragment().getSimpleName();
-
-            if (!selectedFragmentTag.equals(fragment.getTag())) {
-                Helper.doRestart(this);
-            }
         }
     }
 
@@ -121,18 +102,6 @@ public class MikanSearchActivity extends DrawerActivity implements BackInterface
             // Permissions cannot be set, either via policy or forced by user.
             finish();
         }
-    }
-
-    @Override
-    protected String getToolbarTitle() {
-        return Helper.getActivityName(context, R.string.title_activity_mikan);
-    }
-
-    @Override
-    protected void updateDrawerPosition() {
-        DrawerMenuContents mDrawerMenuContents = new DrawerMenuContents(this);
-        mDrawerMenuContents.getPosition(this.getClass());
-        super.updateDrawerPosition();
     }
 
     @Override

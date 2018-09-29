@@ -415,9 +415,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     private void checkSDHealth() {
         File file = new File(Preferences.getRootFolderName(), "test");
-        OutputStream output = null;
-        try {
-            output = FileHelper.getOutputStream(file);
+        try (OutputStream output = FileHelper.getOutputStream(file)) {
             // build
             byte[] bytes = "test".getBytes();
             // write
@@ -436,13 +434,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             Timber.e(e, "IOException while checking SD Health");
         } finally {
             // finished
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
+            // Ignore
             if (file.exists()) {
                 Timber.d("Test file removed: %s", FileHelper.removeFile(file));
             }
@@ -531,10 +523,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
-
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
         collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(mContext) : new MikanAccessor(mContext);
+
+        View rootView = inflater.inflate( (MODE_LIBRARY == mode) ? R.layout.fragment_downloads : R.layout.fragment_mikan, container, false);
 
         initUI(rootView);
         attachScrollListener();
@@ -594,8 +586,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         mDrawerLayout = activity.findViewById(R.id.drawer_layout);
-        mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
-
+        if (mDrawerLayout != null) mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
             @Override
             public void onDrawerStateChanged(int newState) {
                 mDrawerState = newState;
@@ -682,7 +673,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         // If none of the above, user is asking to leave => use double-tap
-        if (backButtonPressed + 2000 > System.currentTimeMillis()) {
+        if (MODE_MIKAN == mode || backButtonPressed + 2000 > System.currentTimeMillis()) {
             return true;
         } else {
             backButtonPressed = System.currentTimeMillis();
@@ -965,13 +956,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Override
     public void onPrepareOptionsMenu(Menu menu) {
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(GravityCompat.START);
-        shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
-                mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
+        if (mDrawerLayout != null) {
+            boolean drawerOpen = mDrawerLayout.isDrawerOpen(GravityCompat.START);
+            shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
+                    mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
 
-        if (!shouldHide) {
-            searchMenu.collapseActionView();
-            menu.findItem(R.id.action_search).setVisible(false);
+            if (!shouldHide) {
+                searchMenu.collapseActionView();
+                menu.findItem(R.id.action_search).setVisible(false);
+            }
         }
     }
 
@@ -1480,7 +1473,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 default:
                     comparator = Attribute.COUNT_COMPARATOR;
             }
-            Attribute[] attrs = results.toArray(new Attribute[results.size()]); // Well, yes, since results.sort(comparator) requires API 24...
+            Attribute[] attrs = results.toArray(new Attribute[0]); // Well, yes, since results.sort(comparator) requires API 24...
             Arrays.sort(attrs, comparator);
 
             // Display buttons
