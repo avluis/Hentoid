@@ -136,17 +136,24 @@ public class QueueFragment extends BaseFragment {
     private void updateProgress(int pagesOK, int pagesKO, int totalPages) {
         if (!ContentQueueManager.getInstance().isQueuePaused() && mAdapter != null && mAdapter.getCount() > 0) {
             Content content = mAdapter.getItem(0);
+
             if (content != null) {
-                // Update book progress bar
-                content.setPercent((pagesOK + pagesKO) * 100.0 / totalPages);
-                mAdapter.notifyDataSetChanged();
+                // Pages download has started
+                if (pagesKO + pagesOK > 0) {
 
-                // Update information bar
-                StringBuilder message = new StringBuilder();
-                String processedPagesFmt = Helper.compensateStringLength(pagesOK, String.valueOf(totalPages).length());
-                message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
+                    // Update book progress bar
+                    content.setPercent((pagesOK + pagesKO) * 100.0 / totalPages);
+                    mAdapter.notifyDataSetChanged();
 
-                queueInfo.setText(message.toString());
+                    // Update information bar
+                    StringBuilder message = new StringBuilder();
+                    String processedPagesFmt = Helper.compensateStringLength(pagesOK, String.valueOf(totalPages).length());
+                    message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
+
+                    queueInfo.setText(message.toString());
+                } else { // Pages download is under preparation
+                    queueInfo.setText(R.string.queue_preparing);
+                }
             }
         }
     }
