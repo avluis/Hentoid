@@ -10,7 +10,7 @@ import android.support.v4.content.ContextCompat;
 import java.util.Locale;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.util.notification.Notification;
 
 public class DownloadProgressNotification implements Notification {
@@ -44,7 +44,7 @@ public class DownloadProgressNotification implements Notification {
     }
 
     private PendingIntent getDefaultIntent(Context context) {
-        Intent resultIntent = new Intent(context, DownloadsActivity.class);
+        Intent resultIntent = new Intent(context, QueueActivity.class);
         resultIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         return PendingIntent.getActivity(context, 0, resultIntent, PendingIntent.FLAG_UPDATE_CURRENT);
