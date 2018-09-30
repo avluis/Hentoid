@@ -1,6 +1,7 @@
 <android.support.v4.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    app:theme="@style/AppTheme.Toolbar"
     android:id="@+id/tag_filter_view"
     android:layout_width="match_parent"
     android:maxHeight="180dp"
