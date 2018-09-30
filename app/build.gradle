@@ -75,7 +75,7 @@ dependencies {
     //implementation 'com.github.apl-devs:AppIntro:v4.2.2'
     implementation 'com.github.apl-devs:appintro:v4.2.3'
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
-    implementation 'com.google.code.gson:gson:2.8.2'
+    implementation 'com.google.code.gson:gson:2.8.5'
     // Timber (Extensible Logger): github.com/JakeWharton/timber
     implementation 'com.jakewharton.timber:timber:4.7.1'
     // Download app updates (without user prompts): github.com/smanikandan14/ThinDownloadManager
