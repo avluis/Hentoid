@@ -113,7 +113,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
      *
      * @param request Request to add to the queue
      */
-    public void queueRequest(Request<T> request) {
+    void queueRequest(Request<T> request) {
         if (isAntiParallelMode) {
             String host = Helper.getHostFromUrl(request.getUrl());
             List<Request<T>> requests;
@@ -168,7 +168,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     /**
      * Cancel the app's request queue : cancel all requests remaining in the queue
      */
-    public void cancelQueue() {
+    void cancelQueue() {
         RequestQueue.RequestFilter filterForAll = request -> true;
         mRequestQueue.cancelAll(filterForAll);
         Timber.d("RequestQueue ::: canceled");
