@@ -59,7 +59,10 @@
         android:text="@string/downloads_empty_library"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        />
 
     <TextView
         android:id="@+id/loading"
@@ -73,7 +76,10 @@
         android:text="@string/downloads_loading"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        />
 
     <include
         android:id="@+id/tag_filter_view"
