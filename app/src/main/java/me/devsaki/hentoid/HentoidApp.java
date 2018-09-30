@@ -9,6 +9,7 @@ import android.os.StrictMode;
 import android.util.Pair;
 
 import com.facebook.stetho.Stetho;
+import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.leakcanary.LeakCanary;
 
@@ -57,6 +58,15 @@ public class HentoidApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
+        // see https://github.com/square/okhttp/issues/2372 for more information
+        try {
+            ProviderInstaller.installIfNeeded(getApplicationContext());
+        } catch (Exception e)
+        {
+            Timber.e(e, "Google Play ProviderInstaller exception");
+        }
 
         // LeakCanary
         if (LeakCanary.isInAnalyzerProcess(this)) {
