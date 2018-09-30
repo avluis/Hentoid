@@ -134,13 +134,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     }
 
     @Override
-    protected void updateDrawerPosition() {
-        DrawerMenuContents mDrawerMenuContents = new DrawerMenuContents(this);
-        mDrawerMenuContents.getPosition(this.getClass());
-        super.updateDrawerPosition();
-    }
-
-    @Override
     public void addBackInterface(BaseFragment fragment) {
         this.baseFragment = fragment;
     }

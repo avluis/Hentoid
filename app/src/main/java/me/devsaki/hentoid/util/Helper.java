@@ -226,22 +226,6 @@ public final class Helper {
         return activityName;
     }
 
-    public static int getId(String resourceName, Class<?> c) {
-        try {
-            Field idField = c.getDeclaredField(resourceName);
-            return idField.getInt(idField);
-        } catch (Exception e) {
-            try {
-                throw new ResourceException("No resource ID found for: " + resourceName +
-                        " / " + c, e);
-            } catch (ResourceException rEx) {
-                Timber.w(rEx);
-            }
-        }
-
-        return R.drawable.ic_menu_unknown;
-    }
-
     public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
@@ -312,36 +296,6 @@ public final class Helper {
     public enum DURATION {SHORT, LONG}
 
     public enum TYPE {JS, CSS, HTML, PLAIN}
-
-    /**
-     * Created by avluis on 06/12/2016.
-     * Resource ID Exception
-     */
-    private static class ResourceException extends Exception {
-        private String result;
-        private Exception code;
-
-        ResourceException(String result, Exception code) {
-            this.result = result;
-            this.code = code;
-        }
-
-        public String getResult() {
-            return result;
-        }
-
-        public void setResult(String result) {
-            this.result = result;
-        }
-
-        public Exception getCode() {
-            return code;
-        }
-
-        public void setCode(Exception code) {
-            this.code = code;
-        }
-    }
 
     public static String capitalizeString(String s) {
         if (s == null || s.length() == 0) return s;

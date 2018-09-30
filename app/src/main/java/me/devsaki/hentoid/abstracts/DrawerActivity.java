@@ -204,7 +204,7 @@ public abstract class DrawerActivity extends BaseActivity {
     }
 
     private void populateDrawerItems() {
-        mDrawerMenuContents = new DrawerMenuContents(this);
+        mDrawerMenuContents = new DrawerMenuContents();
         updateDrawerPosition();
         final int selectedPosition = currentPos;
         final int unselectedColor = ContextCompat.getColor(getApplicationContext(),
