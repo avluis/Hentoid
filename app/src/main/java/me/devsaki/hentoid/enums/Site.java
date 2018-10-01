@@ -8,6 +8,7 @@ import timber.log.Timber;
 /**
  * Created by neko on 20/06/2015.
  * Site enumerator
+ * TODO: deprecate {@link #noParallelDownloads} on 1/10/2020 if not needed by that time
  */
 public enum Site {
 
@@ -29,7 +30,7 @@ public enum Site {
     private final String uniqueKeyword;
     private final String url;
     private final int ico;
-    private final boolean noParallelDownloads;
+    private final boolean noParallelDownloads; // TODO: 01/10/2018 change this to a positive flag such as "allowParallelDownloads"
 
     Site(int code, String description, String url, String uniqueKeyword, int ico, boolean noParallelDownloads) {
         this.code = code;
