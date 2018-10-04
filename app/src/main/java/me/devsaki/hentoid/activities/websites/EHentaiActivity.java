@@ -14,12 +14,10 @@ import me.devsaki.hentoid.parsers.EHentai.EHentaiGalleriesMetadata;
 import me.devsaki.hentoid.parsers.EHentai.EHentaiGalleryQuery;
 import me.devsaki.hentoid.retrofit.EHentaiServer;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.HttpClientHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
 
-import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
 /**
@@ -89,13 +87,15 @@ public class EHentaiActivity extends BaseWebActivity {
 
         private void onContentSuccess(EHentaiGalleriesMetadata metadata)
         {
-            activity.processContent(metadata.toContent());
+            BaseWebActivity activity = activityReference.get();
+            if (activity != null) activity.processContent(metadata.toContent());
         }
 
         private void onContentFailed(Throwable t)
         {
             Timber.e(t, "Error parsing content.");
-            activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+            BaseWebActivity activity = activityReference.get();
+            if (activity != null) activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
         }
 
     }

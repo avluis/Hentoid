@@ -471,8 +471,8 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         private String domainName = "";
         private final String filteredUrl;
-        protected Disposable disposable;
-        protected final BaseWebActivity activity;
+        Disposable disposable;
+        final WeakReference<BaseWebActivity> activityReference;
         protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         void restrictTo(String s) {
@@ -480,12 +480,12 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
 
         CustomWebViewClient(BaseWebActivity activity, String filteredUrl) {
-            this.activity = activity;
+            activityReference = new WeakReference<>(activity);
             this.filteredUrl = filteredUrl;
         }
 
         CustomWebViewClient(BaseWebActivity activity) {
-            this.activity = activity;
+            activityReference = new WeakReference<>(activity);
             this.filteredUrl = "";
         }
 
@@ -520,7 +520,8 @@ public abstract class BaseWebActivity extends BaseActivity {
                 Pattern pattern = Pattern.compile(filteredUrl);
                 Matcher matcher = pattern.matcher(url);
 
-                if (matcher.find()) {
+                BaseWebActivity activity = activityReference.get();
+                if (matcher.find() && activity != null) {
                     executeAsyncTask(new HtmlLoader(activity), url);
                 }
             }
