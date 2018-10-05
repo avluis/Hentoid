@@ -78,9 +78,9 @@ public class EHentaiActivity extends BaseWebActivity {
             if (matcher.find()) {
                 String[] galleryUrlParts = url.split("/");
                 EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4],galleryUrlParts[5]);
-                disposable = EHentaiServer.API.getGalleryMetadata(query)
+                compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
                         .observeOn(Schedulers.computation())
-                        .subscribe(this::onContentSuccess, this::onContentFailed);
+                        .subscribe(this::onContentSuccess, this::onContentFailed));
 
             }
         }

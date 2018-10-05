@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -471,7 +471,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         private String domainName = "";
         private final String filteredUrl;
-        Disposable disposable;
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
         final WeakReference<BaseWebActivity> activityReference;
         protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
@@ -491,7 +491,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         void destroy()
         {
-            if (disposable != null) disposable.dispose();
+            compositeDisposable.clear();
         }
 
         @Override
