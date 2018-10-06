@@ -24,7 +24,7 @@ import timber.log.Timber;
 /**
  * Created by Robb_w on 2018/04
  * Manager class for image download queue (Volley)
- *
+ * <p>
  * NB : Class looks like a singleton but isn't really once, since it is reinstanciated everytime forceSlowMode changes
  */
 public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListener<T> {
@@ -43,31 +43,31 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
         RequestQueueManager.allowParallelDownloads = allowParallelDownloads;
         if (!allowParallelDownloads) serverRequests = new HashMap<>();
 
-        int nbDlThreads = Preferences.getDownloadThreadCount();
-        if (nbDlThreads == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
-            nbDlThreads = getSuggestedThreadCount(context);
+        int dlThreadCount = Preferences.getDownloadThreadCount();
+        if (dlThreadCount == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
+            dlThreadCount = getSuggestedThreadCount(context);
         }
-        Crashlytics.setInt("Download thread count", nbDlThreads);
+        Crashlytics.setInt("Download thread count", dlThreadCount);
 
-        mRequestQueue = getRequestQueue(context, nbDlThreads);
+        mRequestQueue = getRequestQueue(context, dlThreadCount);
     }
 
-    private int getSuggestedThreadCount(Context context) {
-        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        if (activityManager == null) return 4;
+    private static int getSuggestedThreadCount(Context context) {
+        final int threshold = 64;
+        final int maxThreads = 4;
 
-        int memoryClass = activityManager.getMemoryClass();
+        int memoryClass = getMemoryClass(context);
         Crashlytics.setInt("Memory class", memoryClass);
 
-        if (memoryClass <= 64) {
-            return 1;
-        } else if (memoryClass <= 96) {
-            return 2;
-        } else if (memoryClass <= 128) {
-            return 3;
-        } else {
-            return 4;
-        }
+        if (memoryClass == 0) return maxThreads;
+        int threadCount = (int) Math.ceil((double) memoryClass / (double) threshold);
+        return Math.min(threadCount, maxThreads);
+    }
+
+    private static int getMemoryClass(Context context) {
+        ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        if (activityManager == null) return 0;
+        return activityManager.getMemoryClass();
     }
 
     public static synchronized <T> RequestQueueManager<T> getInstance() {
@@ -117,8 +117,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
         if (!allowParallelDownloads) {
             String host = Helper.getHostFromUrl(request.getUrl());
             List<Request<T>> requests;
-            if (serverRequests.containsKey(host))
-            {
+            if (serverRequests.containsKey(host)) {
                 requests = serverRequests.get(host);
                 requests.add(request); // Will wait until the 1st of the list has been completed
                 Timber.d("Host %s queue ::: request added - current total %s", host, requests.size());
@@ -153,8 +152,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
             String host = Helper.getHostFromUrl(request.getUrl());
             if (serverRequests.containsKey(host)) {
                 int hostQueueSize = serverRequests.get(host).size();
-                if (hostQueueSize > 0)
-                {
+                if (hostQueueSize > 0) {
                     Request<T> req = serverRequests.get(host).get(0);
                     addToRequestQueue(req);
                     serverRequests.get(host).remove(req);
