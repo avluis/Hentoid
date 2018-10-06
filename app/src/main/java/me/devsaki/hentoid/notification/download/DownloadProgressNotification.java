@@ -11,7 +11,6 @@ import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.notification.Notification;
 
 public class DownloadProgressNotification implements Notification {
