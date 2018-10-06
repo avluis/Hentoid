@@ -167,7 +167,7 @@ public class ContentDownloadService extends IntentService {
 
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
-        RequestQueueManager.getInstance(this, content.getSite().isNoParallelDownloads()).queueRequest(buildDownloadRequest(cover, dir));
+        RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads()).queueRequest(buildDownloadRequest(cover, dir));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
                 RequestQueueManager.getInstance().queueRequest(buildDownloadRequest(img, dir));

@@ -29,7 +29,7 @@ import timber.log.Timber;
  */
 public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListener<T> {
     private static RequestQueueManager mInstance;           // Instance of the singleton
-    private static Boolean isAntiParallelMode = null;       // True if current instance has anti-parallel mode on
+    private static Boolean allowParallelDownloads = null;       // True if current instance has anti-parallel mode on
     private static final int TIMEOUT_MS = 15000;
 
     private RequestQueue mRequestQueue;                     // Volley download request queue
@@ -39,9 +39,9 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     private Map<String, List<Request<T>>> serverRequests;  // Stores requests for all servers to be handed down to Volley during anti-parallel mode
 
 
-    private RequestQueueManager(Context context, boolean antiParallelMode) {
-        isAntiParallelMode = antiParallelMode;
-        if (antiParallelMode) serverRequests = new HashMap<>();
+    private RequestQueueManager(Context context, boolean allowParallelDownloads) {
+        RequestQueueManager.allowParallelDownloads = allowParallelDownloads;
+        if (!allowParallelDownloads) serverRequests = new HashMap<>();
 
         int nbDlThreads = Preferences.getDownloadThreadCount();
         if (nbDlThreads == Preferences.Constant.DOWNLOAD_THREAD_COUNT_AUTO) {
@@ -71,13 +71,13 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     }
 
     public static synchronized <T> RequestQueueManager<T> getInstance() {
-        return getInstance(null, false);
+        return getInstance(null, true);
     }
 
     @SuppressWarnings("unchecked")
-    public static synchronized <T> RequestQueueManager<T> getInstance(Context context, boolean forceSlowMode) {
-        if (context != null && (mInstance == null || (null == isAntiParallelMode || isAntiParallelMode != forceSlowMode))) {
-            mInstance = new RequestQueueManager<T>(context, forceSlowMode);
+    public static synchronized <T> RequestQueueManager<T> getInstance(Context context, boolean allowParallelDownloads) {
+        if (context != null && (mInstance == null || (null == RequestQueueManager.allowParallelDownloads || RequestQueueManager.allowParallelDownloads != allowParallelDownloads))) {
+            mInstance = new RequestQueueManager<T>(context, allowParallelDownloads);
         }
         return mInstance;
     }
@@ -114,7 +114,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
      * @param request Request to add to the queue
      */
     void queueRequest(Request<T> request) {
-        if (isAntiParallelMode) {
+        if (!allowParallelDownloads) {
             String host = Helper.getHostFromUrl(request.getUrl());
             List<Request<T>> requests;
             if (serverRequests.containsKey(host))
@@ -148,7 +148,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
         nbRequests--;
         Timber.d("Global requests queue ::: request removed for host %s - current total %s", Helper.getHostFromUrl(request.getUrl()), nbRequests);
 
-        if (isAntiParallelMode) {
+        if (!allowParallelDownloads) {
             // Feed the next request of the same server to the global queue
             String host = Helper.getHostFromUrl(request.getUrl());
             if (serverRequests.containsKey(host)) {
