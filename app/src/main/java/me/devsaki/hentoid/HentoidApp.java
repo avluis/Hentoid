@@ -37,7 +37,7 @@ public class HentoidApp extends Application {
     private static HentoidApp instance;
 
     public static Context getAppContext() {
-        return instance.getApplicationContext();
+        return instance;
     }
 
     public static boolean isImportComplete() {
