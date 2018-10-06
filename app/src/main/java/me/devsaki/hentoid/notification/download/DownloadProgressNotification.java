@@ -11,6 +11,7 @@ import java.util.Locale;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.notification.Notification;
 
 public class DownloadProgressNotification implements Notification {
@@ -40,6 +41,7 @@ public class DownloadProgressNotification implements Notification {
                 .setContentIntent(getDefaultIntent(context))
                 .setLocalOnly(true)
                 .setOngoing(true)
+                .setVibrate(Consts.VIBRATION_PATTERN_NO_VIBRATION)
                 .build();
     }
 

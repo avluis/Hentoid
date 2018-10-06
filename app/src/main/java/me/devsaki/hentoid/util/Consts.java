@@ -23,4 +23,6 @@ public abstract class Consts {
                     + " AppleWebKit/535.19 (KHTML, like Gecko)"
                     + " Chrome/18.0.1025.166 Mobile Safari/535.19"
                     + " Hentoid/v" + BuildConfig.VERSION_NAME;
+
+    public static final long[] VIBRATION_PATTERN_NO_VIBRATION = {0};
 }
