@@ -34,7 +34,7 @@
     <string name="move_down">Move down</string>
     <string name="queue_empty2" />
     <string name="queue_paused">Queue paused</string>
-    <string name="queue_preparing">Preparing image download list - please wait…</string>
+    <string name="queue_preparing">Preparing download</string>
     <string name="queue_dl">Downloading {0}</string>
     <!-- TextViews -->
     <string name="work_untitled" translatable="false">[No data]</string>
