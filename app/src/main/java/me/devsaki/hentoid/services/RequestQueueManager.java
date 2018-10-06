@@ -2,6 +2,7 @@ package me.devsaki.hentoid.services;
 
 import android.app.ActivityManager;
 import android.content.Context;
+import android.net.Uri;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -16,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.VolleyOkHttp3Stack;
 import timber.log.Timber;
@@ -115,7 +115,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
      */
     void queueRequest(Request<T> request) {
         if (!allowParallelDownloads) {
-            String host = Helper.getHostFromUrl(request.getUrl());
+            String host = Uri.parse(request.getUrl()).getHost();
             List<Request<T>> requests;
             if (serverRequests.containsKey(host)) {
                 requests = serverRequests.get(host);
@@ -135,7 +135,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     private void addToRequestQueue(Request<T> request) {
         mRequestQueue.add(request);
         nbRequests++;
-        Timber.d("Global requests queue ::: request added for host %s - current total %s", Helper.getHostFromUrl(request.getUrl()), nbRequests);
+        Timber.d("Global requests queue ::: request added for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
     }
 
     /**
@@ -145,11 +145,11 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
      */
     public void onRequestFinished(Request<T> request) {
         nbRequests--;
-        Timber.d("Global requests queue ::: request removed for host %s - current total %s", Helper.getHostFromUrl(request.getUrl()), nbRequests);
+        Timber.d("Global requests queue ::: request removed for host %s - current total %s", Uri.parse(request.getUrl()).getHost(), nbRequests);
 
         if (!allowParallelDownloads) {
             // Feed the next request of the same server to the global queue
-            String host = Helper.getHostFromUrl(request.getUrl());
+            String host = Uri.parse(request.getUrl()).getHost();
             if (serverRequests.containsKey(host)) {
                 int hostQueueSize = serverRequests.get(host).size();
                 if (hostQueueSize > 0) {

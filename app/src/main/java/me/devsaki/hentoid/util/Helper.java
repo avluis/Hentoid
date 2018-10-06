@@ -30,12 +30,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AppLockActivity;
@@ -327,6 +325,7 @@ public final class Helper {
     public static String buildListAsString(List<?> list) {
         return buildListAsString(list, "");
     }
+
     public static String buildListAsString(List<?> list, String valueDelimiter) {
 
         StringBuilder str = new StringBuilder("");
@@ -342,10 +341,10 @@ public final class Helper {
         return str.toString();
     }
 
-    public static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType type)
-    {
-        return extractAttributeByType(attrs, new AttributeType[] { type });
+    public static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType type) {
+        return extractAttributeByType(attrs, new AttributeType[]{type});
     }
+
     private static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType[] types) {
         List<Attribute> result = new ArrayList<>();
 
@@ -356,16 +355,5 @@ public final class Helper {
         }
 
         return result;
-    }
-
-    public static String getHostFromUrl(String url)
-    {
-        int beginning = url.indexOf("//") + 2;
-        int end = url.indexOf(":", beginning);
-        if (-1 == end) end = url.indexOf("?", beginning);
-        if (-1 == end) end = url.indexOf("/", beginning);
-        if (-1 == end) end = beginning;
-
-        return url.substring(beginning, end);
     }
 }
