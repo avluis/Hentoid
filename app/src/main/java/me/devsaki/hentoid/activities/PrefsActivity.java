@@ -67,7 +67,7 @@ public class PrefsActivity extends BaseActivity {
         private boolean onCheckUpdatePrefClick() {
             if (!UpdateDownloadService.isRunning()) {
                 Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
-                startActivity(intent);
+                requireContext().startService(intent);
             }
             return true;
         }
