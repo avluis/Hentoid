@@ -83,7 +83,7 @@ public class ContentDownloadService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (!NetworkStatus.isOnline(this)) {
+        if (!NetworkStatus.isOnline()) {
             Timber.w("No connection!");
             return;
         }

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import me.devsaki.hentoid.HentoidApp;
 import timber.log.Timber;
 
 /**
@@ -41,25 +40,16 @@ public class AssetsCache {
         assetManager = context.getAssets();
         cacheDir = context.getExternalCacheDir();
         if (cacheDir != null) {
-            // Check remote cache version
-            checkNetworkConnectivity();
-        } else {
-            Timber.d("Cache INIT Failed!");
-        }
-    }
-
-    private static void checkNetworkConnectivity() {
-        AsyncTask.execute(() -> {
-            boolean connected = NetworkStatus.hasInternetAccess(HentoidApp.getAppContext());
-
-            if (connected) {
+            if (NetworkStatus.isOnline()) {
                 Timber.d("Checking remote cache version.");
                 new UpdateCheckTask().execute(CACHE_JSON);
             } else {
                 Timber.w("Network is not connected!");
                 unpackBundle();
             }
-        });
+        } else {
+            Timber.d("Cache INIT Failed!");
+        }
     }
 
     private static void downloadCachePack(String downloadURL) {
