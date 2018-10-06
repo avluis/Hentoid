@@ -31,7 +31,7 @@ public class DownloadProgressNotification implements Notification {
     @NonNull
     @Override
     public android.app.Notification onCreateNotification(Context context) {
-        return new NotificationCompat.Builder(context, DownloadNotificationChannel.ID)
+        return new NotificationCompat.Builder(context)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setContentTitle(context.getString(R.string.downloading))
                 .setContentText(title)
@@ -41,7 +41,6 @@ public class DownloadProgressNotification implements Notification {
                 .setContentIntent(getDefaultIntent(context))
                 .setLocalOnly(true)
                 .setOngoing(true)
-                .setVibrate(Consts.VIBRATION_PATTERN_NO_VIBRATION)
                 .build();
     }
 
