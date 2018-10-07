@@ -69,7 +69,7 @@
     <string name="pref_analytics_tracking_summary_on">Tap to enable Analytics Tracking.\nHelp us improve the app by tracking crashes &amp; exceptions.</string>
     <string name="pref_analytics_tracking_default" translatable="false">false</string>
     <string name="pref_use_sfw_title">Use safe-for-work/wife/gf source</string>
-    <string name="pref_use_sfw_summary_off">Going 100%% hentai</string>
+    <string name="pref_use_sfw_summary_off">Going full hentai</string>
     <string name="pref_use_sfw_summary_on">A non-hentai source is available</string>
     <string name="pref_use_sfw_default" translatable="false">false</string>
 </resources>
