@@ -12,9 +12,6 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
-    lintOptions { // To appease jenkins builds
-        abortOnError false
-    }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
