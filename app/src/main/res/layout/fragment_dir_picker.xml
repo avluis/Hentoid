@@ -70,7 +70,7 @@
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
-        app:srcCompat="@drawable/ic_create_new_folder"
+        android:src="@drawable/ic_create_new_folder"
         app:useCompatPadding="true" />
 
     <android.support.design.widget.FloatingActionButton
@@ -85,7 +85,7 @@
         app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple"
-        app:srcCompat="@drawable/ic_action_sd_storage"
+        android:src="@drawable/ic_action_sd_storage"
         app:useCompatPadding="true" />
 
 </RelativeLayout>
