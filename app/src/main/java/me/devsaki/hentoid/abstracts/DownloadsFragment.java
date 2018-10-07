@@ -48,6 +48,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -140,13 +141,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Handler for text searches; needs to be there to be cancelable upon new key press
     private final Handler searchHandler = new Handler();
 
-    // ======== VARIABLES TAKEN FROM SETTINGS / PREFERENCES
+    // ======== VARIABLES TAKEN FROM PREFERENCES / GLOBAL SETTINGS TO DETECT CHANGES
     // Books per page
     protected int booksPerPage;
-    // Hentoid directory
-    private String settingDir;
     // Books sort order
     private int order;
+    // Last collection refresh date
+    private Date lastCollectionRefresh;
 
 
     // ======== VARIABLES
@@ -303,7 +304,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         Timber.d("Querying Prefs.");
         boolean shouldUpdate = false;
 
-        if (settingDir.isEmpty()) {
+        if (Preferences.getRootFolderName().isEmpty()) {
             Timber.d("Where are my files?!");
 
             FragmentActivity activity = getActivity();
@@ -316,11 +317,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             activity.finish();
         }
 
-        String settingDir = Preferences.getRootFolderName();
-
-        if (!this.settingDir.equals(settingDir)) {
-            Timber.d("Library directory has changed!");
-            this.settingDir = settingDir;
+        if (lastCollectionRefresh.compareTo(HentoidApp.getLastCollectionRefresh()) != 0) {
+            Timber.d("Library has been refreshed!");
             cleanResults();
             shouldUpdate = true;
         }
@@ -351,7 +349,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     private void checkStorage() {
         if (FileHelper.isSAF()) {
-            File storage = new File(settingDir);
+            File storage = new File(Preferences.getRootFolderName());
             if (FileHelper.getExtSdCardFolder(storage) == null) {
                 Timber.d("Where are my files?!");
                 Helper.toast(getActivity(),
@@ -374,7 +372,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void checkSDHealth() {
-        File file = new File(settingDir, "test");
+        File file = new File(Preferences.getRootFolderName(), "test");
         OutputStream output = null;
         try {
             output = FileHelper.getOutputStream(file);
@@ -490,9 +488,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         setHasOptionsMenu(true);
 
         mContext = getContext();
-        settingDir = Preferences.getRootFolderName();
         order = Preferences.getContentSortOrder();
         booksPerPage = Preferences.getContentPageQuantity();
+        lastCollectionRefresh = HentoidApp.getLastCollectionRefresh();
     }
 
     @Override
@@ -1127,6 +1125,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             for (String key : tagFilters.keySet()) {
                 Button b = tagMosaic.findViewWithTag(key);
+                if (null == b) continue;
                 int count = 0;
 
                 if (availableTags.containsKey(key)) {

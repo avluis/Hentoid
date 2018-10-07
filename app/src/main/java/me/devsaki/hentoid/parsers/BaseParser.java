@@ -36,17 +36,8 @@ public abstract class BaseParser implements ContentParser {
         Content content = parseContent(doc);
 
         if (content != null) {
-            AttributeMap attributes = content.getAttributes();
-            String author = "";
-            if (attributes.containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
-                author = attributes.get(AttributeType.ARTIST).get(0).getName();
-            if (author.equals("")) // Try and get Circle
-            {
-                if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
-                    author = attributes.get(AttributeType.CIRCLE).get(0).getName();
-            }
-
-            content.setAuthor(author).setStatus(StatusContent.SAVED);
+            content.populateAuthor();
+            content.setStatus(StatusContent.SAVED);
         }
 
         return content;
