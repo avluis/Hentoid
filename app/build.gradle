@@ -12,15 +12,12 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
         sourceCompatibility JavaVersion.VERSION_1_8
     }
-    lintOptions { // To appease jenkins builds
-        abortOnError false
-    }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
         minSdkVersion 15
         // Hold updating targetSdkVersion until implementing an image viewer
         // or Perfect Viewer implements Content URI
-        //noinspection OldTargetApi
+        //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 23
         versionCode 63
         versionName '1.3.10'
