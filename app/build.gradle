@@ -20,7 +20,7 @@ android {
         minSdkVersion 15
         // Hold updating targetSdkVersion until implementing an image viewer
         // or Perfect Viewer implements Content URI
-        //noinspection OldTargetApi
+        //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 23
         versionCode 67
         versionName '1.5.0'
