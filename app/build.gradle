@@ -1,4 +1,4 @@
-1pply plugin: 'com.android.application'
+apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
 
 // apply signing configuration if config file exists
