@@ -17,10 +17,10 @@ public enum Site {
     PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin, true),
     HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi, true),
     NHENTAI(3, "nhentai", "https://nhentai.net", "nhentai", R.drawable.ic_menu_nhentai, true),
-    TSUMINO(4, "tsumino", "http://www.tsumino.com", "tsumino", R.drawable.ic_menu_tsumino, true),
+    TSUMINO(4, "tsumino", "https://www.tsumino.com", "tsumino", R.drawable.ic_menu_tsumino, true),
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe, true),
-    ASMHENTAI(6, "asmhentai", "http://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai, true),
-    ASMHENTAI_COMICS(7, "asmhentai", "http://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, true),
+    ASMHENTAI(6, "asmhentai", "https://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai, true),
+    ASMHENTAI_COMICS(7, "asmhentai", "https://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, true),
     EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, true),
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true); // Safe-for-work/wife/gf option
 
