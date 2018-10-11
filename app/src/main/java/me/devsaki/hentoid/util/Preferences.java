@@ -197,6 +197,7 @@ public final class Preferences {
         static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
     }
 
+    // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
     public static final class Default {
         public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
@@ -215,6 +216,7 @@ public final class Preferences {
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
     }
 
+    // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
     public static final class Constant {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
