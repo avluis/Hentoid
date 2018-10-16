@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.abstracts;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Helper;

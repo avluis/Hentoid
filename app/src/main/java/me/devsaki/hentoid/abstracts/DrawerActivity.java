@@ -7,14 +7,14 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.widget.Toolbar;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,8 +35,8 @@ import timber.log.Timber;
  * The requirements for a subclass are:
  * calling {@link #initializeToolbar()} on onCreate, after setContentView() is called.
  * In addition, subclasses must have these layout elements:
- * - {@link android.support.v7.widget.Toolbar} with id 'toolbar'.
- * - {@link android.support.v4.widget.DrawerLayout} with id 'drawer_layout'.
+ * - {@link androidx.appcompat.widget.Toolbar} with id 'toolbar'.
+ * - {@link DrawerLayout} with id 'drawer_layout'.
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
 public abstract class DrawerActivity extends BaseActivity {

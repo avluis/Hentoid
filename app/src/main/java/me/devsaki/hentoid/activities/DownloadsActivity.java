@@ -4,8 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.FragmentManager;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.FragmentManager;
 import android.view.WindowManager;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -16,7 +16,6 @@ import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.EndlessFragment;
 import me.devsaki.hentoid.fragments.PagerFragment;
-import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;

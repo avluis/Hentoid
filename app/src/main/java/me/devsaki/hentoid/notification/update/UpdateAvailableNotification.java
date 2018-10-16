@@ -3,8 +3,8 @@ package me.devsaki.hentoid.notification.update;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationCompat;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.services.UpdateDownloadService;
