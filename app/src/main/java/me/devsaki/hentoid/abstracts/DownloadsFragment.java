@@ -829,16 +829,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if (shouldHide && (!s.isEmpty())) {
+                if( (shouldHide || MODE_MIKAN == mode) && (!s.isEmpty())) {
                     submitContentSearchQuery(s, 1000);
-                }
-
-                if (shouldHide && bookSortOrderUpdated) {
+                } else if (shouldHide && bookSortOrderUpdated) {
                     clearQuery(false);
                     bookSortOrderUpdated = false;
-                }
-
-                if (!shouldHide && (!s.isEmpty())) {
+                } else if (!shouldHide && (!s.isEmpty())) {
                     clearQuery(true);
                 }
 
