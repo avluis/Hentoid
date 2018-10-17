@@ -38,9 +38,7 @@ public class JsonHelper {
         // convert java object to JSON format, and return as a JSON formatted string
         String json = gson.toJson(object);
 
-        OutputStream output = null;
-        try {
-            output = FileHelper.getOutputStream(file);
+        try (OutputStream output = FileHelper.getOutputStream(file)) {
 
             if (output != null) {
                 // build
@@ -52,42 +50,26 @@ public class JsonHelper {
             } else {
                 Timber.w("JSON file creation failed for %s", file.getPath());
             }
-        } finally {
-            // finished
-            if (output != null) {
-                try {
-                    output.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
         }
+        // finished
+        // Ignore
     }
 
     public static <T> T jsonToObject(File f, Class<T> type) throws IOException {
-        BufferedReader br = null;
         StringBuilder json = new StringBuilder();
-        try {
-            String sCurrentLine;
-            br = new BufferedReader(new FileReader(f));
+        String sCurrentLine;
+        try (BufferedReader br = new BufferedReader(new FileReader(f))) {
             while ((sCurrentLine = br.readLine()) != null) {
                 json.append(sCurrentLine);
             }
-        } finally {
-            if (br != null) {
-                try {
-                    br.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
-            }
         }
+        // Ignore
 
         return new Gson().fromJson(json.toString(), type);
     }
 
     @Nullable
-    public synchronized static JSONObject jsonReader(String jsonURL) throws IOException {
+    synchronized static JSONObject jsonReader(String jsonURL) throws IOException {
         try {
             Request request = new Request.Builder()
                     .url(jsonURL)
