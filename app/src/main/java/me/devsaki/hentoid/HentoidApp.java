@@ -122,6 +122,7 @@ public class HentoidApp extends Application {
      * @param versionCode Current app version
      * @param db          Hentoid DB
      */
+    @SuppressWarnings("deprecation")
     private void UpgradeTo(int versionCode, HentoidDB db) {
         if (versionCode > 43) // Update all "storage_folder" fields in CONTENT table (mandatory)
         {

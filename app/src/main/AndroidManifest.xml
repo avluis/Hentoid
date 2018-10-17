@@ -245,6 +245,8 @@
 
         <service android:name=".services.UpdateDownloadService" />
 
+        <service android:name=".services.ImportService" />
+
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
         <provider

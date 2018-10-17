@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -59,12 +60,16 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
+import me.devsaki.hentoid.services.ContentDownloadService;
+import me.devsaki.hentoid.services.ImportService;
+import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.PendingIntentCompat;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -88,6 +93,10 @@ public class ImportActivity extends BaseActivity {
     private boolean restartFlag;
     private boolean prefInit;
     private boolean defaultInit;
+
+    private ProgressDialog progressDialog;
+    private AlertDialog finishDialog;
+
 
     private static List<Attribute> from(List<URLBuilder> urlBuilders, AttributeType type) {
         List<Attribute> attributes = null;
@@ -552,7 +561,25 @@ public class ImportActivity extends BaseActivity {
                                 // Prior Library found, drop and recreate db
                                 cleanUpDB();
                                 // Send results to scan
-                                Helper.executeAsyncTask(new ImportAsyncTask(this));
+                                //Helper.executeAsyncTask(new ImportAsyncTask(this));
+                                Intent intent = ImportService.makeIntent(this);
+
+                                startService(intent);
+                                PendingIntent pendingIntent = PendingIntentCompat.getForegroundService(this, intent);
+
+                                // TODO set progress dialog here
+                                progressDialog = new ProgressDialog(this);
+                                progressDialog.setTitle(R.string.import_dialog);
+                                progressDialog.setMessage(this.getText(R.string.please_wait));
+                                progressDialog.setIndeterminate(false);
+                                progressDialog.setMax(100);
+
+                                finishDialog = new AlertDialog.Builder(this)
+                                        .setIcon(R.drawable.ic_dialog_warning)
+                                        .setTitle(R.string.add_dialog)
+                                        .setMessage(R.string.please_wait)
+                                        .setCancelable(false)
+                                        .create();
                             })
                     .setNegativeButton(android.R.string.no,
                             (dialog12, which) -> {
