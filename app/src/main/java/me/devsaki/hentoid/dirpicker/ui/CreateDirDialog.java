@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.dirpicker.ui;
 
 import android.content.Context;
-import android.support.annotation.Nullable;
-import android.support.v7.app.AlertDialog;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import android.text.Editable;
 import android.widget.EditText;
 

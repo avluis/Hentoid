@@ -2,7 +2,7 @@ package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;

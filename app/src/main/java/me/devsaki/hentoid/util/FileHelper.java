@@ -3,10 +3,10 @@ package me.devsaki.hentoid.util;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.support.annotation.NonNull;
-import android.support.annotation.WorkerThread;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
+import androidx.annotation.NonNull;
+import androidx.annotation.WorkerThread;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import android.webkit.MimeTypeMap;
 
 import org.apache.commons.io.FileUtils;

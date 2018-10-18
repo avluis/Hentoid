@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.timber;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;

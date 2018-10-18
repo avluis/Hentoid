@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.util.notification;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationManagerCompat;
+import androidx.annotation.NonNull;
+import androidx.core.app.NotificationManagerCompat;
 
 public class NotificationManager {
 
