@@ -503,10 +503,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
-        intent.setData(Uri.parse(url));
+        intent.setDataAndType(Uri.parse(url), "text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, item.getTitle());
         intent.putExtra(Intent.EXTRA_TEXT, url);
-        intent.setType("text/plain");
 
         context.startActivity(Intent.createChooser(intent, context.getString(R.string.send_to)));
     }
