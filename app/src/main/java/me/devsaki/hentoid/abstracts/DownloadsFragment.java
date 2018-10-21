@@ -175,8 +175,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // === MISC. USAGE
     protected Context mContext;
-    // Current state of left drawer (see constants in DrawerLayout class)
-    private int mDrawerState;
     // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
     protected int currentPage = 1;
     // Adapter in charge of book list display
@@ -187,8 +185,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected boolean isLoading;
     // Indicates whether or not one of the books has been selected
     private boolean isSelected;
-    // True if book sort order has been updated
-    private boolean bookSortOrderUpdated;
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
     // True if bottom toolbar visibility is fixed and should not change regardless of scrolling; false if bottom toolbar visibility changes according to scrolling
@@ -203,6 +199,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
     // Total count of book in entire collection (Adapter is in charge of updating it)
     private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
+    //
+    boolean invalidateNextQueryTextChange = false;
 
 
 
@@ -221,7 +219,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // To be documented
     private ActionMode mActionMode;
-    private boolean shouldHide;
     private Parcelable mListState;
     private boolean selectTrigger = false;
 
@@ -369,7 +366,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         int bookOrder = Preferences.getContentSortOrder();
         if (this.bookSortOrder != bookOrder) {
             Timber.d("book sort order updated.");
-            bookSortOrderUpdated = true;
             this.bookSortOrder = bookOrder;
         }
 
@@ -586,13 +582,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         mDrawerLayout = activity.findViewById(R.id.drawer_layout);
-        if (mDrawerLayout != null) mDrawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
-            @Override
-            public void onDrawerStateChanged(int newState) {
-                mDrawerState = newState;
-                activity.invalidateOptionsMenu();
-            }
-        });
 
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
@@ -690,14 +679,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Clear search query and hide the search view if asked so
-     * @param hideSearchView True if search view has to be hidden
      */
-    protected void clearQuery(boolean hideSearchView) {
-        Timber.d("Clearing query with option: %s", hideSearchView);
-        if (mainSearchView != null && hideSearchView) {
-            mainSearchView.clearFocus();
-            mainSearchView.setIconified(true);
-        }
+    protected void clearQuery() {
         setQuery(query = "");
         searchLibrary(true);
     }
@@ -772,7 +755,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onMenuItemActionExpand(MenuItem item) {
                 setSearchPaneVisibility(true);
-                mainSearchView.clearFocus();
+
+                // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
+                if (query != null && !query.isEmpty())
+                    searchHandler.postDelayed(() -> {
+                        invalidateNextQueryTextChange = true;
+                        mainSearchView.setQuery(query, false);
+                    }, 100);
 
                 return true;
             }
@@ -780,12 +769,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 setSearchPaneVisibility(false);
-/* New behaviour
-                if (!("").equals(query)) {
-                    query = "";
-                    submitSearchQuery(query, 300);
-                }
-*/
                 return true;
             }
         });
@@ -829,18 +812,22 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if( (shouldHide || MODE_MIKAN == mode) && (!s.isEmpty())) {
-                    submitContentSearchQuery(s, 1000);
-                } else if (shouldHide && bookSortOrderUpdated) {
-                    clearQuery(false);
-                    bookSortOrderUpdated = false;
-                } else if (!shouldHide && (!s.isEmpty())) {
-                    clearQuery(true);
+                if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
+                    invalidateNextQueryTextChange = false;
+                    return true;
                 }
+
+                if(!s.isEmpty()) {
+                    if (!s.equals(query)) submitContentSearchQuery(s, 1000);
+                } else {
+                    clearQuery();
+                }
+                // TODO : Handle press on back button while text has not been cleared => should not clear anything
 
                 return true;
             }
         });
+
 
         // == SEARCH PANE
 
@@ -887,7 +874,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 {
                     Snackbar.make(mListView, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchHandler.removeCallbacksAndMessages(null);
-                } else if (shouldHide && (!s.isEmpty())) {
+                } else if (!s.isEmpty()) {
                     submitAttributeSearchQuery(selectedTab, s, 1000);
                 }
 
@@ -965,20 +952,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         searchMasterData(selectedTab, "");
     }
 
-    @Override
-    public void onPrepareOptionsMenu(Menu menu) {
-        if (mDrawerLayout != null) {
-            boolean drawerOpen = mDrawerLayout.isDrawerOpen(GravityCompat.START);
-            shouldHide = (mDrawerState != DrawerLayout.STATE_DRAGGING &&
-                    mDrawerState != DrawerLayout.STATE_SETTLING && !drawerOpen);
-
-            if (!shouldHide) {
-                searchMenu.collapseActionView();
-                menu.findItem(R.id.action_search).setVisible(false);
-            }
-        }
-    }
-
     /**
      * Callback method used when a sort method is selected in the sort drop-down menu
      * => Updates the UI according to the chosen sort method
@@ -993,7 +966,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         switch (item.getItemId()) {
             case R.id.action_order_AZ:
                 cleanResults();
-                bookSortOrderUpdated = true;
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
                 mAdapter.setComparator(Content.TITLE_ALPHA_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
@@ -1003,7 +975,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_321:
                 cleanResults();
-                bookSortOrderUpdated = true;
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST;
                 mAdapter.setComparator(Content.DLDATE_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
@@ -1013,7 +984,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_ZA:
                 cleanResults();
-                bookSortOrderUpdated = true;
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
                 mAdapter.setComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
@@ -1023,7 +993,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_123:
                 cleanResults();
-                bookSortOrderUpdated = true;
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST;
                 mAdapter.setComparator(Content.DLDATE_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
@@ -1033,7 +1002,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_random:
                 cleanResults();
-                bookSortOrderUpdated = true;
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
                 mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
                 RandomSeedSingleton.getInstance().renewSeed();
@@ -1058,13 +1026,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @param visible True if search pane has to become visible; false if not
      */
     private void setSearchPaneVisibility(boolean visible) {
-        if (visible) {
-            if (getQuery().length() > 0)
-                clearQuery(true); // Clears any previously active query (search bar)
-            searchPane.setVisibility(View.VISIBLE);
-        } else {
-            searchPane.setVisibility(View.GONE);
-        }
+            searchPane.setVisibility(visible?View.VISIBLE:View.GONE);
+            invalidateNextQueryTextChange = true;
     }
 
     /**
