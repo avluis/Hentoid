@@ -199,7 +199,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
     // Total count of book in entire collection (Adapter is in charge of updating it)
     private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
-    //
+    // Used to ignore native calls to onQueryTextChange
     boolean invalidateNextQueryTextChange = false;
 
 
@@ -822,7 +822,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 } else {
                     clearQuery();
                 }
-                // TODO : Handle press on back button while text has not been cleared => should not clear anything
 
                 return true;
             }
