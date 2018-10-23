@@ -17,6 +17,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.QueryMap;
+import retrofit2.http.Url;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -60,8 +61,8 @@ public class MikanServer {
         @GET("{source}/{id}/pages")
         Single<MikanContentResponse> getPages(@Path("source") String source, @Path("id") String contentId);
 
-        @GET("{source}{suffix}")
-        Single<MikanContentResponse> search(@Path("source") String source, @Path("suffix") String suffix, @QueryMap Map<String, String> options);
+        @GET
+        Single<MikanContentResponse> search(@Url String url, @QueryMap Map<String, String> options);
 
         // Forced HITOMI until the endpoint moves to root URL
         @GET("hitomi.la/info/{endpoint}")

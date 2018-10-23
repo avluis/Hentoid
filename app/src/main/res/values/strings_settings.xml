@@ -40,7 +40,7 @@
     <string name="pref_webview_category">Browser</string>
     <string name="pref_webview_override_overview_title">Disable Page Overview</string>
     <string name="pref_webview_override_overview_summary_off">Disables page overview and allows you to set your preferred initial zoom level below.</string>
-    <string name="pref_webview_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi.</string>
+    <string name="pref_webview_override_overview_summary_on">Tweak the setting below to set your initial zoom level.\nNote: Only affects Hitomi and e-hentai.</string>
     <string name="pref_webview_override_overview_default" translatable="false">false</string>
     <string name="pref_webview_initial_zoom_title">Initial Zoom Level</string>
     <string name="pref_webview_initial_zoom_summary">Zoom level of browser page on initial page load.\nCurrently: %s%%</string>

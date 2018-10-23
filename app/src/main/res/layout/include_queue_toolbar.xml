@@ -43,12 +43,15 @@
             android:orientation="vertical">
 
             <TextView
-                    android:id="@+id/queueStatus"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:textColor="@android:color/white"
-                    android:layout_weight="1"
-                    android:text="@string/app_intro" />
+                android:id="@+id/queueStatus"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:textColor="@android:color/white"
+                android:ellipsize="middle"
+                android:scrollHorizontally="false"
+                android:singleLine="true"
+                android:layout_weight="1"
+                android:text="@string/app_intro" />
 
             <TextView
                 android:id="@+id/queueInfo"

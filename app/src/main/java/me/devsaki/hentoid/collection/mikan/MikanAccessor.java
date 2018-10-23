@@ -171,7 +171,7 @@ public class MikanAccessor implements CollectionAccessor {
         if (attributes.size() > 0) params.put("language", Helper.buildListAsString(attributes));
 
 
-        disposable = MikanServer.API.search(getMikanCodeForSite(site), suffix, params)
+        disposable = MikanServer.API.search(getMikanCodeForSite(site) + suffix, params)
                 .observeOn(mainThread())
                 .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed(null, "Search failed to load - " + throwable.getMessage()));
     }

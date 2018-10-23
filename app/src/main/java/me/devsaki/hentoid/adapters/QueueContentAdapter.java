@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -18,7 +19,6 @@ import com.bumptech.glide.request.RequestOptions;
 import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
@@ -38,12 +38,11 @@ import me.devsaki.hentoid.util.Helper;
 public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private final Context context;
-    private final List<Content> contents;
+    private ListView container = null;
 
     public QueueContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.item_queue, contents);
         this.context = context;
-        this.contents = contents;
     }
 
     @NonNull
@@ -51,6 +50,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     public View getView(int pos, View view, @NonNull ViewGroup parent) {
         View v = view;
         ViewHolder holder;
+        if (null == container) container = (ListView)parent;
         // Check if an existing view is being reused, otherwise inflate the view
         if (v == null) {
             holder = new ViewHolder();
@@ -269,6 +269,28 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
     }
 
+    public void updateProgress(int index, Content content)
+    {
+        if (null == container) return;
+
+        View view = container.getChildAt(index - container.getFirstVisiblePosition());
+        if(view == null) return;
+
+        updateProgress(view, content);
+    }
+
+    private void swap(int firstPosition, int secondPosition)
+    {
+        Content first = getItem(firstPosition<secondPosition?firstPosition:secondPosition);
+        Content second = getItem(firstPosition<secondPosition?secondPosition:firstPosition);
+
+        remove(first);
+        remove(second);
+
+        insert(first, secondPosition - 1);
+        insert(second, firstPosition);
+    }
+
     /**
      * Move designated content up in the download queue (= raise its priority)
      *
@@ -276,7 +298,6 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void moveUp(int contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
-        int initialContentSize = contents.size();
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
         int prevItemId = 0;
@@ -284,14 +305,14 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         int prevItemPosition = -1;
         int loopPosition = 0;
 
+        setNotifyOnChange(false); // Prevents every update from calling a screen refresh
+
         for (Pair<Integer, Integer> p : queue) {
             if (p.first.equals(contentId) && prevItemId != 0) {
                 db.udpateQueue(p.first, prevItemQueuePosition);
                 db.udpateQueue(prevItemId, p.second);
 
-                // If the 1st item has been removed from the queue during the execution of this method, indexes may be off-limits
-                int corrector = contents.size() - initialContentSize;
-                Collections.swap(contents, prevItemPosition + corrector, loopPosition + corrector);
+                swap(prevItemPosition, loopPosition);
                 if (0 == prevItemPosition)
                     EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
@@ -303,7 +324,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             loopPosition++;
         }
 
-        notifyDataSetChanged();
+        notifyDataSetChanged(); // Final screen refresh once everything had been updated
     }
 
     /**
@@ -313,12 +334,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void moveTop(int contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
-        int initialContentSize = contents.size();
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
         int topItemId = 0;
         int topItemQueuePosition = -1;
         int loopPosition = 0;
+
+        setNotifyOnChange(false);  // Prevents every update from calling a screen refresh
 
         for (Pair<Integer, Integer> p : queue) {
             if (0 == topItemId)
@@ -330,10 +352,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             if (p.first.equals(contentId)) {
                 db.udpateQueue(p.first, topItemQueuePosition); // Put selected item on top of list
 
-                // If the 1st item has been removed from the queue during the execution of this method, indexes may be off-limits
-                int corrector = contents.size() - initialContentSize;
-                contents.add(0, contents.get(loopPosition + corrector));
-                contents.remove(loopPosition + 1);
+                Content c = getItem(loopPosition);
+                remove(c);
+                insert(c, 0);
 
                 EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
@@ -343,7 +364,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             loopPosition++;
         }
 
-        notifyDataSetChanged();
+        notifyDataSetChanged(); // Final screen refresh once everything had been updated
     }
 
     /**
@@ -353,13 +374,14 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void moveDown(int contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
-        int initialContentSize = contents.size();
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
         int itemId = 0;
         int itemQueuePosition = -1;
         int itemPosition = -1;
         int loopPosition = 0;
+
+        setNotifyOnChange(false);  // Prevents every update from calling a screen refresh
 
         for (Pair<Integer, Integer> p : queue) {
             if (p.first.equals(contentId)) {
@@ -370,9 +392,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 db.udpateQueue(p.first, itemQueuePosition);
                 db.udpateQueue(itemId, p.second);
 
-                // If the 1st item has been removed from the queue during the execution of this method, indexes may be off-limits
-                int corrector = contents.size() - initialContentSize;
-                Collections.swap(contents, itemPosition + corrector, loopPosition + corrector);
+                swap(itemPosition, loopPosition);
 
                 if (0 == itemPosition)
                     EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
@@ -381,7 +401,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             loopPosition++;
         }
 
-        notifyDataSetChanged();
+        notifyDataSetChanged(); // Final screen refresh once everything had been updated
     }
 
     /**
@@ -397,9 +417,17 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         // Remove the content from the disk
         FileHelper.removeContent(content);
         // Remove the content from the in-memory list and the UI
-        remove(content);
+        super.remove(content);
 
         EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+    }
+
+    public void removeFromQueue(Content content)
+    {
+        HentoidDB db = HentoidDB.getInstance(context);
+        db.deleteQueueById(content.getId());
+
+        super.remove(content);
     }
 
     // View lookup cache

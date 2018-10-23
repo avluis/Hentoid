@@ -41,7 +41,6 @@ public class QueueFragment extends BaseFragment {
 
     // UI ELEMENTS
     private TextView mEmptyText;    // "Empty queue" message panel
-    private ListView mListView;     // Book list container
     private ImageButton btnStart;   // Start / Resume button
     private ImageButton btnPause;   // Pause button
     private TextView queueStatus;   // 1st line of text displayed on the right of the queue pause / play button
@@ -74,7 +73,8 @@ public class QueueFragment extends BaseFragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
 
-        mListView = rootView.findViewById(android.R.id.list);
+        // Book list container
+        ListView mListView = rootView.findViewById(android.R.id.list);
         mEmptyText = rootView.findViewById(android.R.id.empty);
 
         btnStart = rootView.findViewById(R.id.btnStart);
@@ -89,6 +89,10 @@ public class QueueFragment extends BaseFragment {
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
+
+        List<Content> contents = getDB().selectQueueContents();
+        mAdapter = new QueueContentAdapter(context, contents);
+        mListView.setAdapter(mAdapter);
 
         return rootView;
     }
@@ -121,7 +125,9 @@ public class QueueFragment extends BaseFragment {
                     queueInfo.setText("");
                 }
                 break;
-            default:
+            case DownloadEvent.EV_COMPLETE:
+                mAdapter.removeFromQueue(event.content);
+            default: // EV_COMPLETE, EV_PAUSE, EV_CANCEL events
                 update(event.eventType);
         }
     }
@@ -143,7 +149,7 @@ public class QueueFragment extends BaseFragment {
 
                     // Update book progress bar
                     content.setPercent((pagesOK + pagesKO) * 100.0 / totalPages);
-                    mAdapter.notifyDataSetChanged();
+                    mAdapter.updateProgress(0, content);
 
                     // Update information bar
                     StringBuilder message = new StringBuilder();
@@ -177,13 +183,11 @@ public class QueueFragment extends BaseFragment {
      * @param eventType Event type that triggered the update, if any (See types described in DownloadEvent); -1 if none
      */
     public void update(int eventType) {
-        List<Content> contents = getDB().selectQueueContents();
-
-        boolean isEmpty = (0 == contents.size());
+        boolean isEmpty = (0 == mAdapter.getCount());
         boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
         boolean isActive = (!isEmpty && !isPaused);
 
-        Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, contents.size());
+        Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, mAdapter.getCount());
 
         // Update list visibility
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
@@ -191,10 +195,12 @@ public class QueueFragment extends BaseFragment {
         // Update control bar status
         queueInfo.setText(R.string.queue_empty2);
 
+        Content firstContent = isEmpty?null:mAdapter.getItem(0);
+
         if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
-            updateBookTitle(contents.get(0).getTitle());
+            if (firstContent != null)  updateBookTitle(firstContent.getTitle());
 
             // Stop blinking animation, if any
             queueInfo.clearAnimation();
@@ -214,17 +220,12 @@ public class QueueFragment extends BaseFragment {
                 anim.setRepeatCount(Animation.INFINITE);
                 queueStatus.startAnimation(anim);
                 queueInfo.startAnimation(anim);
-            } else {
+            } else { // Empty
                 btnStart.setVisibility(View.GONE);
                 queueStatus.setText(R.string.queue_empty2);
                 queueInfo.setText(R.string.queue_empty2);
             }
         }
-
-        // Update adapter
-        // TODO - re-creating a brand new adapter from scratch is kinda shabby
-        mAdapter = new QueueContentAdapter(context, contents);
-        mListView.setAdapter(mAdapter);
     }
 
     @Override
