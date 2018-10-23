@@ -32,7 +32,9 @@ import android.widget.ImageView;
 
 import com.annimon.stream.Stream;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,11 +60,11 @@ import me.devsaki.hentoid.dirpicker.util.Convert;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
-import me.devsaki.hentoid.services.ContentDownloadService;
 import me.devsaki.hentoid.services.ImportService;
-import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -155,6 +157,9 @@ public class ImportActivity extends BaseActivity {
                 Timber.d("Intent: %s Action: %s", intent, intent.getAction());
             }
         }
+
+        EventBus.getDefault().register(this);
+
         prepImport(savedInstanceState);
     }
 
@@ -274,6 +279,13 @@ public class ImportActivity extends BaseActivity {
         returnIntent.putExtra(ConstsImport.RESULT_KEY, result);
         setResult(RESULT_CANCELED, returnIntent);
         finish();
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+
+        super.onDestroy();
     }
 
     @Subscribe
@@ -531,6 +543,20 @@ public class ImportActivity extends BaseActivity {
         }
     }
 
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onImportEvent(ImportEvent event) {
+        if (ImportEvent.EV_PROGRESS == event.eventType)
+        {
+            progressDialog.setProgress( (int)Math.round(100.0 * (event.booksOK + event.booksKO) / event.booksTotal) );
+        }
+        else if (ImportEvent.EV_COMPLETE == event.eventType)
+        {
+            progressDialog.dismiss();
+            cleanUp((event.booksOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
+        }
+    }
+
     private void importFolder(File folder) {
         if (!FileHelper.validateFolder(folder.getAbsolutePath(), true)) {
             prepImport(null);
@@ -563,23 +589,14 @@ public class ImportActivity extends BaseActivity {
                                 // Send results to scan
                                 //Helper.executeAsyncTask(new ImportAsyncTask(this));
                                 Intent intent = ImportService.makeIntent(this);
-
                                 startService(intent);
-                                PendingIntent pendingIntent = PendingIntentCompat.getForegroundService(this, intent);
 
-                                // TODO set progress dialog here
                                 progressDialog = new ProgressDialog(this);
                                 progressDialog.setTitle(R.string.import_dialog);
                                 progressDialog.setMessage(this.getText(R.string.please_wait));
                                 progressDialog.setIndeterminate(false);
                                 progressDialog.setMax(100);
-
-                                finishDialog = new AlertDialog.Builder(this)
-                                        .setIcon(R.drawable.ic_dialog_warning)
-                                        .setTitle(R.string.add_dialog)
-                                        .setMessage(R.string.please_wait)
-                                        .setCancelable(false)
-                                        .create();
+                                progressDialog.show();
                             })
                     .setNegativeButton(android.R.string.no,
                             (dialog12, which) -> {
@@ -626,7 +643,7 @@ public class ImportActivity extends BaseActivity {
         context.deleteDatabase(Consts.DATABASE_NAME);
     }
 
-    private void cleanUp() {
+    private void cleanUp(String result) {
         Timber.d("Restart needed: %s", restartFlag);
 
         Intent returnIntent = new Intent();
@@ -679,7 +696,7 @@ public class ImportActivity extends BaseActivity {
             } else {
                 result = ConstsImport.NEW_LIBRARY_CREATED;
             }
-            cleanUp();
+            cleanUp(result);
         }
 
         @Override

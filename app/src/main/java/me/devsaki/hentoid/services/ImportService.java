@@ -63,17 +63,19 @@ public class ImportService extends Service {
 
     @Override
     public void onCreate() {
+        super.onCreate();
+
         running = true;
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
-        EventBus.getDefault().register(this);
         Timber.w("Service created");
     }
 
     @Override
     public void onDestroy() {
         running = false;
-        EventBus.getDefault().unregister(this);
         Timber.w("Service destroyed");
+
+        super.onDestroy();
     }
 
     @Nullable
@@ -84,7 +86,7 @@ public class ImportService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        startImport(); // ??? why not, but do it in a worker thread
+        startImport(); // TODO - do it in a worker thread
         return START_NOT_STICKY;
     }
 
