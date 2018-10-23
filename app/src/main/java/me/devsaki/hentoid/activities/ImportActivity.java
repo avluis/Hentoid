@@ -97,7 +97,6 @@ public class ImportActivity extends BaseActivity {
     private boolean defaultInit;
 
     private ProgressDialog progressDialog;
-    private AlertDialog finishDialog;
 
 
     private static List<Attribute> from(List<URLBuilder> urlBuilders, AttributeType type) {
@@ -588,8 +587,6 @@ public class ImportActivity extends BaseActivity {
                                 cleanUpDB();
                                 // Send results to scan
                                 //Helper.executeAsyncTask(new ImportAsyncTask(this));
-                                Intent intent = ImportService.makeIntent(this);
-                                startService(intent);
 
                                 progressDialog = new ProgressDialog(this);
                                 progressDialog.setTitle(R.string.import_dialog);
@@ -597,6 +594,9 @@ public class ImportActivity extends BaseActivity {
                                 progressDialog.setIndeterminate(false);
                                 progressDialog.setMax(100);
                                 progressDialog.show();
+
+                                Intent intent = ImportService.makeIntent(this);
+                                startService(intent);
                             })
                     .setNegativeButton(android.R.string.no,
                             (dialog12, which) -> {

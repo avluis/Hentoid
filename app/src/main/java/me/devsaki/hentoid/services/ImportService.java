@@ -53,6 +53,8 @@ public class ImportService extends Service {
     private ServiceNotificationManager notificationManager;
 
 
+    // TODO - clean folder names according to prefs rules
+
     public static Intent makeIntent(Context context) {
         return new Intent(context, ImportService.class);
     }
