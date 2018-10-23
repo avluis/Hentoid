@@ -592,6 +592,7 @@ public class ImportActivity extends BaseActivity {
                                 progressDialog.setTitle(R.string.import_dialog);
                                 progressDialog.setMessage(this.getText(R.string.please_wait));
                                 progressDialog.setIndeterminate(false);
+                                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                                 progressDialog.setMax(100);
                                 progressDialog.show();
 

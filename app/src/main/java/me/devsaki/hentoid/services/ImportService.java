@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.services;
 
-import android.app.Service;
+import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
@@ -27,7 +27,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
-import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
@@ -44,7 +43,7 @@ import static com.annimon.stream.Collectors.toList;
  *
  * @see UpdateCheckService
  */
-public class ImportService extends Service {
+public class ImportService extends IntentService {
 
     private static final int NOTIFICATION_ID = 1;
 
@@ -52,8 +51,12 @@ public class ImportService extends Service {
 
     private ServiceNotificationManager notificationManager;
 
-
+    // TODO - Discuss with senpai of the opportunity of keeping it as an IntentService (easier to make it run as a worker thread)
     // TODO - clean folder names according to prefs rules
+
+    public ImportService() {
+        super(ImportService.class.getName());
+    }
 
     public static Intent makeIntent(Context context) {
         return new Intent(context, ImportService.class);
@@ -87,10 +90,17 @@ public class ImportService extends Service {
     }
 
     @Override
+    protected void onHandleIntent(@Nullable Intent intent) {
+        startImport();
+    }
+
+/*
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        startImport(); // TODO - do it in a worker thread
+        startImport();
         return START_NOT_STICKY;
     }
+*/
 
     private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO)
     {
