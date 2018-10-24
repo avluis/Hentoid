@@ -176,6 +176,7 @@ public final class Preferences {
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
         public static final String PREF_ADD_NO_MEDIA_FILE = "pref_add_no_media_file";
         public static final String PREF_CHECK_UPDATE_MANUAL = "pref_check_updates_manual";
+        public static final String PREF_REFRESH_LIBRARY = "pref_refresh_bookshelf";
         public static final String PREF_ANALYTICS_TRACKING = "pref_analytics_tracking";
         static final String PREF_WELCOME_DONE = "pref_welcome_done";
         static final String PREFS_VERSION_KEY = "prefs_version";

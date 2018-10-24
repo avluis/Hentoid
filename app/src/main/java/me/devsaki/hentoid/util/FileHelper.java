@@ -303,26 +303,7 @@ public class FileHelper {
     }
 
     public static File createContentDownloadDir(Context context, Content content) {
-        String siteFolder = content.getSite().getFolder();
-        String folderDir = siteFolder;
-
-        // Format folder name according to preferences
-        int folderNamingPreference = Preferences.getFolderNameFormat();
-
-        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
-            folderDir = folderDir + content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
-        }
-        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
-            folderDir = folderDir + content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
-        }
-        folderDir = folderDir + "[" + content.getUniqueSiteId() + "]";
-
-        // Truncate folder dir to something manageable for Windows
-        // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
-        int truncLength = Preferences.getFolderTruncationNbChars();
-        if (truncLength > 0) {
-            if (folderDir.length() - siteFolder.length() > truncLength) folderDir = folderDir.substring(0, siteFolder.length() + truncLength - 1);
-        }
+        String folderDir = formatDirPath(content);
 
         String settingDir = Preferences.getRootFolderName();
         if (settingDir.isEmpty()) {
@@ -340,6 +321,30 @@ public class FileHelper {
         }
 
         return file;
+    }
+
+    public static String formatDirPath(Content content)
+    {
+        String siteFolder = content.getSite().getFolder();
+        String result = siteFolder;
+        int folderNamingPreference = Preferences.getFolderNameFormat();
+
+        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
+            result = result + content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
+        }
+        if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
+            result = result + content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
+        }
+        result = result + "[" + content.getUniqueSiteId() + "]";
+
+        // Truncate folder dir to something manageable for Windows
+        // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
+        int truncLength = Preferences.getFolderTruncationNbChars();
+        if (truncLength > 0) {
+            if (result.length() - siteFolder.length() > truncLength) result = result.substring(0, siteFolder.length() + truncLength - 1);
+        }
+
+        return result;
     }
 
     public static File getDefaultDir(Context context, String dir) {

@@ -20,6 +20,8 @@
     <string name="pref_dl_threads_quantity_default" translatable="false">0</string>
     <!-- Library -->
     <string name="pref_library_category">Library</string>
+    <string name="pref_refresh_library_title">Refresh library</string>
+    <string name="pref_refresh_library_summary">Manually refresh library contents</string>
     <string name="pref_read_content_title">Read Content Action</string>
     <string name="pref_read_content_summary">Image reader to open by default:\n%s</string>
     <string name="pref_read_content_default" translatable="false">0</string>

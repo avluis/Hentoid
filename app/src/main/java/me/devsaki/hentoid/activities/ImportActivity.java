@@ -75,9 +75,11 @@ public class ImportActivity extends BaseActivity {
     private boolean restartFlag;
     private boolean prefInit;
     private boolean defaultInit;
+    private boolean cleanup = false;
 
     private ProgressDialog progressDialog;
 
+    // TODO - do not display dirpicker and do not ask for import confirmation if user wants to refresh the library
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,17 +89,20 @@ public class ImportActivity extends BaseActivity {
         setContentView(contentView);
 
         Intent intent = getIntent();
-        if (intent != null && intent.getAction() != null) {
-            if (intent.getAction().equals(Intent.ACTION_APPLICATION_PREFERENCES)) {
-                Timber.d("Running from prefs screen.");
-                prefInit = true;
+        if (intent != null) {
+            if (intent.getAction() != null) {
+                if (intent.getAction().equals(Intent.ACTION_APPLICATION_PREFERENCES)) {
+                    Timber.d("Running from prefs screen.");
+                    prefInit = true;
+                }
+                if (intent.getAction().equals(Intent.ACTION_GET_CONTENT)) {
+                    Timber.d("Importing default directory.");
+                    defaultInit = true;
+                } else {
+                    Timber.d("Intent: %s Action: %s", intent, intent.getAction());
+                }
             }
-            if (intent.getAction().equals(Intent.ACTION_GET_CONTENT)) {
-                Timber.d("Importing default directory.");
-                defaultInit = true;
-            } else {
-                Timber.d("Intent: %s Action: %s", intent, intent.getAction());
-            }
+            cleanup = intent.getBooleanExtra("cleanup", false);
         }
 
         EventBus.getDefault().register(this);
@@ -542,6 +547,7 @@ public class ImportActivity extends BaseActivity {
 
                                 ImportNotificationChannel.init(this);
                                 Intent intent = ImportService.makeIntent(this);
+                                intent.putExtra("cleanup", cleanup);
                                 startService(intent);
                             })
                     .setNegativeButton(android.R.string.no,

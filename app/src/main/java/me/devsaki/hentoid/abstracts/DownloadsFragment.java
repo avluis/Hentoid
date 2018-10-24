@@ -341,6 +341,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             activity.finish();
         }
 
+        // TODO - find something else (return value when coming back from prefs ?) because total books won't move if a simple folder name cleanup is done
         if (mTotalCount > -1 && mTotalCount != getDB().countAllContent() ) {
             Timber.d("Library has been refreshed!");
             showReloadToolTip();

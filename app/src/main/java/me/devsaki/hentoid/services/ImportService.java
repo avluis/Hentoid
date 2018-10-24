@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
@@ -49,11 +50,8 @@ public class ImportService extends IntentService {
     private static final int NOTIFICATION_ID = 1;
 
     private static boolean running;
-
     private ServiceNotificationManager notificationManager;
 
-    // TODO - Discuss with senpai of the opportunity of keeping it as an IntentService (easier to make it run as a worker thread)
-    // TODO - clean folder names according to prefs rules
 
     public ImportService() {
         super(ImportService.class.getName());
@@ -66,7 +64,6 @@ public class ImportService extends IntentService {
     public static boolean isRunning() {
         return running;
     }
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -93,8 +90,15 @@ public class ImportService extends IntentService {
     }
 
     @Override
-    protected void onHandleIntent(@Nullable Intent intent) {
-        startImport();
+    protected void onHandleIntent(@Nullable Intent intent)
+    {
+        // True if the user has asked for a cleanup when calling import from Preferences
+        boolean doCleanup = false;
+
+        if (intent != null) {
+            doCleanup = intent.getBooleanExtra("cleanup", false);
+        }
+        startImport(doCleanup);
     }
 
 /*
@@ -115,7 +119,11 @@ public class ImportService extends IntentService {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks));
     }
 
-    private void startImport()
+    /**
+     * Import books from known source folders
+     * @param cleanup True if the user has asked for a cleanup when calling import from Preferences
+     */
+    private void startImport(boolean cleanup)
     {
         int booksOK = 0;
         int booksKO = 0;
@@ -130,18 +138,47 @@ public class ImportService extends IntentService {
                 .collect(toList());
 
         Timber.i("Import books starting : %s books total", files.size());
+        Timber.i("Cleanup %s", (cleanup ? "ENABLED" : "DISABLED") );
         for (int i = 0; i < files.size(); i++) {
             File file = files.get(i);
 
             Content content = importJson(file);
             if (content != null)
             {
+                if (cleanup)
+                {
+                    String canonicalBookDir = FileHelper.formatDirPath(content);
+
+                    String[] currentPathParts = file.getAbsolutePath().split("/");
+                    String currentBookDir = "/"+currentPathParts[currentPathParts.length - 2]+"/"+currentPathParts[currentPathParts.length - 1];
+
+                    if (!canonicalBookDir.equals(currentBookDir)) {
+                        String settingDir = Preferences.getRootFolderName();
+                        if (settingDir.isEmpty()) {
+                            settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
+                        }
+
+                        try {
+                            FileUtils.moveDirectory(file, new File(settingDir, canonicalBookDir));
+                            content.setStorageFolder(canonicalBookDir);
+                            Timber.i("Cleanup performed : folder %s renamed to %s", currentBookDir, canonicalBookDir);
+                        } catch (IOException e) {
+                            Timber.e(e, "Cleanup : Could not rename file %s to %s", currentBookDir, canonicalBookDir);
+                        }
+                    }
+                }
                 HentoidDB.getInstance(this).insertContent(content);
                 booksOK++;
                 Timber.d("Import book OK");
             } else {
                 booksKO++;
                 Timber.w("Import book KO : %s", file.getAbsolutePath());
+                // Deletes the folder if cleanup is active
+                if (cleanup)
+                {
+                    FileHelper.removeFile(file);
+                    Timber.i("Cleanup performed : folder %s removed", file.getAbsolutePath());
+                }
             }
 
             eventProgress(content, files.size(), booksOK, booksKO);
