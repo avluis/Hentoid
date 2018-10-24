@@ -19,7 +19,7 @@
         android:layout_height="?android:attr/actionBarSize"
         android:background="@drawable/btn_content_selector"
         android:scaleType="fitXY"
-        app:srcCompat="@drawable/ic_action_previous_item"
+        android:src="@drawable/ic_action_previous_item"
         tools:ignore="ContentDescription" />
 
     <android.support.v7.widget.RecyclerView
@@ -36,7 +36,7 @@
         android:layout_height="?android:attr/actionBarSize"
         android:background="@drawable/btn_content_selector"
         android:scaleType="fitXY"
-        app:srcCompat="@drawable/ic_action_next_item"
+        android:src="@drawable/ic_action_next_item"
         tools:ignore="ContentDescription" />
 
 </LinearLayout>

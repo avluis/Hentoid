@@ -9,18 +9,19 @@ import android.os.StrictMode;
 import android.util.Pair;
 
 import com.facebook.stetho.Stetho;
+import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.leakcanary.LeakCanary;
-import com.squareup.leakcanary.RefWatcher;
 
-import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
+import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
+import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.timber.CrashlyticsTree;
-import me.devsaki.hentoid.updater.UpdateCheck;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ShortcutHelper;
 import timber.log.Timber;
@@ -33,18 +34,10 @@ import timber.log.Timber;
 public class HentoidApp extends Application {
 
     private static boolean beginImport;
-    private static Date lastCollectionRefresh;
     private static HentoidApp instance;
-    private RefWatcher refWatcher;
-
-    // Only for use when activity context cannot be passed or used e.g.;
-    // Notification resources, Analytics, etc.
-    public static synchronized HentoidApp getInstance() {
-        return instance;
-    }
 
     public static Context getAppContext() {
-        return instance.getApplicationContext();
+        return instance;
     }
 
     public static boolean isImportComplete() {
@@ -55,15 +48,6 @@ public class HentoidApp extends Application {
         HentoidApp.beginImport = started;
     }
 
-    public static Date getLastCollectionRefresh() { return lastCollectionRefresh; }
-
-    public static void resetLastCollectionRefresh() { lastCollectionRefresh = new Date(); }
-
-
-    public static RefWatcher getRefWatcher(Context context) {
-        HentoidApp app = (HentoidApp) context.getApplicationContext();
-        return app.refWatcher;
-    }
 
     public static void trackDownloadEvent(String tag) {
         Bundle bundle = new Bundle();
@@ -75,24 +59,36 @@ public class HentoidApp extends Application {
     public void onCreate() {
         super.onCreate();
 
+        // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
+        // see https://github.com/square/okhttp/issues/2372 for more information
+        try {
+            ProviderInstaller.installIfNeeded(getApplicationContext());
+        } catch (Exception e)
+        {
+            Timber.e(e, "Google Play ProviderInstaller exception");
+        }
+
         // LeakCanary
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
             // You should not init your app in this process.
             return;
         }
-        refWatcher = LeakCanary.install(this);
+        LeakCanary.install(this);
 
         // Timber
         if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());
         Timber.plant(new CrashlyticsTree());
 
+        // Prefs
         instance = this;
         Preferences.init(this);
 
+        // Firebase
         boolean isAnalyticsDisabled = Preferences.isAnalyticsDisabled();
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!isAnalyticsDisabled);
 
+        // Stetho
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this);
         }
@@ -100,37 +96,24 @@ public class HentoidApp extends Application {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+        // DB housekeeping
         HentoidDB db = HentoidDB.getInstance(this);
-        Timber.d("Content item(s) count: %s", db.countContent());
+        Timber.d("Content item(s) count: %s", db.countContentEntries());
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
         UpgradeTo(BuildConfig.VERSION_CODE, db);
 
-        UpdateCheck(!Preferences.getMobileUpdate());
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
-            ShortcutHelper.buildShortcuts(this);
-        }
+        // Init notifications
+        UpdateNotificationChannel.init(this);
+        DownloadNotificationChannel.init(this);
+        startService(UpdateCheckService.makeIntent(this, false));
 
         // Clears all previous notifications
         NotificationManager manager = (NotificationManager) instance.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) manager.cancelAll();
 
-        resetLastCollectionRefresh();
-    }
-
-    private void UpdateCheck(boolean onlyWifi) {
-        UpdateCheck.getInstance().checkForUpdate(this,
-                onlyWifi, false, new UpdateCheck.UpdateCheckCallback() {
-                    @Override
-                    public void noUpdateAvailable() {
-                        Timber.d("Update Check: No update.");
-                    }
-
-                    @Override
-                    public void onUpdateAvailable() {
-                        Timber.d("Update Check: Update!");
-                    }
-                });
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
+            ShortcutHelper.buildShortcuts(this);
+        }
     }
 
     /**

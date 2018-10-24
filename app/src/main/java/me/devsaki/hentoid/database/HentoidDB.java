@@ -28,8 +28,9 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.util.RandomSeed;
+import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
 
 /**
@@ -95,7 +96,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    public long countContent() {
+    public long countContentEntries() {
         long count;
 
         SQLiteDatabase db = null;
@@ -347,7 +348,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByQuery(String title, String author, int page, int booksPerPage, List<String> tags, List<Integer> sites, boolean filterFavourites, int orderStyle) {
+    public List<Content> selectContentByQuery(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
         List<Content> result = Collections.emptyList();
 
         synchronized (locker) {
@@ -358,13 +359,13 @@ public class HentoidDB extends SQLiteOpenHelper {
             int start = (page - 1) * booksPerPage;
             try {
                 db = getReadableDatabase();
-                String sql = buildContentSearchQuery(title, author, tags, sites, filterFavourites);
+                String sql = buildContentSearchQuery(title, tags, filterFavourites);
 
                 switch (orderStyle) {
-                    case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE:
+                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
                         sql += ContentTable.ORDER_BY_DATE + " DESC";
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_BY_DATE_INVERTED:
+                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                         sql += ContentTable.ORDER_BY_DATE;
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
@@ -374,7 +375,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeed.getInstance().getRandomNumber()));
+                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
                         break;
                     default:
                         // Nothing
@@ -403,7 +404,11 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public int countContentByQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites) {
+    public int countAllContent() {
+        return countContentByQuery("", Collections.emptyList(), false);
+    }
+
+    public int countContentByQuery(String title, List<Attribute> tags, boolean filterFavourites) {
         int count = 0;
         SQLiteDatabase db = null;
         Cursor cursorCount = null;
@@ -413,7 +418,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             try {
                 db = getReadableDatabase();
-                String sql = buildContentSearchQuery(title, author, tags, sites, filterFavourites);
+                String sql = buildContentSearchQuery(title, tags, filterFavourites);
                 sql = sql.replace("C.*", "COUNT(*)");
 
                 Timber.d("Query : %s", sql);
@@ -433,50 +438,108 @@ public class HentoidDB extends SQLiteOpenHelper {
         return count;
     }
 
-    private String buildContentSearchQuery(String title, String author, List<String> tags, List<Integer> sites, boolean filterFavourites) {
+    private String buildContentSearchQuery(String title, List<Attribute> metadata, boolean filterFavourites) {
+        List<Attribute> params;
+        // Reorganize metadata to facilitate processing
+        AttributeMap metadataMap = new AttributeMap();
+        metadataMap.add(metadata);
+
         boolean hasTitleFilter = (title != null && title.length() > 0);
-        boolean hasAuthorFilter = (author != null && author.length() > 0);
-        boolean hasTagFilter = (tags != null && tags.size() > 0);
+        boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE);
+        boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter?1:0);
+        boolean isConstructingTagFilter = false;
 
         // Base criteria in Content table
-        String sql = ContentTable.SELECT_DOWNLOADS_BASE;
-        sql = sql.replace("%1", buildListQuery(sites));
+        StringBuilder sql = new StringBuilder();
+        sql.append(ContentTable.SELECT_DOWNLOADS_BASE);
 
-        if (filterFavourites) sql += ContentTable.SELECT_DOWNLOADS_FAVS;
+        if (hasSiteFilter) {
+            params = metadataMap.get(AttributeType.SOURCE);
+            if (params.size() > 0) sql.append(ContentTable.SELECT_DOWNLOADS_SITES.replace("%1",Helper.buildListAsString(params,"'")));
+        }
+
+        if (filterFavourites) sql.append(ContentTable.SELECT_DOWNLOADS_FAVS);
 
 
         // Title / Author / Tag filters
-        if (hasTitleFilter || hasAuthorFilter || hasTagFilter) sql += " AND (";
+        if (hasTitleFilter || hasTagFilter) sql.append(" AND (");
 
         // Title filter -> continue querying Content table
         if (hasTitleFilter) {
-            sql += ContentTable.SELECT_DOWNLOADS_TITLE;
             title = '%' + title.replace("'", "''") + '%';
-            sql = sql.replace("%2", title);
+            sql.append(ContentTable.SELECT_DOWNLOADS_TITLE.replace("%2", title));
         }
 
-        // Author & tags filter -> query attribute table through a join
-        if (hasAuthorFilter) {
-            if (hasTitleFilter) sql += " OR ";
-            sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-            sql += ContentTable.SELECT_DOWNLOADS_AUTHOR;
-            author = '%' + author.replace("'", "''") + '%';
-            sql = sql.replace("%3", author);
-            sql += "))";
-        }
-
+        // Tags filter -> query attribute table through a join
         if (hasTagFilter) {
-            if (hasTitleFilter || hasAuthorFilter) sql += " OR ";
-            sql += ContentTable.SELECT_DOWNLOADS_JOINS;
-            sql += ContentTable.SELECT_DOWNLOADS_TAGS;
-            sql = sql.replace("%4", buildListQuery(tags));
-            sql = sql.replace("%5", tags.size() + "");
-            sql += "))";
+            for (AttributeType attrType : metadataMap.keySet()) {
+                List<Attribute> attrs = metadataMap.get(attrType);
+
+                if (attrs.size() > 0) {
+                    if (hasTitleFilter || isConstructingTagFilter) sql.append(" AND ");
+                    sql.append(ContentTable.SELECT_DOWNLOADS_JOINS);
+                    sql.append(
+                            ContentTable.SELECT_DOWNLOADS_TAGS
+                                    .replace("%4", Helper.buildListAsString(attrs))
+                                    .replace("%5", attrType.getCode() + "")
+                                    .replace("%6", attrs.size() + "")
+                    );
+                    sql.append("))");
+                    isConstructingTagFilter = true;
+                }
+            }
         }
 
-        if (hasTitleFilter || hasAuthorFilter || hasTagFilter) sql += " )";
+        if (hasTitleFilter || hasTagFilter) sql.append(" )");
 
-        return sql;
+        return sql.toString();
+    }
+
+    public List<Content> selectContentByExternalRef(Site site, List<String> uniqueIds)
+    {
+        List<Content> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectContentByExternalRef");
+            SQLiteDatabase db = null;
+
+            Cursor cursorContent = null;
+
+            String sql = ContentTable.SELECT_BY_EXTERNAL_REF;
+
+            sql = sql.replace("%1", Helper.buildListAsString(uniqueIds,"'"));
+
+            Timber.v(sql);
+
+            try {
+                db = getReadableDatabase();
+                cursorContent = db.rawQuery(sql, new String[]{
+                        site.getCode() + "",
+                        StatusContent.DOWNLOADED.getCode() + "",
+                        StatusContent.ERROR.getCode() + "",
+                        StatusContent.MIGRATED.getCode() + "",
+                        StatusContent.DOWNLOADING.getCode() + "",
+                        StatusContent.PAUSED.getCode() + ""
+                });
+
+                // looping through all rows and adding to list
+                if (cursorContent.moveToFirst()) {
+
+                    do {
+                        result.add(populateContent(cursorContent, db, false));
+                    } while (cursorContent.moveToNext());
+                }
+            } finally {
+                if (cursorContent != null) {
+                    cursorContent.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
     }
 
     private List<Content> populateResult(Cursor cursorContent, SQLiteDatabase db) {
@@ -501,7 +564,8 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    private Content populateContent(Cursor cursorContent, SQLiteDatabase db) {
+    private Content populateContent(Cursor cursorContent, SQLiteDatabase db) { return populateContent(cursorContent, db, true); }
+    private Content populateContent(Cursor cursorContent, SQLiteDatabase db, boolean getImages) {
         Content content = new Content()
                 .setUrl(cursorContent.getString(ContentTable.IDX_URL - 1))
                 .setTitle(cursorContent.getString(ContentTable.IDX_TITLE - 1))
@@ -514,11 +578,12 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
                 .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
-                .setQueryOrder(cursorContent.getPosition())
-                .populateAuthor();
+                .setQueryOrder(cursorContent.getPosition());
 
-        content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
+        if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
                 .setAttributes(selectAttributesByContentId(db, content.getId()));
+
+        content.populateAuthor();
 
         return content;
     }
@@ -608,27 +673,63 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Pair<String, Integer>> selectAllAttributesByUsage(int type, List<String> tags, List<Integer> sites, boolean filterFavourites) {
-        ArrayList<Pair<String, Integer>> result = new ArrayList<>();
+    public Attribute selectAttributeById(int id) {
+        Attribute result = null;
 
         synchronized (locker) {
-            Timber.d("selectAllAttributesByUsage");
+            Timber.d("selectAttributeById");
+
+            SQLiteDatabase db = null;
+            Cursor cursorAttributes = null;
+
+            try {
+                db = getReadableDatabase();
+                cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_ID, new String[]{id + ""});
+
+                if (cursorAttributes.moveToFirst()) {
+                    result = new Attribute()
+                            .setUrl(cursorAttributes.getString(1))
+                            .setName(cursorAttributes.getString(2))
+                            .setType(AttributeType.searchByCode(cursorAttributes.getInt(3)));
+                }
+            } finally {
+                if (cursorAttributes != null) cursorAttributes.close();
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
+                if (db != null && db.isOpen()) db.close();
+            }
+        }
+
+        return result;
+    }
+
+    public List<Attribute> selectAvailableAttributes(int type, List<Attribute> attrs, List<Integer> sites, boolean filterFavourites) {
+        ArrayList<Attribute> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectAvailableAttributes");
             SQLiteDatabase db = null;
 
             Cursor cursorAttributes = null;
 
-            String sql = AttributeTable.SELECT_ALL_BY_USAGE_BASE;
-            sql = sql.replace("%1", buildListQuery(sites));
+            String sql = AttributeTable.SELECT_ALL_BY_TYPE;
+
+            if (sites != null && sites.size() > 0)
+            {
+                sql += AttributeTable.SELECT_ALL_BY_USAGE_SITE_FILTER;
+                sql = sql.replace("%1", Helper.buildListAsString(sites, "'"));
+            }
 
             if (filterFavourites) sql += AttributeTable.SELECT_ALL_BY_USAGE_FAVS;
 
-            if (tags != null && tags.size() > 0) {
+            if (attrs != null && attrs.size() > 0) {
                 sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
-                sql = sql.replace("%2", buildListQuery(tags));
-                sql = sql.replace("%3", tags.size() + "");
+                sql = sql.replace("%2", Helper.buildListAsString(attrs,""));
+                sql = sql.replace("%3", attrs.size() + "");
             }
 
             sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
+
+            Timber.v(sql);
 
             try {
                 db = getReadableDatabase();
@@ -638,7 +739,89 @@ public class HentoidDB extends SQLiteOpenHelper {
                 if (cursorAttributes.moveToFirst()) {
 
                     do {
-                        result.add(new Pair<>(cursorAttributes.getString(0), cursorAttributes.getInt(1)));
+                        result.add(new Attribute(AttributeType.searchByCode(type), cursorAttributes.getString(1), cursorAttributes.getString(2)).setCount(cursorAttributes.getInt(3)) );
+                    } while (cursorAttributes.moveToNext());
+                }
+            } finally {
+                if (cursorAttributes != null) {
+                    cursorAttributes.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public List<Attribute> selectAllAttributesByType(AttributeType type, String filter) {
+        ArrayList<Attribute> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectAllAttributesByType");
+            SQLiteDatabase db = null;
+
+            Cursor cursorAttributes = null;
+
+            String sql = AttributeTable.SELECT_ALL_BY_TYPE;
+
+            if (filter != null && filter.trim().length() > 0)
+            {
+                sql += AttributeTable.SELECT_ALL_BY_USAGE_ATTR_FILTER;
+                sql = sql.replace("%2", filter);
+            }
+
+            sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
+
+            Timber.v(sql);
+
+            try {
+                db = getReadableDatabase();
+                cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""});
+
+                // looping through all rows and adding to list
+                if (cursorAttributes.moveToFirst()) {
+
+                    do {
+                        result.add(new Attribute(type, cursorAttributes.getString(1), "").setExternalId(cursorAttributes.getInt(0)).setCount(cursorAttributes.getInt(3)));
+                    } while (cursorAttributes.moveToNext());
+                }
+            } finally {
+                if (cursorAttributes != null) {
+                    cursorAttributes.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public List<Attribute> selectAvailableSources() {
+        ArrayList<Attribute> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectAvailableSources");
+            SQLiteDatabase db = null;
+
+            Cursor cursorAttributes = null;
+
+            try {
+                db = getReadableDatabase();
+                cursorAttributes = db.rawQuery(ContentTable.SELECT_SOURCES, new String[]{
+                        StatusContent.DOWNLOADED.getCode() + "",
+                        StatusContent.ERROR.getCode() + "",
+                        StatusContent.MIGRATED.getCode() + ""});
+
+                // looping through all rows and adding to list
+                if (cursorAttributes.moveToFirst()) {
+
+                    do {
+                        Site s = Site.searchByCode(cursorAttributes.getInt(0));
+                        if (null != s) result.add(new Attribute(AttributeType.SOURCE, s.getDescription(), "").setExternalId(s.getCode()).setCount(cursorAttributes.getInt(1)));
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
@@ -910,20 +1093,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                 }
             }
         }
-    }
-
-    private String buildListQuery(List<?> list) {
-        StringBuilder str = new StringBuilder("");
-        if (list != null) {
-            boolean first = true;
-            for (Object o : list) {
-                if (!first) str.append(",");
-                else first = false;
-                str.append("'").append(o.toString().toLowerCase()).append("'");
-            }
-        }
-
-        return str.toString();
     }
 
     public List<Pair<Integer, Integer>> selectQueue() {

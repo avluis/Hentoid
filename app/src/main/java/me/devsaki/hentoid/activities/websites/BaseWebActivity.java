@@ -14,6 +14,7 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -73,6 +75,8 @@ public abstract class BaseWebActivity extends BaseActivity {
     private boolean webViewIsLoading;
     // Indicates if corresponding action buttons are enabled
     private boolean fabReadEnabled, fabDownloadEnabled;
+
+    protected CustomWebViewClient webClient;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -155,9 +159,18 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     @Override
     protected void onDestroy() {
-        webView.removeAllViews();
-        webView.destroy();
-        webView = null;
+        if (webView != null) {
+            // the WebView must be removed from the view hierarchy before calling destroy
+            // to prevent a memory leak
+            // See https://developer.android.com/reference/android/webkit/WebView.html#destroy%28%29
+            ((ViewGroup) webView.getParent()).removeView(webView);
+            webView.removeAllViews();
+            webView.destroy();
+            webView = null;
+        }
+
+        if (webClient != null) webClient.destroy();
+        webClient = null;
 
         super.onDestroy();
     }
@@ -225,9 +238,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        String userAgent;
-        userAgent = Helper.getAppUserAgent();
-        webSettings.setUserAgentString(userAgent);
+        webSettings.setUserAgentString(Consts.USER_AGENT);
 
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
@@ -460,7 +471,8 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         private String domainName = "";
         private final String filteredUrl;
-        protected final BaseWebActivity activity;
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        final WeakReference<BaseWebActivity> activityReference;
         protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
 
         void restrictTo(String s) {
@@ -468,13 +480,18 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
 
         CustomWebViewClient(BaseWebActivity activity, String filteredUrl) {
-            this.activity = activity;
+            activityReference = new WeakReference<>(activity);
             this.filteredUrl = filteredUrl;
         }
 
         CustomWebViewClient(BaseWebActivity activity) {
-            this.activity = activity;
+            activityReference = new WeakReference<>(activity);
             this.filteredUrl = "";
+        }
+
+        void destroy()
+        {
+            compositeDisposable.clear();
         }
 
         @Override
@@ -503,7 +520,8 @@ public abstract class BaseWebActivity extends BaseActivity {
                 Pattern pattern = Pattern.compile(filteredUrl);
                 Matcher matcher = pattern.matcher(url);
 
-                if (matcher.find()) {
+                BaseWebActivity activity = activityReference.get();
+                if (matcher.find() && activity != null) {
                     executeAsyncTask(new HtmlLoader(activity), url);
                 }
             }

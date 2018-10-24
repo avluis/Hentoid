@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.view.WindowManager;
 
@@ -13,6 +12,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
+import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.EndlessFragment;
 import me.devsaki.hentoid.fragments.PagerFragment;
@@ -31,18 +31,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     private Context context;
 
     @Override
-    protected Fragment buildFragment() {
-        try {
-            return getFragment().newInstance();
-        } catch (InstantiationException e) {
-            Timber.e(e, "Error: Could not access constructor");
-        } catch (IllegalAccessException e) {
-            Timber.e(e, "Error: Field or method is not accessible");
-        }
-        return null;
-    }
-
-    private Class<? extends BaseFragment> getFragment() {
+    protected Class<? extends BaseFragment> getFragment() {
         if (Preferences.getEndlessScroll()) {
             Timber.d("getFragment: EndlessFragment.");
             return EndlessFragment.class;
@@ -50,6 +39,14 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
             Timber.d("getFragment: PagerFragment.");
             return PagerFragment.class;
         }
+    }
+
+    @Override
+    protected Bundle getCreationArguments()
+    {
+        Bundle result = new Bundle();
+        result.putInt("mode", DownloadsFragment.MODE_LIBRARY);
+        return result;
     }
 
     @Override
@@ -81,6 +78,11 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     }
 
     @Override
+    public void setTitle(CharSequence subtitle) {
+        super.setTitle(getToolbarTitle() + " " + subtitle);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
@@ -93,8 +95,11 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment != null) {
+            /*
             Fragment selectedFragment = buildFragment();
             String selectedFragmentTag = selectedFragment.getClass().getSimpleName();
+            */
+            String selectedFragmentTag = getFragment().getSimpleName();
 
             if (!selectedFragmentTag.equals(fragment.getTag())) {
                 Helper.doRestart(this);
@@ -126,13 +131,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     @Override
     protected String getToolbarTitle() {
         return Helper.getActivityName(context, R.string.title_activity_downloads);
-    }
-
-    @Override
-    protected void updateDrawerPosition() {
-        DrawerMenuContents mDrawerMenuContents = new DrawerMenuContents(this);
-        mDrawerMenuContents.getPosition(this.getClass());
-        super.updateDrawerPosition();
     }
 
     @Override

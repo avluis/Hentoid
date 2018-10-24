@@ -9,6 +9,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.websites.BaseWebActivity;
+import me.devsaki.hentoid.activities.websites.EHentaiActivity;
 import me.devsaki.hentoid.activities.websites.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.websites.HitomiActivity;
 import me.devsaki.hentoid.activities.websites.NhentaiActivity;
@@ -19,7 +20,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
-import me.devsaki.hentoid.util.FileHelper;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -78,6 +78,7 @@ public class Content implements Serializable {
         switch (site) {
             case FAKKU:
                 return url.substring(url.lastIndexOf("/") + 1);
+            case EHENTAI:
             case PURURIN:
                 paths = url.split("/");
                 return paths[1];
@@ -89,9 +90,9 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case TSUMINO:
-                return url.replace("/", "") + "-" + site.getDescription();
+                return url.replace("/", "");
             case HENTAICAFE:
-                return url.replace("/?p=", "") + "-" + site.getDescription();
+                return url.replace("/?p=", "");
             default:
                 return "";
         }
@@ -110,11 +111,12 @@ public class Content implements Serializable {
             case HITOMI:
                 paths = url.split("/");
                 return paths[1].replace(".html", "") + "-" +
-                        title.replaceAll(FileHelper.FORBIDDEN_CHARS, "_");
+                        title.replaceAll("[^a-zA-Z0-9.-]", "_");
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
             case PANDA:
+            case EHENTAI:
             case TSUMINO:
                 return url.replace("/", "") + "-" + site.getDescription();
             case HENTAICAFE:
@@ -139,6 +141,8 @@ public class Content implements Serializable {
                 return TsuminoActivity.class;
             case PURURIN:
                 return PururinActivity.class;
+            case EHENTAI:
+                return EHentaiActivity.class;
             case PANDA:
                 return PandaActivity.class;
             default:
@@ -181,6 +185,7 @@ public class Content implements Serializable {
                 break;
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
+            case EHENTAI:           // Won't work because of the temporary key
             case NHENTAI:
                 galleryConst = "/g";
                 break;
@@ -209,6 +214,7 @@ public class Content implements Serializable {
                 return site.getUrl() + "/gallery" + url + "1/";
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
+            case EHENTAI:               // Won't work anyway because of the temporary key
             case HENTAICAFE:
             case PANDA:
                 return getGalleryUrl();
@@ -378,6 +384,10 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> {
         return Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; /* Inverted - last download date first */
+    };
+
+    public static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> {
+        return Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; /* Inverted - last upload date first */
     };
 
     public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;

@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -14,8 +13,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestBuilder;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 
 import org.greenrobot.eventbus.EventBus;
@@ -33,8 +30,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-
-import static com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions.withCrossFade;
 
 /**
  * Created by neko on 11/05/2015.
@@ -124,22 +119,16 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content to display
      */
     private void attachCover(ViewHolder holder, Content content) {
-        RequestBuilder<Drawable> thumb = Glide.with(context).load(content.getCoverImageUrl());
-
         String coverFile = FileHelper.getThumb(content);
-        holder.ivCover.layout(0, 0, 0, 0);
+        Glide.with(context).clear(holder.ivCover);
 
         RequestOptions myOptions = new RequestOptions()
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
                 .fitCenter()
-                .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_placeholder);
 
         Glide.with(context)
                 .load(coverFile)
                 .apply(myOptions)
-                .transition(withCrossFade())
-                .thumbnail(thumb)
                 .into(holder.ivCover);
     }
 
@@ -240,19 +229,19 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void attachButtons(View view, final Content content, boolean isFirstItem, boolean isLastItem, int itemCount) {
         View btnUp = view.findViewById(R.id.queueUpBtn);
-        ((ImageView) btnUp).setImageResource(R.drawable.ic_arrow_drop_up_black_24dp);
+        ((ImageView) btnUp).setImageResource(R.drawable.ic_arrow_up);
         btnUp.setVisibility(isFirstItem ? View.INVISIBLE : View.VISIBLE);
-        btnUp.setOnClickListener(v -> moveUp(content));
+        btnUp.setOnClickListener(v -> moveUp(content.getId()));
 
         View btnTop = view.findViewById(R.id.queueTopBtn);
         ((ImageView) btnTop).setImageResource(R.drawable.ic_doublearrowup);
         btnTop.setVisibility((isFirstItem || itemCount < 3) ? View.INVISIBLE : View.VISIBLE);
-        btnTop.setOnClickListener(v -> moveTop(content));
+        btnTop.setOnClickListener(v -> moveTop(content.getId()));
 
         View btnDown = view.findViewById(R.id.queueDownBtn);
-        ((ImageView) btnDown).setImageResource(R.drawable.ic_arrow_drop_down_black_24dp);
+        ((ImageView) btnDown).setImageResource(R.drawable.ic_arrow_down);
         btnDown.setVisibility(isLastItem ? View.INVISIBLE : View.VISIBLE);
-        btnDown.setOnClickListener(v -> moveDown(content));
+        btnDown.setOnClickListener(v -> moveDown(content.getId()));
 
         Button btnCancel = view.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(v -> cancel(content));
@@ -283,10 +272,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Move designated content up in the download queue (= raise its priority)
      *
-     * @param content Content whose priority has to be raised
+     * @param contentId ID of Content whose priority has to be raised
      */
-    private void moveUp(Content content) {
+    private void moveUp(int contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
+        int initialContentSize = contents.size();
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
         int prevItemId = 0;
@@ -295,10 +285,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         int loopPosition = 0;
 
         for (Pair<Integer, Integer> p : queue) {
-            if (p.first.equals(content.getId()) && prevItemId != 0) {
+            if (p.first.equals(contentId) && prevItemId != 0) {
                 db.udpateQueue(p.first, prevItemQueuePosition);
                 db.udpateQueue(prevItemId, p.second);
-                Collections.swap(contents, prevItemPosition, loopPosition);
+
+                // If the 1st item has been removed from the queue during the execution of this method, indexes may be off-limits
+                int corrector = contents.size() - initialContentSize;
+                Collections.swap(contents, prevItemPosition + corrector, loopPosition + corrector);
                 if (0 == prevItemPosition)
                     EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
@@ -316,15 +309,15 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Move designated content on the top of the download queue (= raise its priority)
      *
-     * @param content Content whose priority has to be raised to the top
+     * @param contentId ID of Content whose priority has to be raised to the top
      */
-    private void moveTop(Content content) {
+    private void moveTop(int contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
+        int initialContentSize = contents.size();
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
         int topItemId = 0;
         int topItemQueuePosition = -1;
-        int topItemPosition = -1;
         int loopPosition = 0;
 
         for (Pair<Integer, Integer> p : queue) {
@@ -332,17 +325,17 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             {
                 topItemId = p.first;
                 topItemQueuePosition = p.second;
-                topItemPosition = loopPosition;
             }
 
-            if (p.first.equals(content.getId()) && topItemId != 0) {
-                db.udpateQueue(p.first, topItemQueuePosition);
+            if (p.first.equals(contentId)) {
+                db.udpateQueue(p.first, topItemQueuePosition); // Put selected item on top of list
 
-                contents.add(0, contents.get(loopPosition));
+                // If the 1st item has been removed from the queue during the execution of this method, indexes may be off-limits
+                int corrector = contents.size() - initialContentSize;
+                contents.add(0, contents.get(loopPosition + corrector));
                 contents.remove(loopPosition + 1);
 
-                if (0 == topItemPosition)
-                    EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+                EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             } else {
                 db.udpateQueue(p.first, p.second + 1); // Depriorize every item by 1
@@ -356,10 +349,11 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     /**
      * Move designated content down in the download queue (= lower its priority)
      *
-     * @param content Content whose priority has to be lowered
+     * @param contentId ID of Content whose priority has to be lowered
      */
-    private void moveDown(Content content) {
+    private void moveDown(int contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
+        int initialContentSize = contents.size();
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
         int itemId = 0;
@@ -368,14 +362,18 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         int loopPosition = 0;
 
         for (Pair<Integer, Integer> p : queue) {
-            if (p.first.equals(content.getId())) {
+            if (p.first.equals(contentId)) {
                 itemId = p.first;
                 itemQueuePosition = p.second;
                 itemPosition = loopPosition;
             } else if (itemId != 0) {
                 db.udpateQueue(p.first, itemQueuePosition);
                 db.udpateQueue(itemId, p.second);
-                Collections.swap(contents, itemPosition, loopPosition);
+
+                // If the 1st item has been removed from the queue during the execution of this method, indexes may be off-limits
+                int corrector = contents.size() - initialContentSize;
+                Collections.swap(contents, itemPosition + corrector, loopPosition + corrector);
+
                 if (0 == itemPosition)
                     EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;

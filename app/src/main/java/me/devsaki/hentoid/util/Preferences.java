@@ -65,6 +65,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getAttributesSortOrder() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_ORDER_ATTRIBUTE_LISTS, Default.PREF_ORDER_ATTRIBUTES_DEFAULT + ""));
+    }
+
+    public static void setAttributesSortOrder(int sortOrder) {
+        sharedPreferences.edit()
+                .putString(Key.PREF_ORDER_ATTRIBUTE_LISTS, sortOrder + "")
+                .apply();
+    }
+
     public static int getContentPageQuantity() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_QUANTITY_PER_PAGE_LISTS,
                 Default.PREF_QUANTITY_PER_PAGE_DEFAULT + ""));
@@ -156,6 +166,11 @@ public final class Preferences {
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + ""));
     }
 
+    public static int getFolderTruncationNbChars() {
+        return Integer.parseInt(sharedPreferences.getString(Key.PREF_FOLDER_TRUNCATION_LISTS,
+                Default.PREF_FOLDER_TRUNCATION_DEFAULT + ""));
+    }
+
     public static final class Key {
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
@@ -166,6 +181,7 @@ public final class Preferences {
         static final String PREFS_VERSION_KEY = "prefs_version";
         static final String PREF_QUANTITY_PER_PAGE_LISTS = "pref_quantity_per_page_lists";
         static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
+        static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";
         static final String PREF_APP_LOCK_VIBRATE = "pref_app_lock_vibrate";
         static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
@@ -178,35 +194,44 @@ public final class Preferences {
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         public static final String PREF_USE_SFW = "pref_use_sfw";
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
+        static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
     }
 
+    // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
     public static final class Default {
         public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
         static final int PREF_ORDER_CONTENT_DEFAULT = Constant.PREF_ORDER_CONTENT_ALPHABETIC;
+        static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.PREF_ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_APP_LOCK_VIBRATE_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
         static final boolean PREF_HIDE_RECENT_DEFAULT = true;
-        static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_ID;
+        static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_DEFAULT;
         static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         static final boolean PREF_USE_SFW_DEFAULT = false;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
+        static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
     }
 
+    // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
     public static final class Constant {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
-        public static final int PREF_ORDER_CONTENT_BY_DATE = 1;
+        public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC_INVERTED = 2;
-        public static final int PREF_ORDER_CONTENT_BY_DATE_INVERTED = 3;
+        public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
         public static final int PREF_ORDER_CONTENT_RANDOM = 4;
+        public static final int PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
+        public static final int PREF_ORDER_ATTRIBUTES_ALPHABETIC = 0;
+        public static final int PREF_ORDER_ATTRIBUTES_COUNT = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
         static final int PREF_READ_CONTENT_DEFAULT = 0;
         static final int PREF_READ_CONTENT_PERFECT_VIEWER = 1;
+        static final int TRUNCATE_FOLDER_NONE = 0;
     }
 }

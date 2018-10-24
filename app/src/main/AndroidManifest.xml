@@ -59,14 +59,32 @@
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
+            android:name=".activities.websites.EHentaiActivity"
+            android:configChanges="orientation|screenSize"
+            android:theme="@style/BrowserTheme" />
+        <activity
             android:name=".activities.DownloadsActivity"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.DarkBackgroundNoActionBar">
+            android:theme="@style/AppTheme.Downloads">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
+        </activity>
+        <activity
+            android:name=".activities.MikanSearchActivity"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_mikan"
+            android:parentActivityName=".activities.DownloadsActivity"
+            android:theme="@style/AppTheme.Mikan"
+            tools:ignore="UnusedAttribute">
+            <meta-data
+                android:name="android.app.searchable"
+                android:resource="@xml/searchable" />
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.DownloadsActivity" />
         </activity>
         <activity
             android:name=".activities.QueueActivity"
@@ -114,9 +132,7 @@
             android:theme="@style/BrowserTheme">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-                <!-- Accepts all possible text sent via shared intent -->
                 <data android:mimeType="text/plain" />
             </intent-filter>
             <intent-filter>
@@ -135,10 +151,10 @@
 
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://nhentai.net/g" -->
+                <!-- Accepts URIs that begin with "https://nhentai.net/g/" -->
                 <data
                     android:host="nhentai.net"
-                    android:pathPrefix="/g"
+                    android:pathPrefix="/g/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -207,6 +223,17 @@
                     android:pathPrefix="/"
                     android:scheme="https" />
             </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
+                <data
+                    android:host="e-hentai.org"
+                    android:pathPrefix="/"
+                    android:scheme="https" />
+            </intent-filter>
         </activity>
 
         <service
@@ -214,25 +241,11 @@
             android:enabled="true"
             android:exported="false" />
 
-        <receiver
-            android:name=".updater.UpdateReceiver"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_UPDATE" />
-                <action android:name="me.devsaki.hentoid.updater.NOTIFICATION_REMOVED" />
-                <action android:name="me.devsaki.hentoid.updater.DOWNLOAD_CANCELLED" />
-                <action android:name="me.devsaki.hentoid.updater.INSTALL_UPDATE" />
-            </intent-filter>
-        </receiver>
-        <receiver
-            android:name=".services.NotificationHelper"
-            android:enabled="true"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="me.devsaki.hentoid.services.NOTIFICATION_DELETED" />
-            </intent-filter>
-        </receiver>
+        <service android:name=".services.UpdateCheckService" />
+
+        <service android:name=".services.UpdateDownloadService" />
+
+        <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
         <provider
             android:name="android.support.v4.content.FileProvider"

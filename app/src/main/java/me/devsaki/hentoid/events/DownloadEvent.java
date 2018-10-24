@@ -15,21 +15,22 @@ public class DownloadEvent {
     public static final int EV_SKIP = 5;        // Cancel without removing the Content; used when the 2nd book is prioritized to end up in the first place of the queue or when 1st book is deprioritized
 
     public final int eventType;                 // Event type (see constants EV_XXX above)
-    public final Content content;               // Corresponding book (for EV_CANCEL events that are the only ones not concerning the 1st book of the queue)
+    public final Content content;               // Corresponding book (for EV_CANCEL events that are the only ones not concerning the 1st book of the queue + EV_COMPLETE to update the proper book in library view)
     public final int pagesOK;                   // Number of pages that have been downloaded successfully for current book
     public final int pagesKO;                   // Number of pages that have been downloaded with errors for current book
     public final int pagesTotal;                // Number of pages to download for current book
 
     /**
-     * Use for EV_PROGRESS events
+     * Use for EV_PROGRESS and EV_COMPLETE events
      *
+     * @param content    progressing or completed content
      * @param eventType  event type code (among DownloadEvent public static EV_ values)
      * @param pagesOK    pages downloaded successfully
      * @param pagesKO    pages downloaded with errors
      * @param pagesTotal total pages to download
      */
-    public DownloadEvent(int eventType, int pagesOK, int pagesKO, int pagesTotal) {
-        this.content = null;
+    public DownloadEvent(Content content, int eventType, int pagesOK, int pagesKO, int pagesTotal) {
+        this.content = content;
         this.eventType = eventType;
         this.pagesOK = pagesOK;
         this.pagesKO = pagesKO;
@@ -39,7 +40,7 @@ public class DownloadEvent {
     /**
      * Use for EV_CANCEL events
      *
-     * @param content   Canceled or completed content
+     * @param content   Canceled content
      * @param eventType event type code (among DownloadEvent public static EV_ values)
      */
     public DownloadEvent(Content content, int eventType) {

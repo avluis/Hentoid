@@ -53,6 +53,21 @@
         <item>2</item>
     </string-array>
 
+    <string-array name="pref_folder_trunc_content_entries">
+        <item>None</item>
+        <item>60 characters</item>
+        <item>80 characters</item>
+        <item>100 characters</item>
+        <item>120 characters</item>
+    </string-array>
+    <string-array name="pref_folder_trunc_content_entry_values">
+        <item>0</item>
+        <item>60</item>
+        <item>80</item>
+        <item>100</item>
+        <item>120</item>
+    </string-array>
+
     <string-array name="pref_webview_initial_zoom_entries">
         <item>0</item>
         <item>20</item>
@@ -64,5 +79,14 @@
         <item>20</item>
         <item>50</item>
         <item>100</item>
+    </string-array>
+
+    <string-array name="pref_attribute_list_order_entries">
+        <item>Alphabetical</item>
+        <item>Item count (most used first)</item>
+    </string-array>
+    <string-array name="pref_attribute_list_order_values">
+        <item>0</item>
+        <item>1</item>
     </string-array>
 </resources>

@@ -6,7 +6,10 @@ import com.android.volley.Response;
 import com.android.volley.toolbox.HttpHeaderParser;
 
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.Map;
+
+import me.devsaki.hentoid.util.Consts;
 
 /**
  * Created by Robb_w on 2018/04
@@ -17,9 +20,10 @@ import java.util.Map;
  * <p>
  * to the download callback routine
  */
-class InputStreamVolleyRequest extends Request<byte[]> {
-    // Callback listeners
+class InputStreamVolleyRequest extends Request<Object> {
+    // Callback listener
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mParseListener;
+
 
     InputStreamVolleyRequest(
             int method,
@@ -33,12 +37,12 @@ class InputStreamVolleyRequest extends Request<byte[]> {
     }
 
     @Override
-    protected void deliverResponse(byte[] response) {
+    protected void deliverResponse(Object response) {
         // Nothing; all the work is done in Volley's worker thread, since it is time consuming (picture saving + DB operations)
     }
 
     @Override
-    protected Response<byte[]> parseNetworkResponse(NetworkResponse response) {
+    protected Response<Object> parseNetworkResponse(NetworkResponse response) {
         //Initialise local responseHeaders map with response headers received
         Map<String, String> responseHeaders = response.headers;
 
@@ -46,5 +50,13 @@ class InputStreamVolleyRequest extends Request<byte[]> {
 
         //Pass the response data here
         return Response.success(response.data, HttpHeaderParser.parseCacheHeaders(response));
+    }
+
+    @Override
+    public Map<String, String> getHeaders() {
+        Map<String, String>  params = new HashMap<>();
+        params.put("User-Agent", Consts.USER_AGENT);
+
+        return params;
     }
 }

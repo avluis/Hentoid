@@ -4,6 +4,7 @@
 
 # keep all classes in our package
 -keep class me.devsaki.hentoid.** { *; }
+-keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule
 
 -keep public class * extends android.app.Activity
 -keep public class * extends android.app.Application
@@ -43,6 +44,7 @@
 -keep class * implements android.os.Parcelable {
   public static final android.os.Parcelable$Creator *;
 }
+-keep class android.support.v7.widget.** { *; }
 -keepclassmembers class * implements java.io.Serializable {
     static final long serialVersionUID;
     private static final java.io.ObjectStreamField[] serialPersistentFields;
@@ -51,4 +53,3 @@
     java.lang.Object writeReplace();
     java.lang.Object readResolve();
 }
-

@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 
 import me.devsaki.hentoid.HentoidApp;
@@ -74,7 +75,7 @@ class FileUtil {
             //continue
         }
 
-        String sdStorageUriStr = FileHelper.getStringUri();
+        String sdStorageUriStr = Preferences.getSdStorageUri();
 
         Uri sdStorageUri;
         if (sdStorageUriStr != null) {
@@ -169,6 +170,31 @@ class FileUtil {
             throw new IOException(e);
         }
     }
+
+    static InputStream getInputStream(@NonNull final File target) throws IOException {
+        try {
+            return FileUtils.openInputStream(target);
+        } catch (IOException e) {
+            Timber.d(e, "Could not open file"); // TODO do something for not displaying that exception on logcat, since it is "expected"
+        }
+
+        try {
+            if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+                // Storage Access Framework
+                DocumentFile targetDocument = getDocumentFile(target, false);
+                if (targetDocument != null) {
+                    Context context = HentoidApp.getAppContext();
+                    return context.getContentResolver().openInputStream(
+                            targetDocument.getUri());
+                }
+            }
+            throw new IOException("Error while attempting to get file : " + target.getAbsolutePath());
+        } catch (Exception e) {
+            Timber.e(e, "Error while attempting to get file: %s", target.getAbsolutePath());
+            throw new IOException(e);
+        }
+    }
+
 
     /**
      * Create a file.

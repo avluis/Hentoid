@@ -22,7 +22,7 @@ import me.devsaki.hentoid.util.AttributeMap;
  */
 public class PururinParser extends BaseParser {
 
-    private final static String IMAGE_PATH = "//pururin.io/assets/images/data/";
+    private final static String IMAGE_PATH = "//api.pururin.io/images/";
 
     private class PururinInfo
     {
@@ -47,9 +47,9 @@ public class PururinParser extends BaseParser {
             url = url.replace(protocol+"//pururin.io/gallery","");
             result.setUrl(url);
 
-            String coverUrl = doc.select("div.cover-wrapper")
-                    .select("img")
-                    .attr("src");
+            String coverUrl = "";
+            Elements coverMeta = doc.getElementsByAttributeValue("property","og:image");
+            if (null != coverMeta) coverUrl = coverMeta.first().attr("content");
             if (!coverUrl.startsWith("http")) coverUrl = protocol+coverUrl;
             result.setCoverImageUrl(coverUrl);
 

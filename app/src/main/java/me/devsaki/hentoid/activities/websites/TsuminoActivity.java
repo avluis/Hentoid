@@ -80,8 +80,9 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
+            BaseWebActivity activity = activityReference.get();
 
-            if (url.contains("//www.tsumino.com/Book/Info/")) {
+            if (url.contains("//www.tsumino.com/Book/Info/") && activity != null) {
                 executeAsyncTask(new HtmlLoader(activity), url);
             } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;

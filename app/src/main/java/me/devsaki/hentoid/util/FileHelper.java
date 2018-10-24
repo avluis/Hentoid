@@ -11,13 +11,17 @@ import android.webkit.MimeTypeMap;
 
 import org.apache.commons.io.FileUtils;
 
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -38,7 +42,7 @@ public class FileHelper {
     // Note that many devices will report true (there are no guarantees of this being 'external')
     public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
-    public static final String FORBIDDEN_CHARS = "[^a-zA-Z0-9.-]";
+    private static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 
     private static final String AUTHORITY = BuildConfig.APPLICATION_ID + ".provider.FileProvider";
 
@@ -51,12 +55,8 @@ public class FileHelper {
         Preferences.setSdStorageUri("");
     }
 
-    static String getStringUri() {
-        return Preferences.getSdStorageUri();
-    }
-
     public static boolean isSAF() {
-        return getStringUri() != null && !getStringUri().equals("");
+        return Preferences.getSdStorageUri() != null && !Preferences.getSdStorageUri().equals("");
     }
 
     /**
@@ -166,6 +166,10 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
+    public static InputStream getInputStream(@NonNull final File target) throws IOException {
+        return FileUtil.getInputStream(target);
+    }
+
     /**
      * Create a folder.
      *
@@ -201,6 +205,16 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Cleans a directory without deleting it.
+     *
+     * Custom substitute for commons.io.FileUtils.cleanDirectory that supports devices without File.toPath
+     *
+     * @param directory directory to clean
+     * @return true if directory has been successfully cleaned
+     * @throws IOException              in case cleaning is unsuccessful
+     * @throws IllegalArgumentException if {@code directory} does not exist or is not a directory
+     */
     private static boolean tryCleanDirectory(@NonNull File directory) throws IOException, SecurityException {
         File[] files = directory.listFiles();
         if (files == null) throw new IOException("Failed to list contents of " + directory);
@@ -280,7 +294,7 @@ public class FileHelper {
             String settingDir = Preferences.getRootFolderName();
             File dir = new File(settingDir, content.getStorageFolder());
 
-            if (FileUtils.deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
+            if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.d("Directory %s removed.", dir);
             } else {
                 Timber.d("Failed to delete directory: %s", dir);
@@ -289,18 +303,26 @@ public class FileHelper {
     }
 
     public static File createContentDownloadDir(Context context, Content content) {
-        String folderDir = content.getSite().getFolder();
+        String siteFolder = content.getSite().getFolder();
+        String folderDir = siteFolder;
 
         // Format folder name according to preferences
         int folderNamingPreference = Preferences.getFolderNameFormat();
 
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
-            folderDir = folderDir + content.getAuthor().replaceAll(FORBIDDEN_CHARS, "_") + " - ";
+            folderDir = folderDir + content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
-            folderDir = folderDir + content.getTitle().replaceAll(FORBIDDEN_CHARS, "_") + " - ";
+            folderDir = folderDir + content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
         folderDir = folderDir + "[" + content.getUniqueSiteId() + "]";
+
+        // Truncate folder dir to something manageable for Windows
+        // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
+        int truncLength = Preferences.getFolderTruncationNbChars();
+        if (truncLength > 0) {
+            if (folderDir.length() - siteFolder.length() > truncLength) folderDir = folderDir.substring(0, siteFolder.length() + truncLength - 1);
+        }
 
         String settingDir = Preferences.getRootFolderName();
         if (settingDir.isEmpty()) {
@@ -363,45 +385,13 @@ public class FileHelper {
      * Method is used by onBindViewHolder(), speed is key
      */
     public static String getThumb(Content content) {
-        String rootFolderName = Preferences.getRootFolderName();
         String coverUrl = content.getCoverImageUrl();
-        Timber.d("GetThumb %s --- %s", rootFolderName, content.getStorageFolder());
 
         // If trying to access a non-downloaded book cover (e.g. viewing the download queue)
         if (content.getStorageFolder().equals("")) return coverUrl;
 
-        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
-            Timber.d("Hentoid root folder not found in SD card!! Returning online resource.");
-            return coverUrl;
-        }
-
-        File bookFolder = new File(rootFolderName, content.getStorageFolder());
-
-        String thumbExt = "";
-        if (coverUrl.length() > 3) thumbExt = coverUrl.substring(coverUrl.length() - 3).toLowerCase();
-        String thumb;
-
-        switch (thumbExt) {
-            case "jpg":
-            case "png":
-            case "gif":
-                File f = new File(bookFolder, "thumb" + "." + thumbExt);
-                thumb = f.exists() ? f.getAbsolutePath() : coverUrl;
-                // Some thumbs from nhentai were saved as jpg instead of png
-                // Follow through to scan the directory instead
-                // TODO: Rename the file instead
-                if (!content.getSite().equals(Site.NHENTAI)) {
-                    break;
-                }
-            default: // Scan files; takes longer -> last option
-                File[] fileList = bookFolder.listFiles(
-                        pathname -> pathname.getName().contains("thumb")
-                );
-                thumb = (fileList != null && fileList.length > 0) ? fileList[0].getAbsolutePath() : coverUrl;
-                break;
-        }
-
-        return thumb;
+        File f = new File(Preferences.getRootFolderName(), content.getStorageFolder() + "/thumb." + getExtension(coverUrl));
+        return f.exists() ? f.getAbsolutePath() : coverUrl;
     }
 
     public static void openContent(final Context context, Content content) {
@@ -468,6 +458,10 @@ public class FileHelper {
         }
     }
 
+    public static String getExtension(String a) {
+        return a.contains(".") ? a.substring(a.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
+    }
+
     public static void archiveContent(final Context context, Content content) {
         Timber.d("Building file list for: %s", content.getTitle());
         // Build list of files
@@ -500,13 +494,63 @@ public class FileHelper {
 
             // Build destination file
             File dest = new File(context.getExternalCacheDir() + "/shared",
-                    content.getTitle().replaceAll(FORBIDDEN_CHARS, "_") + ".zip");
+                    content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + ".zip");
             Timber.d("Destination file: %s", dest);
 
             // Convert ArrayList to Array
             File[] fileArray = fileList.toArray(new File[fileList.size()]);
             // Compress files
             new AsyncUnzip(context, dest).execute(fileArray, dest);
+        }
+    }
+
+    // TODO doc
+    public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
+        byte buffer[] = new byte[1024];
+        int count;
+
+        try (InputStream input = new ByteArrayInputStream(binaryContent)) {
+            try (BufferedOutputStream output = new BufferedOutputStream(FileHelper.getOutputStream(file))) {
+
+                while ((count = input.read(buffer)) != -1) {
+                    output.write(buffer, 0, count);
+                }
+
+                output.flush();
+            }
+        }
+    }
+
+    /**
+     * Deletes a file, never throwing an exception. If file is a directory, delete it and all sub-directories.
+     * <p>
+     * The difference between File.delete() and this method are:
+     * <ul>
+     * <li>A directory to be deleted does not have to be empty.</li>
+     * <li>No exceptions are thrown when a file or directory cannot be deleted.</li>
+     * </ul>
+     *
+     * Custom substitute for commons.io.FileUtils.deleteQuietly that works with devices that doesn't support File.toPath
+     *
+     * @param file file or directory to delete, can be {@code null}
+     * @return {@code true} if the file or directory was deleted, otherwise
+     * {@code false}
+     */
+    private static boolean deleteQuietly(final File file) {
+        if (file == null) {
+            return false;
+        }
+        try {
+            if (file.isDirectory()) {
+                tryCleanDirectory(file);
+            }
+        } catch (final Exception ignored) {
+        }
+
+        try {
+            return file.delete();
+        } catch (final Exception ignored) {
+            return false;
         }
     }
 
