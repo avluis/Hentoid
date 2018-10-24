@@ -129,6 +129,7 @@ public class ImportService extends IntentService {
                 .filter(File::isDirectory)
                 .collect(toList());
 
+        Timber.i("Import books starting : %s books total", files.size());
         for (int i = 0; i < files.size(); i++) {
             File file = files.get(i);
 
@@ -137,12 +138,15 @@ public class ImportService extends IntentService {
             {
                 HentoidDB.getInstance(this).insertContent(content);
                 booksOK++;
+                Timber.d("Import book OK");
             } else {
                 booksKO++;
+                Timber.w("Import book KO : %s", file.getAbsolutePath());
             }
 
             eventProgress(content, files.size(), booksOK, booksKO);
         }
+        Timber.i("Import books complete : %s OK; %s KO", booksOK, booksKO);
         eventComplete(files.size(), booksOK, booksKO);
 
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -160,6 +164,8 @@ public class ImportService extends IntentService {
 
         json = new File(folder, Consts.OLD_JSON_FILE_NAME); // (old) JSON file format (legacy and/or FAKKUDroid App)
         if (json.exists()) return importJsonLegacy(json, folder);
+
+        Timber.w("Book folder %s : no JSON file found !", folder.getAbsolutePath());
 
         return null;
     }
