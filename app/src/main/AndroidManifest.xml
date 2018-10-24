@@ -166,7 +166,7 @@
                 <data
                     android:host="www.tsumino.com"
                     android:pathPrefix="/Book/Info"
-                    android:scheme="http" />
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -177,7 +177,7 @@
                 <data
                     android:host="asmhentai.com"
                     android:pathPrefix="/g"
-                    android:scheme="http" />
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -188,7 +188,7 @@
                 <data
                     android:host="comics.asmhentai.com"
                     android:pathPrefix="/g"
-                    android:scheme="http" />
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -210,7 +210,7 @@
                 <data
                     android:host="pururin.io"
                     android:pathPrefix="/"
-                    android:scheme="http" />
+                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
