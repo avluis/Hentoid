@@ -64,6 +64,7 @@ import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
+import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
@@ -547,7 +548,8 @@ public class ImportActivity extends BaseActivity {
     public void onImportEvent(ImportEvent event) {
         if (ImportEvent.EV_PROGRESS == event.eventType)
         {
-            progressDialog.setProgress( (int)Math.round(100.0 * (event.booksOK + event.booksKO) / event.booksTotal) );
+            progressDialog.setMax(event.booksTotal);
+            progressDialog.setProgress(event.booksOK + event.booksKO);
         }
         else if (ImportEvent.EV_COMPLETE == event.eventType)
         {
@@ -593,9 +595,10 @@ public class ImportActivity extends BaseActivity {
                                 progressDialog.setMessage(this.getText(R.string.please_wait));
                                 progressDialog.setIndeterminate(false);
                                 progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                                progressDialog.setMax(100);
+                                progressDialog.setMax(0);
                                 progressDialog.show();
 
+                                ImportNotificationChannel.init(this);
                                 Intent intent = ImportService.makeIntent(this);
                                 startService(intent);
                             })

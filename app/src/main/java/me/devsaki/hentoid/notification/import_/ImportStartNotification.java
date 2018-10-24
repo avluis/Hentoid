@@ -16,7 +16,7 @@ public class ImportStartNotification implements Notification {
         return new NotificationCompat.Builder(context, ImportNotificationChannel.ID)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setContentTitle("Importing library")
-                .setProgress(0,0, true) // Indeterminate progress
+                .setContentText("Importing library")
                 .build();
     }
 }

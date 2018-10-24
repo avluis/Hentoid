@@ -27,12 +27,14 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
+import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
 import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.notification.NotificationManager;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
@@ -72,6 +74,8 @@ public class ImportService extends IntentService {
 
         running = true;
         notificationManager = new ServiceNotificationManager(this, NOTIFICATION_ID);
+        notificationManager.cancel();
+
         Timber.w("Service created");
     }
 
@@ -141,6 +145,8 @@ public class ImportService extends IntentService {
             eventProgress(content, files.size(), booksOK, booksKO);
         }
         eventComplete(files.size(), booksOK, booksKO);
+
+        notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
 
         stopForeground(true);
         stopSelf();
