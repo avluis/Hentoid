@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.activities;
 
 import android.Manifest;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -10,15 +9,12 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.DocumentsContract;
-import android.support.annotation.CheckResult;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
@@ -30,26 +26,18 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 
-import com.annimon.stream.Stream;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.ContentV1;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
 import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
@@ -57,28 +45,19 @@ import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.ui.DirChooserFragment;
 import me.devsaki.hentoid.dirpicker.util.Convert;
-import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.model.DoujinBuilder;
-import me.devsaki.hentoid.model.URLBuilder;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
-import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.PendingIntentCompat;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
 import static android.os.Build.VERSION_CODES.LOLLIPOP;
-import static com.annimon.stream.Collectors.toList;
 
 /**
  * Created by avluis on 04/02/2016.
@@ -99,43 +78,6 @@ public class ImportActivity extends BaseActivity {
 
     private ProgressDialog progressDialog;
 
-
-    private static List<Attribute> from(List<URLBuilder> urlBuilders, AttributeType type) {
-        List<Attribute> attributes = null;
-        if (urlBuilders == null) {
-            return null;
-        }
-        if (urlBuilders.size() > 0) {
-            attributes = new ArrayList<>();
-            for (URLBuilder urlBuilder : urlBuilders) {
-                Attribute attribute = from(urlBuilder, type);
-                if (attribute != null) {
-                    attributes.add(attribute);
-                }
-            }
-        }
-
-        return attributes;
-    }
-
-    private static Attribute from(URLBuilder urlBuilder, AttributeType type) {
-        if (urlBuilder == null) {
-            return null;
-        }
-        try {
-            if (urlBuilder.getDescription() == null) {
-                throw new AttributeException("Problems loading attribute v2.");
-            }
-
-            return new Attribute()
-                    .setName(urlBuilder.getDescription())
-                    .setUrl(urlBuilder.getId())
-                    .setType(type);
-        } catch (Exception e) {
-            Timber.e(e, "Parsing URL to attribute");
-            return null;
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -657,207 +599,6 @@ public class ImportActivity extends BaseActivity {
 
         if (restartFlag && prefInit) {
             Helper.doRestart(this);
-        }
-    }
-
-    private class ImportAsyncTask extends AsyncTask<Integer, Integer, List<Content>> {
-
-        private final ProgressDialog progressDialog;
-        private final AlertDialog finishDialog;
-        private final List<File> files;
-
-        private ImportAsyncTask(Context context) {
-            progressDialog = new ProgressDialog(context);
-            progressDialog.setTitle(R.string.import_dialog);
-            progressDialog.setMessage(context.getText(R.string.please_wait));
-            progressDialog.setIndeterminate(false);
-            progressDialog.setMax(100);
-
-            finishDialog = new AlertDialog.Builder(context)
-                    .setIcon(R.drawable.ic_dialog_warning)
-                    .setTitle(R.string.add_dialog)
-                    .setMessage(R.string.please_wait)
-                    .setCancelable(false)
-                    .create();
-
-            files = Stream.of(Site.values())
-                    .map(site -> FileHelper.getSiteDownloadDir(context, site))
-                    .map(File::listFiles)
-                    .flatMap(Stream::of)
-                    .filter(File::isDirectory)
-                    .collect(toList());
-        }
-
-        @Override
-        protected void onPreExecute() {
-            progressDialog.show();
-        }
-
-        @Override
-        protected void onPostExecute(List<Content> contents) {
-            if (contents != null && contents.size() > 0) {
-                result = ConstsImport.EXISTING_LIBRARY_IMPORTED;
-            } else {
-                result = ConstsImport.NEW_LIBRARY_CREATED;
-            }
-            cleanUp(result);
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            if (values[0] >= 0) {
-                progressDialog.setProgress(values[0]);
-            } else if (values[0] == -1) {
-                progressDialog.dismiss();
-                finishDialog.show();
-            } else if (values[0] == -2) {
-                finishDialog.dismiss();
-            }
-        }
-
-        @Override
-        protected List<Content> doInBackground(Integer... params) {
-            List<Content> contents = new ArrayList<>();
-            for (int i = 0; i < files.size(); i++) {
-                File file = files.get(i);
-                // (v2) JSON file format
-                File json = new File(file, Consts.JSON_FILE_NAME_V2);
-                if (json.exists()) {
-                    Content content = importJsonV2(json);
-                    if (content != null) contents.add(content);
-                } else {
-                    // (v1) JSON file format
-                    json = new File(file, Consts.JSON_FILE_NAME);
-                    if (json.exists()) {
-                        Content content = importJsonV1(json, file);
-                        if (content != null) contents.add(content);
-                    } else {
-                        // (old) JSON file format (legacy and/or FAKKUDroid App)
-                        json = new File(file, Consts.OLD_JSON_FILE_NAME);
-                        if (json.exists()) {
-                            Content content = importJsonLegacy(json, file);
-                            if (content != null) contents.add(content);
-                        }
-                    }
-                }
-                publishProgress((int) (i * 100.0 / files.size()));
-            }
-
-            Timber.d("Adding contents to db.");
-
-            publishProgress(-1);
-            HentoidDB.getInstance(ImportActivity.this)
-                    .insertContents(contents.toArray(new Content[contents.size()]));
-            publishProgress(-2);
-
-            return contents;
-        }
-
-        @Nullable
-        @CheckResult
-        private Content importJsonLegacy(File json, File file) {
-            try {
-                DoujinBuilder doujinBuilder =
-                        JsonHelper.jsonToObject(json, DoujinBuilder.class);
-                //noinspection deprecation
-                ContentV1 content = new ContentV1();
-                content.setUrl(doujinBuilder.getId());
-                content.setHtmlDescription(doujinBuilder.getDescription());
-                content.setTitle(doujinBuilder.getTitle());
-                content.setSeries(from(doujinBuilder.getSeries(),
-                        AttributeType.SERIE));
-                Attribute artist = from(doujinBuilder.getArtist(),
-                        AttributeType.ARTIST);
-                List<Attribute> artists = null;
-                if (artist != null) {
-                    artists = new ArrayList<>(1);
-                    artists.add(artist);
-                }
-
-                content.setArtists(artists);
-                content.setCoverImageUrl(doujinBuilder.getUrlImageTitle());
-                content.setQtyPages(doujinBuilder.getQtyPages());
-                Attribute translator = from(doujinBuilder.getTranslator(),
-                        AttributeType.TRANSLATOR);
-                List<Attribute> translators = null;
-                if (translator != null) {
-                    translators = new ArrayList<>(1);
-                    translators.add(translator);
-                }
-                content.setTranslators(translators);
-                content.setTags(from(doujinBuilder.getLstTags(),
-                        AttributeType.TAG));
-                content.setLanguage(from(doujinBuilder.getLanguage(),
-                        AttributeType.LANGUAGE));
-
-                content.setMigratedStatus();
-                content.setDownloadDate(new Date().getTime());
-                Content contentV2 = content.toV2Content();
-
-                String fileRoot = Preferences.getRootFolderName();
-                contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
-                try {
-                    JsonHelper.saveJson(contentV2, file);
-                } catch (IOException e) {
-                    Timber.e(e,
-                            "Error converting JSON (old) to JSON (v2): %s", content.getTitle());
-                }
-
-                return contentV2;
-            } catch (Exception e) {
-                Timber.e(e, "Error reading JSON (old) file");
-            }
-            return null;
-        }
-
-        @Nullable
-        @CheckResult
-        private Content importJsonV1(File json, File file) {
-            try {
-                //noinspection deprecation
-                ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
-                if (content.getStatus() != StatusContent.DOWNLOADED
-                        && content.getStatus() != StatusContent.ERROR) {
-                    content.setMigratedStatus();
-                }
-                Content contentV2 = content.toV2Content();
-
-                String fileRoot = Preferences.getRootFolderName();
-                contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
-                try {
-                    JsonHelper.saveJson(contentV2, file);
-                } catch (IOException e) {
-                    Timber.e(e, "Error converting JSON (v1) to JSON (v2): %s", content.getTitle());
-                }
-
-                return contentV2;
-            } catch (Exception e) {
-                Timber.e(e, "Error reading JSON (v1) file");
-            }
-            return null;
-        }
-
-        @Nullable
-        @CheckResult
-        private Content importJsonV2(File json) {
-            try {
-                Content content = JsonHelper.jsonToObject(json, Content.class);
-
-                if (null == content.getAuthor()) content.populateAuthor();
-
-                String fileRoot = Preferences.getRootFolderName();
-                content.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
-
-                if (content.getStatus() != StatusContent.DOWNLOADED
-                        && content.getStatus() != StatusContent.ERROR) {
-                    content.setStatus(StatusContent.MIGRATED);
-                }
-
-                return content;
-            } catch (Exception e) {
-                Timber.e(e, "Error reading JSON (v2) file");
-            }
-            return null;
         }
     }
 }
