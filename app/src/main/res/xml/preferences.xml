@@ -43,8 +43,8 @@
         <Preference
             android:icon="@null"
             android:key="pref_refresh_bookshelf"
-            android:summary="@string/pref_refresh_library_title"
-            android:title="@string/pref_refresh_library_summary" />
+            android:summary="@string/pref_refresh_library_summary"
+            android:title="@string/pref_refresh_library_title" />
         <ListPreference
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
