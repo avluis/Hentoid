@@ -207,7 +207,7 @@ public class ImportActivity extends BaseActivity {
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
         }
 
-        if (defaultInit || isRefresh) {
+        if (defaultInit || isRefresh) { // Do not ask what the user wants to import if he has chosen default initial import location or if he has asked for a refresh
             prevRootDir = currentRootDir;
             initImport();
         } else {
@@ -492,18 +492,23 @@ public class ImportActivity extends BaseActivity {
 
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onImportEvent(ImportEvent event) {
+    public void onImportEventProgress(ImportEvent event) {
         if (ImportEvent.EV_PROGRESS == event.eventType)
         {
             progressDialog.setMax(event.booksTotal);
             progressDialog.setProgress(event.booksOK + event.booksKO);
         }
-        else if (ImportEvent.EV_COMPLETE == event.eventType)
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onImportEventComplete(ImportEvent event) {
+        if (ImportEvent.EV_COMPLETE == event.eventType)
         {
             progressDialog.dismiss();
             cleanUp((event.booksOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
         }
     }
+
 
     private void importFolder(File folder) {
         if (!FileHelper.validateFolder(folder.getAbsolutePath(), true)) {
@@ -525,7 +530,7 @@ public class ImportActivity extends BaseActivity {
 
         if (files.size() > 0) {
 
-            if (isRefresh) runImport();
+            if (isRefresh) runImport(); // Do not ask if the user wants to import if he has asked for a refresh
             else new AlertDialog.Builder(this)
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setCancelable(false)

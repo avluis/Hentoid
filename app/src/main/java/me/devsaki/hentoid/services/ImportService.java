@@ -101,14 +101,6 @@ public class ImportService extends IntentService {
         startImport(doCleanup);
     }
 
-/*
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        startImport();
-        return START_NOT_STICKY;
-    }
-*/
-
     private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO)
     {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, content, booksOK, booksKO, nbBooks));
@@ -116,7 +108,6 @@ public class ImportService extends IntentService {
 
     private void eventComplete(int nbBooks, int booksOK, int booksKO)
     {
-        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks));
         EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks));
     }
 

@@ -354,7 +354,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             activity.finish();
         }
 
-        if (libraryHasBeenRefreshed) {
+        if (libraryHasBeenRefreshed && mTotalCount > -1) {
             Timber.d("Library has been refreshed !  %s -> %s books", mTotalCount, refreshedContentCount);
 
             if (refreshedContentCount > mTotalCount) { // More books added
