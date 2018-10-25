@@ -786,6 +786,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onMenuItemActionCollapse(MenuItem item) {
                 setSearchPaneVisibility(false);
+
+                // == Reset attribute search ==
+
+                // Reset color of every tab
+                for (View v : attrSelector.getTouchables()) v.setBackgroundResource(R.drawable.btn_attribute_section_off);
+                // Remove tag search bar
+                SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
+                tagSearchView.setVisibility(View.GONE);
+                tagWaitPanel.setVisibility(View.GONE);
+                // Remove previous tag suggestions
+                attributeMosaic.removeAllViews();
+
                 return true;
             }
         });
