@@ -1089,13 +1089,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setMinHeight(0);
         button.setMinimumHeight(0);
 
-        colorButton(button, TAGFILTER_ACTIVE);
+        colorButton(button, isSelected?TAGFILTER_SELECTED:TAGFILTER_ACTIVE);
 
         button.setTag(attribute);
         button.setId(Math.abs(attribute.getId()));
 
-        if (isSelected) button.setOnClickListener(v -> selectSearchTag(button));
-        else button.setOnClickListener(v -> selectTagSuggestion(button));
+        button.setOnClickListener(v -> selectTagSuggestion(button));
 
         return button;
     }
