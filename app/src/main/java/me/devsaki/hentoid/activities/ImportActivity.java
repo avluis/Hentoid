@@ -75,11 +75,10 @@ public class ImportActivity extends BaseActivity {
     private boolean restartFlag;
     private boolean prefInit;
     private boolean defaultInit;
-    private boolean cleanup = false;
+    private boolean isCleanup = false;
+    private boolean isRefresh = false;
 
     private ProgressDialog progressDialog;
-
-    // TODO - do not display dirpicker and do not ask for import confirmation if user wants to refresh the library
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,7 +101,8 @@ public class ImportActivity extends BaseActivity {
                     Timber.d("Intent: %s Action: %s", intent, intent.getAction());
                 }
             }
-            cleanup = intent.getBooleanExtra("cleanup", false);
+            isRefresh = intent.getBooleanExtra("refresh", false);
+            isCleanup = intent.getBooleanExtra("cleanup", false);
         }
 
         EventBus.getDefault().register(this);
@@ -207,7 +207,7 @@ public class ImportActivity extends BaseActivity {
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
         }
 
-        if (defaultInit) {
+        if (defaultInit || isRefresh) {
             prevRootDir = currentRootDir;
             initImport();
         } else {
@@ -524,7 +524,9 @@ public class ImportActivity extends BaseActivity {
         }
 
         if (files.size() > 0) {
-            new AlertDialog.Builder(this)
+
+            if (isRefresh) runImport();
+            else new AlertDialog.Builder(this)
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setCancelable(false)
                     .setTitle(R.string.app_name)
@@ -532,23 +534,7 @@ public class ImportActivity extends BaseActivity {
                     .setPositiveButton(android.R.string.yes,
                             (dialog1, which) -> {
                                 dialog1.dismiss();
-                                // Prior Library found, drop and recreate db
-                                cleanUpDB();
-                                // Send results to scan
-                                //Helper.executeAsyncTask(new ImportAsyncTask(this));
-
-                                progressDialog = new ProgressDialog(this);
-                                progressDialog.setTitle(R.string.import_dialog);
-                                progressDialog.setMessage(this.getText(R.string.please_wait));
-                                progressDialog.setIndeterminate(false);
-                                progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                                progressDialog.setMax(0);
-                                progressDialog.show();
-
-                                ImportNotificationChannel.init(this);
-                                Intent intent = ImportService.makeIntent(this);
-                                intent.putExtra("cleanup", cleanup);
-                                startService(intent);
+                                runImport();
                             })
                     .setNegativeButton(android.R.string.no,
                             (dialog12, which) -> {
@@ -587,6 +573,25 @@ public class ImportActivity extends BaseActivity {
                 finish();
             }, 100);
         }
+    }
+
+    private void runImport()
+    {
+        // Prior Library found, drop and recreate db
+        cleanUpDB();
+        // Send results to scan
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setTitle(R.string.import_dialog);
+        progressDialog.setMessage(this.getText(R.string.please_wait));
+        progressDialog.setIndeterminate(false);
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+        progressDialog.setMax(0);
+        progressDialog.show();
+
+        ImportNotificationChannel.init(this);
+        Intent intent = ImportService.makeIntent(this);
+        intent.putExtra("cleanup", isCleanup);
+        startService(intent);
     }
 
     private void cleanUpDB() {

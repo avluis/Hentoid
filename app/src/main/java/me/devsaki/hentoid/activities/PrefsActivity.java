@@ -85,6 +85,7 @@ public class PrefsActivity extends BaseActivity {
         {
             Intent refresh = new Intent(this.getContext(), ImportActivity.class);
             refresh.setAction("android.intent.action.APPLICATION_PREFERENCES"); // Is only a constant since API 24 -> using the string
+            refresh.putExtra("refresh", true);
             refresh.putExtra("cleanup", cleanup);
             startActivityForResult(refresh, ConstsImport.RQST_IMPORT_RESULTS);
         }
