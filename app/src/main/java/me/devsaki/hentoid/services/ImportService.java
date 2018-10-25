@@ -117,6 +117,7 @@ public class ImportService extends IntentService {
     private void eventComplete(int nbBooks, int booksOK, int booksKO)
     {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks));
     }
 
     /**
@@ -135,6 +136,7 @@ public class ImportService extends IntentService {
                 .map(File::listFiles)
                 .flatMap(Stream::of)
                 .filter(File::isDirectory)
+                .distinct() // Since there are two asmhentai sites (classic and comics), asm values are duplicated => deduplicate list
                 .collect(toList());
 
         Timber.i("Import books starting : %s books total", files.size());
@@ -169,7 +171,7 @@ public class ImportService extends IntentService {
                 }
                 HentoidDB.getInstance(this).insertContent(content);
                 booksOK++;
-                Timber.d("Import book OK");
+                Timber.d("Import book OK : %s", file.getAbsolutePath());
             } else {
                 booksKO++;
                 Timber.w("Import book KO : %s", file.getAbsolutePath());

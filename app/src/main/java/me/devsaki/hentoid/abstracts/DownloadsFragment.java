@@ -69,6 +69,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
@@ -201,6 +202,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
     // Used to ignore native calls to onQueryTextChange
     boolean invalidateNextQueryTextChange = false;
+    // Used to detect if the library has been refreshed
+    boolean libraryHasBeenRefreshed = false;
+    // If library has been refreshed, indicated new content count
+    int refreshedContentCount = 0;
 
 
 
@@ -321,6 +326,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onImportEvent(ImportEvent event) {
+        if (ImportEvent.EV_COMPLETE == event.eventType) {
+            libraryHasBeenRefreshed = true;
+            refreshedContentCount = event.booksOK;
+        }
+    }
+
     /**
      * Updates class variables with Hentoid user preferences
      */
@@ -341,14 +354,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             activity.finish();
         }
 
-        // TODO - find something else (return value when coming back from prefs ?) because total books won't move if a simple folder name cleanup is done
-        if (mTotalCount > -1 && mTotalCount != getDB().countAllContent() ) {
-            Timber.d("Library has been refreshed!");
-            showReloadToolTip();
-            /*
-            cleanResults();
-            shouldUpdate = true;
-            */
+        if (libraryHasBeenRefreshed) {
+            Timber.d("Library has been refreshed !  %s -> %s books", mTotalCount, refreshedContentCount);
+
+            if (refreshedContentCount > mTotalCount) { // More books added
+                showReloadToolTip();
+            } else { // Library cleaned up
+                cleanResults();
+                shouldUpdate = true;
+            }
+            libraryHasBeenRefreshed = false;
+            refreshedContentCount = 0;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
