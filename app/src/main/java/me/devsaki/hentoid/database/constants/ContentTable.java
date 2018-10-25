@@ -98,9 +98,9 @@ public abstract class ContentTable {
 
     public static final String SELECT_DOWNLOADS_FAVS = " AND C." + FAVOURITE_COLUMN + " = 1 ";
 
-    public static final String SELECT_DOWNLOADS_TITLE = " lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
+    public static final String SELECT_DOWNLOADS_TITLE = " AND lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
 
-    public static final String SELECT_DOWNLOADS_JOINS = " C." + ID_COLUMN
+    public static final String SELECT_DOWNLOADS_JOINS = " AND C." + ID_COLUMN
             + " in (SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM " // TODO replace that IN by an INNER JOIN
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";

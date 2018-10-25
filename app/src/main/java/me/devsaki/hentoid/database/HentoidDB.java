@@ -460,10 +460,6 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         if (filterFavourites) sql.append(ContentTable.SELECT_DOWNLOADS_FAVS);
 
-
-        // Title / Author / Tag filters
-        if (hasTitleFilter || hasTagFilter) sql.append(" AND (");
-
         // Title filter -> continue querying Content table
         if (hasTitleFilter) {
             title = '%' + title.replace("'", "''") + '%';
@@ -473,24 +469,24 @@ public class HentoidDB extends SQLiteOpenHelper {
         // Tags filter -> query attribute table through a join
         if (hasTagFilter) {
             for (AttributeType attrType : metadataMap.keySet()) {
-                List<Attribute> attrs = metadataMap.get(attrType);
+                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
+                    List<Attribute> attrs = metadataMap.get(attrType);
 
-                if (attrs.size() > 0) {
-                    if (hasTitleFilter || isConstructingTagFilter) sql.append(" AND ");
-                    sql.append(ContentTable.SELECT_DOWNLOADS_JOINS);
-                    sql.append(
-                            ContentTable.SELECT_DOWNLOADS_TAGS
-                                    .replace("%4", Helper.buildListAsString(attrs))
-                                    .replace("%5", attrType.getCode() + "")
-                                    .replace("%6", attrs.size() + "")
-                    );
-                    sql.append("))");
-                    isConstructingTagFilter = true;
+                    if (attrs.size() > 0) {
+                        if (isConstructingTagFilter) sql.append(" AND ");
+                        sql.append(ContentTable.SELECT_DOWNLOADS_JOINS);
+                        sql.append(
+                                ContentTable.SELECT_DOWNLOADS_TAGS
+                                        .replace("%4", Helper.buildListAsString(attrs))
+                                        .replace("%5", attrType.getCode() + "")
+                                        .replace("%6", attrs.size() + "")
+                        );
+                        sql.append("))");
+                        isConstructingTagFilter = true;
+                    }
                 }
             }
         }
-
-        if (hasTitleFilter || hasTagFilter) sql.append(" )");
 
         return sql.toString();
     }
