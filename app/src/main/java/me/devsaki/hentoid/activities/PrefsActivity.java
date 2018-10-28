@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,7 +9,6 @@ import android.support.v7.preference.PreferenceFragmentCompat;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.services.UpdateDownloadService;
@@ -18,7 +16,6 @@ import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import timber.log.Timber;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -61,7 +58,9 @@ public class PrefsActivity extends BaseActivity {
 
         @Override
         public boolean onPreferenceTreeClick(Preference preference) {
-            switch (preference.getKey()) {
+            String key = preference.getKey();
+            if (key == null) return super.onPreferenceTreeClick(preference);
+            switch (key) {
                 case Preferences.Key.PREF_ADD_NO_MEDIA_FILE:
                     return FileHelper.createNoMedia();
                 case Preferences.Key.PREF_CHECK_UPDATE_MANUAL:
@@ -81,8 +80,7 @@ public class PrefsActivity extends BaseActivity {
             return true;
         }
 
-        private void launchRefreshImport(boolean cleanup)
-        {
+        private void launchRefreshImport(boolean cleanup) {
             Intent refresh = new Intent(this.getContext(), ImportActivity.class);
             refresh.setAction("android.intent.action.APPLICATION_PREFERENCES"); // Is only a constant since API 24 -> using the string
             refresh.putExtra("refresh", true);
