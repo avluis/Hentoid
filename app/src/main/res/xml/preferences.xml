@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <PreferenceCategory
-        android:key="pref_key_downloads_list_settings"
-        android:title="@string/pref_downloads_category">
+    <PreferenceCategory android:title="@string/pref_downloads_category">
 
         <CheckBoxPreference
             android:defaultValue="@string/pref_endless_scroll_default"
@@ -13,9 +11,7 @@
             android:summaryOn="@string/pref_endless_scroll_summary_on"
             android:title="@string/pref_endless_scroll_title" />
     </PreferenceCategory>
-    <PreferenceCategory
-        android:key="pref_key_performance_settings"
-        android:title="@string/pref_performance_category">
+    <PreferenceCategory android:title="@string/pref_performance_category">
 
         <ListPreference
             android:defaultValue="@string/pref_quantity_per_page_default"
@@ -36,9 +32,7 @@
             android:summary="@string/pref_dl_threads_quantity_summary"
             android:title="@string/pref_dl_threads_quantity_title" />
     </PreferenceCategory>
-    <PreferenceCategory
-        android:key="pref_key_library_settings"
-        android:title="@string/pref_library_category">
+    <PreferenceCategory android:title="@string/pref_library_category">
 
         <Preference
             android:icon="@null"
@@ -74,13 +68,13 @@
             android:summary="@string/pref_read_content_summary"
             android:title="@string/pref_read_content_title" />
         <ListPreference
+            android:defaultValue="@string/pref_attributes_list_order_default"
             android:entries="@array/pref_attribute_list_order_entries"
             android:entryValues="@array/pref_attribute_list_order_values"
-            android:defaultValue="@string/pref_attributes_list_order_default"
             android:icon="@null"
             android:key="pref_order_attribute_lists"
-            android:title="@string/pref_attributes_list_order_title"
-            android:summary="@string/pref_attributes_list_order_summary" />
+            android:summary="@string/pref_attributes_list_order_summary"
+            android:title="@string/pref_attributes_list_order_title" />
         <Preference
             android:icon="@null"
             android:key="folder"
@@ -98,9 +92,7 @@
             android:summary="@string/pref_add_no_media_file_summary"
             android:title="@string/pref_add_no_media_file_title" />
     </PreferenceCategory>
-    <PreferenceCategory
-        android:key="pref_key_webview_settings"
-        android:title="@string/pref_webview_category">
+    <PreferenceCategory android:title="@string/pref_webview_category">
 
         <CheckBoxPreference
             android:defaultValue="@string/pref_webview_override_overview_default"
@@ -120,9 +112,7 @@
             android:summary="@string/pref_webview_initial_zoom_summary"
             android:title="@string/pref_webview_initial_zoom_title" />
     </PreferenceCategory>
-    <PreferenceCategory
-        android:key="pref_key_applock_settings"
-        android:title="@string/pref_applock_category">
+    <PreferenceCategory android:title="@string/pref_applock_category">
 
         <EditTextPreference
             android:icon="@null"
@@ -138,9 +128,7 @@
             android:summary="@string/pref_app_lock_vibrate_summary"
             android:title="@string/pref_app_lock_vibrate_title" />
     </PreferenceCategory>
-    <PreferenceCategory
-        android:key="pref_key_update_settings"
-        android:title="@string/pref_updates_category">
+    <PreferenceCategory android:title="@string/pref_updates_category">
 
         <Preference
             android:icon="@null"
@@ -155,9 +143,7 @@
             android:summaryOn="@string/pref_check_updates_summary_on"
             android:title="@string/pref_check_updates_title" />
     </PreferenceCategory>
-    <PreferenceCategory
-        android:key="pref_key_misc_settings"
-        android:title="@string/pref_misc_category">
+    <PreferenceCategory android:title="@string/pref_misc_category">
 
         <CheckBoxPreference
             android:defaultValue="@string/pref_hide_recent_default"
