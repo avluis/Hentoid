@@ -6,12 +6,12 @@ package me.devsaki.hentoid.database.constants;
  */
 public abstract class AttributeTable {
 
-    public static final String TABLE_NAME = "attribute";
+    static final String TABLE_NAME = "attribute";
 
-    public static final String ID_COLUMN = "id";
+    static final String ID_COLUMN = "id";
     private static final String URL_COLUMN = "url";
-    private static final String NAME_COLUMN = "name";
-    public static final String TYPE_COLUMN = "type";
+    static final String NAME_COLUMN = "name";
+    static final String TYPE_COLUMN = "type";
 
     // CREATE
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "(" + ID_COLUMN
@@ -40,7 +40,7 @@ public abstract class AttributeTable {
             " SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" +
             " select ca1." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*)" +
             " from " + ContentAttributeTable.TABLE_NAME + " as ca1 inner join " + AttributeTable.TABLE_NAME + " as a1 on ca1." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = a1." + AttributeTable.ID_COLUMN +
-            " where a1." + AttributeTable.ID_COLUMN + " in (%2) GROUP BY 1 HAVING COUNT(*) = %3) ) ) ";
+            " where lower(a1." + AttributeTable.NAME_COLUMN + ") in (%2) GROUP BY 1 HAVING COUNT(*) = %3) ) ) ";
 
     public static final String SELECT_ALL_BY_USAGE_END = " group by 2 order by 3 desc, 2 asc";
 

@@ -447,7 +447,6 @@ public class HentoidDB extends SQLiteOpenHelper {
         boolean hasTitleFilter = (title != null && title.length() > 0);
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE);
         boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter?1:0);
-        boolean isConstructingTagFilter = false;
 
         // Base criteria in Content table
         StringBuilder sql = new StringBuilder();
@@ -473,16 +472,14 @@ public class HentoidDB extends SQLiteOpenHelper {
                     List<Attribute> attrs = metadataMap.get(attrType);
 
                     if (attrs.size() > 0) {
-                        if (isConstructingTagFilter) sql.append(" AND ");
                         sql.append(ContentTable.SELECT_DOWNLOADS_JOINS);
                         sql.append(
                                 ContentTable.SELECT_DOWNLOADS_TAGS
-                                        .replace("%4", Helper.buildListAsString(attrs))
+                                        .replace("%4", Helper.buildListAsString(attrs,"'"))
                                         .replace("%5", attrType.getCode() + "")
                                         .replace("%6", attrs.size() + "")
                         );
                         sql.append("))");
-                        isConstructingTagFilter = true;
                     }
                 }
             }
@@ -719,7 +716,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             if (attrs != null && attrs.size() > 0) {
                 sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
-                sql = sql.replace("%2", Helper.buildListAsString(attrs,""));
+                sql = sql.replace("%2", Helper.buildListAsString(attrs,"'"));
                 sql = sql.replace("%3", attrs.size() + "");
             }
 

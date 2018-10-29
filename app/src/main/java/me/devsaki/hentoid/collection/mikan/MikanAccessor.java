@@ -58,6 +58,13 @@ public class MikanAccessor implements CollectionAccessor {
         }
     }
 
+    private static List<Integer> extractAttrIds(List<Attribute> attrs)
+    {
+        List<Integer> result = new ArrayList<>();
+        for(Attribute attr : attrs) result.add(attr.getId());
+        return result;
+    }
+
     private static boolean isSiteUnsupported(Site s) {
         return (s != Site.HITOMI);
     }
@@ -156,19 +163,19 @@ public class MikanAccessor implements CollectionAccessor {
         params.put("page", page + "");
 
         List<Attribute> attributes = Helper.extractAttributeByType(metadata, AttributeType.ARTIST);
-        if (attributes.size() > 0) params.put("artist", Helper.buildListAsString(attributes));
+        if (attributes.size() > 0) params.put("artist", Helper.buildListAsString(extractAttrIds(attributes)));
 
         attributes = Helper.extractAttributeByType(metadata, AttributeType.CIRCLE);
-        if (attributes.size() > 0) params.put("group", Helper.buildListAsString(attributes));
+        if (attributes.size() > 0) params.put("group", Helper.buildListAsString(extractAttrIds(attributes)));
 
         attributes = Helper.extractAttributeByType(metadata, AttributeType.CHARACTER);
-        if (attributes.size() > 0) params.put("character", Helper.buildListAsString(attributes));
+        if (attributes.size() > 0) params.put("character", Helper.buildListAsString(extractAttrIds(attributes)));
 
         attributes = Helper.extractAttributeByType(metadata, AttributeType.TAG);
-        if (attributes.size() > 0) params.put("tag", Helper.buildListAsString(attributes));
+        if (attributes.size() > 0) params.put("tag", Helper.buildListAsString(extractAttrIds(attributes)));
 
         attributes = Helper.extractAttributeByType(metadata, AttributeType.LANGUAGE);
-        if (attributes.size() > 0) params.put("language", Helper.buildListAsString(attributes));
+        if (attributes.size() > 0) params.put("language", Helper.buildListAsString(extractAttrIds(attributes)));
 
 
         disposable = MikanServer.API.search(getMikanCodeForSite(site) + suffix, params)

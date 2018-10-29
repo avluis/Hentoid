@@ -78,7 +78,7 @@ public class Attribute {
 
     @Override
     public String toString() {
-        return getId().toString();
+        return getName();
     }
 
     public void saveToStream(DataOutputStream output) throws IOException
