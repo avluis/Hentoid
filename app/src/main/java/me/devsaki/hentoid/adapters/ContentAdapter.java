@@ -520,7 +520,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void deleteContent(final Content item) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.ImportDialog));
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
