@@ -454,7 +454,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         if (hasSiteFilter) {
             params = metadataMap.get(AttributeType.SOURCE);
-            if (params.size() > 0) sql.append(ContentTable.SELECT_DOWNLOADS_SITES.replace("%1",Helper.buildListAsString(params,"'")));
+            if (params.size() > 0) sql.append(ContentTable.SELECT_DOWNLOADS_SITES.replace("%1",Helper.buildListAsString(Helper.extractAttributesIds(params),"'")));
         }
 
         if (filterFavourites) sql.append(ContentTable.SELECT_DOWNLOADS_FAVS);

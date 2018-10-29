@@ -341,19 +341,26 @@ public final class Helper {
         return str.toString();
     }
 
-    public static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType type) {
-        return extractAttributeByType(attrs, new AttributeType[]{type});
+    public static List<Integer> extractAttributeIdsByType(List<Attribute> attrs, AttributeType type) {
+        return extractAttributeIdsByType(attrs, new AttributeType[]{type});
     }
 
-    private static List<Attribute> extractAttributeByType(List<Attribute> attrs, AttributeType[] types) {
-        List<Attribute> result = new ArrayList<>();
+    private static List<Integer> extractAttributeIdsByType(List<Attribute> attrs, AttributeType[] types) {
+        List<Integer> result = new ArrayList<>();
 
         for (Attribute a : attrs) {
             for (AttributeType type : types) {
-                if (a.getType().equals(type)) result.add(a);
+                if (a.getType().equals(type)) result.add(a.getId());
             }
         }
 
+        return result;
+    }
+
+    public static List<Integer> extractAttributesIds(List<Attribute> attrs)
+    {
+        List<Integer> result = new ArrayList<>();
+        for(Attribute attr : attrs) result.add(attr.getId());
         return result;
     }
 }

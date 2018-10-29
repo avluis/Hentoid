@@ -58,13 +58,6 @@ public class MikanAccessor implements CollectionAccessor {
         }
     }
 
-    private static List<Integer> extractAttrIds(List<Attribute> attrs)
-    {
-        List<Integer> result = new ArrayList<>();
-        for(Attribute attr : attrs) result.add(attr.getId());
-        return result;
-    }
-
     private static boolean isSiteUnsupported(Site s) {
         return (s != Site.HITOMI);
     }
@@ -144,14 +137,14 @@ public class MikanAccessor implements CollectionAccessor {
 
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         // NB : Mikan does not support booksPerPage and orderStyle params
-        List<Attribute> sites = Helper.extractAttributeByType(metadata, AttributeType.SOURCE);
+        List<Integer> sites = Helper.extractAttributeIdsByType(metadata, AttributeType.SOURCE);
 
         if (sites.size() > 1) {
             throw new UnsupportedOperationException("Searching through multiple sites not supported yet by Mikan search");
         }
-        Site site = (1 == sites.size()) ? Site.searchByCode(sites.get(0).getId()) : Site.HITOMI;
+        Site site = (1 == sites.size()) ? Site.searchByCode(sites.get(0)) : Site.HITOMI;
         if (null == site) {
-            throw new UnsupportedOperationException("Unrecognized site ID " + sites.get(0).getId());
+            throw new UnsupportedOperationException("Unrecognized site ID " + sites.get(0));
         }
         if (isSiteUnsupported(site)) {
             throw new UnsupportedOperationException("Site " + site.getDescription() + " not supported yet by Mikan search");
@@ -162,20 +155,20 @@ public class MikanAccessor implements CollectionAccessor {
         Map<String, String> params = new HashMap<>();
         params.put("page", page + "");
 
-        List<Attribute> attributes = Helper.extractAttributeByType(metadata, AttributeType.ARTIST);
-        if (attributes.size() > 0) params.put("artist", Helper.buildListAsString(extractAttrIds(attributes)));
+        List<Integer> attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
+        if (attributes.size() > 0) params.put("artist", Helper.buildListAsString(attributes));
 
-        attributes = Helper.extractAttributeByType(metadata, AttributeType.CIRCLE);
-        if (attributes.size() > 0) params.put("group", Helper.buildListAsString(extractAttrIds(attributes)));
+        attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CIRCLE);
+        if (attributes.size() > 0) params.put("group", Helper.buildListAsString(attributes));
 
-        attributes = Helper.extractAttributeByType(metadata, AttributeType.CHARACTER);
-        if (attributes.size() > 0) params.put("character", Helper.buildListAsString(extractAttrIds(attributes)));
+        attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CHARACTER);
+        if (attributes.size() > 0) params.put("character", Helper.buildListAsString(attributes));
 
-        attributes = Helper.extractAttributeByType(metadata, AttributeType.TAG);
-        if (attributes.size() > 0) params.put("tag", Helper.buildListAsString(extractAttrIds(attributes)));
+        attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.TAG);
+        if (attributes.size() > 0) params.put("tag", Helper.buildListAsString(attributes));
 
-        attributes = Helper.extractAttributeByType(metadata, AttributeType.LANGUAGE);
-        if (attributes.size() > 0) params.put("language", Helper.buildListAsString(extractAttrIds(attributes)));
+        attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.LANGUAGE);
+        if (attributes.size() > 0) params.put("language", Helper.buildListAsString(attributes));
 
 
         disposable = MikanServer.API.search(getMikanCodeForSite(site) + suffix, params)
