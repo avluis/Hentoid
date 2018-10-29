@@ -24,8 +24,7 @@ public class EHentaiParser extends BaseParser {
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
-        // TODO see ehViewer > GalleryDetailParser and GalleryPageParser
-        /**
+        /*
          * 1- Detect the number of pages of the gallery
          *
          * 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
@@ -35,7 +34,7 @@ public class EHentaiParser extends BaseParser {
 
         // 1- Detect the number of pages of the gallery
         Element e;
-        Document doc = Jsoup.connect(content.getGalleryUrl()).get();
+        Document doc = Jsoup.connect(content.getGalleryUrl()+"/?nw=always").get(); // nw=always avoids the Offensive Content popup
         Elements elements = doc.select("table.ptt");
         if (null == elements || 0 == elements.size()) return result;
 
