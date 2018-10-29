@@ -522,7 +522,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         setRetainInstance(true);
         setHasOptionsMenu(true);
 
-        mContext = HentoidApp.getAppContext();
+        mContext = getContext();
         bookSortOrder = Preferences.getContentSortOrder();
         booksPerPage = Preferences.getContentPageQuantity();
     }

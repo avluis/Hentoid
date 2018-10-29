@@ -10,6 +10,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -203,8 +204,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         // The following is needed due to RecyclerView recycling layouts and
         // Glide not considering the layout invalid for the current image:
         // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        Glide.with(context).clear(image);
-        Glide.with(context)
+        //
+        // Using application context to avoid crashes when activity is destroyed
+        // https://stackoverflow.com/questions/39093730/you-cannot-start-a-load-for-a-destroyed-activity-in-relativelayout-image-using-g
+        Glide.with(context.getApplicationContext()).clear(image);
+        Glide.with(context.getApplicationContext())
                 .load(FileHelper.getThumb(content))
                 .apply(myOptions)
                 .into(image);
@@ -516,7 +520,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void deleteContent(final Content item) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(context, R.style.ImportDialog));
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
