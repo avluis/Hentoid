@@ -126,11 +126,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @NonNull
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (null == libraryView) libraryView = ((RecyclerView) parent);
-
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
         return new ContentHolder(view);
+    }
+
+    @Override
+    public void onAttachedToRecyclerView(@NonNull RecyclerView recyclerView) {
+        libraryView = recyclerView;
     }
 
     @Override
