@@ -60,7 +60,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private RecyclerView libraryView; // Kept as reference for querying by Content through ID
 
     private ContentRemovedListener contentRemovedListener;
-    private EndlessScrollListener endlessScrollListener;
+    private Runnable endlessScrollListener;
     private Comparator<Content> mComparator;
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator, CollectionAccessor collectionAccessor, int mode) {
@@ -77,7 +77,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         mComparator = comparator;
     }
 
-    public void setEndlessScrollListener(EndlessScrollListener listener) {
+    public void setEndlessScrollListener(Runnable listener) {
         this.endlessScrollListener = listener;
     }
 
@@ -147,7 +147,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
         if (pos == getItemCount() - VISIBLE_THRESHOLD && endlessScrollListener != null) {
-            endlessScrollListener.onLoadMore();
+            endlessScrollListener.run();
         }
 
         int itemPos = holder.getLayoutPosition();
@@ -768,10 +768,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     // Public interfaces
-    public interface EndlessScrollListener {
-        void onLoadMore();
-    }
-
     public interface ContentRemovedListener {
         void onAllContentRemoved();
 
