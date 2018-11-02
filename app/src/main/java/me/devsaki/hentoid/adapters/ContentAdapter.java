@@ -11,6 +11,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.util.SortedListAdapterCallback;
 import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -53,6 +54,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     private static final int VISIBLE_THRESHOLD = 10;
 
+    private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedListCallback(this));
     private final Context context;
     private final ItemSelectListener itemSelectListener;
     private final IntConsumer onContentRemovedListener;
@@ -757,30 +759,15 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         snackbar.show();
     }
 
-    private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedList.Callback<Content>() {
+    private class SortedListCallback extends SortedListAdapterCallback<Content> {
+
+        private SortedListCallback(RecyclerView.Adapter adapter) {
+            super(adapter);
+        }
+
         @Override
         public int compare(Content a, Content b) {
             return sortComparator.compare(a, b);
-        }
-
-        @Override
-        public void onInserted(int position, int count) {
-            notifyItemRangeInserted(position, count);
-        }
-
-        @Override
-        public void onRemoved(int position, int count) {
-            notifyItemRangeRemoved(position, count);
-        }
-
-        @Override
-        public void onMoved(int fromPosition, int toPosition) {
-            notifyItemMoved(fromPosition, toPosition);
-        }
-
-        @Override
-        public void onChanged(int position, int count) {
-            notifyItemRangeChanged(position, count);
         }
 
         @Override
@@ -792,7 +779,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         public boolean areItemsTheSame(Content item1, Content item2) {
             return item1.getId() == item2.getId();
         }
-    });
+    }
 
     public static class Builder {
         private Context context;
