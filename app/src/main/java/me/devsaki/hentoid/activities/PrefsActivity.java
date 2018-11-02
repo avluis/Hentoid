@@ -1,18 +1,19 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 
+import java.util.Objects;
+
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.fragments.LibRefreshLauncher;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.services.UpdateDownloadService;
-import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -66,7 +67,14 @@ public class PrefsActivity extends BaseActivity {
                 case Preferences.Key.PREF_CHECK_UPDATE_MANUAL:
                     return onCheckUpdatePrefClick();
                 case Preferences.Key.PREF_REFRESH_LIBRARY:
-                    return onRefreshLibraryClick();
+                    if (!ImportService.isRunning()) {
+                        FragmentTransaction ft = Objects.requireNonNull(getFragmentManager()).beginTransaction();
+                        LibRefreshLauncher refreshDialog = new LibRefreshLauncher();
+                        refreshDialog.show(ft, "LibRefreshLauncher");
+                    } else {
+                        Helper.toast("Import is already running");
+                    }
+                    return true;
                 default:
                     return super.onPreferenceTreeClick(preference);
             }
@@ -76,40 +84,6 @@ public class PrefsActivity extends BaseActivity {
             if (!UpdateDownloadService.isRunning()) {
                 Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
                 requireContext().startService(intent);
-            }
-            return true;
-        }
-
-        private void launchRefreshImport(boolean cleanup) {
-            Intent refresh = new Intent(this.getContext(), ImportActivity.class);
-            refresh.setAction("android.intent.action.APPLICATION_PREFERENCES"); // Is only a constant since API 24 -> using the string
-            refresh.putExtra("refresh", true);
-            refresh.putExtra("cleanup", cleanup);
-            startActivityForResult(refresh, ConstsImport.RQST_IMPORT_RESULTS);
-        }
-
-        private boolean onRefreshLibraryClick() {
-            if (!ImportService.isRunning()) {
-                Context ctx = this.getContext();
-                if (null == ctx) return false;
-
-                new AlertDialog.Builder(ctx)
-                        .setTitle(R.string.app_name)
-                        .setMessage(R.string.cleanup_folders)
-                        .setPositiveButton("Yes", // android.R.string.yes displays as "OK" ?! O.o
-                                (dialog1, which) -> {
-                                    dialog1.dismiss();
-                                    launchRefreshImport(true);
-                                })
-                        .setNegativeButton("No", // // android.R.string.yes displays as "Cancel" ?! O.o
-                                (dialog12, which) -> {
-                                    dialog12.dismiss();
-                                    launchRefreshImport(false);
-                                })
-                        .create()
-                        .show();
-            } else {
-                Helper.toast("Import is already running");
             }
             return true;
         }
