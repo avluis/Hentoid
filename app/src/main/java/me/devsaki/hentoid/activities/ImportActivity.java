@@ -197,9 +197,7 @@ public class ImportActivity extends BaseActivity {
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
         }
 
-        // TODO - nope, when actual library is located on SD card, location is reset to default in-memory location when trying to refresh !
-
-        if (defaultInit || isRefresh) { // Do not ask what the user wants to import if he has chosen default initial import location or if he has asked for a refresh
+        if (defaultInit) {
             prevRootDir = currentRootDir;
             initImport();
         } else {
