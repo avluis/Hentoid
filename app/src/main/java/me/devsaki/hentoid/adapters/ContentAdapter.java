@@ -15,8 +15,6 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -43,6 +41,7 @@ import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
+import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
@@ -369,7 +368,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 // "In queue" icon
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                    animateBlink(holder.ivDownload);
+                    holder.ivDownload.startAnimation(new BlinkAnimation());
                     holder.ivDownload.setOnClickListener(v -> Helper.viewQueue(context));
                 }
                 // "In library" icon
@@ -387,20 +386,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void tryDownloadPages(Content content) {
         ContentHolder holder = holderByContent(content);
         if (holder != null) {
-            animateBlink(holder.ivDownload);
+            holder.ivDownload.startAnimation(new BlinkAnimation());
             holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
             collectionAccessor.getPages(content, this);
         }
-    }
-
-    private void animateBlink(View view) {
-        // Set blinking animation when book is being downloaded
-        Animation anim = new AlphaAnimation(0.0f, 1.0f);
-        anim.setDuration(500);
-        anim.setStartOffset(100);
-        anim.setRepeatMode(Animation.REVERSE);
-        anim.setRepeatCount(Animation.INFINITE);
-        view.startAnimation(anim);
     }
 
     private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
