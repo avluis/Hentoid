@@ -42,29 +42,7 @@ public class LibRefreshLauncher extends DialogFragment {
                             launchRefreshImport(false);
                         })
                 .create();
-//                .show();
     }
-/*
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        View rootView = inflater.inflate(R.layout.fragment_dir_picker, container, false);
-
-        initUI(rootView);
-
-        return rootView;
-    }
-
-    private void initUI(View rootView) {
-
-    }
-
-    @Override
-    public void onCancel(DialogInterface dialog) {
-
-        super.onCancel(dialog);
-    }
-    */
 
     private void launchRefreshImport(boolean cleanup) {
         Intent refresh = new Intent(this.getContext(), ImportActivity.class);
