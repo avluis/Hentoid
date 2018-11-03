@@ -22,24 +22,8 @@
             android:key="pref_quantity_per_page_lists"
             android:summary="@string/pref_quantity_per_page_summary"
             android:title="@string/pref_quantity_per_page_title" />
-
-        <ListPreference
-            android:defaultValue="@string/pref_dl_threads_quantity_default"
-            android:entries="@array/pref_dl_threads_quantity_entries"
-            android:entryValues="@array/pref_dl_threads_quantity_values"
-            android:icon="@null"
-            android:key="pref_dl_threads_quantity_lists"
-            android:summary="@string/pref_dl_threads_quantity_summary"
-            android:title="@string/pref_dl_threads_quantity_title" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_library_category">
-<!--
-        <Preference
-            android:icon="@null"
-            android:key="pref_refresh_bookshelf"
-            android:summary="@string/pref_refresh_library_summary"
-            android:title="@string/pref_refresh_library_title" />
--->
         <ListPreference
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
