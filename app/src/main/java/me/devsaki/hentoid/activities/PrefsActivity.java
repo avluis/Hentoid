@@ -88,7 +88,7 @@ public class PrefsActivity extends BaseActivity  {
         {
             MyPreferenceFragment applicationPreferencesFragment = new MyPreferenceFragment();
             Bundle args = new Bundle();
-            args.putString("rootKey", preferenceScreen.getKey());
+            args.putString(TARGET_SETTING_PAGE, preferenceScreen.getKey());
             applicationPreferencesFragment.setArguments(args);
             getFragmentManager()
                     .beginTransaction()
