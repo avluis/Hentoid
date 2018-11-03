@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.preference.Preference;
@@ -23,9 +24,7 @@ import me.devsaki.hentoid.util.Preferences;
  * Maintained by wightwulf1944 22/02/2018
  * updated class for new AppCompatActivity and cleanup
  */
-public class PrefsActivity extends BaseActivity  {
-
-    public static final String TARGET_SETTING_PAGE = "target";
+public class PrefsActivity extends BaseActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,19 +34,38 @@ public class PrefsActivity extends BaseActivity  {
                 .commit();
     }
 
+    private void switchPreferenceFragments(String rootKey) {
+        Bundle args = new Bundle();
+        args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, rootKey);
+
+        MyPreferenceFragment preferenceFragment = new MyPreferenceFragment();
+        preferenceFragment.setArguments(args);
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(android.R.id.content, preferenceFragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
     public static class MyPreferenceFragment extends PreferenceFragmentCompat {
+
+        private PrefsActivity parentActivity;
+
+        @Override
+        public void onAttach(Context context) {
+            super.onAttach(context);
+            parentActivity = (PrefsActivity) context;
+        }
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
-            if(getArguments() != null){
-                String key = getArguments().getString(TARGET_SETTING_PAGE);
-                setPreferencesFromResource(R.xml.preferences, key);
+            setPreferencesFromResource(R.xml.preferences, rootKey);
 
+            if ("advancedSettings".equals(rootKey)) {
                 findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
             } else {
-                setPreferencesFromResource(R.xml.preferences, rootKey);
-
                 findPreference(Preferences.Key.PREF_HIDE_RECENT)
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
@@ -84,17 +102,8 @@ public class PrefsActivity extends BaseActivity  {
         }
 
         @Override
-        public void onNavigateToScreen(PreferenceScreen preferenceScreen)
-        {
-            MyPreferenceFragment applicationPreferencesFragment = new MyPreferenceFragment();
-            Bundle args = new Bundle();
-            args.putString("rootKey", preferenceScreen.getKey());
-            applicationPreferencesFragment.setArguments(args);
-            getFragmentManager()
-                    .beginTransaction()
-                    .replace(getId(), applicationPreferencesFragment)
-                    .addToBackStack(null)
-                    .commit();
+        public void onNavigateToScreen(PreferenceScreen preferenceScreen) {
+            parentActivity.switchPreferenceFragments(preferenceScreen.getKey());
         }
 
         private boolean onCheckUpdatePrefClick() {
