@@ -47,9 +47,9 @@ import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
 
@@ -59,6 +59,11 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
  * Browser activity which allows the user to navigate a supported source.
  * No particular source should be filtered/defined here.
  * The source itself should contain every method it needs to function.
+ * <p>
+ * todo issue:
+ * {@link #checkPermissions()} causes the app to reset unexpectedly. If permission is integral to
+ * this activity's function, it is recommended to request for this permission and show rationale if
+ * permission request is denied
  */
 public abstract class BaseWebActivity extends BaseActivity {
 
@@ -177,7 +182,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     // Validate permissions
     private void checkPermissions() {
-        if (Helper.permissionsCheck(this, ConstsImport.RQST_STORAGE_PERMISSION, false)) {
+        if (PermissionUtil.checkExternalStoragePermission(this)) {
             Timber.d("Storage permission allowed!");
         } else {
             Timber.d("Storage permission denied!");

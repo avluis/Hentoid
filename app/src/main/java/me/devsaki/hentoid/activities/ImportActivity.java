@@ -53,6 +53,7 @@ import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -122,7 +123,8 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void checkForDefaultDirectory() {
-        if (checkPermissions()) {
+        if (PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
+            Timber.d("Storage permission allowed!");
             String settingDir = Preferences.getRootFolderName();
             Timber.d(settingDir);
 
@@ -142,7 +144,7 @@ public class ImportActivity extends BaseActivity {
             }
             pickDownloadDirectory(currentRootDir);
         } else {
-            Timber.d("Do we have permission?");
+            Timber.d("Storage permission denied!");
         }
     }
 
@@ -152,18 +154,6 @@ public class ImportActivity extends BaseActivity {
         outState.putSerializable(PREV_DIR, prevRootDir);
         outState.putString(ConstsImport.RESULT_KEY, result);
         super.onSaveInstanceState(outState);
-    }
-
-    // Validate permissions
-    private boolean checkPermissions() {
-        if (Helper.permissionsCheck(
-                ImportActivity.this, ConstsImport.RQST_STORAGE_PERMISSION, true)) {
-            Timber.d("Storage permission allowed!");
-            return true;
-        } else {
-            Timber.d("Storage permission denied!");
-        }
-        return false;
     }
 
     @Override

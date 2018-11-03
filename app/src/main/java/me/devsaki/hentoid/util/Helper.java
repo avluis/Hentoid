@@ -162,23 +162,6 @@ public final class Helper {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    public static boolean permissionsCheck(Activity activity, int permissionRequestCode,
-                                           boolean request) {
-        if (ActivityCompat.checkSelfPermission(activity,
-                Manifest.permission.READ_EXTERNAL_STORAGE) == PERMISSION_GRANTED) {
-
-            return true;
-        } else {
-            if (request) {
-                ActivityCompat.requestPermissions(activity, new String[]{
-                        Manifest.permission.READ_EXTERNAL_STORAGE}, permissionRequestCode);
-            }
-
-            return false;
-        }
-    }
-
     // We have asked for permissions, but still denied.
     public static void reset(Context context, Activity activity) {
         Helper.toast(R.string.reset);

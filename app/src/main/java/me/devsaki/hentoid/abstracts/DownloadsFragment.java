@@ -78,6 +78,7 @@ import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
+import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
@@ -87,6 +88,10 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 /**
  * Created by avluis on 08/27/2016.
  * Common elements for use by EndlessFragment and PagerFragment
+ * <p>
+ * todo issue:
+ * After requesting for permission, the app is reset using {@link #resetApp()} instead of implementing
+ * {@link #onRequestPermissionsResult(int, String[], int[])} to receive permission request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentRemovedListener, ItemSelectListener, AttributeListener {
@@ -308,7 +313,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void defaultLoad() {
 
         if (MODE_LIBRARY == mode) {
-            if (Helper.permissionsCheck(getActivity(), ConstsImport.RQST_STORAGE_PERMISSION, true)) {
+            if (PermissionUtil.requestExternalStoragePermission(requireActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
                 boolean shouldUpdate = queryPrefs();
                 if (shouldUpdate || -1 == mTotalSelectedCount) searchLibrary(true); // If prefs changes detected or first run (-1 = uninitialized)
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
