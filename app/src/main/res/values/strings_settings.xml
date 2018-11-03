@@ -74,4 +74,6 @@
     <string name="pref_use_sfw_summary_off">Going full hentai</string>
     <string name="pref_use_sfw_summary_on">A non-hentai source is available</string>
     <string name="pref_use_sfw_default" translatable="false">false</string>
+    <!-- Advanced -->
+    <string name="advanced">Advanced settings</string>
 </resources>
