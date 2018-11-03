@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.preference.Preference;
@@ -34,29 +33,7 @@ public class PrefsActivity extends BaseActivity {
                 .commit();
     }
 
-    private void switchPreferenceFragments(String rootKey) {
-        Bundle args = new Bundle();
-        args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, rootKey);
-
-        MyPreferenceFragment preferenceFragment = new MyPreferenceFragment();
-        preferenceFragment.setArguments(args);
-
-        getSupportFragmentManager()
-                .beginTransaction()
-                .replace(android.R.id.content, preferenceFragment)
-                .addToBackStack(null)
-                .commit();
-    }
-
     public static class MyPreferenceFragment extends PreferenceFragmentCompat {
-
-        private PrefsActivity parentActivity;
-
-        @Override
-        public void onAttach(Context context) {
-            super.onAttach(context);
-            parentActivity = (PrefsActivity) context;
-        }
 
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -103,7 +80,17 @@ public class PrefsActivity extends BaseActivity {
 
         @Override
         public void onNavigateToScreen(PreferenceScreen preferenceScreen) {
-            parentActivity.switchPreferenceFragments(preferenceScreen.getKey());
+            Bundle args = new Bundle();
+            args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, preferenceScreen.getKey());
+
+            MyPreferenceFragment preferenceFragment = new MyPreferenceFragment();
+            preferenceFragment.setArguments(args);
+
+            requireFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, preferenceFragment)
+                    .addToBackStack(null)
+                    .commit();
         }
 
         private boolean onCheckUpdatePrefClick() {
