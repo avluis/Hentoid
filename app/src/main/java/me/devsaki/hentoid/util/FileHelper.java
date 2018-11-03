@@ -166,7 +166,7 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
-    public static InputStream getInputStream(@NonNull final File target) throws IOException {
+    static InputStream getInputStream(@NonNull final File target) throws IOException {
         return FileUtil.getInputStream(target);
     }
 
@@ -463,7 +463,7 @@ public class FileHelper {
         }
     }
 
-    public static String getExtension(String a) {
+    static String getExtension(String a) {
         return a.contains(".") ? a.substring(a.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
     }
 

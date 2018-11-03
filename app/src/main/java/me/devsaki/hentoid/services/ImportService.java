@@ -119,6 +119,8 @@ public class ImportService extends IntentService {
     {
         int booksOK = 0;
         int booksKO = 0;
+        String message;
+        List<String> cleanupLog = cleanup?new ArrayList<>():null;
 
         notificationManager.startForeground(new ImportStartNotification());
 
@@ -127,7 +129,7 @@ public class ImportService extends IntentService {
                 .map(File::listFiles)
                 .flatMap(Stream::of)
                 .filter(File::isDirectory)
-                .distinct() // Since there are two asmhentai sites (classic and comics), asm values are duplicated => deduplicate list
+                .distinct() // Since there are two ASM Hentai sites ("ASM classic" and "ASM comics"), ASM values are duplicated => deduplicate list
                 .collect(toList());
 
         Timber.i("Import books starting : %s books total", files.size());
@@ -154,9 +156,13 @@ public class ImportService extends IntentService {
                         try {
                             FileUtils.moveDirectory(file, new File(settingDir, canonicalBookDir));
                             content.setStorageFolder(canonicalBookDir);
-                            Timber.i("Cleanup performed : folder %s renamed to %s", currentBookDir, canonicalBookDir);
+                            message = String.format("Cleanup performed : folder %s renamed to %s", currentBookDir, canonicalBookDir);
+                            cleanupLog.add(message);
+                            Timber.i(message);
                         } catch (IOException e) {
-                            Timber.e(e, "Cleanup : Could not rename file %s to %s", currentBookDir, canonicalBookDir);
+                            message = String.format("Cleanup : Could not rename file %s to %s", currentBookDir, canonicalBookDir);
+                            cleanupLog.add(message);
+                            Timber.e(e);
                         }
                     }
                 }
@@ -170,13 +176,17 @@ public class ImportService extends IntentService {
                 if (cleanup)
                 {
                     FileHelper.removeFile(file);
-                    Timber.i("Cleanup performed : folder %s removed", file.getAbsolutePath());
+                    message = String.format("Cleanup performed : folder %s removed", file.getAbsolutePath());
+                    cleanupLog.add(message);
+                    Timber.i(message);
                 }
             }
 
             eventProgress(content, files.size(), booksOK, booksKO);
         }
         Timber.i("Import books complete : %s OK; %s KO", booksOK, booksKO);
+        // Write cleanup log in root folder
+        if (cleanup) writeCleanupLog(cleanupLog);
         eventComplete(files.size(), booksOK, booksKO);
 
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -184,6 +194,32 @@ public class ImportService extends IntentService {
         stopForeground(true);
         stopSelf();
     }
+
+    private void writeCleanupLog(List<String> log)
+    {
+        // Create the log
+        StringBuilder logStr = new StringBuilder();
+        logStr.append("Cleanup log : begin").append(System.getProperty("line.separator"));
+        for (String line : log) logStr.append(line).append(System.getProperty("line.separator"));
+        logStr.append("Cleanup log : end");
+
+        // Save it
+        File root;
+        try {
+
+            String settingDir = Preferences.getRootFolderName();
+            if (settingDir.isEmpty()) {
+                root = FileHelper.getDefaultDir(this, "");
+            } else {
+                root = new File(settingDir);
+            }
+            File cleanupLogFile = new File(root, "cleanup_log.txt");
+            FileHelper.saveBinaryInFile(cleanupLogFile, logStr.toString().getBytes());
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+    }
+
 
     private static Content importJson(File folder) {
         File json = new File(folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
