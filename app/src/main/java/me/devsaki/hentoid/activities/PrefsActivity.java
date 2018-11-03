@@ -74,7 +74,8 @@ public class PrefsActivity extends BaseActivity {
             if (key == null) return super.onPreferenceTreeClick(preference);
             switch (key) {
                 case Preferences.Key.PREF_ADD_NO_MEDIA_FILE:
-                    return FileHelper.createNoMedia();
+                    FileHelper.createNoMedia();
+                    return true;
                 case Preferences.Key.PREF_CHECK_UPDATE_MANUAL:
                     return onCheckUpdatePrefClick();
                 case Preferences.Key.PREF_REFRESH_LIBRARY:
