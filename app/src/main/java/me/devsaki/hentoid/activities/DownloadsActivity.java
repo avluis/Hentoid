@@ -54,10 +54,8 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (!BuildConfig.DEBUG) { // Debug apps always visible to facilitate video capture
-            if (Preferences.getRecentVisibility()) {
-                getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
-            }
+        if (Preferences.getRecentVisibility()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
         setContentView(mainLayout);
 
