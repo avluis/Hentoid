@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
 import android.view.WindowManager;
 
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
@@ -53,8 +54,10 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (Preferences.getRecentVisibility()) {
-            getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        if (!BuildConfig.DEBUG) { // Debug apps always visible to facilitate video capture
+            if (Preferences.getRecentVisibility()) {
+                getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            }
         }
         setContentView(mainLayout);
 
