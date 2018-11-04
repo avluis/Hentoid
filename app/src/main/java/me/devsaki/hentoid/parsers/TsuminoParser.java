@@ -91,7 +91,7 @@ public class TsuminoParser extends BaseParser {
             parseAttributes(attributes, AttributeType.SERIE, seriesElements);
 
             Elements characterElements = content
-                    .select(":has(div.book-info:containsOwn(Characters))")
+                    .select(":has(div.book-info:containsOwn(Character))")
                     .select("a.book-tag");
             parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
 
