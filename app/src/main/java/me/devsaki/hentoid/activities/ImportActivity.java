@@ -495,7 +495,7 @@ public class ImportActivity extends BaseActivity {
     public void onImportEventComplete(ImportEvent event) {
         if (ImportEvent.EV_COMPLETE == event.eventType)
         {
-            progressDialog.dismiss();
+            if (progressDialog != null) progressDialog.dismiss();
             cleanUp((event.booksOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
         }
     }
