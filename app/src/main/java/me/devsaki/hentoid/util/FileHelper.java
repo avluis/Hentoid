@@ -596,6 +596,19 @@ public class FileHelper {
         }
     }
 
+    public static boolean renameDirectory(File srcDir, File destDir)
+    {
+        try {
+            FileUtils.moveDirectory(srcDir, destDir);
+            return true;
+        } catch (IOException e) {
+            return FileUtil.renameWithSAF(srcDir, destDir.getName());
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return false;
+    }
+
     private static class AsyncUnzip extends ZipUtil.ZipTask {
         final Context context;
         final File dest;
