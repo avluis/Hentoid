@@ -463,7 +463,7 @@ public class FileHelper {
      * @param context Context
      * @param aFile File to be opened
      */
-    private static void openFile(Context context, File aFile) {
+    public static void openFile(Context context, File aFile) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());

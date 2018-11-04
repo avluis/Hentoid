@@ -106,9 +106,9 @@ public class ImportService extends IntentService {
         EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_PROGRESS, content, booksOK, booksKO, nbBooks));
     }
 
-    private void eventComplete(int nbBooks, int booksOK, int booksKO)
+    private void eventComplete(int nbBooks, int booksOK, int booksKO, File cleanupLogFile)
     {
-        EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks));
+        EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
     /**
@@ -185,17 +185,19 @@ public class ImportService extends IntentService {
             eventProgress(content, files.size(), booksOK, booksKO);
         }
         Timber.i("Import books complete : %s OK; %s KO", booksOK, booksKO);
-        // Write cleanup log in root folder
-        if (cleanup) writeCleanupLog(cleanupLog);
-        eventComplete(files.size(), booksOK, booksKO);
 
+        // Write cleanup log in root folder
+        File cleanupLogFile = null;
+        if (cleanup) cleanupLogFile = writeCleanupLog(cleanupLog);
+
+        eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
 
         stopForeground(true);
         stopSelf();
     }
 
-    private void writeCleanupLog(List<String> log)
+    private File writeCleanupLog(List<String> log)
     {
         // Create the log
         StringBuilder logStr = new StringBuilder();
@@ -215,9 +217,12 @@ public class ImportService extends IntentService {
             }
             File cleanupLogFile = new File(root, "cleanup_log.txt");
             FileHelper.saveBinaryInFile(cleanupLogFile, logStr.toString().getBytes());
+            return cleanupLogFile;
         } catch (Exception e) {
             Timber.e(e);
         }
+
+        return null;
     }
 
 

@@ -503,7 +503,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
             if (selectedTagIds != null) {
                 for (Integer i : selectedTagIds) {
-                    Attribute a = getDB().selectAttributeById(i);
+                    Attribute a = getDB().selectAttributeById(i); // TODO - sometimes comes out as null - investigate (https://console.firebase.google.com/u/1/project/hentoid-e0f49/crashlytics/app/android:me.devsaki.hentoid/issues/5bd1eb8cf8b88c2963297c94)
                     selectedSearchTags.add(a);
                     searchTags.addView(createTagSuggestionButton(a, true));
                 }
