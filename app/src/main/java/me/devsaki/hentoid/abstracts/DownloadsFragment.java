@@ -503,9 +503,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
             if (selectedTagIds != null) {
                 for (Integer i : selectedTagIds) {
-                    Attribute a = getDB().selectAttributeById(i); // TODO - sometimes comes out as null - investigate (https://console.firebase.google.com/u/1/project/hentoid-e0f49/crashlytics/app/android:me.devsaki.hentoid/issues/5bd1eb8cf8b88c2963297c94)
-                    selectedSearchTags.add(a);
-                    searchTags.addView(createTagSuggestionButton(a, true));
+                    Attribute a = getDB().selectAttributeById(i);
+                    if (a != null) {
+                        selectedSearchTags.add(a);
+                        searchTags.addView(createTagSuggestionButton(a, true));
+                    }
                 }
             }
         }
@@ -1089,7 +1091,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private Button createTagSuggestionButton(Attribute attribute, boolean isSelected) {
         Button button = new Button(mContext);
-        button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
+        if (attribute.getCount() > 0) button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
+        else button.setText(attribute.getName());
         button.setBackgroundResource(R.drawable.btn_attribute_selector);
         button.setMinHeight(0);
         button.setMinimumHeight(0);
@@ -1140,26 +1143,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             colorButton(button, TAGFILTER_ACTIVE);
             selectedSearchTags.remove(a);
         }
-
-        // Launch book search according to new attribute selection
-        searchLibrary(MODE_MIKAN == mode);
-        // Update attribute mosaic buttons state according to available metadata
-        updateAttributeMosaic();
-    }
-
-    /**
-     * Handler for search tag (i.e. selected Attribute appearing near the search bar) button click
-     *
-     * @param button Button that has been clicked on
-     */
-    private void selectSearchTag(Button button) {
-        Attribute a = (Attribute)button.getTag();
-        selectedSearchTags.remove(a);
-        searchTags.removeView(button);
-
-        // If displayed, change color of the corresponding button in tag suggestions
-        Button tagButton = attributeMosaic.findViewById(Math.abs(a.getId()));
-        if (tagButton != null) colorButton(tagButton, TAGFILTER_ACTIVE);
 
         // Launch book search according to new attribute selection
         searchLibrary(MODE_MIKAN == mode);
