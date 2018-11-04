@@ -2,7 +2,6 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.preference.PreferenceManager;
 
 import me.devsaki.hentoid.BuildConfig;
