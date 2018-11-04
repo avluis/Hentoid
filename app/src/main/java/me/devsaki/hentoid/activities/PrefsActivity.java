@@ -62,7 +62,7 @@ public class PrefsActivity extends BaseActivity {
         if (ImportEvent.EV_COMPLETE == event.eventType && event.cleanupLogFile != null)
         {
             Snackbar snackbar = Snackbar.make(this.findViewById(android.R.id.content), R.string.cleanup_done, Snackbar.LENGTH_LONG);
-            snackbar.setAction("READ LOG", v -> FileHelper.openFile(this.getApplicationContext(), event.cleanupLogFile) );
+            snackbar.setAction("READ LOG", v -> FileHelper.openFile(this, event.cleanupLogFile) );
             snackbar.show();
         }
     }
