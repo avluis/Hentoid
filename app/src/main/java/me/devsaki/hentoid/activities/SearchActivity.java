@@ -3,7 +3,6 @@ package me.devsaki.hentoid.activities;
 import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
 import android.util.SparseIntArray;
-import android.view.View;
 import android.widget.Button;
 
 import com.google.android.flexbox.FlexboxLayout;
@@ -12,8 +11,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.database.constants.AttributeTable;
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 
 /**
