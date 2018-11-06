@@ -15,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -58,6 +59,7 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
+import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentRemovedListener;
 import me.devsaki.hentoid.collection.CollectionAccessor;
@@ -153,8 +155,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private TextView emptyText;
     // Bottom toolbar with page numbers
     protected LinearLayout pagerToolbar;
-    // Bar containing attribute selectors
-    private LinearLayout attrSelector;
+// Bar containing attribute selectors
+private LinearLayout attrSelector;
     // Panel that displays the "waiting for metadata info" visuals
     private View tagWaitPanel;
     // Image that displays current metadata type title (e.g. "Character search")
@@ -219,8 +221,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private boolean filterFavourites = false;
     // Expression typed in the search bar
     protected String query = "";
-    // Currently selected tab
-    private AttributeType selectedTab = AttributeType.TAG;
+// Currently selected tab
+private AttributeType selectedTab = AttributeType.TAG;
     // Current search tags
     private List<Attribute> selectedSearchTags = new ArrayList<>();
     // Last search parameters; used to determine whether or not page number should be reset to 1
@@ -863,6 +865,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
 
         // == SEARCH PANE
+
+        View advancedSearchBtn = activity.findViewById(R.id.advanced_btn);
+        advancedSearchBtn.setOnClickListener( v-> {
+            Intent refresh = new Intent(this.getContext(), SearchActivity.class);
+            startActivityForResult(refresh, 999);
+        });
 
         // Create category buttons
         attrSelector = activity.findViewById(R.id.search_tabs);

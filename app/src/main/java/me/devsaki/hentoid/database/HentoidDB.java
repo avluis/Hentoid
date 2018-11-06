@@ -11,7 +11,9 @@ import android.util.SparseIntArray;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -45,6 +47,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
 
     // TODO : enable foreign keys & indexes
+    // TODO : is it necessary to use a locker during read-only operations ??
 
     private HentoidDB(Context context) {
         super(context, Consts.DATABASE_NAME, null, DATABASE_VERSION);
@@ -110,6 +113,38 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
 
         return count;
+    }
+
+    public SparseIntArray countAttributesPerType() {
+        SparseIntArray result = new SparseIntArray();
+
+        Timber.d("countAttributesPerType");
+
+        SQLiteDatabase db = null;
+        Cursor cursorContent = null;
+
+        try {
+            db = getReadableDatabase();
+            cursorContent = db.rawQuery(AttributeTable.SELECT_COUNT_BY_TYPE, new String[]{});
+
+            if (cursorContent.moveToFirst()) {
+                do {
+                    result.append(cursorContent.getInt(0),cursorContent.getInt(1));
+                } while (cursorContent.moveToNext());
+            }
+
+            cursorContent = db.rawQuery(AttributeTable.SELECT_COUNT_BY_TYPE, new String[]{});
+        } finally {
+            if (cursorContent != null) {
+                cursorContent.close();
+            }
+            Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
+            if (db != null && db.isOpen()) {
+                db.close(); // Closing database connection
+            }
+        }
+
+        return result;
     }
 
     public void insertContent(Content row) {

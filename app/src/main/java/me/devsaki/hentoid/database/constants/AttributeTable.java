@@ -1,5 +1,9 @@
 package me.devsaki.hentoid.database.constants;
 
+import android.provider.ContactsContract;
+
+import me.devsaki.hentoid.enums.StatusContent;
+
 /**
  * Created by DevSaki on 10/05/2015.
  * db Attribute Table
@@ -25,10 +29,16 @@ public abstract class AttributeTable {
     // SELECT
     public static final String SELECT_BY_ID = "SELECT * FROM " + TABLE_NAME + " WHERE " + ID_COLUMN + " = ?";
 
+    public static final String SELECT_COUNT_BY_TYPE = "SELECT A." + TYPE_COLUMN + ", COUNT(*) FROM " + TABLE_NAME + " a " +
+            " INNER JOIN " + ContentAttributeTable.TABLE_NAME + " ca ON a." + ID_COLUMN + " = ca." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN +
+            " INNER JOIN " + ContentTable.TABLE_NAME + " c ON ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN +
+            " WHERE c." + ContentTable.STATUS_COLUMN + " IN (" + StatusContent.DOWNLOADED.getCode() + "," + StatusContent.ERROR.getCode() + "," + StatusContent.MIGRATED.getCode() + ")" +
+            " GROUP BY A."+TYPE_COLUMN;
+
     public static final String SELECT_ALL_BY_TYPE = "select distinct a." + ID_COLUMN + ", lower(a." + NAME_COLUMN + "), a." + URL_COLUMN + ", count(*) " +
             "from " + TABLE_NAME + " a inner join " + ContentAttributeTable.TABLE_NAME + " ca on a." + ID_COLUMN + " = ca." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " " +
             "inner join " + ContentTable.TABLE_NAME + " c on ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN + " " +
-            "where a." + TYPE_COLUMN + "=? and c." + ContentTable.STATUS_COLUMN + " in (1,4,5) ";
+            "where a." + TYPE_COLUMN + "=? and c." + ContentTable.STATUS_COLUMN + " in (" + StatusContent.DOWNLOADED.getCode() + "," + StatusContent.ERROR.getCode() + "," + StatusContent.MIGRATED.getCode() + ") ";
 
     public static final String SELECT_ALL_BY_USAGE_SITE_FILTER = " AND c." + ContentTable.SITE_COLUMN + " IN (%1) ";
 

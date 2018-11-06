@@ -17,6 +17,14 @@
     <color name="material_red_50">#ffebee</color>
     <color name="material_red_100">#FFFFCDD2</color>
 
+    <!-- New red 2018 (search activity) -->
+    <color name="red_primary">#470000</color>
+    <color name="red_dark">#3f0000</color>
+    <color name="red_accent">#b25959</color>
+    <color name="red_bg">#592828</color>
+    <color name="red_item">#28FFFFFF</color>
+    <color name="red_text">#FFFFFF</color>
+
     <!-- Pink -->
     <color name="material_pink_300">#F06292</color>
     <color name="very_dark_pink">#6d0721</color>
