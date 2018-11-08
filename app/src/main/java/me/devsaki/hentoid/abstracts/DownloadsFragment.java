@@ -104,14 +104,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
 
-    protected static final int TAGFILTER_ACTIVE = 0;
-    protected static final int TAGFILTER_SELECTED = 1;
-    protected static final int TAGFILTER_INACTIVE = 3;
+protected static final int TAGFILTER_ACTIVE = 0;
+protected static final int TAGFILTER_SELECTED = 1;
+protected static final int TAGFILTER_INACTIVE = 3;
 
     public final static int MODE_LIBRARY = 0;
     public final static int MODE_MIKAN = 1;
 
-    protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
+protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
 
 
     // Save state constants
@@ -139,10 +139,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private SearchView mainSearchView;
     // Search pane that shows up on top when using search function
     protected View searchPane;
-    // Container where selected attributed are displayed
-    private ViewGroup searchTags;
-    // Container where all available attributes are loaded
-    private ViewGroup attributeMosaic;
+// Container where selected attributed are displayed
+private ViewGroup searchTags;
+// Container where all available attributes are loaded
+private ViewGroup attributeMosaic;
     // Layout containing the list of books
     private SwipeRefreshLayout refreshLayout;
     // List containing all books
@@ -157,14 +157,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected LinearLayout pagerToolbar;
 // Bar containing attribute selectors
 private LinearLayout attrSelector;
-    // Panel that displays the "waiting for metadata info" visuals
-    private View tagWaitPanel;
-    // Image that displays current metadata type title (e.g. "Character search")
-    private TextView tagWaitTitle;
-    // Image that displays current metadata type icon (e.g. face icon for character)
-    private ImageView tagWaitImage;
-    // Image that displays metadata search message (e.g. loading up / too many results / no result)
-    private TextView tagWaitMessage;
+// Panel that displays the "waiting for metadata info" visuals
+private View tagWaitPanel;
+// Image that displays current metadata type title (e.g. "Character search")
+private TextView tagWaitTitle;
+// Image that displays current metadata type icon (e.g. face icon for character)
+private ImageView tagWaitImage;
+// Image that displays metadata search message (e.g. loading up / too many results / no result)
+private TextView tagWaitMessage;
 
     // ======== UTIL OBJECTS
     private ObjectAnimator animator;
@@ -176,8 +176,8 @@ private LinearLayout attrSelector;
     protected int booksPerPage;
     // Books sort order
     private int bookSortOrder;
-    // Attributes sort order
-    private int attributesSortOrder;
+// Attributes sort order
+private int attributesSortOrder;
 
     // ======== VARIABLES
 
@@ -223,8 +223,8 @@ private LinearLayout attrSelector;
     protected String query = "";
 // Currently selected tab
 private AttributeType selectedTab = AttributeType.TAG;
-    // Current search tags
-    private List<Attribute> selectedSearchTags = new ArrayList<>();
+// Current search tags
+private List<Attribute> selectedSearchTags = new ArrayList<>();
     // Last search parameters; used to determine whether or not page number should be reset to 1
     private String lastSearchParams = "";
 
@@ -868,8 +868,9 @@ private AttributeType selectedTab = AttributeType.TAG;
 
         View advancedSearchBtn = activity.findViewById(R.id.advanced_btn);
         advancedSearchBtn.setOnClickListener( v-> {
-            Intent refresh = new Intent(this.getContext(), SearchActivity.class);
-            startActivityForResult(refresh, 999);
+            Intent search = new Intent(this.getContext(), SearchActivity.class);
+            search.putExtra("mode", mode);
+            startActivityForResult(search, 999);
         });
 
         // Create category buttons

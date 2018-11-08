@@ -121,12 +121,8 @@
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            android:parentActivityName=".activities.DownloadsActivity"
             android:theme="@style/AppTheme.Search"
             tools:ignore="UnusedAttribute">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.DownloadsActivity" />
         </activity>
         <activity
             android:name=".activities.ImportActivity"

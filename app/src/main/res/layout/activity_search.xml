@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TODO : flexboxlayout ? -->
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -9,7 +8,7 @@
     tools:context=".activities.SearchActivity">
 
     <android.support.v7.widget.Toolbar
-        android:id="@+id/toolbar"
+        android:id="@+id/search_toolbar"
         android:layout_width="0dp"
         android:layout_height="?attr/actionBarSize"
         android:background="@color/red_primary"
@@ -19,7 +18,7 @@
         app:title="Advanced search" />
 
     <TextView
-        android:id="@+id/chips"
+        android:id="@+id/startCaption"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:background="@color/red_primary"
@@ -27,7 +26,29 @@
         android:text="Select a filter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbar" />
+        app:layout_constraintTop_toBottomOf="@id/search_toolbar" />
+
+    <com.google.android.flexbox.FlexboxLayout
+        android:id="@+id/search_tags"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:background="@color/red_primary"
+        android:paddingLeft="8dp"
+        android:paddingStart="8dp"
+        android:paddingBottom="8dp"
+        app:flexWrap="wrap"
+        app:flexDirection="row"
+        app:alignItems="baseline"
+        app:alignContent="flex_start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/startCaption"
+        tools:ignore="RtlSymmetry"
+        android:visibility="gone">
+
+        <!-- programmatically added selected metadata here -->
+
+    </com.google.android.flexbox.FlexboxLayout>
 
     <com.google.android.flexbox.FlexboxLayout
         android:id="@+id/search_tabs"
@@ -41,10 +62,45 @@
         app:justifyContent="space_around"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chips">
+        app:layout_constraintTop_toBottomOf="@id/search_tags">
 
         <!-- programmatically added attribute sections here -->
 
     </com.google.android.flexbox.FlexboxLayout>
+
+    <View
+        android:id="@+id/search_results_shadow"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#80000000"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintBottom_toTopOf="@id/guide"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:visibility="gone"/>
+
+    <FrameLayout
+        android:id="@+id/search_results"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/red_bg"
+        app:layout_constraintBottom_toTopOf="@id/guide"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:visibility="gone">
+
+        <include layout="@layout/include_search_filter_category" />
+
+    </FrameLayout>
+
+    <android.support.constraint.Guideline
+        android:id="@+id/guide"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.6" />
+
 
 </android.support.constraint.ConstraintLayout>
