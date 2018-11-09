@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -26,7 +25,6 @@ import com.google.android.flexbox.FlexboxLayout;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -56,9 +54,14 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
 
     HentoidDB db;
 
+    private TextView tagCategoryText;
+    private TextView artistCategoryText;
+    private TextView seriesCategoryText;
+    private TextView characterCategoryText;
+    private TextView languageCategoryText;
+    private TextView sourceCategoryText;
+
     private View startCaption;
-    // Bar containing attribute selectors
-    private FlexboxLayout attrSelector;
     // Panel that displays the "waiting for metadata info" visuals
     private View tagWaitPanel;
     // Image that displays current metadata type title (e.g. "Character search")
@@ -124,11 +127,28 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
 
         startCaption = findViewById(R.id.startCaption);
 
+        tagCategoryText = findViewById(R.id.textCategoryTag);
+        tagCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.TAG));
+
+        artistCategoryText = findViewById(R.id.textCategoryArtist);
+        artistCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.ARTIST));
+
+        seriesCategoryText = findViewById(R.id.textCategorySeries);
+        seriesCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.SERIE));
+
+        characterCategoryText = findViewById(R.id.textCategoryCharacter);
+        characterCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.CHARACTER));
+
+        languageCategoryText = findViewById(R.id.textCategoryLanguage);
+        languageCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.LANGUAGE));
+
+        sourceCategoryText = findViewById(R.id.textCategorySource);
+        sourceCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.SOURCE));
+
         // Create category buttons
-        attrSelector = findViewById(R.id.search_tabs);
         SparseIntArray attrCount = db.countAttributesPerType();
         attrCount.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
-        populateAttrSelector(attrCount);
+        onQueryUpdated(attrCount);
 
         searchResultsShadow = findViewById(R.id.search_results_shadow);
         searchResultsShadow.setOnClickListener(
@@ -160,7 +180,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
             public boolean onQueryTextSubmit(String s) {
 
                 if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(attrSelector, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(startCaption, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
                     submitAttributeSearchQuery(selectedTab, s);
                 }
@@ -172,7 +192,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
             @Override
             public boolean onQueryTextChange(String s) {
                 if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(attrSelector, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(startCaption, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchHandler.removeCallbacksAndMessages(null);
                 } else /*if (!s.isEmpty())*/ {
                     submitAttributeSearchQuery(selectedTab, s, 1000);
@@ -184,54 +204,27 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
 
     }
 
-    private void populateAttrSelector(SparseIntArray attrCount)
-    {
-        attrSelector.removeAllViews();
-        attrSelector.addView(createAttributeSectionButton(AttributeType.LANGUAGE, attrCount));
-        attrSelector.addView(createAttributeSectionButton(AttributeType.ARTIST, attrCount)); // TODO circle in the same tag
-        attrSelector.addView(createAttributeSectionButton(AttributeType.TAG, attrCount));
-        attrSelector.addView(createAttributeSectionButton(AttributeType.CHARACTER, attrCount));
-        attrSelector.addView(createAttributeSectionButton(AttributeType.SERIE, attrCount));
-        if (MODE_LIBRARY == mode)
-            attrSelector.addView(createAttributeSectionButton(AttributeType.SOURCE, attrCount));
+    private void onQueryUpdated(SparseIntArray attrCount) {
         // TODO "any" button
+
+        tagCategoryText.setText(String.format("%s (%s)", AttributeType.TAG.name(), attrCount.get(AttributeType.TAG.getCode(), 0)));
+
+        // TODO circle in the same tag
+        artistCategoryText.setText(String.format("%s (%s)", AttributeType.ARTIST.name(), attrCount.get(AttributeType.ARTIST.getCode(), 0)));
+
+        seriesCategoryText.setText(String.format("%s (%s)", AttributeType.SERIE.name(), attrCount.get(AttributeType.SERIE.getCode(), 0)));
+
+        characterCategoryText.setText(String.format("%s (%s)", AttributeType.CHARACTER.name(), attrCount.get(AttributeType.CHARACTER.getCode(), 0)));
+
+        languageCategoryText.setText(String.format("%s (%s)", AttributeType.LANGUAGE.name(), attrCount.get(AttributeType.LANGUAGE.getCode(), 0)));
+
+        if (MODE_LIBRARY == mode) {
+            sourceCategoryText.setText(String.format("%s (%s)", AttributeType.SOURCE.name(), attrCount.get(AttributeType.SOURCE.getCode(), 0)));
+        }
     }
 
-    /**
-     * Create the button for the given attribute type
-     *
-     * @param attr Attribute Type the button should represent
-     * @return Button representing the given Attribute type
-     */
-    private Button createAttributeSectionButton(AttributeType attr, SparseIntArray attrCount) {
-        Button button = new Button(new ContextThemeWrapper(this, R.style.LargeItem), null, 0);
-        button.setText(String.format("%s (%s)", attr.name(), attrCount.get(attr.getCode(), 0)));
-
-        button.setClickable(true);
-        button.setFocusable(true);
-        button.setEnabled(true);
-
-        FlexboxLayout.LayoutParams flexParams =
-                new FlexboxLayout.LayoutParams(
-                        FlexboxLayout.LayoutParams.WRAP_CONTENT,
-                        FlexboxLayout.LayoutParams.WRAP_CONTENT);
-        flexParams.setFlexBasisPercent(0.40f);
-        button.setLayoutParams(flexParams);
-
-        button.setOnClickListener(v -> selectAttrButton(button));
-        button.setTag(attr);
-
-        return button;
-    }
-
-    /**
-     * Handler for Attribute type button click
-     *
-     * @param button Button that has been clicked on
-     */
-    private void selectAttrButton(Button button) {
-
-        selectedTab = (AttributeType) button.getTag();
+    private void onAttrButtonClick(AttributeType attributeType) {
+        selectedTab = attributeType;
 
         // Set hint on search bar
         tagSearchView.setVisibility(View.VISIBLE);
@@ -324,7 +317,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
     @Override
     public void onAttributesFailed(String message) {
         Timber.w(message);
-        Snackbar.make(attrSelector, message, Snackbar.LENGTH_SHORT).show(); // TODO: 9/11/2018 consider retry button if applicable
+        Snackbar.make(startCaption, message, Snackbar.LENGTH_SHORT).show(); // TODO: 9/11/2018 consider retry button if applicable
         tagWaitPanel.setVisibility(View.GONE);
     }
 
@@ -460,7 +453,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
             attrCount.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
 
             // Refreshed displayed attribute buttons
-            populateAttrSelector(attrCount);
+            onQueryUpdated(attrCount);
         }
     }
 
