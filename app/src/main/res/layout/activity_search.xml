@@ -60,6 +60,7 @@
     <TextView
         android:id="@+id/textCategoryAny"
         style="@style/LargeItem"
+        android:text="@string/category_any"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="16dp"
@@ -67,12 +68,12 @@
         android:layout_marginRight="4dp"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/search_tags"
-        tools:text="Any" />
+        app:layout_constraintTop_toBottomOf="@id/search_tags" />
 
     <TextView
         android:id="@+id/textCategoryTag"
         style="@style/LargeItem"
+        android:text="@string/category_tag"
         android:layout_marginStart="4dp"
         android:layout_marginLeft="4dp"
         android:layout_marginTop="16dp"
@@ -80,12 +81,12 @@
         android:layout_marginRight="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
-        app:layout_constraintTop_toBottomOf="@id/search_tags"
-        tools:text="Tag" />
+        app:layout_constraintTop_toBottomOf="@id/search_tags" />
 
     <TextView
         android:id="@+id/textCategoryCharacter"
         style="@style/LargeItem"
+        android:text="@string/category_character"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
@@ -93,12 +94,12 @@
         android:layout_marginRight="4dp"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textCategoryAny"
-        tools:text="Character" />
+        app:layout_constraintTop_toBottomOf="@id/textCategoryAny" />
 
     <TextView
         android:id="@+id/textCategoryArtist"
         style="@style/LargeItem"
+        android:text="@string/category_artist"
         android:layout_marginStart="4dp"
         android:layout_marginLeft="4dp"
         android:layout_marginTop="8dp"
@@ -106,12 +107,12 @@
         android:layout_marginRight="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
-        app:layout_constraintTop_toBottomOf="@id/textCategoryTag"
-        tools:text="Artist" />
+        app:layout_constraintTop_toBottomOf="@id/textCategoryTag" />
 
     <TextView
         android:id="@+id/textCategorySeries"
         style="@style/LargeItem"
+        android:text="@string/category_series"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
@@ -119,12 +120,12 @@
         android:layout_marginRight="4dp"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textCategoryCharacter"
-        tools:text="Series" />
+        app:layout_constraintTop_toBottomOf="@id/textCategoryCharacter" />
 
     <TextView
         android:id="@+id/textCategoryLanguage"
         style="@style/LargeItem"
+        android:text="@string/category_language"
         android:layout_marginStart="4dp"
         android:layout_marginLeft="4dp"
         android:layout_marginTop="8dp"
@@ -132,12 +133,12 @@
         android:layout_marginRight="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/guidelineMiddle"
-        app:layout_constraintTop_toBottomOf="@id/textCategoryArtist"
-        tools:text="Language" />
+        app:layout_constraintTop_toBottomOf="@id/textCategoryArtist" />
 
     <TextView
         android:id="@+id/textCategorySource"
         style="@style/LargeItem"
+        android:text="@string/category_source"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginTop="8dp"
@@ -145,8 +146,7 @@
         android:layout_marginRight="4dp"
         app:layout_constraintEnd_toStartOf="@id/guidelineMiddle"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/textCategorySeries"
-        tools:text="Source" />
+        app:layout_constraintTop_toBottomOf="@id/textCategorySeries" />
 
     <View
         android:id="@+id/search_results_shadow"

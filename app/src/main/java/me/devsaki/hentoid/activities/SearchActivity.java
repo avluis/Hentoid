@@ -207,19 +207,25 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
     private void onQueryUpdated(SparseIntArray attrCount) {
         // TODO "any" button
 
-        tagCategoryText.setText(String.format("%s (%s)", AttributeType.TAG.name(), attrCount.get(AttributeType.TAG.getCode(), 0)));
+        int tagCount = attrCount.get(AttributeType.TAG.getCode(), 0);
+        tagCategoryText.setText(getString(R.string.category_tag, tagCount));
 
         // TODO circle in the same tag
-        artistCategoryText.setText(String.format("%s (%s)", AttributeType.ARTIST.name(), attrCount.get(AttributeType.ARTIST.getCode(), 0)));
+        int artistCount = attrCount.get(AttributeType.ARTIST.getCode(), 0);
+        artistCategoryText.setText(getString(R.string.category_artist, artistCount));
 
-        seriesCategoryText.setText(String.format("%s (%s)", AttributeType.SERIE.name(), attrCount.get(AttributeType.SERIE.getCode(), 0)));
+        int serieCount = attrCount.get(AttributeType.SERIE.getCode(), 0);
+        seriesCategoryText.setText(getString(R.string.category_series, serieCount));
 
-        characterCategoryText.setText(String.format("%s (%s)", AttributeType.CHARACTER.name(), attrCount.get(AttributeType.CHARACTER.getCode(), 0)));
+        int characterCount = attrCount.get(AttributeType.CHARACTER.getCode(), 0);
+        characterCategoryText.setText(getString(R.string.category_character, characterCount));
 
-        languageCategoryText.setText(String.format("%s (%s)", AttributeType.LANGUAGE.name(), attrCount.get(AttributeType.LANGUAGE.getCode(), 0)));
+        int languageCount = attrCount.get(AttributeType.LANGUAGE.getCode(), 0);
+        languageCategoryText.setText(getString(R.string.category_language, languageCount));
 
         if (MODE_LIBRARY == mode) {
-            sourceCategoryText.setText(String.format("%s (%s)", AttributeType.SOURCE.name(), attrCount.get(AttributeType.SOURCE.getCode(), 0)));
+            int sourceCount = attrCount.get(AttributeType.SOURCE.getCode(), 0);
+            sourceCategoryText.setText(getString(R.string.category_source, sourceCount));
         }
     }
 
