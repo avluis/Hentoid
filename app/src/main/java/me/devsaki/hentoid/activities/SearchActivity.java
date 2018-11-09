@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.res.ResourcesCompat;
-import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
 import android.util.SparseIntArray;
@@ -22,7 +21,6 @@ import android.widget.TextView;
 
 import com.google.android.flexbox.FlexboxLayout;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -50,6 +48,12 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 
 /**
  * Created by Robb on 2018/11
+ *
+ * TODO - use a RecyclerView for the input and choice chips.
+ * Implement an adapter for each recyclerview and feed both adapters with the same data list
+ * modeling the currently selected filters. Whenever the filter list is modified, notify both
+ * adapters independently to update views. This should cleanup selection behavior and delegate
+ * managing views to the RecyclerView framework.
  */
 public class SearchActivity extends BaseActivity implements ContentListener, AttributeListener {
 
@@ -330,9 +334,9 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
 
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, parent, false);
         chip.setText(format("%s: %s", type, name));
-        chip.setTag(attribute);
+        chip.setTag(attribute); // TODO - is this necessary for input chips?
         chip.setId(Math.abs(attribute.getId()));
-        chip.setOnClickListener(this::selectTagSuggestion);
+        chip.setOnClickListener(v -> removeSearchFilter(v, attribute));
 
         parent.addView(chip);
     }
@@ -343,8 +347,8 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
         chip.setText(label);
         chip.setTag(attribute);
-        chip.setId(Math.abs(attribute.getId()));
-        chip.setOnClickListener(this::selectTagSuggestion);
+        chip.setId(Math.abs(attribute.getId())); // TODO - is this necessary for choice chips?
+        chip.setOnClickListener(this::toggleSearchFilter);
 
         FlexboxLayout.LayoutParams lp = (FlexboxLayout.LayoutParams) chip.getLayoutParams();
         lp.setFlexGrow(1);
@@ -354,6 +358,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
 
     /**
      * Applies to the edges and text of the given Button the color corresponding to the given state
+     * TODO - use a StateListDrawable resource for this
      *
      * @param b        Button to be updated
      * @param tagState Tag state whose color has to be applied
@@ -368,12 +373,29 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
         b.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
     }
 
+    private void removeSearchFilter(View v, Attribute a) {
+        searchTags.removeView(v);
+        colorChip(v, TAGFILTER_ACTIVE); // TODO - this is no-op. what is it for?
+        selectedSearchTags.remove(a);
+        if (selectedSearchTags.isEmpty()) {
+            searchTags.setVisibility(View.GONE);
+            startCaption.setVisibility(View.VISIBLE);
+        }
+
+        // Launch book search according to new attribute selection
+        //searchLibrary(MODE_MIKAN == mode);
+        // TODO - count results here
+        // Update attribute mosaic buttons state according to available metadata
+        updateAttributeMosaic();
+    }
+
     /**
      * Handler for Attribute button click
      *
      * @param button Button that has been clicked on
+     * @see #removeSearchFilter(View, Attribute)
      */
-    private void selectTagSuggestion(View button) {
+    private void toggleSearchFilter(View button) {
         Attribute a = (Attribute) button.getTag();
 
         // Add new tag to the selection
@@ -383,7 +405,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
             selectedSearchTags.add(a);
             startCaption.setVisibility(View.GONE);
             searchTags.setVisibility(View.VISIBLE);
-        } else { // Remove selected tag
+        } else { // Remove selected tagsearchTags.removeView(v);
             searchTags.removeView(searchTags.findViewById(Math.abs(a.getId())));
             colorChip(button, TAGFILTER_ACTIVE);
             selectedSearchTags.remove(a);
