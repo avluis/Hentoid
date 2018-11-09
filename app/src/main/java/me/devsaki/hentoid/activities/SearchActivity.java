@@ -44,6 +44,7 @@ import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
+import static java.lang.String.format;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 
@@ -259,7 +260,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
      */
     protected void searchMasterData(AttributeType a, final String s) {
         tagWaitImage.setImageResource(a.getIcon());
-        tagWaitTitle.setText(String.format("%s search", Helper.capitalizeString(a.name())));
+        tagWaitTitle.setText(format("%s search", Helper.capitalizeString(a.name())));
         tagWaitMessage.setText(R.string.downloads_loading);
 
         // Set blinking animation
@@ -307,11 +308,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
 
             // Display buttons
             for (Attribute attr : attrs) {
-                View button = createTagSuggestionChip(attr, false);
-                attributeMosaic.addView(button);
-                FlexboxLayout.LayoutParams lp = (FlexboxLayout.LayoutParams) button.getLayoutParams();
-                lp.setFlexGrow(1);
-                button.setLayoutParams(lp);
+                addChoiceChip(attributeMosaic, attr);
             }
 
             // Update attribute mosaic buttons state according to available metadata
@@ -327,29 +324,32 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
         tagWaitPanel.setVisibility(View.GONE);
     }
 
-    /**
-     * Create the button for the given attribute
-     *
-     * @param attribute  Attribute the button should represent
-     * @param isSelected True if the button should appear as selected
-     * @return Button representing the given Attribute, drawn as selected if needed
-     */
-    private TextView createTagSuggestionChip(Attribute attribute, boolean isSelected) {
-        TextView chip = new TextView(new ContextThemeWrapper(this, isSelected ? R.style.Chip_Input : R.style.Chip_Choice), null, 0);
-        chip.setText(MessageFormat.format("{0}{1}{2}",
-                isSelected ? attribute.getType().name().toLowerCase() + ":" : "",
-                attribute.getName(),
-                !isSelected && attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : "")
-        );
+    private void addInputChip(ViewGroup parent, Attribute attribute) {
+        String type = attribute.getType().name().toLowerCase();
+        String name = attribute.getName();
 
-        colorChip(chip, isSelected ? TAGFILTER_SELECTED : TAGFILTER_ACTIVE);
-
+        TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, parent, false);
+        chip.setText(format("%s: %s", type, name));
         chip.setTag(attribute);
         chip.setId(Math.abs(attribute.getId()));
+        chip.setOnClickListener(this::selectTagSuggestion);
 
-        chip.setOnClickListener(v -> selectTagSuggestion(chip));
+        parent.addView(chip);
+    }
 
-        return chip;
+    private void addChoiceChip(ViewGroup parent, Attribute attribute) {
+        String label = format("%s %s", attribute.getName(), attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : "");
+
+        TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
+        chip.setText(label);
+        chip.setTag(attribute);
+        chip.setId(Math.abs(attribute.getId()));
+        chip.setOnClickListener(this::selectTagSuggestion);
+
+        FlexboxLayout.LayoutParams lp = (FlexboxLayout.LayoutParams) chip.getLayoutParams();
+        lp.setFlexGrow(1);
+
+        parent.addView(chip);
     }
 
     /**
@@ -358,7 +358,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
      * @param b        Button to be updated
      * @param tagState Tag state whose color has to be applied
      */
-    private void colorChip(TextView b, int tagState) {
+    private void colorChip(View b, int tagState) {
         int color = ResourcesCompat.getColor(getResources(), R.color.red_item, null);
         if (TAGFILTER_SELECTED == tagState) {
             color = ResourcesCompat.getColor(getResources(), R.color.red_accent, null);
@@ -373,12 +373,12 @@ public class SearchActivity extends BaseActivity implements ContentListener, Att
      *
      * @param button Button that has been clicked on
      */
-    private void selectTagSuggestion(TextView button) {
+    private void selectTagSuggestion(View button) {
         Attribute a = (Attribute) button.getTag();
 
         // Add new tag to the selection
         if (!selectedSearchTags.contains(a)) {
-            searchTags.addView(createTagSuggestionChip(a, true));
+            addInputChip(searchTags, a);
             colorChip(button, TAGFILTER_SELECTED);
             selectedSearchTags.add(a);
             startCaption.setVisibility(View.GONE);
