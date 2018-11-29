@@ -24,9 +24,9 @@ public class DatabaseAccessor implements CollectionAccessor {
 
     static class ContentQueryResult
     {
-        public List<Content> pagedContents;
-        public int totalContent;
-        public int totalSelectedContent;
+        List<Content> pagedContents;
+        int totalContent;
+        int totalSelectedContent;
     }
 
 
@@ -56,6 +56,15 @@ public class DatabaseAccessor implements CollectionAccessor {
 
     @Override
     public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
+        synchronized (attrSynch) {
+            List<AttributeType> attrs = new ArrayList<>();
+            attrs.add(attr);
+            new AttributesFetchTask(db, listener, attrs, filter).execute();
+        }
+    }
+
+    @Override
+    public void getAttributeMasterData(List<AttributeType> attr, String filter, AttributeListener listener) {
         synchronized (attrSynch) {
             new AttributesFetchTask(db, listener, attr, filter).execute();
         }
@@ -117,24 +126,30 @@ public class DatabaseAccessor implements CollectionAccessor {
 
         private final HentoidDB db;
         private final AttributeListener listener;
-        private final AttributeType attrType;
+        private final List<AttributeType> attrTypes;
         private final String filter;
 
-        AttributesFetchTask(HentoidDB db, AttributeListener listener, AttributeType attrType, String filter) {
+        AttributesFetchTask(HentoidDB db, AttributeListener listener, List<AttributeType> attrTypes, String filter) {
             this.db = db;
             this.listener = listener;
-            this.attrType = attrType;
+            this.attrTypes = attrTypes;
             this.filter = filter;
         }
 
         @Override
         protected List<Attribute> doInBackground(String... params) {
-            if (AttributeType.SOURCE == attrType) // Specific case
-            {
-                return db.selectAvailableSources();
-            } else {
-                return db.selectAllAttributesByType(attrType, filter);
+            List<Attribute> attrs = new ArrayList<>();
+
+            for (AttributeType type : attrTypes) {
+                if (AttributeType.SOURCE == type) // Specific case
+                {
+                    attrs.addAll(db.selectAvailableSources());
+                } else {
+                    attrs.addAll(db.selectAllAttributesByType(type, filter));
+                }
             }
+
+            return attrs;
         }
 
         @Override

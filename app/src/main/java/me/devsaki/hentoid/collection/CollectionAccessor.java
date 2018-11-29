@@ -20,5 +20,7 @@ public interface CollectionAccessor {
 
     void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener);
 
+    void getAttributeMasterData(List<AttributeType> attrs, String filter, AttributeListener listener);
+
     void dispose();
 }

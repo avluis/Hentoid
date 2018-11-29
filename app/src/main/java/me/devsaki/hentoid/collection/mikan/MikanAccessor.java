@@ -196,6 +196,12 @@ public class MikanAccessor implements CollectionAccessor {
     }
 
     @Override
+    public void getAttributeMasterData(List<AttributeType> attrs, String filter, AttributeListener listener) {
+        // Because Mikan is unable to do that, and trying to assemble it manually would be a disaster
+        getAttributeMasterData(attrs.get(0), filter, listener);
+    }
+
+    @Override
     public void dispose() {
         if (disposable != null) disposable.dispose();
     }

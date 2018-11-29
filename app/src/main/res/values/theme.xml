@@ -91,6 +91,8 @@
     </style>
 
     <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
+        <item name="colorPrimary">@color/red_primary</item>
+        <item name="colorPrimaryDark">@color/red_dark</item>
         <item name="colorAccent">@color/red_accent</item>
         <item name="bottomSheetStyle">@style/ModalStyle</item>
     </style>
