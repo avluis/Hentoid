@@ -135,7 +135,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
         View view = inflater.inflate(R.layout.include_search_filter_category, container, false);
 
         tagWaitPanel = view.findViewById(R.id.tag_wait_panel);
-        tagWaitPanel.setVisibility(View.GONE);
         tagWaitImage = view.findViewById(R.id.tag_wait_image);
         tagWaitMessage = view.findViewById(R.id.tag_wait_description);
         tagWaitTitle = view.findViewById(R.id.tag_wait_title);
@@ -143,7 +142,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
 
         tagSearchView = view.findViewById(R.id.tag_filter);
         tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
-        tagSearchView.setIconifiedByDefault(false);
         tagSearchView.setQueryHint("Search " + mainAttr.name().toLowerCase());
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -265,9 +263,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
         chip.setTag(attribute);
 //        chip.setId(Math.abs(attribute.getId())); // TODO - is this necessary for choice chips?
         chip.setOnClickListener(this::toggleSearchFilter);
-
-        FlexboxLayout.LayoutParams lp = (FlexboxLayout.LayoutParams) chip.getLayoutParams();
-        lp.setFlexGrow(1);
 
         parent.addView(chip);
     }
