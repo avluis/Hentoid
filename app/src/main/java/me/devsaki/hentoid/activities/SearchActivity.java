@@ -21,6 +21,7 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
+import me.devsaki.hentoid.fragments.SearchBottomSheetFragment.OnAttributeSelectListener;
 import me.devsaki.hentoid.listener.ContentListener;
 
 import static java.lang.String.format;
@@ -35,7 +36,7 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
  * adapters independently to update views. This should cleanup selection behavior and delegate
  * managing views to the RecyclerView framework.
  */
-public class SearchActivity extends BaseActivity implements ContentListener, View.OnClickListener {
+public class SearchActivity extends BaseActivity implements ContentListener, OnAttributeSelectListener {
 
     HentoidDB db;
 
@@ -141,28 +142,27 @@ public class SearchActivity extends BaseActivity implements ContentListener, Vie
     }
 
     private void onAttrButtonClick(AttributeType... attributeTypes) {
-        SearchBottomSheetFragment.show(getSupportFragmentManager(), mode, attributeTypes, this);
+        SearchBottomSheetFragment.show(getSupportFragmentManager(), mode, attributeTypes);
     }
 
     /**
      * Handler for Attribute button click
      *
-     * @param button Button that has been clicked on
+     * @param attribute the attribute that was selected in {@link SearchBottomSheetFragment}
      * @see #removeSearchFilter(View, Attribute)
+     * @see OnAttributeSelectListener
      */
     @Override
-    public void onClick(View button) {
-        Attribute a = (Attribute) button.getTag();
-
+    public void onAttributeSelected(Attribute attribute) {
         // Add new tag to the selection
-        if (!selectedSearchTags.contains(a)) {
-            addInputChip(searchTags, a);
-            selectedSearchTags.add(a);
+        if (!selectedSearchTags.contains(attribute)) {
+            addInputChip(searchTags, attribute);
+            selectedSearchTags.add(attribute);
             startCaption.setVisibility(View.GONE);
             searchTags.setVisibility(View.VISIBLE);
         } else { // Remove selected tagsearchTags.removeView(v);
-            searchTags.removeView(searchTags.findViewById(Math.abs(a.getId())));
-            selectedSearchTags.remove(a);
+            searchTags.removeView(searchTags.findViewById(Math.abs(attribute.getId())));
+            selectedSearchTags.remove(attribute);
             if (selectedSearchTags.isEmpty()) {
                 searchTags.setVisibility(View.GONE);
                 startCaption.setVisibility(View.VISIBLE);

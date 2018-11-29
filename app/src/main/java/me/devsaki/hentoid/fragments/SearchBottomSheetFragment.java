@@ -2,12 +2,14 @@ package me.devsaki.hentoid.fragments;
 
 import android.app.Activity;
 import android.app.SearchManager;
+import android.app.SearchableInfo;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
@@ -78,7 +80,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
     private List<AttributeType> attributeTypes = new ArrayList<>();
     private AttributeType mainAttr;
 
-    private View.OnClickListener clickListener;
+    private OnAttributeSelectListener onAttributeSelectListener;
 
 
     // ======== UTIL OBJECTS
@@ -91,7 +93,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
 
     private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
 
-    public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types, View.OnClickListener clickListener) {
+    public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {
         ArrayList<Integer> selectedTypes = new ArrayList<>();
         for (AttributeType type : types) selectedTypes.add(type.getCode());
 
@@ -102,19 +104,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
         searchBottomSheetFragment.setArguments(bundle);
         searchBottomSheetFragment.setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme);
-        searchBottomSheetFragment.setClickListener(clickListener);  // TODO - DANGER: fragments can be spontaneously recreated by the system. If that happens it will not have a clickListener.
         searchBottomSheetFragment.show(fragmentManager, null);
     }
 
-
-    protected void setClickListener(View.OnClickListener listener)
-    {
-        this.clickListener = listener;
-    }
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        selectedAttributes = ((SearchActivity) context).getSelectedSearchTags(); // TODO - this is ugly
+        onAttributeSelectListener = (OnAttributeSelectListener) context;
 
         Bundle bundle = getArguments();
         if (bundle != null)
@@ -129,48 +126,23 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
             for (Integer i : attrTypesList) attributeTypes.add(AttributeType.searchByCode(i));
             mainAttr = attributeTypes.get(0);
         }
-    }
 
-    private void submitAttributeSearchQuery(List<AttributeType> a, String s) {
-        submitAttributeSearchQuery(a, s, 0);
-    }
-
-    private void submitAttributeSearchQuery(List<AttributeType> a, final String s, long delay) {
-        searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(() -> searchMasterData(a, s), delay);
+        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(context) : new MikanAccessor(context);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.include_search_filter_category, container, false);
-    }
+        View view = inflater.inflate(R.layout.include_search_filter_category, container, false);
 
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        Activity activity = requireActivity();
-
-        selectedAttributes = ((SearchActivity)activity).getSelectedSearchTags(); // TODO - this is ugly
-        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(activity) : new MikanAccessor(activity);
-
-        View rootView = Objects.requireNonNull(getView());
-
-        tagWaitPanel = rootView.findViewById(R.id.tag_wait_panel);
+        tagWaitPanel = view.findViewById(R.id.tag_wait_panel);
         tagWaitPanel.setVisibility(View.GONE);
-        tagWaitImage = rootView.findViewById(R.id.tag_wait_image);
-        tagWaitMessage = rootView.findViewById(R.id.tag_wait_description);
-        tagWaitTitle = rootView.findViewById(R.id.tag_wait_title);
+        tagWaitImage = view.findViewById(R.id.tag_wait_image);
+        tagWaitMessage = view.findViewById(R.id.tag_wait_description);
+        tagWaitTitle = view.findViewById(R.id.tag_wait_title);
+        attributeMosaic = view.findViewById(R.id.tag_suggestion);
 
-        attributeMosaic = rootView.findViewById(R.id.tag_suggestion);
-
-        tagSearchView = rootView.findViewById(R.id.tag_filter);
-        // Associate searchable configuration with the SearchView
-        final SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-        if (searchManager != null) {
-            tagSearchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
-        }
+        tagSearchView = view.findViewById(R.id.tag_filter);
+        tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
         tagSearchView.setIconifiedByDefault(false);
         tagSearchView.setQueryHint("Search " + mainAttr.name().toLowerCase());
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -178,7 +150,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
             public boolean onQueryTextSubmit(String s) {
 
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(Objects.requireNonNull(getView()), R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
                     submitAttributeSearchQuery(attributeTypes, s);
                 }
@@ -190,7 +162,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
             @Override
             public boolean onQueryTextChange(String s) {
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
-                    Snackbar.make(Objects.requireNonNull(getView()), R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchHandler.removeCallbacksAndMessages(null);
                 } else /*if (!s.isEmpty())*/ {
                     submitAttributeSearchQuery(attributeTypes, s, 1000);
@@ -200,7 +172,21 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
             }
         });
 
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         searchMasterData(attributeTypes, "");
+    }
+
+    private void submitAttributeSearchQuery(List<AttributeType> a, String s) {
+        submitAttributeSearchQuery(a, s, 0);
+    }
+
+    private void submitAttributeSearchQuery(List<AttributeType> a, final String s, long delay) {
+        searchHandler.removeCallbacksAndMessages(null);
+        searchHandler.postDelayed(() -> searchMasterData(a, s), delay);
     }
 
     /**
@@ -209,7 +195,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
      * @param a Attribute Type whose attributes to retrieve
      * @param s Filter to apply to the attributes name (only retrieve attributes with name like %s%)
      */
-    protected void searchMasterData(List<AttributeType> a, final String s) {
+    private void searchMasterData(List<AttributeType> a, final String s) {
         tagWaitImage.setImageResource(a.get(0).getIcon());
         tagWaitTitle.setText(format("%s search", Helper.capitalizeString(a.get(0).name())));
         tagWaitMessage.setText(R.string.downloads_loading);
@@ -227,9 +213,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
         collectionAccessor.getAttributeMasterData(a, s, this);
     }
 
-    /*
-     AttributeListener implementation
-      */
+    /** @see AttributeListener */
     @Override
     public void onAttributesReady(List<Attribute> results, int totalContent) {
         attributeMosaic.removeAllViews();
@@ -266,7 +250,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
             tagWaitPanel.setVisibility(View.GONE);
         }
     }
-
     @Override
     public void onAttributesFailed(String message) {
         Timber.w(message);
@@ -320,7 +303,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
             colorChip(button, TAGFILTER_ACTIVE);
         }
 
-        clickListener.onClick(button);
+        onAttributeSelectListener.onAttributeSelected(a);
 
         // Update attribute mosaic buttons state according to available metadata
         updateAttributeMosaic(selectedAttributes);
@@ -389,5 +372,20 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
                 }
             }
         }
+    }
+
+    /**
+     * Utility method
+     *
+     * @param activity the activity to get the SearchableInfo from
+     */
+    private static SearchableInfo getSearchableInfo(Activity activity) {
+        final SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
+        if(searchManager == null) throw new RuntimeException();
+        return searchManager.getSearchableInfo(activity.getComponentName());
+    }
+
+    public interface OnAttributeSelectListener {
+        void onAttributeSelected(Attribute attribute);
     }
 }
