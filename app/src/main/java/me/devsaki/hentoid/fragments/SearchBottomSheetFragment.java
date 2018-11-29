@@ -7,8 +7,10 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
@@ -87,22 +89,23 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
     // ======== CONSTANTS
     protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
 
-    public static SearchBottomSheetFragment newInstance(int mode, AttributeType[] types, View.OnClickListener clickListener) {
-        SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
+    private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
+
+    public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types, View.OnClickListener clickListener) {
+        ArrayList<Integer> selectedTypes = new ArrayList<>();
+        for (AttributeType type : types) selectedTypes.add(type.getCode());
 
         Bundle bundle = new Bundle();
         bundle.putInt("mode", mode);
+        bundle.putIntegerArrayList(KEY_ATTRIBUTE_TYPES, selectedTypes);
 
-        ArrayList<Integer> selectedTypes = new ArrayList<>();
-        for (AttributeType type : types) selectedTypes.add(type.getCode());
-        bundle.putSerializable("attributeTypes", selectedTypes);
-
+        SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
         searchBottomSheetFragment.setArguments(bundle);
-
-        searchBottomSheetFragment.setClickListener(clickListener);
-
-        return searchBottomSheetFragment;
+        searchBottomSheetFragment.setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme);
+        searchBottomSheetFragment.setClickListener(clickListener);  // TODO - DANGER: fragments can be spontaneously recreated by the system. If that happens it will not have a clickListener.
+        searchBottomSheetFragment.show(fragmentManager, null);
     }
+
 
     protected void setClickListener(View.OnClickListener listener)
     {
@@ -117,7 +120,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
         if (bundle != null)
         {
             mode = bundle.getInt("mode", -1);
-            List<Integer> attrTypesList = bundle.getIntegerArrayList("attributeTypes");
+            List<Integer> attrTypesList = bundle.getIntegerArrayList(KEY_ATTRIBUTE_TYPES);
             if (-1 == mode || null == attrTypesList || attrTypesList.isEmpty()) {
                 Timber.d("Initialization failed");
                 return;
@@ -126,11 +129,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
             for (Integer i : attrTypesList) attributeTypes.add(AttributeType.searchByCode(i));
             mainAttr = attributeTypes.get(0);
         }
-    }
-
-    @Override
-    public int getTheme() {
-        return R.style.BottomSheetDialogTheme; // XML declaration doesn't seem to work
     }
 
     private void submitAttributeSearchQuery(List<AttributeType> a, String s) {
@@ -143,7 +141,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.include_search_filter_category, container, false);
     }
@@ -152,7 +150,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        Activity activity = Objects.requireNonNull(getActivity());
+        Activity activity = requireActivity();
 
         selectedAttributes = ((SearchActivity)activity).getSelectedSearchTags(); // TODO - this is ugly
         collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(activity) : new MikanAccessor(activity);

@@ -1,10 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.Toolbar;
 import android.util.SparseIntArray;
 import android.view.View;
@@ -64,12 +61,9 @@ public class SearchActivity extends BaseActivity implements ContentListener, Vie
     private CollectionAccessor collectionAccessor;
 
 
-
-
     public static final int TAGFILTER_ACTIVE = 0;
     public static final int TAGFILTER_SELECTED = 1;
     public static final int TAGFILTER_INACTIVE = 3;
-
 
 
     @Override
@@ -97,22 +91,22 @@ public class SearchActivity extends BaseActivity implements ContentListener, Vie
         anyCategoryText.setEnabled(MODE_LIBRARY == mode); // Unsupported by Mikan
 
         tagCategoryText = findViewById(R.id.textCategoryTag);
-        tagCategoryText.setOnClickListener(v -> onAttrButtonClick(new AttributeType[] { AttributeType.TAG } ));
+        tagCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.TAG));
 
         artistCategoryText = findViewById(R.id.textCategoryArtist);
-        artistCategoryText.setOnClickListener(v -> onAttrButtonClick(new AttributeType[] { AttributeType.ARTIST, AttributeType.CIRCLE } ));
+        artistCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.ARTIST, AttributeType.CIRCLE));
 
         seriesCategoryText = findViewById(R.id.textCategorySeries);
-        seriesCategoryText.setOnClickListener(v -> onAttrButtonClick(new AttributeType[] { AttributeType.SERIE } ));
+        seriesCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.SERIE));
 
         characterCategoryText = findViewById(R.id.textCategoryCharacter);
-        characterCategoryText.setOnClickListener(v -> onAttrButtonClick(new AttributeType[] { AttributeType.CHARACTER } ));
+        characterCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.CHARACTER));
 
         languageCategoryText = findViewById(R.id.textCategoryLanguage);
-        languageCategoryText.setOnClickListener(v -> onAttrButtonClick(new AttributeType[] { AttributeType.LANGUAGE } ));
+        languageCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.LANGUAGE));
 
         sourceCategoryText = findViewById(R.id.textCategorySource);
-        sourceCategoryText.setOnClickListener(v -> onAttrButtonClick(new AttributeType[] { AttributeType.SOURCE } ));
+        sourceCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.SOURCE));
 
         // Create category buttons
         SparseIntArray attrCount = db.countAttributesPerType();
@@ -146,9 +140,8 @@ public class SearchActivity extends BaseActivity implements ContentListener, Vie
         }
     }
 
-    private void onAttrButtonClick(AttributeType[] attributeTypes) {
-        SearchBottomSheetFragment bottomSheetFragment = SearchBottomSheetFragment.newInstance(mode, attributeTypes, this);
-        bottomSheetFragment.show(getSupportFragmentManager(), bottomSheetFragment.getTag());
+    private void onAttrButtonClick(AttributeType... attributeTypes) {
+        SearchBottomSheetFragment.show(getSupportFragmentManager(), mode, attributeTypes, this);
     }
 
     /**
