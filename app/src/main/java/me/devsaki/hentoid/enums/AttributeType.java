@@ -44,6 +44,17 @@ public enum AttributeType {
         return null;
     }
 
+    @Nullable
+    public static AttributeType searchByName(String name) {
+        for (AttributeType s : AttributeType.values()) {
+            if (s.name().equalsIgnoreCase(name)) {
+                return s;
+            }
+        }
+
+        return null;
+    }
+
     public int getCode() {
         return code;
     }

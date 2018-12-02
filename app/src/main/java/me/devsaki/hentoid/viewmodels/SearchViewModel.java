@@ -16,6 +16,7 @@ import me.devsaki.hentoid.database.DatabaseAccessor;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ResultListener;
 
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
@@ -30,6 +31,7 @@ public class SearchViewModel extends AndroidViewModel {
     // Populated with DB queries
     private MutableLiveData<AttributeSearchResult> proposedAttributes;
     private MutableLiveData<AttributeSearchResult> availableAttributes;
+    private MutableLiveData<ContentSearchResult> selectedContent;
     private MutableLiveData<SparseIntArray> attributesPerType;
 
     // Collection accessor (DB or external, depending on mode)
@@ -40,12 +42,10 @@ public class SearchViewModel extends AndroidViewModel {
 
 
     // === LISTENER HELPERS
-    private class AttributesResultListener implements ResultListener<List<Attribute>>
-    {
+    private class AttributesResultListener implements ResultListener<List<Attribute>> {
         private final MutableLiveData<AttributeSearchResult> list;
 
-        AttributesResultListener(MutableLiveData<AttributeSearchResult> list)
-        {
+        AttributesResultListener(MutableLiveData<AttributeSearchResult> list) {
             this.list = list;
         }
 
@@ -64,8 +64,24 @@ public class SearchViewModel extends AndroidViewModel {
         }
     }
 
-    private ResultListener<SparseIntArray> countResultListener = new ResultListener<SparseIntArray>()
-    {
+    private ContentListener contentResultListener = new ContentListener() {
+        @Override
+        public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) {
+            ContentSearchResult result = new ContentSearchResult(results);
+            result.totalSelected = totalSelectedContent;
+            selectedContent.postValue(result);
+        }
+
+        @Override
+        public void onContentFailed(Content content, String message) {
+            ContentSearchResult result = new ContentSearchResult();
+            result.success = false;
+            result.message = message;
+            selectedContent.postValue(result);
+        }
+    };
+
+    private ResultListener<SparseIntArray> countResultListener = new ResultListener<SparseIntArray>() {
         @Override
         public void onResultReady(SparseIntArray results, int totalContent) {
             attributesPerType.postValue(results);
@@ -77,7 +93,6 @@ public class SearchViewModel extends AndroidViewModel {
             attributesPerType.postValue(result);
         }
     };
-
 
 
     // === INIT METHODS
@@ -119,6 +134,14 @@ public class SearchViewModel extends AndroidViewModel {
         return availableAttributes;
     }
 
+    public LiveData<ContentSearchResult> searchBooks() {
+        if (null == selectedContent) {
+            selectedContent = new MutableLiveData<>();
+        }
+        collectionAccessor.searchBooks("", selectedAttributes.getValue(), 1, 1, 1, false, contentResultListener);
+        return selectedContent;
+    }
+
     public LiveData<List<Attribute>> getSelectedAttributes() {
         return selectedAttributes;
     }
@@ -136,7 +159,10 @@ public class SearchViewModel extends AndroidViewModel {
         getAvailableAttributes(types);
     }
 
-    public void unselectAttribute(Attribute a) { unselectAttribute(null, a); }
+    public void unselectAttribute(Attribute a) {
+        unselectAttribute(null, a);
+    }
+
     public void unselectAttribute(List<AttributeType> types, Attribute a) {
         List<Attribute> selectedAttributesList = selectedAttributes.getValue();
         if (null == selectedAttributesList) selectedAttributesList = new ArrayList<>();
@@ -150,34 +176,32 @@ public class SearchViewModel extends AndroidViewModel {
         if (types != null) getAvailableAttributes(types);
     }
 
-
-
-    public class AttributeSearchResult
-    {
+    public class AttributeSearchResult {
         public List<Attribute> attributes;
         public boolean success = true;
         public String message;
 
 
-        AttributeSearchResult()
-        {
+        AttributeSearchResult() {
             this.attributes = new ArrayList<>();
         }
 
-        AttributeSearchResult(List<Attribute> attributes)
-        {
+        AttributeSearchResult(List<Attribute> attributes) {
             this.attributes = attributes;
         }
     }
 
-    public class ContentSearchResult
-    {
+    public class ContentSearchResult {
         public List<Content> contents;
+        public int totalSelected;
         public boolean success = true;
         public String message;
 
-        ContentSearchResult(List<Content> contents)
-        {
+        ContentSearchResult() {
+            this.contents = new ArrayList<>();
+        }
+
+        ContentSearchResult(List<Content> contents) {
             this.contents = contents;
         }
     }

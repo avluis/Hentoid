@@ -2,6 +2,7 @@ package me.devsaki.hentoid.abstracts;
 
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.SearchManager;
@@ -10,6 +11,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -53,6 +55,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -1376,7 +1379,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             currentPage = 1;
         }
         lastSearchParams = currentSearchParams;
-
+// TODO make default search universal
         if (isSearchMode()) collectionAccessor.searchBooks(getQuery(), selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
     }
@@ -1583,6 +1586,31 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
 
             if (mActionMode != null) {
                 mActionMode.finish();
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 999) {
+            if(resultCode == Activity.RESULT_OK){
+                Uri searchUri = Uri.parse(data.getStringExtra("searchUri"));
+                setQuery(searchUri.getPath());
+
+                selectedSearchTags.clear();
+                for (String typeStr : searchUri.getQueryParameterNames())
+                {
+                    AttributeType type = AttributeType.searchByName(typeStr);
+                    if (type != null)
+                    {
+                        for (String attrStr : searchUri.getQueryParameters(typeStr))
+                            selectedSearchTags.add(new Attribute(type, attrStr, ""));
+                    }
+                }
+
+                searchLibrary(true);
             }
         }
     }

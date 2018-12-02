@@ -101,8 +101,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         super.onAttach(context);
 
         Bundle bundle = getArguments();
-        if (bundle != null)
-        {
+        if (bundle != null) {
             mode = bundle.getInt("mode", -1);
             List<Integer> attrTypesList = bundle.getIntegerArrayList(KEY_ATTRIBUTE_TYPES);
             if (-1 == mode || null == attrTypesList || attrTypesList.isEmpty()) {
@@ -181,9 +180,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      * Loads the attributes corresponding to the given AttributeType, filtered with the given string
      *
      * @param a Attribute Type whose attributes to retrieve
-     * @param s Filter to apply to the attributes name (only retrieve attributes with name like %s%)
+     * @param filter Filter to apply to the attributes name (only retrieve attributes with name like %s%)
      */
-    private void searchMasterData(List<AttributeType> a, final String s) {
+    private void searchMasterData(List<AttributeType> a, final String filter) {
         tagWaitImage.setImageResource(a.get(0).getIcon());
         tagWaitTitle.setText(format("%s search", Helper.capitalizeString(a.get(0).name())));
         tagWaitMessage.setText(R.string.downloads_loading);
@@ -198,12 +197,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         tagWaitPanel.setVisibility(View.VISIBLE);
 
-        model.searchAttributes(a, s).observe(this, this::onAttributesReady);
+        model.searchAttributes(a, filter).observe(this, this::onAttributesReady);
     }
 
     private void onAttributesReady(SearchViewModel.AttributeSearchResult results) {
-        if (!results.success)
-        {
+        if (!results.success) {
             onAttributesFailed(results.message);
             return;
         }
@@ -246,8 +244,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private void addChoiceChip(ViewGroup parent, Attribute attribute) {
-        String label = format("%s %s", attribute.getName(), attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : "");
+        String label = format("%s %s", attribute.getName(), attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : ""); // TODO - generalize this display
 
+        // TODO - do not make unavailable items clickable ! (possible merging of this method with updateAttributeMosaic that knows how to handle that ?)
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
         chip.setText(label);
         chip.setTag(attribute);
@@ -341,7 +340,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      */
     private static SearchableInfo getSearchableInfo(Activity activity) {
         final SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-        if(searchManager == null) throw new RuntimeException();
+        if (searchManager == null) throw new RuntimeException();
         return searchManager.getSearchableInfo(activity.getComponentName());
     }
 }

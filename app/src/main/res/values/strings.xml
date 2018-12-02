@@ -138,4 +138,5 @@
     <string name="category_series">Series (%1$d)</string>
     <string name="category_language">Language (%1$d)</string>
     <string name="category_source">Source (%1$d)</string>
+    <string name="search_button">%1 Result%2 found</string>
 </resources>

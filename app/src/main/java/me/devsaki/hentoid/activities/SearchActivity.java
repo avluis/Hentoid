@@ -1,8 +1,11 @@
 package me.devsaki.hentoid.activities;
 
+import android.app.Activity;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.Toolbar;
 import android.util.SparseIntArray;
 import android.view.View;
@@ -16,14 +19,17 @@ import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
+import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
+import timber.log.Timber;
 
 import static java.lang.String.format;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 
 /**
  * Created by Robb on 2018/11
- *
+ * <p>
  * TODO - use a RecyclerView for the input and choice chips.
  * Implement an adapter for each recyclerview and feed both adapters with the same data list
  * modeling the currently selected filters. Whenever the filter list is modified, notify both
@@ -39,6 +45,8 @@ public class SearchActivity extends BaseActivity {
     private TextView characterCategoryText;
     private TextView languageCategoryText;
     private TextView sourceCategoryText;
+
+    private TextView searchButton;
 
     private View startCaption;
     // Container where selected attributed are displayed
@@ -61,6 +69,7 @@ public class SearchActivity extends BaseActivity {
         Intent intent = getIntent();
         if (intent != null) {
             mode = intent.getIntExtra("mode", MODE_LIBRARY);
+            // TODO create with current search filter/URI, if previously selected
         }
 
         setContentView(R.layout.activity_search);
@@ -93,6 +102,9 @@ public class SearchActivity extends BaseActivity {
         sourceCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.SOURCE));
 
         searchTags = findViewById(R.id.search_tags);
+
+        searchButton = findViewById(R.id.search_fab);
+        searchButton.setOnClickListener(v -> validateForm());
 
         model = ViewModelProviders.of(this).get(SearchViewModel.class);
         model.setMode(mode);
@@ -132,24 +144,6 @@ public class SearchActivity extends BaseActivity {
         SearchBottomSheetFragment.show(getSupportFragmentManager(), mode, attributeTypes);
     }
 
-    /**
-     * Handler for Attribute button click
-     *
-     * @param attributes list of currently selected attributes
-     */
-    public void onAttributeSelected(List<Attribute> attributes) {
-
-        searchTags.removeAllViews();
-        searchTags.setVisibility(attributes.isEmpty()?View.GONE:View.VISIBLE);
-        startCaption.setVisibility(attributes.isEmpty()?View.VISIBLE:View.GONE);
-
-        for (Attribute a : attributes) addInputChip(searchTags, a);
-
-        // Launch book search according to new attribute selection
-        //searchLibrary(MODE_MIKAN == mode);
-        // TODO - count results here
-    }
-
     private void addInputChip(ViewGroup parent, Attribute attribute) {
         String type = attribute.getType().name().toLowerCase();
         String name = attribute.getName();
@@ -160,5 +154,54 @@ public class SearchActivity extends BaseActivity {
         chip.setOnClickListener(v -> model.unselectAttribute(attribute));
 
         parent.addView(chip);
+    }
+
+    /**
+     * Handler for Attribute button click
+     *
+     * @param attributes list of currently selected attributes
+     */
+    public void onAttributeSelected(List<Attribute> attributes) {
+
+        searchTags.removeAllViews();
+        searchTags.setVisibility(attributes.isEmpty() ? View.GONE : View.VISIBLE);
+        startCaption.setVisibility(attributes.isEmpty() ? View.VISIBLE : View.GONE);
+
+        for (Attribute a : attributes) addInputChip(searchTags, a);
+
+        // Launch book search according to new attribute selection
+        model.searchBooks().observe(this, this::onBooksReady);
+    }
+
+    private void onBooksReady(SearchViewModel.ContentSearchResult result) {
+        if (result.success) {
+            searchButton.setText(getString(R.string.search_button).replace("%1", result.totalSelected + "").replace("%2", 1 == result.totalSelected ? "" : "s"));
+            searchButton.setVisibility(View.VISIBLE);
+        } else {
+            searchButton.setVisibility(View.GONE);
+            Snackbar.make(startCaption, result.message, Snackbar.LENGTH_LONG);
+        }
+    }
+
+    private void validateForm() {
+        AttributeMap metadataMap = new AttributeMap();
+        metadataMap.add(model.getSelectedAttributes().getValue());
+
+        Uri.Builder searchUri = new Uri.Builder();
+        searchUri.scheme("search").authority("hentoid");
+
+        for (AttributeType attrType : metadataMap.keySet()) {
+            List<Attribute> attrs = metadataMap.get(attrType);
+            if (attrs.size() > 0) {
+                searchUri.appendQueryParameter(attrType.name(), Helper.buildListAsString(attrs));
+            }
+        }
+
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("searchUri", searchUri.build().toString());
+        Timber.d("URI :%s", searchUri.build().toString());
+
+        setResult(Activity.RESULT_OK, returnIntent);
+        finish();
     }
 }
