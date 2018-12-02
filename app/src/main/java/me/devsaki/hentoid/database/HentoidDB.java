@@ -114,28 +114,52 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public SparseIntArray countAttributesPerType() {
+        return countAttributesPerType(null);
+    }
+
+    public SparseIntArray countAttributesPerType(List<Attribute> filter) {
         SparseIntArray result = new SparseIntArray();
 
         Timber.d("countAttributesPerType");
 
-        SQLiteDatabase db = null;
-        Cursor cursorContent = null;
+        StringBuilder sql = new StringBuilder();
+        sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SELECT);
 
-        try {
-            db = getReadableDatabase();
-            cursorContent = db.rawQuery(AttributeTable.SELECT_COUNT_BY_TYPE, new String[]{});
+        if (filter != null && !filter.isEmpty())
+        {
+            AttributeMap metadataMap = new AttributeMap();
+            metadataMap.add(filter);
+
+            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
+            if (params != null && !params.isEmpty()) sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SITE_FILTER.replace("%1",Helper.buildListAsString(Helper.extractAttributesIds(params),"'")));
+
+            for (AttributeType attrType : metadataMap.keySet()) {
+                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
+                    List<Attribute> attrs = metadataMap.get(attrType);
+                    if (attrs.size() > 0)
+                        sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_ATTR_FILTER_JOINS);
+                        sql.append(
+                                AttributeTable.SELECT_COUNT_BY_TYPE_ATTR_FILTER_ATTRS
+                                        .replace("%4", Helper.buildListAsString(attrs,"'"))
+                                        .replace("%5", attrType.getCode() + "")
+                                        .replace("%6", attrs.size() + "")
+                        );
+                        sql.append("))");
+                    }
+            }
+        }
+
+        sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_GROUP);
+
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor cursorContent = db.rawQuery(sql.toString(), new String[]{})) {
 
             if (cursorContent.moveToFirst()) {
                 do {
-                    result.append(cursorContent.getInt(0),cursorContent.getInt(1));
+                    result.append(cursorContent.getInt(0), cursorContent.getInt(1));
                 } while (cursorContent.moveToNext());
             }
-
-            cursorContent = db.rawQuery(AttributeTable.SELECT_COUNT_BY_TYPE, new String[]{});
         } finally {
-            if (cursorContent != null) {
-                cursorContent.close();
-            }
             Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
             if (db != null && db.isOpen()) {
                 db.close(); // Closing database connection
@@ -728,7 +752,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Attribute> selectAvailableAttributes(int type, List<Attribute> attrs, List<Integer> sites, boolean filterFavourites) {
+    public List<Attribute> selectAvailableAttributes(int type, List<Attribute> attrs, boolean filterFavourites) {
         ArrayList<Attribute> result = new ArrayList<>();
 
         synchronized (locker) {
@@ -739,19 +763,25 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             String sql = AttributeTable.SELECT_ALL_BY_TYPE;
 
-            if (sites != null && sites.size() > 0)
-            {
-                sql += AttributeTable.SELECT_ALL_BY_USAGE_SITE_FILTER;
-                sql = sql.replace("%1", Helper.buildListAsString(sites, "'"));
+            if (attrs != null) {
+                // Detect the presence of sources within given attributes
+                List<Integer> sources = new ArrayList<>();
+                for (Attribute a : attrs)
+                    if (a.getType().equals(AttributeType.SOURCE)) sources.add(a.getId());
+
+                if (sources.size() > 0) {
+                    sql += AttributeTable.SELECT_ALL_SITE_FILTER;
+                    sql = sql.replace("%1", Helper.buildListAsString(sources, "'"));
+                }
+
+                if (attrs.size() > 0) {
+                    sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
+                    sql = sql.replace("%2", Helper.buildListAsString(attrs, "'"));
+                    sql = sql.replace("%3", attrs.size() + "");
+                }
             }
 
             if (filterFavourites) sql += AttributeTable.SELECT_ALL_BY_USAGE_FAVS;
-
-            if (attrs != null && attrs.size() > 0) {
-                sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
-                sql = sql.replace("%2", Helper.buildListAsString(attrs,"'"));
-                sql = sql.replace("%3", attrs.size() + "");
-            }
 
             sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
 
@@ -794,7 +824,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             if (filter != null && filter.trim().length() > 0)
             {
-                sql += AttributeTable.SELECT_ALL_BY_USAGE_ATTR_FILTER;
+                sql += AttributeTable.SELECT_ALL_ATTR_FILTER;
                 sql = sql.replace("%2", filter);
             }
 

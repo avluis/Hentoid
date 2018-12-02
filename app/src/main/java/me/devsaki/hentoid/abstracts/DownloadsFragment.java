@@ -15,7 +15,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
-import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -72,9 +71,9 @@ import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -96,7 +95,7 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * {@link #onRequestPermissionsResult(int, String[], int[])} to receive permission request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
-        ContentRemovedListener, ItemSelectListener, AttributeListener {
+        ContentRemovedListener, ItemSelectListener, ResultListener<List<Attribute>> {
 
     // ======== CONSTANTS
 
@@ -351,11 +350,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         if (Preferences.getRootFolderName().isEmpty()) {
             Timber.d("Where are my files?!");
 
-            FragmentActivity activity = getActivity();
-            if (null == activity) {
-                Timber.e("Activity unreachable !");
-                return false;
-            }
+            FragmentActivity activity = requireActivity();
             Intent intent = new Intent(activity, ImportActivity.class);
             startActivity(intent);
             activity.finish();
@@ -414,17 +409,13 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             File storage = new File(Preferences.getRootFolderName());
             if (FileHelper.getExtSdCardFolder(storage) == null) {
                 Timber.d("Where are my files?!");
-                Helper.toast(getActivity(),
+                Helper.toast(requireActivity(),
                         "Could not find library!\nPlease check your storage device.", LONG);
                 setQuery("      ");
 
                 Handler handler = new Handler();
                 handler.postDelayed(() -> {
-                    FragmentActivity activity = getActivity();
-                    if (null == activity) {
-                        Timber.e("Activity unreachable !");
-                        return;
-                    }
+                    FragmentActivity activity = requireActivity();
                     activity.finish();
                     Runtime.getRuntime().exit(0);
                 }, 3000);
@@ -445,7 +436,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         } catch (NullPointerException npe) {
             Timber.e(npe, "Invalid Stream");
             Helper.toast(R.string.sd_access_error);
-            new AlertDialog.Builder(getActivity())
+            new AlertDialog.Builder(requireActivity())
                     .setMessage(R.string.sd_access_fatal_error)
                     .setTitle("Error!")
                     .setPositiveButton(android.R.string.ok, null)
@@ -465,7 +456,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      * Reset the app (to get write permissions)
      */
     private void resetApp() {
-        Helper.reset(HentoidApp.getAppContext(), getActivity());
+        Helper.reset(HentoidApp.getAppContext(), requireActivity());
     }
 
     @Override
@@ -599,12 +590,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         }
 
         // Drawer
-        FragmentActivity activity = getActivity();
-        if (null == activity) {
-            Timber.e("Activity unreachable !");
-            return;
-        }
-
+        FragmentActivity activity = requireActivity();
         mDrawerLayout = activity.findViewById(R.id.drawer_layout);
 
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
@@ -817,12 +803,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             return true;
         });
 
-        FragmentActivity activity = getActivity();
-        if (null == activity) {
-            Timber.e("Activity unreachable !");
-            return;
-        }
-
+        FragmentActivity activity = requireActivity();
         mainSearchView = (SearchView) searchMenu.getActionView();
         if (searchManager != null) {
             mainSearchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
@@ -1184,14 +1165,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
     {
         if (MODE_LIBRARY == mode)
         {
-            List<Attribute> searchTags = new ArrayList<>();
-            List<Integer> searchSites = new ArrayList<>();
-
-            for (Attribute attr : selectedSearchTags)
-            {
-                if (attr.getType().equals(AttributeType.SOURCE)) searchSites.add(attr.getId());
-                else searchTags.add(attr);
-            }
+            List<Attribute> searchTags = new ArrayList<>(selectedSearchTags);
 
             // TODO run DB transaction on a dedicated thread
             List<Attribute> availableAttrs;
@@ -1199,7 +1173,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             {
                 availableAttrs = getDB().selectAvailableSources();
             } else {
-                availableAttrs = getDB().selectAvailableAttributes(selectedTab.getCode(), searchTags, searchSites, filterFavourites);
+                availableAttrs = getDB().selectAvailableAttributes(selectedTab.getCode(), searchTags, filterFavourites);
             }
 
             // Refresh displayed tag buttons
@@ -1463,11 +1437,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
     private void updateTitle()
     {
         if (MODE_LIBRARY == mode) {
-            Activity activity = getActivity();
-            if (null != activity) {
-                if (mTotalSelectedCount == mTotalCount) activity.setTitle("(" + mTotalCount + ")");
-                else activity.setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
-            }
+            if (mTotalSelectedCount == mTotalCount) requireActivity().setTitle("(" + mTotalCount + ")");
+            else requireActivity().setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
         }
     }
 
@@ -1509,7 +1480,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
     AttributeListener implementation
      */
     @Override
-    public void onAttributesReady(List<Attribute> results, int totalContent) {
+    public void onResultReady(List<Attribute> results, int totalContent) {
         attributeMosaic.removeAllViews();
 
         tagWaitMessage.clearAnimation();
@@ -1551,7 +1522,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
     }
 
     @Override
-    public void onAttributesFailed(String message) {
+    public void onResultFailed(String message) {
         Timber.w(message);
         Snackbar.make(mListView, message, Snackbar.LENGTH_SHORT).show(); // TODO: 9/11/2018 consider retry button if applicable
         tagWaitPanel.setVisibility(View.GONE);

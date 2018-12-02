@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -23,8 +24,6 @@ import android.view.animation.Animation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.flexbox.FlexboxLayout;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -32,17 +31,12 @@ import java.util.List;
 import java.util.Objects;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.SearchActivity;
-import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.collection.mikan.MikanAccessor;
-import me.devsaki.hentoid.database.DatabaseAccessor;
-import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
 import static java.lang.String.format;
@@ -52,7 +46,7 @@ import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_ACTIVE;
 import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_INACTIVE;
 import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_SELECTED;
 
-public class SearchBottomSheetFragment extends BottomSheetDialogFragment implements AttributeListener {
+public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // Panel that displays the "waiting for metadata info" visuals
     private View tagWaitPanel;
     // Image that displays current metadata type title (e.g. "Character search")
@@ -71,16 +65,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
 
     // Mode : show library or show Mikan search
     private int mode;
-    // Collection accessor (DB or external, depending on mode)
-    private CollectionAccessor collectionAccessor;
-
-    // TODO this is ugly
-    List<Attribute> selectedAttributes; // Reference to the actual list maintained by SearchActivity
 
     private List<AttributeType> attributeTypes = new ArrayList<>();
     private AttributeType mainAttr;
 
-    private OnAttributeSelectListener onAttributeSelectListener;
+    private SearchViewModel model;
 
 
     // ======== UTIL OBJECTS
@@ -110,8 +99,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        selectedAttributes = ((SearchActivity) context).getSelectedSearchTags(); // TODO - this is ugly
-        onAttributeSelectListener = (OnAttributeSelectListener) context;
 
         Bundle bundle = getArguments();
         if (bundle != null)
@@ -125,9 +112,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
 
             for (Integer i : attrTypesList) attributeTypes.add(AttributeType.searchByCode(i));
             mainAttr = attributeTypes.get(0);
-        }
 
-        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(context) : new MikanAccessor(context);
+            model = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
+            model.setMode(mode);
+        }
     }
 
     @Override
@@ -176,6 +164,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         searchMasterData(attributeTypes, "");
+        // Update attribute mosaic buttons state according to available metadata
+        model.getAvailableAttributes(attributeTypes).observe(this, this::updateAttributeMosaic);
     }
 
     private void submitAttributeSearchQuery(List<AttributeType> a, String s) {
@@ -208,19 +198,23 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
 
         tagWaitPanel.setVisibility(View.VISIBLE);
 
-        collectionAccessor.getAttributeMasterData(a, s, this);
+        model.searchAttributes(a, s).observe(this, this::onAttributesReady);
     }
 
-    /** @see AttributeListener */
-    @Override
-    public void onAttributesReady(List<Attribute> results, int totalContent) {
+    private void onAttributesReady(SearchViewModel.AttributeSearchResult results) {
+        if (!results.success)
+        {
+            onAttributesFailed(results.message);
+            return;
+        }
+
         attributeMosaic.removeAllViews();
 
         tagWaitMessage.clearAnimation();
 
-        if (0 == totalContent) {
+        if (results.attributes.isEmpty()) {
             tagWaitMessage.setText(R.string.masterdata_no_result);
-        } else if (totalContent > MAX_ATTRIBUTES_DISPLAYED) {
+        } else if (results.attributes.size() > MAX_ATTRIBUTES_DISPLAYED) {
             String searchQuery = tagSearchView.getQuery().toString();
 
             String errMsg = (0 == searchQuery.length()) ? getString(R.string.masterdata_too_many_results_noquery) : getString(R.string.masterdata_too_many_results_query);
@@ -235,21 +229,17 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
                 default:
                     comparator = Attribute.COUNT_COMPARATOR;
             }
-            Attribute[] attrs = results.toArray(new Attribute[0]); // Well, yes, since results.sort(comparator) requires API 24...
+            Attribute[] attrs = results.attributes.toArray(new Attribute[0]); // Well, yes, since results.sort(comparator) requires API 24...
             Arrays.sort(attrs, comparator);
 
             // Display buttons
             for (Attribute attr : attrs) {
                 addChoiceChip(attributeMosaic, attr);
             }
-
-            // Update attribute mosaic buttons state according to available metadata
-            updateAttributeMosaic(selectedAttributes);
-            tagWaitPanel.setVisibility(View.GONE);
         }
     }
-    @Override
-    public void onAttributesFailed(String message) {
+
+    private void onAttributesFailed(String message) {
         Timber.w(message);
         Snackbar.make(Objects.requireNonNull(getView()), message, Snackbar.LENGTH_SHORT).show(); // TODO: 9/11/2018 consider retry button if applicable
         tagWaitPanel.setVisibility(View.GONE);
@@ -292,50 +282,22 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
     private void toggleSearchFilter(View button) {
         Attribute a = (Attribute) button.getTag();
 
-        if (!selectedAttributes.contains(a)) {
+        if (null == model.getSelectedAttributes().getValue() || !model.getSelectedAttributes().getValue().contains(a)) { // Add selected tag
             colorChip(button, TAGFILTER_SELECTED);
-        } else { // Remove selected tagsearchTags.removeView(v);
+            model.selectAttribute(attributeTypes, a);
+        } else { // Remove selected tag
             colorChip(button, TAGFILTER_ACTIVE);
+            model.unselectAttribute(attributeTypes, a);
         }
-
-        onAttributeSelectListener.onAttributeSelected(a);
-
-        // Update attribute mosaic buttons state according to available metadata
-        updateAttributeMosaic(selectedAttributes);
     }
 
     /**
      * Refresh attributes list according to selected attributes
      * NB : available in library mode only because Mikan does not provide enough data for it
      */
-    private void updateAttributeMosaic(List<Attribute> selectedAttributes) {
+    private void updateAttributeMosaic(SearchViewModel.AttributeSearchResult availableAttrs) {
         if (MODE_LIBRARY == mode) {
-            Activity activity = getActivity();
-            if (null == activity) {
-                Timber.e("Activity unreachable !");
-                return;
-            }
-            HentoidDB db = HentoidDB.getInstance(activity);
-
-            List<Attribute> searchTags = new ArrayList<>();
-            List<Integer> searchSites = new ArrayList<>();
-
-            for (Attribute attr : selectedAttributes) {
-                if (attr.getType().equals(AttributeType.SOURCE)) searchSites.add(attr.getId());
-                else searchTags.add(attr);
-            }
-
-            // TODO run DB transaction on a dedicated thread
-
-            // Attributes within selected AttributeTypes
-            List<Attribute> availableAttrs;
-            if (mainAttr.equals(AttributeType.SOURCE)) {
-                availableAttrs = db.selectAvailableSources();
-            } else {
-                availableAttrs = new ArrayList<>();
-                for (AttributeType type : attributeTypes)
-                    availableAttrs.addAll(db.selectAvailableAttributes(type.getCode(), searchTags, searchSites, false)); // No favourites button in SearchActivity
-            }
+            tagWaitPanel.setVisibility(View.GONE);
 
             // Refresh displayed tag buttons
             boolean found, selected;
@@ -345,7 +307,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
                 Attribute displayedAttr = (Attribute) button.getTag();
                 if (displayedAttr != null) {
                     found = false;
-                    for (Attribute attr : availableAttrs)
+                    for (Attribute attr : availableAttrs.attributes)
                         if (attr.getId().equals(displayedAttr.getId())) {
                             found = true;
                             label = attr.getName() + " (" + attr.getCount() + ")";
@@ -356,14 +318,18 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
                     }
 
                     selected = false;
-                    for (Attribute attr : selectedAttributes)
-                        if (attr.getId().equals(displayedAttr.getId())) {
-                            selected = true;
-                            break;
-                        }
-                    button.setEnabled(selected || found);
-                    colorChip(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE);
-                    button.setText(label);
+                    if (model.getSelectedAttributes() != null) {
+                        List<Attribute> selectedAttributes = model.getSelectedAttributes().getValue();
+                        if (selectedAttributes != null)
+                            for (Attribute attr : selectedAttributes)
+                                if (attr.getId().equals(displayedAttr.getId())) {
+                                    selected = true;
+                                    break;
+                                }
+                        button.setEnabled(selected || found);
+                        colorChip(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE);
+                        button.setText(label);
+                    }
                 }
             }
         }
@@ -378,9 +344,5 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment impleme
         final SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
         if(searchManager == null) throw new RuntimeException();
         return searchManager.getSearchableInfo(activity.getComponentName());
-    }
-
-    public interface OnAttributeSelectListener {
-        void onAttributeSelected(Attribute attribute);
     }
 }

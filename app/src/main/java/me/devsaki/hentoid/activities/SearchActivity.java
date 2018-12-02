@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities;
 
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -8,21 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
-import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.collection.mikan.MikanAccessor;
-import me.devsaki.hentoid.database.DatabaseAccessor;
-import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Attribute;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
-import me.devsaki.hentoid.fragments.SearchBottomSheetFragment.OnAttributeSelectListener;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.viewmodels.SearchViewModel;
 
 import static java.lang.String.format;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
@@ -36,9 +30,7 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
  * adapters independently to update views. This should cleanup selection behavior and delegate
  * managing views to the RecyclerView framework.
  */
-public class SearchActivity extends BaseActivity implements ContentListener, OnAttributeSelectListener {
-
-    HentoidDB db;
+public class SearchActivity extends BaseActivity {
 
     private TextView anyCategoryText;
     private TextView tagCategoryText;
@@ -52,20 +44,15 @@ public class SearchActivity extends BaseActivity implements ContentListener, OnA
     // Container where selected attributed are displayed
     private ViewGroup searchTags;
 
-    // Current search tags
-    private List<Attribute> selectedSearchTags = new ArrayList<>();
-
 
     // Mode : show library or show Mikan search
     private int mode;
-    // Collection accessor (DB or external, depending on mode)
-    private CollectionAccessor collectionAccessor;
+    private SearchViewModel model;
 
 
     public static final int TAGFILTER_ACTIVE = 0;
     public static final int TAGFILTER_SELECTED = 1;
     public static final int TAGFILTER_INACTIVE = 3;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,13 +60,9 @@ public class SearchActivity extends BaseActivity implements ContentListener, OnA
 
         Intent intent = getIntent();
         if (intent != null) {
-            mode = intent.getIntExtra("refresh", MODE_LIBRARY);
+            mode = intent.getIntExtra("mode", MODE_LIBRARY);
         }
 
-        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(this) : new MikanAccessor(this);
-
-        // TODO - Execute DB calls in a worker thread
-        db = HentoidDB.getInstance(this);
         setContentView(R.layout.activity_search);
 
         Toolbar toolbar = findViewById(R.id.search_toolbar);
@@ -109,12 +92,16 @@ public class SearchActivity extends BaseActivity implements ContentListener, OnA
         sourceCategoryText = findViewById(R.id.textCategorySource);
         sourceCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.SOURCE));
 
-        // Create category buttons
-        SparseIntArray attrCount = db.countAttributesPerType();
-        attrCount.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
-        onQueryUpdated(attrCount);
-
         searchTags = findViewById(R.id.search_tags);
+
+        model = ViewModelProviders.of(this).get(SearchViewModel.class);
+        model.setMode(mode);
+        model.countAttributesPerType().observe(this, this::onTypeCountReady);
+        model.getSelectedAttributes().observe(this, this::onAttributeSelected);
+    }
+
+    public void onTypeCountReady(SparseIntArray results) {
+        if (results != null && results.size() > 0) onQueryUpdated(results);
     }
 
     private void onQueryUpdated(SparseIntArray attrCount) {
@@ -134,7 +121,7 @@ public class SearchActivity extends BaseActivity implements ContentListener, OnA
         languageCategoryText.setText(getString(R.string.category_language, languageCount));
 
         if (MODE_LIBRARY == mode) {
-            // TODO "any" button
+            anyCategoryText.setText(getString(R.string.category_any));
 
             int sourceCount = attrCount.get(AttributeType.SOURCE.getCode(), 0);
             sourceCategoryText.setText(getString(R.string.category_source, sourceCount));
@@ -148,26 +135,15 @@ public class SearchActivity extends BaseActivity implements ContentListener, OnA
     /**
      * Handler for Attribute button click
      *
-     * @param attribute the attribute that was selected in {@link SearchBottomSheetFragment}
-     * @see #removeSearchFilter(View, Attribute)
-     * @see OnAttributeSelectListener
+     * @param attributes list of currently selected attributes
      */
-    @Override
-    public void onAttributeSelected(Attribute attribute) {
-        // Add new tag to the selection
-        if (!selectedSearchTags.contains(attribute)) {
-            addInputChip(searchTags, attribute);
-            selectedSearchTags.add(attribute);
-            startCaption.setVisibility(View.GONE);
-            searchTags.setVisibility(View.VISIBLE);
-        } else { // Remove selected tagsearchTags.removeView(v);
-            searchTags.removeView(searchTags.findViewById(Math.abs(attribute.getId())));
-            selectedSearchTags.remove(attribute);
-            if (selectedSearchTags.isEmpty()) {
-                searchTags.setVisibility(View.GONE);
-                startCaption.setVisibility(View.VISIBLE);
-            }
-        }
+    public void onAttributeSelected(List<Attribute> attributes) {
+
+        searchTags.removeAllViews();
+        searchTags.setVisibility(attributes.isEmpty()?View.GONE:View.VISIBLE);
+        startCaption.setVisibility(attributes.isEmpty()?View.VISIBLE:View.GONE);
+
+        for (Attribute a : attributes) addInputChip(searchTags, a);
 
         // Launch book search according to new attribute selection
         //searchLibrary(MODE_MIKAN == mode);
@@ -182,46 +158,8 @@ public class SearchActivity extends BaseActivity implements ContentListener, OnA
         chip.setText(format("%s: %s", type, name));
 //        chip.setTag(attribute); // TODO - is this necessary for input chips?
         chip.setId(Math.abs(attribute.getId()));
-        chip.setOnClickListener(v -> removeSearchFilter(v, attribute));
+        chip.setOnClickListener(v -> model.unselectAttribute(attribute));
 
         parent.addView(chip);
-    }
-
-    private void removeSearchFilter(View v, Attribute a) {
-        searchTags.removeView(v);
-        selectedSearchTags.remove(a);
-        if (selectedSearchTags.isEmpty()) {
-            searchTags.setVisibility(View.GONE);
-            startCaption.setVisibility(View.VISIBLE);
-        }
-
-        // Launch book search according to new attribute selection
-        //searchLibrary(MODE_MIKAN == mode);
-        // TODO - count results here
-
-        // All AttributeTypes in the background
-        SparseIntArray attrCount = db.countAttributesPerType(); // TODO - create a variant query using searchTags and searchSites as input to make it display actually _available_ items
-        attrCount.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
-
-        onQueryUpdated(attrCount);
-        /*
-        // Update attribute mosaic buttons state according to available metadata  <-- does not happen, the modal fragment is not visible anymore
-        updateAttributeMosaic();
-        */
-    }
-
-    public List<Attribute> getSelectedSearchTags()
-    {
-        return selectedSearchTags;
-    }
-
-    @Override
-    public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) {
-
-    }
-
-    @Override
-    public void onContentFailed(Content content, String message) {
-
     }
 }
