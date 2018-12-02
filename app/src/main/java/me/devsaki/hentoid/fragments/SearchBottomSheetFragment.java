@@ -251,7 +251,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
         chip.setText(label);
         chip.setTag(attribute);
-//        chip.setId(Math.abs(attribute.getId())); // TODO - is this necessary for choice chips?
         chip.setOnClickListener(this::toggleSearchFilter);
 
         parent.addView(chip);

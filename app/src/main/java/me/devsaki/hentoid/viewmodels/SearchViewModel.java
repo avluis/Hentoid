@@ -62,7 +62,7 @@ public class SearchViewModel extends AndroidViewModel {
             result.message = message;
             list.postValue(result);
         }
-    };
+    }
 
     private ResultListener<SparseIntArray> countResultListener = new ResultListener<SparseIntArray>()
     {

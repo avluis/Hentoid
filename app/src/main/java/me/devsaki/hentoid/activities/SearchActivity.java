@@ -156,7 +156,6 @@ public class SearchActivity extends BaseActivity {
 
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, parent, false);
         chip.setText(format("%s: %s", type, name));
-//        chip.setTag(attribute); // TODO - is this necessary for input chips?
         chip.setId(Math.abs(attribute.getId()));
         chip.setOnClickListener(v -> model.unselectAttribute(attribute));
 

@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.database.constants;
 
-import android.provider.ContactsContract;
-
 import me.devsaki.hentoid.enums.StatusContent;
 
 /**
