@@ -309,7 +309,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                         List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
                         if (selectedAttributes != null)
                             for (Attribute attr : selectedAttributes)
-                                if (attr.getId().equals(displayedAttr.getId())) {
+                                if (attr.getName().equals(displayedAttr.getName()) && attr.getType().equals(displayedAttr.getType())) {
                                     selected = true;
                                     break;
                                 }
