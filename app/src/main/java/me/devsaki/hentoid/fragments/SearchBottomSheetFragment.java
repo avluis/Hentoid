@@ -5,8 +5,6 @@ import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -14,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,9 +39,6 @@ import timber.log.Timber;
 import static java.lang.String.format;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
-import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_ACTIVE;
-import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_INACTIVE;
-import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_SELECTED;
 
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // Panel that displays the "waiting for metadata info" visuals
@@ -242,7 +236,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void onAttributesFailed(String message) {
         Timber.w(message);
-        Snackbar.make(Objects.requireNonNull(getView()), message, Snackbar.LENGTH_SHORT).show(); // TODO: 9/11/2018 consider retry button if applicable
+        Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), message, Snackbar.LENGTH_SHORT);
+        // Set retry button if Mikan mode on
+        if (MODE_MIKAN == mode) {
+            bar.setAction("RETRY", v -> viewModel.searchAttributes(attributeTypes, tagSearchView.getQuery().toString()));
+            bar.setDuration(Snackbar.LENGTH_LONG);
+        }
+        bar.show();
+
         tagWaitPanel.setVisibility(View.GONE);
     }
 
