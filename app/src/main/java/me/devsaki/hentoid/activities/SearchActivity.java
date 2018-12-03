@@ -195,9 +195,7 @@ public class SearchActivity extends BaseActivity {
 
         for (AttributeType attrType : metadataMap.keySet()) {
             List<Attribute> attrs = metadataMap.get(attrType);
-            if (attrs.size() > 0) {
-                searchUri.appendQueryParameter(attrType.name(), Helper.buildListAsString(attrs));
-            }
+            for (Attribute attr : attrs) searchUri.appendQueryParameter(attrType.name(), attr.getName());
         }
 
         Intent returnIntent = new Intent();
