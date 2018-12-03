@@ -108,8 +108,9 @@ public class SearchActivity extends BaseActivity {
 
         viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
         viewModel.setMode(mode);
-        viewModel.countAttributesPerType().observe(this, this::onTypeCountReady);
-        viewModel.getSelectedAttributes().observe(this, this::onAttributeSelected);
+        viewModel.getAttributesCountData().observe(this, this::onTypeCountReady);
+        viewModel.getSelectedAttributesData().observe(this, this::onAttributeSelected);
+        viewModel.getSelectedContentData().observe(this, this::onBooksReady);
     }
 
     public void onTypeCountReady(SparseIntArray results) {
@@ -170,7 +171,7 @@ public class SearchActivity extends BaseActivity {
         for (Attribute a : attributes) addInputChip(searchTags, a);
 
         // Launch book search according to new attribute selection
-        viewModel.searchBooks().observe(this, this::onBooksReady);
+        viewModel.searchBooks();
     }
 
     private void onBooksReady(SearchViewModel.ContentSearchResult result) {
@@ -185,7 +186,7 @@ public class SearchActivity extends BaseActivity {
 
     private void validateForm() {
         AttributeMap metadataMap = new AttributeMap();
-        metadataMap.add(viewModel.getSelectedAttributes().getValue());
+        metadataMap.add(viewModel.getSelectedAttributesData().getValue());
 
         Uri.Builder searchUri = new Uri.Builder();
         searchUri.scheme("search").authority("hentoid");

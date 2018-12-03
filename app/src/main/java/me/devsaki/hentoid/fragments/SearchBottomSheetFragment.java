@@ -115,7 +115,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             mainAttr = attributeTypes.get(0);
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
-            viewModel.setMode(mode);
+            viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
+            viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
         }
     }
 
@@ -166,7 +167,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         searchMasterData(attributeTypes, "");
         // Update attribute mosaic buttons state according to available metadata
-        viewModel.getAvailableAttributes(attributeTypes).observe(this, this::updateAttributeMosaic);
+        viewModel.getAvailableAttributes(attributeTypes);
     }
 
     private void submitAttributeSearchQuery(List<AttributeType> a, String s) {
@@ -199,7 +200,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         tagWaitPanel.setVisibility(View.VISIBLE);
 
-        viewModel.searchAttributes(a, filter).observe(this, this::onAttributesReady);
+        viewModel.searchAttributes(a, filter);
     }
 
     private void onAttributesReady(SearchViewModel.AttributeSearchResult results) {
@@ -282,7 +283,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private void toggleSearchFilter(View button) {
         Attribute a = (Attribute) button.getTag();
 
-        if (null == viewModel.getSelectedAttributes().getValue() || !viewModel.getSelectedAttributes().getValue().contains(a)) { // Add selected tag
+        if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             colorChip(button, TAGFILTER_SELECTED);
             viewModel.selectAttribute(attributeTypes, a);
         } else { // Remove selected tag
@@ -318,8 +319,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                     }
 
                     selected = false;
-                    if (viewModel.getSelectedAttributes() != null) {
-                        List<Attribute> selectedAttributes = viewModel.getSelectedAttributes().getValue();
+                    if (viewModel.getSelectedAttributesData() != null) {
+                        List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
                         if (selectedAttributes != null)
                             for (Attribute attr : selectedAttributes)
                                 if (attr.getId().equals(displayedAttr.getId())) {

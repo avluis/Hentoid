@@ -29,16 +29,13 @@ public class SearchViewModel extends AndroidViewModel {
     private MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
 
     // Populated with DB queries
-    private MutableLiveData<AttributeSearchResult> proposedAttributes;
-    private MutableLiveData<AttributeSearchResult> availableAttributes;
-    private MutableLiveData<ContentSearchResult> selectedContent;
-    private MutableLiveData<SparseIntArray> attributesPerType;
+    private MutableLiveData<AttributeSearchResult> proposedAttributes = new MutableLiveData<>();
+    private MutableLiveData<AttributeSearchResult> availableAttributes = new MutableLiveData<>();
+    private MutableLiveData<ContentSearchResult> selectedContent = new MutableLiveData<>();
+    private MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
 
     // Collection accessor (DB or external, depending on mode)
     private CollectionAccessor collectionAccessor;
-
-    private AttributesResultListener availableAttributesListener;
-    private AttributesResultListener proposedAttributesListener;
 
 
     // === LISTENER HELPERS
@@ -103,47 +100,45 @@ public class SearchViewModel extends AndroidViewModel {
 
     public void setMode(int mode) {
         collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(getApplication().getApplicationContext()) : new MikanAccessor(getApplication().getApplicationContext());
+        countAttributesPerType();
     }
 
-
-    // === FUNCTIONAL METHODS
-
-    public LiveData<SparseIntArray> countAttributesPerType() {
-        if (null == attributesPerType) {
-            attributesPerType = new MutableLiveData<>();
-        }
-        collectionAccessor.countAttributesPerType(selectedAttributes.getValue(), countResultListener);
-        return attributesPerType;
-    }
-
-    public LiveData<AttributeSearchResult> searchAttributes(List<AttributeType> types, String query) {
-        if (null == proposedAttributes) {
-            proposedAttributes = new MutableLiveData<>();
-            proposedAttributesListener = new AttributesResultListener(proposedAttributes);
-        }
-        collectionAccessor.getAttributeMasterData(types, query, proposedAttributesListener);
-        return proposedAttributes;
-    }
-
-    public LiveData<AttributeSearchResult> getAvailableAttributes(List<AttributeType> types) {
-        if (null == availableAttributes) {
-            availableAttributes = new MutableLiveData<>();
-            availableAttributesListener = new AttributesResultListener(availableAttributes);
-        }
-        collectionAccessor.getAvailableAttributes(types, selectedAttributes.getValue(), false, availableAttributesListener);
+    public LiveData<AttributeSearchResult> getAvailableAttributesData() {
         return availableAttributes;
     }
 
-    public LiveData<ContentSearchResult> searchBooks() {
-        if (null == selectedContent) {
-            selectedContent = new MutableLiveData<>();
-        }
-        collectionAccessor.searchBooks("", selectedAttributes.getValue(), 1, 1, 1, false, contentResultListener);
+    public LiveData<AttributeSearchResult> getProposedAttributesData() {
+        return proposedAttributes;
+    }
+
+    public LiveData<List<Attribute>> getSelectedAttributesData() {
+        return selectedAttributes;
+    }
+
+    public LiveData<SparseIntArray> getAttributesCountData() {
+        return attributesPerType;
+    }
+
+    public LiveData<ContentSearchResult> getSelectedContentData() {
         return selectedContent;
     }
 
-    public LiveData<List<Attribute>> getSelectedAttributes() {
-        return selectedAttributes;
+    // === VERB METHODS
+
+    private void countAttributesPerType() {
+        collectionAccessor.countAttributesPerType(selectedAttributes.getValue(), countResultListener);
+    }
+
+    public void searchAttributes(List<AttributeType> types, String query) {
+        collectionAccessor.getAttributeMasterData(types, query, new AttributesResultListener(proposedAttributes));
+    }
+
+    public void getAvailableAttributes(List<AttributeType> types) {
+        collectionAccessor.getAvailableAttributes(types, selectedAttributes.getValue(), false, new AttributesResultListener(availableAttributes));
+    }
+
+    public void searchBooks() {
+        collectionAccessor.searchBooks("", selectedAttributes.getValue(), 1, 1, 1, false, contentResultListener);
     }
 
     public void selectAttribute(List<AttributeType> types, Attribute a) {
