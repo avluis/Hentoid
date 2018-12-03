@@ -10,7 +10,6 @@ import android.util.SparseIntArray;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanAccessor;
@@ -20,6 +19,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.model.State;
 
 import static java.util.Objects.requireNonNull;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
@@ -32,6 +32,13 @@ public class SearchViewModel extends AndroidViewModel {
     private final MutableLiveData<AttributeSearchResult> availableAttributes = new MutableLiveData<>();
     private final MutableLiveData<ContentSearchResult> selectedContent = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
+
+    /**
+     * should only be used as a means to communicate with the view without keeping a reference to
+     * it, or knowing about it's lifecycle. {@link LiveData#getValue()} is rarely used due to its
+     * cumbersome nulllability.
+     */
+    private final MutableLiveData<State> stateLiveData = new MutableLiveData<>();
 
     /** @see #setMode(int) */
     private CollectionAccessor collectionAccessor;
@@ -131,6 +138,16 @@ public class SearchViewModel extends AndroidViewModel {
         return selectedContent;
     }
 
+    /**
+     * Used by the view to observe changes to this ViewModel's state. It is safe to subscribe to
+     * this observable before it is given an initial value.
+     *
+     * @return LiveData holding the current state
+     */
+    @NonNull
+    public MutableLiveData<State> getStateLiveData() {
+        return stateLiveData;
+    }
 
     // === VERB METHODS
 

@@ -46,6 +46,14 @@ import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_ACTIVE;
 import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_INACTIVE;
 import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_SELECTED;
 
+/**
+ * TODO: It's not important where the beginning curly braces are placed but it is better if a file
+ * has a consistent code style by using CTRL + L. This can be changed in Settings > Editor > Code
+ * Style > Java
+ * <p>
+ * TODO: look into recyclerview.extensions.ListAdapter for a RecyclerView.Adapter that can issue
+ * appropriate notify commands based on list diff
+ */
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // Panel that displays the "waiting for metadata info" visuals
     private View tagWaitPanel;
@@ -103,7 +111,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             mode = bundle.getInt(KEY_MODE, -1);
             List<Integer> attrTypesList = bundle.getIntegerArrayList(KEY_ATTRIBUTE_TYPES);
             if (-1 == mode || null == attrTypesList || attrTypesList.isEmpty()) {
-                Timber.d("Initialization failed");
+                Timber.d("Initialization failed"); // TODO: 04/12/2018 shouldn't this throw a RuntimeException?
                 return;
             }
 
@@ -181,9 +189,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     /**
-     * Loads the attributes corresponding to the given AttributeType, filtered with the given string
+     * Loads the attributes corresponding to the given AttributeType, filtered with the given
+     * string
      *
-     * @param filter Filter to apply to the attributes name (only retrieve attributes with name like %s%)
+     * @param filter Filter to apply to the attributes name (only retrieve attributes with name like
+     *               %s%)
      */
     private void searchMasterData(final String filter) {
         // Set blinking animation
@@ -219,6 +229,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             String errMsg = (0 == searchQuery.length()) ? getString(R.string.masterdata_too_many_results_noquery) : getString(R.string.masterdata_too_many_results_query);
             tagWaitMessage.setText(errMsg.replace("%1", searchQuery));
         } else {
+            // TODO: data processing should be done in the ViewModel. The view should only care about what to display using business objects
             // Sort items according to prefs
             Comparator<Attribute> comparator;
             switch (attributesSortOrder) {
@@ -291,8 +302,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     /**
-     * Refresh attributes list according to selected attributes
-     * NB : available in library mode only because Mikan does not provide enough data for it
+     * TODO: it may be easier to just remove all views and inflate views for all attributes, TODO:
+     * or using RecyclerView notify only the views that changed TODO: data processing should be done
+     * in the ViewModel TODO: also see {@link me.devsaki.hentoid.model.State} Refresh attributes
+     * list according to selected attributes NB : available in library mode only because Mikan does
+     * not provide enough data for it
      */
     private void updateAttributeMosaic(SearchViewModel.AttributeSearchResult availableAttrs) {
         if (MODE_LIBRARY == mode) {
@@ -325,7 +339,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                                 break;
                             }
                     button.setEnabled(selected || found);
-                    colorChip(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE);
+                    colorChip(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE); // TODO: use a statelistdrawable for this
                     button.setText(label);
                 }
             }
