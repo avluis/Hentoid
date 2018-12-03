@@ -215,6 +215,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             String errMsg = (0 == searchQuery.length()) ? getString(R.string.masterdata_too_many_results_noquery) : getString(R.string.masterdata_too_many_results_query);
             tagWaitMessage.setText(errMsg.replace("%1", searchQuery));
         } else {
+            tagWaitPanel.setVisibility(View.GONE);
+
             // Sort items according to prefs
             Comparator<Attribute> comparator;
             switch (attributesSortOrder) {
@@ -231,6 +233,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             for (Attribute attr : attrs) {
                 addChoiceChip(attributeMosaic, attr);
             }
+
+            updateAttributeMosaic(viewModel.getAvailableAttributesData().getValue());
         }
     }
 
@@ -250,7 +254,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private void addChoiceChip(ViewGroup parent, Attribute attribute) {
         String label = formatAttributeLabel(attribute);
 
-        // TODO - do not make unavailable items clickable ! (possible merging of this method with updateAttributeMosaic that knows how to handle that ?)
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
         chip.setText(label);
         chip.setTag(attribute);
@@ -280,8 +283,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      * Refresh attributes list according to selected attributes
      * NB : available in library mode only because Mikan does not provide enough data for it
      */
-    private void updateAttributeMosaic(SearchViewModel.AttributeSearchResult availableAttrs) {
-        if (MODE_LIBRARY == mode) {
+    private void updateAttributeMosaic(SearchViewModel.AttributeSearchResult availableAttributes) {
+        if (MODE_LIBRARY == mode && availableAttributes != null) {
             tagWaitPanel.setVisibility(View.GONE);
 
             // Refresh displayed tag buttons
@@ -292,14 +295,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 Attribute displayedAttr = (Attribute) button.getTag();
                 if (displayedAttr != null) {
                     found = false;
-                    for (Attribute attr : availableAttrs.attributes)
+                    for (Attribute attr : availableAttributes.attributes)
                         if (attr.getId().equals(displayedAttr.getId())) {
                             found = true;
                             label = formatAttributeLabel(attr);
                             break;
                         }
                     if (!found) {
-                        label = formatAttributeLabel(displayedAttr);
+                        label = displayedAttr.getName(); // No count on this one, since it is not available
                     }
 
                     selected = false;
