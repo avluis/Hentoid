@@ -49,10 +49,6 @@ import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_SELECTED;
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // Panel that displays the "waiting for metadata info" visuals
     private View tagWaitPanel;
-    // Image that displays current metadata type title (e.g. "Character search")
-    private TextView tagWaitTitle;
-    // Image that displays current metadata type icon (e.g. face icon for character)
-    private ImageView tagWaitImage;
     // Image that displays metadata search message (e.g. loading up / too many results / no result)
     private TextView tagWaitMessage;
     // Search bar
@@ -115,6 +111,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             mainAttr = attributeTypes.get(0);
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
+            viewModel.onCategoryChanged(attributeTypes);
         }
     }
 
@@ -122,10 +119,16 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.include_search_filter_category, container, false);
 
+        // Image that displays current metadata type icon (e.g. face icon for character)
+        ImageView tagWaitImage = view.findViewById(R.id.tag_wait_image);
+        tagWaitImage.setImageResource(mainAttr.getIcon());
+
+        // Image that displays current metadata type title (e.g. "Character search")
+        TextView tagWaitTitle = view.findViewById(R.id.tag_wait_title);
+        tagWaitTitle.setText(format("%s search", Helper.capitalizeString(mainAttr.name())));
+
         tagWaitPanel = view.findViewById(R.id.tag_wait_panel);
-        tagWaitImage = view.findViewById(R.id.tag_wait_image);
         tagWaitMessage = view.findViewById(R.id.tag_wait_description);
-        tagWaitTitle = view.findViewById(R.id.tag_wait_title);
         attributeMosaic = view.findViewById(R.id.tag_suggestion);
 
         tagSearchView = view.findViewById(R.id.tag_filter);
@@ -138,7 +141,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
-                    submitAttributeSearchQuery(attributeTypes, s);
+                    submitAttributeSearchQuery(s);
                 }
                 tagSearchView.clearFocus();
 
@@ -151,7 +154,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchHandler.removeCallbacksAndMessages(null);
                 } else /*if (!s.isEmpty())*/ {
-                    submitAttributeSearchQuery(attributeTypes, s, 1000);
+                    submitAttributeSearchQuery(s, 1000);
                 }
 
                 return true;
@@ -163,44 +166,39 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        searchMasterData(attributeTypes, "");
-        // Update attribute mosaic buttons state according to available metadata
-        viewModel.getAvailableAttributes(attributeTypes);
+        searchMasterData("");
         viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
         viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
     }
 
-    private void submitAttributeSearchQuery(List<AttributeType> a, String s) {
-        submitAttributeSearchQuery(a, s, 0);
+    private void submitAttributeSearchQuery(String s) {
+        submitAttributeSearchQuery(s, 0);
     }
 
-    private void submitAttributeSearchQuery(List<AttributeType> a, final String s, long delay) {
+    private void submitAttributeSearchQuery(final String s, long delay) {
         searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(() -> searchMasterData(a, s), delay);
+        searchHandler.postDelayed(() -> searchMasterData(s), delay);
     }
 
     /**
      * Loads the attributes corresponding to the given AttributeType, filtered with the given string
      *
-     * @param a Attribute Type whose attributes to retrieve
      * @param filter Filter to apply to the attributes name (only retrieve attributes with name like %s%)
      */
-    private void searchMasterData(List<AttributeType> a, final String filter) {
-        tagWaitImage.setImageResource(a.get(0).getIcon());
-        tagWaitTitle.setText(format("%s search", Helper.capitalizeString(a.get(0).name())));
-        tagWaitMessage.setText(R.string.downloads_loading);
-
+    private void searchMasterData(final String filter) {
         // Set blinking animation
         Animation anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(750);
         anim.setStartOffset(20);
         anim.setRepeatMode(Animation.REVERSE);
         anim.setRepeatCount(Animation.INFINITE);
+
         tagWaitMessage.startAnimation(anim);
+        tagWaitMessage.setText(R.string.downloads_loading);
 
         tagWaitPanel.setVisibility(View.VISIBLE);
 
-        viewModel.searchAttributes(a, filter);
+        viewModel.onCategoryFilterChanged(filter);
     }
 
     private void onAttributesReady(SearchViewModel.AttributeSearchResult results) {
@@ -285,10 +283,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             colorChip(button, TAGFILTER_SELECTED);
-            viewModel.selectAttribute(attributeTypes, a);
+            viewModel.onAttributeSelected(a);
         } else { // Remove selected tag
             colorChip(button, TAGFILTER_ACTIVE);
-            viewModel.unselectAttribute(attributeTypes, a);
+            viewModel.onAttributeUnselected(a);
         }
     }
 
@@ -319,18 +317,16 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                     }
 
                     selected = false;
-                    if (viewModel.getSelectedAttributesData() != null) {
-                        List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
-                        if (selectedAttributes != null)
-                            for (Attribute attr : selectedAttributes)
-                                if (attr.getId().equals(displayedAttr.getId())) {
-                                    selected = true;
-                                    break;
-                                }
-                        button.setEnabled(selected || found);
-                        colorChip(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE);
-                        button.setText(label);
-                    }
+                    List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
+                    if (selectedAttributes != null)
+                        for (Attribute attr : selectedAttributes)
+                            if (attr.getId().equals(displayedAttr.getId())) {
+                                selected = true;
+                                break;
+                            }
+                    button.setEnabled(selected || found);
+                    colorChip(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE);
+                    button.setText(label);
                 }
             }
         }

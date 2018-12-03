@@ -30,11 +30,11 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 /**
  * Created by Robb on 2018/11
  * <p>
- * TODO - use a RecyclerView for the input and choice chips.
- * Implement an adapter for each recyclerview and feed both adapters with the same data list
- * modeling the currently selected filters. Whenever the filter list is modified, notify both
- * adapters independently to update views. This should cleanup selection behavior and delegate
- * managing views to the RecyclerView framework.
+ * TODO - use a RecyclerView for the input and choice chips. Implement an adapter for each
+ * recyclerview and feed both adapters with the same data list modeling the currently selected
+ * filters. Whenever the filter list is modified, notify both adapters independently to update
+ * views. This should cleanup selection behavior and delegate managing views to the RecyclerView
+ * framework.
  */
 public class SearchActivity extends BaseActivity {
 
@@ -108,13 +108,9 @@ public class SearchActivity extends BaseActivity {
 
         viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
         viewModel.setMode(mode);
-        viewModel.getAttributesCountData().observe(this, this::onTypeCountReady);
-        viewModel.getSelectedAttributesData().observe(this, this::onAttributeSelected);
+        viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
+        viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentData().observe(this, this::onBooksReady);
-    }
-
-    public void onTypeCountReady(SparseIntArray results) {
-        if (results != null && results.size() > 0) onQueryUpdated(results);
     }
 
     private void onQueryUpdated(SparseIntArray attrCount) {
@@ -145,33 +141,30 @@ public class SearchActivity extends BaseActivity {
         SearchBottomSheetFragment.show(getSupportFragmentManager(), mode, attributeTypes);
     }
 
-    private void addInputChip(ViewGroup parent, Attribute attribute) {
-        String type = attribute.getType().name().toLowerCase();
-        String name = attribute.getName();
-
-        TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, parent, false);
-        chip.setText(format("%s: %s", type, name));
-        chip.setId(Math.abs(attribute.getId()));
-        chip.setOnClickListener(v -> viewModel.unselectAttribute(attribute));
-
-        parent.addView(chip);
-    }
-
-    /**
-     * Handler for Attribute button click
-     *
-     * @param attributes list of currently selected attributes
-     */
-    public void onAttributeSelected(List<Attribute> attributes) {
-
+    /** @param attributes list of currently selected attributes */
+    private void onSelectedAttributesChanged(List<Attribute> attributes) {
         searchTags.removeAllViews();
-        searchTags.setVisibility(attributes.isEmpty() ? View.GONE : View.VISIBLE);
-        startCaption.setVisibility(attributes.isEmpty() ? View.VISIBLE : View.GONE);
 
-        for (Attribute a : attributes) addInputChip(searchTags, a);
+        if (attributes.isEmpty()) {
+            searchTags.setVisibility(View.GONE);
+            startCaption.setVisibility(View.VISIBLE);
+        } else {
+            searchTags.setVisibility(View.VISIBLE);
+            startCaption.setVisibility(View.GONE);
 
-        // Launch book search according to new attribute selection
-        viewModel.searchBooks();
+            // TODO: 04/12/2018 this should be replaced by a RecyclerViewAdapter
+            for (Attribute a : attributes) {
+                String type = a.getType().name().toLowerCase();
+                String name = a.getName();
+
+                TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, searchTags, false);
+                chip.setText(format("%s: %s", type, name));
+                chip.setId(Math.abs(a.getId()));
+                chip.setOnClickListener(v -> viewModel.onAttributeUnselected(a));
+
+                searchTags.addView(chip);
+            }
+        }
     }
 
     private void onBooksReady(SearchViewModel.ContentSearchResult result) {
@@ -188,8 +181,9 @@ public class SearchActivity extends BaseActivity {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.add(viewModel.getSelectedAttributesData().getValue());
 
-        Uri.Builder searchUri = new Uri.Builder();
-        searchUri.scheme("search").authority("hentoid");
+        Uri.Builder searchUri = new Uri.Builder()
+                .scheme("search")
+                .authority("hentoid");
 
         for (AttributeType attrType : metadataMap.keySet()) {
             List<Attribute> attrs = metadataMap.get(attrType);
