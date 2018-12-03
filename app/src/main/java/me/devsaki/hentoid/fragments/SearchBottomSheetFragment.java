@@ -247,7 +247,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     private void addChoiceChip(ViewGroup parent, Attribute attribute) {
-        String label = format("%s %s", attribute.getName(), attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : ""); // TODO - generalize this display
+        String label = formatAttributeLabel(attribute);
 
         // TODO - do not make unavailable items clickable ! (possible merging of this method with updateAttributeMosaic that knows how to handle that ?)
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
@@ -259,23 +259,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     /**
-     * Applies to the edges and text of the given Button the color corresponding to the given state
-     * TODO - use a StateListDrawable resource for this
-     *
-     * @param b        Button to be updated
-     * @param tagState Tag state whose color has to be applied
-     */
-    private void colorChip(View b, int tagState) {
-        int color = ResourcesCompat.getColor(getResources(), R.color.red_item, null);
-        if (TAGFILTER_SELECTED == tagState) {
-            color = ResourcesCompat.getColor(getResources(), R.color.red_accent, null);
-        } else if (TAGFILTER_INACTIVE == tagState) {
-            color = Color.DKGRAY;
-        }
-        b.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
-    }
-
-    /**
      * Handler for Attribute button click
      *
      * @param button Button that has been clicked on
@@ -284,10 +267,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         Attribute a = (Attribute) button.getTag();
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
-            colorChip(button, TAGFILTER_SELECTED);
+            button.setPressed(true);
             viewModel.selectAttribute(attributeTypes, a);
         } else { // Remove selected tag
-            colorChip(button, TAGFILTER_ACTIVE);
+            button.setEnabled(true);
             viewModel.unselectAttribute(attributeTypes, a);
         }
     }
@@ -311,11 +294,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                     for (Attribute attr : availableAttrs.attributes)
                         if (attr.getId().equals(displayedAttr.getId())) {
                             found = true;
-                            label = attr.getName() + " (" + attr.getCount() + ")";
+                            label = formatAttributeLabel(attr);
                             break;
                         }
                     if (!found) {
-                        label = displayedAttr.getName() + " (0)";
+                        label = formatAttributeLabel(displayedAttr);
                     }
 
                     selected = false;
@@ -328,12 +311,17 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                                     break;
                                 }
                         button.setEnabled(selected || found);
-                        colorChip(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE);
+                        button.setPressed(selected);
                         button.setText(label);
                     }
                 }
             }
         }
+    }
+
+    private String formatAttributeLabel(Attribute attribute)
+    {
+        return format("%s %s", attribute.getName(), attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : "");
     }
 
     /**

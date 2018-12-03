@@ -171,6 +171,7 @@ public class SearchViewModel extends AndroidViewModel {
         if (types != null) getAvailableAttributes(types);
     }
 
+    // === HELPER RESULT STRUCTURES
     public class AttributeSearchResult {
         public List<Attribute> attributes;
         public boolean success = true;
