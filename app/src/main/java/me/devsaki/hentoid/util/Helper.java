@@ -14,6 +14,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
@@ -344,6 +345,22 @@ public final class Helper {
     {
         List<Integer> result = new ArrayList<>();
         for(Attribute attr : attrs) result.add(attr.getId());
+        return result;
+    }
+
+    public static List<Attribute> extractAttributesFromUri(Uri uri) {
+        List<Attribute> result = new ArrayList<>();
+
+        for (String typeStr : uri.getQueryParameterNames())
+        {
+            AttributeType type = AttributeType.searchByName(typeStr);
+            if (type != null)
+            {
+                for (String attrStr : uri.getQueryParameters(typeStr))
+                    result.add(new Attribute(type, attrStr, ""));
+            }
+        }
+
         return result;
     }
 }

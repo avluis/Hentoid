@@ -121,6 +121,7 @@ protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
     private static final String FILTER_FAVOURITES = "filter_favs";
     private static final String CURRENT_PAGE = "current_page";
     private static final String QUERY = "query";
+    private static final String SEARCH_URI = "search_uri";
     private static final String MODE = "mode";
 
 
@@ -214,6 +215,8 @@ private int attributesSortOrder;
     boolean libraryHasBeenRefreshed = false;
     // If library has been refreshed, indicated new content count
     int refreshedContentCount = 0;
+    // Seach URI coming from Advanced search screen
+    String currentSearchUri = "";
 
 
 
@@ -476,6 +479,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         outState.putParcelable(LIST_STATE_KEY, mListState);
         outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
         outState.putString(QUERY, query);
+        outState.putString(SEARCH_URI, currentSearchUri);
         outState.putInt(CURRENT_PAGE, currentPage);
         outState.putInt(MODE, mode);
 
@@ -492,6 +496,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             mListState = state.getParcelable(LIST_STATE_KEY);
             filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
             query = state.getString(QUERY, "");
+            currentSearchUri = state.getString(SEARCH_URI, "");
             currentPage = state.getInt(CURRENT_PAGE);
             mode = state.getInt(MODE);
 
@@ -853,6 +858,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         advancedSearchBtn.setOnClickListener( v-> {
             Intent search = new Intent(this.getContext(), SearchActivity.class);
             search.putExtra("mode", mode);
+            if (!currentSearchUri.isEmpty()) search.putExtra("searchUri", currentSearchUri);
             startActivityForResult(search, 999);
         });
 
@@ -1596,19 +1602,11 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
 
         if (requestCode == 999) {
             if(resultCode == Activity.RESULT_OK){
-                Uri searchUri = Uri.parse(data.getStringExtra("searchUri"));
-                setQuery(searchUri.getPath());
+                currentSearchUri = data.getStringExtra("searchUri");
+                Uri searchUri = Uri.parse(currentSearchUri);
 
-                selectedSearchTags.clear();
-                for (String typeStr : searchUri.getQueryParameterNames())
-                {
-                    AttributeType type = AttributeType.searchByName(typeStr);
-                    if (type != null)
-                    {
-                        for (String attrStr : searchUri.getQueryParameters(typeStr))
-                            selectedSearchTags.add(new Attribute(type, attrStr, ""));
-                    }
-                }
+                setQuery(searchUri.getPath());
+                selectedSearchTags = Helper.extractAttributesFromUri(searchUri);
 
                 searchLibrary(true);
             }

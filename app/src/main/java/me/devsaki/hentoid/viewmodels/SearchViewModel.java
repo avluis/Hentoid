@@ -141,6 +141,13 @@ public class SearchViewModel extends AndroidViewModel {
         collectionAccessor.countBooks("", selectedAttributes.getValue(), false, contentResultListener);
     }
 
+    public void setSelectedAttributes(List<Attribute> attrs) {
+        selectedAttributes.setValue(attrs);
+
+        // Indirect impact on attributesPerType
+        countAttributesPerType();
+    }
+
     public void selectAttribute(List<AttributeType> types, Attribute a) {
         List<Attribute> selectedAttributesList = selectedAttributes.getValue();
         if (null == selectedAttributesList) selectedAttributesList = new ArrayList<>();

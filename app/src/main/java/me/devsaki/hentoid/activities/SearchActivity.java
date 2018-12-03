@@ -61,16 +61,22 @@ public class SearchActivity extends BaseActivity {
     private SearchViewModel viewModel;
 
 
-    // TODO - Activity state save/restore
+    // TODO - Activity state save/restore (onSaveInstanceState / onViewStateRestored)
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
+        List<Attribute> preSelectedAttributes = null;
         if (intent != null) {
             mode = intent.getIntExtra("mode", MODE_LIBRARY);
-            // TODO create with current search filter/URI, if previously selected
+            String searchUriStr = intent.getStringExtra("searchUri");
+            if (searchUriStr != null && !searchUriStr.isEmpty())
+            {
+                Uri searchUri = Uri.parse(searchUriStr);
+                preSelectedAttributes = Helper.extractAttributesFromUri(searchUri);
+            }
         }
 
         setContentView(R.layout.activity_search);
@@ -113,6 +119,7 @@ public class SearchActivity extends BaseActivity {
         viewModel.getAttributesCountData().observe(this, this::onTypeCountReady);
         viewModel.getSelectedAttributesData().observe(this, this::onAttributeSelected);
         viewModel.getSelectedContentData().observe(this, this::onBooksReady);
+        if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
     }
 
     public void onTypeCountReady(SparseIntArray results) {
