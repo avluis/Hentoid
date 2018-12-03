@@ -38,6 +38,7 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
  */
 public class SearchActivity extends BaseActivity {
 
+    // Category buttons
     private TextView anyCategoryText;
     private TextView tagCategoryText;
     private TextView artistCategoryText;
@@ -46,17 +47,21 @@ public class SearchActivity extends BaseActivity {
     private TextView languageCategoryText;
     private TextView sourceCategoryText;
 
+    // Book search button at the bottom of screen
     private TextView searchButton;
-
+    // Caption that says "Select a filter" on top of screen
     private View startCaption;
     // Container where selected attributed are displayed
     private ViewGroup searchTags;
 
-
     // Mode : show library or show Mikan search
     private int mode;
+
+    // ViewModel of this activity
     private SearchViewModel viewModel;
 
+
+    // TODO - Activity state save/restore
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,7 +173,7 @@ public class SearchActivity extends BaseActivity {
         for (Attribute a : attributes) addInputChip(searchTags, a);
 
         // Launch book search according to new attribute selection
-        viewModel.searchBooks();
+        viewModel.countBooks();
     }
 
     private void onBooksReady(SearchViewModel.ContentSearchResult result) {

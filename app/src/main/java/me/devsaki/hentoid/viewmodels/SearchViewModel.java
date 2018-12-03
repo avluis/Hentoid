@@ -137,8 +137,8 @@ public class SearchViewModel extends AndroidViewModel {
         collectionAccessor.getAvailableAttributes(types, selectedAttributes.getValue(), false, new AttributesResultListener(availableAttributes));
     }
 
-    public void searchBooks() {
-        collectionAccessor.searchBooks("", selectedAttributes.getValue(), 1, 1, 1, false, contentResultListener);
+    public void countBooks() {
+        collectionAccessor.countBooks("", selectedAttributes.getValue(), false, contentResultListener);
     }
 
     public void selectAttribute(List<AttributeType> types, Attribute a) {

@@ -54,14 +54,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // Container where all available attributes are loaded
     private ViewGroup attributeMosaic;
 
-    // Attributes sort order
-    private int attributesSortOrder = Preferences.getAttributesSortOrder();
-
     // Mode : show library or show Mikan search
     private int mode;
 
-    private List<AttributeType> attributeTypes = new ArrayList<>();
+    // Selected attribute types (selection done in the activity view)
+    private List<AttributeType> selectedAttributeTypes = new ArrayList<>();
 
+    // ViewModel of the current activity
     private SearchViewModel viewModel;
 
 
@@ -73,9 +72,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // ======== CONSTANTS
     protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
 
-    private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
+    private static final String KEY_ATTRIBUTE_TYPES = "selectedAttributeTypes";
 
     private static final String KEY_MODE = "mode";
+
 
     public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {
         ArrayList<Integer> selectedTypes = new ArrayList<>();
@@ -104,7 +104,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 return;
             }
 
-            for (Integer i : attrTypesList) attributeTypes.add(AttributeType.searchByCode(i));
+            for (Integer i : attrTypesList) selectedAttributeTypes.add(AttributeType.searchByCode(i));
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
         }
@@ -113,7 +113,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.include_search_filter_category, container, false);
-        AttributeType mainAttr = attributeTypes.get(0);
+        AttributeType mainAttr = selectedAttributeTypes.get(0);
 
         tagWaitPanel = view.findViewById(R.id.tag_wait_panel);
         tagWaitImage = view.findViewById(R.id.tag_wait_image);
@@ -123,7 +123,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         tagSearchView = view.findViewById(R.id.tag_filter);
         tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
-        tagSearchView.setQueryHint("Search " + Helper.buildListAsString(attributeTypes));
+        tagSearchView.setQueryHint("Search " + Helper.buildListAsString(selectedAttributeTypes));
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -131,7 +131,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
-                    submitAttributeSearchQuery(attributeTypes, s);
+                    submitAttributeSearchQuery(selectedAttributeTypes, s);
                 }
                 tagSearchView.clearFocus();
 
@@ -144,7 +144,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchHandler.removeCallbacksAndMessages(null);
                 } else /*if (!s.isEmpty())*/ {
-                    submitAttributeSearchQuery(attributeTypes, s, 1000);
+                    submitAttributeSearchQuery(selectedAttributeTypes, s, 1000);
                 }
 
                 return true;
@@ -156,9 +156,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        searchMasterData(attributeTypes, "");
+        searchMasterData(selectedAttributeTypes, "");
         // Update attribute mosaic buttons state according to available metadata
-        viewModel.getAvailableAttributes(attributeTypes);
+        viewModel.getAvailableAttributes(selectedAttributeTypes);
         viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
         viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
     }
@@ -218,7 +218,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
             // Sort items according to prefs
             Comparator<Attribute> comparator;
-            switch (attributesSortOrder) {
+            switch (Preferences.getAttributesSortOrder()) {
                 case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
                     comparator = Attribute.NAME_COMPARATOR;
                     break;
@@ -242,7 +242,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), message, Snackbar.LENGTH_SHORT);
         // Set retry button if Mikan mode on
         if (MODE_MIKAN == mode) {
-            bar.setAction("RETRY", v -> viewModel.searchAttributes(attributeTypes, tagSearchView.getQuery().toString()));
+            bar.setAction("RETRY", v -> viewModel.searchAttributes(selectedAttributeTypes, tagSearchView.getQuery().toString()));
             bar.setDuration(Snackbar.LENGTH_LONG);
         }
         bar.show();
@@ -271,10 +271,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
-            viewModel.selectAttribute(attributeTypes, a);
+            viewModel.selectAttribute(selectedAttributeTypes, a);
         } else { // Remove selected tag
             button.setEnabled(true);
-            viewModel.unselectAttribute(attributeTypes, a);
+            viewModel.unselectAttribute(selectedAttributeTypes, a);
         }
     }
 

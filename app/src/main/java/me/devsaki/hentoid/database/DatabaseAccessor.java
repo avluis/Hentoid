@@ -56,6 +56,13 @@ public class DatabaseAccessor implements CollectionAccessor {
     }
 
     @Override
+    public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
+        synchronized (contentSynch) {
+            new ContentFetchTask(db, query, metadata, favouritesOnly, listener).execute();
+        }
+    }
+
+    @Override
     public void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener) {
         synchronized (attrSynch) {
             List<AttributeType> attrs = new ArrayList<>();
@@ -104,6 +111,12 @@ public class DatabaseAccessor implements CollectionAccessor {
         private final int orderStyle;
         private final boolean favouritesOnly;
 
+        private final int mode;
+
+        private final int MODE_SEARCH = 0;
+        private final int MODE_COUNT = 1;
+
+
         ContentFetchTask(HentoidDB db, String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
             this.db = db;
             this.titleQuery = query;
@@ -113,14 +126,29 @@ public class DatabaseAccessor implements CollectionAccessor {
             this.orderStyle = orderStyle;
             this.favouritesOnly = favouritesOnly;
             this.listener = listener;
+            mode = MODE_SEARCH;
+        }
+
+        ContentFetchTask(HentoidDB db, String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
+            this.db = db;
+            this.titleQuery = query;
+            this.metadata = metadata;
+            this.currentPage = 1;
+            this.booksPerPage = 1;
+            this.orderStyle = 1;
+            this.favouritesOnly = favouritesOnly;
+            this.listener = listener;
+            mode = MODE_COUNT;
         }
 
         @Override
         protected ContentQueryResult doInBackground(String... params) {
             ContentQueryResult result = new ContentQueryResult();
 
-            // Fetch the given page of results (query results count is always <= booksPerPage)
-            result.pagedContents = db.selectContentByQuery(titleQuery, currentPage, booksPerPage, metadata, favouritesOnly, orderStyle);
+            if (MODE_SEARCH == mode) {
+                // Fetch the given page of results (query results count is always <= booksPerPage)
+                result.pagedContents = db.selectContentByQuery(titleQuery, currentPage, booksPerPage, metadata, favouritesOnly, orderStyle);
+            }
             // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
             result.totalSelectedContent = db.countContentByQuery(titleQuery, metadata, favouritesOnly);
             // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
@@ -147,10 +175,12 @@ public class DatabaseAccessor implements CollectionAccessor {
         private final List<Attribute> attrs;
         private final String filter;
         private final boolean filterFavourites;
+
         private final int mode;
 
         private final int MODE_SEARCH_TEXT = 0;
         private final int MODE_SEARCH_AVAILABLE = 1;
+
 
         AttributesFetchTask(HentoidDB db, ResultListener<List<Attribute>> listener, List<AttributeType> attrTypes, String filter) {
             this.db = db;

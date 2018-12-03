@@ -20,6 +20,8 @@ public interface CollectionAccessor {
 
     void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
 
+    void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener);
+
     void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener);
 
     void getAttributeMasterData(List<AttributeType> types, String filter, ResultListener<List<Attribute>> listener);
