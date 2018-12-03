@@ -82,12 +82,14 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
 
+    private static final String KEY_MODE = "mode";
+
     public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {
         ArrayList<Integer> selectedTypes = new ArrayList<>();
         for (AttributeType type : types) selectedTypes.add(type.getCode());
 
         Bundle bundle = new Bundle();
-        bundle.putInt("mode", mode);
+        bundle.putInt(KEY_MODE, mode);
         bundle.putIntegerArrayList(KEY_ATTRIBUTE_TYPES, selectedTypes);
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
@@ -102,7 +104,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            mode = bundle.getInt("mode", -1);
+            mode = bundle.getInt(KEY_MODE, -1);
             List<Integer> attrTypesList = bundle.getIntegerArrayList(KEY_ATTRIBUTE_TYPES);
             if (-1 == mode || null == attrTypesList || attrTypesList.isEmpty()) {
                 Timber.d("Initialization failed");
