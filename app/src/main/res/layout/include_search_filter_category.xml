@@ -50,17 +50,23 @@
 
     </LinearLayout>
 
-    <com.google.android.flexbox.FlexboxLayout
-        android:id="@+id/tag_suggestion"
+    <android.support.v4.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:alignContent="flex_start"
-        app:flexWrap="wrap"
-        tools:layout_height="20dp">
+        tools:layout_height="30dp">
 
-        <!-- programmatically added metadata here -->
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/tag_suggestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:alignContent="flex_start"
+            app:flexWrap="wrap">
 
-    </com.google.android.flexbox.FlexboxLayout>
+            <!-- programmatically added metadata here -->
+
+        </com.google.android.flexbox.FlexboxLayout>
+
+    </android.support.v4.widget.NestedScrollView>
 
     <android.support.v7.widget.SearchView
         android:id="@+id/tag_filter"

@@ -115,8 +115,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             mainAttr = attributeTypes.get(0);
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
-            viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
-            viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
         }
     }
 
@@ -168,6 +166,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         searchMasterData(attributeTypes, "");
         // Update attribute mosaic buttons state according to available metadata
         viewModel.getAvailableAttributes(attributeTypes);
+        viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
+        viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
     }
 
     private void submitAttributeSearchQuery(List<AttributeType> a, String s) {
