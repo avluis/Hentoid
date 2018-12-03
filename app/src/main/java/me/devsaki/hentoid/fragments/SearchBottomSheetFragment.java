@@ -61,7 +61,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private int mode;
 
     private List<AttributeType> attributeTypes = new ArrayList<>();
-    private AttributeType mainAttr;
 
     private SearchViewModel viewModel;
 
@@ -106,7 +105,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             }
 
             for (Integer i : attrTypesList) attributeTypes.add(AttributeType.searchByCode(i));
-            mainAttr = attributeTypes.get(0);
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
         }
@@ -115,6 +113,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.include_search_filter_category, container, false);
+        AttributeType mainAttr = attributeTypes.get(0);
 
         tagWaitPanel = view.findViewById(R.id.tag_wait_panel);
         tagWaitImage = view.findViewById(R.id.tag_wait_image);
@@ -124,7 +123,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         tagSearchView = view.findViewById(R.id.tag_filter);
         tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
-        tagSearchView.setQueryHint("Search " + mainAttr.name().toLowerCase());
+        tagSearchView.setQueryHint("Search " + Helper.buildListAsString(attributeTypes));
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {

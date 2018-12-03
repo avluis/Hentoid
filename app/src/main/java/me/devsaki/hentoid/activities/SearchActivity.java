@@ -58,10 +58,6 @@ public class SearchActivity extends BaseActivity {
     private SearchViewModel viewModel;
 
 
-    public static final int TAGFILTER_ACTIVE = 0;
-    public static final int TAGFILTER_SELECTED = 1;
-    public static final int TAGFILTER_INACTIVE = 3;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -80,7 +76,8 @@ public class SearchActivity extends BaseActivity {
         startCaption = findViewById(R.id.startCaption);
 
         anyCategoryText = findViewById(R.id.textCategoryAny);
-        anyCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.values()));
+        anyCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.TAG, AttributeType.ARTIST,
+                AttributeType.CIRCLE, AttributeType.SERIE, AttributeType.CHARACTER, AttributeType.LANGUAGE)); // Everything but source !
         anyCategoryText.setEnabled(MODE_LIBRARY == mode); // Unsupported by Mikan
 
         tagCategoryText = findViewById(R.id.textCategoryTag);
