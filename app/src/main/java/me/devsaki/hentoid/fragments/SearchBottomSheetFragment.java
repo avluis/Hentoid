@@ -69,7 +69,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private List<AttributeType> attributeTypes = new ArrayList<>();
     private AttributeType mainAttr;
 
-    private SearchViewModel model;
+    private SearchViewModel viewModel;
 
 
     // ======== UTIL OBJECTS
@@ -114,8 +114,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             for (Integer i : attrTypesList) attributeTypes.add(AttributeType.searchByCode(i));
             mainAttr = attributeTypes.get(0);
 
-            model = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
-            model.setMode(mode);
+            viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
+            viewModel.setMode(mode);
         }
     }
 
@@ -166,7 +166,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         searchMasterData(attributeTypes, "");
         // Update attribute mosaic buttons state according to available metadata
-        model.getAvailableAttributes(attributeTypes).observe(this, this::updateAttributeMosaic);
+        viewModel.getAvailableAttributes(attributeTypes).observe(this, this::updateAttributeMosaic);
     }
 
     private void submitAttributeSearchQuery(List<AttributeType> a, String s) {
@@ -199,7 +199,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         tagWaitPanel.setVisibility(View.VISIBLE);
 
-        model.searchAttributes(a, filter).observe(this, this::onAttributesReady);
+        viewModel.searchAttributes(a, filter).observe(this, this::onAttributesReady);
     }
 
     private void onAttributesReady(SearchViewModel.AttributeSearchResult results) {
@@ -282,12 +282,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private void toggleSearchFilter(View button) {
         Attribute a = (Attribute) button.getTag();
 
-        if (null == model.getSelectedAttributes().getValue() || !model.getSelectedAttributes().getValue().contains(a)) { // Add selected tag
+        if (null == viewModel.getSelectedAttributes().getValue() || !viewModel.getSelectedAttributes().getValue().contains(a)) { // Add selected tag
             colorChip(button, TAGFILTER_SELECTED);
-            model.selectAttribute(attributeTypes, a);
+            viewModel.selectAttribute(attributeTypes, a);
         } else { // Remove selected tag
             colorChip(button, TAGFILTER_ACTIVE);
-            model.unselectAttribute(attributeTypes, a);
+            viewModel.unselectAttribute(attributeTypes, a);
         }
     }
 
@@ -318,8 +318,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                     }
 
                     selected = false;
-                    if (model.getSelectedAttributes() != null) {
-                        List<Attribute> selectedAttributes = model.getSelectedAttributes().getValue();
+                    if (viewModel.getSelectedAttributes() != null) {
+                        List<Attribute> selectedAttributes = viewModel.getSelectedAttributes().getValue();
                         if (selectedAttributes != null)
                             for (Attribute attr : selectedAttributes)
                                 if (attr.getId().equals(displayedAttr.getId())) {

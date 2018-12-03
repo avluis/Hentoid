@@ -55,7 +55,7 @@ public class SearchActivity extends BaseActivity {
 
     // Mode : show library or show Mikan search
     private int mode;
-    private SearchViewModel model;
+    private SearchViewModel viewModel;
 
 
     public static final int TAGFILTER_ACTIVE = 0;
@@ -106,10 +106,10 @@ public class SearchActivity extends BaseActivity {
         searchButton = findViewById(R.id.search_fab);
         searchButton.setOnClickListener(v -> validateForm());
 
-        model = ViewModelProviders.of(this).get(SearchViewModel.class);
-        model.setMode(mode);
-        model.countAttributesPerType().observe(this, this::onTypeCountReady);
-        model.getSelectedAttributes().observe(this, this::onAttributeSelected);
+        viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
+        viewModel.setMode(mode);
+        viewModel.countAttributesPerType().observe(this, this::onTypeCountReady);
+        viewModel.getSelectedAttributes().observe(this, this::onAttributeSelected);
     }
 
     public void onTypeCountReady(SparseIntArray results) {
@@ -151,7 +151,7 @@ public class SearchActivity extends BaseActivity {
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, parent, false);
         chip.setText(format("%s: %s", type, name));
         chip.setId(Math.abs(attribute.getId()));
-        chip.setOnClickListener(v -> model.unselectAttribute(attribute));
+        chip.setOnClickListener(v -> viewModel.unselectAttribute(attribute));
 
         parent.addView(chip);
     }
@@ -170,7 +170,7 @@ public class SearchActivity extends BaseActivity {
         for (Attribute a : attributes) addInputChip(searchTags, a);
 
         // Launch book search according to new attribute selection
-        model.searchBooks().observe(this, this::onBooksReady);
+        viewModel.searchBooks().observe(this, this::onBooksReady);
     }
 
     private void onBooksReady(SearchViewModel.ContentSearchResult result) {
@@ -185,7 +185,7 @@ public class SearchActivity extends BaseActivity {
 
     private void validateForm() {
         AttributeMap metadataMap = new AttributeMap();
-        metadataMap.add(model.getSelectedAttributes().getValue());
+        metadataMap.add(viewModel.getSelectedAttributes().getValue());
 
         Uri.Builder searchUri = new Uri.Builder();
         searchUri.scheme("search").authority("hentoid");
