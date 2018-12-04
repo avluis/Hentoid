@@ -111,7 +111,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             for (Integer i : attrTypesList) selectedAttributeTypes.add(AttributeType.searchByCode(i));
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
-            viewModel.onCategoryChanged(attributeTypes);
+            viewModel.onCategoryChanged(selectedAttributeTypes);
         }
     }
 
@@ -253,7 +253,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), message, Snackbar.LENGTH_SHORT);
         // Set retry button if Mikan mode on
         if (MODE_MIKAN == mode) {
-            bar.setAction("RETRY", v -> viewModel.searchAttributes(selectedAttributeTypes, tagSearchView.getQuery().toString()));
+            bar.setAction("RETRY", v -> viewModel.onCategoryFilterChanged(tagSearchView.getQuery().toString()));
             bar.setDuration(Snackbar.LENGTH_LONG);
         }
         bar.show();

@@ -191,10 +191,8 @@ public class SearchActivity extends BaseActivity {
                 chip.setId(Math.abs(a.getId())); // TODO - is this actually useful ?
                 chip.setOnClickListener(v -> viewModel.onAttributeUnselected(a));
 
-                parent.addView(chip);
+                searchTags.addView(chip);
             }
-            // Launch book search according to new attribute selection
-            viewModel.countBooks();
         }
     }
 
