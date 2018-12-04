@@ -32,7 +32,8 @@
     <com.google.android.flexbox.FlexboxLayout
         android:id="@+id/search_tags"
         android:layout_width="0dp"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
+        android:minHeight="48dp"
         android:background="@color/red_primary"
         android:paddingLeft="8dp"
         android:paddingStart="8dp"

@@ -181,6 +181,12 @@ public class MikanAccessor implements CollectionAccessor {
     }
 
     @Override
+    public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
+        // Just counting is not possible with Mikan interface => call to countBooks anyway
+        searchBooks(query, metadata, 1, 1, 1, favouritesOnly, listener);
+    }
+
+        @Override
     public void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener) {
 
         // Try and get response from cache

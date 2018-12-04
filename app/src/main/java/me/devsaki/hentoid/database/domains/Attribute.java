@@ -116,7 +116,7 @@ public class Attribute {
 
         Attribute attribute = (Attribute) o;
 
-        if ((externalId != 0 || attribute.externalId != 0) && externalId != attribute.externalId) return false;
+        if ((externalId != 0 && attribute.externalId != 0) && externalId != attribute.externalId) return false;
         if (!name.equals(attribute.name)) return false;
         return type == attribute.type;
     }

@@ -4,6 +4,7 @@
     <color name="primary_dark">@color/very_dark_mostly_black_red</color>
     <color name="ripple">@color/material_pink_300</color>
     <color name="accent">@color/red_accent_700</color>
+    <color name="darkGray">#FF444444</color>
 
     <!-- Useful Colors -->
     <!-- White -->

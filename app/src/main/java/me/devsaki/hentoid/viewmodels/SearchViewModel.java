@@ -173,6 +173,13 @@ public class SearchViewModel extends AndroidViewModel {
         updateSelectionResult();
     }
 
+    public void setSelectedAttributes(List<Attribute> attrs) {
+        selectedAttributes.setValue(attrs);
+
+        // Indirect impact on attributesPerType
+        countAttributesPerType();
+    }
+
     public void onAttributeUnselected(Attribute a) {
         List<Attribute> selectedAttributesList = requireNonNull(selectedAttributes.getValue());
 
@@ -195,9 +202,10 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     private void updateSelectionResult() {
-        collectionAccessor.searchBooks("", selectedAttributes.getValue(), 1, 1, 1, false, contentResultListener);
+        collectionAccessor.countBooks("", selectedAttributes.getValue(), false, contentResultListener);
     }
 
+    // === HELPER RESULT STRUCTURES
     public class AttributeSearchResult {
         public List<Attribute> attributes;
         public boolean success = true;

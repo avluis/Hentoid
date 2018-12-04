@@ -5,8 +5,6 @@ import android.app.SearchManager;
 import android.app.SearchableInfo;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
@@ -14,7 +12,6 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.SearchView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,9 +39,6 @@ import timber.log.Timber;
 import static java.lang.String.format;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
-import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_ACTIVE;
-import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_INACTIVE;
-import static me.devsaki.hentoid.activities.SearchActivity.TAGFILTER_SELECTED;
 
 /**
  * TODO: It's not important where the beginning curly braces are placed but it is better if a file
@@ -64,15 +58,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // Container where all available attributes are loaded
     private ViewGroup attributeMosaic;
 
-    // Attributes sort order
-    private int attributesSortOrder = Preferences.getAttributesSortOrder();
-
     // Mode : show library or show Mikan search
     private int mode;
 
-    private List<AttributeType> attributeTypes = new ArrayList<>();
-    private AttributeType mainAttr;
+    // Selected attribute types (selection done in the activity view)
+    private List<AttributeType> selectedAttributeTypes = new ArrayList<>();
 
+    // ViewModel of the current activity
     private SearchViewModel viewModel;
 
 
@@ -84,9 +76,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // ======== CONSTANTS
     protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
 
-    private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
+    private static final String KEY_ATTRIBUTE_TYPES = "selectedAttributeTypes";
 
     private static final String KEY_MODE = "mode";
+
 
     public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {
         ArrayList<Integer> selectedTypes = new ArrayList<>();
@@ -115,8 +108,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 return;
             }
 
-            for (Integer i : attrTypesList) attributeTypes.add(AttributeType.searchByCode(i));
-            mainAttr = attributeTypes.get(0);
+            for (Integer i : attrTypesList) selectedAttributeTypes.add(AttributeType.searchByCode(i));
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
             viewModel.onCategoryChanged(attributeTypes);
@@ -126,6 +118,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.include_search_filter_category, container, false);
+        AttributeType mainAttr = selectedAttributeTypes.get(0);
 
         // Image that displays current metadata type icon (e.g. face icon for character)
         ImageView tagWaitImage = view.findViewById(R.id.tag_wait_image);
@@ -141,7 +134,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         tagSearchView = view.findViewById(R.id.tag_filter);
         tagSearchView.setSearchableInfo(getSearchableInfo(requireActivity())); // Associate searchable configuration with the SearchView
-        tagSearchView.setQueryHint("Search " + mainAttr.name().toLowerCase());
+        tagSearchView.setQueryHint("Search " + Helper.buildListAsString(selectedAttributeTypes));
         tagSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
@@ -174,7 +167,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        searchMasterData("");
+        searchMasterData( "");
+        // Update attribute mosaic buttons state according to available metadata
+//        viewModel.getAvailableAttributes(selectedAttributeTypes);
         viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
         viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
     }
@@ -229,10 +224,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             String errMsg = (0 == searchQuery.length()) ? getString(R.string.masterdata_too_many_results_noquery) : getString(R.string.masterdata_too_many_results_query);
             tagWaitMessage.setText(errMsg.replace("%1", searchQuery));
         } else {
+            tagWaitPanel.setVisibility(View.GONE);
+
             // TODO: data processing should be done in the ViewModel. The view should only care about what to display using business objects
             // Sort items according to prefs
             Comparator<Attribute> comparator;
-            switch (attributesSortOrder) {
+            switch (Preferences.getAttributesSortOrder()) {
                 case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
                     comparator = Attribute.NAME_COMPARATOR;
                     break;
@@ -246,42 +243,33 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             for (Attribute attr : attrs) {
                 addChoiceChip(attributeMosaic, attr);
             }
+
+            updateAttributeMosaic(viewModel.getAvailableAttributesData().getValue());
         }
     }
 
     private void onAttributesFailed(String message) {
         Timber.w(message);
-        Snackbar.make(Objects.requireNonNull(getView()), message, Snackbar.LENGTH_SHORT).show(); // TODO: 9/11/2018 consider retry button if applicable
+        Snackbar bar = Snackbar.make(Objects.requireNonNull(getView()), message, Snackbar.LENGTH_SHORT);
+        // Set retry button if Mikan mode on
+        if (MODE_MIKAN == mode) {
+            bar.setAction("RETRY", v -> viewModel.searchAttributes(selectedAttributeTypes, tagSearchView.getQuery().toString()));
+            bar.setDuration(Snackbar.LENGTH_LONG);
+        }
+        bar.show();
+
         tagWaitPanel.setVisibility(View.GONE);
     }
 
     private void addChoiceChip(ViewGroup parent, Attribute attribute) {
-        String label = format("%s %s", attribute.getName(), attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : ""); // TODO - generalize this display
+        String label = formatAttributeLabel(attribute);
 
-        // TODO - do not make unavailable items clickable ! (possible merging of this method with updateAttributeMosaic that knows how to handle that ?)
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
         chip.setText(label);
         chip.setTag(attribute);
         chip.setOnClickListener(this::toggleSearchFilter);
 
         parent.addView(chip);
-    }
-
-    /**
-     * Applies to the edges and text of the given Button the color corresponding to the given state
-     * TODO - use a StateListDrawable resource for this
-     *
-     * @param b        Button to be updated
-     * @param tagState Tag state whose color has to be applied
-     */
-    private void colorChip(View b, int tagState) {
-        int color = ResourcesCompat.getColor(getResources(), R.color.red_item, null);
-        if (TAGFILTER_SELECTED == tagState) {
-            color = ResourcesCompat.getColor(getResources(), R.color.red_accent, null);
-        } else if (TAGFILTER_INACTIVE == tagState) {
-            color = Color.DKGRAY;
-        }
-        b.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_ATOP);
     }
 
     /**
@@ -293,10 +281,10 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         Attribute a = (Attribute) button.getTag();
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
-            colorChip(button, TAGFILTER_SELECTED);
+            button.setPressed(true);
             viewModel.onAttributeSelected(a);
         } else { // Remove selected tag
-            colorChip(button, TAGFILTER_ACTIVE);
+            button.setEnabled(true);
             viewModel.onAttributeUnselected(a);
         }
     }
@@ -308,8 +296,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      * list according to selected attributes NB : available in library mode only because Mikan does
      * not provide enough data for it
      */
-    private void updateAttributeMosaic(SearchViewModel.AttributeSearchResult availableAttrs) {
-        if (MODE_LIBRARY == mode) {
+    private void updateAttributeMosaic(SearchViewModel.AttributeSearchResult availableAttributes) {
+        if (MODE_LIBRARY == mode && availableAttributes != null) {
             tagWaitPanel.setVisibility(View.GONE);
 
             // Refresh displayed tag buttons
@@ -320,30 +308,37 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 Attribute displayedAttr = (Attribute) button.getTag();
                 if (displayedAttr != null) {
                     found = false;
-                    for (Attribute attr : availableAttrs.attributes)
+                    for (Attribute attr : availableAttributes.attributes)
                         if (attr.getId().equals(displayedAttr.getId())) {
                             found = true;
-                            label = attr.getName() + " (" + attr.getCount() + ")";
+                            label = formatAttributeLabel(attr);
                             break;
                         }
                     if (!found) {
-                        label = displayedAttr.getName() + " (0)";
+                        label = displayedAttr.getName(); // No count on this one, since it is not available
                     }
 
                     selected = false;
-                    List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
-                    if (selectedAttributes != null)
-                        for (Attribute attr : selectedAttributes)
-                            if (attr.getId().equals(displayedAttr.getId())) {
-                                selected = true;
-                                break;
-                            }
-                    button.setEnabled(selected || found);
-                    colorChip(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE); // TODO: use a statelistdrawable for this
-                    button.setText(label);
+
+                        List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
+                        if (selectedAttributes != null)
+                            for (Attribute attr : selectedAttributes)
+                                if (attr.getName().equals(displayedAttr.getName()) && attr.getType().equals(displayedAttr.getType())) {
+                                    selected = true;
+                                    break;
+                                }
+                        button.setEnabled(selected || found);
+                        button.setPressed( selected );
+                        button.setText(label);
+
                 }
             }
         }
+    }
+
+    private String formatAttributeLabel(Attribute attribute)
+    {
+        return format("%s %s", attribute.getName(), attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : "");
     }
 
     /**

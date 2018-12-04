@@ -38,6 +38,7 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
  */
 public class SearchActivity extends BaseActivity {
 
+    // Category buttons
     private TextView anyCategoryText;
     private TextView tagCategoryText;
     private TextView artistCategoryText;
@@ -46,30 +47,56 @@ public class SearchActivity extends BaseActivity {
     private TextView languageCategoryText;
     private TextView sourceCategoryText;
 
+    // Book search button at the bottom of screen
     private TextView searchButton;
-
+    // Caption that says "Select a filter" on top of screen
     private View startCaption;
     // Container where selected attributed are displayed
     private ViewGroup searchTags;
 
-
     // Mode : show library or show Mikan search
     private int mode;
+
+    // ViewModel of this activity
     private SearchViewModel viewModel;
 
 
-    public static final int TAGFILTER_ACTIVE = 0;
-    public static final int TAGFILTER_SELECTED = 1;
-    public static final int TAGFILTER_INACTIVE = 3;
+    private final String KEY_SEARCH_URI = "search_uri";
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_SEARCH_URI, buildSearchUri().toString());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        String searchUriStr = savedInstanceState.getString(KEY_SEARCH_URI, "");
+        if (!searchUriStr.isEmpty())
+        {
+            Uri searchUri = Uri.parse(searchUriStr);
+            List<Attribute> preSelectedAttributes = Helper.extractAttributesFromUri(searchUri);
+            if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Intent intent = getIntent();
+        List<Attribute> preSelectedAttributes = null;
         if (intent != null) {
             mode = intent.getIntExtra("mode", MODE_LIBRARY);
-            // TODO create with current search filter/URI, if previously selected
+            String searchUriStr = intent.getStringExtra("searchUri");
+            if (searchUriStr != null && !searchUriStr.isEmpty())
+            {
+                Uri searchUri = Uri.parse(searchUriStr);
+                preSelectedAttributes = Helper.extractAttributesFromUri(searchUri);
+            }
         }
 
         setContentView(R.layout.activity_search);
@@ -80,7 +107,8 @@ public class SearchActivity extends BaseActivity {
         startCaption = findViewById(R.id.startCaption);
 
         anyCategoryText = findViewById(R.id.textCategoryAny);
-        anyCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.values()));
+        anyCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.TAG, AttributeType.ARTIST,
+                AttributeType.CIRCLE, AttributeType.SERIE, AttributeType.CHARACTER, AttributeType.LANGUAGE)); // Everything but source !
         anyCategoryText.setEnabled(MODE_LIBRARY == mode); // Unsupported by Mikan
 
         tagCategoryText = findViewById(R.id.textCategoryTag);
@@ -111,6 +139,7 @@ public class SearchActivity extends BaseActivity {
         viewModel.getAttributesCountData().observe(this, this::onQueryUpdated);
         viewModel.getSelectedAttributesData().observe(this, this::onSelectedAttributesChanged);
         viewModel.getSelectedContentData().observe(this, this::onBooksReady);
+        if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
     }
 
     private void onQueryUpdated(SparseIntArray attrCount) {
@@ -159,11 +188,13 @@ public class SearchActivity extends BaseActivity {
 
                 TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, searchTags, false);
                 chip.setText(format("%s: %s", type, name));
-                chip.setId(Math.abs(a.getId()));
+                chip.setId(Math.abs(a.getId())); // TODO - is this actually useful ?
                 chip.setOnClickListener(v -> viewModel.onAttributeUnselected(a));
 
-                searchTags.addView(chip);
+                parent.addView(chip);
             }
+            // Launch book search according to new attribute selection
+            viewModel.countBooks();
         }
     }
 
@@ -177,7 +208,8 @@ public class SearchActivity extends BaseActivity {
         }
     }
 
-    private void validateForm() {
+    private Uri buildSearchUri()
+    {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.add(viewModel.getSelectedAttributesData().getValue());
 
@@ -187,14 +219,18 @@ public class SearchActivity extends BaseActivity {
 
         for (AttributeType attrType : metadataMap.keySet()) {
             List<Attribute> attrs = metadataMap.get(attrType);
-            if (attrs.size() > 0) {
-                searchUri.appendQueryParameter(attrType.name(), Helper.buildListAsString(attrs));
-            }
+            for (Attribute attr : attrs) searchUri.appendQueryParameter(attrType.name(), attr.getName()); // NB : Only name and type are exported; IDs are not necessary
         }
+        return searchUri.build();
+    }
 
+    private void validateForm() {
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("searchUri", searchUri.build().toString());
-        Timber.d("URI :%s", searchUri.build().toString());
+
+        String searchUri = buildSearchUri().toString();
+
+        returnIntent.putExtra("searchUri", searchUri);
+        Timber.d("URI :%s", searchUri);
 
         setResult(Activity.RESULT_OK, returnIntent);
         finish();
