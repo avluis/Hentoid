@@ -61,7 +61,27 @@ public class SearchActivity extends BaseActivity {
     private SearchViewModel viewModel;
 
 
-    // TODO - Activity state save/restore (onSaveInstanceState / onViewStateRestored)
+    private final String KEY_SEARCH_URI = "search_uri";
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(KEY_SEARCH_URI, buildSearchUri().toString());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        String searchUriStr = savedInstanceState.getString(KEY_SEARCH_URI, "");
+        if (!searchUriStr.isEmpty())
+        {
+            Uri searchUri = Uri.parse(searchUriStr);
+            List<Attribute> preSelectedAttributes = Helper.extractAttributesFromUri(searchUri);
+            if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -160,7 +180,7 @@ public class SearchActivity extends BaseActivity {
 
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, parent, false);
         chip.setText(format("%s: %s", type, name));
-        chip.setId(Math.abs(attribute.getId()));
+        chip.setId(Math.abs(attribute.getId())); // TODO - is this actually useful ?
         chip.setOnClickListener(v -> viewModel.unselectAttribute(attribute));
 
         parent.addView(chip);
@@ -193,7 +213,8 @@ public class SearchActivity extends BaseActivity {
         }
     }
 
-    private void validateForm() {
+    private Uri buildSearchUri()
+    {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.add(viewModel.getSelectedAttributesData().getValue());
 
@@ -204,10 +225,16 @@ public class SearchActivity extends BaseActivity {
             List<Attribute> attrs = metadataMap.get(attrType);
             for (Attribute attr : attrs) searchUri.appendQueryParameter(attrType.name(), attr.getName()); // NB : Only name and type are exported; IDs are not necessary
         }
+        return searchUri.build();
+    }
 
+    private void validateForm() {
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("searchUri", searchUri.build().toString());
-        Timber.d("URI :%s", searchUri.build().toString());
+
+        String searchUri = buildSearchUri().toString();
+
+        returnIntent.putExtra("searchUri", searchUri);
+        Timber.d("URI :%s", searchUri);
 
         setResult(Activity.RESULT_OK, returnIntent);
         finish();
