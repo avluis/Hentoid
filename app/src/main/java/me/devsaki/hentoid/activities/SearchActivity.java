@@ -19,7 +19,6 @@ import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
-import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
@@ -67,7 +66,7 @@ public class SearchActivity extends BaseActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(KEY_SEARCH_URI, buildSearchUri().toString());
+        outState.putString(KEY_SEARCH_URI, Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue()).toString());
     }
 
     @Override
@@ -75,11 +74,11 @@ public class SearchActivity extends BaseActivity {
         super.onRestoreInstanceState(savedInstanceState);
 
         String searchUriStr = savedInstanceState.getString(KEY_SEARCH_URI, "");
-        if (!searchUriStr.isEmpty())
-        {
+        if (!searchUriStr.isEmpty()) {
             Uri searchUri = Uri.parse(searchUriStr);
-            List<Attribute> preSelectedAttributes = Helper.extractAttributesFromUri(searchUri);
-            if (preSelectedAttributes != null) viewModel.setSelectedAttributes(preSelectedAttributes);
+            List<Attribute> preSelectedAttributes = Helper.parseSearchUri(searchUri);
+            if (preSelectedAttributes != null)
+                viewModel.setSelectedAttributes(preSelectedAttributes);
         }
     }
 
@@ -92,10 +91,9 @@ public class SearchActivity extends BaseActivity {
         if (intent != null) {
             mode = intent.getIntExtra("mode", MODE_LIBRARY);
             String searchUriStr = intent.getStringExtra("searchUri");
-            if (searchUriStr != null && !searchUriStr.isEmpty())
-            {
+            if (searchUriStr != null && !searchUriStr.isEmpty()) {
                 Uri searchUri = Uri.parse(searchUriStr);
-                preSelectedAttributes = Helper.extractAttributesFromUri(searchUri);
+                preSelectedAttributes = Helper.parseSearchUri(searchUri);
             }
         }
 
@@ -170,7 +168,9 @@ public class SearchActivity extends BaseActivity {
         SearchBottomSheetFragment.show(getSupportFragmentManager(), mode, attributeTypes);
     }
 
-    /** @param attributes list of currently selected attributes */
+    /**
+     * @param attributes list of currently selected attributes
+     */
     private void onSelectedAttributesChanged(List<Attribute> attributes) {
         searchTags.removeAllViews();
 
@@ -206,29 +206,12 @@ public class SearchActivity extends BaseActivity {
         }
     }
 
-    private Uri buildSearchUri()
-    {
-        AttributeMap metadataMap = new AttributeMap();
-        metadataMap.add(viewModel.getSelectedAttributesData().getValue());
-
-        Uri.Builder searchUri = new Uri.Builder()
-                .scheme("search")
-                .authority("hentoid");
-
-        for (AttributeType attrType : metadataMap.keySet()) {
-            List<Attribute> attrs = metadataMap.get(attrType);
-            for (Attribute attr : attrs) searchUri.appendQueryParameter(attrType.name(), attr.getName()); // NB : Only name and type are exported; IDs are not necessary
-        }
-        return searchUri.build();
-    }
-
     private void validateForm() {
-        Intent returnIntent = new Intent();
-
-        String searchUri = buildSearchUri().toString();
-
-        returnIntent.putExtra("searchUri", searchUri);
+        String searchUri = Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue()).toString();
         Timber.d("URI :%s", searchUri);
+
+        Intent returnIntent = new Intent();
+        returnIntent.putExtra("searchUri", searchUri);
 
         setResult(Activity.RESULT_OK, returnIntent);
         finish();
