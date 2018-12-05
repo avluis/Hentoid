@@ -22,8 +22,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,7 +30,6 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
@@ -41,10 +38,6 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 
 /**
- * TODO: It's not important where the beginning curly braces are placed but it is better if a file
- * has a consistent code style by using CTRL + L. This can be changed in Settings > Editor > Code
- * Style > Java
- * <p>
  * TODO: look into recyclerview.extensions.ListAdapter for a RecyclerView.Adapter that can issue
  * appropriate notify commands based on list diff
  */
@@ -104,11 +97,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             mode = bundle.getInt(KEY_MODE, -1);
             List<Integer> attrTypesList = bundle.getIntegerArrayList(KEY_ATTRIBUTE_TYPES);
             if (-1 == mode || null == attrTypesList || attrTypesList.isEmpty()) {
-                Timber.d("Initialization failed"); // TODO: 04/12/2018 shouldn't this throw a RuntimeException?
-                return;
+                throw new RuntimeException("Initialization failed");
             }
 
-            for (Integer i : attrTypesList) selectedAttributeTypes.add(AttributeType.searchByCode(i));
+            for (Integer i : attrTypesList)
+                selectedAttributeTypes.add(AttributeType.searchByCode(i));
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
             viewModel.onCategoryChanged(selectedAttributeTypes);
@@ -167,7 +160,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        searchMasterData( "");
+        searchMasterData("");
         // Update attribute mosaic buttons state according to available metadata
 //        viewModel.getAvailableAttributes(selectedAttributeTypes);
         viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
@@ -226,21 +219,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         } else {
             tagWaitPanel.setVisibility(View.GONE);
 
-            // TODO: data processing should be done in the ViewModel. The view should only care about what to display using business objects
-            // Sort items according to prefs
-            Comparator<Attribute> comparator;
-            switch (Preferences.getAttributesSortOrder()) {
-                case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
-                    comparator = Attribute.NAME_COMPARATOR;
-                    break;
-                default:
-                    comparator = Attribute.COUNT_COMPARATOR;
-            }
-            Attribute[] attrs = results.attributes.toArray(new Attribute[0]); // Well, yes, since results.sort(comparator) requires API 24...
-            Arrays.sort(attrs, comparator);
-
             // Display buttons
-            for (Attribute attr : attrs) {
+            for (Attribute attr : results.attributes) {
                 addChoiceChip(attributeMosaic, attr);
             }
 
@@ -289,12 +269,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         }
     }
 
+// TODO: it may be easier to just remove all views and inflate views for all attributes, or using RecyclerView notify only the views that changed
+// TODO: data processing should be done in the ViewModel
+// TODO: also see {@link me.devsaki.hentoid.model.State}
+
     /**
-     * TODO: it may be easier to just remove all views and inflate views for all attributes, TODO:
-     * or using RecyclerView notify only the views that changed TODO: data processing should be done
-     * in the ViewModel TODO: also see {@link me.devsaki.hentoid.model.State} Refresh attributes
-     * list according to selected attributes NB : available in library mode only because Mikan does
-     * not provide enough data for it
+     * Refresh attributes list according to selected attributes
+     * NB : available in library mode only because Mikan does not provide enough data for it
      */
     private void updateAttributeMosaic(SearchViewModel.AttributeSearchResult availableAttributes) {
         if (MODE_LIBRARY == mode && availableAttributes != null) {
@@ -317,27 +298,24 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                     if (!found) {
                         label = displayedAttr.getName(); // No count on this one, since it is not available
                     }
+                    button.setText(label);
 
                     selected = false;
-
-                        List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
-                        if (selectedAttributes != null)
-                            for (Attribute attr : selectedAttributes)
-                                if (attr.getName().equals(displayedAttr.getName()) && attr.getType().equals(displayedAttr.getType())) {
-                                    selected = true;
-                                    break;
-                                }
-                        button.setEnabled(selected || found);
-                        button.setPressed( selected );
-                        button.setText(label);
-
+                    List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
+                    if (selectedAttributes != null)
+                        for (Attribute attr : selectedAttributes)
+                            if (attr.getName().equals(displayedAttr.getName()) && attr.getType().equals(displayedAttr.getType())) {
+                                selected = true;
+                                break;
+                            }
+                    button.setEnabled(selected || found);
+                    button.setPressed(selected);
                 }
             }
         }
     }
 
-    private String formatAttributeLabel(Attribute attribute)
-    {
+    private String formatAttributeLabel(Attribute attribute) {
         return format("%s %s", attribute.getName(), attribute.getCount() > 0 ? "(" + attribute.getCount() + ")" : "");
     }
 

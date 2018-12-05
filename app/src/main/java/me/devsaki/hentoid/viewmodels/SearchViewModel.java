@@ -9,6 +9,8 @@ import android.support.annotation.NonNull;
 import android.util.SparseIntArray;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 import me.devsaki.hentoid.collection.CollectionAccessor;
@@ -20,6 +22,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.model.State;
+import me.devsaki.hentoid.util.Preferences;
 
 import static java.util.Objects.requireNonNull;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
@@ -40,7 +43,9 @@ public class SearchViewModel extends AndroidViewModel {
      */
     private final MutableLiveData<State> stateLiveData = new MutableLiveData<>();
 
-    /** @see #setMode(int) */
+    /**
+     * @see #setMode(int)
+     */
     private CollectionAccessor collectionAccessor;
 
     private List<AttributeType> category;
@@ -56,7 +61,20 @@ public class SearchViewModel extends AndroidViewModel {
 
         @Override
         public void onResultReady(List<Attribute> results, int totalContent) {
-            AttributeSearchResult result = new AttributeSearchResult(results);
+
+            // Sort items according to prefs
+            Comparator<Attribute> comparator;
+            switch (Preferences.getAttributesSortOrder()) {
+                case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
+                    comparator = Attribute.NAME_COMPARATOR;
+                    break;
+                default:
+                    comparator = Attribute.COUNT_COMPARATOR;
+            }
+            Attribute[] attrs = results.toArray(new Attribute[0]); // Well, yes, since results.sort(comparator) requires API 24...
+            Arrays.sort(attrs, comparator);
+
+            AttributeSearchResult result = new AttributeSearchResult(attrs);
             list.postValue(result);
         }
 
@@ -72,7 +90,7 @@ public class SearchViewModel extends AndroidViewModel {
     private ContentListener contentResultListener = new ContentListener() {
         @Override
         public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) {
-            ContentSearchResult result = new ContentSearchResult(results);
+            ContentSearchResult result = new ContentSearchResult();
             result.totalSelected = totalSelectedContent;
             selectedContent.postValue(result);
         }
@@ -216,23 +234,14 @@ public class SearchViewModel extends AndroidViewModel {
             this.attributes = new ArrayList<>();
         }
 
-        AttributeSearchResult(List<Attribute> attributes) {
-            this.attributes = attributes;
+        AttributeSearchResult(Attribute[] attributes) {
+            this.attributes = Arrays.asList(attributes);
         }
     }
 
     public class ContentSearchResult {
-        public List<Content> contents;
         public int totalSelected;
         public boolean success = true;
         public String message;
-
-        ContentSearchResult() {
-            this.contents = new ArrayList<>();
-        }
-
-        ContentSearchResult(List<Content> contents) {
-            this.contents = contents;
-        }
     }
 }
