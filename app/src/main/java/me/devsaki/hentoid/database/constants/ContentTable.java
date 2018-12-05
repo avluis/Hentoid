@@ -98,13 +98,23 @@ public abstract class ContentTable {
 
     public static final String SELECT_DOWNLOADS_FAVS = " AND C." + FAVOURITE_COLUMN + " = 1 ";
 
-    public static final String SELECT_DOWNLOADS_TITLE = " AND lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
+
+
+    private static final String SELECT_DOWNLOADS_TITLE_RAW = " lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
+    public static final String SELECT_DOWNLOADS_TITLE = " AND " + SELECT_DOWNLOADS_TITLE_RAW;
+    public static final String SELECT_DOWNLOADS_TITLE_UNIVERSAL = " AND (" + SELECT_DOWNLOADS_TITLE_RAW;
 
     public static final String SELECT_DOWNLOADS_JOINS = " AND C." + ID_COLUMN
             + " in (SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*) FROM " // TODO replace that IN by an INNER JOIN
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
 
+    public static final String SELECT_DOWNLOADS_JOINS_UNIVERSAL = " OR C." + ID_COLUMN
+            + " in (SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" + "SELECT CA." + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM " // TODO replace that IN by an INNER JOIN
+            + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
+            + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
+
     public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
-            + AttributeTable.TYPE_COLUMN + " = %5) GROUP BY 1 HAVING COUNT(*)=%6";
+            + AttributeTable.TYPE_COLUMN + " = %5) GROUP BY 1 HAVING COUNT(*)=%6 ))";
+    public static final String SELECT_DOWNLOADS_TAGS_UNIVERSAL = "lower(A." + AttributeTable.NAME_COLUMN + ") LIKE lower('%4') ) ))";
 }

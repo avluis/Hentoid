@@ -9,6 +9,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -182,11 +183,23 @@ public class MikanAccessor implements CollectionAccessor {
 
     @Override
     public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
-        // Just counting is not possible with Mikan interface => call to countBooks anyway
+        // Just counting is not possible with Mikan interface => call to searchBooks anyway
         searchBooks(query, metadata, 1, 1, 1, favouritesOnly, listener);
     }
 
-        @Override
+    @Override
+    public void searchBooksUniversal(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+        // Mikan does not allow "universal" search => call to searchBooks with empty metadata
+        searchBooks(query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly, listener);
+    }
+
+    @Override
+    public void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener) {
+        // Just counting is not possible with Mikan interface => call to searchBooks anyway
+        searchBooks(query, Collections.emptyList(), 1, 1, 1, favouritesOnly, listener);
+    }
+
+    @Override
     public void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener) {
 
         // Try and get response from cache

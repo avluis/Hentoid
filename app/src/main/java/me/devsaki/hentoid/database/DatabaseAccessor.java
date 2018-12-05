@@ -63,6 +63,20 @@ public class DatabaseAccessor implements CollectionAccessor {
     }
 
     @Override
+    public void searchBooksUniversal(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+        synchronized (contentSynch) {
+            new ContentFetchTask(db, query, page, booksPerPage, orderStyle, favouritesOnly, listener).execute();
+        }
+    }
+
+    @Override
+    public void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener) {
+        synchronized (contentSynch) {
+            new ContentFetchTask(db, query, favouritesOnly, listener).execute();
+        }
+    }
+
+    @Override
     public void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener) {
         synchronized (attrSynch) {
             List<AttributeType> attrs = new ArrayList<>();
@@ -113,9 +127,23 @@ public class DatabaseAccessor implements CollectionAccessor {
 
         private final int mode;
 
-        private final int MODE_SEARCH = 0;
-        private final int MODE_COUNT = 1;
+        private final int MODE_SEARCH_MODULAR = 0;
+        private final int MODE_COUNT_MODULAR = 1;
+        private final int MODE_SEARCH_UNIVERSAL = 2;
+        private final int MODE_COUNT_UNIVERSAL = 3;
 
+
+        ContentFetchTask(HentoidDB db, String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+            this.db = db;
+            this.titleQuery = query;
+            this.metadata = null;
+            this.currentPage = page;
+            this.booksPerPage = booksPerPage;
+            this.orderStyle = orderStyle;
+            this.favouritesOnly = favouritesOnly;
+            this.listener = listener;
+            mode = MODE_SEARCH_UNIVERSAL;
+        }
 
         ContentFetchTask(HentoidDB db, String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
             this.db = db;
@@ -126,7 +154,19 @@ public class DatabaseAccessor implements CollectionAccessor {
             this.orderStyle = orderStyle;
             this.favouritesOnly = favouritesOnly;
             this.listener = listener;
-            mode = MODE_SEARCH;
+            mode = MODE_SEARCH_MODULAR;
+        }
+
+        ContentFetchTask(HentoidDB db, String query, boolean favouritesOnly, ContentListener listener) {
+            this.db = db;
+            this.titleQuery = query;
+            this.metadata = null;
+            this.currentPage = 1;
+            this.booksPerPage = 1;
+            this.orderStyle = 1;
+            this.favouritesOnly = favouritesOnly;
+            this.listener = listener;
+            mode = MODE_COUNT_UNIVERSAL;
         }
 
         ContentFetchTask(HentoidDB db, String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
@@ -138,19 +178,25 @@ public class DatabaseAccessor implements CollectionAccessor {
             this.orderStyle = 1;
             this.favouritesOnly = favouritesOnly;
             this.listener = listener;
-            mode = MODE_COUNT;
+            mode = MODE_COUNT_MODULAR;
         }
 
         @Override
         protected ContentQueryResult doInBackground(String... params) {
             ContentQueryResult result = new ContentQueryResult();
 
-            if (MODE_SEARCH == mode) {
-                // Fetch the given page of results (query results count is always <= booksPerPage)
+            // Fetch the given page of results (query results count is always <= booksPerPage)
+            if (MODE_SEARCH_MODULAR == mode) {
                 result.pagedContents = db.selectContentByQuery(titleQuery, currentPage, booksPerPage, metadata, favouritesOnly, orderStyle);
+            } else if (MODE_SEARCH_UNIVERSAL == mode) {
+                result.pagedContents = db.selectContentByUniqueQuery(titleQuery, currentPage, booksPerPage, favouritesOnly, orderStyle);
             }
             // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
-            result.totalSelectedContent = db.countContentByQuery(titleQuery, metadata, favouritesOnly);
+            if (MODE_SEARCH_MODULAR == mode || MODE_COUNT_MODULAR == mode) {
+                result.totalSelectedContent = db.countContentByQuery(titleQuery, metadata, favouritesOnly);
+            } else if (MODE_SEARCH_UNIVERSAL == mode || MODE_COUNT_UNIVERSAL == mode) {
+                result.totalSelectedContent = db.countContentByUniqueQuery(titleQuery, favouritesOnly);
+            }
             // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
             result.totalContent = db.countAllContent();
 

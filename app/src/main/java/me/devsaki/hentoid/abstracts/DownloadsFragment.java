@@ -55,7 +55,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -1223,6 +1222,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
 
     private void submitContentSearchQuery(final String s, long delay) {
         query = s;
+        selectedSearchTags.clear(); // If user searches in main toolbar, universal search takes over advanced search
         searchHandler.removeCallbacksAndMessages(null);
         searchHandler.postDelayed(() -> {
             setQuery(s);
@@ -1339,7 +1339,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      */
     private boolean isSearchMode()
     {
-        return ( (query != null && query.length() > 0) || selectedSearchTags.size() > 0);
+        return (getQuery().length() > 0 || selectedSearchTags.size() > 0);
     }
 
     /**
@@ -1385,9 +1385,14 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             currentPage = 1;
         }
         lastSearchParams = currentSearchParams;
-// TODO make default search universal
+
+        /*
         if (isSearchMode()) collectionAccessor.searchBooks(getQuery(), selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
+        */
+        if (!getQuery().isEmpty()) collectionAccessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Universal search
+        else if (!selectedSearchTags.isEmpty()) collectionAccessor.searchBooks("", selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Advanced search
+        else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Default search (display recent)
     }
 
     /**
@@ -1527,6 +1532,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             updateAttributeMosaic();
             tagWaitPanel.setVisibility(View.GONE);
         }
+
+        // TODO implement new "clear search" button
     }
 
     @Override
@@ -1606,7 +1613,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
                 Uri searchUri = Uri.parse(currentSearchUri);
 
                 setQuery(searchUri.getPath());
-                selectedSearchTags = Helper.extractAttributesFromUri(searchUri);
+                selectedSearchTags = Helper.parseSearchUri(searchUri);
 
                 searchLibrary(true);
             }
