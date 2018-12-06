@@ -1352,16 +1352,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Update search icon appearance
-     *
-     * @param isSearchMode True if icon has to appear as "search mode on"; false if icon has to appear neutral
-     */
-    private void updateSearchIcon(boolean isSearchMode) {
-        if (searchMenu != null)
-            searchMenu.setIcon(isSearchMode ? R.drawable.ic_menu_search_found : R.drawable.ic_menu_search);
-    }
-
-    /**
      * Create a "thumbprint" unique to the combination of current search parameters
      *
      * @return Search parameters thumbprint
@@ -1386,7 +1376,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isLoading = true;
 
         if (showLoadingPanel) toggleUI(SHOW_LOADING);
-        updateSearchIcon(isSearchMode());
 
         // New searches always start from page 1
         String currentSearchParams = getCurrentSearchParams();
