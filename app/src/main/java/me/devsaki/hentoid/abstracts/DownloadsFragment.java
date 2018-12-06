@@ -104,14 +104,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
 
-protected static final int TAGFILTER_ACTIVE = 0;
-protected static final int TAGFILTER_SELECTED = 1;
-protected static final int TAGFILTER_INACTIVE = 3;
+    protected static final int TAGFILTER_ACTIVE = 0;
+    protected static final int TAGFILTER_SELECTED = 1;
+    protected static final int TAGFILTER_INACTIVE = 3;
 
     public final static int MODE_LIBRARY = 0;
     public final static int MODE_MIKAN = 1;
 
-protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
+    protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
 
 
     // Save state constants
@@ -140,10 +140,10 @@ protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
     private SearchView mainSearchView;
     // Search pane that shows up on top when using search function
     protected View searchPane;
-// Container where selected attributed are displayed
-private ViewGroup searchTags;
-// Container where all available attributes are loaded
-private ViewGroup attributeMosaic;
+    // Container where selected attributed are displayed
+    private ViewGroup searchTags;
+    // Container where all available attributes are loaded
+    private ViewGroup attributeMosaic;
     // Layout containing the list of books
     private SwipeRefreshLayout refreshLayout;
     // List containing all books
@@ -156,16 +156,22 @@ private ViewGroup attributeMosaic;
     private TextView emptyText;
     // Bottom toolbar with page numbers
     protected LinearLayout pagerToolbar;
-// Bar containing attribute selectors
-private LinearLayout attrSelector;
-// Panel that displays the "waiting for metadata info" visuals
-private View tagWaitPanel;
-// Image that displays current metadata type title (e.g. "Character search")
-private TextView tagWaitTitle;
-// Image that displays current metadata type icon (e.g. face icon for character)
-private ImageView tagWaitImage;
-// Image that displays metadata search message (e.g. loading up / too many results / no result)
-private TextView tagWaitMessage;
+    // Bar with CLEAR button that appears whenever a search filter is active
+    private ViewGroup filterBar;
+    // Book count text on the filter bar
+    private TextView filterBookCount;
+    // CLEAR button on the filter bar
+    private TextView filterClearButton;
+    // Bar containing attribute selectors
+    private LinearLayout attrSelector;
+    // Panel that displays the "waiting for metadata info" visuals
+    private View tagWaitPanel;
+    // Image that displays current metadata type title (e.g. "Character search")
+    private TextView tagWaitTitle;
+    // Image that displays current metadata type icon (e.g. face icon for character)
+    private ImageView tagWaitImage;
+    // Image that displays metadata search message (e.g. loading up / too many results / no result)
+    private TextView tagWaitMessage;
 
     // ======== UTIL OBJECTS
     private ObjectAnimator animator;
@@ -177,8 +183,8 @@ private TextView tagWaitMessage;
     protected int booksPerPage;
     // Books sort order
     private int bookSortOrder;
-// Attributes sort order
-private int attributesSortOrder;
+    // Attributes sort order
+    private int attributesSortOrder;
 
     // ======== VARIABLES
 
@@ -218,16 +224,15 @@ private int attributesSortOrder;
     String currentSearchUri = "";
 
 
-
     // === SEARCH
     // Favourite filter active
     private boolean filterFavourites = false;
     // Expression typed in the search bar
     protected String query = "";
-// Currently selected tab
-private AttributeType selectedTab = AttributeType.TAG;
-// Current search tags
-private List<Attribute> selectedSearchTags = new ArrayList<>();
+    // Currently selected tab
+    private AttributeType selectedTab = AttributeType.TAG;
+    // Current search tags
+    private List<Attribute> selectedSearchTags = new ArrayList<>();
     // Last search parameters; used to determine whether or not page number should be reset to 1
     private String lastSearchParams = "";
 
@@ -320,7 +325,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         if (MODE_LIBRARY == mode) {
             if (PermissionUtil.requestExternalStoragePermission(requireActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
                 boolean shouldUpdate = queryPrefs();
-                if (shouldUpdate || -1 == mTotalSelectedCount) searchLibrary(true); // If prefs changes detected or first run (-1 = uninitialized)
+                if (shouldUpdate || -1 == mTotalSelectedCount)
+                    searchLibrary(true); // If prefs changes detected or first run (-1 = uninitialized)
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
                 showToolbar(true);
             } else {
@@ -543,7 +549,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
         collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(mContext) : new MikanAccessor(mContext);
 
-        View rootView = inflater.inflate( (MODE_LIBRARY == mode) ? R.layout.fragment_downloads : R.layout.fragment_mikan, container, false);
+        View rootView = inflater.inflate((MODE_LIBRARY == mode) ? R.layout.fragment_downloads : R.layout.fragment_mikan, container, false);
 
         initUI(rootView);
         attachScrollListener();
@@ -555,7 +561,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
     protected void initUI(View rootView) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
-        emptyText.setText((MODE_LIBRARY == mode)? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
+        emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
 
         // Main view
         mListView = rootView.findViewById(R.id.list);
@@ -563,7 +569,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         llm = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(llm);
 
-        if (MODE_MIKAN == mode) bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
+        if (MODE_MIKAN == mode)
+            bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
 
         Comparator<Content> comparator;
         switch (bookSortOrder) {
@@ -586,7 +593,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
-        mAdapter = new ContentAdapter(mContext, this, comparator, collectionAccessor,  mode);
+        mAdapter = new ContentAdapter(mContext, this, comparator, collectionAccessor, mode);
         mAdapter.setContentsWipedListener(this);
         mListView.setAdapter(mAdapter);
 
@@ -602,6 +609,10 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
+
+        filterBar = rootView.findViewById(R.id.filter_bar);
+        filterBookCount = rootView.findViewById(R.id.filter_book_count);
+        filterClearButton = rootView.findViewById(R.id.filter_clear);
 
         searchPane = rootView.findViewById(R.id.tag_filter_view);
         attributeMosaic = rootView.findViewById(R.id.tag_suggestion);
@@ -655,6 +666,13 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
     protected void attachOnClickListeners(View rootView) {
         newContentToolTip.setOnClickListener(v -> commitRefresh());
 
+        filterClearButton.setOnClickListener(v -> {
+            setQuery("");
+            selectedSearchTags.clear();
+            filterBar.setVisibility(View.GONE);
+            searchLibrary(true);
+        });
+
         refreshLayout.setEnabled(false);
         refreshLayout.setOnRefreshListener(this::commitRefresh);
     }
@@ -703,8 +721,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
 
     /**
      * Refresh the whole screen
-     *  - Called by pressing the "New Content" button that appear on new downloads
-     *  - Called by scrolling up when being on top of the list ("force reload" command)
+     * - Called by pressing the "New Content" button that appear on new downloads
+     * - Called by scrolling up when being on top of the list ("force reload" command)
      */
     protected void commitRefresh() {
         newContentToolTip.setVisibility(View.GONE);
@@ -789,7 +807,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
                 // == Reset attribute search ==
 
                 // Reset color of every tab
-                for (View v : attrSelector.getTouchables()) v.setBackgroundResource(R.drawable.btn_attribute_section_off);
+                for (View v : attrSelector.getTouchables())
+                    v.setBackgroundResource(R.drawable.btn_attribute_section_off);
                 // Remove tag search bar
                 SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
                 tagSearchView.setVisibility(View.GONE);
@@ -840,7 +859,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
                     return true;
                 }
 
-                if(!s.isEmpty()) {
+                if (!s.isEmpty()) {
                     if (!s.equals(query)) submitContentSearchQuery(s, 1000);
                 } else {
                     clearQuery();
@@ -854,12 +873,13 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         // == SEARCH PANE
 
         View advancedSearchBtn = activity.findViewById(R.id.advanced_btn);
-        advancedSearchBtn.setOnClickListener( v-> {
+        advancedSearchBtn.setOnClickListener(v -> {
             Intent search = new Intent(this.getContext(), SearchActivity.class);
             search.putExtra("mode", mode);
             if (!currentSearchUri.isEmpty()) search.putExtra("searchUri", currentSearchUri);
             startActivityForResult(search, 999);
         });
+
 
         // Create category buttons
         attrSelector = activity.findViewById(R.id.search_tabs);
@@ -869,7 +889,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         attrSelector.addView(createAttributeSectionButton(AttributeType.TAG));
         attrSelector.addView(createAttributeSectionButton(AttributeType.CHARACTER));
         attrSelector.addView(createAttributeSectionButton(AttributeType.SERIE));
-        if(MODE_LIBRARY == mode) attrSelector.addView(createAttributeSectionButton(AttributeType.SOURCE));
+        if (MODE_LIBRARY == mode)
+            attrSelector.addView(createAttributeSectionButton(AttributeType.SOURCE));
 
         tagWaitPanel = activity.findViewById(R.id.tag_wait_panel);
         tagWaitPanel.setVisibility(View.GONE);
@@ -887,8 +908,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             @Override
             public boolean onQueryTextSubmit(String s) {
 
-                if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s))
-                {
+                if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(mListView, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
                     submitAttributeSearchQuery(selectedTab, s);
@@ -900,8 +920,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s))
-                {
+                if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(mListView, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchHandler.removeCallbacksAndMessages(null);
                 } else if (!s.isEmpty()) {
@@ -911,7 +930,6 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
                 return true;
             }
         });
-
 
 
         // == BOOKS SORT
@@ -944,8 +962,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      * @param attr Attribute Type the button should represent
      * @return Button representing the given Attribute type
      */
-    private ImageButton createAttributeSectionButton(AttributeType attr)
-    {
+    private ImageButton createAttributeSectionButton(AttributeType attr) {
         ImageButton button = new ImageButton(mContext);
         button.setBackgroundResource(R.drawable.btn_attribute_section_off);
         button.setImageResource(attr.getIcon());
@@ -964,11 +981,11 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      *
      * @param button Button that has been clicked on
      */
-    private void selectAttrButton(ImageButton button)
-    {
-        selectedTab = (AttributeType)button.getTag();
+    private void selectAttrButton(ImageButton button) {
+        selectedTab = (AttributeType) button.getTag();
         // Reset color of every tab
-        for (View v : attrSelector.getTouchables()) v.setBackgroundResource(R.drawable.btn_attribute_section_off);
+        for (View v : attrSelector.getTouchables())
+            v.setBackgroundResource(R.drawable.btn_attribute_section_off);
         // Set color of selected tab
         button.setBackgroundResource(R.drawable.btn_attribute_section_on);
         // Set hint on search bar
@@ -1056,8 +1073,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      * @param visible True if search pane has to become visible; false if not
      */
     private void setSearchPaneVisibility(boolean visible) {
-            searchPane.setVisibility(visible?View.VISIBLE:View.GONE);
-            invalidateNextQueryTextChange = true;
+        searchPane.setVisibility(visible ? View.VISIBLE : View.GONE);
+        invalidateNextQueryTextChange = true;
     }
 
     /**
@@ -1074,13 +1091,13 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      * Update favourite filter button appearance (icon and color) on a book
      */
     private void updateFavouriteFilter() {
-        favsMenu.setIcon(filterFavourites?R.drawable.ic_fav_full:R.drawable.ic_fav_empty);
+        favsMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
     }
 
     /**
      * Create the button for the given attribute
      *
-     * @param attribute Attribute the button should represent
+     * @param attribute  Attribute the button should represent
      * @param isSelected True if the button should appear as selected
      * @return Button representing the given Attribute, drawn as selected if needed
      */
@@ -1091,7 +1108,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         button.setMinHeight(0);
         button.setMinimumHeight(0);
 
-        colorButton(button, isSelected?TAGFILTER_SELECTED:TAGFILTER_ACTIVE);
+        colorButton(button, isSelected ? TAGFILTER_SELECTED : TAGFILTER_ACTIVE);
 
         button.setTag(attribute);
         button.setId(Math.abs(attribute.getId()));
@@ -1125,7 +1142,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      * @param button Button that has been clicked on
      */
     private void selectTagSuggestion(Button button) {
-        Attribute a = (Attribute)button.getTag();
+        Attribute a = (Attribute) button.getTag();
 
         // Add new tag to the selection
         if (!selectedSearchTags.contains(a)) {
@@ -1150,7 +1167,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      * @param button Button that has been clicked on
      */
     private void selectSearchTag(Button button) {
-        Attribute a = (Attribute)button.getTag();
+        Attribute a = (Attribute) button.getTag();
         selectedSearchTags.remove(a);
         searchTags.removeView(button);
 
@@ -1168,16 +1185,13 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      * Refresh attributes list according to selected attributes
      * NB : available in library mode only because Mikan does not provide enough data for it
      */
-    private void updateAttributeMosaic()
-    {
-        if (MODE_LIBRARY == mode)
-        {
+    private void updateAttributeMosaic() {
+        if (MODE_LIBRARY == mode) {
             List<Attribute> searchTags = new ArrayList<>(selectedSearchTags);
 
             // TODO run DB transaction on a dedicated thread
             List<Attribute> availableAttrs;
-            if (selectedTab.equals(AttributeType.SOURCE))
-            {
+            if (selectedTab.equals(AttributeType.SOURCE)) {
                 availableAttrs = getDB().selectAvailableSources();
             } else {
                 availableAttrs = getDB().selectAvailableAttributes(selectedTab.getCode(), searchTags, filterFavourites);
@@ -1186,30 +1200,26 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             // Refresh displayed tag buttons
             boolean found, selected;
             String label = "";
-            for (int i=0; i<attributeMosaic.getChildCount(); i++)
-            {
-                Button button = (Button)attributeMosaic.getChildAt(i);
-                Attribute displayedAttr = (Attribute)button.getTag();
-                if (displayedAttr != null)
-                {
+            for (int i = 0; i < attributeMosaic.getChildCount(); i++) {
+                Button button = (Button) attributeMosaic.getChildAt(i);
+                Attribute displayedAttr = (Attribute) button.getTag();
+                if (displayedAttr != null) {
                     found = false;
                     for (Attribute attr : availableAttrs)
-                        if (attr.getId().equals(displayedAttr.getId()))
-                        {
+                        if (attr.getId().equals(displayedAttr.getId())) {
                             found = true;
-                            label = attr.getName() + " ("+attr.getCount()+")";
+                            label = attr.getName() + " (" + attr.getCount() + ")";
                             break;
                         }
                     if (!found) label = displayedAttr.getName() + " (0)";
 
                     selected = false;
                     for (Attribute attr : selectedSearchTags)
-                        if (attr.getId().equals(displayedAttr.getId()))
-                        {
+                        if (attr.getId().equals(displayedAttr.getId())) {
                             selected = true;
                             break;
                         }
-                    colorButton(button, selected?TAGFILTER_SELECTED:found?TAGFILTER_ACTIVE:TAGFILTER_INACTIVE);
+                    colorButton(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE);
                     button.setText(label);
                 }
             }
@@ -1337,26 +1347,26 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
     /**
      * Run a new search in the DB according to active filters
      */
-    private boolean isSearchMode()
-    {
+    private boolean isSearchMode() {
         return (getQuery().length() > 0 || selectedSearchTags.size() > 0);
     }
 
     /**
      * Update search icon appearance
+     *
      * @param isSearchMode True if icon has to appear as "search mode on"; false if icon has to appear neutral
      */
-    private void updateSearchIcon(boolean isSearchMode)
-    {
-        if (searchMenu != null) searchMenu.setIcon(isSearchMode?R.drawable.ic_menu_search_found:R.drawable.ic_menu_search);
+    private void updateSearchIcon(boolean isSearchMode) {
+        if (searchMenu != null)
+            searchMenu.setIcon(isSearchMode ? R.drawable.ic_menu_search_found : R.drawable.ic_menu_search);
     }
 
     /**
      * Create a "thumbprint" unique to the combination of current search parameters
+     *
      * @return Search parameters thumbprint
      */
-    private String getCurrentSearchParams()
-    {
+    private String getCurrentSearchParams() {
         StringBuilder result = new StringBuilder(mode == MODE_LIBRARY ? "L" : "M");
         result.append(".").append(query);
         for (Attribute a : selectedSearchTags) result.append(".").append(a.getName());
@@ -1380,8 +1390,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
 
         // New searches always start from page 1
         String currentSearchParams = getCurrentSearchParams();
-        if (!currentSearchParams.equals(lastSearchParams))
-        {
+        if (!currentSearchParams.equals(lastSearchParams)) {
             currentPage = 1;
         }
         lastSearchParams = currentSearchParams;
@@ -1390,9 +1399,12 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         if (isSearchMode()) collectionAccessor.searchBooks(getQuery(), selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         */
-        if (!getQuery().isEmpty()) collectionAccessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Universal search
-        else if (!selectedSearchTags.isEmpty()) collectionAccessor.searchBooks("", selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Advanced search
-        else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Default search (display recent)
+        if (!getQuery().isEmpty())
+            collectionAccessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Universal search
+        else if (!selectedSearchTags.isEmpty())
+            collectionAccessor.searchBooks("", selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Advanced search
+        else
+            collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Default search (display recent)
     }
 
     /**
@@ -1403,7 +1415,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
      */
     protected void searchMasterData(AttributeType a, final String s) {
         tagWaitImage.setImageResource(a.getIcon());
-        tagWaitTitle.setText(String.format("%s search", Helper.capitalizeString(a.name())) );
+        tagWaitTitle.setText(String.format("%s search", Helper.capitalizeString(a.name())));
         tagWaitMessage.setText(R.string.downloads_loading);
 
         // Set blinking animation
@@ -1424,6 +1436,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
 
     /**
      * Indicates if current page is the last page of the library
+     *
      * @return true if last page has been reached
      */
     protected boolean isLastPage() {
@@ -1435,7 +1448,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             emptyText.setText(R.string.search_entry_not_found);
             toggleUI(SHOW_BLANK);
         } else if (!isLoading) {
-            emptyText.setText((MODE_LIBRARY == mode)? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
+            emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
             toggleUI(SHOW_BLANK);
         } else {
             Timber.w("Why are we in here?");
@@ -1444,13 +1457,13 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
 
     /**
      * Update the screen title according to current search filter
-     *      (#TOTAL BOOKS) if no filter is enabled
-     *      (#FILTERED / #TOTAL BOOKS) if a filter is enabled
+     * (#TOTAL BOOKS) if no filter is enabled
+     * (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
-    private void updateTitle()
-    {
+    private void updateTitle() {
         if (MODE_LIBRARY == mode) {
-            if (mTotalSelectedCount == mTotalCount) requireActivity().setTitle("(" + mTotalCount + ")");
+            if (mTotalSelectedCount == mTotalCount)
+                requireActivity().setTitle("(" + mTotalCount + ")");
             else requireActivity().setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
         }
     }
@@ -1463,10 +1476,14 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
         isLoading = false;
 
-        if (isSearchMode() && isNewContentAvailable)
-        {
-            newContentToolTip.setVisibility(View.GONE);
-            isNewContentAvailable = false;
+        if (isSearchMode()) {
+            if (isNewContentAvailable) {
+                newContentToolTip.setVisibility(View.GONE);
+                isNewContentAvailable = false;
+            }
+
+            filterBookCount.setText(String.format(getText(R.string.downloads_filter_book_count).toString(), totalSelectedContent + "", (1 == totalSelectedContent) ? "" : "s"));
+            filterBar.setVisibility(View.VISIBLE);
         }
 
         // Display new results
@@ -1484,7 +1501,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         isLoading = false;
 
         Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
-                .setAction("RETRY", v-> searchLibrary(MODE_MIKAN == mode) )
+                .setAction("RETRY", v -> searchLibrary(MODE_MIKAN == mode))
                 .show();
         toggleUI(SHOW_BLANK);
     }
@@ -1504,8 +1521,8 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
             String searchQuery = tagSearchView.getQuery().toString();
 
-            String errMsg = (0 == searchQuery.length())? mContext.getString(R.string.masterdata_too_many_results_noquery):mContext.getString(R.string.masterdata_too_many_results_query);
-            tagWaitMessage.setText(errMsg.replace("%1",searchQuery));
+            String errMsg = (0 == searchQuery.length()) ? mContext.getString(R.string.masterdata_too_many_results_noquery) : mContext.getString(R.string.masterdata_too_many_results_query);
+            tagWaitMessage.setText(errMsg.replace("%1", searchQuery));
         } else {
             // Sort items according to prefs
             Comparator<Attribute> comparator;
@@ -1532,8 +1549,6 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
             updateAttributeMosaic();
             tagWaitPanel.setVisibility(View.GONE);
         }
-
-        // TODO implement new "clear search" button
     }
 
     @Override
@@ -1608,7 +1623,7 @@ private List<Attribute> selectedSearchTags = new ArrayList<>();
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == 999) {
-            if(resultCode == Activity.RESULT_OK){
+            if (resultCode == Activity.RESULT_OK) {
                 currentSearchUri = data.getStringExtra("searchUri");
                 Uri searchUri = Uri.parse(currentSearchUri);
 

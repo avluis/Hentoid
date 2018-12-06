@@ -87,6 +87,8 @@
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
     <string name="sd_access_fatal_error">Hentoid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
+    <string name="downloads_filter_book_count">%s result%s</string>
+    <string name="downloads_filter_clear">CLEAR</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
