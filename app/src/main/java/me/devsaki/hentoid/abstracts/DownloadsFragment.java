@@ -509,8 +509,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (selectedTagIds != null) {
                 for (Integer i : selectedTagIds) {
                     Attribute a = getDB().selectAttributeById(i);
-                    selectedSearchTags.add(a);
-                    searchTags.addView(createTagSuggestionButton(a, true));
+                    if (a != null) {
+                        selectedSearchTags.add(a);
+                        searchTags.addView(createTagSuggestionButton(a, true));
+                    }
                 }
             }
         }
@@ -1103,7 +1105,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private Button createTagSuggestionButton(Attribute attribute, boolean isSelected) {
         Button button = new Button(mContext);
-        button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
+        if (attribute.getCount() > 0) button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
+        else button.setText(attribute.getName());
         button.setBackgroundResource(R.drawable.btn_attribute_selector);
         button.setMinHeight(0);
         button.setMinimumHeight(0);

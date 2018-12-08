@@ -38,6 +38,10 @@ public class HitomiParser extends BaseParser {
             result.setCoverImageUrl(coverImageUrl);
             Element info = content.select(".gallery").first();
             Element titleElement = info.select("h1").first();
+
+            // Nota Bene : Non-video entries have their title inside a hyperlink
+            // whereas video entries have it directly in the H1 tag, hence a silent crash when trying to parse videos
+            // (no problem here since they are not supported by the downloader anyway)
             String url = titleElement.select("a").first().attr("href").replace("/reader", "");
             result.setUrl(url);
             String title = titleElement.text();

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import me.devsaki.hentoid.BuildConfig;
 import timber.log.Timber;
 
 /**
@@ -207,7 +208,7 @@ public final class Preferences {
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_APP_LOCK_VIBRATE_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
-        static final boolean PREF_HIDE_RECENT_DEFAULT = true;
+        static final boolean PREF_HIDE_RECENT_DEFAULT = (!BuildConfig.DEBUG); // Debug apps always visible to facilitate video capture
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_DEFAULT;
         static final boolean PREF_CHECK_UPDATES_DEFAULT = true;

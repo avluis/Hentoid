@@ -166,7 +166,7 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
-    public static InputStream getInputStream(@NonNull final File target) throws IOException {
+    static InputStream getInputStream(@NonNull final File target) throws IOException {
         return FileUtil.getInputStream(target);
     }
 
@@ -274,7 +274,10 @@ public class FileHelper {
         return true;
     }
 
-    public static boolean createNoMedia() {
+    /**
+     * Create the ".nomedia" file in the app's root folder
+     */
+    public static void createNoMedia() {
         String settingDir = Preferences.getRootFolderName();
         File noMedia = new File(settingDir, ".nomedia");
 
@@ -283,8 +286,6 @@ public class FileHelper {
         } else {
             Timber.d(".nomedia file already exists.");
         }
-
-        return true;
     }
 
     @WorkerThread
@@ -302,6 +303,12 @@ public class FileHelper {
         }
     }
 
+    /**
+     * Create the download directory of the given content
+     * @param context Context
+     * @param content Content for which the directory to create
+     * @return Created directory
+     */
     public static File createContentDownloadDir(Context context, Content content) {
         String folderDir = formatDirPath(content);
 
@@ -323,6 +330,11 @@ public class FileHelper {
         return file;
     }
 
+    /**
+     * Format the download directory path of the given content according to current user preferences
+     * @param content Content to get the path from
+     * @return Canonical download directory path of the given content, according to current user preferences
+     */
     public static String formatDirPath(Content content)
     {
         String siteFolder = content.getSite().getFolder();
@@ -399,6 +411,11 @@ public class FileHelper {
         return f.exists() ? f.getAbsolutePath() : coverUrl;
     }
 
+    /**
+     * Open the given content using the viewer defined in user preferences
+     * @param context Context
+     * @param content Content to be opened
+     */
     public static void openContent(final Context context, Content content) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
         String rootFolderName = Preferences.getRootFolderName();
@@ -441,7 +458,12 @@ public class FileHelper {
         }
     }
 
-    private static void openFile(Context context, File aFile) {
+    /**
+     * Open the given file using the device's app(s) of choice
+     * @param context Context
+     * @param aFile File to be opened
+     */
+    public static void openFile(Context context, File aFile) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
@@ -450,6 +472,11 @@ public class FileHelper {
         context.startActivity(myIntent);
     }
 
+    /**
+     * Open PerfectViewer telling it to display the given image
+     * @param context Context
+     * @param firstImage Image to be displayed
+     */
     private static void openPerfectViewer(Context context, File firstImage) {
         try {
             Intent intent = context
@@ -463,8 +490,13 @@ public class FileHelper {
         }
     }
 
-    public static String getExtension(String a) {
-        return a.contains(".") ? a.substring(a.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
+    /**
+     * Returns the extension of the given filename
+     * @param fileName Filename
+     * @return Extension of the given filename
+     */
+    static String getExtension(String fileName) {
+        return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
     }
 
     public static void archiveContent(final Context context, Content content) {
@@ -509,7 +541,12 @@ public class FileHelper {
         }
     }
 
-    // TODO doc
+    /**
+     * Save the given binary content in the given file
+     * @param file File to save content on
+     * @param binaryContent Content to save
+     * @throws IOException If any IOException occurs
+     */
     public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
         byte buffer[] = new byte[1024];
         int count;
@@ -557,6 +594,19 @@ public class FileHelper {
         } catch (final Exception ignored) {
             return false;
         }
+    }
+
+    public static boolean renameDirectory(File srcDir, File destDir)
+    {
+        try {
+            FileUtils.moveDirectory(srcDir, destDir);
+            return true;
+        } catch (IOException e) {
+            return FileUtil.renameWithSAF(srcDir, destDir.getName());
+        } catch (Exception e) {
+            Timber.e(e);
+        }
+        return false;
     }
 
     private static class AsyncUnzip extends ZipUtil.ZipTask {
