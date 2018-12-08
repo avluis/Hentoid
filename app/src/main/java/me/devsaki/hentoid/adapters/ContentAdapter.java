@@ -21,6 +21,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
+import com.annimon.stream.function.IntConsumer;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
@@ -59,8 +60,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final int mode;
     private RecyclerView libraryView; // Kept as reference for querying by Content through ID
 
-    private ContentRemovedListener contentRemovedListener;
     private Runnable endlessScrollListener;
+    private Runnable onContentClearedListener;
+    private IntConsumer onContentRemovedListener;
     private Comparator<Content> mComparator;
 
     public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator, CollectionAccessor collectionAccessor, int mode) {
@@ -81,8 +83,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         this.endlessScrollListener = listener;
     }
 
-    public void setContentsWipedListener(ContentRemovedListener listener) {
-        this.contentRemovedListener = listener;
+    public void setOnContentClearedListener(Runnable onContentClearedListener) {
+        this.onContentClearedListener = onContentClearedListener;
+    }
+
+    public void setOnContentRemovedListener(IntConsumer onContentRemovedListener) {
+        this.onContentRemovedListener = onContentRemovedListener;
     }
 
     private void toggleSelection(int pos) {
@@ -688,7 +694,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         for (Content content : contents) {
             mSortedList.remove(content);
         }
-        contentRemovedListener.onContentRemoved(contents.size());
+        onContentRemovedListener.accept(contents.size());
         mSortedList.endBatchedUpdates();
         listener.onItemClear(0);
 
@@ -707,19 +713,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     private void remove(Content content) {
         mSortedList.remove(content);
-        if (contentRemovedListener != null) {
-            if (0 == mSortedList.size()) {
-                contentRemovedListener.onAllContentRemoved();
-            } else {
-                contentRemovedListener.onContentRemoved(1);
-            }
+        if (0 == mSortedList.size()) {
+            if (onContentClearedListener != null)
+                onContentClearedListener.run();
+        } else {
+            if (onContentRemovedListener != null)
+                onContentRemovedListener.accept(1);
         }
         if (listener != null) listener.onItemClear(0);
     }
 
     public void removeAll() {
         replaceAll(new ArrayList<>());
-        contentRemovedListener.onAllContentRemoved();
+        onContentClearedListener.run();
     }
 
     public void replaceAll(List<Content> contents) {
@@ -765,13 +771,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             snackbar.setAction("RETRY", v -> tryDownloadPages(content));
         }
         snackbar.show();
-    }
-
-    // Public interfaces
-    public interface ContentRemovedListener {
-        void onAllContentRemoved();
-
-        void onContentRemoved(int i);
     }
 
     private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedList.Callback<Content>() {

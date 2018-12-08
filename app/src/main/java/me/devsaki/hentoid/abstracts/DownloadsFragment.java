@@ -61,7 +61,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
-import me.devsaki.hentoid.adapters.ContentAdapter.ContentRemovedListener;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanAccessor;
 import me.devsaki.hentoid.database.DatabaseAccessor;
@@ -95,7 +94,7 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
-        ContentRemovedListener, ItemSelectListener, ResultListener<List<Attribute>> {
+        ItemSelectListener, ResultListener<List<Attribute>> {
 
     // ======== CONSTANTS
 
@@ -595,7 +594,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         mAdapter = new ContentAdapter(mContext, this, comparator, collectionAccessor, mode);
-        mAdapter.setContentsWipedListener(this);
+        mAdapter.setOnContentRemovedListener(this::onContentRemoved);
+        mAdapter.setOnContentClearedListener(this::onContentsCleared);
         mListView.setAdapter(mAdapter);
 
         if (mAdapter.getItemCount() == 0) {
@@ -1629,11 +1629,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    /*
-    ContentRemovedListener implementation
-     */
-    @Override
-    public void onAllContentRemoved() {
+    private void onContentsCleared() {
         Timber.d("All items cleared!");
         mTotalSelectedCount = 0;
         mTotalCount = 0;
@@ -1644,8 +1640,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         updateTitle();
     }
 
-    @Override
-    public void onContentRemoved(int i) {
+    private void onContentRemoved(int i) {
         mTotalSelectedCount = mTotalSelectedCount - i;
         mTotalCount = mTotalCount - i;
         updateTitle();
