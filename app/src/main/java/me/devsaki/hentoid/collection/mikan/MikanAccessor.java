@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.collection.mikan;
 
 import android.content.Context;
+import android.util.SparseIntArray;
 
 import com.annimon.stream.Stream;
 
@@ -8,6 +9,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -22,8 +24,8 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.retrofit.MikanServer;
 import me.devsaki.hentoid.util.AttributeCache;
 import me.devsaki.hentoid.util.Helper;
@@ -108,6 +110,7 @@ public class MikanAccessor implements CollectionAccessor {
 
     // === ACCESSORS
 
+    @Override
     public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         boolean showMostRecentFirst = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST == orderStyle;
 
@@ -125,6 +128,7 @@ public class MikanAccessor implements CollectionAccessor {
                 .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed(null, "Recent books failed to load - " + throwable.getMessage()));
     }
 
+    @Override
     public void getPages(Content content, ContentListener listener) {
         if (isSiteUnsupported(content.getSite())) {
             throw new UnsupportedOperationException("Site " + content.getSite().getDescription() + " not supported yet by Mikan search");
@@ -135,6 +139,7 @@ public class MikanAccessor implements CollectionAccessor {
                 .subscribe((result) -> onPagesSuccess(result, content, listener), (throwable) -> listener.onContentFailed(content, "Pages failed to load - " + throwable.getMessage()));
     }
 
+    @Override
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         // NB : Mikan does not support booksPerPage and orderStyle params
         List<Integer> sites = Helper.extractAttributeIdsByType(metadata, AttributeType.SOURCE);
@@ -176,23 +181,60 @@ public class MikanAccessor implements CollectionAccessor {
                 .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onContentFailed(null, "Search failed to load - " + throwable.getMessage()));
     }
 
-    public void getAttributeMasterData(AttributeType attr, String filter, AttributeListener listener) {
+    @Override
+    public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
+        // Just counting is not possible with Mikan interface => call to searchBooks anyway
+        searchBooks(query, metadata, 1, 1, 1, favouritesOnly, listener);
+    }
+
+    @Override
+    public void searchBooksUniversal(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+        // Mikan does not allow "universal" search => call to searchBooks with empty metadata
+        searchBooks(query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly, listener);
+    }
+
+    @Override
+    public void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener) {
+        // Just counting is not possible with Mikan interface => call to searchBooks anyway
+        searchBooks(query, Collections.emptyList(), 1, 1, 1, favouritesOnly, listener);
+    }
+
+    @Override
+    public void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener) {
 
         // Try and get response from cache
-        List<Attribute> attributes = AttributeCache.getFromCache(attr.name());
+        List<Attribute> attributes = AttributeCache.getFromCache(type.name());
 
         // If not cached (or cache expired), get it from network
         if (null == attributes) {
-            String endpoint = getEndpointPath(attr);
+            String endpoint = getEndpointPath(type);
             disposable = MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())
                     .subscribe((result) -> {
-                        onMasterDataSuccess(result, attr.name(), filter, listener); // TODO handle caching in computing thread
-                    }, (throwable) -> listener.onAttributesFailed("Attributes failed to load - " + throwable.getMessage() ));
+                        onMasterDataSuccess(result, type.name(), filter, listener); // TODO handle caching in computing thread
+                    }, (throwable) -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage() ));
         } else {
             List<Attribute> result = filter(attributes, filter);
-            listener.onAttributesReady(result, result.size());
+            listener.onResultReady(result, result.size());
         }
+    }
+
+    @Override
+    public void getAttributeMasterData(List<AttributeType> types, String filter, ResultListener<List<Attribute>> listener) {
+        // Because Mikan is unable to do that, and trying to assemble it manually would be a disaster
+        getAttributeMasterData(types.get(0), filter, listener);
+    }
+
+    @Override
+    public void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
+        // Not implemented in Mikan
+        listener.onResultReady(null, 0);
+    }
+
+    @Override
+    public void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener) {
+        // Not implemented in Mikan
+        listener.onResultReady(null, 0);
     }
 
     @Override
@@ -229,10 +271,10 @@ public class MikanAccessor implements CollectionAccessor {
         }
     }
 
-    private void onMasterDataSuccess(Response<MikanAttributeResponse> response, String attrName, String filter, AttributeListener listener) {
+    private void onMasterDataSuccess(Response<MikanAttributeResponse> response, String attrName, String filter, ResultListener<List<Attribute>> listener) {
         MikanAttributeResponse result = response.body();
         if (null == result) {
-            listener.onAttributesFailed("Attributes failed to load - Empty response");
+            listener.onResultFailed("Attributes failed to load - Empty response");
             return;
         }
 
@@ -251,7 +293,7 @@ public class MikanAccessor implements CollectionAccessor {
 //        Timber.d("Mikan response [%s] : %s", attrResponse.request, json.toString());
 
         List<Attribute> finalResult = filter(attributes, filter);
-        listener.onAttributesReady(finalResult, finalResult.size());
+        listener.onResultReady(finalResult, finalResult.size());
     }
 
 }

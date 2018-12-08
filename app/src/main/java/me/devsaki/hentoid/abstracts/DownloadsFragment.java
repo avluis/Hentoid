@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -58,6 +59,7 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
+import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.adapters.ContentAdapter.ContentRemovedListener;
 import me.devsaki.hentoid.collection.CollectionAccessor;
@@ -70,9 +72,9 @@ import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.listener.AttributeListener;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -94,7 +96,7 @@ import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
  * {@link #onRequestPermissionsResult(int, String[], int[])} to receive permission request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
-        ContentRemovedListener, ItemSelectListener, AttributeListener {
+        ContentRemovedListener, ItemSelectListener, ResultListener<List<Attribute>> {
 
     // ======== CONSTANTS
 
@@ -118,6 +120,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private static final String FILTER_FAVOURITES = "filter_favs";
     private static final String CURRENT_PAGE = "current_page";
     private static final String QUERY = "query";
+    private static final String SEARCH_URI = "search_uri";
     private static final String MODE = "mode";
 
 
@@ -153,6 +156,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private TextView emptyText;
     // Bottom toolbar with page numbers
     protected LinearLayout pagerToolbar;
+    // Bar with CLEAR button that appears whenever a search filter is active
+    private ViewGroup filterBar;
+    // Book count text on the filter bar
+    private TextView filterBookCount;
+    // CLEAR button on the filter bar
+    private TextView filterClearButton;
     // Bar containing attribute selectors
     private LinearLayout attrSelector;
     // Panel that displays the "waiting for metadata info" visuals
@@ -211,7 +220,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     boolean libraryHasBeenRefreshed = false;
     // If library has been refreshed, indicated new content count
     int refreshedContentCount = 0;
-
+    // Seach URI coming from Advanced search screen
+    String currentSearchUri = "";
 
 
     // === SEARCH
@@ -315,7 +325,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (MODE_LIBRARY == mode) {
             if (PermissionUtil.requestExternalStoragePermission(requireActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
                 boolean shouldUpdate = queryPrefs();
-                if (shouldUpdate || -1 == mTotalSelectedCount) searchLibrary(true); // If prefs changes detected or first run (-1 = uninitialized)
+                if (shouldUpdate || -1 == mTotalSelectedCount)
+                    searchLibrary(true); // If prefs changes detected or first run (-1 = uninitialized)
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
                 showToolbar(true);
             } else {
@@ -349,11 +360,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (Preferences.getRootFolderName().isEmpty()) {
             Timber.d("Where are my files?!");
 
-            FragmentActivity activity = getActivity();
-            if (null == activity) {
-                Timber.e("Activity unreachable !");
-                return false;
-            }
+            FragmentActivity activity = requireActivity();
             Intent intent = new Intent(activity, ImportActivity.class);
             startActivity(intent);
             activity.finish();
@@ -412,17 +419,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             File storage = new File(Preferences.getRootFolderName());
             if (FileHelper.getExtSdCardFolder(storage) == null) {
                 Timber.d("Where are my files?!");
-                Helper.toast(getActivity(),
+                Helper.toast(requireActivity(),
                         "Could not find library!\nPlease check your storage device.", LONG);
                 setQuery("      ");
 
                 Handler handler = new Handler();
                 handler.postDelayed(() -> {
-                    FragmentActivity activity = getActivity();
-                    if (null == activity) {
-                        Timber.e("Activity unreachable !");
-                        return;
-                    }
+                    FragmentActivity activity = requireActivity();
                     activity.finish();
                     Runtime.getRuntime().exit(0);
                 }, 3000);
@@ -443,7 +446,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         } catch (NullPointerException npe) {
             Timber.e(npe, "Invalid Stream");
             Helper.toast(R.string.sd_access_error);
-            new AlertDialog.Builder(getActivity())
+            new AlertDialog.Builder(requireActivity())
                     .setMessage(R.string.sd_access_fatal_error)
                     .setTitle("Error!")
                     .setPositiveButton(android.R.string.ok, null)
@@ -463,7 +466,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * Reset the app (to get write permissions)
      */
     private void resetApp() {
-        Helper.reset(HentoidApp.getAppContext(), getActivity());
+        Helper.reset(HentoidApp.getAppContext(), requireActivity());
     }
 
     @Override
@@ -481,6 +484,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         outState.putParcelable(LIST_STATE_KEY, mListState);
         outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
         outState.putString(QUERY, query);
+        outState.putString(SEARCH_URI, currentSearchUri);
         outState.putInt(CURRENT_PAGE, currentPage);
         outState.putInt(MODE, mode);
 
@@ -497,6 +501,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             mListState = state.getParcelable(LIST_STATE_KEY);
             filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
             query = state.getString(QUERY, "");
+            currentSearchUri = state.getString(SEARCH_URI, "");
             currentPage = state.getInt(CURRENT_PAGE);
             mode = state.getInt(MODE);
 
@@ -546,7 +551,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
         collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(mContext) : new MikanAccessor(mContext);
 
-        View rootView = inflater.inflate( (MODE_LIBRARY == mode) ? R.layout.fragment_downloads : R.layout.fragment_mikan, container, false);
+        View rootView = inflater.inflate((MODE_LIBRARY == mode) ? R.layout.fragment_downloads : R.layout.fragment_mikan, container, false);
 
         initUI(rootView);
         attachScrollListener();
@@ -558,7 +563,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void initUI(View rootView) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
-        emptyText.setText((MODE_LIBRARY == mode)? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
+        emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
 
         // Main view
         mListView = rootView.findViewById(R.id.list);
@@ -566,7 +571,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         llm = new LinearLayoutManager(mContext);
         mListView.setLayoutManager(llm);
 
-        if (MODE_MIKAN == mode) bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
+        if (MODE_MIKAN == mode)
+            bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
 
         Comparator<Content> comparator;
         switch (bookSortOrder) {
@@ -589,7 +595,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
-        mAdapter = new ContentAdapter(mContext, this, comparator, collectionAccessor,  mode);
+        mAdapter = new ContentAdapter(mContext, this, comparator, collectionAccessor, mode);
         mAdapter.setContentsWipedListener(this);
         mListView.setAdapter(mAdapter);
 
@@ -599,17 +605,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         // Drawer
-        FragmentActivity activity = getActivity();
-        if (null == activity) {
-            Timber.e("Activity unreachable !");
-            return;
-        }
-
+        FragmentActivity activity = requireActivity();
         mDrawerLayout = activity.findViewById(R.id.drawer_layout);
 
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
         refreshLayout = rootView.findViewById(R.id.swipe_container);
+
+        filterBar = rootView.findViewById(R.id.filter_bar);
+        filterBookCount = rootView.findViewById(R.id.filter_book_count);
+        filterClearButton = rootView.findViewById(R.id.filter_clear);
 
         searchPane = rootView.findViewById(R.id.tag_filter_view);
         attributeMosaic = rootView.findViewById(R.id.tag_suggestion);
@@ -663,6 +668,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void attachOnClickListeners(View rootView) {
         newContentToolTip.setOnClickListener(v -> commitRefresh());
 
+        filterClearButton.setOnClickListener(v -> {
+            setQuery("");
+            selectedSearchTags.clear();
+            filterBar.setVisibility(View.GONE);
+            searchLibrary(true);
+        });
+
         refreshLayout.setEnabled(false);
         refreshLayout.setOnRefreshListener(this::commitRefresh);
     }
@@ -711,8 +723,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Refresh the whole screen
-     *  - Called by pressing the "New Content" button that appear on new downloads
-     *  - Called by scrolling up when being on top of the list ("force reload" command)
+     * - Called by pressing the "New Content" button that appear on new downloads
+     * - Called by scrolling up when being on top of the list ("force reload" command)
      */
     protected void commitRefresh() {
         newContentToolTip.setVisibility(View.GONE);
@@ -797,7 +809,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 // == Reset attribute search ==
 
                 // Reset color of every tab
-                for (View v : attrSelector.getTouchables()) v.setBackgroundResource(R.drawable.btn_attribute_section_off);
+                for (View v : attrSelector.getTouchables())
+                    v.setBackgroundResource(R.drawable.btn_attribute_section_off);
                 // Remove tag search bar
                 SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
                 tagSearchView.setVisibility(View.GONE);
@@ -817,12 +830,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             return true;
         });
 
-        FragmentActivity activity = getActivity();
-        if (null == activity) {
-            Timber.e("Activity unreachable !");
-            return;
-        }
-
+        FragmentActivity activity = requireActivity();
         mainSearchView = (SearchView) searchMenu.getActionView();
         if (searchManager != null) {
             mainSearchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
@@ -853,7 +861,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     return true;
                 }
 
-                if(!s.isEmpty()) {
+                if (!s.isEmpty()) {
                     if (!s.equals(query)) submitContentSearchQuery(s, 1000);
                 } else {
                     clearQuery();
@@ -866,6 +874,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // == SEARCH PANE
 
+        View advancedSearchBtn = activity.findViewById(R.id.advanced_btn);
+        advancedSearchBtn.setOnClickListener(v -> {
+            Intent search = new Intent(this.getContext(), SearchActivity.class);
+            search.putExtra("mode", mode);
+            if (!currentSearchUri.isEmpty()) search.putExtra("searchUri", currentSearchUri);
+            startActivityForResult(search, 999);
+        });
+
+
         // Create category buttons
         attrSelector = activity.findViewById(R.id.search_tabs);
         attrSelector.removeAllViews();
@@ -874,7 +891,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         attrSelector.addView(createAttributeSectionButton(AttributeType.TAG));
         attrSelector.addView(createAttributeSectionButton(AttributeType.CHARACTER));
         attrSelector.addView(createAttributeSectionButton(AttributeType.SERIE));
-        if(MODE_LIBRARY == mode) attrSelector.addView(createAttributeSectionButton(AttributeType.SOURCE));
+        if (MODE_LIBRARY == mode)
+            attrSelector.addView(createAttributeSectionButton(AttributeType.SOURCE));
 
         tagWaitPanel = activity.findViewById(R.id.tag_wait_panel);
         tagWaitPanel.setVisibility(View.GONE);
@@ -892,8 +910,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             @Override
             public boolean onQueryTextSubmit(String s) {
 
-                if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s))
-                {
+                if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(mListView, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
                     submitAttributeSearchQuery(selectedTab, s);
@@ -905,8 +922,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             @Override
             public boolean onQueryTextChange(String s) {
-                if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s))
-                {
+                if (MODE_MIKAN == mode && selectedTab.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(mListView, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchHandler.removeCallbacksAndMessages(null);
                 } else if (!s.isEmpty()) {
@@ -916,7 +932,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 return true;
             }
         });
-
 
 
         // == BOOKS SORT
@@ -949,8 +964,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @param attr Attribute Type the button should represent
      * @return Button representing the given Attribute type
      */
-    private ImageButton createAttributeSectionButton(AttributeType attr)
-    {
+    private ImageButton createAttributeSectionButton(AttributeType attr) {
         ImageButton button = new ImageButton(mContext);
         button.setBackgroundResource(R.drawable.btn_attribute_section_off);
         button.setImageResource(attr.getIcon());
@@ -969,11 +983,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *
      * @param button Button that has been clicked on
      */
-    private void selectAttrButton(ImageButton button)
-    {
-        selectedTab = (AttributeType)button.getTag();
+    private void selectAttrButton(ImageButton button) {
+        selectedTab = (AttributeType) button.getTag();
         // Reset color of every tab
-        for (View v : attrSelector.getTouchables()) v.setBackgroundResource(R.drawable.btn_attribute_section_off);
+        for (View v : attrSelector.getTouchables())
+            v.setBackgroundResource(R.drawable.btn_attribute_section_off);
         // Set color of selected tab
         button.setBackgroundResource(R.drawable.btn_attribute_section_on);
         // Set hint on search bar
@@ -1061,8 +1075,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @param visible True if search pane has to become visible; false if not
      */
     private void setSearchPaneVisibility(boolean visible) {
-            searchPane.setVisibility(visible?View.VISIBLE:View.GONE);
-            invalidateNextQueryTextChange = true;
+        searchPane.setVisibility(visible ? View.VISIBLE : View.GONE);
+        invalidateNextQueryTextChange = true;
     }
 
     /**
@@ -1079,13 +1093,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * Update favourite filter button appearance (icon and color) on a book
      */
     private void updateFavouriteFilter() {
-        favsMenu.setIcon(filterFavourites?R.drawable.ic_fav_full:R.drawable.ic_fav_empty);
+        favsMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
     }
 
     /**
      * Create the button for the given attribute
      *
-     * @param attribute Attribute the button should represent
+     * @param attribute  Attribute the button should represent
      * @param isSelected True if the button should appear as selected
      * @return Button representing the given Attribute, drawn as selected if needed
      */
@@ -1097,7 +1111,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         button.setMinHeight(0);
         button.setMinimumHeight(0);
 
-        colorButton(button, isSelected?TAGFILTER_SELECTED:TAGFILTER_ACTIVE);
+        colorButton(button, isSelected ? TAGFILTER_SELECTED : TAGFILTER_ACTIVE);
 
         button.setTag(attribute);
         button.setId(Math.abs(attribute.getId()));
@@ -1131,7 +1145,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @param button Button that has been clicked on
      */
     private void selectTagSuggestion(Button button) {
-        Attribute a = (Attribute)button.getTag();
+        Attribute a = (Attribute) button.getTag();
 
         // Add new tag to the selection
         if (!selectedSearchTags.contains(a)) {
@@ -1151,58 +1165,64 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
+     * Handler for search tag (i.e. selected Attribute appearing near the search bar) button click
+     *
+     * @param button Button that has been clicked on
+     */
+    private void selectSearchTag(Button button) {
+        Attribute a = (Attribute) button.getTag();
+        selectedSearchTags.remove(a);
+        searchTags.removeView(button);
+
+        // If displayed, change color of the corresponding button in tag suggestions
+        Button tagButton = attributeMosaic.findViewById(Math.abs(a.getId()));
+        if (tagButton != null) colorButton(tagButton, TAGFILTER_ACTIVE);
+
+        // Launch book search according to new attribute selection
+        searchLibrary(MODE_MIKAN == mode);
+        // Update attribute mosaic buttons state according to available metadata
+        updateAttributeMosaic();
+    }
+
+    /**
      * Refresh attributes list according to selected attributes
      * NB : available in library mode only because Mikan does not provide enough data for it
      */
-    private void updateAttributeMosaic()
-    {
-        if (MODE_LIBRARY == mode)
-        {
-            List<Attribute> searchTags = new ArrayList<>();
-            List<Integer> searchSites = new ArrayList<>();
-
-            for (Attribute attr : selectedSearchTags)
-            {
-                if (attr.getType().equals(AttributeType.SOURCE)) searchSites.add(attr.getId());
-                else searchTags.add(attr);
-            }
+    private void updateAttributeMosaic() {
+        if (MODE_LIBRARY == mode) {
+            List<Attribute> searchTags = new ArrayList<>(selectedSearchTags);
 
             // TODO run DB transaction on a dedicated thread
             List<Attribute> availableAttrs;
-            if (selectedTab.equals(AttributeType.SOURCE))
-            {
+            if (selectedTab.equals(AttributeType.SOURCE)) {
                 availableAttrs = getDB().selectAvailableSources();
             } else {
-                availableAttrs = getDB().selectAvailableAttributes(selectedTab.getCode(), searchTags, searchSites, filterFavourites);
+                availableAttrs = getDB().selectAvailableAttributes(selectedTab.getCode(), searchTags, filterFavourites);
             }
 
             // Refresh displayed tag buttons
             boolean found, selected;
             String label = "";
-            for (int i=0; i<attributeMosaic.getChildCount(); i++)
-            {
-                Button button = (Button)attributeMosaic.getChildAt(i);
-                Attribute displayedAttr = (Attribute)button.getTag();
-                if (displayedAttr != null)
-                {
+            for (int i = 0; i < attributeMosaic.getChildCount(); i++) {
+                Button button = (Button) attributeMosaic.getChildAt(i);
+                Attribute displayedAttr = (Attribute) button.getTag();
+                if (displayedAttr != null) {
                     found = false;
                     for (Attribute attr : availableAttrs)
-                        if (attr.getId().equals(displayedAttr.getId()))
-                        {
+                        if (attr.getId().equals(displayedAttr.getId())) {
                             found = true;
-                            label = attr.getName() + " ("+attr.getCount()+")";
+                            label = attr.getName() + " (" + attr.getCount() + ")";
                             break;
                         }
                     if (!found) label = displayedAttr.getName() + " (0)";
 
                     selected = false;
                     for (Attribute attr : selectedSearchTags)
-                        if (attr.getId().equals(displayedAttr.getId()))
-                        {
+                        if (attr.getId().equals(displayedAttr.getId())) {
                             selected = true;
                             break;
                         }
-                    colorButton(button, selected?TAGFILTER_SELECTED:found?TAGFILTER_ACTIVE:TAGFILTER_INACTIVE);
+                    colorButton(button, selected ? TAGFILTER_SELECTED : found ? TAGFILTER_ACTIVE : TAGFILTER_INACTIVE);
                     button.setText(label);
                 }
             }
@@ -1215,6 +1235,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     private void submitContentSearchQuery(final String s, long delay) {
         query = s;
+        selectedSearchTags.clear(); // If user searches in main toolbar, universal search takes over advanced search
         searchHandler.removeCallbacksAndMessages(null);
         searchHandler.postDelayed(() -> {
             setQuery(s);
@@ -1329,26 +1350,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     /**
      * Run a new search in the DB according to active filters
      */
-    private boolean isSearchMode()
-    {
-        return ( (query != null && query.length() > 0) || selectedSearchTags.size() > 0);
-    }
-
-    /**
-     * Update search icon appearance
-     * @param isSearchMode True if icon has to appear as "search mode on"; false if icon has to appear neutral
-     */
-    private void updateSearchIcon(boolean isSearchMode)
-    {
-        if (searchMenu != null) searchMenu.setIcon(isSearchMode?R.drawable.ic_menu_search_found:R.drawable.ic_menu_search);
+    private boolean isSearchMode() {
+        return (getQuery().length() > 0 || selectedSearchTags.size() > 0);
     }
 
     /**
      * Create a "thumbprint" unique to the combination of current search parameters
+     *
      * @return Search parameters thumbprint
      */
-    private String getCurrentSearchParams()
-    {
+    private String getCurrentSearchParams() {
         StringBuilder result = new StringBuilder(mode == MODE_LIBRARY ? "L" : "M");
         result.append(".").append(query);
         for (Attribute a : selectedSearchTags) result.append(".").append(a.getName());
@@ -1368,18 +1379,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isLoading = true;
 
         if (showLoadingPanel) toggleUI(SHOW_LOADING);
-        updateSearchIcon(isSearchMode());
 
         // New searches always start from page 1
         String currentSearchParams = getCurrentSearchParams();
-        if (!currentSearchParams.equals(lastSearchParams))
-        {
+        if (!currentSearchParams.equals(lastSearchParams)) {
             currentPage = 1;
         }
         lastSearchParams = currentSearchParams;
 
+        /*
         if (isSearchMode()) collectionAccessor.searchBooks(getQuery(), selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
         else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
+        */
+        if (!getQuery().isEmpty())
+            collectionAccessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Universal search
+        else if (!selectedSearchTags.isEmpty())
+            collectionAccessor.searchBooks("", selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Advanced search
+        else
+            collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Default search (display recent)
     }
 
     /**
@@ -1390,7 +1407,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     protected void searchMasterData(AttributeType a, final String s) {
         tagWaitImage.setImageResource(a.getIcon());
-        tagWaitTitle.setText(String.format("%s search", Helper.capitalizeString(a.name())) );
+        tagWaitTitle.setText(String.format("%s search", Helper.capitalizeString(a.name())));
         tagWaitMessage.setText(R.string.downloads_loading);
 
         // Set blinking animation
@@ -1411,6 +1428,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Indicates if current page is the last page of the library
+     *
      * @return true if last page has been reached
      */
     protected boolean isLastPage() {
@@ -1422,7 +1440,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             emptyText.setText(R.string.search_entry_not_found);
             toggleUI(SHOW_BLANK);
         } else if (!isLoading) {
-            emptyText.setText((MODE_LIBRARY == mode)? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
+            emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
             toggleUI(SHOW_BLANK);
         } else {
             Timber.w("Why are we in here?");
@@ -1431,17 +1449,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     /**
      * Update the screen title according to current search filter
-     *      (#TOTAL BOOKS) if no filter is enabled
-     *      (#FILTERED / #TOTAL BOOKS) if a filter is enabled
+     * (#TOTAL BOOKS) if no filter is enabled
+     * (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
-    private void updateTitle()
-    {
+    private void updateTitle() {
         if (MODE_LIBRARY == mode) {
-            Activity activity = getActivity();
-            if (null != activity) {
-                if (mTotalSelectedCount == mTotalCount) activity.setTitle("(" + mTotalCount + ")");
-                else activity.setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
-            }
+            if (mTotalSelectedCount == mTotalCount)
+                requireActivity().setTitle("(" + mTotalCount + ")");
+            else requireActivity().setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
         }
     }
 
@@ -1453,10 +1468,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
         isLoading = false;
 
-        if (isSearchMode() && isNewContentAvailable)
-        {
-            newContentToolTip.setVisibility(View.GONE);
-            isNewContentAvailable = false;
+        if (isSearchMode()) {
+            if (isNewContentAvailable) {
+                newContentToolTip.setVisibility(View.GONE);
+                isNewContentAvailable = false;
+            }
+
+            filterBookCount.setText(String.format(getText(R.string.downloads_filter_book_count).toString(), totalSelectedContent + "", (1 == totalSelectedContent) ? "" : "s"));
+            filterBar.setVisibility(View.VISIBLE);
         }
 
         // Display new results
@@ -1474,7 +1493,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isLoading = false;
 
         Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
-                .setAction("RETRY", v-> searchLibrary(MODE_MIKAN == mode) )
+                .setAction("RETRY", v -> searchLibrary(MODE_MIKAN == mode))
                 .show();
         toggleUI(SHOW_BLANK);
     }
@@ -1483,7 +1502,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     AttributeListener implementation
      */
     @Override
-    public void onAttributesReady(List<Attribute> results, int totalContent) {
+    public void onResultReady(List<Attribute> results, int totalContent) {
         attributeMosaic.removeAllViews();
 
         tagWaitMessage.clearAnimation();
@@ -1494,8 +1513,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             SearchView tagSearchView = searchPane.findViewById(R.id.tag_filter);
             String searchQuery = tagSearchView.getQuery().toString();
 
-            String errMsg = (0 == searchQuery.length())? mContext.getString(R.string.masterdata_too_many_results_noquery):mContext.getString(R.string.masterdata_too_many_results_query);
-            tagWaitMessage.setText(errMsg.replace("%1",searchQuery));
+            String errMsg = (0 == searchQuery.length()) ? mContext.getString(R.string.masterdata_too_many_results_noquery) : mContext.getString(R.string.masterdata_too_many_results_query);
+            tagWaitMessage.setText(errMsg.replace("%1", searchQuery));
         } else {
             // Sort items according to prefs
             Comparator<Attribute> comparator;
@@ -1525,7 +1544,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onAttributesFailed(String message) {
+    public void onResultFailed(String message) {
         Timber.w(message);
         Snackbar.make(mListView, message, Snackbar.LENGTH_SHORT).show(); // TODO: 9/11/2018 consider retry button if applicable
         tagWaitPanel.setVisibility(View.GONE);
@@ -1587,6 +1606,23 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             if (mActionMode != null) {
                 mActionMode.finish();
+            }
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 999) {
+            if (resultCode == Activity.RESULT_OK) {
+                currentSearchUri = data.getStringExtra("searchUri");
+                Uri searchUri = Uri.parse(currentSearchUri);
+
+                setQuery(searchUri.getPath());
+                selectedSearchTags = Helper.parseSearchUri(searchUri);
+
+                searchLibrary(true);
             }
         }
     }

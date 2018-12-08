@@ -9,6 +9,7 @@
     <string name="title_activity_preferences">Preferences</string>
     <string name="title_activity_about">About</string>
     <string name="title_activity_app_lock">App Lock</string>
+    <string name="title_activity_search">Advanced Search</string>
     <!-- Menu -->
     <string name="menu_tags">Tags</string>
     <string name="menu_search">Search</string>
@@ -89,6 +90,8 @@
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
     <string name="sd_access_fatal_error">Hentoid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
+    <string name="downloads_filter_book_count">%s result%s</string>
+    <string name="downloads_filter_clear">CLEAR</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
@@ -131,4 +134,14 @@
     <string name="about_licenses">Display Licenses</string>
     <!-- Web viewer -->
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
+
+    <!-- SearchActivity -->
+    <string name="category_any">Any</string>
+    <string name="category_tag">Tag (%1$d)</string>
+    <string name="category_character">Character (%1$d)</string>
+    <string name="category_artist">Artist (%1$d)</string>
+    <string name="category_series">Series (%1$d)</string>
+    <string name="category_language">Language (%1$d)</string>
+    <string name="category_source">Source (%1$d)</string>
+    <string name="search_button">%1 Result%2 found</string>
 </resources>

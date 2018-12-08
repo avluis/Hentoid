@@ -4,6 +4,7 @@
     <color name="primary_dark">@color/very_dark_mostly_black_red</color>
     <color name="ripple">@color/material_pink_300</color>
     <color name="accent">@color/red_accent_700</color>
+    <color name="darkGray">#FF444444</color>
 
     <!-- Useful Colors -->
     <!-- White -->
@@ -16,6 +17,14 @@
     <color name="very_dark_mostly_black_red">#2b0202</color>
     <color name="material_red_50">#ffebee</color>
     <color name="material_red_100">#FFFFCDD2</color>
+
+    <!-- New red 2018 (search activity) -->
+    <color name="red_primary">#470000</color>
+    <color name="red_dark">#3f0000</color>
+    <color name="red_accent">#b25959</color>
+    <color name="red_bg">#592828</color>
+    <color name="red_item">#28FFFFFF</color>
+    <color name="red_text">#FFFFFF</color>
 
     <!-- Pink -->
     <color name="material_pink_300">#F06292</color>

@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Chip.Input"
+    tools:context=".activities.SearchActivity" />

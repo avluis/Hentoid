@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp"
+    android:theme="@style/BottomSheetDialogTheme"
+    tools:context=".activities.SearchActivity">
+
+    <LinearLayout
+        android:id="@+id/tag_wait_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:id="@+id/tag_wait_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_intro"
+            android:textColor="@color/card_item_src_online"
+            android:textSize="24sp" />
+
+        <ImageView
+            android:id="@+id/tag_wait_image"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="110dp"
+            android:minHeight="110dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_action_pause"
+            android:tint="@color/card_item_src_online"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/tag_wait_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="@string/app_intro"
+            android:textColor="@color/card_item_src_online"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:layout_height="30dp">
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/tag_suggestion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:alignContent="flex_start"
+            app:flexWrap="wrap">
+
+            <!-- programmatically added metadata here -->
+
+        </com.google.android.flexbox.FlexboxLayout>
+
+    </android.support.v4.widget.NestedScrollView>
+
+    <android.support.v7.widget.SearchView
+        android:id="@+id/tag_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:minWidth="120dp"
+        app:iconifiedByDefault="false" />
+
+</LinearLayout>

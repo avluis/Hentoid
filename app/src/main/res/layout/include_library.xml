@@ -11,11 +11,54 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true" />
 
+    <RelativeLayout
+        android:id="@+id/filter_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="@color/primary"
+        android:padding="12dp"
+        android:visibility="gone"
+        >
+
+        <TextView
+            android:id="@+id/filter_book_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/downloads_filter_book_count"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
+
+        <TextView
+            android:id="@+id/filter_clear"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/downloads_filter_clear"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@color/material_red_100"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
+            android:textSize="16sp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+    </RelativeLayout>
+
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@+id/downloads_toolbar">
+        android:layout_above="@+id/downloads_toolbar"
+        android:layout_below="@id/filter_bar"
+        >
 
         <FrameLayout
             android:layout_width="match_parent"
