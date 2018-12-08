@@ -171,6 +171,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        searchMasterDataDebouncer.clear();
+    }
+
     /**
      * Loads the attributes corresponding to the given AttributeType, filtered with the given
      * string
