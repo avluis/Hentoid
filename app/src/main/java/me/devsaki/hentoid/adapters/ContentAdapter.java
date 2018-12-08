@@ -370,7 +370,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 // "In queue" icon
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                    holder.ivDownload.startAnimation(new BlinkAnimation());
+                    holder.ivDownload.startAnimation(new BlinkAnimation(500,100));
                     holder.ivDownload.setOnClickListener(v -> Helper.viewQueue(context));
                 }
                 // "In library" icon
@@ -388,7 +388,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void tryDownloadPages(Content content) {
         ContentHolder holder = holderByContent(content);
         if (holder != null) {
-            holder.ivDownload.startAnimation(new BlinkAnimation());
+            holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
             holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
             collectionAccessor.getPages(content, this);
         }

@@ -27,6 +27,7 @@ import java.util.Objects;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
@@ -185,14 +186,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      *               %s%)
      */
     private void searchMasterData(final String filter) {
-        // Set blinking animation
-        Animation anim = new AlphaAnimation(0.0f, 1.0f);
-        anim.setDuration(750);
-        anim.setStartOffset(20);
-        anim.setRepeatMode(Animation.REVERSE);
-        anim.setRepeatCount(Animation.INFINITE);
-
-        tagWaitMessage.startAnimation(anim);
+        tagWaitMessage.startAnimation(new BlinkAnimation(750, 20));
         tagWaitMessage.setText(R.string.downloads_loading);
 
         tagWaitPanel.setVisibility(View.VISIBLE);

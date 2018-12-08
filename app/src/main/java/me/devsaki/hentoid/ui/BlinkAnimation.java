@@ -5,11 +5,11 @@ import android.view.animation.Animation;
 
 public class BlinkAnimation extends AlphaAnimation {
 
-    public BlinkAnimation() {
+    public BlinkAnimation(long duration, long startOffset) {
         super(0.0f, 1.0f);
-        setDuration(500);
-        setStartOffset(100);
         setRepeatMode(Animation.REVERSE);
         setRepeatCount(Animation.INFINITE);
+        setDuration(duration);
+        setStartOffset(startOffset);
     }
 }
