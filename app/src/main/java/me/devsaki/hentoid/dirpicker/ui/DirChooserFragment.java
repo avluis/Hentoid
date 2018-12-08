@@ -71,12 +71,12 @@ public class DirChooserFragment extends DialogFragment implements
     @Override
     public void onActivityCreated(Bundle savedState) {
         super.onActivityCreated(savedState);
-        Bus.register(bus, getActivity());
+        if (bus != null) Bus.register(bus, getActivity());
     }
 
     @Override
     public void onDestroy() {
-        Bus.unregister(bus, getActivity());
+        if (bus != null) Bus.unregister(bus, getActivity());
         super.onDestroy();
     }
 
