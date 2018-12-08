@@ -55,40 +55,32 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private static final int VISIBLE_THRESHOLD = 10;
 
     private final Context context;
-    private final ItemSelectListener listener;
+    private final ItemSelectListener itemSelectListener;
+    private final IntConsumer onContentRemovedListener;
+    private final Runnable onContentsClearedListener;
     private final CollectionAccessor collectionAccessor;
-    private final int mode;
+    private final int displayMode;
     private RecyclerView libraryView; // Kept as reference for querying by Content through ID
+    private Runnable onScrollToEndListener;
+    private Comparator<Content> sortComparator;
 
-    private Runnable endlessScrollListener;
-    private Runnable onContentClearedListener;
-    private IntConsumer onContentRemovedListener;
-    private Comparator<Content> mComparator;
-
-    public ContentAdapter(Context context, ItemSelectListener listener, Comparator<Content> comparator, CollectionAccessor collectionAccessor, int mode) {
-        this.context = context;
-        this.listener = listener;
-        this.collectionAccessor = collectionAccessor;
-        this.mode = mode;
-        this.mComparator = comparator;
-        this.setHasStableIds(true);
+    private ContentAdapter(Builder builder) {
+        context = builder.context;
+        itemSelectListener = builder.itemSelectListener;
+        onContentRemovedListener = builder.onContentRemovedListener;
+        onContentsClearedListener = builder.onContentsClearedListener;
+        collectionAccessor = builder.collectionAccessor;
+        sortComparator = builder.sortComparator;
+        displayMode = builder.displayMode;
+        setHasStableIds(true);
     }
 
-
-    public void setComparator(Comparator<Content> comparator) {
-        mComparator = comparator;
+    public void setSortComparator(Comparator<Content> comparator) {
+        sortComparator = comparator;
     }
 
-    public void setEndlessScrollListener(Runnable listener) {
-        this.endlessScrollListener = listener;
-    }
-
-    public void setOnContentClearedListener(Runnable onContentClearedListener) {
-        this.onContentClearedListener = onContentClearedListener;
-    }
-
-    public void setOnContentRemovedListener(IntConsumer onContentRemovedListener) {
-        this.onContentRemovedListener = onContentRemovedListener;
+    public void setOnScrollToEndListener(Runnable listener) {
+        this.onScrollToEndListener = listener;
     }
 
     private void toggleSelection(int pos) {
@@ -152,8 +144,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
-        if (pos == getItemCount() - VISIBLE_THRESHOLD && endlessScrollListener != null) {
-            endlessScrollListener.run();
+        if (pos == getItemCount() - VISIBLE_THRESHOLD && onScrollToEndListener != null) {
+            onScrollToEndListener.run();
         }
 
         int itemPos = holder.getLayoutPosition();
@@ -298,7 +290,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             holder.ivSite.setOnClickListener(v -> {
                 if (getSelectedItemsCount() >= 1) {
                     clearSelections();
-                    listener.onItemClear(0);
+                    itemSelectListener.onItemClear(0);
                 }
                 Helper.viewContent(context, content);
             });
@@ -327,11 +319,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
             holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, bg));
 
-            holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == mode) ? View.VISIBLE : View.GONE);
-            holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == mode) ? View.VISIBLE : View.GONE);
-            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode) ? View.VISIBLE : View.GONE);
+            holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
+            holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
+            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == displayMode) ? View.VISIBLE : View.GONE);
 
-            if (DownloadsFragment.MODE_LIBRARY == mode) {
+            if (DownloadsFragment.MODE_LIBRARY == displayMode) {
                 // Favourite toggle
                 if (content.isFavourite()) {
                     holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
@@ -341,7 +333,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 holder.ivFavourite.setOnClickListener(v -> {
                     if (getSelectedItemsCount() >= 1) {
                         clearSelections();
-                        listener.onItemClear(0);
+                        itemSelectListener.onItemClear(0);
                     }
                     if (content.isFavourite()) {
                         holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
@@ -357,7 +349,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     holder.ivError.setOnClickListener(v -> {
                         if (getSelectedItemsCount() >= 1) {
                             clearSelections();
-                            listener.onItemClear(0);
+                            itemSelectListener.onItemClear(0);
                         }
                         downloadAgain(content);
                     });
@@ -412,8 +404,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         // Simple click = open book (library mode only)
         // TODO : implement preview gallery for Mikan mode
-        if (DownloadsFragment.MODE_LIBRARY == mode) {
-            holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, listener) {
+        if (DownloadsFragment.MODE_LIBRARY == displayMode) {
+            holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, itemSelectListener) {
 
                 @Override
                 public void onClick(View v) {
@@ -433,8 +425,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
 
         // Long click = select item (library mode only)
-        if (DownloadsFragment.MODE_LIBRARY == mode) {
-            holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, listener) {
+        if (DownloadsFragment.MODE_LIBRARY == displayMode) {
+            holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, itemSelectListener) {
 
                 @Override
                 public boolean onLongClick(View v) {
@@ -530,7 +522,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .setNegativeButton(android.R.string.no,
                         (dialog, which) -> {
                             clearSelections();
-                            listener.onItemClear(0);
+                            itemSelectListener.onItemClear(0);
                         })
                 .create().show();
     }
@@ -546,7 +538,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .setNegativeButton(android.R.string.no,
                         (dialog, which) -> {
                             clearSelections();
-                            listener.onItemClear(0);
+                            itemSelectListener.onItemClear(0);
                         })
                 .create().show();
     }
@@ -602,7 +594,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 if (!items.isEmpty()) {
                     shareContent(items.get(0));
                 } else {
-                    listener.onItemClear(0);
+                    itemSelectListener.onItemClear(0);
                     Timber.d("Nothing to share!!");
                 }
             } else {
@@ -611,7 +603,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 Helper.toast("Not yet implemented!!");
             }
         } else {
-            listener.onItemClear(0);
+            itemSelectListener.onItemClear(0);
             Timber.d("No items to share!!");
         }
     }
@@ -628,7 +620,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 if (!items.isEmpty()) {
                     deleteContent(items.get(0));
                 } else {
-                    listener.onItemClear(0);
+                    itemSelectListener.onItemClear(0);
                     Timber.d("Nothing to delete!!");
                 }
             } else {
@@ -640,12 +632,12 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 if (!items.isEmpty()) {
                     deleteContents(items);
                 } else {
-                    listener.onItemClear(0);
+                    itemSelectListener.onItemClear(0);
                     Timber.d("No items to delete!!");
                 }
             }
         } else {
-            listener.onItemClear(0);
+            itemSelectListener.onItemClear(0);
             Timber.d("No items to delete!!");
         }
     }
@@ -662,7 +654,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 if (!items.isEmpty()) {
                     archiveContent(items.get(0));
                 } else {
-                    listener.onItemClear(0);
+                    itemSelectListener.onItemClear(0);
                     Timber.d("Nothing to archive!!");
                 }
             } else {
@@ -671,7 +663,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 Helper.toast("Not yet implemented!!");
             }
         } else {
-            listener.onItemClear(0);
+            itemSelectListener.onItemClear(0);
             Timber.d("No items to archive!!");
         }
     }
@@ -696,7 +688,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
         onContentRemovedListener.accept(contents.size());
         mSortedList.endBatchedUpdates();
-        listener.onItemClear(0);
+        itemSelectListener.onItemClear(0);
 
         final HentoidDB db = HentoidDB.getInstance(context);
 
@@ -714,18 +706,18 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void remove(Content content) {
         mSortedList.remove(content);
         if (0 == mSortedList.size()) {
-            if (onContentClearedListener != null)
-                onContentClearedListener.run();
+            if (onContentsClearedListener != null)
+                onContentsClearedListener.run();
         } else {
             if (onContentRemovedListener != null)
                 onContentRemovedListener.accept(1);
         }
-        if (listener != null) listener.onItemClear(0);
+        if (itemSelectListener != null) itemSelectListener.onItemClear(0);
     }
 
     public void removeAll() {
         replaceAll(new ArrayList<>());
-        onContentClearedListener.run();
+        onContentsClearedListener.run();
     }
 
     public void replaceAll(List<Content> contents) {
@@ -776,7 +768,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final SortedList<Content> mSortedList = new SortedList<>(Content.class, new SortedList.Callback<Content>() {
         @Override
         public int compare(Content a, Content b) {
-            return mComparator.compare(a, b);
+            return sortComparator.compare(a, b);
         }
 
         @Override
@@ -809,4 +801,53 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             return item1.getId() == item2.getId();
         }
     });
+
+    public static class Builder {
+        private Context context;
+        private ItemSelectListener itemSelectListener;
+        private IntConsumer onContentRemovedListener;
+        private Runnable onContentsClearedListener;
+        private CollectionAccessor collectionAccessor;
+        private Comparator<Content> sortComparator;
+        private int displayMode;
+
+        public Builder setContext(Context context) {
+            this.context = context;
+            return this;
+        }
+
+        public Builder setItemSelectListener(ItemSelectListener itemSelectListener) {
+            this.itemSelectListener = itemSelectListener;
+            return this;
+        }
+
+        public Builder setCollectionAccessor(CollectionAccessor collectionAccessor) {
+            this.collectionAccessor = collectionAccessor;
+            return this;
+        }
+
+        public Builder setSortComparator(Comparator<Content> sortComparator) {
+            this.sortComparator = sortComparator;
+            return this;
+        }
+
+        public Builder setDisplayMode(int displayMode) {
+            this.displayMode = displayMode;
+            return this;
+        }
+
+        public Builder setOnContentRemovedListener(IntConsumer onContentRemovedListener) {
+            this.onContentRemovedListener = onContentRemovedListener;
+            return this;
+        }
+
+        public Builder setOnContentsClearedListener(Runnable onContentsClearedListener) {
+            this.onContentsClearedListener = onContentsClearedListener;
+            return this;
+        }
+
+        public ContentAdapter build() {
+            return new ContentAdapter(this);
+        }
+    }
 }

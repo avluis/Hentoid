@@ -30,7 +30,7 @@ public class EndlessFragment extends DownloadsFragment {
     @Override
     protected void attachScrollListener() {
         super.attachScrollListener();
-        mAdapter.setEndlessScrollListener(this::onLoadMore);
+        mAdapter.setOnScrollToEndListener(this::onLoadMore);
     }
 
     @Override

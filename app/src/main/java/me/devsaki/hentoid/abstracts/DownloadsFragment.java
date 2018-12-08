@@ -593,9 +593,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
-        mAdapter = new ContentAdapter(mContext, this, comparator, collectionAccessor, mode);
-        mAdapter.setOnContentRemovedListener(this::onContentRemoved);
-        mAdapter.setOnContentClearedListener(this::onContentsCleared);
+        mAdapter = new ContentAdapter.Builder()
+                .setContext(mContext)
+                .setCollectionAccessor(collectionAccessor)
+                .setDisplayMode(mode)
+                .setSortComparator(comparator)
+                .setItemSelectListener(this)
+                .setOnContentsClearedListener(this::onContentsCleared)
+                .setOnContentRemovedListener(this::onContentRemoved)
+                .build();
         mListView.setAdapter(mAdapter);
 
         if (mAdapter.getItemCount() == 0) {
@@ -1014,7 +1020,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_AZ:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
-                mAdapter.setComparator(Content.TITLE_ALPHA_COMPARATOR);
+                mAdapter.setSortComparator(Content.TITLE_ALPHA_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
                 searchLibrary(true);
 
@@ -1023,7 +1029,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_321:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST;
-                mAdapter.setComparator(Content.DLDATE_COMPARATOR);
+                mAdapter.setSortComparator(Content.DLDATE_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
                 searchLibrary(true);
 
@@ -1032,7 +1038,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_ZA:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
-                mAdapter.setComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
+                mAdapter.setSortComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 searchLibrary(true);
 
@@ -1041,7 +1047,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_123:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST;
-                mAdapter.setComparator(Content.DLDATE_INV_COMPARATOR);
+                mAdapter.setSortComparator(Content.DLDATE_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
                 searchLibrary(true);
 
@@ -1050,7 +1056,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_random:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
-                mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
+                mAdapter.setSortComparator(Content.QUERY_ORDER_COMPARATOR);
                 RandomSeedSingleton.getInstance().renewSeed();
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
                 searchLibrary(true);
