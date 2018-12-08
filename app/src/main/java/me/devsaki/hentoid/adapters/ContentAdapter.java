@@ -10,7 +10,6 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
-import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.RecyclerView;
 import android.util.Pair;
 import android.view.LayoutInflater;
@@ -48,8 +47,7 @@ import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
 /**
- * Created by avluis on 04/23/2016.
- * RecyclerView based Content Adapter
+ * Created by avluis on 04/23/2016. RecyclerView based Content Adapter
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements ContentListener {
 
@@ -97,7 +95,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     public void clearSelections() {
-        for (int i=0; i<mSortedList.size(); i++) {
+        for (int i = 0; i < mSortedList.size(); i++) {
             mSortedList.get(i).setSelected(false);
             notifyDataSetChanged();
         }
@@ -105,7 +103,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     private int getSelectedItemsCount() {
         int result = 0;
-        for (int i=0; i<mSortedList.size(); i++) {
+        for (int i = 0; i < mSortedList.size(); i++) {
             if (mSortedList.get(i).isSelected()) result++;
         }
         return result;
@@ -114,7 +112,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private List<Content> getSelectedContents() {
         List<Content> selectionList = new ArrayList<>();
 
-        for (int i=0;i<mSortedList.size();i++) {
+        for (int i = 0; i < mSortedList.size(); i++) {
             if (mSortedList.get(i).isSelected()) selectionList.add(mSortedList.get(i));
             Timber.d("Added: %s to list.", mSortedList.get(i).getTitle());
         }
@@ -130,7 +128,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     @NonNull
     @Override
     public ContentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        if (null == libraryView) libraryView = ((RecyclerView)parent);
+        if (null == libraryView) libraryView = ((RecyclerView) parent);
 
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         View view = inflater.inflate(R.layout.item_download, parent, false);
@@ -199,7 +197,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .centerInside()
                 .error(R.drawable.ic_placeholder);
 
-        ImageView image = holder.itemView.isSelected()?holder.ivCover2:holder.ivCover;
+        ImageView image = holder.itemView.isSelected() ? holder.ivCover2 : holder.ivCover;
 
         // The following is needed due to RecyclerView recycling layouts and
         // Glide not considering the layout invalid for the current image:
@@ -323,9 +321,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
             holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, bg));
 
-            holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
-            holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == mode)?View.VISIBLE:View.GONE);
-            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode)?View.VISIBLE:View.GONE);
+            holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == mode) ? View.VISIBLE : View.GONE);
+            holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == mode) ? View.VISIBLE : View.GONE);
+            holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == mode) ? View.VISIBLE : View.GONE);
 
             if (DownloadsFragment.MODE_LIBRARY == mode) {
                 // Favourite toggle
@@ -365,7 +363,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 // "Available online" icon
                 if (status == StatusContent.ONLINE) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                    holder.ivDownload.setOnClickListener( v -> tryDownloadPages(content) );
+                    holder.ivDownload.setOnClickListener(v -> tryDownloadPages(content));
                 }
                 // "In queue" icon
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
@@ -385,8 +383,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
     }
 
-    private void tryDownloadPages(Content content)
-    {
+    private void tryDownloadPages(Content content) {
         ContentHolder holder = holderByContent(content);
         if (holder != null) {
             animateBlink(holder.ivDownload);
@@ -395,8 +392,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
     }
 
-    private void animateBlink(View view)
-    {
+    private void animateBlink(View view) {
         // Set blinking animation when book is being downloaded
         Animation anim = new AlphaAnimation(0.0f, 1.0f);
         anim.setDuration(500);
@@ -460,27 +456,25 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
         }
 
-        String message = context.getString(R.string.download_again_dialog_message).replace("@clean", images-imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
+        String message = context.getString(R.string.download_again_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle(R.string.download_again_dialog_title)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
-                           downloadContent(item);
+                            downloadContent(item);
                             remove(item);
                         })
                 .setNegativeButton(android.R.string.no, null)
                 .create().show();
     }
 
-    private void downloadContent(Content item)
-    {
+    private void downloadContent(Content item) {
         HentoidDB db = HentoidDB.getInstance(context);
 
         item.setDownloadDate(new Date().getTime());
 
-        if (StatusContent.ONLINE == item.getStatus())
-        {
+        if (StatusContent.ONLINE == item.getStatus()) {
             item.setStatus(StatusContent.DOWNLOADING);
             for (ImageFile im : item.getImageFiles()) im.setStatus(StatusContent.SAVED);
 
@@ -570,9 +564,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     @Nullable
-    private ContentHolder holderByContent(Content content)
-    {
-        return (ContentHolder)libraryView.findViewHolderForItemId(content.getId());
+    private ContentHolder holderByContent(Content content) {
+        return (ContentHolder) libraryView.findViewHolderForItemId(content.getId());
     }
 
     @Override
@@ -586,8 +579,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     @Nullable
-    private Content getItemAt(int pos)
-    {
+    private Content getItemAt(int pos) {
         if (mSortedList.size() <= pos) return null;
         else return mSortedList.get(pos);
     }
@@ -768,9 +760,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             ContentHolder holder = holderByContent(content);
             if (holder != null) {
                 holder.ivDownload.clearAnimation();
-                holder.ivDownload.setOnClickListener( v -> tryDownloadPages(content) );
+                holder.ivDownload.setOnClickListener(v -> tryDownloadPages(content));
             }
-            snackbar.setAction("RETRY", v -> tryDownloadPages(content) );
+            snackbar.setAction("RETRY", v -> tryDownloadPages(content));
         }
         snackbar.show();
     }
@@ -782,6 +774,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     public interface ContentRemovedListener {
         void onAllContentRemoved();
+
         void onContentRemoved(int i);
     }
 

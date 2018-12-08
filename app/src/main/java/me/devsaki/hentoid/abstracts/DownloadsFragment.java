@@ -88,12 +88,11 @@ import timber.log.Timber;
 import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 
 /**
- * Created by avluis on 08/27/2016.
- * Common elements for use by EndlessFragment and PagerFragment
+ * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
  * <p>
- * todo issue:
- * After requesting for permission, the app is reset using {@link #resetApp()} instead of implementing
- * {@link #onRequestPermissionsResult(int, String[], int[])} to receive permission request result
+ * todo issue: After requesting for permission, the app is reset using {@link #resetApp()} instead
+ * of implementing {@link #onRequestPermissionsResult(int, String[], int[])} to receive permission
+ * request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
         ContentRemovedListener, ItemSelectListener, ResultListener<List<Attribute>> {
@@ -722,9 +721,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Refresh the whole screen
-     * - Called by pressing the "New Content" button that appear on new downloads
-     * - Called by scrolling up when being on top of the list ("force reload" command)
+     * Refresh the whole screen - Called by pressing the "New Content" button that appear on new
+     * downloads - Called by scrolling up when being on top of the list ("force reload" command)
      */
     protected void commitRefresh() {
         newContentToolTip.setVisibility(View.GONE);
@@ -1002,8 +1000,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Callback method used when a sort method is selected in the sort drop-down menu
-     * => Updates the UI according to the chosen sort method
+     * Callback method used when a sort method is selected in the sort drop-down menu => Updates the
+     * UI according to the chosen sort method
      *
      * @param item MenuItem that has been selected
      * @return true if the order has been successfuly processed
@@ -1105,7 +1103,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private Button createTagSuggestionButton(Attribute attribute, boolean isSelected) {
         Button button = new Button(mContext);
-        if (attribute.getCount() > 0) button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
+        if (attribute.getCount() > 0)
+            button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
         else button.setText(attribute.getName());
         button.setBackgroundResource(R.drawable.btn_attribute_selector);
         button.setMinHeight(0);
@@ -1185,8 +1184,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Refresh attributes list according to selected attributes
-     * NB : available in library mode only because Mikan does not provide enough data for it
+     * Refresh attributes list according to selected attributes NB : available in library mode only
+     * because Mikan does not provide enough data for it
      */
     private void updateAttributeMosaic() {
         if (MODE_LIBRARY == mode) {
@@ -1274,9 +1273,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Returns the current value of the query typed in the search toolbar; empty string if no query typed
+     * Returns the current value of the query typed in the search toolbar; empty string if no query
+     * typed
      *
-     * @return Current value of the query typed in the search toolbar; empty string if no query typed
+     * @return Current value of the query typed in the search toolbar; empty string if no query
+     * typed
      */
     private String getQuery() {
         return query == null ? "" : query;
@@ -1400,10 +1401,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Loads the attributes corresponding to the given AttributeType, filtered with the given string
+     * Loads the attributes corresponding to the given AttributeType, filtered with the given
+     * string
      *
      * @param a Attribute Type whose attributes to retrieve
-     * @param s Filter to apply to the attributes name (only retrieve attributes with name like %s%)
+     * @param s Filter to apply to the attributes name (only retrieve attributes with name like
+     *          %s%)
      */
     protected void searchMasterData(AttributeType a, final String s) {
         tagWaitImage.setImageResource(a.getIcon());
@@ -1448,9 +1451,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Update the screen title according to current search filter
-     * (#TOTAL BOOKS) if no filter is enabled
-     * (#FILTERED / #TOTAL BOOKS) if a filter is enabled
+     * Update the screen title according to current search filter (#TOTAL BOOKS) if no filter is
+     * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
     private void updateTitle() {
         if (MODE_LIBRARY == mode) {
