@@ -5,7 +5,6 @@ import android.view.View;
 import java.util.List;
 
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
-import me.devsaki.hentoid.adapters.ContentAdapter.EndlessScrollListener;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
@@ -14,7 +13,7 @@ import timber.log.Timber;
  * Created by avluis on 08/26/2016.
  * Presents the list of downloaded works to the user in an endless scroll list.
  */
-public class EndlessFragment extends DownloadsFragment implements EndlessScrollListener {
+public class EndlessFragment extends DownloadsFragment {
 
     // True if the user is currently loading a page; false if not
     boolean isPageLoading = false;
@@ -31,7 +30,7 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
     @Override
     protected void attachScrollListener() {
         super.attachScrollListener();
-        mAdapter.setEndlessScrollListener(this);
+        mAdapter.setOnScrollToEndListener(this::onLoadMore);
     }
 
     @Override
@@ -50,8 +49,7 @@ public class EndlessFragment extends DownloadsFragment implements EndlessScrollL
         toggleUI(SHOW_RESULT);
     }
 
-    @Override
-    public void onLoadMore() {
+    private void onLoadMore() {
         if (!isLastPage()) { // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
             currentPage++;
             isPageLoading = true;

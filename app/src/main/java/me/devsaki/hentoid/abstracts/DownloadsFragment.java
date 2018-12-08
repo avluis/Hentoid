@@ -61,7 +61,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
-import me.devsaki.hentoid.adapters.ContentAdapter.ContentRemovedListener;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanAccessor;
 import me.devsaki.hentoid.database.DatabaseAccessor;
@@ -88,15 +87,14 @@ import timber.log.Timber;
 import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 
 /**
- * Created by avluis on 08/27/2016.
- * Common elements for use by EndlessFragment and PagerFragment
+ * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
  * <p>
- * todo issue:
- * After requesting for permission, the app is reset using {@link #resetApp()} instead of implementing
- * {@link #onRequestPermissionsResult(int, String[], int[])} to receive permission request result
+ * todo issue: After requesting for permission, the app is reset using {@link #resetApp()} instead
+ * of implementing {@link #onRequestPermissionsResult(int, String[], int[])} to receive permission
+ * request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
-        ContentRemovedListener, ItemSelectListener, ResultListener<List<Attribute>> {
+        ItemSelectListener, ResultListener<List<Attribute>> {
 
     // ======== CONSTANTS
 
@@ -595,8 +593,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
-        mAdapter = new ContentAdapter(mContext, this, comparator, collectionAccessor, mode);
-        mAdapter.setContentsWipedListener(this);
+        mAdapter = new ContentAdapter.Builder()
+                .setContext(mContext)
+                .setCollectionAccessor(collectionAccessor)
+                .setDisplayMode(mode)
+                .setSortComparator(comparator)
+                .setItemSelectListener(this)
+                .setOnContentsClearedListener(this::onContentsCleared)
+                .setOnContentRemovedListener(this::onContentRemoved)
+                .build();
         mListView.setAdapter(mAdapter);
 
         if (mAdapter.getItemCount() == 0) {
@@ -722,9 +727,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Refresh the whole screen
-     * - Called by pressing the "New Content" button that appear on new downloads
-     * - Called by scrolling up when being on top of the list ("force reload" command)
+     * Refresh the whole screen - Called by pressing the "New Content" button that appear on new
+     * downloads - Called by scrolling up when being on top of the list ("force reload" command)
      */
     protected void commitRefresh() {
         newContentToolTip.setVisibility(View.GONE);
@@ -1002,8 +1006,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Callback method used when a sort method is selected in the sort drop-down menu
-     * => Updates the UI according to the chosen sort method
+     * Callback method used when a sort method is selected in the sort drop-down menu => Updates the
+     * UI according to the chosen sort method
      *
      * @param item MenuItem that has been selected
      * @return true if the order has been successfuly processed
@@ -1016,7 +1020,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_AZ:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
-                mAdapter.setComparator(Content.TITLE_ALPHA_COMPARATOR);
+                mAdapter.setSortComparator(Content.TITLE_ALPHA_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
                 searchLibrary(true);
 
@@ -1025,7 +1029,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_321:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST;
-                mAdapter.setComparator(Content.DLDATE_COMPARATOR);
+                mAdapter.setSortComparator(Content.DLDATE_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_321);
                 searchLibrary(true);
 
@@ -1034,7 +1038,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_ZA:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
-                mAdapter.setComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
+                mAdapter.setSortComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 searchLibrary(true);
 
@@ -1043,7 +1047,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_123:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST;
-                mAdapter.setComparator(Content.DLDATE_INV_COMPARATOR);
+                mAdapter.setSortComparator(Content.DLDATE_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
                 searchLibrary(true);
 
@@ -1052,7 +1056,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case R.id.action_order_random:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
-                mAdapter.setComparator(Content.QUERY_ORDER_COMPARATOR);
+                mAdapter.setSortComparator(Content.QUERY_ORDER_COMPARATOR);
                 RandomSeedSingleton.getInstance().renewSeed();
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
                 searchLibrary(true);
@@ -1105,7 +1109,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private Button createTagSuggestionButton(Attribute attribute, boolean isSelected) {
         Button button = new Button(mContext);
-        if (attribute.getCount() > 0) button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
+        if (attribute.getCount() > 0)
+            button.setText(MessageFormat.format("{0}({1})", attribute.getName(), attribute.getCount()));
         else button.setText(attribute.getName());
         button.setBackgroundResource(R.drawable.btn_attribute_selector);
         button.setMinHeight(0);
@@ -1185,8 +1190,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Refresh attributes list according to selected attributes
-     * NB : available in library mode only because Mikan does not provide enough data for it
+     * Refresh attributes list according to selected attributes NB : available in library mode only
+     * because Mikan does not provide enough data for it
      */
     private void updateAttributeMosaic() {
         if (MODE_LIBRARY == mode) {
@@ -1274,9 +1279,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Returns the current value of the query typed in the search toolbar; empty string if no query typed
+     * Returns the current value of the query typed in the search toolbar; empty string if no query
+     * typed
      *
-     * @return Current value of the query typed in the search toolbar; empty string if no query typed
+     * @return Current value of the query typed in the search toolbar; empty string if no query
+     * typed
      */
     private String getQuery() {
         return query == null ? "" : query;
@@ -1400,10 +1407,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Loads the attributes corresponding to the given AttributeType, filtered with the given string
+     * Loads the attributes corresponding to the given AttributeType, filtered with the given
+     * string
      *
      * @param a Attribute Type whose attributes to retrieve
-     * @param s Filter to apply to the attributes name (only retrieve attributes with name like %s%)
+     * @param s Filter to apply to the attributes name (only retrieve attributes with name like
+     *          %s%)
      */
     protected void searchMasterData(AttributeType a, final String s) {
         tagWaitImage.setImageResource(a.getIcon());
@@ -1448,9 +1457,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /**
-     * Update the screen title according to current search filter
-     * (#TOTAL BOOKS) if no filter is enabled
-     * (#FILTERED / #TOTAL BOOKS) if a filter is enabled
+     * Update the screen title according to current search filter (#TOTAL BOOKS) if no filter is
+     * enabled (#FILTERED / #TOTAL BOOKS) if a filter is enabled
      */
     private void updateTitle() {
         if (MODE_LIBRARY == mode) {
@@ -1627,11 +1635,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    /*
-    ContentRemovedListener implementation
-     */
-    @Override
-    public void onAllContentRemoved() {
+    private void onContentsCleared() {
         Timber.d("All items cleared!");
         mTotalSelectedCount = 0;
         mTotalCount = 0;
@@ -1642,8 +1646,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         updateTitle();
     }
 
-    @Override
-    public void onContentRemoved(int i) {
+    private void onContentRemoved(int i) {
         mTotalSelectedCount = mTotalSelectedCount - i;
         mTotalCount = mTotalCount - i;
         updateTitle();
