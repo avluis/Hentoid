@@ -6,7 +6,6 @@ import android.app.SearchableInfo;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
@@ -28,6 +27,7 @@ import java.util.Objects;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
@@ -42,6 +42,15 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
  * appropriate notify commands based on list diff
  */
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
+
+    /**
+     * Strings submitted to this will be debounced to {@link #searchMasterData(String)} after the given
+     * delay.
+     *
+     * @see Debouncer
+     */
+    private final Debouncer<String> searchMasterDataDebouncer = new Debouncer<>(1000, this::searchMasterData);
+
     // Panel that displays the "waiting for metadata info" visuals
     private View tagWaitPanel;
     // Image that displays metadata search message (e.g. loading up / too many results / no result)
@@ -59,11 +68,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     // ViewModel of the current activity
     private SearchViewModel viewModel;
-
-
-    // ======== UTIL OBJECTS
-    // Handler for text searches; needs to be there to be cancelable upon new key press
-    private final Handler searchHandler = new Handler();
 
 
     // ======== CONSTANTS
@@ -135,7 +139,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                 } else if (!s.isEmpty()) {
-                    submitAttributeSearchQuery(s);
+                    searchMasterData(s);
                 }
                 tagSearchView.clearFocus();
 
@@ -146,9 +150,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             public boolean onQueryTextChange(String s) {
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
-                    searchHandler.removeCallbacksAndMessages(null);
+                    searchMasterDataDebouncer.clear();
                 } else /*if (!s.isEmpty())*/ {
-                    submitAttributeSearchQuery(s, 1000);
+                    searchMasterDataDebouncer.submit(s);
                 }
 
                 return true;
@@ -165,15 +169,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 //        viewModel.getAvailableAttributes(selectedAttributeTypes);
         viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
         viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
-    }
-
-    private void submitAttributeSearchQuery(String s) {
-        submitAttributeSearchQuery(s, 0);
-    }
-
-    private void submitAttributeSearchQuery(final String s, long delay) {
-        searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(() -> searchMasterData(s), delay);
     }
 
     /**
