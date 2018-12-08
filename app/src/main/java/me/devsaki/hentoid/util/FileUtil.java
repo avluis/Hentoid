@@ -49,7 +49,7 @@ class FileUtil {
      * If the file does not exist, it is created.
      *
      * @param file        The file.
-     * @param isDirectory flag indicating if the file should be a directory.
+     * @param isDirectory flag indicating if the given file should be a directory.
      * @return The DocumentFile.
      */
     @Nullable
@@ -95,13 +95,13 @@ class FileUtil {
     }
 
     /**
-     * Get the DocumentFile corresponding to the given file.
-     * If the file does not exist, it is created.
+     * Get the DocumentFile corresponding to the given elements.
+     * If it does not exist, it is created.
      *
      * @param rootURI      Uri representing root
      * @param returnRoot   True if method has just to return the DocumentFile representing the given root
      * @param relativePath Relative path to the Document to be found/created (relative to given root)
-     * @param isDirectory  True if document is supposed to be a directory; false if document is supposed to be a file
+     * @param isDirectory  True if the given elements are supposed to be a directory; false if they are supposed to be a file
      * @return DocumentFile corresponding to the given file.
      */
     private static DocumentFile documentFileHelper(Uri rootURI, boolean returnRoot,
@@ -151,7 +151,7 @@ class FileUtil {
         try {
             return FileUtils.openOutputStream(target);
         } catch (IOException e) {
-            Timber.d(e, "Could not open file"); // TODO do something for not displaying that exception on logcat, since it is "expected"
+            Timber.d("Could not open file (expected)");
         }
 
         try {
@@ -175,7 +175,7 @@ class FileUtil {
         try {
             return FileUtils.openInputStream(target);
         } catch (IOException e) {
-            Timber.d(e, "Could not open file"); // TODO do something for not displaying that exception on logcat, since it is "expected"
+            Timber.d("Could not open file (expected)");
         }
 
         try {
@@ -278,6 +278,15 @@ class FileUtil {
             }
         }
 
+        return false;
+    }
+
+    static boolean renameWithSAF(File srcDir, String newName)
+    {
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+            DocumentFile srcDocument = getDocumentFile(srcDir, true);
+            if (srcDocument != null) return srcDocument.renameTo(newName);
+        }
         return false;
     }
 }

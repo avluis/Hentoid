@@ -1,18 +1,24 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
+import android.support.design.widget.Snackbar;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
+import android.support.v7.preference.PreferenceScreen;
+import android.view.MenuItem;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.fragments.LibRefreshLauncher;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.services.UpdateDownloadService;
-import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
@@ -32,6 +38,33 @@ public class PrefsActivity extends BaseActivity {
         getSupportFragmentManager().beginTransaction()
                 .replace(android.R.id.content, new MyPreferenceFragment())
                 .commit();
+        EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onImportEventComplete(ImportEvent event) {
+        if (ImportEvent.EV_COMPLETE == event.eventType && event.cleanupLogFile != null)
+        {
+            Snackbar snackbar = Snackbar.make(this.findViewById(android.R.id.content), R.string.cleanup_done, Snackbar.LENGTH_LONG);
+            snackbar.setAction("READ LOG", v -> FileHelper.openFile(this, event.cleanupLogFile) );
+            snackbar.show();
+        }
     }
 
     public static class MyPreferenceFragment extends PreferenceFragmentCompat {
@@ -40,20 +73,22 @@ public class PrefsActivity extends BaseActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.preferences, rootKey);
 
-            findPreference(Preferences.Key.PREF_HIDE_RECENT)
-                    .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+            if ("advancedSettings".equals(rootKey)) {
+                findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)
+                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+            } else {
+                findPreference(Preferences.Key.PREF_HIDE_RECENT)
+                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-            findPreference(Preferences.Key.PREF_ANALYTICS_TRACKING)
-                    .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+                findPreference(Preferences.Key.PREF_ANALYTICS_TRACKING)
+                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-            findPreference(Preferences.Key.PREF_USE_SFW)
-                    .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
+                findPreference(Preferences.Key.PREF_USE_SFW)
+                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
-            findPreference(Preferences.Key.PREF_DL_THREADS_QUANTITY_LISTS)
-                    .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
-
-            findPreference(Preferences.Key.PREF_APP_LOCK)
-                    .setOnPreferenceChangeListener((preference, newValue) -> onAppLockPinChanged(newValue));
+                findPreference(Preferences.Key.PREF_APP_LOCK)
+                        .setOnPreferenceChangeListener((preference, newValue) -> onAppLockPinChanged(newValue));
+            }
         }
 
         @Override
@@ -62,54 +97,41 @@ public class PrefsActivity extends BaseActivity {
             if (key == null) return super.onPreferenceTreeClick(preference);
             switch (key) {
                 case Preferences.Key.PREF_ADD_NO_MEDIA_FILE:
-                    return FileHelper.createNoMedia();
+                    FileHelper.createNoMedia();
+                    return true;
                 case Preferences.Key.PREF_CHECK_UPDATE_MANUAL:
                     return onCheckUpdatePrefClick();
                 case Preferences.Key.PREF_REFRESH_LIBRARY:
-                    return onRefreshLibraryClick();
+                    if (ImportService.isRunning()) {
+                        Helper.toast("Import is already running");
+                    } else {
+                        LibRefreshLauncher.invoke(requireFragmentManager());
+                    }
+                    return true;
                 default:
                     return super.onPreferenceTreeClick(preference);
             }
+        }
+
+        @Override
+        public void onNavigateToScreen(PreferenceScreen preferenceScreen) {
+            Bundle args = new Bundle();
+            args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, preferenceScreen.getKey());
+
+            MyPreferenceFragment preferenceFragment = new MyPreferenceFragment();
+            preferenceFragment.setArguments(args);
+
+            requireFragmentManager()
+                    .beginTransaction()
+                    .replace(android.R.id.content, preferenceFragment)
+                    .addToBackStack(null)
+                    .commit();
         }
 
         private boolean onCheckUpdatePrefClick() {
             if (!UpdateDownloadService.isRunning()) {
                 Intent intent = UpdateCheckService.makeIntent(requireContext(), true);
                 requireContext().startService(intent);
-            }
-            return true;
-        }
-
-        private void launchRefreshImport(boolean cleanup) {
-            Intent refresh = new Intent(this.getContext(), ImportActivity.class);
-            refresh.setAction("android.intent.action.APPLICATION_PREFERENCES"); // Is only a constant since API 24 -> using the string
-            refresh.putExtra("refresh", true);
-            refresh.putExtra("cleanup", cleanup);
-            startActivityForResult(refresh, ConstsImport.RQST_IMPORT_RESULTS);
-        }
-
-        private boolean onRefreshLibraryClick() {
-            if (!ImportService.isRunning()) {
-                Context ctx = this.getContext();
-                if (null == ctx) return false;
-
-                new AlertDialog.Builder(ctx)
-                        .setTitle(R.string.app_name)
-                        .setMessage(R.string.cleanup_folders)
-                        .setPositiveButton("Yes", // android.R.string.yes displays as "OK" ?! O.o
-                                (dialog1, which) -> {
-                                    dialog1.dismiss();
-                                    launchRefreshImport(true);
-                                })
-                        .setNegativeButton("No", // // android.R.string.yes displays as "Cancel" ?! O.o
-                                (dialog12, which) -> {
-                                    dialog12.dismiss();
-                                    launchRefreshImport(false);
-                                })
-                        .create()
-                        .show();
-            } else {
-                Helper.toast("Import is already running");
             }
             return true;
         }

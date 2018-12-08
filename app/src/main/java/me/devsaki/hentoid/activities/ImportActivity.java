@@ -16,6 +16,7 @@ import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -197,9 +198,7 @@ public class ImportActivity extends BaseActivity {
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
         }
 
-        // TODO - nope, when actual library is located on SD card, location is reset to default in-memory location when trying to refresh !
-
-        if (defaultInit || isRefresh) { // Do not ask what the user wants to import if he has chosen default initial import location or if he has asked for a refresh
+        if (defaultInit) {
             prevRootDir = currentRootDir;
             initImport();
         } else {
@@ -496,7 +495,7 @@ public class ImportActivity extends BaseActivity {
     public void onImportEventComplete(ImportEvent event) {
         if (ImportEvent.EV_COMPLETE == event.eventType)
         {
-            progressDialog.dismiss();
+            if (progressDialog != null) progressDialog.dismiss();
             cleanUp((event.booksOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
         }
     }
