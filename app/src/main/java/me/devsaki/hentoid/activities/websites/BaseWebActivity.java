@@ -412,7 +412,7 @@ public abstract class BaseWebActivity extends BaseActivity {
      * @param content Currently displayed content
      */
     void processContent(Content content) {
-        if (content == null) {
+        if (null == content || null == content.getUrl()) {
             return;
         }
 
