@@ -192,7 +192,8 @@ public class ImportService extends IntentService {
         // Create the log
         StringBuilder logStr = new StringBuilder();
         logStr.append("Cleanup log : begin").append(System.getProperty("line.separator"));
-        for (String line : log) logStr.append(line).append(System.getProperty("line.separator"));
+        if (log.isEmpty()) logStr.append("No activity to report - All folder names are formatted as expected.");
+        else for (String line : log) logStr.append(line).append(System.getProperty("line.separator"));
         logStr.append("Cleanup log : end");
 
         // Save it
