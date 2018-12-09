@@ -1242,6 +1242,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 setQuery(searchUri.getPath());
                 selectedSearchTags = Helper.parseSearchUri(searchUri);
 
+                searchMenu.collapseActionView();
                 searchLibrary(true);
             }
         }
