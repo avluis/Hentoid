@@ -7,8 +7,6 @@ import android.support.v4.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -27,6 +25,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.services.ContentQueueManager;
+import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
 
@@ -195,12 +194,12 @@ public class QueueFragment extends BaseFragment {
         // Update control bar status
         queueInfo.setText(R.string.queue_empty2);
 
-        Content firstContent = isEmpty?null:mAdapter.getItem(0);
+        Content firstContent = isEmpty ? null : mAdapter.getItem(0);
 
         if (isActive) {
             btnPause.setVisibility(View.VISIBLE);
             btnStart.setVisibility(View.GONE);
-            if (firstContent != null)  updateBookTitle(firstContent.getTitle());
+            if (firstContent != null) updateBookTitle(firstContent.getTitle());
 
             // Stop blinking animation, if any
             queueInfo.clearAnimation();
@@ -213,13 +212,9 @@ public class QueueFragment extends BaseFragment {
                 queueStatus.setText(R.string.queue_paused);
 
                 // Set blinking animation when queue is paused
-                Animation anim = new AlphaAnimation(0.0f, 1.0f);
-                anim.setDuration(750);
-                anim.setStartOffset(20);
-                anim.setRepeatMode(Animation.REVERSE);
-                anim.setRepeatCount(Animation.INFINITE);
-                queueStatus.startAnimation(anim);
-                queueInfo.startAnimation(anim);
+                BlinkAnimation animation = new BlinkAnimation(750, 20);
+                queueStatus.startAnimation(animation);
+                queueInfo.startAnimation(animation);
             } else { // Empty
                 btnStart.setVisibility(View.GONE);
                 queueStatus.setText(R.string.queue_empty2);
