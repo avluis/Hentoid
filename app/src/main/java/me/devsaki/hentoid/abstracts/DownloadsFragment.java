@@ -62,6 +62,7 @@ import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
+import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -809,8 +810,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         ViewGroup advancedSearchBtn = activity.findViewById(R.id.advanced_search);
         advancedSearchBtn.setOnClickListener(v -> {
             Intent search = new Intent(this.getContext(), SearchActivity.class);
-            search.putExtra("mode", mode);
-            if (!selectedSearchTags.isEmpty()) search.putExtra("searchUri", Helper.buildSearchUri(selectedSearchTags).toString());
+
+            BundleManager manager = new BundleManager();
+            manager.setMode(mode);
+            if (!selectedSearchTags.isEmpty()) manager.setUri(Helper.buildSearchUri(selectedSearchTags));
+            search.putExtras(manager.getBundle());
+
             startActivityForResult(search, 999);
         });
 
@@ -1237,13 +1242,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (requestCode == 999) {
             if (resultCode == Activity.RESULT_OK) {
-                Uri searchUri = Uri.parse(data.getStringExtra("searchUri"));
+                BundleManager manager = new BundleManager(data.getExtras());
+                Uri searchUri = manager.getUri();
 
-                setQuery(searchUri.getPath());
-                selectedSearchTags = Helper.parseSearchUri(searchUri);
+                if (searchUri != null) {
+                    setQuery(searchUri.getPath());
+                    selectedSearchTags = Helper.parseSearchUri(searchUri);
 
-                searchMenu.collapseActionView();
-                searchLibrary(true);
+                    searchMenu.collapseActionView();
+                    searchLibrary(true);
+                }
             }
         }
     }

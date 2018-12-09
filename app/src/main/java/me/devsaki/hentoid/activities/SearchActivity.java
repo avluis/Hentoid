@@ -19,6 +19,7 @@ import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
+import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
@@ -60,22 +61,21 @@ public class SearchActivity extends BaseActivity {
     private SearchViewModel viewModel;
 
 
-    private final String KEY_SEARCH_URI = "search_uri";
-
-
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putString(KEY_SEARCH_URI, Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue()).toString());
+        BundleManager manager = new BundleManager(outState);
+        manager.setUri(Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue()));
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        String searchUriStr = savedInstanceState.getString(KEY_SEARCH_URI, "");
-        if (!searchUriStr.isEmpty()) {
-            Uri searchUri = Uri.parse(searchUriStr);
+        BundleManager manager = new BundleManager(savedInstanceState);
+        Uri searchUri = manager.getUri();
+
+        if (searchUri != null) {
             List<Attribute> preSelectedAttributes = Helper.parseSearchUri(searchUri);
             if (preSelectedAttributes != null)
                 viewModel.setSelectedAttributes(preSelectedAttributes);
@@ -89,12 +89,10 @@ public class SearchActivity extends BaseActivity {
         Intent intent = getIntent();
         List<Attribute> preSelectedAttributes = null;
         if (intent != null) {
-            mode = intent.getIntExtra("mode", MODE_LIBRARY);
-            String searchUriStr = intent.getStringExtra("searchUri");
-            if (searchUriStr != null && !searchUriStr.isEmpty()) {
-                Uri searchUri = Uri.parse(searchUriStr);
-                preSelectedAttributes = Helper.parseSearchUri(searchUri);
-            }
+            BundleManager manager = new BundleManager(intent.getExtras());
+            mode = manager.getMode();
+            Uri searchUri = manager.getUri();
+            if (searchUri != null) preSelectedAttributes = Helper.parseSearchUri(searchUri);
         }
 
         setContentView(R.layout.activity_search);
@@ -207,11 +205,13 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void validateForm() {
-        String searchUri = Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue()).toString();
+        Uri searchUri = Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue());
         Timber.d("URI :%s", searchUri);
 
         Intent returnIntent = new Intent();
-        returnIntent.putExtra("searchUri", searchUri);
+        BundleManager manager = new BundleManager();
+        manager.setUri(searchUri);
+        returnIntent.putExtras(manager.getBundle());
 
         setResult(Activity.RESULT_OK, returnIntent);
         finish();

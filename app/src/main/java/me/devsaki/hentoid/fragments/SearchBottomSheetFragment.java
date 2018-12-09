@@ -26,6 +26,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
@@ -72,18 +73,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // ======== CONSTANTS
     protected static final int MAX_ATTRIBUTES_DISPLAYED = 40;
 
-    private static final String KEY_ATTRIBUTE_TYPES = "selectedAttributeTypes";
-
-    private static final String KEY_MODE = "mode";
-
 
     public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {
-        ArrayList<Integer> selectedTypes = new ArrayList<>();
-        for (AttributeType type : types) selectedTypes.add(type.getCode());
-
         Bundle bundle = new Bundle();
-        bundle.putInt(KEY_MODE, mode);
-        bundle.putIntegerArrayList(KEY_ATTRIBUTE_TYPES, selectedTypes);
+        BundleManager manager = new BundleManager(bundle);
+
+        manager.setMode(mode);
+        manager.setAttributeTypes(types);
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
         searchBottomSheetFragment.setArguments(bundle);
@@ -97,14 +93,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            mode = bundle.getInt(KEY_MODE, -1);
-            List<Integer> attrTypesList = bundle.getIntegerArrayList(KEY_ATTRIBUTE_TYPES);
-            if (-1 == mode || null == attrTypesList || attrTypesList.isEmpty()) {
+            BundleManager manager = new BundleManager(bundle);
+            mode = manager.getMode();
+            selectedAttributeTypes = manager.getAttributeTypes();
+
+            if (-1 == mode || selectedAttributeTypes.isEmpty()) {
                 throw new RuntimeException("Initialization failed");
             }
-
-            for (Integer i : attrTypesList)
-                selectedAttributeTypes.add(AttributeType.searchByCode(i));
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
             viewModel.onCategoryChanged(selectedAttributeTypes);
