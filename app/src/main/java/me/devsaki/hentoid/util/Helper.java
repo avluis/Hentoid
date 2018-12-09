@@ -362,16 +362,17 @@ public final class Helper {
     public static List<Attribute> parseSearchUri(Uri uri) {
         List<Attribute> result = new ArrayList<>();
 
-        for (String typeStr : uri.getQueryParameterNames()) {
-            AttributeType type = AttributeType.searchByName(typeStr);
-            if (type != null)
-                for (String attrStr : uri.getQueryParameters(typeStr)) {
-                    String[] attrParams = attrStr.split(";");
-                    if (2 == attrParams.length) {
-                        result.add(new Attribute(type, attrParams[1], "").setExternalId(Integer.parseInt(attrParams[0])));
+        if (uri != null)
+            for (String typeStr : uri.getQueryParameterNames()) {
+                AttributeType type = AttributeType.searchByName(typeStr);
+                if (type != null)
+                    for (String attrStr : uri.getQueryParameters(typeStr)) {
+                        String[] attrParams = attrStr.split(";");
+                        if (2 == attrParams.length) {
+                            result.add(new Attribute(type, attrParams[1], "").setExternalId(Integer.parseInt(attrParams[0])));
+                        }
                     }
-                }
-        }
+            }
 
         return result;
     }
