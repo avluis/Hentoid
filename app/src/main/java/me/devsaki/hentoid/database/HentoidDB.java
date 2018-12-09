@@ -40,7 +40,7 @@ import timber.log.Timber;
 public class HentoidDB extends SQLiteOpenHelper {
 
     private static final Object locker = new Object();
-    private static final int DATABASE_VERSION = 5;
+    private static final int DATABASE_VERSION = 6;
     private static HentoidDB instance;
 
 
@@ -74,26 +74,31 @@ public class HentoidDB extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        if (oldVersion < 2) // Updates to v2
+        if (oldVersion < 2)
         {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.AUTHOR_COLUMN + " TEXT");
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.STORAGE_FOLDER_COLUMN + " TEXT");
             Timber.i("Upgrading DB version to v2");
         }
-        if (oldVersion < 3) // Updates to v3
+        if (oldVersion < 3)
         {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.FAVOURITE_COLUMN + " INTEGER DEFAULT 0");
             Timber.i("Upgrading DB version to v3");
         }
-        if (oldVersion < 4) // Updates to v4
+        if (oldVersion < 4)
         {
             db.execSQL(QueueTable.CREATE_TABLE);
             Timber.i("Upgrading DB version to v4");
         }
-        if (oldVersion < 5) // Updates to v5
+        if (oldVersion < 5)
         {
             db.execSQL(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID_IDX);
             Timber.i("Upgrading DB version to v5");
+        }
+        if (oldVersion < 6)
+        {
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.READS_COLUMN + " INTEGER DEFAULT 1");
+            Timber.i("Upgrading DB version to v6");
         }
     }
 
@@ -218,6 +223,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor()) ? "" : row.getAuthor());
                         statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder()) ? "" : row.getStorageFolder());
                         statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
+                        statement.bindLong(ContentTable.IDX_READS, row.getReads());
 
                         statement.execute();
 
@@ -402,6 +408,12 @@ public class HentoidDB extends SQLiteOpenHelper {
                     case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST:
+                        sql += ContentTable.ORDER_READS;
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST:
+                        sql += ContentTable.ORDER_READS + " DESC";
+                        break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
                         sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
                         break;
@@ -458,6 +470,12 @@ public class HentoidDB extends SQLiteOpenHelper {
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST:
+                        sql += ContentTable.ORDER_READS;
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST:
+                        sql += ContentTable.ORDER_READS + " DESC";
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
                         sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
@@ -704,6 +722,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
                 .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
+                .setReads(cursorContent.getLong(ContentTable.IDX_READS - 1))
                 .setQueryOrder(cursorContent.getPosition());
 
         if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
@@ -1168,11 +1187,9 @@ public class HentoidDB extends SQLiteOpenHelper {
         synchronized (locker) {
             Timber.d("updateContentFavourite");
             SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
 
-            try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(ContentTable.UPDATE_CONTENT_FAVOURITE);
+            db = getWritableDatabase();
+            try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_FAVOURITE)) {
 
                 db.beginTransaction();
                 try {
@@ -1186,15 +1203,40 @@ public class HentoidDB extends SQLiteOpenHelper {
                 }
             } finally {
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }
             }
         }
     }
+
+    public void updateContentReads(Content content) {
+        synchronized (locker) {
+            Timber.d("updateContentReads");
+            SQLiteDatabase db = null;
+
+            db = getWritableDatabase();
+            try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_READS)) {
+
+                db.beginTransaction();
+                try {
+                    statement.clearBindings();
+                    statement.bindLong(1, content.getReads());
+                    statement.bindLong(2, content.getId());
+                    statement.execute();
+                    db.setTransactionSuccessful();
+                } finally {
+                    db.endTransaction();
+                }
+            } finally {
+                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+    }
+
 
     public void updateContentStatus(StatusContent updateFrom, StatusContent updateTo) {
         synchronized (locker) {

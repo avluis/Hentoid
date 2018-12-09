@@ -506,6 +506,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST:
                 comparator = Content.ULDATE_COMPARATOR;
                 break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST:
+                comparator = Content.READS_ORDER_COMPARATOR;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST:
+                comparator = Content.READS_ORDER_INV_COMPARATOR;
+                break;
             default:
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
@@ -764,6 +770,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST:
+                orderMenu.setIcon(R.drawable.ic_menu_sort_unread);
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST:
+                orderMenu.setIcon(R.drawable.ic_menu_sort_read);
+                break;
             case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
                 break;
@@ -833,6 +845,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                 result = true;
                 break;
+            case R.id.action_order_unread:
+                cleanResults();
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST;
+                mAdapter.setSortComparator(Content.READS_ORDER_COMPARATOR);
+                orderMenu.setIcon(R.drawable.ic_menu_sort_unread);
+                searchLibrary(true);
+
+                result = true;
+                break;
+            case R.id.action_order_read:
+                cleanResults();
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST;
+                mAdapter.setSortComparator(Content.READS_ORDER_INV_COMPARATOR);
+                orderMenu.setIcon(R.drawable.ic_menu_sort_read);
+                searchLibrary(true);
+
+                result = true;
+                break;
             case R.id.action_order_random:
                 cleanResults();
                 bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
@@ -844,7 +874,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 result = true;
                 break;
             default:
-
                 result = super.onOptionsItemSelected(item);
         }
         // Save current sort order

@@ -18,6 +18,8 @@
     <string name="menu_order_ZA">alphabetically (inverted)</string>
     <string name="menu_order_123">by download date (oldest 1st)</string>
     <string name="menu_order_321">by download date (newest 1st)</string>
+    <string name="menu_order_unread">by reads (unread 1st)</string>
+    <string name="menu_order_read">by reads (most read 1st)</string>
     <string name="menu_order_random">random order</string>
     <string name="menu_fav">Toggle favourite filter</string>
     <string name="menu_delete_single">Delete</string>

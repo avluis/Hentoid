@@ -192,6 +192,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         if (holder.itemView.isSelected()) {
             holder.tvTitle2.setText(title);
         }
+
+        holder.ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
     }
 
     private void attachCover(ContentHolder holder, Content content) {
@@ -370,7 +372,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 // "In queue" icon
                 else if (status == StatusContent.DOWNLOADING || status == StatusContent.PAUSED) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_download);
-                    holder.ivDownload.startAnimation(new BlinkAnimation(500,100));
+                    holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
                     holder.ivDownload.setOnClickListener(v -> Helper.viewQueue(context));
                 }
                 // "In library" icon

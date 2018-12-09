@@ -1,7 +1,5 @@
 package me.devsaki.hentoid.database.constants;
 
-import me.devsaki.hentoid.enums.AttributeType;
-
 /**
  * Created by DevSaki on 10/05/2015.
  * db Content Table
@@ -11,7 +9,7 @@ public abstract class ContentTable {
     public static final String TABLE_NAME = "content";
 
     public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO " + TABLE_NAME
-            + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+            + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
     public static final String LIMIT_BY_PAGE = " LIMIT ?,?";
 
     // COLUMN NAMES
@@ -30,6 +28,7 @@ public abstract class ContentTable {
     public static final String AUTHOR_COLUMN = "author";
     public static final String STORAGE_FOLDER_COLUMN = "storage_folder";
     public static final String FAVOURITE_COLUMN = "favourite";
+    public static final String READS_COLUMN = "reads";
 
     // COLUMN INDEXES
     public static final int IDX_INTERNALID = 1;
@@ -47,10 +46,12 @@ public abstract class ContentTable {
     public static final int IDX_AUTHOR = 13;
     public static final int IDX_STORAGE_FOLDER = 14;
     public static final int IDX_FAVOURITE = 15;
+    public static final int IDX_READS = 16;
 
     // ORDER
     public static final String ORDER_BY_DATE = " ORDER BY C." + DOWNLOAD_DATE_COLUMN;
     public static final String ORDER_ALPHABETIC = " ORDER BY C." + TITLE_COLUMN;
+    public static final String ORDER_READS = " ORDER BY C." + READS_COLUMN;
     public static final String ORDER_RANDOM = " ORDER BY ((ABS(" + ID_COLUMN + " * %6) * 1e7) % 1e7)";
 
     // CREATE
@@ -61,7 +62,7 @@ public abstract class ContentTable {
             + UPLOAD_DATE_COLUMN + " INTEGER" + "," + DOWNLOAD_DATE_COLUMN + " INTEGER" + ","
             + STATUS_COLUMN + " INTEGER" + "," + COVER_IMAGE_URL_COLUMN + " TEXT"
             + "," + SITE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT, "
-            + FAVOURITE_COLUMN + " INTEGER DEFAULT 0 )";
+            + FAVOURITE_COLUMN + " INTEGER " + READS_COLUMN + " INTEGER " + " DEFAULT 0 )";
 
     // DELETE
     public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE " + ID_COLUMN + " = ?";
@@ -78,6 +79,8 @@ public abstract class ContentTable {
     public static final String UPDATE_CONTENT_STORAGE_FOLDER = "UPDATE " + TABLE_NAME + " SET " + STORAGE_FOLDER_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
 
     public static final String UPDATE_CONTENT_FAVOURITE = "UPDATE " + TABLE_NAME + " SET " + FAVOURITE_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
+
+    public static final String UPDATE_CONTENT_READS = "UPDATE " + TABLE_NAME + " SET " + READS_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
 
 
     // SELECT
@@ -97,7 +100,6 @@ public abstract class ContentTable {
     public static final String SELECT_DOWNLOADS_SITES = " AND C." + SITE_COLUMN + " in (%1) ";
 
     public static final String SELECT_DOWNLOADS_FAVS = " AND C." + FAVOURITE_COLUMN + " = 1 ";
-
 
 
     private static final String SELECT_DOWNLOADS_TITLE_RAW = " lower(C." + TITLE_COLUMN + ") LIKE '%2' ";

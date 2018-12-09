@@ -52,6 +52,8 @@ public class Content implements Serializable {
     private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
     @Expose
     private boolean favourite;
+    @Expose
+    private long reads = 0;
     // Runtime attributes; no need to expose them
     private double percent;
     private int queryOrder;
@@ -219,7 +221,7 @@ public class Content implements Serializable {
             case PANDA:
                 return getGalleryUrl();
             case PURURIN:
-                return site.getUrl() + "/read/" + url.substring(1).replace("/","/01/");
+                return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
             default:
                 return null;
         }
@@ -358,9 +360,28 @@ public class Content implements Serializable {
         return this;
     }
 
-    public boolean isSelected() { return selected; }
+    public boolean isSelected() {
+        return selected;
+    }
 
-    public void setSelected(boolean selected) { this.selected = selected; }
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+    }
+
+
+    public long getReads() {
+        return reads;
+    }
+
+    public Content increaseReads() {
+        this.reads++;
+        return this;
+    }
+
+    public Content setReads(long reads) {
+        this.reads = reads;
+        return this;
+    }
 
 
     @Override
@@ -395,4 +416,8 @@ public class Content implements Serializable {
     public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
 
     public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
+
+    public static final Comparator<Content> READS_ORDER_COMPARATOR = (a, b) -> Long.compare(a.getReads(), b.getReads());
+
+    public static final Comparator<Content> READS_ORDER_INV_COMPARATOR = (a, b) -> Long.compare(a.getReads(), b.getReads()) * -1;
 }

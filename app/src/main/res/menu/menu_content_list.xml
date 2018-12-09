@@ -38,6 +38,14 @@
                 android:icon="@drawable/ic_menu_sort_321"
                 android:title="@string/menu_order_321" />
             <item
+                android:id="@+id/action_order_unread"
+                android:icon="@drawable/ic_menu_sort_unread"
+                android:title="@string/menu_order_unread" />
+            <item
+                android:id="@+id/action_order_read"
+                android:icon="@drawable/ic_menu_sort_read"
+                android:title="@string/menu_order_read" />
+            <item
                 android:id="@+id/action_order_random"
                 android:icon="@drawable/ic_menu_sort_random"
                 android:title="@string/menu_order_random" />
