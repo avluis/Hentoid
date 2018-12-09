@@ -99,6 +99,8 @@ dependencies {
     implementation 'com.google.android:flexbox:1.0.0'
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
+    // ScrollView with MaxHeight (tag display in advanced search UI)
+    implementation 'com.bskim:maxheightscrollview:1.0.0@aar'
 
     //    https://github.com/square/retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.4.0'
