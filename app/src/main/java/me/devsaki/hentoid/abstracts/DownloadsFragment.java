@@ -806,7 +806,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // == SEARCH PANE
 
-        View advancedSearchBtn = activity.findViewById(R.id.advanced_btn);
+        ViewGroup advancedSearchBtn = activity.findViewById(R.id.advanced_search);
         advancedSearchBtn.setOnClickListener(v -> {
             Intent search = new Intent(this.getContext(), SearchActivity.class);
             search.putExtra("mode", mode);

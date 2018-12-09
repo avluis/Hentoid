@@ -10,23 +10,23 @@
     android:tag="TagFilter">
 
     <LinearLayout
-        android:id="@+id/filter_wrapper"
+        android:id="@+id/advanced_search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_margin="8dp"
+        android:clickable="true"
+        android:focusable="true"
         >
 
         <TextView
-            android:id="@+id/advanced_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
             android:textColor="@color/white"
             android:text="Advanced search..."
             tools:ignore="HardcodedText"
-            android:clickable="true"
-            android:focusable="true" />
+             />
 
     </LinearLayout>
 
