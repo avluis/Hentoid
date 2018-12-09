@@ -196,6 +196,7 @@ public class SearchViewModel extends AndroidViewModel {
 
         // Indirect impact on attributesPerType
         countAttributesPerType();
+        updateSelectionResult();
     }
 
     public void onAttributeUnselected(Attribute a) {
