@@ -98,7 +98,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private static final String FILTER_FAVOURITES = "filter_favs";
     private static final String CURRENT_PAGE = "current_page";
     private static final String QUERY = "query";
-    private static final String SEARCH_URI = "search_uri";
     private static final String MODE = "mode";
 
 
@@ -182,8 +181,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     boolean libraryHasBeenRefreshed = false;
     // If library has been refreshed, indicated new content count
     int refreshedContentCount = 0;
-    // Seach URI coming from Advanced search screen
-    String currentSearchUri = "";
 
 
     // === SEARCH
@@ -431,7 +428,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         outState.putParcelable(LIST_STATE_KEY, mListState);
         outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
         outState.putString(QUERY, query);
-        outState.putString(SEARCH_URI, currentSearchUri);
         outState.putInt(CURRENT_PAGE, currentPage);
         outState.putInt(MODE, mode);
 
@@ -448,7 +444,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             mListState = state.getParcelable(LIST_STATE_KEY);
             filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
             query = state.getString(QUERY, "");
-            currentSearchUri = state.getString(SEARCH_URI, "");
             currentPage = state.getInt(CURRENT_PAGE);
             mode = state.getInt(MODE);
 
@@ -815,7 +810,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         advancedSearchBtn.setOnClickListener(v -> {
             Intent search = new Intent(this.getContext(), SearchActivity.class);
             search.putExtra("mode", mode);
-            if (!currentSearchUri.isEmpty()) search.putExtra("searchUri", currentSearchUri);
+            if (!selectedSearchTags.isEmpty()) search.putExtra("searchUri", Helper.buildSearchUri(selectedSearchTags).toString());
             startActivityForResult(search, 999);
         });
 
@@ -1242,8 +1237,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (requestCode == 999) {
             if (resultCode == Activity.RESULT_OK) {
-                currentSearchUri = data.getStringExtra("searchUri");
-                Uri searchUri = Uri.parse(currentSearchUri);
+                Uri searchUri = Uri.parse(data.getStringExtra("searchUri"));
 
                 setQuery(searchUri.getPath());
                 selectedSearchTags = Helper.parseSearchUri(searchUri);
