@@ -817,6 +817,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             search.putExtras(manager.getBundle());
 
             startActivityForResult(search, 999);
+            searchMenu.collapseActionView();
         });
 
 
@@ -1249,7 +1250,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     setQuery(searchUri.getPath());
                     selectedSearchTags = Helper.parseSearchUri(searchUri);
 
-                    searchMenu.collapseActionView();
                     searchLibrary(true);
                 }
             }
