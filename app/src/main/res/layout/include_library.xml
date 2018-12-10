@@ -1,25 +1,31 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:background="@color/primary_dark">
 
-    <include
-        android:id="@+id/downloads_toolbar"
-        layout="@layout/include_downloads_toolbar"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/advanced_search"
+        style="@style/TextButton"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
+        android:background="@color/red_bg"
+        android:text="@string/title_activity_search"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <RelativeLayout
         android:id="@+id/filter_bar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:background="@color/red_bg"
         android:visibility="gone"
-        tools:visibility="visible">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/filter_book_count"
@@ -44,12 +50,21 @@
 
     </RelativeLayout>
 
+    <android.support.constraint.Barrier
+        android:id="@+id/barrier_top"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="advanced_search,filter_bar" />
+
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/downloads_toolbar"
-        android:layout_below="@id/filter_bar">
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/downloads_toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrier_top">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -59,12 +74,13 @@
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:clipToPadding="false"
                 android:paddingStart="@dimen/default_cardview_margin"
                 android:paddingLeft="@dimen/default_cardview_margin"
                 android:paddingTop="@dimen/default_cardview_margin"
-                android:paddingEnd="0dp"
-                android:paddingRight="0dp"
-                tools:background="@color/white" />
+                android:paddingEnd="@dimen/default_cardview_margin"
+                android:paddingRight="@dimen/default_cardview_margin"
+                tools:listitem="@layout/item_download" />
 
             <LinearLayout
                 android:id="@+id/tooltip"
@@ -89,21 +105,21 @@
         android:id="@+id/empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
         android:layout_marginTop="150dp"
         android:gravity="center"
         android:text="@string/downloads_empty_library"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
         android:drawableTop="@drawable/bg_loading"
         android:gravity="center"
         android:padding="15dp"
@@ -112,16 +128,19 @@
         android:text="@string/downloads_loading"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
-        android:visibility="gone" />
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <TextView
-        android:id="@+id/advanced_search"
-        style="@style/TextButton"
-        android:layout_width="match_parent"
+    <include
+        android:id="@+id/downloads_toolbar"
+        layout="@layout/include_downloads_toolbar"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:background="@color/red_bg"
-        android:text="@string/title_activity_search"
-        android:visibility="gone" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>
