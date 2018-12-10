@@ -2,10 +2,11 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
-    android:layout_width="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <include android:id="@+id/downloads_toolbar"
+    <include
+        android:id="@+id/downloads_toolbar"
         layout="@layout/include_downloads_toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -18,37 +19,36 @@
         android:layout_alignParentTop="true"
         android:background="@color/primary"
         android:padding="12dp"
-        android:visibility="gone"
-        >
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/filter_book_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
             android:gravity="center"
             android:text="@string/downloads_filter_book_count"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/white"
-            android:textSize="16sp"
-            android:layout_centerVertical="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/filter_clear"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:text="@string/downloads_filter_clear"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textColor="@color/material_red_100"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true"
             android:textSize="16sp"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:textStyle="bold" />
 
     </RelativeLayout>
 
@@ -57,8 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/downloads_toolbar"
-        android:layout_below="@id/filter_bar"
-        >
+        android:layout_below="@id/filter_bar">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -68,11 +67,11 @@
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingEnd="0dp"
-                android:paddingLeft="@dimen/default_cardview_margin"
-                android:paddingRight="0dp"
                 android:paddingStart="@dimen/default_cardview_margin"
+                android:paddingLeft="@dimen/default_cardview_margin"
                 android:paddingTop="@dimen/default_cardview_margin"
+                android:paddingEnd="0dp"
+                android:paddingRight="0dp"
                 tools:background="@color/white" />
 
             <LinearLayout
@@ -98,20 +97,21 @@
         android:id="@+id/empty"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         android:layout_marginTop="150dp"
         android:gravity="center"
         android:text="@string/downloads_empty_library"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
-        android:visibility="gone"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        />
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
         android:drawableTop="@drawable/bg_loading"
         android:gravity="center"
         android:padding="15dp"
@@ -120,10 +120,7 @@
         android:text="@string/downloads_loading"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
-        android:visibility="gone"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        />
+        android:visibility="gone" />
 
     <include
         android:id="@+id/tag_filter_view"
@@ -131,7 +128,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:visibility="gone"
-        />
+        android:visibility="gone" />
 
 </RelativeLayout>
