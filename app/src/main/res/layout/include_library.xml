@@ -1,64 +1,70 @@
-<?xml version="1.0" encoding="utf-8"?>
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_width="match_parent">
+    tools:background="@color/primary_dark">
 
-    <include android:id="@+id/downloads_toolbar"
-        layout="@layout/include_downloads_toolbar"
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/advanced_search"
+        style="@style/TextButton"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true" />
+        android:background="@color/red_bg"
+        android:text="@string/title_activity_search"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <RelativeLayout
         android:id="@+id/filter_bar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:background="@color/primary"
-        android:padding="12dp"
+        android:background="@color/red_bg"
         android:visibility="gone"
-        >
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/filter_book_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/downloads_filter_book_count"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/white"
-            android:textSize="16sp"
-            android:layout_centerVertical="true"
+            android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true" />
+            android:layout_centerVertical="true"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:text="@string/downloads_filter_book_count"
+            android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/filter_clear"
+            style="@style/TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:text="@string/downloads_filter_clear"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/material_red_100"
-            android:textStyle="bold"
-            android:clickable="true"
-            android:focusable="true"
-            android:textSize="16sp"
-            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
+            android:text="@string/downloads_filter_clear" />
 
     </RelativeLayout>
 
+    <android.support.constraint.Barrier
+        android:id="@+id/barrier_top"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:barrierDirection="bottom"
+        app:constraint_referenced_ids="advanced_search,filter_bar" />
+
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/swipe_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_above="@+id/downloads_toolbar"
-        android:layout_below="@id/filter_bar"
-        >
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@id/downloads_toolbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/barrier_top">
 
         <FrameLayout
             android:layout_width="match_parent"
@@ -68,12 +74,13 @@
                 android:id="@+id/list"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:paddingEnd="0dp"
-                android:paddingLeft="@dimen/default_cardview_margin"
-                android:paddingRight="0dp"
+                android:clipToPadding="false"
                 android:paddingStart="@dimen/default_cardview_margin"
+                android:paddingLeft="@dimen/default_cardview_margin"
                 android:paddingTop="@dimen/default_cardview_margin"
-                tools:background="@color/white" />
+                android:paddingEnd="@dimen/default_cardview_margin"
+                android:paddingRight="@dimen/default_cardview_margin"
+                tools:listitem="@layout/item_download" />
 
             <LinearLayout
                 android:id="@+id/tooltip"
@@ -104,9 +111,10 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
         android:visibility="gone"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/loading"
@@ -121,17 +129,18 @@
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@color/white"
         android:visibility="gone"
-        android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true"
-        />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <include
-        android:id="@+id/tag_filter_view"
-        layout="@layout/include_search_pane"
-        android:layout_width="match_parent"
+        android:id="@+id/downloads_toolbar"
+        layout="@layout/include_downloads_toolbar"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:visibility="gone"
-        />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-</RelativeLayout>
+</android.support.constraint.ConstraintLayout>

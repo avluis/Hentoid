@@ -117,7 +117,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Action view associated with search menu button
     private SearchView mainSearchView;
     // Search pane that shows up on top when using search function
-    protected View searchPane;
+    protected View advancedSearchPane;
     // Layout containing the list of books
     private SwipeRefreshLayout refreshLayout;
     // List containing all books
@@ -565,7 +565,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         filterBookCount = rootView.findViewById(R.id.filter_book_count);
         filterClearButton = rootView.findViewById(R.id.filter_clear);
 
-        searchPane = rootView.findViewById(R.id.tag_filter_view);
+        advancedSearchPane = rootView.findViewById(R.id.advanced_search);
+        advancedSearchPane.setOnClickListener(v -> onAdvancedSearchClick());
     }
 
     protected void attachScrollListener() {
@@ -770,13 +771,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
         mainSearchView.setIconifiedByDefault(true);
         mainSearchView.setQueryHint(getString(R.string.search_hint));
-        // Collapse search view when pressing back button on main text filter
-        mainSearchView.setOnQueryTextFocusChangeListener((view, queryTextFocused) -> {
-            View tagFilter = searchPane.findViewById(R.id.tag_filter);
-            if (!queryTextFocused && tagFilter != null && !tagFilter.hasFocus()) {
-                searchMenu.collapseActionView();
-            }
-        });
         // Change display when text query is typed
         mainSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -805,22 +799,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         });
 
 
-        // == SEARCH PANE
-
-        ViewGroup advancedSearchBtn = activity.findViewById(R.id.advanced_search);
-        advancedSearchBtn.setOnClickListener(v -> {
-            Intent search = new Intent(this.getContext(), SearchActivity.class);
-
-            BundleManager manager = new BundleManager();
-            manager.setMode(mode);
-            if (!selectedSearchTags.isEmpty()) manager.setUri(Helper.buildSearchUri(selectedSearchTags));
-            search.putExtras(manager.getBundle());
-
-            startActivityForResult(search, 999);
-            searchMenu.collapseActionView();
-        });
-
-
         // == BOOKS SORT
 
         // Sets the right starting icon according to the starting sort order
@@ -843,6 +821,19 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             default:
                 // Nothing
         }
+    }
+
+    private void onAdvancedSearchClick() {
+        Intent search = new Intent(this.getContext(), SearchActivity.class);
+
+        BundleManager manager = new BundleManager();
+        manager.setMode(mode);
+        if (!selectedSearchTags.isEmpty())
+            manager.setUri(Helper.buildSearchUri(selectedSearchTags));
+        search.putExtras(manager.getBundle());
+
+        startActivityForResult(search, 999);
+        searchMenu.collapseActionView();
     }
 
     /**
@@ -919,7 +910,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @param visible True if search pane has to become visible; false if not
      */
     private void setSearchPaneVisibility(boolean visible) {
-        searchPane.setVisibility(visible ? View.VISIBLE : View.GONE);
+        advancedSearchPane.setVisibility(visible ? View.VISIBLE : View.GONE);
         invalidateNextQueryTextChange = true;
     }
 
