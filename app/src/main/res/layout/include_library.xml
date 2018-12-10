@@ -17,9 +17,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:background="@color/primary"
-        android:padding="12dp"
-        android:visibility="gone">
+        android:background="@color/red_bg"
+        android:visibility="gone"
+        tools:visibility="visible">
 
         <TextView
             android:id="@+id/filter_book_count"
@@ -28,27 +28,19 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentLeft="true"
             android:layout_centerVertical="true"
-            android:gravity="center"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
             android:text="@string/downloads_filter_book_count"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/white"
-            android:textSize="16sp" />
+            android:textColor="@color/white" />
 
         <TextView
             android:id="@+id/filter_clear"
+            style="@style/TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="@string/downloads_filter_clear"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@color/material_red_100"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:text="@string/downloads_filter_clear" />
 
     </RelativeLayout>
 
@@ -122,12 +114,14 @@
         android:textColor="@color/white"
         android:visibility="gone" />
 
-    <include
-        android:id="@+id/tag_filter_view"
-        layout="@layout/include_search_pane"
+    <TextView
+        android:id="@+id/advanced_search"
+        style="@style/TextButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
+        android:background="@color/red_bg"
+        android:text="@string/title_activity_search"
         android:visibility="gone" />
 
 </RelativeLayout>
