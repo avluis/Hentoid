@@ -5,7 +5,6 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -13,13 +12,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -59,6 +55,7 @@ import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.fragments.AboutMikanDialogFragment;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -94,7 +91,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
 
     // Save state constants
-    private static final String LIST_STATE_KEY = "list_state";
+
     private static final String SELECTED_TAGS = "selected_tags";
     private static final String FILTER_FAVOURITES = "filter_favs";
     private static final String CURRENT_PAGE = "current_page";
@@ -106,8 +103,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // Top tooltip appearing when a download has been completed
     protected LinearLayout newContentToolTip;
-    // Left drawer
-    private DrawerLayout mDrawerLayout;
     // "Search" button on top menu
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
@@ -197,7 +192,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // To be documented
     private ActionMode mActionMode;
-    private Parcelable mListState;
     private boolean selectTrigger = false;
 
 
@@ -269,10 +263,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         super.onResume();
 
         defaultLoad();
-
-        if (mListState != null) {
-            llm.onRestoreInstanceState(mListState);
-        }
     }
 
     /**
@@ -425,8 +415,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        mListState = llm.onSaveInstanceState();
-        outState.putParcelable(LIST_STATE_KEY, mListState);
         outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
         outState.putString(QUERY, query);
         outState.putInt(CURRENT_PAGE, currentPage);
@@ -442,7 +430,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         super.onViewStateRestored(state);
 
         if (state != null) {
-            mListState = state.getParcelable(LIST_STATE_KEY);
             filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
             query = state.getString(QUERY, "");
             currentPage = state.getInt(CURRENT_PAGE);
@@ -457,15 +444,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     }
                 }
             }
-        }
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, Bundle state) {
-        super.onViewCreated(view, state);
-
-        if (mListState != null) {
-            mListState = state.getParcelable(LIST_STATE_KEY);
         }
     }
 
@@ -493,7 +471,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
         collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(mContext) : new MikanAccessor(mContext);
 
-        View rootView = inflater.inflate((MODE_LIBRARY == mode) ? R.layout.fragment_downloads : R.layout.fragment_mikan, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
         initUI(rootView);
         attachScrollListener();
@@ -507,11 +485,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         emptyText = rootView.findViewById(R.id.empty);
         emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
 
-        // Main view
-        mListView = rootView.findViewById(R.id.list);
-        mListView.setHasFixedSize(true);
-        llm = new LinearLayoutManager(mContext);
-        mListView.setLayoutManager(llm);
 
         if (MODE_MIKAN == mode)
             bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
@@ -537,6 +510,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
+
+        llm = new LinearLayoutManager(mContext);
+
         mAdapter = new ContentAdapter.Builder()
                 .setContext(mContext)
                 .setCollectionAccessor(collectionAccessor)
@@ -546,16 +522,16 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 .setOnContentsClearedListener(this::onContentsCleared)
                 .setOnContentRemovedListener(this::onContentRemoved)
                 .build();
+
+        // Main view
+        mListView = rootView.findViewById(R.id.list);
+        mListView.setHasFixedSize(true);
+        mListView.setLayoutManager(llm);
         mListView.setAdapter(mAdapter);
+        mListView.setVisibility(View.GONE);
 
-        if (mAdapter.getItemCount() == 0) {
-            mListView.setVisibility(View.GONE);
-            loadingText.setVisibility(View.VISIBLE);
-        }
+        loadingText.setVisibility(View.VISIBLE);
 
-        // Drawer
-        FragmentActivity activity = requireActivity();
-        mDrawerLayout = activity.findViewById(R.id.drawer_layout);
 
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
@@ -629,14 +605,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Override
     public boolean onBackPressed() {
-        // If the left drawer is open, close it
-        if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
-            mDrawerLayout.closeDrawers();
-            backButtonPressed = 0;
-
-            return false;
-        }
-
         // If content is selected, deselect it
         if (isSelected) {
             clearSelection();
@@ -706,26 +674,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_content_list, menu);
 
-        // Associate searchable configuration with the SearchView
-        final SearchManager searchManager = (SearchManager)
-                mContext.getSystemService(Context.SEARCH_SERVICE);
-
         MenuItem aboutMikanMenu = menu.findItem(R.id.action_about_mikan);
         aboutMikanMenu.setVisible(MODE_MIKAN == mode);
         if (MODE_MIKAN == mode) {
             aboutMikanMenu.setOnMenuItemClickListener(item -> {
-                WebView webView = new WebView(mContext);
-                webView.loadUrl("file:///android_asset/about_mikan.html");
-                webView.setInitialScale(95);
-
-                android.support.v7.app.AlertDialog mikanDialog = new android.support.v7.app.AlertDialog.Builder(mContext)
-                        .setTitle("About Mikan Search")
-                        .setView(webView)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .create();
-
-                mikanDialog.show();
-
+                AboutMikanDialogFragment.show(getFragmentManager());
                 return true;
             });
         }
@@ -764,11 +717,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             return true;
         });
 
-        FragmentActivity activity = requireActivity();
         mainSearchView = (SearchView) searchMenu.getActionView();
-        if (searchManager != null) {
-            mainSearchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
-        }
         mainSearchView.setIconifiedByDefault(true);
         mainSearchView.setQueryHint(getString(R.string.search_hint));
         // Change display when text query is typed
@@ -841,7 +790,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * UI according to the chosen sort method
      *
      * @param item MenuItem that has been selected
-     * @return true if the order has been successfuly processed
+     * @return true if the order has been successfully processed
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

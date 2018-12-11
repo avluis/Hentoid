@@ -6,6 +6,8 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.view.WindowManager;
 
 import me.devsaki.hentoid.BuildConfig;
@@ -72,6 +74,12 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     @Override
     public void onBackPressed() {
+        DrawerLayout drawerLayout = findViewById(R.id.drawer_layout);
+        if (drawerLayout != null && drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawers();
+            return;
+        }
+
         if (baseFragment == null || baseFragment.onBackPressed()) {
             // Fragment did not consume onBackPressed.
             super.onBackPressed();
