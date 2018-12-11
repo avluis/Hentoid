@@ -5,7 +5,6 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.NotificationManager;
-import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -706,10 +705,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menu_content_list, menu);
 
-        // Associate searchable configuration with the SearchView
-        final SearchManager searchManager = (SearchManager)
-                mContext.getSystemService(Context.SEARCH_SERVICE);
-
         MenuItem aboutMikanMenu = menu.findItem(R.id.action_about_mikan);
         aboutMikanMenu.setVisible(MODE_MIKAN == mode);
         if (MODE_MIKAN == mode) {
@@ -764,11 +759,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             return true;
         });
 
-        FragmentActivity activity = requireActivity();
         mainSearchView = (SearchView) searchMenu.getActionView();
-        if (searchManager != null) {
-            mainSearchView.setSearchableInfo(searchManager.getSearchableInfo(activity.getComponentName()));
-        }
         mainSearchView.setIconifiedByDefault(true);
         mainSearchView.setQueryHint(getString(R.string.search_hint));
         // Change display when text query is typed
