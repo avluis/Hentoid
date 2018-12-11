@@ -40,7 +40,7 @@ import timber.log.Timber;
 public class HentoidDB extends SQLiteOpenHelper {
 
     private static final Object locker = new Object();
-    private static final int DATABASE_VERSION = 6;
+    private static final int DATABASE_VERSION = 7;
     private static HentoidDB instance;
 
 
@@ -99,6 +99,12 @@ public class HentoidDB extends SQLiteOpenHelper {
         {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.READS_COLUMN + " INTEGER DEFAULT 1");
             Timber.i("Upgrading DB version to v6");
+        }
+        if (oldVersion < 7)
+        {
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.LAST_READ_DATE_COLUMN + " INTEGER");
+            db.execSQL("UPDATE " + ContentTable.TABLE_NAME + " SET " + ContentTable.LAST_READ_DATE_COLUMN + " = " + ContentTable.DOWNLOAD_DATE_COLUMN);
+            Timber.i("Upgrading DB version to v7");
         }
     }
 
@@ -224,6 +230,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder()) ? "" : row.getStorageFolder());
                         statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
                         statement.bindLong(ContentTable.IDX_READS, row.getReads());
+                        statement.bindLong(ContentTable.IDX_LAST_READ_DATE, row.getLastReadDate());
 
                         statement.execute();
 
@@ -408,11 +415,14 @@ public class HentoidDB extends SQLiteOpenHelper {
                     case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST:
-                        sql += ContentTable.ORDER_READS;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
+                        sql += ContentTable.ORDER_READS_ASC;
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST:
-                        sql += ContentTable.ORDER_READS + " DESC";
+                    case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
+                        sql += ContentTable.ORDER_READS_DESC;
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
+                        sql += ContentTable.ORDER_READ_DATE;
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
                         sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
@@ -471,11 +481,14 @@ public class HentoidDB extends SQLiteOpenHelper {
                     case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST:
-                        sql += ContentTable.ORDER_READS;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
+                        sql += ContentTable.ORDER_READS_ASC;
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST:
-                        sql += ContentTable.ORDER_READS + " DESC";
+                    case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
+                        sql += ContentTable.ORDER_READS_DESC;
+                        break;
+                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
+                        sql += ContentTable.ORDER_READ_DATE;
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
                         sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
@@ -723,6 +736,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
                 .setReads(cursorContent.getLong(ContentTable.IDX_READS - 1))
+                .setLastReadDate(cursorContent.getLong(ContentTable.IDX_LAST_READ_DATE - 1))
                 .setQueryOrder(cursorContent.getPosition());
 
         if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
@@ -1222,7 +1236,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 try {
                     statement.clearBindings();
                     statement.bindLong(1, content.getReads());
-                    statement.bindLong(2, content.getId());
+                    statement.bindLong(2, content.getLastReadDate());
+                    statement.bindLong(3, content.getId());
                     statement.execute();
                     db.setTransactionSuccessful();
                 } finally {

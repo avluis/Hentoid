@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -421,7 +422,8 @@ public class FileHelper {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
 
         HentoidDB db = HentoidDB.getInstance(context);
-        db.updateContentReads(content.increaseReads());
+        content.increaseReads().setLastReadDate(new Date().getTime());
+        db.updateContentReads(content);
 
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());

@@ -227,8 +227,9 @@ public final class Preferences {
         public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
         public static final int PREF_ORDER_CONTENT_RANDOM = 4;
         public static final int PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
-        public static final int PREF_ORDER_CONTENT_UNREAD_FIRST = 6;
-        public static final int PREF_ORDER_CONTENT_MOST_READ_FIRST = 7;
+        public static final int PREF_ORDER_CONTENT_LEAST_READ = 6;
+        public static final int PREF_ORDER_CONTENT_MOST_READ = 7;
+        public static final int PREF_ORDER_CONTENT_LAST_READ = 8;
         public static final int PREF_ORDER_ATTRIBUTES_ALPHABETIC = 0;
         public static final int PREF_ORDER_ATTRIBUTES_COUNT = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;

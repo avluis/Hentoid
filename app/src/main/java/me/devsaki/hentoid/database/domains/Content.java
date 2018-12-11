@@ -54,6 +54,8 @@ public class Content implements Serializable {
     private boolean favourite;
     @Expose
     private long reads = 0;
+    @Expose
+    private long lastReadDate;
     // Runtime attributes; no need to expose them
     private double percent;
     private int queryOrder;
@@ -383,6 +385,15 @@ public class Content implements Serializable {
         return this;
     }
 
+    public long getLastReadDate() {
+        return lastReadDate;
+    }
+
+    public Content setLastReadDate(long lastReadDate) {
+        this.lastReadDate = lastReadDate;
+        return this;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -403,21 +414,25 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
 
-    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> {
-        return Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; /* Inverted - last download date first */
-    };
+    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; // Inverted - last download date first
 
-    public static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> {
-        return Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; /* Inverted - last upload date first */
-    };
+    public static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; // Inverted - last upload date first
 
     public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
 
     public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
 
+    public static final Comparator<Content> READS_ORDER_COMPARATOR = (a, b) -> {
+        int comp = Long.compare(a.getReads(), b.getReads());
+        return (0 == comp) ? Long.compare(a.getLastReadDate(), b.getLastReadDate()) : comp;
+    };
+
+    public static final Comparator<Content> READS_ORDER_INV_COMPARATOR = (a, b) -> {
+        int comp = Long.compare(a.getReads(), b.getReads()) * -1;
+        return (0 == comp) ? Long.compare(a.getLastReadDate(), b.getLastReadDate()) * -1 : comp;
+    };
+
+    public static final Comparator<Content> READ_DATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getLastReadDate(), b.getLastReadDate()) * -1;
+
     public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
-
-    public static final Comparator<Content> READS_ORDER_COMPARATOR = (a, b) -> Long.compare(a.getReads(), b.getReads());
-
-    public static final Comparator<Content> READS_ORDER_INV_COMPARATOR = (a, b) -> Long.compare(a.getReads(), b.getReads()) * -1;
 }

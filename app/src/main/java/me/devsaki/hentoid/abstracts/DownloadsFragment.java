@@ -27,7 +27,6 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -490,6 +489,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
 
         Comparator<Content> comparator;
+
         switch (bookSortOrder) {
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
                 comparator = Content.DLDATE_COMPARATOR;
@@ -506,16 +506,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST:
                 comparator = Content.ULDATE_COMPARATOR;
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST:
+            case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
                 comparator = Content.READS_ORDER_COMPARATOR;
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST:
+            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
                 comparator = Content.READS_ORDER_INV_COMPARATOR;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
+                comparator = Content.READ_DATE_INV_COMPARATOR;
                 break;
             default:
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
-
 
         llm = new LinearLayoutManager(mContext);
 
@@ -770,11 +772,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST:
+            case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_unread);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST:
+            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_read);
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
+                orderMenu.setIcon(R.drawable.ic_menu_sort_last_read);
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_random);
@@ -845,20 +850,29 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                 result = true;
                 break;
-            case R.id.action_order_unread:
+            case R.id.action_order_least_read:
                 cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_UNREAD_FIRST;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ;
                 mAdapter.setSortComparator(Content.READS_ORDER_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_unread);
                 searchLibrary(true);
 
                 result = true;
                 break;
-            case R.id.action_order_read:
+            case R.id.action_order_most_read:
                 cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ_FIRST;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ;
                 mAdapter.setSortComparator(Content.READS_ORDER_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_read);
+                searchLibrary(true);
+
+                result = true;
+                break;
+            case R.id.action_order_last_read:
+                cleanResults();
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ;
+                mAdapter.setSortComparator(Content.READ_DATE_INV_COMPARATOR);
+                orderMenu.setIcon(R.drawable.ic_menu_sort_last_read);
                 searchLibrary(true);
 
                 result = true;
@@ -1056,6 +1070,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         String currentSearchParams = getCurrentSearchParams();
         if (!currentSearchParams.equals(lastSearchParams)) {
             currentPage = 1;
+            mListView.scrollToPosition(0);
         }
         lastSearchParams = currentSearchParams;
 
