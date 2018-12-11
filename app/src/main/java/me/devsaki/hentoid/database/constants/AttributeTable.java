@@ -47,7 +47,7 @@ public abstract class AttributeTable {
     public static final String SELECT_ALL_BY_USAGE_END = " group by 2 order by 3 desc, 2 asc";
 
 
-    public static final String SELECT_COUNT_BY_TYPE_SELECT = "SELECT A." + TYPE_COLUMN + ", COUNT(*) FROM " + TABLE_NAME + " a " +
+    public static final String SELECT_COUNT_BY_TYPE_SELECT = "SELECT A." + TYPE_COLUMN + ", COUNT(DISTINCT(A." + NAME_COLUMN + ")) FROM " + TABLE_NAME + " a " +
             " INNER JOIN " + ContentAttributeTable.TABLE_NAME + " ca ON a." + ID_COLUMN + " = ca." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN +
             " INNER JOIN " + ContentTable.TABLE_NAME + " c ON ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN +
             " WHERE c." + ContentTable.STATUS_COLUMN + " IN (" + StatusContent.DOWNLOADED.getCode() + "," + StatusContent.ERROR.getCode() + "," + StatusContent.MIGRATED.getCode() + ")";
@@ -57,7 +57,7 @@ public abstract class AttributeTable {
     public static final String SELECT_COUNT_BY_TYPE_ATTR_FILTER_JOINS = ContentTable.SELECT_DOWNLOADS_JOINS;
     public static final String SELECT_COUNT_BY_TYPE_ATTR_FILTER_ATTRS = ContentTable.SELECT_DOWNLOADS_TAGS;
 
-    public static final String SELECT_COUNT_BY_TYPE_GROUP = " GROUP BY A."+TYPE_COLUMN;
+    public static final String SELECT_COUNT_BY_TYPE_GROUP = " GROUP BY A." + TYPE_COLUMN;
 
 
     public static final String SELECT_BY_CONTENT_ID = "SELECT T." + ID_COLUMN + ", T." + URL_COLUMN
