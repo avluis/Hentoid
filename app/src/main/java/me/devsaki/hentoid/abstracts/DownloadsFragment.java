@@ -267,6 +267,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         defaultLoad();
 
+        // TODO this can be removed
         if (mListState != null) {
             llm.onRestoreInstanceState(mListState);
         }
@@ -624,6 +625,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Override
     public boolean onBackPressed() {
+        // TODO this should be moved to activity level
         // If the left drawer is open, close it
         DrawerLayout mDrawerLayout = requireActivity().findViewById(R.id.drawer_layout);
         if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
@@ -829,7 +831,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * UI according to the chosen sort method
      *
      * @param item MenuItem that has been selected
-     * @return true if the order has been successfuly processed
+     * @return true if the order has been successfully processed
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
