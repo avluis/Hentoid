@@ -504,11 +504,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         emptyText = rootView.findViewById(R.id.empty);
         emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
 
-        // Main view
-        mListView = rootView.findViewById(R.id.list);
-        mListView.setHasFixedSize(true);
-        llm = new LinearLayoutManager(mContext);
-        mListView.setLayoutManager(llm);
 
         if (MODE_MIKAN == mode)
             bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
@@ -534,6 +529,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 comparator = Content.QUERY_ORDER_COMPARATOR;
         }
 
+
+        llm = new LinearLayoutManager(mContext);
+
         mAdapter = new ContentAdapter.Builder()
                 .setContext(mContext)
                 .setCollectionAccessor(collectionAccessor)
@@ -543,12 +541,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 .setOnContentsClearedListener(this::onContentsCleared)
                 .setOnContentRemovedListener(this::onContentRemoved)
                 .build();
-        mListView.setAdapter(mAdapter);
 
-        if (mAdapter.getItemCount() == 0) {
-            mListView.setVisibility(View.GONE);
-            loadingText.setVisibility(View.VISIBLE);
-        }
+        // Main view
+        mListView = rootView.findViewById(R.id.list);
+        mListView.setHasFixedSize(true);
+        mListView.setLayoutManager(llm);
+        mListView.setAdapter(mAdapter);
+        mListView.setVisibility(View.GONE);
+
+        loadingText.setVisibility(View.VISIBLE);
 
 
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
