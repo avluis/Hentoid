@@ -55,6 +55,7 @@ import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.fragments.AboutMikanDialogFragment;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -677,18 +678,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         aboutMikanMenu.setVisible(MODE_MIKAN == mode);
         if (MODE_MIKAN == mode) {
             aboutMikanMenu.setOnMenuItemClickListener(item -> {
-                WebView webView = new WebView(mContext);
-                webView.loadUrl("file:///android_asset/about_mikan.html");
-                webView.setInitialScale(95);
-
-                android.support.v7.app.AlertDialog mikanDialog = new android.support.v7.app.AlertDialog.Builder(mContext)
-                        .setTitle("About Mikan Search")
-                        .setView(webView)
-                        .setPositiveButton(android.R.string.ok, null)
-                        .create();
-
-                mikanDialog.show();
-
+                AboutMikanDialogFragment.show(getFragmentManager());
                 return true;
             });
         }
