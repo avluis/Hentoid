@@ -492,7 +492,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
         collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(mContext) : new MikanAccessor(mContext);
 
-        View rootView = inflater.inflate((MODE_LIBRARY == mode) ? R.layout.fragment_downloads : R.layout.fragment_mikan, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
         initUI(rootView);
         attachScrollListener();
