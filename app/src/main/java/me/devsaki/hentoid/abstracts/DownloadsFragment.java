@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -93,7 +92,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
 
     // Save state constants
-    private static final String LIST_STATE_KEY = "list_state";
+
     private static final String SELECTED_TAGS = "selected_tags";
     private static final String FILTER_FAVOURITES = "filter_favs";
     private static final String CURRENT_PAGE = "current_page";
@@ -194,7 +193,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // To be documented
     private ActionMode mActionMode;
-    private Parcelable mListState;
     private boolean selectTrigger = false;
 
 
@@ -266,11 +264,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         super.onResume();
 
         defaultLoad();
-
-        // TODO this can be removed
-        if (mListState != null) {
-            llm.onRestoreInstanceState(mListState);
-        }
     }
 
     /**
@@ -423,8 +416,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        mListState = llm.onSaveInstanceState();
-        outState.putParcelable(LIST_STATE_KEY, mListState);
         outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
         outState.putString(QUERY, query);
         outState.putInt(CURRENT_PAGE, currentPage);
@@ -440,7 +431,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         super.onViewStateRestored(state);
 
         if (state != null) {
-            mListState = state.getParcelable(LIST_STATE_KEY);
             filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
             query = state.getString(QUERY, "");
             currentPage = state.getInt(CURRENT_PAGE);
@@ -455,15 +445,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                     }
                 }
             }
-        }
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, Bundle state) {
-        super.onViewCreated(view, state);
-
-        if (mListState != null) {
-            mListState = state.getParcelable(LIST_STATE_KEY);
         }
     }
 
