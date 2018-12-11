@@ -105,8 +105,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // Top tooltip appearing when a download has been completed
     protected LinearLayout newContentToolTip;
-    // Left drawer
-    private DrawerLayout mDrawerLayout;
     // "Search" button on top menu
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
@@ -552,9 +550,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             loadingText.setVisibility(View.VISIBLE);
         }
 
-        // Drawer
-        FragmentActivity activity = requireActivity();
-        mDrawerLayout = activity.findViewById(R.id.drawer_layout);
 
         pagerToolbar = rootView.findViewById(R.id.downloads_toolbar);
         newContentToolTip = rootView.findViewById(R.id.tooltip);
@@ -629,6 +624,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public boolean onBackPressed() {
         // If the left drawer is open, close it
+        DrawerLayout mDrawerLayout = requireActivity().findViewById(R.id.drawer_layout);
         if (mDrawerLayout != null && mDrawerLayout.isDrawerOpen(GravityCompat.START)) {
             mDrawerLayout.closeDrawers();
             backButtonPressed = 0;
