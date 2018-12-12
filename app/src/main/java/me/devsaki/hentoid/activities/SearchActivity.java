@@ -38,8 +38,6 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
  */
 public class SearchActivity extends BaseActivity {
 
-    // Category buttons
-    private TextView anyCategoryText;
     private TextView tagCategoryText;
     private TextView artistCategoryText;
     private TextView seriesCategoryText;
@@ -102,7 +100,8 @@ public class SearchActivity extends BaseActivity {
 
         startCaption = findViewById(R.id.startCaption);
 
-        anyCategoryText = findViewById(R.id.textCategoryAny);
+        // Category buttons
+        TextView anyCategoryText = findViewById(R.id.textCategoryAny);
         anyCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.TAG, AttributeType.ARTIST,
                 AttributeType.CIRCLE, AttributeType.SERIE, AttributeType.CHARACTER, AttributeType.LANGUAGE)); // Everything but source !
         anyCategoryText.setEnabled(MODE_LIBRARY == mode); // Unsupported by Mikan
@@ -139,28 +138,22 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void onQueryUpdated(SparseIntArray attrCount) {
-        int tagCount = attrCount.get(AttributeType.TAG.getCode(), 0);
-        tagCategoryText.setText(getString(R.string.category_tag, tagCount));
-
-        int artistCount = attrCount.get(AttributeType.ARTIST.getCode(), 0) + attrCount.get(AttributeType.CIRCLE.getCode(), 0);
-        artistCategoryText.setText(getString(R.string.category_artist, artistCount));
-
-        int serieCount = attrCount.get(AttributeType.SERIE.getCode(), 0);
-        seriesCategoryText.setText(getString(R.string.category_series, serieCount));
-
-        int characterCount = attrCount.get(AttributeType.CHARACTER.getCode(), 0);
-        characterCategoryText.setText(getString(R.string.category_character, characterCount));
-
-        int languageCount = attrCount.get(AttributeType.LANGUAGE.getCode(), 0);
-        languageCategoryText.setText(getString(R.string.category_language, languageCount));
-
-        if (MODE_LIBRARY == mode) {
-            anyCategoryText.setText(getString(R.string.category_any));
-
-            int sourceCount = attrCount.get(AttributeType.SOURCE.getCode(), 0);
-            sourceCategoryText.setText(getString(R.string.category_source, sourceCount));
-        }
+        updateCategoryButton(tagCategoryText, attrCount, AttributeType.TAG);
+        updateCategoryButton(artistCategoryText, attrCount, AttributeType.ARTIST, AttributeType.CIRCLE);
+        updateCategoryButton(seriesCategoryText, attrCount, AttributeType.SERIE);
+        updateCategoryButton(characterCategoryText, attrCount, AttributeType.CHARACTER);
+        updateCategoryButton(languageCategoryText, attrCount, AttributeType.LANGUAGE);
+        if (MODE_LIBRARY == mode) updateCategoryButton(sourceCategoryText, attrCount, AttributeType.SOURCE);
     }
+
+    private void updateCategoryButton(TextView button, SparseIntArray attrCount, AttributeType... types) {
+        int count = 0;
+        for (AttributeType type : types) count += attrCount.get(type.getCode(), 0);
+
+        button.setText(format("%s (%s)", Helper.capitalizeString(types[0].name()), count ));
+        button.setEnabled(count > 0);
+    }
+
 
     private void onAttrButtonClick(AttributeType... attributeTypes) {
         SearchBottomSheetFragment.show(getSupportFragmentManager(), mode, attributeTypes);
@@ -186,7 +179,6 @@ public class SearchActivity extends BaseActivity {
 
                 TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_input, searchTags, false);
                 chip.setText(format("%s: %s", type, name));
-                chip.setId(Math.abs(a.getId())); // TODO - is this actually useful ?
                 chip.setOnClickListener(v -> viewModel.onAttributeUnselected(a));
 
                 searchTags.addView(chip);
@@ -195,7 +187,7 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void onBooksReady(SearchViewModel.ContentSearchResult result) {
-        if (result.success) {
+        if (result.success && searchTags.getChildCount() > 0) {
             searchButton.setText(getString(R.string.search_button).replace("%1", result.totalSelected + "").replace("%2", 1 == result.totalSelected ? "" : "s"));
             searchButton.setVisibility(View.VISIBLE);
         } else {
