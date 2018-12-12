@@ -415,6 +415,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                         setSelected(false, 0);
 
                         super.onClick(v);
+
+                        if (sortComparator.equals(Content.READ_DATE_INV_COMPARATOR)
+                                || sortComparator.equals(Content.READS_ORDER_COMPARATOR)
+                                || sortComparator.equals(Content.READS_ORDER_INV_COMPARATOR))
+                            mSortedList.recalculatePositionOfItemAt(pos); // Reading the book has an effect on its position
                     }
                 }
             });
@@ -547,13 +552,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         db.updateContentFavourite(item);
     }
 
-    public void switchStateToDownloaded(Content item) {
-        ContentHolder holder = holderByContent(item);
+    /**
+     * Change the state of the item relative to the given content to "downloaded"
+     * NB : Specific to Mikan screen
+     *
+     * @param content content that has been downloaded
+     */
+    public void switchStateToDownloaded(Content content) {
+        ContentHolder holder = holderByContent(content);
 
         if (holder != null) {
             holder.ivDownload.setImageResource(R.drawable.ic_action_play);
             holder.ivDownload.clearAnimation();
-            holder.ivDownload.setOnClickListener(v -> FileHelper.openContent(context, item));
+            holder.ivDownload.setOnClickListener(v -> FileHelper.openContent(context, content));
         }
     }
 
