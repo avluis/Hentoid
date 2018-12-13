@@ -66,7 +66,7 @@ public abstract class ContentTable {
             + UPLOAD_DATE_COLUMN + " INTEGER" + "," + DOWNLOAD_DATE_COLUMN + " INTEGER" + ","
             + STATUS_COLUMN + " INTEGER" + "," + COVER_IMAGE_URL_COLUMN + " TEXT"
             + "," + SITE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT, "
-            + FAVOURITE_COLUMN + " INTEGER " + READS_COLUMN + " INTEGER " + LAST_READ_DATE_COLUMN + " INTEGER "
+            + FAVOURITE_COLUMN + " INTEGER, " + READS_COLUMN + " INTEGER, " + LAST_READ_DATE_COLUMN + " INTEGER "
             + " DEFAULT 0 )";
 
     // DELETE
