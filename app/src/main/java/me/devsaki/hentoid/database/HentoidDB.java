@@ -74,34 +74,28 @@ public class HentoidDB extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        if (oldVersion < 2)
-        {
+        if (oldVersion < 2) {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.AUTHOR_COLUMN + " TEXT");
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.STORAGE_FOLDER_COLUMN + " TEXT");
             Timber.i("Upgrading DB version to v2");
         }
-        if (oldVersion < 3)
-        {
+        if (oldVersion < 3) {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.FAVOURITE_COLUMN + " INTEGER DEFAULT 0");
             Timber.i("Upgrading DB version to v3");
         }
-        if (oldVersion < 4)
-        {
+        if (oldVersion < 4) {
             db.execSQL(QueueTable.CREATE_TABLE);
             Timber.i("Upgrading DB version to v4");
         }
-        if (oldVersion < 5)
-        {
+        if (oldVersion < 5) {
             db.execSQL(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID_IDX);
             Timber.i("Upgrading DB version to v5");
         }
-        if (oldVersion < 6)
-        {
+        if (oldVersion < 6) {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.READS_COLUMN + " INTEGER DEFAULT 1");
             Timber.i("Upgrading DB version to v6");
         }
-        if (oldVersion < 7)
-        {
+        if (oldVersion < 7) {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.LAST_READ_DATE_COLUMN + " INTEGER");
             db.execSQL("UPDATE " + ContentTable.TABLE_NAME + " SET " + ContentTable.LAST_READ_DATE_COLUMN + " = " + ContentTable.DOWNLOAD_DATE_COLUMN);
             Timber.i("Upgrading DB version to v7");
@@ -230,7 +224,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder()) ? "" : row.getStorageFolder());
                         statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
                         statement.bindLong(ContentTable.IDX_READS, row.getReads());
-                        statement.bindLong(ContentTable.IDX_LAST_READ_DATE, row.getLastReadDate());
+                        statement.bindLong(ContentTable.IDX_LAST_READ_DATE, (0 == row.getLastReadDate()) ? row.getDownloadDate() : row.getLastReadDate());
 
                         statement.execute();
 
