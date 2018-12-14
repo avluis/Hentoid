@@ -25,7 +25,7 @@ public enum DrawerItem {
     PURURIN("PURURIN", R.drawable.ic_menu_pururin, PururinActivity.class),
     PANDA("PANDA", R.drawable.ic_menu_panda, PandaActivity.class),
     EHENTAI("E-HENTAI", R.drawable.ic_menu_ehentai, EHentaiActivity.class),
-    MIKAN("MIKAN SEARCH", R.drawable.ic_menu_mikan, MikanSearchActivity.class),
+//    MIKAN("MIKAN SEARCH", R.drawable.ic_menu_mikan, MikanSearchActivity.class),
     HOME("HOME", R.drawable.ic_menu_downloads, DownloadsActivity.class),
     QUEUE("QUEUE", R.drawable.ic_menu_queue, QueueActivity.class),
     PREFS("PREFERENCES", R.drawable.ic_menu_prefs, PrefsActivity.class),
