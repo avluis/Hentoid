@@ -224,7 +224,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder()) ? "" : row.getStorageFolder());
                         statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
                         statement.bindLong(ContentTable.IDX_READS, row.getReads());
-                        statement.bindLong(ContentTable.IDX_LAST_READ_DATE, (0 == row.getLastReadDate()) ? row.getDownloadDate() : row.getLastReadDate());
+                        statement.bindLong(ContentTable.IDX_LAST_READ_DATE, row.getLastReadDate());
 
                         statement.execute();
 
