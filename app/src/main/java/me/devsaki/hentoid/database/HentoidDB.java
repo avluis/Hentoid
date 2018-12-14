@@ -127,8 +127,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         Timber.d("countAttributesPerType");
 
-        StringBuilder sql = new StringBuilder();
-        sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SELECT);
+        StringBuilder sql = new StringBuilder(AttributeTable.SELECT_COUNT_BY_TYPE_SELECT);
 
         if (filter != null && !filter.isEmpty()) {
             AttributeMap metadataMap = new AttributeMap();
@@ -136,7 +135,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
             if (params != null && !params.isEmpty())
-                sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SITE_FILTER.replace("%1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
+                sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SOURCE_FILTER.replace("%1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
 
             for (AttributeType attrType : metadataMap.keySet()) {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
@@ -219,7 +218,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                             statement.bindString(ContentTable.IDX_COVERURL, row.getCoverImageUrl());
                         }
 
-                        statement.bindLong(ContentTable.IDX_SITECODE, row.getSite().getCode());
+                        statement.bindLong(ContentTable.IDX_SOURCECODE, row.getSite().getCode());
                         statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor()) ? "" : row.getAuthor());
                         statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder()) ? "" : row.getStorageFolder());
                         statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
@@ -449,7 +448,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     // This is a long running task, execute with AsyncTask or similar
-    public List<Content> selectContentByUniqueQuery(String query, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
+    List<Content> selectContentByUniqueQuery(String query, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
         List<Content> result = Collections.emptyList();
 
         synchronized (locker) {
@@ -548,7 +547,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return count;
     }
 
-    public int countContentByUniqueQuery(String query, boolean filterFavourites) {
+    int countContentByUniqueQuery(String query, boolean filterFavourites) {
         int count = 0;
         SQLiteDatabase db = null;
         Cursor cursorCount = null;
@@ -725,7 +724,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setDownloadDate(cursorContent.getLong(ContentTable.IDX_DLDATE - 1))
                 .setStatus(StatusContent.searchByCode(cursorContent.getInt(ContentTable.IDX_STATUSCODE - 1)))
                 .setCoverImageUrl(cursorContent.getString(ContentTable.IDX_COVERURL - 1))
-                .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SITECODE - 1)))
+                .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SOURCECODE - 1)))
                 .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
                 .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
@@ -855,7 +854,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Attribute> selectAvailableAttributes(int type, List<Attribute> attrs, boolean filterFavourites) {
+    List<Attribute> selectAvailableAttributes(int type, List<Attribute> attrs, boolean filterFavourites) {
         ArrayList<Attribute> result = new ArrayList<>();
 
         synchronized (locker) {
@@ -873,7 +872,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     if (a.getType().equals(AttributeType.SOURCE)) sources.add(a.getId());
 
                 if (sources.size() > 0) {
-                    sql += AttributeTable.SELECT_ALL_SITE_FILTER;
+                    sql += AttributeTable.SELECT_ALL_SOURCE_FILTER;
                     sql = sql.replace("%1", Helper.buildListAsString(sources, "'"));
                 }
 
@@ -914,14 +913,12 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Attribute> selectAllAttributesByType(AttributeType type, String filter) {
+    List<Attribute> selectAllAttributesByType(AttributeType type, String filter) {
         ArrayList<Attribute> result = new ArrayList<>();
 
         synchronized (locker) {
             Timber.d("selectAllAttributesByType");
             SQLiteDatabase db = null;
-
-            Cursor cursorAttributes = null;
 
             String sql = AttributeTable.SELECT_ALL_BY_TYPE;
 
@@ -934,9 +931,8 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             Timber.v(sql);
 
-            try {
-                db = getReadableDatabase();
-                cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""});
+            db = getReadableDatabase();
+            try (Cursor cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""})) {
 
                 // looping through all rows and adding to list
                 if (cursorAttributes.moveToFirst()) {
@@ -946,9 +942,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
-                if (cursorAttributes != null) {
-                    cursorAttributes.close();
-                }
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }
@@ -958,21 +951,44 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public List<Attribute> selectAvailableSources() {
+    List<Attribute> selectAvailableSources() {
+        return selectAvailableSources(null);
+    }
+
+    List<Attribute> selectAvailableSources(List<Attribute> filter) {
         ArrayList<Attribute> result = new ArrayList<>();
+        Timber.d("selectAvailableSources");
+
+        StringBuilder sql = new StringBuilder(AttributeTable.SELECT_COUNT_BY_SOURCE_SELECT);
+
+        if (filter != null && !filter.isEmpty()) {
+            AttributeMap metadataMap = new AttributeMap();
+            metadataMap.add(filter);
+
+            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
+            if (params != null && !params.isEmpty())
+                sql.append(AttributeTable.SELECT_COUNT_BY_SOURCE_SOURCE_FILTER.replace("%1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
+
+            for (AttributeType attrType : metadataMap.keySet()) {
+                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
+                    List<Attribute> attrs = metadataMap.get(attrType);
+                    if (attrs.size() > 0)
+                        sql.append(AttributeTable.SELECT_COUNT_BY_SOURCE_ATTR_FILTER_JOINS);
+                    sql.append(
+                            AttributeTable.SELECT_COUNT_BY_SOURCE_ATTR_FILTER_ATTRS
+                                    .replace("%4", Helper.buildListAsString(attrs, "'"))
+                                    .replace("%5", attrType.getCode() + "")
+                                    .replace("%6", attrs.size() + "")
+                    );
+                }
+            }
+        }
+
+        sql.append(AttributeTable.SELECT_COUNT_BY_SOURCE_GROUP);
 
         synchronized (locker) {
-            Timber.d("selectAvailableSources");
-            SQLiteDatabase db = null;
-
-            Cursor cursorAttributes = null;
-
-            try {
-                db = getReadableDatabase();
-                cursorAttributes = db.rawQuery(ContentTable.SELECT_SOURCES, new String[]{
-                        StatusContent.DOWNLOADED.getCode() + "",
-                        StatusContent.ERROR.getCode() + "",
-                        StatusContent.MIGRATED.getCode() + ""});
+            SQLiteDatabase db = getReadableDatabase();
+            try (Cursor cursorAttributes = db.rawQuery(sql.toString(), new String[]{})) {
 
                 // looping through all rows and adding to list
                 if (cursorAttributes.moveToFirst()) {
@@ -984,9 +1000,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
-                if (cursorAttributes != null) {
-                    cursorAttributes.close();
-                }
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }
@@ -999,11 +1012,8 @@ public class HentoidDB extends SQLiteOpenHelper {
     public void updateImageFileStatus(ImageFile row) {
         synchronized (locker) {
             Timber.d("updateImageFileStatus");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
-            try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_FROM_ID);
+            SQLiteDatabase db = getWritableDatabase();
+            try (SQLiteStatement statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_FROM_ID)) {
                 db.beginTransaction();
                 try {
                     statement.clearBindings();
@@ -1016,9 +1026,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                 }
             } finally {
                 Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }

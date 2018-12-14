@@ -265,7 +265,7 @@ public class DatabaseAccessor implements CollectionAccessor {
                 }
             } else if (MODE_SEARCH_AVAILABLE == mode) {
                 if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
-                    result = db.selectAvailableSources();
+                    result = db.selectAvailableSources(attrs);
                 } else {
                     result = new ArrayList<>();
                     for (AttributeType type : attrTypes)
@@ -304,10 +304,11 @@ public class DatabaseAccessor implements CollectionAccessor {
 
             if (null == filter || filter.isEmpty()) {
                 result = db.countAttributesPerType();
+                result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
             } else {
                 result = db.countAttributesPerType(filter);
+                result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(filter).size());
             }
-            result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
 
             return result;
         }

@@ -24,7 +24,7 @@ public abstract class ContentTable {
     public static final String DOWNLOAD_DATE_COLUMN = "download_date";
     static final String STATUS_COLUMN = "status";
     private static final String COVER_IMAGE_URL_COLUMN = "cover_image_url";
-    static final String SITE_COLUMN = "site";
+    public static final String SOURCE_COLUMN = "site";
     public static final String AUTHOR_COLUMN = "author";
     public static final String STORAGE_FOLDER_COLUMN = "storage_folder";
     public static final String FAVOURITE_COLUMN = "favourite";
@@ -43,7 +43,7 @@ public abstract class ContentTable {
     public static final int IDX_DLDATE = 9;
     public static final int IDX_STATUSCODE = 10;
     public static final int IDX_COVERURL = 11;
-    public static final int IDX_SITECODE = 12;
+    public static final int IDX_SOURCECODE = 12;
     public static final int IDX_AUTHOR = 13;
     public static final int IDX_STORAGE_FOLDER = 14;
     public static final int IDX_FAVOURITE = 15;
@@ -65,7 +65,7 @@ public abstract class ContentTable {
             + " TEXT," + TITLE_COLUMN + " TEXT" + "," + QTY_PAGES_COLUMN + " INTEGER" + ","
             + UPLOAD_DATE_COLUMN + " INTEGER" + "," + DOWNLOAD_DATE_COLUMN + " INTEGER" + ","
             + STATUS_COLUMN + " INTEGER" + "," + COVER_IMAGE_URL_COLUMN + " TEXT"
-            + "," + SITE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT, "
+            + "," + SOURCE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT, "
             + FAVOURITE_COLUMN + " INTEGER, " + READS_COLUMN + " INTEGER, " + LAST_READ_DATE_COLUMN + " INTEGER "
             + " DEFAULT 0 )";
 
@@ -91,18 +91,18 @@ public abstract class ContentTable {
     // SELECT
     public static final String SELECT_BY_CONTENT_ID = "SELECT * FROM " + TABLE_NAME + " C WHERE C." + ID_COLUMN + " = ?";
 
-    public static final String SELECT_BY_EXTERNAL_REF = "SELECT * FROM " + TABLE_NAME + " WHERE " + SITE_COLUMN + "= ? AND " + UNIQUE_SITE_ID_COLUMN + " IN (%1) AND " + STATUS_COLUMN + " IN (?,?,?,?,?)";
+    public static final String SELECT_BY_EXTERNAL_REF = "SELECT * FROM " + TABLE_NAME + " WHERE " + SOURCE_COLUMN + "= ? AND " + UNIQUE_SITE_ID_COLUMN + " IN (%1) AND " + STATUS_COLUMN + " IN (?,?,?,?,?)";
 
     public static final String SELECT_NULL_FOLDERS = "SELECT * FROM " + TABLE_NAME + " WHERE " + STORAGE_FOLDER_COLUMN + " is null";
 
-    public static final String SELECT_SOURCES = "SELECT " + SITE_COLUMN + ", COUNT(*) FROM " + TABLE_NAME + " WHERE " + STATUS_COLUMN + " IN (?,?,?) GROUP BY 1";
+    public static final String SELECT_SOURCES = "SELECT " + SOURCE_COLUMN + ", COUNT(*) FROM " + TABLE_NAME + " WHERE " + STATUS_COLUMN + " IN (?,?,?) GROUP BY 1";
 
 
     // SEARCH QUERIES "TOOLBOX"
 
     public static final String SELECT_DOWNLOADS_BASE = "SELECT C.* FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) ";
 
-    public static final String SELECT_DOWNLOADS_SITES = " AND C." + SITE_COLUMN + " in (%1) ";
+    public static final String SELECT_DOWNLOADS_SITES = " AND C." + SOURCE_COLUMN + " in (%1) ";
 
     public static final String SELECT_DOWNLOADS_FAVS = " AND C." + FAVOURITE_COLUMN + " = 1 ";
 

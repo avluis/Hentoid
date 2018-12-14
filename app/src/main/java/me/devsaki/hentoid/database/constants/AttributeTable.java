@@ -32,7 +32,7 @@ public abstract class AttributeTable {
             "inner join " + ContentTable.TABLE_NAME + " c on ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN + " " +
             "where a." + TYPE_COLUMN + "=? and c." + ContentTable.STATUS_COLUMN + " in (" + StatusContent.DOWNLOADED.getCode() + "," + StatusContent.ERROR.getCode() + "," + StatusContent.MIGRATED.getCode() + ") ";
 
-    public static final String SELECT_ALL_SITE_FILTER = " AND c." + ContentTable.SITE_COLUMN + " IN (%1) ";
+    public static final String SELECT_ALL_SOURCE_FILTER = " AND c." + ContentTable.SOURCE_COLUMN + " IN (%1) ";
 
     public static final String SELECT_ALL_ATTR_FILTER = " AND lower(a." + NAME_COLUMN + ") LIKE lower('%%2%') ";
 
@@ -52,12 +52,23 @@ public abstract class AttributeTable {
             " INNER JOIN " + ContentTable.TABLE_NAME + " c ON ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN +
             " WHERE c." + ContentTable.STATUS_COLUMN + " IN (" + StatusContent.DOWNLOADED.getCode() + "," + StatusContent.ERROR.getCode() + "," + StatusContent.MIGRATED.getCode() + ")";
 
-    public static final String SELECT_COUNT_BY_TYPE_SITE_FILTER = SELECT_ALL_SITE_FILTER;
+    public static final String SELECT_COUNT_BY_TYPE_SOURCE_FILTER = SELECT_ALL_SOURCE_FILTER;
 
     public static final String SELECT_COUNT_BY_TYPE_ATTR_FILTER_JOINS = ContentTable.SELECT_DOWNLOADS_JOINS;
     public static final String SELECT_COUNT_BY_TYPE_ATTR_FILTER_ATTRS = ContentTable.SELECT_DOWNLOADS_TAGS;
 
     public static final String SELECT_COUNT_BY_TYPE_GROUP = " GROUP BY A." + TYPE_COLUMN;
+
+
+    public static final String SELECT_COUNT_BY_SOURCE_SELECT = "SELECT C." + ContentTable.SOURCE_COLUMN + ", COUNT(*) FROM " + ContentTable.TABLE_NAME + " C " +
+            " WHERE C." + ContentTable.STATUS_COLUMN + " IN (" + StatusContent.DOWNLOADED.getCode() + "," + StatusContent.ERROR.getCode() + "," + StatusContent.MIGRATED.getCode() + ")";
+
+    public static final String SELECT_COUNT_BY_SOURCE_SOURCE_FILTER = SELECT_ALL_SOURCE_FILTER;
+
+    public static final String SELECT_COUNT_BY_SOURCE_ATTR_FILTER_JOINS = ContentTable.SELECT_DOWNLOADS_JOINS;
+    public static final String SELECT_COUNT_BY_SOURCE_ATTR_FILTER_ATTRS = ContentTable.SELECT_DOWNLOADS_TAGS;
+
+    public static final String SELECT_COUNT_BY_SOURCE_GROUP = " GROUP BY C." + ContentTable.SOURCE_COLUMN;
 
 
     public static final String SELECT_BY_CONTENT_ID = "SELECT T." + ID_COLUMN + ", T." + URL_COLUMN
