@@ -278,7 +278,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Download next content in a new Intent
-        ContentQueueManager.getInstance().resumeQueue(this);
+        contentQueueManager.resumeQueue(this);
     }
 
     /**
