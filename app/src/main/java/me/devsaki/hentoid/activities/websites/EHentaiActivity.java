@@ -70,13 +70,22 @@ public class EHentaiActivity extends BaseWebActivity {
                 EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4],galleryUrlParts[5]);
                 compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
                         .observeOn(Schedulers.computation())
-                        .subscribe(this::onContentSuccess, this::onContentFailed));
+                        .subscribe(
+                                metadata -> {
+                                    listener.onResultReady(metadata.toContent(), 1);
+                                }, throwable -> {
+                                    Timber.e(throwable, "Error parsing content.");
+                                    listener.onResultFailed("");
+                                })
+                );
 
-            } else {
+                                //this::onContentSuccess, this::onContentFailed));
+
+            }/* else {
                 compositeDisposable.clear(); // TODO - Isn't that a tad too aggressive ?
-            }
+            }*/
         }
-
+/*
         private void onContentSuccess(EHentaiGalleriesMetadata metadata)
         {
             listener.onResultReady(metadata.toContent(), 1);
@@ -87,6 +96,6 @@ public class EHentaiActivity extends BaseWebActivity {
             Timber.e(t, "Error parsing content.");
             listener.onResultFailed("");
         }
-
+*/
     }
 }
