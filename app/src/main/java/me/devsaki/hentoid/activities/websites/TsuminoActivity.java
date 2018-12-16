@@ -9,7 +9,9 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.views.ObservableWebView;
 
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
@@ -19,6 +21,9 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
  * Implements tsumino source
  */
 public class TsuminoActivity extends BaseWebActivity {
+
+    private static final String DOMAIN_FILTER = "tsumino.com";
+//    private static final String GALLERY_FILTER = "";  Multiple gallery filters ?
 
     private boolean downloadFabPressed = false;
     private int historyIndex;
@@ -40,29 +45,30 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     @Override
-    void setWebView(ObservableWebView webView) {
-        TsuminoWebViewClient client = new TsuminoWebViewClient(this);
-        client.restrictTo("tsumino.com");
+    protected CustomWebViewClient getWebClient() {
+        CustomWebViewClient client = new TsuminoWebViewClient(getStartSite(), this);
+        client.restrictTo(DOMAIN_FILTER);
         addContentBlockFilter(blockedContent);
 
-        webView.setWebViewClient(client);
-        super.setWebView(webView);
+        return client;
     }
 
     @Override
     public void onDownloadFabClick(View view) {
         downloadFabPressed = true;
-        historyIndex = getWebView().copyBackForwardList().getCurrentIndex();
+        historyIndex = webView.copyBackForwardList().getCurrentIndex();
 
-        String newUrl = getWebView().getUrl().replace("Book/Info", "Read/View");
+        // TODO - just what is this hack ?!
+        String newUrl = webView.getUrl().replace("Book/Info", "Read/View");
         final int index = ordinalIndexOf(newUrl);
         if (index > 0) newUrl = newUrl.substring(0, index);
-        getWebView().loadUrl(newUrl);
+        webView.loadUrl(newUrl);
     }
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
-        TsuminoWebViewClient(BaseWebActivity activity) {
-            super(activity);
+
+        TsuminoWebViewClient(Site startSite, ResultListener<Content> listener) {
+            super(startSite, listener);
         }
 
         @Override
@@ -80,38 +86,16 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
-            BaseWebActivity activity = activityReference.get();
 
-            if (url.contains("//www.tsumino.com/Book/Info/") && activity != null) {
-                executeAsyncTask(new HtmlLoader(activity), url);
+            if (url.contains("//www.tsumino.com/Book/Info/")) {
+                executeAsyncTask(new HtmlLoader(startSite, listener), url);
             } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;
-                int currentIndex = getWebView().copyBackForwardList().getCurrentIndex();
-                getWebView().goBackOrForward(historyIndex - currentIndex);
+                int currentIndex = webView.copyBackForwardList().getCurrentIndex();
+                webView.goBackOrForward(historyIndex - currentIndex);
                 processDownload();
             }
         }
 
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull String url) {
-            if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                return super.shouldInterceptRequest(view, url);
-            }
-        }
-
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull WebResourceRequest request) {
-            String url = request.getUrl().toString();
-            if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                return super.shouldInterceptRequest(view, request);
-            }
-        }
     }
 }

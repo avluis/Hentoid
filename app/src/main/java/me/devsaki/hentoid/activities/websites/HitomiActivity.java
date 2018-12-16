@@ -7,14 +7,11 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.views.ObservableWebView;
-import timber.log.Timber;
+import me.devsaki.hentoid.listener.ResultListener;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
-import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 
 /**
@@ -23,42 +20,34 @@ import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
  */
 public class HitomiActivity extends BaseWebActivity {
 
+    private static final String DOMAIN_FILTER = "hitomi.la";
+    private static final String GALLERY_FILTER = "//hitomi.la/galleries/";
+
     Site getStartSite() {
         return Site.HITOMI;
     }
 
     @Override
-    void setWebView(ObservableWebView webView) {
-        HitomiWebViewClient client = new HitomiWebViewClient(this, "//hitomi.la/galleries/");
-        client.restrictTo("hitomi.la");
-
-        webView.setWebViewClient(client);
-
-        boolean bWebViewOverview = Preferences.getWebViewOverview();
-        int webViewInitialZoom = Preferences.getWebViewInitialZoom();
-
-        if (bWebViewOverview) {
-            webView.getSettings().setLoadWithOverviewMode(false);
-            webView.setInitialScale(webViewInitialZoom);
-            Timber.d("WebView Initial Scale: %s%%", webViewInitialZoom);
-        } else {
-            webView.setInitialScale(Preferences.Default.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
-            webView.getSettings().setLoadWithOverviewMode(true);
-        }
-
-        super.setWebView(webView);
+    protected CustomWebViewClient getWebClient() {
+        CustomWebViewClient client = new HitomiWebViewClient(GALLERY_FILTER, getStartSite(), this);
+        client.restrictTo(DOMAIN_FILTER);
+        return client;
     }
 
+
+/*
     @Override
     void backgroundRequest(String extra) {
         Timber.d(extra);
         Helper.toast("Processing...");
         executeAsyncTask(new HtmlLoader(this), extra);
     }
+*/
 
     private class HitomiWebViewClient extends CustomWebViewClient {
-        HitomiWebViewClient(BaseWebActivity activity, String filteredUrl) {
-            super(activity, filteredUrl);
+
+        HitomiWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
+            super(filteredUrl, startSite, listener);
         }
 
         @Override

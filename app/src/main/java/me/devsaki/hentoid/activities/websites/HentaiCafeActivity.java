@@ -1,11 +1,8 @@
 package me.devsaki.hentoid.activities.websites;
 
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.views.ObservableWebView;
-import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
+import me.devsaki.hentoid.listener.ResultListener;
 
 /**
  * Created by avluis on 07/21/2016.
@@ -13,30 +10,34 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
  */
 public class HentaiCafeActivity extends BaseWebActivity {
 
+    private static final String DOMAIN_FILTER = "hentai.cafe";
+    private static final String GALLERY_FILTER = "//hentai.cafe/";
+
     Site getStartSite() {
         return Site.HENTAICAFE;
     }
 
-    @Override
-    void setWebView(ObservableWebView webView) {
-        HentaiCafeWebViewClient client = new HentaiCafeWebViewClient(this, "//hentai.cafe/");
-        client.restrictTo("hentai.cafe");
 
-        webView.setWebViewClient(client);
-        super.setWebView(webView);
+    @Override
+    protected CustomWebViewClient getWebClient() {
+        CustomWebViewClient client = new HentaiCafeWebViewClient(GALLERY_FILTER, getStartSite(), this);
+        client.restrictTo(DOMAIN_FILTER);
+        return client;
     }
 
+/*
     @Override
     void backgroundRequest(String extra) {
         Timber.d(extra);
         Helper.toast("Processing...");
         executeAsyncTask(new HtmlLoader(this), extra);
     }
+    */
 
     private class HentaiCafeWebViewClient extends CustomWebViewClient {
 
-        HentaiCafeWebViewClient(BaseWebActivity activity, String filteredUrl) {
-            super(activity, filteredUrl);
+        HentaiCafeWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
+            super(filteredUrl, startSite, listener);
         }
     }
 }

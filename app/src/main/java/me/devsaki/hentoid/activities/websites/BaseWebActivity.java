@@ -25,7 +25,6 @@ import android.webkit.WebViewClient;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -43,6 +42,7 @@ import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -50,6 +50,7 @@ import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
 
@@ -65,10 +66,10 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
  * this activity's function, it is recommended to request for this permission and show rationale if
  * permission request is denied
  */
-public abstract class BaseWebActivity extends BaseActivity {
+public abstract class BaseWebActivity extends BaseActivity implements ResultListener<Content> {
 
     // UI
-    private ObservableWebView webView;                                              // Associated webview
+    protected ObservableWebView webView;                                              // Associated webview
     private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;   // Action buttons
     private SwipeRefreshLayout swipeLayout;
 
@@ -103,13 +104,7 @@ public abstract class BaseWebActivity extends BaseActivity {
         universalBlockedContent.add("smatoo.net");
     }
 
-    ObservableWebView getWebView() {
-        return webView;
-    }
-
-    void setWebView(ObservableWebView webView) {
-        this.webView = webView;
-    }
+    protected abstract CustomWebViewClient getWebClient();
 
     abstract Site getStartSite();
 
@@ -148,8 +143,6 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         initWebView();
         initSwipeLayout();
-
-        setWebView(getWebView());
 
         String intentVar = getIntent().getStringExtra(Consts.INTENT_URL);
         webView.loadUrl(intentVar == null ? getStartSite().getUrl() : intentVar);
@@ -197,6 +190,7 @@ public abstract class BaseWebActivity extends BaseActivity {
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
         webView = findViewById(R.id.wbMain);
+/*
         webView.setOnLongClickListener(v -> {
             WebView.HitTestResult result = webView.getHitTestResult();
             if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
@@ -209,6 +203,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
             return false;
         });
+*/
         webView.setHapticFeedbackEnabled(false);
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -239,6 +234,22 @@ public abstract class BaseWebActivity extends BaseActivity {
                 }
             }
         });
+
+        boolean bWebViewOverview = Preferences.getWebViewOverview();
+        int webViewInitialZoom = Preferences.getWebViewInitialZoom();
+
+        if (bWebViewOverview) {
+            webView.getSettings().setLoadWithOverviewMode(false);
+            webView.setInitialScale(webViewInitialZoom);
+            Timber.d("WebView Initial Scale: %s%%", webViewInitialZoom);
+        } else {
+            webView.setInitialScale(Preferences.Default.PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT);
+            webView.getSettings().setLoadWithOverviewMode(true);
+        }
+
+
+        webView.setWebViewClient(getWebClient());
+
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
@@ -285,7 +296,7 @@ public abstract class BaseWebActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
-        if (!getWebView().canGoBack()) {
+        if (!webView.canGoBack()) {
             goHome();
         }
     }
@@ -420,10 +431,9 @@ public abstract class BaseWebActivity extends BaseActivity {
 
         // Set Download action button visibility
         StatusContent contentStatus = content.getStatus();
-        if (    contentStatus != StatusContent.DOWNLOADED
+        if (contentStatus != StatusContent.DOWNLOADED
                 && contentStatus != StatusContent.DOWNLOADING
-                && contentStatus != StatusContent.MIGRATED)
-        {
+                && contentStatus != StatusContent.MIGRATED) {
             currentContent = content;
             runOnUiThread(() -> showFab(fabDownload));
         } else {
@@ -431,10 +441,9 @@ public abstract class BaseWebActivity extends BaseActivity {
         }
 
         // Set Read action button visibility
-        if (    contentStatus == StatusContent.DOWNLOADED
+        if (contentStatus == StatusContent.DOWNLOADED
                 || contentStatus == StatusContent.MIGRATED
-                || contentStatus == StatusContent.ERROR)
-        {
+                || contentStatus == StatusContent.ERROR) {
             currentContent = content;
             runOnUiThread(() -> showFab(fabRead));
         } else {
@@ -468,35 +477,51 @@ public abstract class BaseWebActivity extends BaseActivity {
         parser.parseImageList(content);
     }
 
+    public void onResultReady(Content results, int totalContent)
+    {
+        processContent(results);
+    }
+
+    public void onResultFailed(String message)
+    {
+        runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+    }
+
+/*
     void backgroundRequest(String extra) {
         Timber.d("Extras: %s", extra);
     }
+*/
 
     class CustomWebViewClient extends WebViewClient {
 
         private String domainName = "";
         private final String filteredUrl;
         CompositeDisposable compositeDisposable = new CompositeDisposable();
-        final WeakReference<BaseWebActivity> activityReference;
         protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        protected final Site startSite;
+        protected final ResultListener<Content> listener;
+
+
+        CustomWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
+            this.filteredUrl = filteredUrl;
+            this.startSite = startSite;
+            this.listener = listener;
+        }
+
+        CustomWebViewClient(Site startSite, ResultListener<Content> listener) {
+            this.filteredUrl = "";
+            this.startSite = startSite;
+            this.listener = listener;
+        }
+
+        void destroy() {
+            Timber.d("WebClient destroyed");
+            compositeDisposable.clear();
+        }
 
         void restrictTo(String s) {
             domainName = s;
-        }
-
-        CustomWebViewClient(BaseWebActivity activity, String filteredUrl) {
-            activityReference = new WeakReference<>(activity);
-            this.filteredUrl = filteredUrl;
-        }
-
-        CustomWebViewClient(BaseWebActivity activity) {
-            activityReference = new WeakReference<>(activity);
-            this.filteredUrl = "";
-        }
-
-        void destroy()
-        {
-            compositeDisposable.clear();
         }
 
         @Override
@@ -525,10 +550,16 @@ public abstract class BaseWebActivity extends BaseActivity {
                 Pattern pattern = Pattern.compile(filteredUrl);
                 Matcher matcher = pattern.matcher(url);
 
+/*
                 BaseWebActivity activity = activityReference.get();
                 if (matcher.find() && activity != null) {
                     executeAsyncTask(new HtmlLoader(activity), url);
                 }
+*/
+                if (matcher.find()) {
+                    executeAsyncTask(new HtmlLoader(startSite, listener), url);
+                }
+
             }
         }
 
@@ -579,30 +610,32 @@ public abstract class BaseWebActivity extends BaseActivity {
         return false;
     }
 
+
     protected static class HtmlLoader extends AsyncTask<String, Integer, Content> {
 
-        private final WeakReference<BaseWebActivity> activityReference;
+        private final Site startSite;
+        private final ResultListener<Content> listener;
 
         // only retain a weak reference to the activity
-        HtmlLoader(BaseWebActivity context) {
-            activityReference = new WeakReference<>(context);
+        HtmlLoader(Site startSite, ResultListener<Content> listener) {
+            this.startSite = startSite;
+            this.listener = listener;
         }
+
 
         @Override
         protected Content doInBackground(String... params) {
             String url = params[0];
-            BaseWebActivity activity = activityReference.get();
-            if (null == activity) return null;
 
             try {
-                ContentParser parser = ContentParserFactory.getInstance().getParser(activity.getStartSite());
-                activity.processContent(parser.parseContent(url));
+                ContentParser parser = ContentParserFactory.getInstance().getParser(startSite);
+                listener.onResultReady(parser.parseContent(url), 1);
             } catch (IOException e) { // Most I/O errors being timeouts...
                 Timber.e(e, "I/O Error while parsing content @ %s", url);
-                //activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+                listener.onResultFailed("");
             } catch (Exception e) {
                 Timber.e(e, "Error while parsing content @ %s", url);
-                activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+                listener.onResultFailed("");
             }
 
             return null;
