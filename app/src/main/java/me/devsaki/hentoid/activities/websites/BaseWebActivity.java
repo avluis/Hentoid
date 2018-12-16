@@ -499,7 +499,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         private final String filteredUrl;
         CompositeDisposable compositeDisposable = new CompositeDisposable();
         protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-        protected final Site startSite;
+        final Site startSite;
         protected final ResultListener<Content> listener;
 
 
