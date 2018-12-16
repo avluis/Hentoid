@@ -16,7 +16,6 @@ import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
@@ -484,8 +483,7 @@ public class ImportActivity extends BaseActivity {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEventProgress(ImportEvent event) {
-        if (ImportEvent.EV_PROGRESS == event.eventType)
-        {
+        if (ImportEvent.EV_PROGRESS == event.eventType) {
             progressDialog.setMax(event.booksTotal);
             progressDialog.setProgress(event.booksOK + event.booksKO);
         }
@@ -493,8 +491,7 @@ public class ImportActivity extends BaseActivity {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onImportEventComplete(ImportEvent event) {
-        if (ImportEvent.EV_COMPLETE == event.eventType)
-        {
+        if (ImportEvent.EV_COMPLETE == event.eventType) {
             if (progressDialog != null) progressDialog.dismiss();
             cleanUp((event.booksOK > 0) ? ConstsImport.EXISTING_LIBRARY_IMPORTED : ConstsImport.NEW_LIBRARY_CREATED);
         }
@@ -521,7 +518,8 @@ public class ImportActivity extends BaseActivity {
 
         if (files.size() > 0) {
 
-            if (isRefresh) runImport(); // Do not ask if the user wants to import if he has asked for a refresh
+            if (isRefresh)
+                runImport(); // Do not ask if the user wants to import if he has asked for a refresh
             else new AlertDialog.Builder(this)
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setCancelable(false)
@@ -571,8 +569,7 @@ public class ImportActivity extends BaseActivity {
         }
     }
 
-    private void runImport()
-    {
+    private void runImport() {
         // Prior Library found, drop and recreate db
         cleanUpDB();
         // Send results to scan
