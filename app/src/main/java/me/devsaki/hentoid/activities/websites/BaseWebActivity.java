@@ -157,6 +157,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
     @Override
     protected void onDestroy() {
+        if (webClient != null) webClient.destroy();
+        webClient = null;
+
         if (webView != null) {
             // the WebView must be removed from the view hierarchy before calling destroy
             // to prevent a memory leak
@@ -166,9 +169,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             webView.destroy();
             webView = null;
         }
-
-        if (webClient != null) webClient.destroy();
-        webClient = null;
 
         super.onDestroy();
     }
@@ -247,8 +247,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             webView.getSettings().setLoadWithOverviewMode(true);
         }
 
-
-        webView.setWebViewClient(getWebClient());
+        webClient = getWebClient();
+        webView.setWebViewClient(webClient);
 
         WebSettings webSettings = webView.getSettings();
         webSettings.setBuiltInZoomControls(true);
@@ -477,13 +477,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         parser.parseImageList(content);
     }
 
-    public void onResultReady(Content results, int totalContent)
-    {
+    public void onResultReady(Content results, int totalContent) {
         processContent(results);
     }
 
-    public void onResultFailed(String message)
-    {
+    public void onResultFailed(String message) {
         runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
     }
 
@@ -550,12 +548,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 Pattern pattern = Pattern.compile(filteredUrl);
                 Matcher matcher = pattern.matcher(url);
 
-/*
-                BaseWebActivity activity = activityReference.get();
-                if (matcher.find() && activity != null) {
-                    executeAsyncTask(new HtmlLoader(activity), url);
-                }
-*/
                 if (matcher.find()) {
                     executeAsyncTask(new HtmlLoader(startSite, listener), url);
                 }

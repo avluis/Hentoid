@@ -6,22 +6,13 @@ import android.webkit.WebView;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.parsers.EHentai.EHentaiGalleriesMetadata;
 import me.devsaki.hentoid.parsers.EHentai.EHentaiGalleryQuery;
 import me.devsaki.hentoid.retrofit.EHentaiServer;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.Preferences;
-import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
 /**
  * Created by Robb_w on 2018/04
@@ -67,35 +58,16 @@ public class EHentaiActivity extends BaseWebActivity {
 
             if (matcher.find()) {
                 String[] galleryUrlParts = url.split("/");
-                EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4],galleryUrlParts[5]);
+                EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
                 compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
-                        .observeOn(Schedulers.computation())
+                        .observeOn(Schedulers.newThread()) // Consider calling Schedulers.shutdown() if Schedulers.io or Schedulers.computation is used instead
                         .subscribe(
-                                metadata -> {
-                                    listener.onResultReady(metadata.toContent(), 1);
-                                }, throwable -> {
+                                metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                     Timber.e(throwable, "Error parsing content.");
                                     listener.onResultFailed("");
                                 })
                 );
-
-                                //this::onContentSuccess, this::onContentFailed));
-
-            }/* else {
-                compositeDisposable.clear(); // TODO - Isn't that a tad too aggressive ?
-            }*/
+            }
         }
-/*
-        private void onContentSuccess(EHentaiGalleriesMetadata metadata)
-        {
-            listener.onResultReady(metadata.toContent(), 1);
-        }
-
-        private void onContentFailed(Throwable t)
-        {
-            Timber.e(t, "Error parsing content.");
-            listener.onResultFailed("");
-        }
-*/
     }
 }
