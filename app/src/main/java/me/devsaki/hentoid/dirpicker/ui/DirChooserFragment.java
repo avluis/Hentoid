@@ -20,6 +20,7 @@ import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
 
+import io.fabric.sdk.android.InitializationException;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.dirpicker.events.CurrentRootDirChangedEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
@@ -97,7 +98,7 @@ public class DirChooserFragment extends DialogFragment implements
         bus.register(this);
 
         DirListBuilder dirListBuilder = new DirListBuilder(
-                getActivity().getApplicationContext(), bus, recyclerView);
+                requireActivity().getApplicationContext(), bus, recyclerView);
         Bus.register(bus, dirListBuilder);
         dirListBuilder.onUpdateDirTreeEvent(new UpdateDirTreeEvent(currentRootDir));
 
@@ -143,6 +144,8 @@ public class DirChooserFragment extends DialogFragment implements
     }
 
     private void setCurrentDir() {
+        if (null == getArguments()) throw new InitializationException("Init failed : arguments have not been set");
+
         File rootDir = (File) getArguments().getSerializable(ROOT_DIR);
         if (rootDir == null) {
             currentRootDir = Environment.getExternalStorageDirectory();
@@ -186,8 +189,8 @@ public class DirChooserFragment extends DialogFragment implements
     }
 
     private void createDirBtnClicked() {
-        new CreateDirDialog(getActivity(), bus,
-                getActivity().getString(R.string.app_name)).dialog(currentRootDir);
+        new CreateDirDialog(requireActivity(), bus,
+                requireActivity().getString(R.string.app_name)).dialog(currentRootDir);
     }
 
     private void requestSDBtnClicked() {
