@@ -190,20 +190,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     @SuppressLint("SetJavaScriptEnabled")
     private void initWebView() {
         webView = findViewById(R.id.wbMain);
-/*
-        webView.setOnLongClickListener(v -> {
-            WebView.HitTestResult result = webView.getHitTestResult();
-            if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
-                if (result.getExtra() != null && result.getExtra().contains(getStartSite().getUrl())) {
-                    backgroundRequest(result.getExtra());
-                }
-            } else {
-                return true;
-            }
-
-            return false;
-        });
-*/
         webView.setHapticFeedbackEnabled(false);
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -449,12 +435,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         } else {
             runOnUiThread(() -> hideFab(fabRead));
         }
-/*
-        // Allows debugging parsers without starting a content download
-        if (BuildConfig.DEBUG) {
-            attachToDebugger(content);
-        }
-*/
     }
 
     /**
@@ -473,11 +453,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         db.insertContent(content);
     }
 
-    private void attachToDebugger(Content content) {
-        ContentParser parser = ContentParserFactory.getInstance().getParser(content);
-        parser.parseImageList(content);
-    }
-
     public void onResultReady(Content results, int totalContent) {
         processContent(results);
     }
@@ -486,11 +461,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
     }
 
-/*
-    void backgroundRequest(String extra) {
-        Timber.d("Extras: %s", extra);
-    }
-*/
 
     class CustomWebViewClient extends WebViewClient {
 

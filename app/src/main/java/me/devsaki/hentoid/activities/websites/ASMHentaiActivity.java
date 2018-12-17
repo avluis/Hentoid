@@ -45,15 +45,6 @@ public class ASMHentaiActivity extends BaseWebActivity {
         return client;
     }
 
-/*
-    @Override
-    void backgroundRequest(String extra) {
-        Timber.d(extra);
-        Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(this), extra);
-    }
-*/
-
     private class ASMViewClient extends CustomWebViewClient {
 
         ASMViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
@@ -80,33 +71,5 @@ public class ASMHentaiActivity extends BaseWebActivity {
                 );
             }
         }
-
-/*
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull String url) {
-            if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else if (url.contains("main.js")) {
-                return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else {
-                return super.shouldInterceptRequest(view, url);
-            }
-        }
-
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull WebResourceRequest request) {
-            String url = request.getUrl().toString();
-            if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else if (url.contains("main.js")) {
-                return getWebResourceResponseFromAsset(getStartSite(), "main.js", TYPE.JS);
-            } else {
-                return super.shouldInterceptRequest(view, request);
-            }
-        }
-*/
     }
 }
