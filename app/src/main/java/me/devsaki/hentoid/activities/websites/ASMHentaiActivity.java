@@ -62,7 +62,6 @@ public class ASMHentaiActivity extends BaseWebActivity {
             if (matcher.find()) {
                 String[] galleryUrlParts = url.split("/");
                 compositeDisposable.add(ASMHentaiServer.API.getGalleryMetadata(galleryUrlParts[4])
-                        .observeOn(Schedulers.newThread()) // Consider calling Schedulers.shutdown() if Schedulers.io or Schedulers.computation is used instead
                         .subscribe(
                                 metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                     Timber.e(throwable, "Error parsing content.");
