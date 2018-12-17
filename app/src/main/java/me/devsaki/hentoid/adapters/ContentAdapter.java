@@ -65,6 +65,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final Runnable onContentsClearedListener;
     private final CollectionAccessor collectionAccessor;
     private final int displayMode;
+    private final RequestOptions glideRequestOptions;
     private RecyclerView libraryView; // Kept as reference for querying by Content through ID
     private Runnable onScrollToEndListener;
     private Comparator<Content> sortComparator;
@@ -77,6 +78,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         collectionAccessor = builder.collectionAccessor;
         sortComparator = builder.sortComparator;
         displayMode = builder.displayMode;
+        glideRequestOptions = new RequestOptions()
+                .centerInside()
+                .error(R.drawable.ic_placeholder);
         setHasStableIds(true);
     }
 
@@ -201,10 +205,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void attachCover(ContentHolder holder, Content content) {
-        RequestOptions myOptions = new RequestOptions()
-                .centerInside()
-                .error(R.drawable.ic_placeholder);
-
         ImageView image = holder.itemView.isSelected() ? holder.ivCover2 : holder.ivCover;
 
         // The following is needed due to RecyclerView recycling layouts and
@@ -216,7 +216,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         Glide.with(context.getApplicationContext()).clear(image);
         Glide.with(context.getApplicationContext())
                 .load(FileHelper.getThumb(content))
-                .apply(myOptions)
+                .apply(glideRequestOptions)
                 .into(image);
     }
 
