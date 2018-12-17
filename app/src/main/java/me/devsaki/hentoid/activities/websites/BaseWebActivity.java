@@ -449,11 +449,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         } else {
             runOnUiThread(() -> hideFab(fabRead));
         }
-
+/*
         // Allows debugging parsers without starting a content download
         if (BuildConfig.DEBUG) {
             attachToDebugger(content);
         }
+*/
     }
 
     /**
