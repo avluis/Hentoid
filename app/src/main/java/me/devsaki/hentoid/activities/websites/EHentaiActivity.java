@@ -6,7 +6,6 @@ import android.webkit.WebView;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
