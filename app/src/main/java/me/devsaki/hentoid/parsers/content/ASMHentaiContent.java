@@ -17,7 +17,7 @@ public class ASMHentaiContent {
     private String pageUrl;
     @Selector(value = "div.cover a", attr="href")
     private String galleryUrl;
-    @Selector(value = "div.cover a coverUrl", attr="src")
+    @Selector(value = "div.cover a img", attr="src")
     private String coverUrl;
     @Selector("div.info h1:first-child")
     private String title;
