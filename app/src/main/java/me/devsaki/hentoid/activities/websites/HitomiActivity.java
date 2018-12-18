@@ -10,7 +10,8 @@ import android.webkit.WebView;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.retrofit.HitomiServer;
+import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
 import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
@@ -44,7 +45,14 @@ public class HitomiActivity extends BaseWebActivity {
 
         @Override
         protected void onGalleryFind(String url) {
-            Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
+            String[] galleryUrlParts = url.split("/");
+            compositeDisposable.add(HitomiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+                    .subscribe(
+                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                                Timber.e(throwable, "Error parsing content.");
+                                listener.onResultFailed("");
+                            })
+            );
         }
 
         @Override

@@ -5,7 +5,6 @@ import android.webkit.URLUtil;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONTokener;
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -17,12 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.AttributeMap;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
 
 /**
  * Created by avluis on 07/26/2016.
@@ -61,8 +55,7 @@ public class HentaiCafeParser extends BaseParser {
                         try {
 //                            doc = Jsoup.connect(links.get(i).attr("href")).timeout(TIMEOUT).get();
                             doc = getOnlineDocument(links.get(i).attr("href"));
-                            if (doc != null)
-                            {
+                            if (doc != null) {
                                 contents = doc.select("article#content");
                                 js = contents.select("script").last();
 

@@ -13,8 +13,6 @@ import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HentaiCafeContent {
-    @Selector(value = "head [rel=canonical]", attr="href")
-    private String pageUrl;
     @Selector(value = "div.x-main.full article", attr="id")
     private String galleryUrl;
     @Selector(value = "div.x-column.x-sm.x-1-2 img", attr="src")
