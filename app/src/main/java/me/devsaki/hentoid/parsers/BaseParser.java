@@ -26,7 +26,7 @@ import timber.log.Timber;
 
 public abstract class BaseParser implements ContentParser {
 
-    static final int TIMEOUT = 30000; // 30 seconds
+    private static final int TIMEOUT = 30000; // 30 seconds
 
     @Nullable
     protected abstract Content parseContent(Document doc);

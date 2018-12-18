@@ -462,7 +462,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
 
-    class CustomWebViewClient extends WebViewClient {
+    abstract class CustomWebViewClient extends WebViewClient {
 
         private String domainName = "";
         private final String filteredUrl;
@@ -470,6 +470,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
         final Site startSite;
         protected final ResultListener<Content> listener;
+
+        protected abstract void onGalleryFind(String url);
 
 
         CustomWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
@@ -518,11 +520,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (filteredUrl.length() > 0) {
                 Pattern pattern = Pattern.compile(filteredUrl);
                 Matcher matcher = pattern.matcher(url);
-
-                if (matcher.find()) {
-                    executeAsyncTask(new HtmlLoader(startSite, listener), url);
-                }
-
+                if (matcher.find()) onGalleryFind(url);
             }
         }
 

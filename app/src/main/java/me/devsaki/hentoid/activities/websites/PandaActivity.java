@@ -30,19 +30,15 @@ public class PandaActivity extends BaseWebActivity {
         return client;
     }
 
-/*
-    @Override
-    void backgroundRequest(String extra) {
-        Timber.d(extra);
-        Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(this), extra);
-    }
-*/
-
     private class PandaWebViewClient extends CustomWebViewClient {
 
         PandaWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
             super(filteredUrl, startSite, listener);
+        }
+
+        @Override
+        protected void onGalleryFind(String url) {
+            Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
         }
     }
 }

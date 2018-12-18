@@ -14,6 +14,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.parsers.ContentParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import timber.log.Timber;
 
@@ -63,12 +64,8 @@ public class NhentaiActivity extends BaseWebActivity {
         }
 
         @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-
-            if (url.contains(GALLERY_FILTER)) {
-                executeAsyncTask(new JsonLoader(listener), "https://nhentai.net/api/gallery/" + getGalleryId(url));
-            }
+        protected void onGalleryFind(String url) {
+            executeAsyncTask(new JsonLoader(listener), "https://nhentai.net/api/gallery/" + getGalleryId(url));
         }
 
         @Override

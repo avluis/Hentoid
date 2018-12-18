@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities.websites;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.util.Helper;
 
 public class PururinActivity extends BaseWebActivity {
 
@@ -20,18 +21,15 @@ public class PururinActivity extends BaseWebActivity {
         return client;
     }
 
-    /*
-        @Override
-        void backgroundRequest(String extra) {
-            Timber.d(extra);
-            Helper.toast("Processing...");
-            executeAsyncTask(new HtmlLoader(this), extra);
-        }
-    */
     private class PururinViewClient extends CustomWebViewClient {
 
         PururinViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
             super(filteredUrl, startSite, listener);
+        }
+
+        @Override
+        protected void onGalleryFind(String url) {
+            Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
         }
     }
 }

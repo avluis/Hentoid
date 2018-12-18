@@ -32,60 +32,7 @@ public class HentaiCafeParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-        Content result = null;
-
-        Elements content = doc.select("div.entry-content.content");
-
-        Timber.d("URI : %s", doc.baseUri());
-        if (doc.baseUri().contains(HENTAICAFE.getUrl() + "/78-2/") ||           // ignore tags page
-                doc.baseUri().contains(HENTAICAFE.getUrl() + "/artists/")) {    // ignore artist page
-
-            return null;
-        }
-
-        if (content.size() > 0) {
-            result = new Content();
-
-            String url = doc.select("div.x-main.full")
-                    .select("article")
-                    .attr("id")
-                    .replace("post-", "/?p=");
-            result.setUrl(url);
-
-            String coverUrl = doc.select("div.x-column.x-sm.x-1-2")
-                    .select("img")
-                    .attr("src");
-            result.setCoverImageUrl(coverUrl);
-
-            String title = doc.select("div.x-column.x-sm.x-1-2.last")
-                    .select("h3")
-                    .first()
-                    .text();
-            result.setTitle(title);
-
-            AttributeMap attributes = new AttributeMap();
-            result.setAttributes(attributes);
-
-            String info = content.select("div.x-column.x-sm.x-1-2.last")
-                    .select("p").html();
-
-            String tags = info.substring(0, info.indexOf("<br>")).replace(HENTAICAFE.getUrl(), "");
-
-            String artists = info.substring(info.indexOf("Artists: "));
-            artists = artists.substring(0, artists.indexOf("<br>")).replace(HENTAICAFE.getUrl(), "");
-
-            Elements tagElements = Jsoup.parse(tags).select("a");
-
-            Elements artistElements = Jsoup.parse(artists).select("a");
-
-            parseAttributes(attributes, AttributeType.TAG, tagElements);
-            parseAttributes(attributes, AttributeType.ARTIST, artistElements);
-
-            result.setQtyPages(-1)
-                    .setSite(Site.HENTAICAFE);
-        }
-
-        return result;
+        return new Content(); // Useless; handled directly by HentaiCafeServer
     }
 
     @Override

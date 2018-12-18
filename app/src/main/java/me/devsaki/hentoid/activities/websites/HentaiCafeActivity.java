@@ -3,6 +3,10 @@ package me.devsaki.hentoid.activities.websites;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.retrofit.HentaiCafeServer;
+import timber.log.Timber;
+
+import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
 
 /**
  * Created by avluis on 07/21/2016.
@@ -11,7 +15,7 @@ import me.devsaki.hentoid.listener.ResultListener;
 public class HentaiCafeActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hentai.cafe";
-    private static final String GALLERY_FILTER = "//hentai.cafe/";
+    private static final String GALLERY_FILTER = "//hentai.cafe/[A-Za-z0-9\\-_]+/";
 
     Site getStartSite() {
         return Site.HENTAICAFE;
@@ -25,19 +29,27 @@ public class HentaiCafeActivity extends BaseWebActivity {
         return client;
     }
 
-/*
-    @Override
-    void backgroundRequest(String extra) {
-        Timber.d(extra);
-        Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(this), extra);
-    }
-    */
-
     private class HentaiCafeWebViewClient extends CustomWebViewClient {
 
         HentaiCafeWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
             super(filteredUrl, startSite, listener);
+        }
+
+        @Override
+        protected void onGalleryFind(String url) {
+            if (url.contains(HENTAICAFE.getUrl() + "/78-2/") ||       // ignore tags page
+                    url.contains(HENTAICAFE.getUrl() + "/artists/")) {    // ignore artist page
+                return;
+            }
+
+            String[] galleryUrlParts = url.split("/");
+            compositeDisposable.add(HentaiCafeServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+                    .subscribe(
+                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                                Timber.e(throwable, "Error parsing content.");
+                                listener.onResultFailed("");
+                            })
+            );
         }
     }
 }

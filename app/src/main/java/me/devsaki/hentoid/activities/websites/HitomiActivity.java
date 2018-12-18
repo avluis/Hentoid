@@ -10,6 +10,7 @@ import android.webkit.WebView;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.util.Helper;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
 import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
@@ -35,19 +36,15 @@ public class HitomiActivity extends BaseWebActivity {
     }
 
 
-/*
-    @Override
-    void backgroundRequest(String extra) {
-        Timber.d(extra);
-        Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(this), extra);
-    }
-*/
-
     private class HitomiWebViewClient extends CustomWebViewClient {
 
         HitomiWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
             super(filteredUrl, startSite, listener);
+        }
+
+        @Override
+        protected void onGalleryFind(String url) {
+            Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
         }
 
         @Override

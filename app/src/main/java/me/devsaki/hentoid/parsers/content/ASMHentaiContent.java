@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers.ASMHentai;
+package me.devsaki.hentoid.parsers.content;
 
 import org.jsoup.nodes.Element;
 
@@ -12,13 +12,13 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class ASMContent {
+public class ASMHentaiContent {
     @Selector(value = "head [rel=canonical]", attr="href")
     private String pageUrl;
     @Selector(value = "div.cover a", attr="href")
-    private String url;
-    @Selector(value = "div.cover a img", attr="src")
-    private String img;
+    private String galleryUrl;
+    @Selector(value = "div.cover a coverUrl", attr="src")
+    private String coverUrl;
     @Selector("div.info h1:first-child")
     private String title;
     @Selector("div.pages h3")
@@ -45,8 +45,8 @@ public class ASMContent {
         Content result = new Content();
 
         result.setSite(pageUrl.toLowerCase().contains("comics") ? Site.ASMHENTAI_COMICS : Site.ASMHENTAI);
-        result.setUrl(url.substring(0, url.length() - 2).replace("/gallery", ""));
-        result.setCoverImageUrl(getProtocol() + "://"+img);
+        result.setUrl(galleryUrl.substring(0, galleryUrl.length() - 2).replace("/gallery", ""));
+        result.setCoverImageUrl(getProtocol() + "://"+ coverUrl);
         result.setTitle(title);
         result.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
 

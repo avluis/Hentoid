@@ -12,6 +12,7 @@ import android.webkit.WebView;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.views.ObservableWebView;
 
 import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
@@ -69,6 +70,11 @@ public class TsuminoActivity extends BaseWebActivity {
 
         TsuminoWebViewClient(Site startSite, ResultListener<Content> listener) {
             super(startSite, listener);
+        }
+
+        @Override
+        protected void onGalleryFind(String url) {
+            Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
         }
 
         @Override
