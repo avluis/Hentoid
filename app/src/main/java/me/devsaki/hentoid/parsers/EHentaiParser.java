@@ -15,9 +15,7 @@ public class EHentaiParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-        // Nothing here; that part is directly handled in EHentaiActivity
-        // NB : that will become the norm once a refactoring is done
-        return new Content();
+        return new Content(); // Useless; handled directly by EHentaiServer
     }
 
     @Override
