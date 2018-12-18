@@ -33,15 +33,6 @@ public class EHentaiActivity extends BaseWebActivity {
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
-/*
-    @Override
-    void backgroundRequest(String extra) {
-        Timber.d(extra);
-        Helper.toast("Processing...");
-        executeAsyncTask(new HtmlLoader(getStartSite()), extra);
-    }
-*/
-
 
     private class EHentaiWebClient extends CustomWebViewClient {
 
@@ -60,7 +51,6 @@ public class EHentaiActivity extends BaseWebActivity {
                 String[] galleryUrlParts = url.split("/");
                 EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
                 compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
-                        .observeOn(Schedulers.newThread()) // Consider calling Schedulers.shutdown() if Schedulers.io or Schedulers.computation is used instead
                         .subscribe(
                                 metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                     Timber.e(throwable, "Error parsing content.");
