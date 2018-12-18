@@ -92,54 +92,60 @@ public class HentaiCafeParser extends BaseParser {
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
-        Document doc = Jsoup.connect(content.getReaderUrl()).timeout(TIMEOUT).get();
-        Elements links = doc.select("a.x-btn");
+        Document doc = getOnlineDocument(content.getReaderUrl());
+        if (doc != null) {
+            Elements links = doc.select("a.x-btn");
 
-        Elements contents;
-        Element js;
-        int pages = 0;
+            Elements contents;
+            Element js;
+            int pages = 0;
 
-        if (links != null) {
-            if (links.size() > 1) {
-                Timber.d("Multiple chapters found!");
-            }
+            if (links != null) {
+                if (links.size() > 1) {
+                    Timber.d("Multiple chapters found!");
+                }
 
-            for (int i = 0; i < links.size(); i++) {
+                for (int i = 0; i < links.size(); i++) {
 
-                String url = links.get(i).attr("href");
+                    String url = links.get(i).attr("href");
 
-                if (URLUtil.isValidUrl(url)) {
-                    Timber.d("Chapter Links: %s", links.get(i).attr("href"));
-                    try {
-                        doc = Jsoup.connect(links.get(i).attr("href")).timeout(TIMEOUT).get();
-                        contents = doc.select("article#content");
-                        js = contents.select("script").last();
+                    if (URLUtil.isValidUrl(url)) {
+                        Timber.d("Chapter Links: %s", links.get(i).attr("href"));
+                        try {
+//                            doc = Jsoup.connect(links.get(i).attr("href")).timeout(TIMEOUT).get();
+                            doc = getOnlineDocument(links.get(i).attr("href"));
+                            if (doc != null)
+                            {
+                                contents = doc.select("article#content");
+                                js = contents.select("script").last();
 
-                        if (contents.size() > 0) {
-                            pages += Integer.parseInt(
-                                    doc.select("div.text").first().text().replace(" ⤵", ""));
-                            Timber.d("Pages: %s", pages);
+                                if (contents.size() > 0) {
+                                    pages += Integer.parseInt(
+                                            doc.select("div.text").first().text().replace(" ⤵", ""));
+                                    Timber.d("Pages: %s", pages);
 
-                            JSONArray array = getJSONArrayFromString(js.toString());
-                            if (array != null) {
-                                for (int j = 0; j < array.length(); j++) {
-                                    try {
-                                        result.add(array.getJSONObject(j).getString("url"));
-                                    } catch (JSONException e) {
-                                        Timber.e(e, "Error while reading from array");
+                                    JSONArray array = getJSONArrayFromString(js.toString());
+                                    if (array != null) {
+                                        for (int j = 0; j < array.length(); j++) {
+                                            try {
+                                                result.add(array.getJSONObject(j).getString("url"));
+                                            } catch (JSONException e) {
+                                                Timber.e(e, "Error while reading from array");
+                                            }
+                                        }
+                                    } else {
+                                        Timber.e("Error while parsing pages");
                                     }
                                 }
-                            } else {
-                                Timber.e("Error while parsing pages");
                             }
+                        } catch (IOException e) {
+                            Timber.e(e, "JSOUP Error");
                         }
-                    } catch (IOException e) {
-                        Timber.e(e, "JSOUP Error");
                     }
                 }
+                Timber.d("Total Pages: %s", pages);
+                content.setQtyPages(pages);
             }
-            Timber.d("Total Pages: %s", pages);
-            content.setQtyPages(pages);
         }
 
         return result;

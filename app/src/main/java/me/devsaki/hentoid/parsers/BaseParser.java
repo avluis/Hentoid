@@ -18,6 +18,10 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.OkHttpClientSingleton;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 public abstract class BaseParser implements ContentParser {
@@ -31,13 +35,16 @@ public abstract class BaseParser implements ContentParser {
 
     @Nullable
     public Content parseContent(String urlString) throws IOException {
-        Document doc = Jsoup.connect(urlString).timeout(TIMEOUT).get();
+        //        Document doc = Jsoup.connect(urlString).timeout(TIMEOUT).get();
+        Content content = null;
+        Document doc = getOnlineDocument(urlString);
+        if (doc != null) {
+            content = parseContent(doc);
 
-        Content content = parseContent(doc);
-
-        if (content != null) {
-            content.populateAuthor();
-            content.setStatus(StatusContent.SAVED);
+            if (content != null) {
+                content.populateAuthor();
+                content.setStatus(StatusContent.SAVED);
+            }
         }
 
         return content;
@@ -60,6 +67,17 @@ public abstract class BaseParser implements ContentParser {
 
             map.add(attribute);
         }
+    }
+
+    @Nullable
+    Document getOnlineDocument(String url) throws IOException {
+        OkHttpClient okHttp = OkHttpClientSingleton.getInstance(TIMEOUT);
+        Request request = new Request.Builder().url(url).get().build();
+        ResponseBody body = okHttp.newCall(request).execute().body();
+        if (body != null) {
+            return Jsoup.parse(body.string());
+        }
+        return null;
     }
 
     public List<String> parseImageList(Content content) {
