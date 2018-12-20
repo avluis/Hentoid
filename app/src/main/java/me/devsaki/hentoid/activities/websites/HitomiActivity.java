@@ -24,6 +24,7 @@ public class HitomiActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hitomi.la";
     private static final String GALLERY_FILTER = "//hitomi.la/galleries/";
+    private static final String[] blockedContent = {"hitomi-horizontal.js", "hitomi-vertical.js"};
 
     Site getStartSite() {
         return Site.HITOMI;
@@ -41,6 +42,7 @@ public class HitomiActivity extends BaseWebActivity {
 
         HitomiWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
             super(filteredUrl, startSite, listener);
+            addContentBlockFilter(blockedContent);
         }
 
         @Override
@@ -60,7 +62,7 @@ public class HitomiActivity extends BaseWebActivity {
                                                           @NonNull String url) {
             if (url.contains("hitomi.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "hitomi.js", TYPE.JS);
-            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js") || isUrlForbidden(url)) {
+            } else if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, url);
@@ -74,7 +76,7 @@ public class HitomiActivity extends BaseWebActivity {
             String url = request.getUrl().toString();
             if (url.contains("hitomi.js")) {
                 return getWebResourceResponseFromAsset(getStartSite(), "hitomi.js", TYPE.JS);
-            } else if (url.contains("hitomi-horizontal.js") || url.contains("hitomi-vertical.js") || isUrlForbidden(url)) {
+            } else if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
                 return super.shouldInterceptRequest(view, request);

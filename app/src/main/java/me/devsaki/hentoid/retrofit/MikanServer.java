@@ -7,6 +7,7 @@ import io.reactivex.Single;
 import me.devsaki.hentoid.collection.mikan.MikanAttributeResponse;
 import me.devsaki.hentoid.collection.mikan.MikanContentResponse;
 import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.OkHttpClientSingleton;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -29,12 +30,12 @@ public class MikanServer {
 
     public static final Api API = new Retrofit.Builder()
             .baseUrl(MIKAN_BASE_URL)
-            .client(getClient())
+            .client(OkHttpClientSingleton.getInstance(TIMEOUT_S * 1000))
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(Api.class);
-
+/*
     private static OkHttpClient getClient() {
         return new OkHttpClient.Builder()
                 .addInterceptor(MikanServer::onIntercept)
@@ -52,7 +53,7 @@ public class MikanServer {
                 .build();
         return chain.proceed(request);
     }
-
+*/
     public interface Api {
 
         @GET("{source}")
