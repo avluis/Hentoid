@@ -33,7 +33,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.reactivex.disposables.CompositeDisposable;
-import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
@@ -53,8 +52,6 @@ import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
 /**
  * Browser activity which allows the user to navigate a supported source.
@@ -471,7 +468,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         final Site startSite;
         protected final ResultListener<Content> listener;
 
-        protected abstract void onGalleryFind(String url);
+        protected abstract void onGalleryFound(String url);
 
 
         CustomWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
@@ -520,7 +517,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (filteredUrl.length() > 0) {
                 Pattern pattern = Pattern.compile(filteredUrl);
                 Matcher matcher = pattern.matcher(url);
-                if (matcher.find()) onGalleryFind(url);
+                if (matcher.find()) onGalleryFound(url);
             }
         }
 

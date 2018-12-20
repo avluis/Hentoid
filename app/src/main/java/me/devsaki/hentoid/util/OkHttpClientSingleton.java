@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.retrofit.MikanServer;
 import okhttp3.Cache;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -19,25 +18,25 @@ public class OkHttpClientSingleton {
 
     private static volatile SparseArray<OkHttpClient> instance = new SparseArray<>();
 
-    private OkHttpClientSingleton() {}
+    private OkHttpClientSingleton() {
+    }
 
-    public static OkHttpClient getInstance(int timeoutMs)
-    {
+    public static OkHttpClient getInstance(int timeoutMs) {
         if (null == OkHttpClientSingleton.instance.get(timeoutMs)) {
-            synchronized(OkHttpClientSingleton.class) {
+            synchronized (OkHttpClientSingleton.class) {
                 if (null == OkHttpClientSingleton.instance.get(timeoutMs)) {
 
                     int CACHE_SIZE = 2 * 1024 * 1024; // 2 MB
 
                     OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
-                    .addInterceptor(OkHttpClientSingleton::onIntercept)
-                    .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                    .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                    .writeTimeout(timeoutMs, TimeUnit.MILLISECONDS)
-                    .cache(new Cache(HentoidApp.getAppContext().getCacheDir(), CACHE_SIZE));
+                            .addInterceptor(OkHttpClientSingleton::onIntercept)
+                            .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+                            .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+                            .writeTimeout(timeoutMs, TimeUnit.MILLISECONDS)
+                            .cache(new Cache(HentoidApp.getAppContext().getCacheDir(), CACHE_SIZE));
 
 
-                    OkHttpClientSingleton.instance.put(timeoutMs,clientBuilder.build());
+                    OkHttpClientSingleton.instance.put(timeoutMs, clientBuilder.build());
                 }
             }
         }

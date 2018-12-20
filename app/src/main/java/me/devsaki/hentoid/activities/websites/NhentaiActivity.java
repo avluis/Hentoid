@@ -44,7 +44,7 @@ public class NhentaiActivity extends BaseWebActivity {
         }
 
         @Override
-        protected void onGalleryFind(String url) {
+        protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(NhentaiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
                     .subscribe(

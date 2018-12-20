@@ -36,7 +36,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
         }
 
         @Override
-        protected void onGalleryFind(String url) {
+        protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(ASMHentaiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
                     .subscribe(

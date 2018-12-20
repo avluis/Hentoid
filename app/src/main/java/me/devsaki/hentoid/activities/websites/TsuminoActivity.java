@@ -73,7 +73,7 @@ public class TsuminoActivity extends BaseWebActivity {
         }
 
         @Override
-        protected void onGalleryFind(String url) {
+        protected void onGalleryFound(String url) {
             Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
         }
 

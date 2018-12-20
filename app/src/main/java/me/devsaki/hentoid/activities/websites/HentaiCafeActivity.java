@@ -36,7 +36,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
         }
 
         @Override
-        protected void onGalleryFind(String url) {
+        protected void onGalleryFound(String url) {
             if (url.contains(HENTAICAFE.getUrl() + "/78-2/") ||       // ignore tags page
                     url.contains(HENTAICAFE.getUrl() + "/artists/")) {    // ignore artist page
                 return;

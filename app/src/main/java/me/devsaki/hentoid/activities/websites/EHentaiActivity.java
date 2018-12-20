@@ -34,7 +34,7 @@ public class EHentaiActivity extends BaseWebActivity {
         }
 
         @Override
-        protected void onGalleryFind(String url) {
+        protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
             compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)

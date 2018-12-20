@@ -46,7 +46,7 @@ public class HitomiActivity extends BaseWebActivity {
         }
 
         @Override
-        protected void onGalleryFind(String url) {
+        protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(HitomiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
                     .subscribe(
