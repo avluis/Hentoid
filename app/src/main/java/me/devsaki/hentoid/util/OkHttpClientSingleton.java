@@ -2,11 +2,15 @@ package me.devsaki.hentoid.util;
 
 import android.util.SparseArray;
 
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.retrofit.MikanServer;
 import okhttp3.Cache;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 
 /**
  * Manages a single instance of OkHttpClient per timeout delay
@@ -26,6 +30,7 @@ public class OkHttpClientSingleton {
                     int CACHE_SIZE = 2 * 1024 * 1024; // 2 MB
 
                     OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder()
+                    .addInterceptor(OkHttpClientSingleton::onIntercept)
                     .connectTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                     .readTimeout(timeoutMs, TimeUnit.MILLISECONDS)
                     .writeTimeout(timeoutMs, TimeUnit.MILLISECONDS)
@@ -37,5 +42,14 @@ public class OkHttpClientSingleton {
             }
         }
         return OkHttpClientSingleton.instance.get(timeoutMs);
+    }
+
+    private static okhttp3.Response onIntercept(Interceptor.Chain chain) throws IOException {
+        Request request = chain.request()
+                .newBuilder()
+                .header("User-Agent", Consts.USER_AGENT)
+//                .header("Data-type", "application/json")
+                .build();
+        return chain.proceed(request);
     }
 }
