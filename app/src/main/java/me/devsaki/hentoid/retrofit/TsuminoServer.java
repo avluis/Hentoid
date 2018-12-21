@@ -22,7 +22,7 @@ public class TsuminoServer {
 
     public interface Api {
 
-        @GET("/Book/Info/{id1}/{id2}")
-        Single<TsuminoContent> getGalleryMetadata(@Path("id1") String contentId1, @Path("id2") String contentId2);
+        @GET("/Book/Info/{id1}")
+        Single<TsuminoContent> getGalleryMetadata(@Path("id1") String contentId1);
     }
 }

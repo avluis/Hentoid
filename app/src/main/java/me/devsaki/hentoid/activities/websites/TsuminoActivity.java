@@ -68,7 +68,9 @@ public class TsuminoActivity extends BaseWebActivity {
         @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
-            compositeDisposable.add(TsuminoServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 2], galleryUrlParts[galleryUrlParts.length - 1])
+            // Tsumino books can be called through two different URLs : "book ID" and "book ID/book-name"
+            // -> need to get the book ID only
+            compositeDisposable.add(TsuminoServer.API.getGalleryMetadata(galleryUrlParts[5])
                     .subscribe(
                             metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                 Timber.e(throwable, "Error parsing content.");

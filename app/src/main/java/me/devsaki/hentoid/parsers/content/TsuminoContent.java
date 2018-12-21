@@ -15,14 +15,14 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
 
 public class TsuminoContent {
-    @Selector(value = "div.book-page-cover a", attr = "href")
+    @Selector(value = "div.book-page-cover a", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = "img.book-page-image", attr = "src")
+    @Selector(value = "img.book-page-image", attr = "src", defValue = "")
     private String coverUrl;
     @Selector("div#Title")
     private String title;
-    @Selector("div#Pages")
-    private Integer pages;
+    @Selector(value="div#Pages", defValue = "")
+    private String pages;
     @Selector(value = "div#Artist a")
     private List<Element> artists;
     @Selector(value = "div#Group a")
@@ -44,7 +44,7 @@ public class TsuminoContent {
         result.setUrl(galleryUrl.replace("/Read/View", ""));
         result.setCoverImageUrl(TSUMINO.getUrl() + coverUrl);
         result.setTitle(title);
-        result.setQtyPages(pages);
+        result.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
 
         AttributeMap attributes = new AttributeMap();
         result.setAttributes(attributes);
