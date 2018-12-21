@@ -19,7 +19,7 @@ public class PandaContent {
     private String title;
     @Selector(value = "select#pageMenu option", attr = "value")
     private List<String> pages;
-    @Selector("div#mangainfo div h2")
+    @Selector("div#mangainfo div h2 a")
     private Element series;
 
 
