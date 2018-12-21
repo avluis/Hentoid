@@ -27,11 +27,9 @@ public class HitomiParser extends BaseParser {
     protected List<String> parseImages(Content content) throws Exception {
         List<String> result = new ArrayList<>();
 
-        String url = content.getReaderUrl();
-        String html = HttpClientHelper.call(url);
-        Timber.d("Parsing: %s", url);
-        if (html != null) {
-            Document doc = Jsoup.parse(html);
+        Document doc = getOnlineDocument(content.getReaderUrl());
+        if (doc != null) {
+            Timber.d("Parsing: %s", content.getReaderUrl());
             Elements imgElements = doc.select(".img-url");
             // New Hitomi image URLs starting from june 2018
             //  If book ID is even, starts with 'aa'; else starts with 'ba'

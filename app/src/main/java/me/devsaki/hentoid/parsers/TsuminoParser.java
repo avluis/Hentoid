@@ -40,9 +40,8 @@ public class TsuminoParser extends BaseParser {
 
     @Override
     protected List<String> parseImages(Content content) throws Exception {
-        String response = HttpClientHelper.call(content.getReaderUrl());
-        if (null != response) {
-            Document doc = Jsoup.parse(response);
+        Document doc = getOnlineDocument(content.getReaderUrl());
+        if (null != doc) {
             Elements contents = doc.select("#image-container");
             String dataUrl, dataOpt, dataObj;
 

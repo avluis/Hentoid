@@ -3,7 +3,6 @@ package me.devsaki.hentoid.parsers;
 import com.google.gson.Gson;
 import com.google.gson.annotations.Expose;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.util.ArrayList;
@@ -38,13 +37,15 @@ public class PururinParser extends BaseParser {
         // 2- Generate image URL from  imagePath constant, gallery ID, page number and extension
 
         // 1- Get image extension from gallery data (JSON on HTML body)
-        Document doc = Jsoup.connect(url).get();
-        String json = doc.select("gallery-read").attr(":gallery");
-        PururinInfo info = new Gson().fromJson(json, PururinInfo.class);
+        Document doc = getOnlineDocument(url);
+        if (doc != null) {
+            String json = doc.select("gallery-read").attr(":gallery");
+            PururinInfo info = new Gson().fromJson(json, PururinInfo.class);
 
-        // 2- Get imagePath from app.js => it is constant anyway, and app.js is 3 MB long => put it there as a const
-        for (int i = 0; i < content.getQtyPages(); i++) {
-            result.add(protocol + IMAGE_PATH + info.id + "/" + (i + 1) + "." + info.image_extension);
+            // 2- Get imagePath from app.js => it is constant anyway, and app.js is 3 MB long => put it there as a const
+            for (int i = 0; i < content.getQtyPages(); i++) {
+                result.add(protocol + IMAGE_PATH + info.id + "/" + (i + 1) + "." + info.image_extension);
+            }
         }
 
         return result;

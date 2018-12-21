@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.parsers;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.io.IOException;
@@ -15,18 +14,20 @@ public class ASMHentaiParser extends BaseParser {
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
-        Document doc = Jsoup.connect(content.getReaderUrl()).get();
-        String imgUrl = "http:" +
-                doc.select("div.full_gallery")
-                        .select("a")
-                        .select("img")
-                        .attr("src");
+        Document doc = getOnlineDocument(content.getReaderUrl());
+        if (doc != null) {
+            String imgUrl = "http:" +
+                    doc.select("div.full_gallery")
+                            .select("a")
+                            .select("img")
+                            .attr("src");
 
-        String ext = imgUrl.substring(imgUrl.lastIndexOf('.'));
+            String ext = imgUrl.substring(imgUrl.lastIndexOf('.'));
 
-        for (int i = 0; i < content.getQtyPages(); i++) {
-            String img = imgUrl.substring(0, imgUrl.lastIndexOf('/') + 1) + (i + 1) + ext;
-            result.add(img);
+            for (int i = 0; i < content.getQtyPages(); i++) {
+                String img = imgUrl.substring(0, imgUrl.lastIndexOf('/') + 1) + (i + 1) + ext;
+                result.add(img);
+            }
         }
 
         return result;
