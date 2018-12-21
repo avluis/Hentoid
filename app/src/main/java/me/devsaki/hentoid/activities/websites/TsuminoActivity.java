@@ -1,21 +1,14 @@
 package me.devsaki.hentoid.activities.websites;
 
-import android.annotation.TargetApi;
 import android.graphics.Bitmap;
-import android.os.Build;
-import android.support.annotation.NonNull;
 import android.view.View;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.views.ObservableWebView;
-
-import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
+import me.devsaki.hentoid.retrofit.TsuminoServer;
+import timber.log.Timber;
 
 /**
  * Created by Shiro on 1/22/2016.
@@ -24,7 +17,7 @@ import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 public class TsuminoActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "tsumino.com";
-//    private static final String GALLERY_FILTER = "";  Multiple gallery filters ?
+    private static final String GALLERY_FILTER = "//www.tsumino.com/Book/Info/";
 
     private boolean downloadFabPressed = false;
     private int historyIndex;
@@ -47,7 +40,7 @@ public class TsuminoActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new TsuminoWebViewClient(getStartSite(), this);
+        CustomWebViewClient client = new TsuminoWebViewClient(GALLERY_FILTER, getStartSite(), this);
         client.restrictTo(DOMAIN_FILTER);
         addContentBlockFilter(blockedContent);
 
@@ -59,7 +52,7 @@ public class TsuminoActivity extends BaseWebActivity {
         downloadFabPressed = true;
         historyIndex = webView.copyBackForwardList().getCurrentIndex();
 
-        // TODO - just what is this hack ?!
+        // Hack to reach the first gallery page to initiate download, and go back to the book page
         String newUrl = webView.getUrl().replace("Book/Info", "Read/View");
         final int index = ordinalIndexOf(newUrl);
         if (index > 0) newUrl = newUrl.substring(0, index);
@@ -68,19 +61,27 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private class TsuminoWebViewClient extends CustomWebViewClient {
 
-        TsuminoWebViewClient(Site startSite, ResultListener<Content> listener) {
-            super(startSite, listener);
+        TsuminoWebViewClient(String galleryFilter, Site startSite, ResultListener<Content> listener) {
+            super(galleryFilter, startSite, listener);
         }
 
         @Override
         protected void onGalleryFound(String url) {
-            Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
+            String[] galleryUrlParts = url.split("/");
+            compositeDisposable.add(TsuminoServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 2], galleryUrlParts[galleryUrlParts.length - 1])
+                    .subscribe(
+                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                                Timber.e(throwable, "Error parsing content.");
+                                listener.onResultFailed("");
+                            })
+            );
         }
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
 
+            // Hack to reach the first gallery page to initiate download, and go back to the book page
             if (downloadFabPressed &&
                     !(url.contains("//www.tsumino.com/Read/View/") ||
                             url.contains("//www.tsumino.com/Read/Auth/") ||
@@ -93,9 +94,8 @@ public class TsuminoActivity extends BaseWebActivity {
         public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
 
-            if (url.contains("//www.tsumino.com/Book/Info/")) {
-                executeAsyncTask(new HtmlLoader(startSite, listener), url);
-            } else if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
+            // Hack to reach the first gallery page to initiate download, and go back to the book page
+            if (downloadFabPressed && url.contains("//www.tsumino.com/Read/View/")) {
                 downloadFabPressed = false;
                 int currentIndex = webView.copyBackForwardList().getCurrentIndex();
                 webView.goBackOrForward(historyIndex - currentIndex);

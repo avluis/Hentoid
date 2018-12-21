@@ -477,12 +477,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             this.listener = listener;
         }
 
-        CustomWebViewClient(Site startSite, ResultListener<Content> listener) {
-            this.filteredUrl = "";
-            this.startSite = startSite;
-            this.listener = listener;
-        }
-
         void destroy() {
             Timber.d("WebClient destroyed");
             compositeDisposable.clear();
@@ -566,37 +560,5 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             }
 
         return false;
-    }
-
-
-    protected static class HtmlLoader extends AsyncTask<String, Integer, Content> {
-
-        private final Site startSite;
-        private final ResultListener<Content> listener;
-
-        // only retain a weak reference to the activity
-        HtmlLoader(Site startSite, ResultListener<Content> listener) {
-            this.startSite = startSite;
-            this.listener = listener;
-        }
-
-
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-
-            try {
-                ContentParser parser = ContentParserFactory.getInstance().getParser(startSite);
-                listener.onResultReady(parser.parseContent(url), 1);
-            } catch (IOException e) { // Most I/O errors being timeouts...
-                Timber.e(e, "I/O Error while parsing content @ %s", url);
-                listener.onResultFailed("");
-            } catch (Exception e) {
-                Timber.e(e, "Error while parsing content @ %s", url);
-                listener.onResultFailed("");
-            }
-
-            return null;
-        }
     }
 }

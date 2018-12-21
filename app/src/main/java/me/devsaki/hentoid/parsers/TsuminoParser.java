@@ -21,14 +21,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import timber.log.Timber;
 
@@ -42,82 +40,29 @@ public class TsuminoParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-        Content result = null;
-
-        Elements content = doc.select("div.book-line");
-
-        if (content.size() > 0) {
-            result = new Content();
-
-            String url = doc
-                    .select("div.book-page-cover a")
-                    .attr("href")
-                    .replace("/Read/View", "");
-            result.setUrl(url);
-
-            String coverUrl = TSUMINO.getUrl()
-                    + doc.select("img.book-page-image").attr("src");
-            result.setCoverImageUrl(coverUrl);
-
-            String title = content
-                    .select(":has(div.book-info:containsOwn(Title))")
-                    .select("div.book-data")
-                    .text();
-            result.setTitle(title);
-
-            int pages =
-                    Integer.parseInt(content
-                            .select(":has(div.book-info:containsOwn(Pages))")
-                            .select("div.book-data")
-                            .text()
-                    );
-
-            AttributeMap attributes = new AttributeMap();
-            result.setAttributes(attributes);
-
-            Elements artistElements = content
-                    .select(":has(div.book-info:containsOwn(Artist))")
-                    .select("a.book-tag");
-            parseAttributes(attributes, AttributeType.ARTIST, artistElements);
-
-            Elements tagElements = content
-                    .select(":has(div.book-info:containsOwn(Tag))")
-                    .select("a.book-tag");
-            parseAttributes(attributes, AttributeType.TAG, tagElements);
-
-            Elements seriesElements = content
-                    .select(":has(div.book-info:containsOwn(Parody))")
-                    .select("a.book-tag");
-            parseAttributes(attributes, AttributeType.SERIE, seriesElements);
-
-            Elements characterElements = content
-                    .select(":has(div.book-info:containsOwn(Character))")
-                    .select("a.book-tag");
-            parseAttributes(attributes, AttributeType.CHARACTER, characterElements);
-
-            result.setQtyPages(pages)
-                    .setSite(Site.TSUMINO);
-        }
-
-        return result;
+        return new Content(); // Useless; handled directly by TsuminoServer
     }
 
 
     @Override
     protected List<String> parseImages(Content content) throws Exception {
-        Document doc = Jsoup.parse(HttpClientHelper.call(content.getReaderUrl()));
-        Elements contents = doc.select("#image-container");
-        String dataUrl, dataOpt, dataObj;
+        String response = HttpClientHelper.call(content.getReaderUrl());
+        if (null != response) {
+            Document doc = Jsoup.parse(response);
+            Elements contents = doc.select("#image-container");
+            String dataUrl, dataOpt, dataObj;
 
-        dataUrl = contents.attr("data-url");
-        dataOpt = contents.attr("data-opt");
-        dataObj = contents.attr("data-obj");
+            dataUrl = contents.attr("data-url");
+            dataOpt = contents.attr("data-opt");
+            dataObj = contents.attr("data-obj");
 
-        Timber.d("Data URL: %s%s, Data Opt: %s, Data Obj: %s",
-                TSUMINO.getUrl(), dataUrl, dataOpt, dataObj);
+            Timber.d("Data URL: %s%s, Data Opt: %s, Data Obj: %s",
+                    TSUMINO.getUrl(), dataUrl, dataOpt, dataObj);
 
-        String request = sendPostRequest(dataUrl, dataOpt);
-        return buildImageUrls(dataObj, request);
+            String request = sendPostRequest(dataUrl, dataOpt);
+            return buildImageUrls(dataObj, request);
+        }
+        return Collections.emptyList();
     }
 
     private static String sendPostRequest(String dataUrl, String dataOpt) {
