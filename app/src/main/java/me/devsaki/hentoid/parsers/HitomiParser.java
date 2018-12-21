@@ -24,12 +24,6 @@ public class HitomiParser extends BaseParser {
     private final static char HOSTNAME_PREFIX_BASE = 97;
 
     @Override
-    protected Content parseContent(Document doc) {
-        return new Content(); // Useless; handled directly by HitomiServer
-    }
-
-
-    @Override
     protected List<String> parseImages(Content content) throws Exception {
         List<String> result = new ArrayList<>();
 

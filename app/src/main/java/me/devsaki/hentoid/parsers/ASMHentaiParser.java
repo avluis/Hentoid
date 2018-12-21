@@ -12,11 +12,6 @@ import me.devsaki.hentoid.database.domains.Content;
 public class ASMHentaiParser extends BaseParser {
 
     @Override
-    protected Content parseContent(Document doc) {
-        return new Content(); // Useless; handled directly by ASMHentaiServer
-    }
-
-    @Override
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 

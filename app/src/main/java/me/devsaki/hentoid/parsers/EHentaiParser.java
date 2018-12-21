@@ -14,11 +14,6 @@ import me.devsaki.hentoid.database.domains.Content;
 public class EHentaiParser extends BaseParser {
 
     @Override
-    protected Content parseContent(Document doc) {
-        return new Content(); // Useless; handled directly by EHentaiServer
-    }
-
-    @Override
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
@@ -32,7 +27,7 @@ public class EHentaiParser extends BaseParser {
 
         // 1- Detect the number of pages of the gallery
         Element e;
-        Document doc = Jsoup.connect(content.getGalleryUrl()+"/?nw=always").get(); // nw=always avoids the Offensive Content popup
+        Document doc = Jsoup.connect(content.getGalleryUrl() + "/?nw=always").get(); // nw=always avoids the Offensive Content popup
         Elements elements = doc.select("table.ptt");
         if (null == elements || 0 == elements.size()) return result;
 
@@ -53,12 +48,10 @@ public class EHentaiParser extends BaseParser {
         }
 
         // 3- Open all pages and grab the URL of the displayed image
-        for (String s : pageUrls)
-        {
+        for (String s : pageUrls) {
             doc = Jsoup.connect(s).get();
             elements = doc.select("img#img");
-            if (elements != null && elements.size() > 0)
-            {
+            if (elements != null && elements.size() > 0) {
                 e = elements.first();
                 result.add(e.attr("src"));
             }
@@ -70,8 +63,7 @@ public class EHentaiParser extends BaseParser {
     private void fetchPageUrls(Document doc, List<String> pageUrls) {
         Elements imageLinks = doc.getElementsByClass("gdtm");
 
-        for (Element e : imageLinks)
-        {
+        for (Element e : imageLinks) {
             e = e.select("div").first().select("a").first();
             pageUrls.add(e.attr("href"));
         }

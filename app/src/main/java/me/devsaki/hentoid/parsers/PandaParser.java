@@ -16,11 +16,6 @@ import me.devsaki.hentoid.database.domains.Content;
 public class PandaParser extends BaseParser {
 
     @Override
-    protected Content parseContent(Document doc) {
-        return new Content(); // Useless; handled directly by PandaServer
-    }
-
-    @Override
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 

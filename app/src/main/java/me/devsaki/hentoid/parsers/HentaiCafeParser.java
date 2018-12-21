@@ -25,11 +25,6 @@ import timber.log.Timber;
 public class HentaiCafeParser extends BaseParser {
 
     @Override
-    protected Content parseContent(Document doc) {
-        return new Content(); // Useless; handled directly by HentaiCafeServer
-    }
-
-    @Override
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 

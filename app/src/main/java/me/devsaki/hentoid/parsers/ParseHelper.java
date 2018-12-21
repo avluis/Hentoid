@@ -9,10 +9,6 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.util.AttributeMap;
 
 public class ParseHelper {
-    public static void parseAttributes(AttributeMap map, AttributeType type, List<Element> elements) {
-        parseAttributes(map, type, elements, false);
-    }
-
     /**
      * Remove counters from given string (e.g. "Futanari (2660)" => "Futanari")
      *

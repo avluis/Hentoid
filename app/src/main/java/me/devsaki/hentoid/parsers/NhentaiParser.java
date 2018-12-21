@@ -17,10 +17,6 @@ import timber.log.Timber;
  */
 public class NhentaiParser implements ContentParser {
 
-    public Content parseContent(String json) {
-        return new Content(); // Useless; handled directly by NhentaiServer
-    }
-
     public List<String> parseImageList(Content content) {
         String url = content.getGalleryUrl();
         url = url.replace("/g", "/api/gallery");

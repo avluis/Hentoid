@@ -17,8 +17,13 @@ import okhttp3.Request;
 public class OkHttpClientSingleton {
 
     private static volatile SparseArray<OkHttpClient> instance = new SparseArray<>();
+    private static int DEFAULT_TIMEOUT = 20 * 1000;
 
     private OkHttpClientSingleton() {
+    }
+
+    public static OkHttpClient getInstance() {
+        return getInstance(DEFAULT_TIMEOUT);
     }
 
     public static OkHttpClient getInstance(int timeoutMs) {

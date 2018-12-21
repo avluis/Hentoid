@@ -27,12 +27,6 @@ public class PururinParser extends BaseParser {
     }
 
     @Override
-    protected Content parseContent(Document doc) {
-        return new Content(); // Useless; handled directly by PururinServer
-    }
-
-
-    @Override
     protected List<String> parseImages(Content content) throws Exception {
         List<String> result = new ArrayList<>();
         String url = content.getReaderUrl();

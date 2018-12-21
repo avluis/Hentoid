@@ -39,12 +39,6 @@ import static me.devsaki.hentoid.enums.Site.TSUMINO;
 public class TsuminoParser extends BaseParser {
 
     @Override
-    protected Content parseContent(Document doc) {
-        return new Content(); // Useless; handled directly by TsuminoServer
-    }
-
-
-    @Override
     protected List<String> parseImages(Content content) throws Exception {
         String response = HttpClientHelper.call(content.getReaderUrl());
         if (null != response) {
