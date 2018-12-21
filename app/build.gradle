@@ -96,7 +96,7 @@ dependencies {
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.2'
     testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.2'
     // Specific UI layout for tag mosaic : https://github.com/google/flexbox-layout
-    implementation 'com.google.android:flexbox:1.1.0'
+    implementation 'com.google.android:flexbox:1.0.0' // <-- don't ever update that unless the app has been migrated to AndroidX
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
     // ScrollView with MaxHeight (tag display in advanced search UI)
