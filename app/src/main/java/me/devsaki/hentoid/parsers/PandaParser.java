@@ -12,43 +12,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.AttributeMap;
 
 public class PandaParser extends BaseParser {
 
     @Override
     protected Content parseContent(Document doc) {
-        Content result = new Content();
-
-        result.setUrl(doc.baseUri().substring(doc.baseUri().indexOf('/', 9)));
-
-        String coverUrl = doc.select("div#imgholder")
-                .select("a")
-                .select("img")
-                .attr("src");
-        result.setCoverImageUrl(coverUrl);
-
-        String title = doc.select("div#mangainfo")
-                .select("div")
-                .select("h1")
-                .text();
-        result.setTitle(title);
-
-        String lastOptionUrl = doc.select("div#selectpage")
-                .select("select")
-                .select("option")
-                .last()
-                .attr("value");
-        int nbPages = Integer.parseInt(lastOptionUrl.substring(lastOptionUrl.lastIndexOf('/') + 1));
-        result.setQtyPages(nbPages);
-
-        AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
-
-        result.setSite(Site.PANDA);
-
-        return result;
+        return new Content(); // Useless; handled directly by PandaServer
     }
 
     @Override

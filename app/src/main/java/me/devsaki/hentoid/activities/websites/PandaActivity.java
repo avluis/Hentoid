@@ -3,11 +3,8 @@ package me.devsaki.hentoid.activities.websites;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.views.ObservableWebView;
+import me.devsaki.hentoid.retrofit.PandaServer;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 
 /**
  * Created by Robb_w on 2018/04
@@ -38,7 +35,14 @@ public class PandaActivity extends BaseWebActivity {
 
         @Override
         protected void onGalleryFound(String url) {
-            Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
+            String[] galleryUrlParts = url.split("/");
+            compositeDisposable.add(PandaServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 2], galleryUrlParts[galleryUrlParts.length - 1])
+                    .subscribe(
+                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                                Timber.e(throwable, "Error parsing content.");
+                                listener.onResultFailed("");
+                            })
+            );
         }
     }
 }
