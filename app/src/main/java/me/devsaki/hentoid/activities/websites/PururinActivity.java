@@ -3,7 +3,8 @@ package me.devsaki.hentoid.activities.websites;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.retrofit.PururinServer;
+import timber.log.Timber;
 
 public class PururinActivity extends BaseWebActivity {
 
@@ -29,7 +30,14 @@ public class PururinActivity extends BaseWebActivity {
 
         @Override
         protected void onGalleryFound(String url) {
-            Helper.executeAsyncTask(new HtmlLoader(startSite, listener), url);
+            String[] galleryUrlParts = url.split("/");
+            compositeDisposable.add(PururinServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 2], galleryUrlParts[galleryUrlParts.length - 1])
+                    .subscribe(
+                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                                Timber.e(throwable, "Error parsing content.");
+                                listener.onResultFailed("");
+                            })
+            );
         }
     }
 }
