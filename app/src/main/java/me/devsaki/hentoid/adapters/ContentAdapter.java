@@ -24,6 +24,8 @@ import com.annimon.stream.function.IntConsumer;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -45,6 +47,8 @@ import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 /**
@@ -346,7 +350,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     } else {
                         holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
                     }
-                    favToggleItem(content);
+                    toggleFavourite(content);
                 });
 
                 // Error icon
@@ -544,12 +548,23 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .create().show();
     }
 
-    private void favToggleItem(Content item) {
+    private void toggleFavourite(Content item) {
         item.setFavourite(!item.isFavourite());
 
         // Persist in it DB
         final HentoidDB db = HentoidDB.getInstance(context);
         db.updateContentFavourite(item);
+
+        // Persist in it JSON
+        String rootFolderName = Preferences.getRootFolderName();
+        File dir = new File(rootFolderName, item.getStorageFolder());
+
+        try {
+            JsonHelper.saveJson(item, dir);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to " + dir.getAbsolutePath());
+        }
+
     }
 
     /**

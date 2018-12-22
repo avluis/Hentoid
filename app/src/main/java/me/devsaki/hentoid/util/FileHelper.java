@@ -209,7 +209,7 @@ public class FileHelper {
 
     /**
      * Cleans a directory without deleting it.
-     *
+     * <p>
      * Custom substitute for commons.io.FileUtils.cleanDirectory that supports devices without File.toPath
      *
      * @param directory directory to clean
@@ -307,6 +307,7 @@ public class FileHelper {
 
     /**
      * Create the download directory of the given content
+     *
      * @param context Context
      * @param content Content for which the directory to create
      * @return Created directory
@@ -334,11 +335,11 @@ public class FileHelper {
 
     /**
      * Format the download directory path of the given content according to current user preferences
+     *
      * @param content Content to get the path from
      * @return Canonical download directory path of the given content, according to current user preferences
      */
-    public static String formatDirPath(Content content)
-    {
+    public static String formatDirPath(Content content) {
         String siteFolder = content.getSite().getFolder();
         String result = siteFolder;
         int folderNamingPreference = Preferences.getFolderNameFormat();
@@ -355,7 +356,8 @@ public class FileHelper {
         // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
         int truncLength = Preferences.getFolderTruncationNbChars();
         if (truncLength > 0) {
-            if (result.length() - siteFolder.length() > truncLength) result = result.substring(0, siteFolder.length() + truncLength - 1);
+            if (result.length() - siteFolder.length() > truncLength)
+                result = result.substring(0, siteFolder.length() + truncLength - 1);
         }
 
         return result;
@@ -415,6 +417,7 @@ public class FileHelper {
 
     /**
      * Open the given content using the viewer defined in user preferences
+     *
      * @param context Context
      * @param content Content to be opened
      */
@@ -427,6 +430,12 @@ public class FileHelper {
 
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
+
+        try {
+            JsonHelper.saveJson(content, dir);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to " + dir.getAbsolutePath());
+        }
 
         Timber.d("Opening: " + content.getTitle() + " from: " + dir);
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
@@ -467,8 +476,9 @@ public class FileHelper {
 
     /**
      * Open the given file using the device's app(s) of choice
+     *
      * @param context Context
-     * @param aFile File to be opened
+     * @param aFile   File to be opened
      */
     public static void openFile(Context context, File aFile) {
         Intent myIntent = new Intent(Intent.ACTION_VIEW);
@@ -481,7 +491,8 @@ public class FileHelper {
 
     /**
      * Open PerfectViewer telling it to display the given image
-     * @param context Context
+     *
+     * @param context    Context
      * @param firstImage Image to be displayed
      */
     private static void openPerfectViewer(Context context, File firstImage) {
@@ -499,6 +510,7 @@ public class FileHelper {
 
     /**
      * Returns the extension of the given filename
+     *
      * @param fileName Filename
      * @return Extension of the given filename
      */
@@ -550,7 +562,8 @@ public class FileHelper {
 
     /**
      * Save the given binary content in the given file
-     * @param file File to save content on
+     *
+     * @param file          File to save content on
      * @param binaryContent Content to save
      * @throws IOException If any IOException occurs
      */
@@ -578,7 +591,7 @@ public class FileHelper {
      * <li>A directory to be deleted does not have to be empty.</li>
      * <li>No exceptions are thrown when a file or directory cannot be deleted.</li>
      * </ul>
-     *
+     * <p>
      * Custom substitute for commons.io.FileUtils.deleteQuietly that works with devices that doesn't support File.toPath
      *
      * @param file file or directory to delete, can be {@code null}
@@ -603,8 +616,7 @@ public class FileHelper {
         }
     }
 
-    public static boolean renameDirectory(File srcDir, File destDir)
-    {
+    public static boolean renameDirectory(File srcDir, File destDir) {
         try {
             FileUtils.moveDirectory(srcDir, destDir);
             return true;
