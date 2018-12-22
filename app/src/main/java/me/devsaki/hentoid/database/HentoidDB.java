@@ -854,26 +854,24 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    List<Attribute> selectAvailableAttributes(int type, List<Attribute> attrs, boolean filterFavourites) {
+    List<Attribute> selectAvailableAttributes(int type, List<Attribute> attributes, boolean filterFavourites) {
         ArrayList<Attribute> result = new ArrayList<>();
 
         synchronized (locker) {
             Timber.d("selectAvailableAttributes");
-            SQLiteDatabase db = null;
-
-            Cursor cursorAttributes = null;
-
             String sql = AttributeTable.SELECT_ALL_BY_TYPE;
 
-            if (attrs != null) {
+            if (attributes != null) {
                 // Detect the presence of sources within given attributes
                 List<Integer> sources = new ArrayList<>();
-                for (Attribute a : attrs)
+                List<Integer> attrs = new ArrayList<>();
+                for (Attribute a : attributes)
                     if (a.getType().equals(AttributeType.SOURCE)) sources.add(a.getId());
+                    else attrs.add(a.getId());
 
                 if (sources.size() > 0) {
                     sql += AttributeTable.SELECT_ALL_SOURCE_FILTER;
-                    sql = sql.replace("%1", Helper.buildListAsString(sources, "'"));
+                    sql = sql.replace("%1", Helper.buildListAsString(sources, ""));
                 }
 
                 if (attrs.size() > 0) {
@@ -889,9 +887,8 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             Timber.v(sql);
 
-            try {
-                db = getReadableDatabase();
-                cursorAttributes = db.rawQuery(sql, new String[]{type + ""});
+            SQLiteDatabase db = getReadableDatabase();
+            try (Cursor cursorAttributes = db.rawQuery(sql, new String[]{type + ""})) {
 
                 // looping through all rows and adding to list
                 if (cursorAttributes.moveToFirst()) {
@@ -901,9 +898,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                     } while (cursorAttributes.moveToNext());
                 }
             } finally {
-                if (cursorAttributes != null) {
-                    cursorAttributes.close();
-                }
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }
