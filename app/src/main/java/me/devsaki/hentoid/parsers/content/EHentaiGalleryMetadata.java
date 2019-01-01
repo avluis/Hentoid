@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.parsers.EHentai;
+package me.devsaki.hentoid.parsers.content;
 
 import com.google.gson.annotations.Expose;
 

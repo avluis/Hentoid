@@ -1,80 +1,58 @@
 package me.devsaki.hentoid.activities.websites;
 
 import android.annotation.TargetApi;
-import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
-import java.lang.ref.WeakReference;
-
-import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.ContentParser;
-import me.devsaki.hentoid.parsers.ContentParserFactory;
-import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.HttpClientHelper;
-import me.devsaki.hentoid.views.ObservableWebView;
+import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.retrofit.NhentaiServer;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.Helper.TYPE;
-import static me.devsaki.hentoid.util.Helper.executeAsyncTask;
 import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 
 /**
  * Created by Shiro on 1/20/2016.
  * Implements nhentai source
- *
- * NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
  */
 public class NhentaiActivity extends BaseWebActivity {
+
+    private static final String DOMAIN_FILTER = "nhentai.net";
+    private static final String GALLERY_FILTER = "nhentai.net/g/";
 
     Site getStartSite() {
         return Site.NHENTAI;
     }
 
+
     @Override
-    void setWebView(ObservableWebView webView) {
-        NhentaiWebViewClient client = new NhentaiWebViewClient(this);
-        client.restrictTo("nhentai.net");
-
-        webView.setWebViewClient(client);
-        super.setWebView(webView);
-    }
-
-    private static String getGalleryId(String url)
-    {
-        String[] parts = url.split("/");
-        boolean gFound = false;
-        for (String s : parts)
-        {
-            if (gFound)
-            {
-                return s;
-            }
-            if (s.equals("g")) gFound = true;
-        }
-        return "";
+    protected CustomWebViewClient getWebClient() {
+        CustomWebViewClient client = new NhentaiWebViewClient(GALLERY_FILTER, getStartSite(), this);
+        client.restrictTo(DOMAIN_FILTER);
+        return client;
     }
 
     private class NhentaiWebViewClient extends CustomWebViewClient {
-        NhentaiWebViewClient(BaseWebActivity activity) {
-            super(activity);
+
+        NhentaiWebViewClient(String galleryUrl, Site startSite, ResultListener<Content> listener) {
+            super(galleryUrl, startSite, listener);
         }
 
         @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            super.onPageStarted(view, url, favicon);
-            BaseWebActivity activity = activityReference.get();
-
-            if (url.contains("nhentai.net/g/") && activity != null) {
-                executeAsyncTask(new JsonLoader(activity), "https://nhentai.net/api/gallery/"+getGalleryId(url));
-            }
+        protected void onGalleryFound(String url) {
+            String[] galleryUrlParts = url.split("/");
+            compositeDisposable.add(NhentaiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+                    .subscribe(
+                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                                Timber.e(throwable, "Error parsing content.");
+                                listener.onResultFailed("");
+                            })
+            );
         }
 
         @Override
@@ -105,31 +83,6 @@ public class NhentaiActivity extends BaseWebActivity {
             } else {
                 return super.shouldInterceptRequest(view, request);
             }
-        }
-    }
-
-    private static class JsonLoader extends AsyncTask<String, Integer, Content> {
-
-        private final WeakReference<BaseWebActivity> activityReference;
-
-        // only retain a weak reference to the activity
-        JsonLoader(BaseWebActivity context) {
-            activityReference = new WeakReference<>(context);
-        }
-
-        @Override
-        protected Content doInBackground(String... params) {
-            String url = params[0];
-            BaseWebActivity activity = activityReference.get();
-            try {
-                ContentParser parser = ContentParserFactory.getInstance().getParser(Site.NHENTAI);
-                activity.processContent(parser.parseContent(HttpClientHelper.call(url)));
-            } catch (Exception e) {
-                Timber.e(e, "Error parsing content.");
-                activity.runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
-            }
-
-            return null;
         }
     }
 }

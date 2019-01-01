@@ -9,9 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.AttributeType;
-import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.HttpClientHelper;
 import timber.log.Timber;
 
@@ -27,75 +24,23 @@ public class HitomiParser extends BaseParser {
     private final static char HOSTNAME_PREFIX_BASE = 97;
 
     @Override
-    protected Content parseContent(Document doc) {
-        Content result = null;
-
-        Elements content = doc.select(".content");
-        if (content.size() > 0) {
-            result = new Content();
-
-            String coverImageUrl = "https:" + content.select(".cover img").attr("src");
-            result.setCoverImageUrl(coverImageUrl);
-            Element info = content.select(".gallery").first();
-            Element titleElement = info.select("h1").first();
-
-            // Nota Bene : Non-video entries have their title inside a hyperlink
-            // whereas video entries have it directly in the H1 tag, hence a silent crash when trying to parse videos
-            // (no problem here since they are not supported by the downloader anyway)
-            String url = titleElement.select("a").first().attr("href").replace("/reader", "");
-            result.setUrl(url);
-            String title = titleElement.text();
-            result.setTitle(title);
-
-            AttributeMap attributes = new AttributeMap();
-            result.setAttributes(attributes);
-            parseAttributes(attributes, AttributeType.ARTIST, info.select("h2").select("a"));
-
-            Elements rows = info.select("tr");
-
-            for (Element element : rows) {
-                Element td = element.select("td").first();
-                if (td.html().startsWith("Group")) {
-                    parseAttributes(attributes, AttributeType.CIRCLE, element.select("a"));
-                } else if (td.html().startsWith("Series")) {
-                    parseAttributes(attributes, AttributeType.SERIE, element.select("a"));
-                } else if (td.html().startsWith("Character")) {
-                    parseAttributes(attributes, AttributeType.CHARACTER, element.select("a"));
-                } else if (td.html().startsWith("Tags")) {
-                    parseAttributes(attributes, AttributeType.TAG, element.select("a"));
-                } else if (td.html().startsWith("Language")) {
-                    parseAttributes(attributes, AttributeType.LANGUAGE, element.select("a"));
-                } else if (td.html().startsWith("Type")) {
-                    parseAttributes(attributes, AttributeType.CATEGORY, element.select("a"));
-                }
-            }
-            int pages = doc.select(".thumbnail-container").size();
-
-            result.setQtyPages(pages)
-                    .setSite(Site.HITOMI);
-        }
-
-        return result;
-    }
-
-
-    @Override
     protected List<String> parseImages(Content content) throws Exception {
         List<String> result = new ArrayList<>();
 
-        String url = content.getReaderUrl();
-        String html = HttpClientHelper.call(url);
-        Timber.d("Parsing: %s", url);
-        Document doc = Jsoup.parse(html);
-        Elements imgElements = doc.select(".img-url");
-        // New Hitomi image URLs starting from june 2018
-        //  If book ID is even, starts with 'aa'; else starts with 'ba'
-        int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
-        if (1 == referenceId) referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
-        String imageHostname = Character.toString((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS) )) + HOSTNAME_SUFFIX;
+        Document doc = getOnlineDocument(content.getReaderUrl());
+        if (doc != null) {
+            Timber.d("Parsing: %s", content.getReaderUrl());
+            Elements imgElements = doc.select(".img-url");
+            // New Hitomi image URLs starting from june 2018
+            //  If book ID is even, starts with 'aa'; else starts with 'ba'
+            int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
+            if (1 == referenceId)
+                referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
+            String imageHostname = Character.toString((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
 
-        for (Element element : imgElements) {
-            result.add("https:" + element.text().replace("//g.", "//" + imageHostname + "."));
+            for (Element element : imgElements) {
+                result.add("https:" + element.text().replace("//g.", "//" + imageHostname + "."));
+            }
         }
 
         return result;

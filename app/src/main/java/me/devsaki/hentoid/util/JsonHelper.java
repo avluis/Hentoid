@@ -29,8 +29,6 @@ import timber.log.Timber;
  */
 public class JsonHelper {
 
-    private static final int TIMEOUT_MS = 20000;
-
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
@@ -77,7 +75,7 @@ public class JsonHelper {
                     .addHeader("Data-type", "application/json")
                     .build();
 
-            Call okHttpCall = OkHttpClientSingleton.getInstance(TIMEOUT_MS).newCall(request);
+            Call okHttpCall = OkHttpClientSingleton.getInstance().newCall(request);
 
             Response okHttpResponse = okHttpCall.execute();
 

@@ -18,7 +18,7 @@ public class ContentParserFactory {
         return (null == content) ? new DummyParser() : getParser(content.getSite());
     }
 
-    public ContentParser getParser(Site site) {
+    private ContentParser getParser(Site site) {
         switch (site) {
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
