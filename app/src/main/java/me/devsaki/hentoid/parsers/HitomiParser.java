@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.parsers;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -9,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.HttpClientHelper;
 import timber.log.Timber;
 
 /**

@@ -6,7 +6,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -27,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.HttpClientHelper;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
