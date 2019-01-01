@@ -104,16 +104,25 @@ public class SearchViewModel extends AndroidViewModel {
         }
     };
 
-    private ResultListener<SparseIntArray> countResultListener = new ResultListener<SparseIntArray>() {
+    private ResultListener<SparseIntArray> countPerTypeResultListener = new ResultListener<SparseIntArray>() {
         @Override
         public void onResultReady(SparseIntArray results, int totalContent) {
+            // Result has to take into account the number of attributes already selected (hence unavailable)
+            List<Attribute> selectedAttrs = selectedAttributes.getValue();
+            if (selectedAttrs != null) {
+                for (Attribute a : selectedAttrs) {
+                    int countForType = results.get(a.getType().getCode());
+                    if (countForType > 0)
+                        results.put(a.getType().getCode(), --countForType);
+                }
+            }
+
             attributesPerType.postValue(results);
         }
 
         @Override
         public void onResultFailed(String message) {
-            SparseIntArray result = new SparseIntArray();
-            attributesPerType.postValue(result);
+            attributesPerType.postValue(new SparseIntArray());
         }
     };
 
@@ -129,11 +138,6 @@ public class SearchViewModel extends AndroidViewModel {
         Context ctx = getApplication().getApplicationContext();
         collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseCollectionAccessor(ctx) : new MikanCollectionAccessor(ctx);
         countAttributesPerType();
-    }
-
-    @NonNull
-    public LiveData<AttributeSearchResult> getAvailableAttributesData() {
-        return availableAttributes;
     }
 
     @NonNull
@@ -216,7 +220,7 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     private void countAttributesPerType() {
-        collectionAccessor.countAttributesPerType(selectedAttributes.getValue(), countResultListener);
+        collectionAccessor.countAttributesPerType(selectedAttributes.getValue(), countPerTypeResultListener);
     }
 
     private void getAvailableAttributes() {
