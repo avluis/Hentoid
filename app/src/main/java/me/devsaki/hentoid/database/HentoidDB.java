@@ -648,26 +648,21 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         synchronized (locker) {
             Timber.d("selectContentByExternalRef");
-            SQLiteDatabase db = null;
-
-            Cursor cursorContent = null;
-
             String sql = ContentTable.SELECT_BY_EXTERNAL_REF;
 
             sql = sql.replace("%1", Helper.buildListAsString(uniqueIds, "'"));
 
             Timber.v(sql);
 
-            try {
-                db = getReadableDatabase();
-                cursorContent = db.rawQuery(sql, new String[]{
-                        site.getCode() + "",
-                        StatusContent.DOWNLOADED.getCode() + "",
-                        StatusContent.ERROR.getCode() + "",
-                        StatusContent.MIGRATED.getCode() + "",
-                        StatusContent.DOWNLOADING.getCode() + "",
-                        StatusContent.PAUSED.getCode() + ""
-                });
+            SQLiteDatabase db = getReadableDatabase();
+            try (Cursor cursorContent = db.rawQuery(sql, new String[]{
+                    site.getCode() + "",
+                    StatusContent.DOWNLOADED.getCode() + "",
+                    StatusContent.ERROR.getCode() + "",
+                    StatusContent.MIGRATED.getCode() + "",
+                    StatusContent.DOWNLOADING.getCode() + "",
+                    StatusContent.PAUSED.getCode() + ""
+            })) {
 
                 // looping through all rows and adding to list
                 if (cursorContent.moveToFirst()) {
@@ -677,9 +672,38 @@ public class HentoidDB extends SQLiteOpenHelper {
                     } while (cursorContent.moveToNext());
                 }
             } finally {
-                if (cursorContent != null) {
-                    cursorContent.close();
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
                 }
+            }
+        }
+
+        return result;
+    }
+
+    public List<Content> selectContentByStatus(StatusContent status) {
+        List<Content> result = new ArrayList<>();
+
+        synchronized (locker) {
+            Timber.d("selectContentByStatus");
+
+            String sql = ContentTable.SELECT_BY_STATUS;
+
+            Timber.v(sql);
+
+            SQLiteDatabase db = getReadableDatabase();
+            try (Cursor cursorContent = db.rawQuery(sql, new String[]{
+                    status.getCode() + ""
+            })) {
+
+                // looping through all rows and adding to list
+                if (cursorContent.moveToFirst()) {
+
+                    do {
+                        result.add(populateContent(cursorContent, db, false));
+                    } while (cursorContent.moveToNext());
+                }
+            } finally {
                 if (db != null && db.isOpen()) {
                     db.close(); // Closing database connection
                 }

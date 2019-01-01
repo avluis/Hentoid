@@ -63,8 +63,7 @@ public class HentoidApp extends Application {
         // see https://github.com/square/okhttp/issues/2372 for more information
         try {
             ProviderInstaller.installIfNeeded(getApplicationContext());
-        } catch (Exception e)
-        {
+        } catch (Exception e) {
             Timber.e(e, "Google Play ProviderInstaller exception");
         }
 
@@ -97,10 +96,7 @@ public class HentoidApp extends Application {
         StrictMode.setThreadPolicy(policy);
 
         // DB housekeeping
-        HentoidDB db = HentoidDB.getInstance(this);
-        Timber.d("Content item(s) count: %s", db.countContentEntries());
-        db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-        UpgradeTo(BuildConfig.VERSION_CODE, db);
+        performDatabaseHousekeeping();
 
         // Init notifications
         UpdateNotificationChannel.init(this);
@@ -114,6 +110,24 @@ public class HentoidApp extends Application {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1) {
             ShortcutHelper.buildShortcuts(this);
         }
+    }
+
+    /**
+     * Clean up and upgrade database
+     */
+    private void performDatabaseHousekeeping() {
+        HentoidDB db = HentoidDB.getInstance(this);
+        Timber.d("Content item(s) count: %s", db.countContentEntries());
+
+        // Set items that were being downloaded in previous session as paused
+        db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
+
+        // Clear temporary books created from browsing a book page without downloading it
+        List<Content> obsoleteTempContent = db.selectContentByStatus(StatusContent.SAVED);
+        for (Content c : obsoleteTempContent) db.deleteContent(c);
+
+        // Perform technical data updates
+        UpgradeTo(BuildConfig.VERSION_CODE, db);
     }
 
     /**

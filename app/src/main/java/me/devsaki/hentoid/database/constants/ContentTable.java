@@ -97,6 +97,8 @@ public abstract class ContentTable {
 
     public static final String SELECT_SOURCES = "SELECT " + SOURCE_COLUMN + ", COUNT(*) FROM " + TABLE_NAME + " WHERE " + STATUS_COLUMN + " IN (?,?,?) GROUP BY 1";
 
+    public static final String SELECT_BY_STATUS = "SELECT * FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " = ?";
+
 
     // SEARCH QUERIES "TOOLBOX"
 
