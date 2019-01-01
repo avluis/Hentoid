@@ -16,7 +16,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ResultListener;
 
-public class DatabaseAccessor implements CollectionAccessor {
+public class DatabaseCollectionAccessor implements CollectionAccessor {
 
     private static final String contentSynch = "";
     private static final String attrSynch = "";
@@ -31,7 +31,7 @@ public class DatabaseAccessor implements CollectionAccessor {
     }
 
 
-    public DatabaseAccessor(Context ctx)
+    public DatabaseCollectionAccessor(Context ctx)
     {
         db = HentoidDB.getInstance(ctx);
     }
@@ -89,6 +89,18 @@ public class DatabaseAccessor implements CollectionAccessor {
     public void getAttributeMasterData(List<AttributeType> types, String filter, ResultListener<List<Attribute>> listener) {
         synchronized (attrSynch) {
             new AttributesFetchTask(db, listener, types, filter).execute();
+        }
+    }
+
+    @Override
+    public boolean supportsAvailabilityFilter() {
+        return true;
+    }
+
+    @Override
+    public void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
+        synchronized (attrSynch) {
+            new AttributesFetchTask(db, listener, types, filter, attrs, filterFavourites).execute();
         }
     }
 
@@ -226,6 +238,7 @@ public class DatabaseAccessor implements CollectionAccessor {
 
         private final int MODE_SEARCH_TEXT = 0;
         private final int MODE_SEARCH_AVAILABLE = 1;
+        private final int MODE_SEARCH_COMBINED = 2;
 
 
         AttributesFetchTask(HentoidDB db, ResultListener<List<Attribute>> listener, List<AttributeType> attrTypes, String filter) {
@@ -248,6 +261,16 @@ public class DatabaseAccessor implements CollectionAccessor {
             mode = MODE_SEARCH_AVAILABLE;
         }
 
+        AttributesFetchTask(HentoidDB db, ResultListener<List<Attribute>> listener, List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites) {
+            this.db = db;
+            this.listener = listener;
+            this.attrTypes = attrTypes;
+            this.attrs = attrs;
+            this.filter = filter;
+            this.filterFavourites = filterFavourites;
+            mode = MODE_SEARCH_COMBINED;
+        }
+
         @Override
         protected List<Attribute> doInBackground(String... params) {
             List<Attribute> result = new ArrayList<>();
@@ -263,13 +286,13 @@ public class DatabaseAccessor implements CollectionAccessor {
                         result.addAll(db.selectAllAttributesByType(type, filter));
                     }
                 }
-            } else if (MODE_SEARCH_AVAILABLE == mode) {
+            } else if (MODE_SEARCH_AVAILABLE == mode || MODE_SEARCH_COMBINED == mode) {
                 if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
                     result = db.selectAvailableSources(attrs);
                 } else {
                     result = new ArrayList<>();
                     for (AttributeType type : attrTypes)
-                        result.addAll(db.selectAvailableAttributes(type.getCode(), attrs, filterFavourites)); // No favourites button in SearchActivity
+                        result.addAll(db.selectAvailableAttributes(type, attrs, filter, filterFavourites)); // No favourites button in SearchActivity
                 }
             }
 

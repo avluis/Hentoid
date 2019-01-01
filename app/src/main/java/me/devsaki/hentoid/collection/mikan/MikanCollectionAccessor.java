@@ -37,14 +37,14 @@ import timber.log.Timber;
 import static com.annimon.stream.Collectors.toList;
 import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 
-public class MikanAccessor implements CollectionAccessor {
+public class MikanCollectionAccessor implements CollectionAccessor {
 
     private final LibraryMatcher libraryMatcher;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // == CONSTRUCTOR
 
-    public MikanAccessor(Context context) {
+    public MikanCollectionAccessor(Context context) {
         libraryMatcher = new LibraryMatcher(context);
     }
 
@@ -226,15 +226,23 @@ public class MikanAccessor implements CollectionAccessor {
     }
 
     @Override
+    public boolean supportsAvailabilityFilter() {
+        return false;
+    }
+
+    @Override
+    public void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
+        throw new UnsupportedOperationException("Not implemented with Mikan");
+    }
+
+    @Override
     public void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
-        // Not implemented in Mikan
-        listener.onResultReady(null, 0);
+        throw new UnsupportedOperationException("Not implemented with Mikan");
     }
 
     @Override
     public void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener) {
-        // Not implemented in Mikan
-        listener.onResultReady(null, 0);
+        throw new UnsupportedOperationException("Not implemented with Mikan");
     }
 
     @Override

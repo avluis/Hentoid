@@ -18,7 +18,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.annimon.stream.Stream;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,8 +36,8 @@ import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
+import static com.annimon.stream.Collectors.toList;
 import static java.lang.String.format;
-import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 
 /**
@@ -161,7 +164,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         searchMasterData("");
         // Update attribute mosaic buttons state according to available metadata
 //        viewModel.getAvailableAttributes(selectedAttributeTypes);
-        viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
+//        viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
         viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
     }
 
@@ -194,12 +197,20 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         }
 
         attributeMosaic.removeAllViews();
-
         tagWaitMessage.clearAnimation();
 
-        if (results.attributes.isEmpty()) {
+        List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
+
+        // Remove unavailable and selected attributes
+        List<Attribute> finalSelectedAttributes = (selectedAttributes == null) ? Collections.emptyList() : selectedAttributes;
+        List<Attribute> attributes = Stream.of(results.attributes)
+                .filter(value -> value.getCount() > 0)
+                .filter(value -> !finalSelectedAttributes.contains(value))
+                .collect(toList());
+
+        if (attributes.isEmpty()) {
             tagWaitMessage.setText(R.string.masterdata_no_result);
-        } else if (results.attributes.size() > MAX_ATTRIBUTES_DISPLAYED) {
+        } else if (attributes.size() > MAX_ATTRIBUTES_DISPLAYED) {
             String searchQuery = tagSearchView.getQuery().toString();
 
             String errMsg = (0 == searchQuery.length()) ? getString(R.string.masterdata_too_many_results_noquery) : getString(R.string.masterdata_too_many_results_query);
@@ -208,11 +219,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             tagWaitPanel.setVisibility(View.GONE);
 
             // Display buttons
-            for (Attribute attr : results.attributes) {
+            for (Attribute attr : attributes) {
                 addChoiceChip(attributeMosaic, attr);
             }
-
-            updateAttributeMosaic(viewModel.getAvailableAttributesData().getValue());
         }
     }
 
@@ -235,7 +244,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
         chip.setText(label);
         chip.setTag(attribute);
-        chip.setOnClickListener(this::toggleSearchFilter);
+        chip.setOnClickListener(this::onAttributeChosen);
 
         parent.addView(chip);
     }
@@ -245,61 +254,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      *
      * @param button Button that has been clicked on
      */
-    private void toggleSearchFilter(View button) {
+    private void onAttributeChosen(View button) {
         Attribute a = (Attribute) button.getTag();
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
             viewModel.onAttributeSelected(a);
-        } else { // Remove selected tag
-            button.setEnabled(true);
-            viewModel.onAttributeUnselected(a);
-        }
-    }
-
-// TODO: it may be easier to just remove all views and inflate views for all attributes, or using RecyclerView notify only the views that changed
-// TODO: data processing should be done in the ViewModel
-// TODO: also see {@link me.devsaki.hentoid.model.State}
-
-    /**
-     * Refresh attributes list according to selected attributes
-     * NB : available in library mode only because Mikan does not provide enough data for it
-     */
-    private void updateAttributeMosaic(SearchViewModel.AttributeSearchResult availableAttributes) {
-        if (MODE_LIBRARY == mode && availableAttributes != null) {
-            tagWaitPanel.setVisibility(View.GONE);
-
-            // Refresh displayed tag buttons
-            boolean found, selected;
-            String label = "";
-            for (int i = 0; i < attributeMosaic.getChildCount(); i++) {
-                TextView button = (TextView) attributeMosaic.getChildAt(i);
-                Attribute displayedAttr = (Attribute) button.getTag();
-                if (displayedAttr != null) {
-                    found = false;
-                    for (Attribute attr : availableAttributes.attributes)
-                        if (attr.getId().equals(displayedAttr.getId())) {
-                            found = true;
-                            label = formatAttributeLabel(attr);
-                            break;
-                        }
-                    if (!found) {
-                        label = displayedAttr.getName(); // No count on this one, since it is not available
-                    }
-                    button.setText(label);
-
-                    selected = false;
-                    List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
-                    if (selectedAttributes != null)
-                        for (Attribute attr : selectedAttributes)
-                            if (attr.getName().equals(displayedAttr.getName()) && attr.getType().equals(displayedAttr.getType())) {
-                                selected = true;
-                                break;
-                            }
-                    button.setEnabled(selected || found);
-                    button.setPressed(selected);
-                }
-            }
+            searchMasterData(tagSearchView.getQuery().toString());
         }
     }
 

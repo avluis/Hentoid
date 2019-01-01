@@ -30,6 +30,10 @@ public interface CollectionAccessor {
 
     void getAttributeMasterData(List<AttributeType> types, String filter, ResultListener<List<Attribute>> listener);
 
+    boolean supportsAvailabilityFilter();
+
+    void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener);
+
     void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener);
 
     void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener);

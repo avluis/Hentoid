@@ -14,8 +14,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.collection.mikan.MikanAccessor;
-import me.devsaki.hentoid.database.DatabaseAccessor;
+import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
+import me.devsaki.hentoid.database.DatabaseCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -127,7 +127,7 @@ public class SearchViewModel extends AndroidViewModel {
 
     public void setMode(int mode) {
         Context ctx = getApplication().getApplicationContext();
-        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseAccessor(ctx) : new MikanAccessor(ctx);
+        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseCollectionAccessor(ctx) : new MikanCollectionAccessor(ctx);
         countAttributesPerType();
     }
 
@@ -175,7 +175,10 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public void onCategoryFilterChanged(String query) {
-        collectionAccessor.getAttributeMasterData(category, query, new AttributesResultListener(proposedAttributes));
+        if (collectionAccessor.supportsAvailabilityFilter())
+            collectionAccessor.getAttributeMasterData(category, query, selectedAttributes.getValue(), false, new AttributesResultListener(proposedAttributes));
+        else
+            collectionAccessor.getAttributeMasterData(category, query, new AttributesResultListener(proposedAttributes));
     }
 
     public void onAttributeSelected(Attribute a) {
@@ -217,7 +220,8 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     private void getAvailableAttributes() {
-        collectionAccessor.getAvailableAttributes(category, selectedAttributes.getValue(), false, new AttributesResultListener(availableAttributes));
+        if (collectionAccessor.supportsAvailabilityFilter())
+            collectionAccessor.getAvailableAttributes(category, selectedAttributes.getValue(), false, new AttributesResultListener(availableAttributes));
     }
 
     private void updateSelectionResult() {
