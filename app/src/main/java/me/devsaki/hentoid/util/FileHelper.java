@@ -629,7 +629,7 @@ public class FileHelper {
     }
 
     private static class AsyncUnzip extends ZipUtil.ZipTask {
-        final Context context;
+        final Context context; // TODO - omg leak !
         final File dest;
 
         AsyncUnzip(Context context, File dest) {

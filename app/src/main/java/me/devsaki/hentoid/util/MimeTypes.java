@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
  */
 public final class MimeTypes {
 
+    // TODO - why using this rather than android.webkit.MimeTypeMap?
+
     private static final String ALL_MIME_TYPES = "*/*";
 
     private static final HashMap<String, String> MIME_TYPES = new HashMap<>();
