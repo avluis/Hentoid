@@ -78,7 +78,7 @@
             android:paddingRight="8dp"
             android:paddingStart="5dp"
             android:paddingTop="8dp"
-            tools:background="@color/dark_red"
+            tools:background="@color/primary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_hitomi" />
 

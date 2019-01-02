@@ -311,7 +311,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         // Set source color
         if (content.getStatus() != null) {
             StatusContent status = content.getStatus();
-            holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, R.color.dark_red));
+            holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, R.color.primary));
             holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
             holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
             holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == displayMode) ? View.VISIBLE : View.GONE);
