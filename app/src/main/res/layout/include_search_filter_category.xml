@@ -25,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_intro"
-            android:textColor="@color/card_item_src_online"
+            android:textColor="@color/white"
             android:textSize="24sp" />
 
         <ImageView
@@ -36,7 +36,7 @@
             android:minHeight="110dp"
             android:scaleType="fitCenter"
             android:src="@drawable/ic_action_pause"
-            android:tint="@color/card_item_src_online"
+            android:tint="@color/white"
             tools:ignore="ContentDescription" />
 
         <TextView
@@ -45,7 +45,7 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical|center_horizontal"
             android:text="@string/app_intro"
-            android:textColor="@color/card_item_src_online"
+            android:textColor="@color/white"
             android:textSize="18sp" />
 
     </LinearLayout>
