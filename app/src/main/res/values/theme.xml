@@ -7,7 +7,7 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:editTextColor">@android:color/white</item>
-        <item name="android:textColorHint">@color/material_red_50</item>
+        <item name="android:textColorHint">@color/lightGray</item>
     </style>
 
     <!-- Activities with Toolbar as ActionBar -->
@@ -16,7 +16,7 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:editTextColor">@android:color/white</item>
-        <item name="android:textColorHint">@color/material_red_50</item>
+        <item name="android:textColorHint">@color/lightGray</item>
     </style>
 
     <!-- AppIntro Activity & Slides -->
@@ -54,6 +54,15 @@
     </style>
 
     <!-- Backgrounds -->
+    <style name="AppTheme.TaupeBackground" parent="AppTheme">
+        <item name="android:windowBackground">@color/taupe</item>
+    </style>
+
+    <style name="AppTheme.TaupeBackgroundNoActionBar" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@color/taupe</item>
+        <item name="windowActionModeOverlay">true</item>
+    </style>
+
     <style name="AppTheme.DarkBackground" parent="AppTheme">
         <item name="android:windowBackground">@color/primary_dark</item>
     </style>
@@ -64,41 +73,41 @@
     </style>
 
     <!-- Downloads -->
-    <style name="AppTheme.Downloads" parent="AppTheme.DarkBackgroundNoActionBar">
-        <item name="android:textColorHint">@color/material_red_100</item>
-        <item name="android:textColorSecondary">@color/material_red_100</item>
+    <style name="AppTheme.Downloads" parent="AppTheme.TaupeBackgroundNoActionBar">
+        <item name="android:textColorHint">@color/lightGray</item>
+        <item name="android:textColorSecondary">@color/lightGray</item>
     </style>
 
     <!-- Mikan -->
     <style name="AppTheme.Mikan" parent="AppTheme.DarkBackground">
-        <item name="android:textColorHint">@color/material_red_100</item>
-        <item name="android:textColorSecondary">@color/material_red_100</item>
+        <item name="android:textColorHint">@color/lightGray</item>
+        <item name="android:textColorSecondary">@color/lightGray</item>
     </style>
 
     <!-- Toolbar -->
     <style name="AppTheme.Toolbar" parent="AppTheme.DarkBackground">
-        <item name="android:textColorHint">@color/material_red_100</item>
-        <item name="android:textColorPrimary">@color/material_red_100</item>
-        <item name="android:textColorSecondary">@color/material_red_100</item>
+        <item name="android:textColorHint">@color/lightGray</item>
+        <item name="android:textColorPrimary">@color/lightGray</item>
+        <item name="android:textColorSecondary">@color/lightGray</item>
     </style>
 
     <!-- Search Activity -->
     <style name="AppTheme.Search" parent="Theme.AppCompat.NoActionBar">
-        <item name="colorPrimary">@color/red_primary</item>
-        <item name="colorPrimaryDark">@color/red_dark</item>
-        <item name="colorAccent">@color/red_accent</item>
-        <item name="android:windowBackground">@color/red_bg</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
+        <item name="android:windowBackground">@color/taupe</item>
     </style>
 
     <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
-        <item name="colorPrimary">@color/red_primary</item>
-        <item name="colorPrimaryDark">@color/red_dark</item>
-        <item name="colorAccent">@color/red_accent</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
         <item name="bottomSheetStyle">@style/ModalStyle</item>
     </style>
 
     <style name="ModalStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@color/red_bg</item>
+        <item name="android:background">@color/taupe</item>
     </style>
 
     <style name="LargeItem">

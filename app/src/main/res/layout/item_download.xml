@@ -48,7 +48,7 @@
                 android:layout_alignParentRight="true"
                 android:layout_alignParentEnd="true"
                 android:adjustViewBounds="true"
-                android:tint="@color/card_item_src_other"
+                android:tint="@color/accent"
                 android:padding="8dp"
                 android:src="@drawable/ic_new"
                 tools:ignore="ContentDescription"
@@ -78,7 +78,7 @@
             android:paddingRight="8dp"
             android:paddingStart="5dp"
             android:paddingTop="8dp"
-            tools:background="@color/card_item_src_normal"
+            tools:background="@color/primary"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_hitomi" />
 
@@ -90,7 +90,7 @@
             android:layout_toLeftOf="@id/ivFavourite"
             android:layout_toStartOf="@id/ivFavourite"
             android:adjustViewBounds="true"
-            android:background="@color/card_item_src_other"
+            android:background="@color/accent"
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
@@ -111,7 +111,7 @@
             android:focusable="true"
             android:padding="8dp"
             android:src="@drawable/ic_fav_empty"
-            android:tint="@color/card_item_src_other"
+            android:tint="@color/accent"
             tools:ignore="ContentDescription"
             />
 
@@ -128,7 +128,7 @@
             android:focusable="true"
             android:padding="8dp"
             android:src="@drawable/ic_action_download"
-            android:tint="@color/card_item_src_other"
+            android:tint="@color/accent"
             tools:ignore="ContentDescription"
             />
     </RelativeLayout>

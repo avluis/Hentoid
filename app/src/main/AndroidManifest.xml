@@ -91,7 +91,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_queue"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/AppTheme.DarkBackground"
+            android:theme="@style/AppTheme.TaupeBackground"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

@@ -1,50 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="primary">@color/very_dark_red</color>
-    <color name="primary_dark">@color/very_dark_mostly_black_red</color>
-    <color name="ripple">@color/material_pink_300</color>
-    <color name="accent">@color/red_accent_700</color>
-    <color name="darkGray">#FF444444</color>
+    <color name="primary">@color/dark_red</color>
+    <color name="primary_dark">@color/very_dark_red</color>
+    <color name="ripple">@color/light_red</color>
+    <color name="accent">@color/accent_red</color>
 
-    <!-- Useful Colors -->
-    <!-- White -->
-    <color name="white">#FFFFFF</color>
-
-    <!-- Red -->
-    <color name="red_accent_700">#d50000</color>
-    <color name="very_dark_red">#400404</color>
-    <color name="very_dark_red_2">#400000</color>
-    <color name="very_dark_mostly_black_red">#2b0202</color>
-    <color name="material_red_50">#ffebee</color>
-    <color name="material_red_100">#FFFFCDD2</color>
-
-    <!-- New red 2018 (search activity) -->
-    <color name="red_primary">#470000</color>
-    <color name="red_dark">#3f0000</color>
-    <color name="red_accent">#b25959</color>
-    <color name="red_bg">#592828</color>
-    <color name="red_item">#28FFFFFF</color>
-    <color name="red_text">#FFFFFF</color>
-
-    <!-- Pink -->
-    <color name="material_pink_300">#F06292</color>
+    <!-- App palette -->
+    <color name="very_dark_red">#3f0000</color>
+    <color name="dark_red">#470000</color>
+    <color name="taupe">#592828</color>
+    <color name="accent_red">#b25959</color>
+    <color name="light_red">#ffebee</color>
     <color name="very_dark_pink">#6d0721</color>
+
+    <!-- Neutral Colors -->
+    <color name="white">#FFFFFF</color>
+    <color name="lightGray">#1010</color>
+    <color name="darkGray">#FF444444</color>
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>
+    <color name="transparent_item">#28FFFFFF</color>
 
     <!-- Drawer Layout -->
-    <color name="drawer_list_background">@color/very_dark_red_2</color>
-    <color name="drawer_item_selected_background">@color/very_dark_mostly_black_red</color>
-    <color name="drawer_item_unselected_background">@color/very_dark_red</color>
+    <color name="drawer_list_background">@color/dark_red</color>
+    <color name="drawer_item_selected_background">@color/taupe</color>
+    <color name="drawer_item_unselected_background">@color/dark_red</color>
     <color name="drawer_item_tint_color">@color/white</color>
 
     <!-- App Intro -->
-    <color name="app_intro_text">@color/material_red_50</color>
-
-    <!-- Card View -->
-    <color name="card_item_src_normal">@color/very_dark_red</color>
-    <color name="card_item_src_migrated">@color/material_pink_300</color>
-    <color name="card_item_src_online">#888888</color>
-    <color name="card_item_src_other">@color/red_accent_700</color>
+    <color name="app_intro_text">@color/light_red</color>
 </resources>

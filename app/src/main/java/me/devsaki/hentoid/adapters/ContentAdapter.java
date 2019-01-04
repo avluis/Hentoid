@@ -311,24 +311,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         // Set source color
         if (content.getStatus() != null) {
             StatusContent status = content.getStatus();
-            int bg;
-            switch (status) {
-                case DOWNLOADED:
-                    bg = R.color.card_item_src_normal;
-                    break;
-                case MIGRATED:
-                    bg = R.color.card_item_src_migrated;
-                    break;
-                case ONLINE:
-                    bg = R.color.card_item_src_other;
-                    break;
-                default:
-                    Timber.d("Position: %s %s - Status: %s", pos, content.getTitle(), status);
-                    bg = R.color.card_item_src_other;
-                    break;
-            }
-            holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, bg));
-
+            holder.ivSite.setBackgroundColor(ContextCompat.getColor(context, R.color.primary));
             holder.ivFavourite.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
             holder.ivError.setVisibility((DownloadsFragment.MODE_LIBRARY == displayMode) ? View.VISIBLE : View.GONE);
             holder.ivDownload.setVisibility((DownloadsFragment.MODE_MIKAN == displayMode) ? View.VISIBLE : View.GONE);
