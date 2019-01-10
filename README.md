@@ -13,7 +13,8 @@ ___
 ##### Check out the [Hentoid wiki](https://github.com/AVnetWS/Hentoid/wiki) if you need assistance installing `Hentoid` on your device.
 ##### For the latest release, click [here](https://github.com/AVnetWS/Hentoid/releases/latest).
 
-##### Visit our [Discord Server](https://discord.gg/QEZ3qk9) to chat with other users, announcements, updates, app support or to hang out with the devs.
+##### Don't forget to check the [FAQ](https://github.com/avluis/Hentoid/wiki/FAQ) if you have any issue
+##### Visit our [Discord Server](https://discord.gg/QEZ3qk9) to chat with other users, read the latest announcements, get dev updates, app support or hang out with the development team.
 ___
 ###### [Help us](https://github.com/AVnetWS/Hentoid/wiki/Contributing) shape `Hentoid` into the best H-Manga App for you.
 ___
