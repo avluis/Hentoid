@@ -1,153 +1,78 @@
 package me.devsaki.hentoid.parsers.content;
 
-import com.google.gson.annotations.Expose;
+import org.jsoup.nodes.Element;
 
 import java.util.List;
 
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import pl.droidsonroids.jspoon.annotation.Selector;
 
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
 public class NhentaiContent {
 
-    @Expose
-    public Long id;
-    @Expose
-    public String media_id;
-    @Expose
-    public NHentaiTitle title;
-    @Expose
-    public NHentaiImages images;
-    @Expose
-    public String scanlator;
-    @Expose
-    public Long upload_date;
-    @Expose
-    public List<NHentaiTag> tags;
-    @Expose
-    public Integer num_pages;
-    @Expose
-    public Integer num_favorites;
+    @Selector(value = "#download", attr = "href", defValue = "")
+    private String galleryUrl;
+    @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
+    private String coverUrl;
+    @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
+    private String title;
+
+    @Selector(value = "#info div:not(.tag-container)", defValue = "")
+    private List<String> nbPages;
+
+    @Selector(value = "#info a[href*='/artist']")
+    private List<Element> artists;
+    @Selector(value = "#info a[href*='/group']")
+    private List<Element> circles;
+    @Selector(value = "#info a[href*='/tag']")
+    private List<Element> tags;
+    @Selector(value = "#info a[href*='/parody']")
+    private List<Element> series;
+    @Selector(value = "#info a[href*='/character']")
+    private List<Element> characters;
+    @Selector(value = "#info a[href*='/language']")
+    private List<Element> languages;
+    @Selector(value = "#info a[href*='/category']")
+    private List<Element> categories;
 
 
     public Content toContent() {
         Content result = new Content();
 
-        String extension = images.cover.t;
-        switch (extension) {
-            case "j":
-                extension = "jpg";
-                break;
-            case "p":
-                extension = "png";
-                break;
-            default:
-                extension = "gif";
-                break;
-        }
-        String coverImageUrl = "https://t.nhentai.net/galleries/" + media_id + "/cover." + extension;
+        result.setSite(Site.NHENTAI);
+        result.setUrl(galleryUrl.replace("download", "").replace("/g",""));
+        result.setCoverImageUrl(coverUrl);
+        result.setTitle(title);
 
-        result.setUrl("/" + id.toString() + "/")
-                .setCoverImageUrl(coverImageUrl)
-                .setTitle(title.pretty)
-                .setQtyPages(num_pages)
-                .setStatus(StatusContent.SAVED)
-                .setUploadDate(upload_date)
-                .setSite(Site.NHENTAI);
+        int qtyPages = 0;
+        for (String s : nbPages) {
+            if (s.contains(" pages")) {
+                qtyPages = Integer.parseInt(s.replace(" pages", ""));
+                break;
+            }
+        }
+        result.setQtyPages(qtyPages);
 
         AttributeMap attributes = new AttributeMap();
         result.setAttributes(attributes);
 
-        for (NHentaiTag tag : tags) {
-            attributes.add(tag.toAttribute());
-        }
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true);
 
         result.populateAuthor();
+        result.setStatus(StatusContent.SAVED);
 
         return result;
-    }
-
-    public class NHentaiTitle {
-        @Expose
-        public String english;
-        @Expose
-        public String japanese;
-        @Expose
-        public String pretty;
-    }
-
-    public class NHentaiImages {
-        @Expose
-        public List<NHentaiImage> pages;
-        @Expose
-        public NHentaiImage cover;
-        @Expose
-        public NHentaiImage thumbnail;
-    }
-
-    public class NHentaiImage {
-        @Expose
-        public String t;
-        @Expose
-        public String w;
-        @Expose
-        public String h;
-    }
-
-    public class NHentaiTag {
-        @Expose
-        public Integer id;
-        @Expose
-        public String type;
-        @Expose
-        public String name;
-        @Expose
-        public String url;
-        @Expose
-        public Integer count;
-
-        public Attribute toAttribute() {
-            Attribute result = new Attribute();
-
-            AttributeType theType = AttributeType.TAG;
-
-            switch (type) {
-                case "artist":
-                    theType = AttributeType.ARTIST;
-                    break;
-                case "character":
-                    theType = AttributeType.CHARACTER;
-                    break;
-                case "parody":
-                    theType = AttributeType.SERIE;
-                    break;
-                case "language":
-                    theType = AttributeType.LANGUAGE;
-                    break;
-                case "tag":
-                    theType = AttributeType.TAG;
-                    break;
-                case "group":
-                    theType = AttributeType.CIRCLE;
-                    break;
-                case "category":
-                    theType = AttributeType.CATEGORY;
-                    break;
-                default: // do nothing
-                    break;
-            }
-
-            result.setName(name)
-                    .setUrl(url)
-                    .setCount(count)
-                    .setType(theType);
-
-            return result;
-        }
     }
 
 }

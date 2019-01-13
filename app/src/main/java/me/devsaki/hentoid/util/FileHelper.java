@@ -519,7 +519,7 @@ public class FileHelper {
      * @param fileName Filename
      * @return Extension of the given filename
      */
-    static String getExtension(String fileName) {
+    public static String getExtension(String fileName) {
         return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
     }
 

@@ -1,59 +1,39 @@
 package me.devsaki.hentoid.parsers;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.HttpClientHelper;
-import timber.log.Timber;
+import me.devsaki.hentoid.util.FileHelper;
 
 /**
  * Created by Shiro on 1/5/2016.
  * Handles parsing of content from nhentai
  */
-public class NhentaiParser implements ContentParser {
+public class NhentaiParser extends BaseParser {
 
-    public List<String> parseImageList(Content content) {
-        String url = content.getGalleryUrl();
-        url = url.replace("/g", "/api/gallery");
-        url = url.substring(0, url.length() - 1);
-        List<String> imgUrls = new ArrayList<>();
+    @Override
+    protected List<String> parseImages(Content content) throws IOException {
+        List<String> result = new ArrayList<>();
 
-        try {
-            String json = HttpClientHelper.call(url);
-            JSONObject gallery = new JSONObject(json);
-            String mediaId = gallery.getString("media_id");
-            JSONArray images = gallery.getJSONObject("images").getJSONArray("pages");
-            String serverUrl = "http://i.nhentai.net/galleries/" + mediaId + "/";
-
-            for (int i = 0; i < images.length(); i++) {
-                JSONObject image = images.getJSONObject(i);
-                String extension = image.getString("t");
-                switch (extension) {
-                    case "j":
-                        extension = ".jpg";
-                        break;
-                    case "p":
-                        extension = ".png";
-                        break;
-                    default:
-                        extension = ".gif";
-                        break;
-                }
-                String urlImage = serverUrl + (i + 1) + extension;
-                imgUrls.add(urlImage);
-            }
-        } catch (JSONException e) {
-            Timber.e(e, "Error parsing content");
-        } catch (Exception e) {
-            Timber.e(e, "Couldn't connect to resource");
+        String imageUrl = "";
+        String pageUrl = content.getReaderUrl() + "1/";
+        Document doc = getOnlineDocument(pageUrl);
+        if (doc != null) {
+            Element image = doc.body().select("#image-container img").first();
+            if (image != null) imageUrl = image.attr("src");
         }
-        Timber.d("%s", imgUrls);
+        String imageUrlPrefix = imageUrl.substring(0, imageUrl.lastIndexOf("/") + 1);
+        String imageExt = FileHelper.getExtension(imageUrl);
 
-        return imgUrls;
+        for (int i = 0; i < content.getQtyPages(); i++) {
+            result.add(imageUrlPrefix + (i + 1) + "." + imageExt); // We infer the whole book is stored on the same server
+        }
+
+        return result;
     }
 }

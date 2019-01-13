@@ -210,8 +210,8 @@ public class Content implements Serializable {
         switch (site) {
             case HITOMI:
                 return site.getUrl() + "/reader" + url;
-            case NHENTAI:
-                return getGalleryUrl() + "1/";
+//            case NHENTAI:
+//                return getGalleryUrl() + "1/";
             case TSUMINO:
                 return site.getUrl() + "/Read/View" + url;
             case ASMHENTAI:
@@ -220,6 +220,7 @@ public class Content implements Serializable {
                 return site.getUrl() + "/gallery" + url;
             case EHENTAI:               // Won't work anyway because of the temporary key
             case HENTAICAFE:
+            case NHENTAI:
             case PANDA:
                 return getGalleryUrl();
             case PURURIN:
