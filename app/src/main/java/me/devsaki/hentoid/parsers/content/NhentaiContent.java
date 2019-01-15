@@ -2,14 +2,17 @@ package me.devsaki.hentoid.parsers.content;
 
 import org.jsoup.nodes.Element;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.FileHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
@@ -21,9 +24,6 @@ public class NhentaiContent {
     private String coverUrl;
     @Selector(value = "head [property=og:title]", attr = "content", defValue = "")
     private String title;
-
-    @Selector(value = "#info div:not(.tag-container)", defValue = "")
-    private List<String> nbPages;
 
     @Selector(value = "#info a[href*='/artist']")
     private List<Element> artists;
@@ -40,23 +40,17 @@ public class NhentaiContent {
     @Selector(value = "#info a[href*='/category']")
     private List<Element> categories;
 
+    @Selector(value = "#thumbnail-container img[data-src]", attr = "data-src")
+    private List<String> thumbs;
+
 
     public Content toContent() {
         Content result = new Content();
 
         result.setSite(Site.NHENTAI);
-        result.setUrl(galleryUrl.replace("download", "").replace("/g",""));
+        result.setUrl(galleryUrl.replace("download", "").replace("/g", ""));
         result.setCoverImageUrl(coverUrl);
         result.setTitle(title);
-
-        int qtyPages = 0;
-        for (String s : nbPages) {
-            if (s.contains(" pages")) {
-                qtyPages = Integer.parseInt(s.replace(" pages", ""));
-                break;
-            }
-        }
-        result.setQtyPages(qtyPages);
 
         AttributeMap attributes = new AttributeMap();
         result.setAttributes(attributes);
@@ -68,6 +62,20 @@ public class NhentaiContent {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true);
+
+        List<ImageFile> images = new ArrayList<>();
+        result.setImageFiles(images);
+
+        String[] coverParts = coverUrl.split("/");
+        String mediaId = coverParts[coverParts.length - 2];
+        String serverUrl = "https://i.nhentai.net/galleries/" + mediaId + "/"; // We infer the whole book is stored on the same server
+
+        int index = 1;
+        for (String s : thumbs) {
+            images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED)); // We infer actual book page images have the same format as their thumbs
+            index++;
+        }
+        result.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
 
         result.populateAuthor();
         result.setStatus(StatusContent.SAVED);

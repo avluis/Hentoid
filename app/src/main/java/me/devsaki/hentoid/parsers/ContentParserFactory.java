@@ -27,8 +27,6 @@ public class ContentParserFactory {
                 return new HentaiCafeParser();
             case HITOMI:
                 return new HitomiParser();
-            case NHENTAI:
-                return new NhentaiParser();
             case TSUMINO:
                 return new TsuminoParser();
             case PURURIN:
