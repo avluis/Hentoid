@@ -429,18 +429,8 @@ public class FileHelper {
     public static void openContent(final Context context, Content content) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
 
-        HentoidDB db = HentoidDB.getInstance(context);
-        content.increaseReads().setLastReadDate(new Date().getTime());
-        db.updateContentReads(content);
-
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
-
-        try {
-            JsonHelper.saveJson(content, dir);
-        } catch (IOException e) {
-            Timber.e(e, "Error while writing to " + dir.getAbsolutePath());
-        }
 
         Timber.d("Opening: " + content.getTitle() + " from: " + dir);
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
@@ -476,6 +466,16 @@ public class FileHelper {
             } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(context, imageFile);
             }
+        }
+
+        HentoidDB db = HentoidDB.getInstance(context);
+        content.increaseReads().setLastReadDate(new Date().getTime());
+        db.updateContentReads(content);
+
+        try {
+            JsonHelper.saveJson(content, dir);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }
     }
 
