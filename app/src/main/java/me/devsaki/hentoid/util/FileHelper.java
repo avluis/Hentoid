@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -491,7 +492,12 @@ public class FileHelper {
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
         String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
         myIntent.setDataAndType(Uri.fromFile(file), mimeType);
-        context.startActivity(myIntent);
+        try {
+            context.startActivity(myIntent);
+        } catch (ActivityNotFoundException e) {
+            Timber.e(e, "Activity not found to open %s", aFile.getAbsolutePath());
+            Helper.toast(context, R.string.error_open, Helper.DURATION.LONG);
+        }
     }
 
     /**
