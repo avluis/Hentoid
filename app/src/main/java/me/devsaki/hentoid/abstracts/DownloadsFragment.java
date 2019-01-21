@@ -1033,10 +1033,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+
     /**
-     * Run a new search in the DB according to active filters
+     * Indicates whether a search query is active (using universal search or advanced search) or not
+     *
+     * @return True if a search query is is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
-    private boolean isSearchMode() {
+    private boolean isSearchQueryActive() {
         return (getQuery().length() > 0 || selectedSearchTags.size() > 0);
     }
 
@@ -1074,10 +1077,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
         lastSearchParams = currentSearchParams;
 
-        /*
-        if (isSearchMode()) collectionAccessor.searchBooks(getQuery(), selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
-        else collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this);
-        */
         if (!getQuery().isEmpty())
             collectionAccessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Universal search
         else if (!selectedSearchTags.isEmpty())
@@ -1131,7 +1130,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
         isLoading = false;
 
-        if (isSearchMode()) {
+        if (isSearchQueryActive()) {
             if (isNewContentAvailable) {
                 newContentToolTip.setVisibility(View.GONE);
                 isNewContentAvailable = false;
@@ -1139,6 +1138,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             filterBookCount.setText(String.format(getText(R.string.downloads_filter_book_count).toString(), totalSelectedContent + "", (1 == totalSelectedContent) ? "" : "s"));
             filterBar.setVisibility(View.VISIBLE);
+            if (totalSelectedContent > 0) searchMenu.collapseActionView();
+        } else {
+            filterBar.setVisibility(View.GONE);
         }
 
         // Display new results
