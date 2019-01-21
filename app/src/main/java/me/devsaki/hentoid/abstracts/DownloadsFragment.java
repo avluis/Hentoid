@@ -746,7 +746,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 }
 
                 if (!s.isEmpty()) {
-                    if (!s.equals(query)) submitContentSearchQuery(s, 1000);
+                    if (!s.equals(query)) submitContentSearchQuery(s, 2000);
                 } else {
                     clearQuery();
                 }
