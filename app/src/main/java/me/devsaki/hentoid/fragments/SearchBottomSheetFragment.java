@@ -105,6 +105,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             }
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
+            viewModel.setMode(mode);
             viewModel.onCategoryChanged(selectedAttributeTypes);
         }
     }
