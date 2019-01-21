@@ -13,7 +13,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class PururinContent {
-    @Selector(value = "head [property=og:url]", attr = "content")
+    @Selector(value = "head [property=og:url]", attr = "content", defValue = "")
     private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content")
     private String coverUrl;
@@ -45,6 +45,8 @@ public class PururinContent {
         Content result = new Content();
 
         result.setSite(Site.PURURIN);
+        if (galleryUrl.isEmpty()) return result;
+
         result.setUrl(galleryUrl.replace(getProtocol() + "://pururin.io/gallery", ""));
         result.setCoverImageUrl(getProtocol() + ":" + coverUrl);
         result.setTitle(title.size() > 0 ? title.get(0) : "");

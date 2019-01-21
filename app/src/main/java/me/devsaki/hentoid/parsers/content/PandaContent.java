@@ -13,7 +13,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class PandaContent {
-    @Selector(value = "div#imgholder a img", attr = "src")
+    @Selector(value = "div#imgholder a img", attr = "src", defValue = "")
     private String coverUrl;
     @Selector("div#mangainfo div h1")
     private String title;
@@ -26,6 +26,7 @@ public class PandaContent {
     public Content toContent() {
         Content result = new Content();
         result.setSite(Site.PANDA);
+        if (coverUrl.isEmpty()) return result;
 
         if (pages.size() > 0) {
             result.setUrl(pages.get(0));

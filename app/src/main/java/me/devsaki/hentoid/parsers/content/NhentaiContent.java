@@ -48,6 +48,8 @@ public class NhentaiContent {
         Content result = new Content();
 
         result.setSite(Site.NHENTAI);
+        if (galleryUrl.isEmpty()) return result;
+
         result.setUrl(galleryUrl.replace("download", "").replace("/g", ""));
         result.setCoverImageUrl(coverUrl);
         result.setTitle(title);

@@ -13,7 +13,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HitomiContent {
-    @Selector(value = "h1 a[href*='/reader/']", attr="href")
+    @Selector(value = "h1 a[href*='/reader/']", attr="href", defValue = "")
     private String galleryUrl;
     @Selector(value = ".cover img", attr="src")
     private String coverUrl;
@@ -40,6 +40,7 @@ public class HitomiContent {
     public Content toContent()
     {
         Content result = new Content();
+        if (galleryUrl.isEmpty()) return result;
 
         result.setSite(Site.HITOMI);
         result.setUrl(galleryUrl.replace("/reader", ""));

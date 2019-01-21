@@ -41,6 +41,8 @@ public class TsuminoContent {
         Content result = new Content();
 
         result.setSite(Site.TSUMINO);
+        if (galleryUrl.isEmpty()) return result;
+
         result.setUrl(galleryUrl.replace("/Read/View", ""));
         result.setCoverImageUrl(TSUMINO.getUrl() + coverUrl);
         result.setTitle(title);

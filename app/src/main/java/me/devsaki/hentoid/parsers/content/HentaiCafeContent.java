@@ -13,7 +13,7 @@ import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HentaiCafeContent {
-    @Selector(value = "div.x-main.full article", attr="id")
+    @Selector(value = "div.x-main.full article", attr="id", defValue = "")
     private String galleryUrl;
     @Selector(value = "div.x-column.x-sm.x-1-2 img", attr="src")
     private String coverUrl;
@@ -30,6 +30,8 @@ public class HentaiCafeContent {
         Content result = new Content();
 
         result.setSite(Site.HENTAICAFE);
+        if (galleryUrl.isEmpty()) return result;
+
         result.setUrl(galleryUrl.replace("post-", "/?p="));
         result.setCoverImageUrl(coverUrl);
         result.setTitle(title);
