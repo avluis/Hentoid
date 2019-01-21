@@ -63,7 +63,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
         context = HentoidApp.getAppContext();
         initializeToolbar();
-        setTitle(getToolbarTitle());
+        setTitle("");
     }
 
     @Override
