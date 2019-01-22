@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.util.Pair;
 
+import com.crashlytics.android.Crashlytics;
 import com.facebook.stetho.Stetho;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -15,6 +16,7 @@ import com.squareup.leakcanary.LeakCanary;
 
 import java.util.List;
 
+import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -58,6 +60,7 @@ public class HentoidApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        Fabric.with(this, new Crashlytics());
 
         // Fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
         // see https://github.com/square/okhttp/issues/2372 for more information
