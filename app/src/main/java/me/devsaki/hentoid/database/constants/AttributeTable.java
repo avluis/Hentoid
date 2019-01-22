@@ -32,9 +32,9 @@ public abstract class AttributeTable {
             "inner join " + ContentTable.TABLE_NAME + " c on ca." + ContentAttributeTable.CONTENT_ID_COLUMN + "=c." + ContentTable.ID_COLUMN + " " +
             "where a." + TYPE_COLUMN + "=? and c." + ContentTable.STATUS_COLUMN + " in (" + StatusContent.DOWNLOADED.getCode() + "," + StatusContent.ERROR.getCode() + "," + StatusContent.MIGRATED.getCode() + ") ";
 
-    public static final String SELECT_ALL_SOURCE_FILTER = " AND c." + ContentTable.SOURCE_COLUMN + " IN (%1) ";
+    public static final String SELECT_ALL_SOURCE_FILTER = " AND c." + ContentTable.SOURCE_COLUMN + " IN (@1) ";
 
-    public static final String SELECT_ALL_ATTR_FILTER = " AND lower(a." + NAME_COLUMN + ") LIKE lower('%%2%') ";
+    public static final String SELECT_ALL_ATTR_FILTER = " AND lower(a." + NAME_COLUMN + ") LIKE lower('%@2%') ";
 
     public static final String SELECT_ALL_BY_USAGE_FAVS = " and c." + ContentTable.FAVOURITE_COLUMN + " = 1 ";
 
@@ -42,7 +42,7 @@ public abstract class AttributeTable {
             " SELECT " + ContentAttributeTable.CONTENT_ID_COLUMN + " FROM (" +
             " select ca1." + ContentAttributeTable.CONTENT_ID_COLUMN + " , COUNT(*)" +
             " from " + ContentAttributeTable.TABLE_NAME + " as ca1 inner join " + AttributeTable.TABLE_NAME + " as a1 on ca1." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = a1." + AttributeTable.ID_COLUMN +
-            " where lower(a1." + AttributeTable.NAME_COLUMN + ") in (%2) GROUP BY 1 HAVING COUNT(*) = %3) ) ) ";
+            " where lower(a1." + AttributeTable.NAME_COLUMN + ") in (@2) GROUP BY 1 HAVING COUNT(*) = @3) ) ) ";
 
     public static final String SELECT_ALL_BY_USAGE_END = " group by 2 order by 3 desc, 2 asc";
 

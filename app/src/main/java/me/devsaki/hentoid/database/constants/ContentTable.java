@@ -56,7 +56,7 @@ public abstract class ContentTable {
     public static final String ORDER_READS_ASC = " ORDER BY C." + READS_COLUMN + ", C." + LAST_READ_DATE_COLUMN;
     public static final String ORDER_READS_DESC = " ORDER BY C." + READS_COLUMN + " DESC, C." + LAST_READ_DATE_COLUMN + " DESC";
     public static final String ORDER_READ_DATE = " ORDER BY C." + LAST_READ_DATE_COLUMN + " DESC";
-    public static final String ORDER_RANDOM = " ORDER BY ((ABS(" + ID_COLUMN + " * %6) * 1e7) % 1e7)";
+    public static final String ORDER_RANDOM = " ORDER BY ((ABS(" + ID_COLUMN + " * @6) * 1e7) % 1e7)";
 
     // CREATE
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
@@ -91,7 +91,7 @@ public abstract class ContentTable {
     // SELECT
     public static final String SELECT_BY_CONTENT_ID = "SELECT * FROM " + TABLE_NAME + " C WHERE C." + ID_COLUMN + " = ?";
 
-    public static final String SELECT_BY_EXTERNAL_REF = "SELECT * FROM " + TABLE_NAME + " WHERE " + SOURCE_COLUMN + "= ? AND " + UNIQUE_SITE_ID_COLUMN + " IN (%1) AND " + STATUS_COLUMN + " IN (?,?,?,?,?)";
+    public static final String SELECT_BY_EXTERNAL_REF = "SELECT * FROM " + TABLE_NAME + " WHERE " + SOURCE_COLUMN + "= ? AND " + UNIQUE_SITE_ID_COLUMN + " IN (@1) AND " + STATUS_COLUMN + " IN (?,?,?,?,?)";
 
     public static final String SELECT_NULL_FOLDERS = "SELECT * FROM " + TABLE_NAME + " WHERE " + STORAGE_FOLDER_COLUMN + " is null";
 
@@ -104,12 +104,12 @@ public abstract class ContentTable {
 
     public static final String SELECT_DOWNLOADS_BASE = "SELECT C.* FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " in (?, ?, ?) ";
 
-    public static final String SELECT_DOWNLOADS_SITES = " AND C." + SOURCE_COLUMN + " in (%1) ";
+    public static final String SELECT_DOWNLOADS_SITES = " AND C." + SOURCE_COLUMN + " in (@1) ";
 
     public static final String SELECT_DOWNLOADS_FAVS = " AND C." + FAVOURITE_COLUMN + " = 1 ";
 
 
-    private static final String SELECT_DOWNLOADS_TITLE_RAW = " lower(C." + TITLE_COLUMN + ") LIKE '%2' ";
+    private static final String SELECT_DOWNLOADS_TITLE_RAW = " lower(C." + TITLE_COLUMN + ") LIKE '@2' ";
     public static final String SELECT_DOWNLOADS_TITLE = " AND " + SELECT_DOWNLOADS_TITLE_RAW;
     public static final String SELECT_DOWNLOADS_TITLE_UNIVERSAL = " AND (" + SELECT_DOWNLOADS_TITLE_RAW;
 
@@ -123,7 +123,7 @@ public abstract class ContentTable {
             + ContentAttributeTable.TABLE_NAME + " CA INNER JOIN " + AttributeTable.TABLE_NAME
             + " A ON CA." + ContentAttributeTable.ATTRIBUTE_ID_COLUMN + " = A." + AttributeTable.ID_COLUMN + " WHERE ";
 
-    public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (%4) AND A."
-            + AttributeTable.TYPE_COLUMN + " = %5) GROUP BY 1 HAVING COUNT(*)=%6 ))";
+    public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (@4) AND A."
+            + AttributeTable.TYPE_COLUMN + " = @5) GROUP BY 1 HAVING COUNT(*)=@6 ))";
     public static final String SELECT_DOWNLOADS_TAGS_UNIVERSAL = "lower(A." + AttributeTable.NAME_COLUMN + ") LIKE lower('%4') ) ))";
 }

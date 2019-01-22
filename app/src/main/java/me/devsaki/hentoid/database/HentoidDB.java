@@ -135,7 +135,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
             if (params != null && !params.isEmpty())
-                sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SOURCE_FILTER.replace("%1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
+                sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SOURCE_FILTER.replace("@1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
 
             for (AttributeType attrType : metadataMap.keySet()) {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
@@ -144,9 +144,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_ATTR_FILTER_JOINS);
                     sql.append(
                             AttributeTable.SELECT_COUNT_BY_TYPE_ATTR_FILTER_ATTRS
-                                    .replace("%4", Helper.buildListAsString(attrs, "'"))
-                                    .replace("%5", attrType.getCode() + "")
-                                    .replace("%6", attrs.size() + "")
+                                    .replace("@4", Helper.buildListAsString(attrs, "'"))
+                                    .replace("@5", attrType.getCode() + "")
+                                    .replace("@6", attrs.size() + "")
                     );
                 }
             }
@@ -418,7 +418,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql += ContentTable.ORDER_READ_DATE;
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
+                        sql += ContentTable.ORDER_RANDOM.replace("@6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
                         break;
                     default:
                         // Nothing
@@ -484,7 +484,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql += ContentTable.ORDER_READ_DATE;
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                        sql += ContentTable.ORDER_RANDOM.replace("%6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
+                        sql += ContentTable.ORDER_RANDOM.replace("@6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
                         break;
                     default:
                         // Nothing
@@ -594,7 +594,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         if (hasSiteFilter) {
             params = metadataMap.get(AttributeType.SOURCE);
             if (params.size() > 0)
-                sql.append(ContentTable.SELECT_DOWNLOADS_SITES.replace("%1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
+                sql.append(ContentTable.SELECT_DOWNLOADS_SITES.replace("@1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
         }
 
         if (filterFavourites) sql.append(ContentTable.SELECT_DOWNLOADS_FAVS);
@@ -602,7 +602,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         // Title filter -> continue querying Content table
         if (hasTitleFilter) {
             title = '%' + title.replace("'", "''") + '%';
-            sql.append(ContentTable.SELECT_DOWNLOADS_TITLE.replace("%2", title));
+            sql.append(ContentTable.SELECT_DOWNLOADS_TITLE.replace("@2", title));
         }
 
         // Tags filter -> query attribute table through a join
@@ -615,9 +615,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql.append(ContentTable.SELECT_DOWNLOADS_JOINS);
                         sql.append(
                                 ContentTable.SELECT_DOWNLOADS_TAGS
-                                        .replace("%4", Helper.buildListAsString(attrs, "'"))
-                                        .replace("%5", attrType.getCode() + "")
-                                        .replace("%6", attrs.size() + "")
+                                        .replace("@4", Helper.buildListAsString(attrs, "'"))
+                                        .replace("@5", attrType.getCode() + "")
+                                        .replace("@6", attrs.size() + "")
                         );
                     }
                 }
@@ -636,9 +636,9 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         query = '%' + query.replace("'", "''") + '%';
 
-        sql.append(ContentTable.SELECT_DOWNLOADS_TITLE_UNIVERSAL.replace("%2", query));
+        sql.append(ContentTable.SELECT_DOWNLOADS_TITLE_UNIVERSAL.replace("@2", query));
         sql.append(ContentTable.SELECT_DOWNLOADS_JOINS_UNIVERSAL);
-        sql.append(ContentTable.SELECT_DOWNLOADS_TAGS_UNIVERSAL.replace("%4", query));
+        sql.append(ContentTable.SELECT_DOWNLOADS_TAGS_UNIVERSAL.replace("@4", query));
 
         return sql.toString();
     }
@@ -650,7 +650,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             Timber.d("selectContentByExternalRef");
             String sql = ContentTable.SELECT_BY_EXTERNAL_REF;
 
-            sql = sql.replace("%1", Helper.buildListAsString(uniqueIds, "'"));
+            sql = sql.replace("@1", Helper.buildListAsString(uniqueIds, "'"));
 
             Timber.v(sql);
 
@@ -895,18 +895,18 @@ public class HentoidDB extends SQLiteOpenHelper {
 
                 if (filter != null && !filter.trim().isEmpty()) {
                     sql += AttributeTable.SELECT_ALL_ATTR_FILTER;
-                    sql = sql.replace("%2", filter);
+                    sql = sql.replace("@2", filter);
                 }
 
                 if (sources.size() > 0) {
                     sql += AttributeTable.SELECT_ALL_SOURCE_FILTER;
-                    sql = sql.replace("%1", Helper.buildListAsString(sources, ""));
+                    sql = sql.replace("@1", Helper.buildListAsString(sources, ""));
                 }
 
                 if (attrs.size() > 0) {
                     sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
-                    sql = sql.replace("%2", Helper.buildListAsString(attrs, "'"));
-                    sql = sql.replace("%3", attrs.size() + "");
+                    sql = sql.replace("@2", Helper.buildListAsString(attrs, "'"));
+                    sql = sql.replace("@3", attrs.size() + "");
                 }
             }
 
@@ -947,7 +947,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             if (filter != null && !filter.trim().isEmpty()) {
                 sql += AttributeTable.SELECT_ALL_ATTR_FILTER;
-                sql = sql.replace("%2", filter);
+                sql = sql.replace("@2", filter);
             }
 
             sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
@@ -990,7 +990,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
             if (params != null && !params.isEmpty())
-                sql.append(AttributeTable.SELECT_COUNT_BY_SOURCE_SOURCE_FILTER.replace("%1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
+                sql.append(AttributeTable.SELECT_COUNT_BY_SOURCE_SOURCE_FILTER.replace("@1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
 
             for (AttributeType attrType : metadataMap.keySet()) {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
@@ -999,9 +999,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                         sql.append(AttributeTable.SELECT_COUNT_BY_SOURCE_ATTR_FILTER_JOINS);
                     sql.append(
                             AttributeTable.SELECT_COUNT_BY_SOURCE_ATTR_FILTER_ATTRS
-                                    .replace("%4", Helper.buildListAsString(attrs, "'"))
-                                    .replace("%5", attrType.getCode() + "")
-                                    .replace("%6", attrs.size() + "")
+                                    .replace("@4", Helper.buildListAsString(attrs, "'"))
+                                    .replace("@5", attrType.getCode() + "")
+                                    .replace("@6", attrs.size() + "")
                     );
                 }
             }
