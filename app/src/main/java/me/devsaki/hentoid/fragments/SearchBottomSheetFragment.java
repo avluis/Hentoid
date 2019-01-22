@@ -209,12 +209,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 .filter(value -> !finalSelectedAttributes.contains(value))
                 .collect(toList());
 
+        String searchQuery = tagSearchView.getQuery().toString();
         if (attributes.isEmpty()) {
-            tagWaitMessage.setText(R.string.masterdata_no_result);
+            if (searchQuery.isEmpty()) this.dismiss();
+            else tagWaitMessage.setText(R.string.masterdata_no_result);
         } else if (attributes.size() > MAX_ATTRIBUTES_DISPLAYED) {
-            String searchQuery = tagSearchView.getQuery().toString();
-
-            String errMsg = (0 == searchQuery.length()) ? getString(R.string.masterdata_too_many_results_noquery) : getString(R.string.masterdata_too_many_results_query);
+            String errMsg = (searchQuery.isEmpty()) ? getString(R.string.masterdata_too_many_results_noquery) : getString(R.string.masterdata_too_many_results_query);
             tagWaitMessage.setText(errMsg.replace("%1", searchQuery));
         } else {
             tagWaitPanel.setVisibility(View.GONE);
