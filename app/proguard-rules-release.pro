@@ -29,6 +29,7 @@
 -verbose
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 
+-keep class me.devsaki.hentoid.parsers.content.** { *; }
 -keep class com.bumptech.glide.integration.okhttp3.OkHttpGlideModule
 
 -keep public class * extends android.app.Activity
