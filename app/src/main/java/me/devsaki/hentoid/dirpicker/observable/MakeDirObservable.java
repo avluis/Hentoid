@@ -3,9 +3,9 @@ package me.devsaki.hentoid.dirpicker.observable;
 import java.io.File;
 import java.io.IOException;
 
+import io.reactivex.Observable;
 import me.devsaki.hentoid.dirpicker.exceptions.DirExistsException;
 import me.devsaki.hentoid.dirpicker.exceptions.PermissionDeniedException;
-import rx.Observable;
 
 /**
  * Created by avluis on 06/12/2016.
@@ -26,7 +26,7 @@ public class MakeDirObservable {
                 boolean isDirCreated = newDir.mkdir();
                 if (isDirCreated) {
                     subscriber.onNext(newDir);
-                    subscriber.onCompleted();
+                    subscriber.onComplete();
                 } else {
                     subscriber.onError(new IOException());
                 }

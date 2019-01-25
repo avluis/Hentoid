@@ -4,14 +4,13 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.dirpicker.model.DirTree;
 import me.devsaki.hentoid.dirpicker.observable.MakeDirObservable;
 import me.devsaki.hentoid.dirpicker.observers.MakeDirObserver;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 /**
  * Created by avluis on 06/12/2016.
@@ -20,7 +19,7 @@ import rx.schedulers.Schedulers;
 class MakeDir {
     private final DirTree dirTree;
     private final EventBus bus;
-    private Subscription subscription;
+//    private Subscription subscription;
 
     MakeDir(DirTree dirTree, EventBus bus) {
         this.dirTree = dirTree;
@@ -28,21 +27,22 @@ class MakeDir {
     }
 
     void process(File rootDir, String name) {
-        cancelPrevOp();
+//        cancelPrevOp();
 
         Observable<File> observable = new MakeDirObservable().create(rootDir, name);
         Observer<File> observer = new MakeDirObserver(dirTree, bus);
 
-        subscription = observable.observeOn(Schedulers.io())
-                .onBackpressureDrop()
+/*        subscription = */ observable.observeOn(Schedulers.io())
+//                .onBackpressureDrop()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(observer);
     }
-
+/*
     private void cancelPrevOp() {
         if (subscription != null && !subscription.isUnsubscribed()) {
             subscription.unsubscribe();
         }
         subscription = null;
     }
+*/
 }

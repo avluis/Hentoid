@@ -4,16 +4,15 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
+import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.model.DirTree;
 import me.devsaki.hentoid.dirpicker.model.FileBuilder;
 import me.devsaki.hentoid.dirpicker.observable.ListDirObservable;
 import me.devsaki.hentoid.dirpicker.observers.ListDirObserver;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -24,7 +23,7 @@ class ListDir {
 
     private final DirTree dirTree;
     private final EventBus bus;
-    private Subscription subscription;
+//    private Subscription subscription;
 
     ListDir(DirTree dirTree, EventBus bus) {
         this.dirTree = dirTree;
@@ -33,14 +32,16 @@ class ListDir {
 
     void process(File rootDir) {
         if (rootDir.canRead()) {
-            cancelPrevOp();
+//            cancelPrevOp();
             updateDirList(rootDir);
 
             Observable<File> observable = new ListDirObservable().create(rootDir);
             Observer<File> observer = new ListDirObserver(dirTree, bus);
 
-            subscription = observable.subscribeOn(Schedulers.io())
-                    .onBackpressureBuffer()
+            // TODO - anti-leak measures
+            /*            subscription =*/
+            observable.subscribeOn(Schedulers.io())
+//                    .onBackpressureBuffer()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(observer);
         } else {
@@ -49,13 +50,14 @@ class ListDir {
         }
     }
 
-    private void cancelPrevOp() {
-        if (subscription != null && !subscription.isUnsubscribed()) {
-            subscription.unsubscribe();
+    /*
+        private void cancelPrevOp() {
+            if (subscription != null && !subscription.isUnsubscribed()) {
+                subscription.unsubscribe();
+            }
+            subscription = null;
         }
-        subscription = null;
-    }
-
+    */
     private void updateDirList(File rootDir) {
         dirTree.setRootDir(rootDir);
         updateParentDir(rootDir);

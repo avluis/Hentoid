@@ -2,8 +2,9 @@ package me.devsaki.hentoid.dirpicker.observable;
 
 import java.io.File;
 
-import rx.Observable;
-import rx.functions.Func1;
+import io.reactivex.Observable;
+import io.reactivex.functions.Predicate;
+
 
 /**
  * Created by avluis on 06/12/2016.
@@ -15,7 +16,7 @@ public class ListDirObservable extends ListFileObservable {
         return super.create(rootDir).filter(isDir());
     }
 
-    private Func1<File, Boolean> isDir() {
+    private Predicate<File> isDir() {
         return File::isDirectory;
     }
 }

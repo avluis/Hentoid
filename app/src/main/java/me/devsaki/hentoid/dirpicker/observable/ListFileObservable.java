@@ -2,7 +2,8 @@ package me.devsaki.hentoid.dirpicker.observable;
 
 import java.io.File;
 
-import rx.Observable;
+import io.reactivex.Observable;
+
 
 /**
  * Created by avluis on 06/12/2016.
@@ -17,7 +18,7 @@ class ListFileObservable {
             for (File child : childDirs) {
                 subscriber.onNext(child);
             }
-            subscriber.onCompleted();
+            subscriber.onComplete();
         });
     }
 }

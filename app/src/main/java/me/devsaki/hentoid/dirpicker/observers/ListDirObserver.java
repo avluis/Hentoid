@@ -4,10 +4,11 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 import me.devsaki.hentoid.dirpicker.events.DataSetChangedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.model.DirTree;
-import rx.Observer;
 import timber.log.Timber;
 
 /**
@@ -27,7 +28,7 @@ public class ListDirObserver implements Observer<File> {
     }
 
     @Override
-    public void onCompleted() {
+    public void onComplete() {
         dirTree.dirList.sort();
 
         if (dirTree.getParent() != null) {
@@ -41,6 +42,11 @@ public class ListDirObserver implements Observer<File> {
     public void onError(Throwable e) {
         Timber.d("onError: %s", e.toString());
         bus.post(new OpFailedEvent());
+    }
+
+    @Override
+    public void onSubscribe(Disposable d) {
+        // TODO is there something here ?
     }
 
     @Override
