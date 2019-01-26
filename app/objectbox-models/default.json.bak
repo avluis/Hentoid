@@ -150,54 +150,6 @@
         }
       ],
       "relations": []
-    },
-    {
-      "id": "5:1507624453077224648",
-      "lastPropertyId": "2:2516142253958987500",
-      "name": "AttributeType",
-      "properties": [
-        {
-          "id": "1:7592738185335406663",
-          "name": "code"
-        },
-        {
-          "id": "2:2516142253958987500",
-          "name": "icon"
-        }
-      ],
-      "relations": []
-    },
-    {
-      "id": "6:4536601977896522985",
-      "lastPropertyId": "6:357430645307545125",
-      "name": "Site",
-      "properties": [
-        {
-          "id": "1:1563990578201199392",
-          "name": "code"
-        },
-        {
-          "id": "2:9191187514651288803",
-          "name": "description"
-        },
-        {
-          "id": "3:8574774205759935691",
-          "name": "uniqueKeyword"
-        },
-        {
-          "id": "4:5093810653843572088",
-          "name": "url"
-        },
-        {
-          "id": "5:7850878983689763618",
-          "name": "ico"
-        },
-        {
-          "id": "6:357430645307545125",
-          "name": "allowParallelDownloads"
-        }
-      ],
-      "relations": []
     }
   ],
   "lastEntityId": "6:4536601977896522985",
@@ -206,9 +158,21 @@
   "lastSequenceId": "0:0",
   "modelVersion": 4,
   "modelVersionParserMinimum": 4,
-  "retiredEntityUids": [],
+  "retiredEntityUids": [
+    4536601977896522985,
+    1507624453077224648
+  ],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    1563990578201199392,
+    9191187514651288803,
+    8574774205759935691,
+    5093810653843572088,
+    7850878983689763618,
+    357430645307545125,
+    7592738185335406663,
+    2516142253958987500
+  ],
   "retiredRelationUids": [],
   "version": 1
 }

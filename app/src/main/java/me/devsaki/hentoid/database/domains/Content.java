@@ -38,7 +38,7 @@ public class Content implements Serializable {
     @Id
     private long id;
     @Expose
-    @Unique
+//    @Unique
     private String url;
     @Expose
     private String title;

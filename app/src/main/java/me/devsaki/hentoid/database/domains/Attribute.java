@@ -26,7 +26,7 @@ public class Attribute {
     @Id
     private long id;
     @Expose
-    @Unique
+//    @Unique
     private String url;
     @Expose
     private String name;
