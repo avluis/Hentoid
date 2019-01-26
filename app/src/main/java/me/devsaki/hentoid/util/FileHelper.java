@@ -28,7 +28,7 @@ import java.util.Locale;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
@@ -469,7 +469,7 @@ public class FileHelper {
             }
         }
 
-        HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         content.increaseReads().setLastReadDate(new Date().getTime());
         db.updateContentReads(content);
 

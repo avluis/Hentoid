@@ -221,6 +221,7 @@ public final class Preferences {
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
     public static final class Constant {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
+        public static final int PREF_ORDER_CONTENT_NONE = -1;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
         public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
         public static final int PREF_ORDER_CONTENT_ALPHABETIC_INVERTED = 2;

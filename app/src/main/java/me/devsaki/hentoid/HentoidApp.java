@@ -18,6 +18,7 @@ import java.util.List;
 
 import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
@@ -119,7 +120,7 @@ public class HentoidApp extends Application {
      * Clean up and upgrade database
      */
     private void performDatabaseHousekeeping() {
-        HentoidDB db = HentoidDB.getInstance(this);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(this);
         Timber.d("Content item(s) count: %s", db.countContentEntries());
 
         // Set items that were being downloaded in previous session as paused
@@ -129,18 +130,18 @@ public class HentoidApp extends Application {
         List<Content> obsoleteTempContent = db.selectContentByStatus(StatusContent.SAVED);
         for (Content c : obsoleteTempContent) db.deleteContent(c);
 
-        // Perform technical data updates
-        UpgradeTo(BuildConfig.VERSION_CODE, db);
+        // Perform technical data updates on the old database engine
+        UpgradeTo(BuildConfig.VERSION_CODE); // Yes, this _is_ useful to have the old DB ready for ObjectBox migration
     }
 
     /**
      * Handles complex DB version updates at startup
      *
      * @param versionCode Current app version
-     * @param db          Hentoid DB
      */
     @SuppressWarnings("deprecation")
-    private void UpgradeTo(int versionCode, HentoidDB db) {
+    private void UpgradeTo(int versionCode) {
+        HentoidDB db = HentoidDB.getInstance(this);
         if (versionCode > 43) // Update all "storage_folder" fields in CONTENT table (mandatory)
         {
             List<Content> contents = db.selectContentEmptyFolder();

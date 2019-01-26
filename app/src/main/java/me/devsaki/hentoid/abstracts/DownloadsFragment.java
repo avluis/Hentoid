@@ -37,7 +37,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -48,7 +47,8 @@ import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
-import me.devsaki.hentoid.database.DatabaseCollectionAccessor;
+import me.devsaki.hentoid.database.ObjectBoxAccessor;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Language;
@@ -168,9 +168,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Collection accessor (DB or external, depending on mode)
     private CollectionAccessor collectionAccessor;
     // Total count of book in entire selected/queried collection (Adapter is in charge of updating it)
-    private int mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
+    private long mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
     // Total count of book in entire collection (Adapter is in charge of updating it)
-    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
+    private long mTotalCount = -1; // -1 = uninitialized (no query done yet)
     // Used to ignore native calls to onQueryTextChange
     boolean invalidateNextQueryTextChange = false;
     // Used to detect if the library has been refreshed
@@ -441,9 +441,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             long[] selectedTagIds = state.getLongArray(SELECTED_TAGS);
 //            List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
+            ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
             if (selectedTagIds != null) {
                 for (long i : selectedTagIds) {
-                    Attribute a = getDB().selectAttributeById(i);
+                    Attribute a = db.selectAttributeById(i);
                     if (a != null) {
                         selectedSearchTags.add(a);
                     }
@@ -474,7 +475,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
+        collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxAccessor(mContext) : new MikanCollectionAccessor(mContext);
 
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
@@ -1092,7 +1093,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void showToolbar(boolean show);
 
-    protected abstract void displayResults(List<Content> results, int totalSelectedContent);
+    protected abstract void displayResults(List<Content> results, long totalSelectedContent);
 
     /**
      * Indicates if current page is the last page of the library
@@ -1131,7 +1132,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     ContentListener implementation
      */
     @Override
-    public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) {
+    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
         Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
         isLoading = false;
 

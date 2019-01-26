@@ -91,7 +91,7 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     @Override
-    protected void displayResults(List<Content> results, int totalSelectedContent) {
+    protected void displayResults(List<Content> results, long totalSelectedContent) {
         if (0 == results.size()) {
             Timber.d("Result: Nothing to match.");
             displayNoResults();

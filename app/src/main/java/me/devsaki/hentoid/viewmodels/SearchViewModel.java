@@ -89,7 +89,7 @@ public class SearchViewModel extends AndroidViewModel {
 
     private ContentListener contentResultListener = new ContentListener() {
         @Override
-        public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) {
+        public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
             ContentSearchResult result = new ContentSearchResult();
             result.totalSelected = totalSelectedContent;
             selectedContent.postValue(result);
@@ -249,7 +249,7 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public class ContentSearchResult {
-        public int totalSelected;
+        public long totalSelected;
         public boolean success = true;
         public String message;
     }

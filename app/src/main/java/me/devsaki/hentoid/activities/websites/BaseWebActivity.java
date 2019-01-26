@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,8 +34,9 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -69,7 +69,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     // Content currently viewed
     private Content currentContent;
     // Database
-    private HentoidDB db;
+    private ObjectBoxDB db;
     // Indicates if webView is loading
     private boolean webViewIsLoading;
     // Indicates if corresponding action buttons are enabled
@@ -118,7 +118,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         setContentView(R.layout.activity_base_web);
 
-        db = HentoidDB.getInstance(this);
+        db = ObjectBoxDB.getInstance(this);
 
         if (getStartSite() == null) {
             Timber.w("Site is null!");
@@ -296,7 +296,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      */
     public void onReadFabClick(View view) {
         if (currentContent != null) {
-            currentContent = db.selectContentById(currentContent.getId());
+            currentContent = db.selectContentById(currentContent.getId()); // TODO - wasn't it by URL ?
             if (currentContent != null) {
                 if (StatusContent.DOWNLOADED == currentContent.getStatus()
                         || StatusContent.ERROR == currentContent.getStatus()) {
@@ -334,10 +334,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 .setStatus(StatusContent.DOWNLOADING);
         db.updateContentStatus(currentContent);
 
-        List<Pair<Integer, Integer>> queue = db.selectQueue();
+        List<QueueRecord> queue = db.selectQueue();
         int lastIndex = 1;
         if (queue.size() > 0) {
-            lastIndex = queue.get(queue.size() - 1).second + 1;
+            lastIndex = queue.get(queue.size() - 1).rank + 1;
         }
         db.insertQueue(currentContent.getId(), lastIndex);
 

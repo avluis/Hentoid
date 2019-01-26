@@ -12,7 +12,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,10 +33,11 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ContentListener;
@@ -452,7 +452,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void downloadContent(Content item) {
-        HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         item.setDownloadDate(new Date().getTime());
 
@@ -466,10 +466,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             db.updateContentStatus(item);
         }
 
-        List<Pair<Integer, Integer>> queue = db.selectQueue();
+        List<QueueRecord> queue = db.selectQueue();
         int lastIndex = 1;
         if (queue.size() > 0) {
-            lastIndex = queue.get(queue.size() - 1).second + 1;
+            lastIndex = queue.get(queue.size() - 1).rank + 1;
         }
         db.insertQueue(item.getId(), lastIndex);
 
@@ -531,7 +531,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         item.setFavourite(!item.isFavourite());
 
         // Persist in it DB
-        final HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.updateContentFavourite(item);
 
         // Persist in it JSON
@@ -672,7 +672,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void deleteItem(final Content item) {
         remove(item);
 
-        final HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         AsyncTask.execute(() -> {
             FileHelper.removeContent(item);
             db.deleteContent(item);
@@ -691,7 +691,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         mSortedList.endBatchedUpdates();
         itemSelectListener.onItemClear(0);
 
-        final HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         AsyncTask.execute(() -> {
             for (Content item : contents) {
@@ -743,7 +743,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     // ContentListener implementation
     @Override
-    public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) { // Listener for pages retrieval in Mikan mode
+    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) { // Listener for pages retrieval in Mikan mode
         if (1 == results.size()) // 1 content with pages
         {
             downloadContent(results.get(0));

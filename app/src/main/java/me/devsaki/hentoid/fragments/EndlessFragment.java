@@ -39,7 +39,7 @@ public class EndlessFragment extends DownloadsFragment {
     }
 
     @Override
-    protected void displayResults(List<Content> results, int totalSelectedContent) {
+    protected void displayResults(List<Content> results, long totalSelectedContent) {
         if (isPageLoading) {
             mAdapter.add(results);
             isPageLoading = false;
