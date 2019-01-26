@@ -11,7 +11,6 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.model.DirTree;
 import me.devsaki.hentoid.dirpicker.model.FileBuilder;
-import me.devsaki.hentoid.dirpicker.observable.ListDirObservable;
 import me.devsaki.hentoid.dirpicker.observers.ListDirObserver;
 import timber.log.Timber;
 
@@ -35,12 +34,13 @@ class ListDir {
 //            cancelPrevOp();
             updateDirList(rootDir);
 
-            Observable<File> observable = new ListDirObservable().create(rootDir);
             Observer<File> observer = new ListDirObserver(dirTree, bus);
 
             // TODO - anti-leak measures
             /*            subscription =*/
-            observable.subscribeOn(Schedulers.io())
+            Observable.fromArray(rootDir.listFiles())
+                    .filter(File::isDirectory)
+                    .subscribeOn(Schedulers.io())
 //                    .onBackpressureBuffer()
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(observer);
