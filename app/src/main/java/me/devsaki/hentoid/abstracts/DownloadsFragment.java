@@ -37,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -419,9 +420,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         outState.putInt(CURRENT_PAGE, currentPage);
         outState.putInt(MODE, mode);
 
-        ArrayList<Integer> selectedTagIds = new ArrayList<>();
-        for (Attribute a : selectedSearchTags) selectedTagIds.add(a.getId());
-        outState.putIntegerArrayList(SELECTED_TAGS, selectedTagIds);
+        long[] selectedTagIds = new long[selectedSearchTags.size()];
+        int index = 0;
+        for (Attribute a : selectedSearchTags) {
+            selectedTagIds[index++] = a.getId();
+        }
+        outState.putLongArray(SELECTED_TAGS, selectedTagIds);
+//        outState.putIntegerArrayList(SELECTED_TAGS, selectedTagIds);
     }
 
     @Override
@@ -434,9 +439,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             currentPage = state.getInt(CURRENT_PAGE);
             mode = state.getInt(MODE);
 
-            List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
+            long[] selectedTagIds = state.getLongArray(SELECTED_TAGS);
+//            List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
             if (selectedTagIds != null) {
-                for (Integer i : selectedTagIds) {
+                for (long i : selectedTagIds) {
                     Attribute a = getDB().selectAttributeById(i);
                     if (a != null) {
                         selectedSearchTags.add(a);

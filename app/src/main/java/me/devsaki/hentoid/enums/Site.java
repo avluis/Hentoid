@@ -2,6 +2,8 @@ package me.devsaki.hentoid.enums;
 
 import javax.annotation.Nullable;
 
+import io.objectbox.annotation.Entity;
+import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
 
@@ -42,7 +44,7 @@ public enum Site {
     }
 
     @Nullable
-    public static Site searchByCode(int code) {
+    public static Site searchByCode(long code) {
         if (code == -1) {
             Timber.w("Invalid site code!");
         }
@@ -95,6 +97,26 @@ public enum Site {
             return "/Downloads/";
         } else {
             return '/' + description + '/';
+        }
+    }
+
+    public static class SiteConverter implements PropertyConverter<Site, Integer> {
+        @Override
+        public Site convertToEntityProperty(Integer databaseValue) {
+            if (databaseValue == null) {
+                return null;
+            }
+            for (Site site : Site.values()) {
+                if (site.getCode() == databaseValue) {
+                    return site;
+                }
+            }
+            return Site.FAKKU;
+        }
+
+        @Override
+        public Integer convertToDatabaseValue(Site entityProperty) {
+            return entityProperty == null ? null : entityProperty.getCode();
         }
     }
 }

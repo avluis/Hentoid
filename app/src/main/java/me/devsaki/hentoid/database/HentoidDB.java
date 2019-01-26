@@ -233,8 +233,8 @@ public class HentoidDB extends SQLiteOpenHelper {
 
                         List<Attribute> attributes = new ArrayList<>();
                         for (AttributeType attributeType : AttributeType.values()) {
-                            if (row.getAttributes().get(attributeType) != null) {
-                                attributes.addAll(row.getAttributes().get(attributeType));
+                            if (row.getAttributeMap().get(attributeType) != null) {
+                                attributes.addAll(row.getAttributeMap().get(attributeType));
                             }
                         }
                         insertAttributes(db, row, attributes);
@@ -330,7 +330,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     @Nullable
-    public Content selectContentById(int id) {
+    public Content selectContentById(long id) {
         Content result;
         synchronized (locker) {
             Timber.d("selectContentById");
@@ -350,7 +350,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     @Nullable
-    private Content selectContentById(SQLiteDatabase db, int id) {
+    private Content selectContentById(SQLiteDatabase db, long id) {
         Content result = null;
 
         try (Cursor cursorContents = db.rawQuery(ContentTable.SELECT_BY_CONTENT_ID, new String[]{id + ""})) {
@@ -757,14 +757,14 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setQueryOrder(cursorContent.getPosition());
 
         if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
-                .setAttributes(selectAttributesByContentId(db, content.getId()));
+                .setAttributeMap(selectAttributesByContentId(db, content.getId()));
 
         content.populateAuthor();
 
         return content;
     }
 
-    private List<ImageFile> selectImageFilesByContentId(SQLiteDatabase db, int id) {
+    private List<ImageFile> selectImageFilesByContentId(SQLiteDatabase db, long id) {
         List<ImageFile> result = Collections.emptyList();
         Cursor cursorImageFiles = null;
         try {
@@ -791,7 +791,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public SparseIntArray countProcessedImagesById(int contentId) {
+    public SparseIntArray countProcessedImagesById(long contentId) {
         SparseIntArray result = new SparseIntArray();
 
         synchronized (locker) {
@@ -823,7 +823,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    private AttributeMap selectAttributesByContentId(SQLiteDatabase db, int id) {
+    private AttributeMap selectAttributesByContentId(SQLiteDatabase db, long id) {
         AttributeMap result = null;
         Cursor cursorAttributes = null;
         try {
@@ -849,7 +849,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public Attribute selectAttributeById(int id) {
+    public Attribute selectAttributeById(long id) {
         Attribute result = null;
 
         synchronized (locker) {
@@ -887,7 +887,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
             if (attributes != null) {
                 // Detect the presence of sources within given attributes
-                List<Integer> sources = new ArrayList<>();
+                List<Long> sources = new ArrayList<>();
                 List<Attribute> attrs = new ArrayList<>();
                 for (Attribute a : attributes)
                     if (a.getType().equals(AttributeType.SOURCE)) sources.add(a.getId());
@@ -1403,7 +1403,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    public void insertQueue(int id, int order) {
+    public void insertQueue(long id, int order) {
         synchronized (locker) {
             Timber.d("insertQueue");
             SQLiteDatabase db = null;
@@ -1429,7 +1429,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    public void deleteQueueById(int contentId) {
+    public void deleteQueueById(long contentId) {
         synchronized (locker) {
             Timber.d("deleteQueueById");
             SQLiteDatabase db = null;

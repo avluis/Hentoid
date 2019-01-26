@@ -219,7 +219,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void attachSeries(ContentHolder holder, Content content) {
         String templateSeries = context.getResources().getString(R.string.work_series);
         StringBuilder seriesBuilder = new StringBuilder();
-        List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
+        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
             holder.tvSeries.setVisibility(View.GONE);
         } else {
@@ -245,9 +245,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         String templateArtist = context.getResources().getString(R.string.work_artist);
         StringBuilder artistsBuilder = new StringBuilder();
         List<Attribute> attributes = new ArrayList<>();
-        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
+        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
         if (artistAttributes != null) attributes.addAll(artistAttributes);
-        List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
+        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
         if (circleAttributes != null) attributes.addAll(circleAttributes);
 
         if (attributes.isEmpty()) {
@@ -273,7 +273,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void attachTags(ContentHolder holder, Content content) {
         String templateTags = context.getResources().getString(R.string.work_tags);
         StringBuilder tagsBuilder = new StringBuilder();
-        List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
+        List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);

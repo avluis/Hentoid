@@ -11,8 +11,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
-import static me.devsaki.hentoid.enums.Site.NHENTAI;
-
 public class EHentaiGalleryMetadata {
 
     @Expose
@@ -59,7 +57,7 @@ public class EHentaiGalleryMetadata {
                 .setSite(Site.EHENTAI);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
+        result.setAttributeMap(attributes);
 
         String[] tagParts;
         AttributeType type;

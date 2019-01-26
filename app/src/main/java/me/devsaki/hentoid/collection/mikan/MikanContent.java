@@ -54,7 +54,7 @@ public class MikanContent implements Serializable {
         result.setTitle(name);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
+        result.setAttributeMap(attributes);
 
         for (MikanAttribute a : artist) attributes.add(new Attribute(AttributeType.ARTIST, a.name, a.url));
         for (MikanAttribute a : group) attributes.add(new Attribute(AttributeType.CIRCLE, a.name, a.url));

@@ -321,12 +321,12 @@ public final class Helper {
         return str.toString();
     }
 
-    public static List<Integer> extractAttributeIdsByType(List<Attribute> attrs, AttributeType type) {
+    public static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType type) {
         return extractAttributeIdsByType(attrs, new AttributeType[]{type});
     }
 
-    private static List<Integer> extractAttributeIdsByType(List<Attribute> attrs, AttributeType[] types) {
-        List<Integer> result = new ArrayList<>();
+    private static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType[] types) {
+        List<Long> result = new ArrayList<>();
 
         for (Attribute a : attrs) {
             for (AttributeType type : types) {
@@ -337,8 +337,8 @@ public final class Helper {
         return result;
     }
 
-    public static List<Integer> extractAttributesIds(List<Attribute> attrs) {
-        List<Integer> result = new ArrayList<>();
+    public static List<Long> extractAttributesIds(List<Attribute> attrs) {
+        List<Long> result = new ArrayList<>();
         for (Attribute attr : attrs) result.add(attr.getId());
         return result;
     }

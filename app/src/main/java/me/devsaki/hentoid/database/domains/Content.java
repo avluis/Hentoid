@@ -7,6 +7,12 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import io.objectbox.annotation.Convert;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Transient;
+import io.objectbox.annotation.Unique;
+import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.websites.BaseWebActivity;
 import me.devsaki.hentoid.activities.websites.EHentaiActivity;
@@ -25,16 +31,20 @@ import me.devsaki.hentoid.util.AttributeMap;
  * Created by DevSaki on 09/05/2015.
  * Content builder
  */
+@Entity
 public class Content implements Serializable {
 
+    @Id
+    private long id;
     @Expose
+    @Unique
     private String url;
     @Expose
     private String title;
     @Expose
     private String author;
     @Expose
-    private AttributeMap attributes;
+    private ToMany<Attribute> attributes; // TODO - not sure this will result in an n-n relationship. Attributes must be seen as master data - to code app-side ?
     @Expose
     private String coverImageUrl;
     @Expose
@@ -44,10 +54,12 @@ public class Content implements Serializable {
     @Expose
     private long downloadDate;
     @Expose
+    @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
     @Expose
     private List<ImageFile> imageFiles;
     @Expose
+    @Convert(converter = Site.SiteConverter.class, dbType = Integer.class)
     private Site site;
     private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
     @Expose
@@ -56,25 +68,40 @@ public class Content implements Serializable {
     private long reads = 0;
     @Expose
     private long lastReadDate;
-    // Runtime attributes; no need to expose them
+    // Runtime attributes; no need to expose them nor to persist them
+    @Transient
     private double percent;
+    @Transient
     private int queryOrder;
+    @Transient
     private boolean selected = false;
 
+    public List<Attribute> getAttributes() { return this.attributes; }
+    public void setAttributes(ToMany<Attribute> attributes) { this.attributes = attributes; }
 
-    public AttributeMap getAttributes() {
-        if (null == attributes) attributes = new AttributeMap();
-        return attributes;
+    public AttributeMap getAttributeMap() {
+        AttributeMap result = new AttributeMap();
+        result.add(attributes);
+        return result;
     }
 
-    public Content setAttributes(AttributeMap attributes) {
-        this.attributes = attributes;
+    public Content setAttributeMap(AttributeMap attributes) {
+        if (attributes != null)
+        {
+            for(AttributeType type : attributes.keySet())
+            {
+                this.attributes.addAll(attributes.get(type));
+            }
+        }
         return this;
     }
-
+/*
     public int getId() {
         return url.hashCode();
     }
+*/
+    public long getId() { return this.id; }
+    public void setId(long id ) { this.id = id; }
 
     public String getUniqueSiteId() {
         String[] paths;
@@ -159,7 +186,7 @@ public class Content implements Serializable {
             return url.substring(1, url.lastIndexOf("/"));
         } else {
             if (attributes != null) {
-                List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);
+                List<Attribute> attributesList = getAttributeMap().get(AttributeType.CATEGORY);
                 if (attributesList != null && attributesList.size() > 0) {
                     return attributesList.get(0).getName();
                 }
@@ -232,12 +259,13 @@ public class Content implements Serializable {
 
     public Content populateAuthor() {
         String author = "";
-        if (getAttributes().containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
-            author = attributes.get(AttributeType.ARTIST).get(0).getName();
+        AttributeMap attrMap = getAttributeMap();
+        if (attrMap.containsKey(AttributeType.ARTIST) && attrMap.get(AttributeType.ARTIST).size() > 0)
+            author = attrMap.get(AttributeType.ARTIST).get(0).getName();
         if (null == author || author.equals("")) // Try and get Circle
         {
-            if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
-                author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+            if (attrMap.containsKey(AttributeType.CIRCLE) && attrMap.get(AttributeType.CIRCLE).size() > 0)
+                author = attrMap.get(AttributeType.CIRCLE).get(0).getName();
         }
         if (null == author) author = "";
         setAuthor(author);

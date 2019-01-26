@@ -4,7 +4,6 @@ import android.test.AndroidTestCase;
 import android.test.RenamingDelegatingContext;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -107,7 +106,7 @@ public class TestHentoidDB extends AndroidTestCase {
                 }
             }
             contents.add(new Content()
-                    .setAttributes(attributeMap)
+                    .setAttributeMap(attributeMap)
                     .setUrl("/doujinshi/u" + k)
                     .setCoverImageUrl("c" + k)
                     .setDownloadDate(1000 * k)

@@ -55,7 +55,7 @@ public class NhentaiContent {
         result.setTitle(title);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
+        result.setAttributeMap(attributes);
 
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true);

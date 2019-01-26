@@ -141,7 +141,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void attachSeries(ViewHolder holder, Content content) {
         String templateSeries = context.getString(R.string.work_series);
         StringBuilder series = new StringBuilder();
-        List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
+        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
             holder.tvSeries.setVisibility(View.GONE);
         } else {
@@ -173,9 +173,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         String templateArtist = context.getString(R.string.work_artist);
         StringBuilder artists = new StringBuilder();
         List<Attribute> attributes = new ArrayList<>();
-        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
+        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
         if (artistAttributes != null) attributes.addAll(artistAttributes);
-        List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
+        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
         if (circleAttributes != null) attributes.addAll(circleAttributes);
 
         boolean first = true;
@@ -204,7 +204,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void attachTags(ViewHolder holder, Content content) {
         String templateTags = context.getString(R.string.work_tags);
         StringBuilder tags = new StringBuilder();
-        List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
+        List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
@@ -296,7 +296,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      *
      * @param contentId ID of Content whose priority has to be raised
      */
-    private void moveUp(int contentId) {
+    private void moveUp(long contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
@@ -332,7 +332,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      *
      * @param contentId ID of Content whose priority has to be raised to the top
      */
-    private void moveTop(int contentId) {
+    private void moveTop(long contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
@@ -372,7 +372,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      *
      * @param contentId ID of Content whose priority has to be lowered
      */
-    private void moveDown(int contentId) {
+    private void moveDown(long contentId) {
         HentoidDB db = HentoidDB.getInstance(context);
         List<Pair<Integer, Integer>> queue = db.selectQueue();
 
