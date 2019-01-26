@@ -238,7 +238,7 @@ public class ContentDownloadService extends IntentService {
 
             // Save JSON file
             try {
-                JsonHelper.saveJson(content, dir);
+                JsonHelper.saveJson(content.populateAttributeMap(), dir);
             } catch (IOException e) {
                 Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
             }

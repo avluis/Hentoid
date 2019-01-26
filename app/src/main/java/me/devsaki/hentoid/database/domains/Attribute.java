@@ -30,6 +30,7 @@ public class Attribute {
     private String url;
     @Expose
     private String name;
+    @Expose
     @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
     private AttributeType type;
     @Transient

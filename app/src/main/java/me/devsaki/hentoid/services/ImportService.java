@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ContentV1;
@@ -158,7 +158,7 @@ public class ImportService extends IntentService {
                         Timber.i(message);
                     }
                 }
-                HentoidDB.getInstance(this).insertContent(content);
+                ObjectBoxDB.getInstance(this).insertContent(content);
                 booksOK++;
                 Timber.d("Import book OK : %s", file.getAbsolutePath());
             } else {
@@ -314,7 +314,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
             try {
-                JsonHelper.saveJson(contentV2, file);
+                JsonHelper.saveJson(contentV2.populateAttributeMap(), file);
             } catch (IOException e) {
                 Timber.e(e,
                         "Error converting JSON (old) to JSON (v2): %s", content.getTitle());
@@ -342,7 +342,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
             try {
-                JsonHelper.saveJson(contentV2, file);
+                JsonHelper.saveJson(contentV2.populateAttributeMap(), file);
             } catch (IOException e) {
                 Timber.e(e, "Error converting JSON (v1) to JSON (v2): %s", content.getTitle());
             }
@@ -359,8 +359,7 @@ public class ImportService extends IntentService {
     private static Content importJsonV2(File json) {
         try {
             Content content = JsonHelper.jsonToObject(json, Content.class);
-
-            if (null == content.getAuthor()) content.populateAuthor();
+            content.populateAttributes();
 
             String fileRoot = Preferences.getRootFolderName();
             content.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));

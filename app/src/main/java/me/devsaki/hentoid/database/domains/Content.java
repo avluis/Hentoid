@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -43,7 +44,7 @@ public class Content implements Serializable {
     private String title;
     @Expose
     private String author;
-    @Expose
+    @Expose(serialize = false, deserialize = false)
     private ToMany<Attribute> attributes; // TODO - not sure this will result in an n-n relationship. Attributes must be seen as master data - to code app-side ?
     @Expose
     private String coverImageUrl;
@@ -75,9 +76,19 @@ public class Content implements Serializable {
     private int queryOrder;
     @Transient
     private boolean selected = false;
+    // Kept for retro-compatibility with contentV2.json Hentoid files
+    @Transient
+    @Expose
+    @SerializedName("attributes")
+    private AttributeMap attributeMap;
 
-    public List<Attribute> getAttributes() { return this.attributes; }
-    public void setAttributes(ToMany<Attribute> attributes) { this.attributes = attributes; }
+    public List<Attribute> getAttributes() {
+        return this.attributes;
+    }
+
+    public void setAttributes(ToMany<Attribute> attributes) {
+        this.attributes = attributes;
+    }
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
@@ -86,22 +97,26 @@ public class Content implements Serializable {
     }
 
     public Content setAttributeMap(AttributeMap attributes) {
-        if (attributes != null)
-        {
-            for(AttributeType type : attributes.keySet())
-            {
+        if (attributes != null) {
+            for (AttributeType type : attributes.keySet()) {
                 this.attributes.addAll(attributes.get(type));
             }
         }
         return this;
     }
-/*
-    public int getId() {
-        return url.hashCode();
+
+    /*
+        public int getId() {
+            return url.hashCode();
+        }
+    */
+    public long getId() {
+        return this.id;
     }
-*/
-    public long getId() { return this.id; }
-    public void setId(long id ) { this.id = id; }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getUniqueSiteId() {
         String[] paths;
@@ -269,6 +284,20 @@ public class Content implements Serializable {
         }
         if (null == author) author = "";
         setAuthor(author);
+        return this;
+    }
+
+    public Content populateAttributeMap() {
+        this.attributeMap = getAttributeMap();
+        return this;
+    }
+
+    public Content populateAttributes() {
+        if (attributeMap != null) {
+            this.attributes.clear();
+            for (AttributeType type : attributeMap.keySet())
+                this.attributes.addAll(attributeMap.get(type));
+        }
         return this;
     }
 
