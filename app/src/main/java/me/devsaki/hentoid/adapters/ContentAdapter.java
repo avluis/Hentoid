@@ -17,8 +17,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.annimon.stream.function.IntConsumer;
 import com.bumptech.glide.Glide;
@@ -168,19 +166,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         int itemPos = holder.getLayoutPosition();
         holder.itemView.setSelected(isSelectedAt(itemPos));
 
-        final RelativeLayout items = holder.itemView.findViewById(R.id.item);
-        LinearLayout minimal = holder.itemView.findViewById(R.id.item_minimal);
-
         if (holder.itemView.isSelected()) {
             Timber.d("Position: %s %s is a selected item currently in view.", pos, content.getTitle());
 
-            if (getSelectedItemsCount() >= 1) {
-                items.setVisibility(View.GONE);
-                minimal.setVisibility(View.VISIBLE);
-            }
+            holder.fullLayout.setVisibility(View.GONE);
+            holder.miniLayout.setVisibility(View.VISIBLE);
         } else {
-            items.setVisibility(View.VISIBLE);
-            minimal.setVisibility(View.GONE);
+            holder.fullLayout.setVisibility(View.VISIBLE);
+            holder.miniLayout.setVisibility(View.GONE);
         }
     }
 
