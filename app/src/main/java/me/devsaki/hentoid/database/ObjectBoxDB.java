@@ -1,8 +1,6 @@
 package me.devsaki.hentoid.database;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.util.SparseIntArray;
 
 import com.annimon.stream.Collectors;
@@ -19,7 +17,6 @@ import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
-import me.devsaki.hentoid.database.constants.AttributeTable;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Content;
@@ -33,7 +30,6 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
-import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
 
@@ -411,8 +407,10 @@ public class ObjectBoxDB {
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
-        if (filter != null && !filter.trim().isEmpty()) query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        if (filteredContent.length > 0) query.link(Attribute_.contents).in(Content_.id, filteredContent);
+        if (filter != null && !filter.trim().isEmpty())
+            query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        if (filteredContent.length > 0)
+            query.link(Attribute_.contents).in(Content_.id, filteredContent);
 
         List<Attribute> result = query.build().find();
 
@@ -436,7 +434,8 @@ public class ObjectBoxDB {
         long[] filteredContent = getFilteredContent(attributeFilter, false);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
-        if (filteredContent.length > 0) query.link(Attribute_.contents).in(Content_.id, filteredContent);
+        if (filteredContent.length > 0)
+            query.link(Attribute_.contents).in(Content_.id, filteredContent);
 
         List<Attribute> attributes = query.build().find();
 
