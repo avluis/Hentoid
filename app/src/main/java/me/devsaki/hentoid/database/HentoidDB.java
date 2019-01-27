@@ -402,10 +402,10 @@ public class HentoidDB extends SQLiteOpenHelper {
                     case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                         sql += ContentTable.ORDER_BY_DATE;
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+                    case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
                         sql += ContentTable.ORDER_ALPHABETIC;
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+                    case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
@@ -468,10 +468,10 @@ public class HentoidDB extends SQLiteOpenHelper {
                     case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                         sql += ContentTable.ORDER_BY_DATE;
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+                    case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
                         sql += ContentTable.ORDER_ALPHABETIC;
                         break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+                    case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                         sql += ContentTable.ORDER_ALPHABETIC + " DESC";
                         break;
                     case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:

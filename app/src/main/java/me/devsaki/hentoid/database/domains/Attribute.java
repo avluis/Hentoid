@@ -7,11 +7,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
 
+import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
 import io.objectbox.annotation.Unique;
+import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.enums.AttributeType;
 
 /**
@@ -37,6 +39,8 @@ public class Attribute {
     private int count;
     @Transient
     private int externalId = 0;
+    @Backlink(to = "attributes") // backed by the to-many relation in Content
+    public ToMany<Content> contents;
 
     public Attribute() {
     }

@@ -47,7 +47,7 @@ import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
-import me.devsaki.hentoid.database.ObjectBoxAccessor;
+import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -475,7 +475,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxAccessor(mContext) : new MikanCollectionAccessor(mContext);
+        collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
 
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
@@ -504,10 +504,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                 comparator = Content.DLDATE_INV_COMPARATOR;
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
                 comparator = Content.TITLE_ALPHA_COMPARATOR;
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                 comparator = Content.TITLE_ALPHA_INV_COMPARATOR;
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST:
@@ -772,10 +772,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
@@ -822,7 +822,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         switch (item.getItemId()) {
             case R.id.action_order_AZ:
                 cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA;
                 mAdapter.setSortComparator(Content.TITLE_ALPHA_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
                 searchLibrary(true);
@@ -840,7 +840,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_ZA:
                 cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED;
                 mAdapter.setSortComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 searchLibrary(true);

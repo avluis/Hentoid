@@ -152,30 +152,16 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private Query<Content> buildContentSearchQuery(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
-        AttributeMap metadataMap = new AttributeMap();
-        metadataMap.add(metadata);
-
-        boolean hasTitleFilter = (title != null && title.length() > 0);
-        boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE) && (metadataMap.get(AttributeType.SOURCE) != null) && (metadataMap.get(AttributeType.SOURCE).size() > 0);
-        boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
-
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
-
-        if (hasSiteFilter)
-            query.in(Content_.site, getIdsFromAttributes(metadataMap.get(AttributeType.SOURCE)));
-        if (filterFavourites) query.equal(Content_.favourite, true);
-        if (hasTitleFilter) query.contains(Content_.title, title);
-        if (hasTagFilter) {
-            for (AttributeType attrType : metadataMap.keySet()) {
-                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    long[] attrIds = getIdsFromAttributes(metadataMap.get(attrType));
-                    if (attrIds.length > 0)
-                        query.link(Content_.attributes).in(Attribute_.id, attrIds);
-                }
-            }
+    private String[] getNamesFromAttributes(@Nonnull List<Attribute> attrs) {
+        String[] result = new String[attrs.size()];
+        if (attrs.size() > 0) {
+            int index = 0;
+            for (Attribute a : attrs) result[index++] = a.getName();
         }
+        return result;
+    }
+
+    private void applyOrderStyle(QueryBuilder<Content> query, int orderStyle) {
         switch (orderStyle) {
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
                 query.orderDesc(Content_.downloadDate);
@@ -183,10 +169,10 @@ public class ObjectBoxDB {
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                 query.order(Content_.downloadDate);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
                 query.order(Content_.title);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                 query.orderDesc(Content_.title);
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
@@ -205,6 +191,72 @@ public class ObjectBoxDB {
             default:
                 // Nothing
         }
+    }
+
+    private Query<Content> buildContentSearchQuery(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
+        AttributeMap metadataMap = new AttributeMap();
+        metadataMap.add(metadata);
+
+        boolean hasTitleFilter = (title != null && title.length() > 0);
+        boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE) && (metadataMap.get(AttributeType.SOURCE) != null) && (metadataMap.get(AttributeType.SOURCE).size() > 0);
+        boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
+
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, visibleContentStatus);
+
+        if (hasSiteFilter)
+            query.in(Content_.site, getIdsFromAttributes(metadataMap.get(AttributeType.SOURCE)));
+        if (filterFavourites) query.equal(Content_.favourite, true);
+        if (hasTitleFilter) query.contains(Content_.title, title);
+        if (hasTagFilter) {
+            for (AttributeType attrType : metadataMap.keySet()) {
+                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
+                    String[] attrNames = getNamesFromAttributes(metadataMap.get(attrType));
+                    if (attrNames.length > 0)
+                        query.link(Content_.attributes).equal(Attribute_.type, attrType.getCode()).in(Attribute_.name, attrNames, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+                }
+            }
+        }
+        applyOrderStyle(query, orderStyle);
+
+        return query.build();
+    }
+
+    // Target Function; does not work with ObjectBox v2.3.1
+    private Query<Content> buildUniversalContentSearchQuery(String queryStr, boolean filterFavourites, int orderStyle) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, visibleContentStatus);
+
+        if (filterFavourites) query.equal(Content_.favourite, true);
+        query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet
+        applyOrderStyle(query, orderStyle);
+
+        return query.build();
+    }
+
+    // Workaround function for buildUniversalContentSearchQuery
+    // Has to be combined with buildUniversalContentSearchQueryAttributes
+    private Query<Content> buildUniversalContentSearchQueryContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, visibleContentStatus);
+
+        if (filterFavourites) query.equal(Content_.favourite, true);
+        query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        query.or().in(Content_.id, additionalIds);
+        applyOrderStyle(query, orderStyle);
+
+        return query.build();
+    }
+
+    // Workaround function for buildUniversalContentSearchQuery
+    // Has to be combined with buildUniversalContentSearchQueryContent
+    private Query<Content> buildUniversalContentSearchQueryAttributes(String queryStr, boolean filterFavourites) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, visibleContentStatus);
+
+        if (filterFavourites) query.equal(Content_.favourite, true);
+        query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         return query.build();
     }
@@ -220,5 +272,32 @@ public class ObjectBoxDB {
 
         if (booksPerPage < 0) return query.find();
         else return query.find(start, booksPerPage);
+    }
+
+    List<Content> selectContentByUniqueQuery(String queryStr, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
+        int start = (page - 1) * booksPerPage;
+/*
+        Query<Content> query = buildUniversalContentSearchQuery(queryStr, filterFavourites, orderStyle);
+*/
+        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
+        // querying Content and attributes will have to be done separately
+        // TODO optimize by reusing query with parameters
+        Query<Content> contentAttrSubQuery = buildUniversalContentSearchQueryAttributes(queryStr, filterFavourites);
+        Query<Content> query = buildUniversalContentSearchQueryContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
+
+        if (booksPerPage < 0) return query.find();
+        else return query.find(start, booksPerPage);
+    }
+
+    long countContentByUniqueQuery(String queryStr, boolean filterFavourites) {
+/*
+        Query<Content> query = buildUniversalContentSearchQuery(queryStr, filterFavourites, orderStyle);
+*/
+        // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
+        // querying Content and attributes will have to be done separately
+        // TODO optimize by reusing query with parameters
+        Query<Content> contentAttrSubQuery = buildUniversalContentSearchQueryAttributes(queryStr, filterFavourites);
+        Query<Content> query = buildUniversalContentSearchQueryContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.PREF_ORDER_CONTENT_NONE);
+        return query.count();
     }
 }

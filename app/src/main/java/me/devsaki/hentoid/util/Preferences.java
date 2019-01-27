@@ -203,7 +203,7 @@ public final class Preferences {
     public static final class Default {
         public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
-        static final int PREF_ORDER_CONTENT_DEFAULT = Constant.PREF_ORDER_CONTENT_ALPHABETIC;
+        static final int PREF_ORDER_CONTENT_DEFAULT = Constant.PREF_ORDER_CONTENT_TITLE_ALPHA;
         static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.PREF_ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_APP_LOCK_VIBRATE_DEFAULT = true;
@@ -222,9 +222,9 @@ public final class Preferences {
     public static final class Constant {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
         public static final int PREF_ORDER_CONTENT_NONE = -1;
-        public static final int PREF_ORDER_CONTENT_ALPHABETIC = 0;
+        public static final int PREF_ORDER_CONTENT_TITLE_ALPHA = 0;
         public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
-        public static final int PREF_ORDER_CONTENT_ALPHABETIC_INVERTED = 2;
+        public static final int PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED = 2;
         public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
         public static final int PREF_ORDER_CONTENT_RANDOM = 4;
         public static final int PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
