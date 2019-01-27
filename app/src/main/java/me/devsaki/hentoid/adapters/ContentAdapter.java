@@ -20,6 +20,7 @@ import android.widget.ImageView;
 
 import com.annimon.stream.function.IntConsumer;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
@@ -158,6 +159,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachOnClickListeners(holder, content, pos);
     }
 
+    @Override
+    public void onViewRecycled(@NonNull ContentHolder holder) {
+        RequestManager requestManager = Glide.with(context.getApplicationContext());
+        requestManager.clear(holder.ivCover2);
+        requestManager.clear(holder.ivCover);
+    }
+
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
         if (pos == getItemCount() - VISIBLE_THRESHOLD && onScrollToEndListener != null) {
             onScrollToEndListener.run();
@@ -194,14 +202,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     private void attachCover(ContentHolder holder, Content content) {
         ImageView image = holder.itemView.isSelected() ? holder.ivCover2 : holder.ivCover;
-
-        // The following is needed due to RecyclerView recycling layouts and
-        // Glide not considering the layout invalid for the current image:
-        // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        //
-        // Using application context to avoid crashes when activity is destroyed
-        // https://stackoverflow.com/questions/39093730/you-cannot-start-a-load-for-a-destroyed-activity-in-relativelayout-image-using-g
-        Glide.with(context.getApplicationContext()).clear(image);
+        
         Glide.with(context.getApplicationContext())
                 .load(FileHelper.getThumb(content))
                 .apply(glideRequestOptions)
