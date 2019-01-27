@@ -69,7 +69,7 @@ public class Attribute {
     }
 
     public String getName() {
-        return name;
+        return name.toLowerCase();
     }
 
     public Attribute setName(String name) {

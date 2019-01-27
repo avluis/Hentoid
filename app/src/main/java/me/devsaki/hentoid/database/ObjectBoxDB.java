@@ -1,9 +1,17 @@
 package me.devsaki.hentoid.database;
 
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.util.SparseIntArray;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nonnull;
 
@@ -11,6 +19,7 @@ import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
+import me.devsaki.hentoid.database.constants.AttributeTable;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Content;
@@ -19,11 +28,18 @@ import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import timber.log.Timber;
+
+import static com.annimon.stream.Collectors.toList;
 
 public class ObjectBoxDB {
+
+    // TODO - put indexes in the DB
 
     private static ObjectBoxDB instance;
 
@@ -235,8 +251,6 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    // Workaround function for buildUniversalContentSearchQuery
-    // Has to be combined with buildUniversalContentSearchQueryAttributes
     private Query<Content> buildUniversalContentSearchQueryContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
@@ -249,14 +263,22 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    // Workaround function for buildUniversalContentSearchQuery
-    // Has to be combined with buildUniversalContentSearchQueryContent
     private Query<Content> buildUniversalContentSearchQueryAttributes(String queryStr, boolean filterFavourites) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
 
         if (filterFavourites) query.equal(Content_.favourite, true);
         query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+
+        return query.build();
+    }
+
+    private Query<Content> buildContentSearchQueryAttributes(AttributeType type, List<Attribute> attributes) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, visibleContentStatus);
+
+        String[] attrNames = getNamesFromAttributes(attributes);
+        query.link(Content_.attributes).equal(Attribute_.type, type.getCode()).in(Attribute_.name, attrNames, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         return query.build();
     }
@@ -299,5 +321,178 @@ public class ObjectBoxDB {
         Query<Content> contentAttrSubQuery = buildUniversalContentSearchQueryAttributes(queryStr, filterFavourites);
         Query<Content> query = buildUniversalContentSearchQueryContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.PREF_ORDER_CONTENT_NONE);
         return query.count();
+    }
+
+    List<Attribute> selectAvailableSources() {
+        return selectAvailableSources(null);
+    }
+
+    List<Attribute> selectAvailableSources(List<Attribute> filter) {
+        List<Attribute> result = new ArrayList<>();
+
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, visibleContentStatus);
+
+        if (filter != null && !filter.isEmpty()) {
+            AttributeMap metadataMap = new AttributeMap();
+            metadataMap.add(filter);
+
+            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
+            if (params != null && !params.isEmpty())
+                query.in(Content_.site, getIdsFromAttributes(params));
+
+            for (AttributeType attrType : metadataMap.keySet()) {
+                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
+                    List<Attribute> attrs = metadataMap.get(attrType);
+                    if (attrs.size() > 0) {
+                        Query<Content> contentAttrSubQuery = buildContentSearchQueryAttributes(attrType, attrs);
+                        query.in(Content_.id, contentAttrSubQuery.findIds());
+                    }
+                }
+            }
+        }
+
+        List<Content> content = query.build().find();
+
+        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // => Group by and count have to be done manually (thanks God Stream exists !)
+        // Group and count by source
+        Map<Site, List<Content>> map = Stream.of(content).collect(Collectors.groupingBy(Content::getSite));
+        for (Site s : map.keySet()) {
+            result.add(new Attribute(AttributeType.SOURCE, s.getDescription(), "").setExternalId(s.getCode()).setCount(map.get(s).size()));
+        }
+        // Order by count desc
+        result = Stream.of(result).sortBy(a -> -a.getCount()).collect(toList());
+
+        return result;
+    }
+
+    List<Attribute> selectAllAttributesByType(AttributeType type, String filter) {
+        List<Attribute> result = new ArrayList<>();
+
+        QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
+        query.equal(Attribute_.type, type.getCode());
+        if (filter != null && !filter.trim().isEmpty())
+            query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        query.link(Attribute_.contents).in(Content_.status, visibleContentStatus);
+
+        List<Attribute> attrs = query.build().find();
+
+        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // => Group by and count have to be done manually (thanks God Stream exists !)
+        // Group and count by name
+        Map<String, List<Attribute>> map = Stream.of(attrs).collect(Collectors.groupingBy(Attribute::getName));
+        for (String s : map.keySet()) {
+            result.add(new Attribute(AttributeType.SOURCE, s, "").setCount(map.get(s).size())); // external ID was irrelevant
+        }
+        // Order by count desc, name asc
+        return Stream.of(result).sortBy(a -> -a.getCount()).sortBy(Attribute::getName).collect(toList());
+    }
+
+    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributes, String filter, boolean filterFavourites) {
+        QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
+
+        if (attributes != null) {
+            // Detect the presence of sources within given attributes
+            List<Long> sources = new ArrayList<>();
+            List<Attribute> attrs = new ArrayList<>();
+            for (Attribute a : attributes)
+                if (a.getType().equals(AttributeType.SOURCE)) sources.add(a.getId());
+                else attrs.add(a);
+
+            query.equal(Attribute_.type, type.getCode());
+
+            if (filter != null && !filter.trim().isEmpty()) {
+                query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+            }
+
+            if (attrs.size() > 0) {
+                query.in(Attribute_.name, getNamesFromAttributes(attrs), QueryBuilder.StringOrder.CASE_INSENSITIVE); // TODO - not sure it's as simple as that -- see original query
+            }
+
+            QueryBuilder<Content> contentQuery = query.link(Attribute_.contents).in(Content_.status, visibleContentStatus);
+            if (filterFavourites) contentQuery.equal(Content_.favourite, true);
+            if (sources.size() > 0)
+                contentQuery.in(Content_.site, Stream.of(sources).mapToLong(l -> l).toArray());
+        }
+
+        List<Attribute> result = query.build().find();
+
+        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // => Group by and count have to be done manually (thanks God Stream exists !)
+        // Group and count by name
+        Map<String, List<Attribute>> map = Stream.of(result).collect(Collectors.groupingBy(Attribute::getName));
+        for (String s : map.keySet()) {
+            result.add(new Attribute(type, s, "").setCount(map.get(s).size())); // URL was irrelevant
+        }
+        // Order by count desc, name asc
+        return Stream.of(result).sortBy(a -> -a.getCount()).sortBy(Attribute::getName).collect(toList());
+    }
+
+    SparseIntArray countAttributesPerType() {
+        return countAttributesPerType(null);
+    }
+
+    SparseIntArray countAttributesPerType(List<Attribute> filter) {
+
+        SparseIntArray result = new SparseIntArray();
+
+        //TODO
+/*
+        QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
+
+        if (filter != null && !filter.isEmpty()) {
+            AttributeMap metadataMap = new AttributeMap();
+            metadataMap.add(filter);
+
+            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
+            if (params != null && !params.isEmpty())
+                sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SOURCE_FILTER.replace("@1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
+        }
+
+            StringBuilder sql = new StringBuilder(AttributeTable.SELECT_COUNT_BY_TYPE_SELECT);
+
+        if (filter != null && !filter.isEmpty()) {
+            AttributeMap metadataMap = new AttributeMap();
+            metadataMap.add(filter);
+
+            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
+            if (params != null && !params.isEmpty())
+                sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SOURCE_FILTER.replace("@1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
+
+            for (AttributeType attrType : metadataMap.keySet()) {
+                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
+                    List<Attribute> attrs = metadataMap.get(attrType);
+                    if (attrs.size() > 0)
+                        sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_ATTR_FILTER_JOINS);
+                    sql.append(
+                            AttributeTable.SELECT_COUNT_BY_TYPE_ATTR_FILTER_ATTRS
+                                    .replace("@4", Helper.buildListAsString(attrs, "'"))
+                                    .replace("@5", attrType.getCode() + "")
+                                    .replace("@6", attrs.size() + "")
+                    );
+                }
+            }
+        }
+
+        sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_GROUP);
+
+        SQLiteDatabase db = getReadableDatabase();
+        try (Cursor cursorContent = db.rawQuery(sql.toString(), new String[]{})) {
+
+            if (cursorContent.moveToFirst()) {
+                do {
+                    result.append(cursorContent.getInt(0), cursorContent.getInt(1));
+                } while (cursorContent.moveToNext());
+            }
+        } finally {
+            Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
+            if (db != null && db.isOpen()) {
+                db.close(); // Closing database connection
+            }
+        }
+        */
+
+        return result;
     }
 }
