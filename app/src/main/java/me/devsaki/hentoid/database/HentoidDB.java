@@ -125,7 +125,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     SparseIntArray countAttributesPerType(List<Attribute> filter) {
         SparseIntArray result = new SparseIntArray();
 
-        Timber.d("countAttributesPerType");
+        Timber.d("countAvailableAttributesPerType");
 
         StringBuilder sql = new StringBuilder(AttributeTable.SELECT_COUNT_BY_TYPE_SELECT);
 

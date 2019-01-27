@@ -376,4 +376,10 @@ public final class Helper {
 
         return result;
     }
+
+    public static List<Long> getListFromPrimitiveArray(long[] input) {
+        List<Long> list = new ArrayList<>(input.length);
+        for (long n : input) list.add(n);
+        return list;
+    }
 }

@@ -323,6 +323,40 @@ public class ObjectBoxDB {
         return query.count();
     }
 
+    long[] getFilteredContent(List<Attribute> attrs) {
+        QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
+        contentFromSourceQueryBuilder.in(Content_.status, visibleContentStatus);
+        contentFromSourceQueryBuilder.equal(Content_.site, 1);
+        Query<Content> contentFromSourceQuery = contentFromSourceQueryBuilder.build(); // TODO - build once and for all ?
+
+        QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
+        contentFromAttributesQueryBuilder.in(Content_.status, visibleContentStatus);
+        contentFromAttributesQueryBuilder.link(Content_.attributes)
+                .equal(Attribute_.type, 0)
+                .equal(Attribute_.name, "");
+        Query<Content> contentFromAttributesQuery = contentFromAttributesQueryBuilder.build(); // TODO - build once and for all ?
+
+        List<Long> results = Collections.emptyList();
+        long[] ids;
+
+        for (Attribute attr : attrs) {
+            if (attr.getType().equals(AttributeType.SOURCE)) {
+                ids = contentFromSourceQuery.setParameter(Content_.site, attr.getId()).findIds(); // TODO - check if site code is indeed stored in attr.getId ??
+            } else {
+                ids = contentFromAttributesQuery.setParameter(Attribute_.type, attr.getType().getCode())
+                        .setParameter(Attribute_.name, attr.getName()).findIds();
+            }
+            if (null == results) results = Helper.getListFromPrimitiveArray(ids);
+            else {
+                // Filter results with newly found IDs (only common IDs should stay)
+                List<Long> idsAsList = Helper.getListFromPrimitiveArray(ids);
+                results = Stream.of(results).filter(idsAsList::contains).collect(toList());
+            }
+        }
+
+        return Stream.of(results).mapToLong(l -> l).toArray();
+    }
+
     List<Attribute> selectAvailableSources() {
         return selectAvailableSources(null);
     }
@@ -429,69 +463,29 @@ public class ObjectBoxDB {
         return Stream.of(result).sortBy(a -> -a.getCount()).sortBy(Attribute::getName).collect(toList());
     }
 
-    SparseIntArray countAttributesPerType() {
-        return countAttributesPerType(null);
+    SparseIntArray countAvailableAttributesPerType() {
+        return countAvailableAttributesPerType(null);
     }
 
-    SparseIntArray countAttributesPerType(List<Attribute> filter) {
+    SparseIntArray countAvailableAttributesPerType(List<Attribute> filter) {
 
         SparseIntArray result = new SparseIntArray();
 
-        //TODO
-/*
+        // Get Content filtered by current selection
+        long[] filteredContent = getFilteredContent(filter);
+        // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
+        query.link(Attribute_.contents).in(Content_.id, filteredContent);
 
-        if (filter != null && !filter.isEmpty()) {
-            AttributeMap metadataMap = new AttributeMap();
-            metadataMap.add(filter);
+        List<Attribute> attributes = query.build().find();
 
-            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
-            if (params != null && !params.isEmpty())
-                sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SOURCE_FILTER.replace("@1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
+        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // => Group by and count have to be done manually (thanks God Stream exists !)
+        // Group and count by type
+        Map<AttributeType, List<Attribute>> map = Stream.of(attributes).collect(Collectors.groupingBy(Attribute::getType));
+        for (AttributeType t : map.keySet()) {
+            result.append(t.getCode(), map.get(t).size());
         }
-
-            StringBuilder sql = new StringBuilder(AttributeTable.SELECT_COUNT_BY_TYPE_SELECT);
-
-        if (filter != null && !filter.isEmpty()) {
-            AttributeMap metadataMap = new AttributeMap();
-            metadataMap.add(filter);
-
-            List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
-            if (params != null && !params.isEmpty())
-                sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_SOURCE_FILTER.replace("@1", Helper.buildListAsString(Helper.extractAttributesIds(params), "'")));
-
-            for (AttributeType attrType : metadataMap.keySet()) {
-                if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    List<Attribute> attrs = metadataMap.get(attrType);
-                    if (attrs.size() > 0)
-                        sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_ATTR_FILTER_JOINS);
-                    sql.append(
-                            AttributeTable.SELECT_COUNT_BY_TYPE_ATTR_FILTER_ATTRS
-                                    .replace("@4", Helper.buildListAsString(attrs, "'"))
-                                    .replace("@5", attrType.getCode() + "")
-                                    .replace("@6", attrs.size() + "")
-                    );
-                }
-            }
-        }
-
-        sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_GROUP);
-
-        SQLiteDatabase db = getReadableDatabase();
-        try (Cursor cursorContent = db.rawQuery(sql.toString(), new String[]{})) {
-
-            if (cursorContent.moveToFirst()) {
-                do {
-                    result.append(cursorContent.getInt(0), cursorContent.getInt(1));
-                } while (cursorContent.moveToNext());
-            }
-        } finally {
-            Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-            if (db != null && db.isOpen()) {
-                db.close(); // Closing database connection
-            }
-        }
-        */
 
         return result;
     }

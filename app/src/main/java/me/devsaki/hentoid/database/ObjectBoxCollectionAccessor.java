@@ -157,10 +157,10 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         SparseIntArray result;
 
         if (null == filter || filter.isEmpty()) {
-            result = db.countAttributesPerType();
+            result = db.countAvailableAttributesPerType();
             result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources().size());
         } else {
-            result = db.countAttributesPerType(filter);
+            result = db.countAvailableAttributesPerType(filter);
             result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(filter).size());
         }
 

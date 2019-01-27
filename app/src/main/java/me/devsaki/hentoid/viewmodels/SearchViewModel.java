@@ -15,7 +15,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
-import me.devsaki.hentoid.database.DatabaseCollectionAccessor;
+import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -136,7 +136,7 @@ public class SearchViewModel extends AndroidViewModel {
 
     public void setMode(int mode) {
         Context ctx = getApplication().getApplicationContext();
-        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseCollectionAccessor(ctx) : new MikanCollectionAccessor(ctx);
+        collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(ctx) : new MikanCollectionAccessor(ctx);
         countAttributesPerType();
     }
 
