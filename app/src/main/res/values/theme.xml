@@ -31,6 +31,12 @@
         <item name="android:windowContentOverlay">@null</item>
     </style>
 
+    <!-- Prefs Activity -->
+    <style name="PrefsTheme" parent="AppTheme">
+        <item name="android:editTextColor">@android:color/black</item>
+        <item name="android:textColorHint">@android:color/black</item>
+    </style>
+
     <!-- Import Activity -->
     <style name="ImportTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowIsTranslucent">true</item>
@@ -39,6 +45,8 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowIsFloating">true</item>
         <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:editTextColor">@android:color/black</item>
+        <item name="android:textColorHint">@android:color/black</item>
     </style>
 
     <!-- Import Dialog -->
