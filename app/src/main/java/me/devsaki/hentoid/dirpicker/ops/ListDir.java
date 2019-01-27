@@ -5,13 +5,12 @@ import org.greenrobot.eventbus.EventBus;
 import java.io.File;
 
 import io.reactivex.Observable;
-import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.dirpicker.events.DataSetChangedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.model.DirTree;
 import me.devsaki.hentoid.dirpicker.model.FileBuilder;
-import me.devsaki.hentoid.dirpicker.observers.ListDirObserver;
 import timber.log.Timber;
 
 /**
@@ -34,7 +33,7 @@ class ListDir {
 //            cancelPrevOp();
             updateDirList(rootDir);
 
-            Observer<File> observer = new ListDirObserver(dirTree, bus);
+            dirTree.dirList.clear();
 
             // TODO - anti-leak measures
             /*            subscription =*/
@@ -43,7 +42,7 @@ class ListDir {
                     .subscribeOn(Schedulers.io())
 //                    .onBackpressureBuffer()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(observer);
+                    .subscribe(this::onNext, this::onError, this::onComplete);
         } else {
             Timber.d("Failed to process directory list.");
             bus.post(new OpFailedEvent());
@@ -72,5 +71,24 @@ class ListDir {
             parent.setName("../");
             dirTree.setParentDir(parent);
         }
+    }
+
+    private void onNext(File file) {
+        dirTree.dirList.add(file);
+    }
+
+    private void onError(Throwable e) {
+        Timber.d("onError: %s", e.toString());
+        bus.post(new OpFailedEvent());
+    }
+
+    private void onComplete() {
+        dirTree.dirList.sort();
+
+        if (dirTree.getParent() != null) {
+            dirTree.dirList.add(0, dirTree.getParent());
+        }
+        bus.post(new DataSetChangedEvent());
+        Timber.d("Update directory list completed.");
     }
 }
