@@ -323,7 +323,9 @@ public class ObjectBoxDB {
         return query.count();
     }
 
-    long[] getFilteredContent(List<Attribute> attrs) {
+    private long[] getFilteredContent(List<Attribute> attrs) {
+        if (null == attrs || 0 == attrs.size()) return new long[0];
+
         QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
         contentFromSourceQueryBuilder.in(Content_.status, visibleContentStatus);
         contentFromSourceQueryBuilder.equal(Content_.site, 1);
@@ -346,7 +348,7 @@ public class ObjectBoxDB {
                 ids = contentFromAttributesQuery.setParameter(Attribute_.type, attr.getType().getCode())
                         .setParameter(Attribute_.name, attr.getName()).findIds();
             }
-            if (null == results) results = Helper.getListFromPrimitiveArray(ids);
+            if (results.isEmpty()) results = Helper.getListFromPrimitiveArray(ids);
             else {
                 // Filter results with newly found IDs (only common IDs should stay)
                 List<Long> idsAsList = Helper.getListFromPrimitiveArray(ids);
@@ -475,7 +477,7 @@ public class ObjectBoxDB {
         long[] filteredContent = getFilteredContent(filter);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
-        query.link(Attribute_.contents).in(Content_.id, filteredContent);
+        if (filteredContent.length > 0) query.link(Attribute_.contents).in(Content_.id, filteredContent);
 
         List<Attribute> attributes = query.build().find();
 
