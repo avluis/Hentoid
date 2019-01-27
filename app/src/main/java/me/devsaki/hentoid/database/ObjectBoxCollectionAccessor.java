@@ -135,7 +135,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
                     {
                         result.addAll(db.selectAvailableSources());
                     } else {
-                        result.addAll(db.selectAllAttributesByType(type, filter));
+                        result.addAll(db.selectAvailableAttributes(type, attrs, filter, filterFavourites));
                     }
                 }
             } else if (MODE_SEARCH_ATTRIBUTE_AVAILABLE == mode || MODE_SEARCH_ATTRIBUTE_COMBINED == mode) {

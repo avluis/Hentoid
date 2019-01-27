@@ -323,16 +323,18 @@ public class ObjectBoxDB {
         return query.count();
     }
 
-    private long[] getFilteredContent(List<Attribute> attrs) {
+    private long[] getFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
         if (null == attrs || 0 == attrs.size()) return new long[0];
 
         QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
         contentFromSourceQueryBuilder.in(Content_.status, visibleContentStatus);
         contentFromSourceQueryBuilder.equal(Content_.site, 1);
+        if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
         Query<Content> contentFromSourceQuery = contentFromSourceQueryBuilder.build(); // TODO - build once and for all ?
 
         QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
         contentFromAttributesQueryBuilder.in(Content_.status, visibleContentStatus);
+        if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
         contentFromAttributesQueryBuilder.link(Content_.attributes)
                 .equal(Attribute_.type, 0)
                 .equal(Attribute_.name, "");
@@ -403,54 +405,14 @@ public class ObjectBoxDB {
         return result;
     }
 
-    List<Attribute> selectAllAttributesByType(AttributeType type, String filter) {
-        List<Attribute> result = new ArrayList<>();
-
+    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
+        // Get Content filtered by current selection
+        long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
-        if (filter != null && !filter.trim().isEmpty())
-            query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        query.link(Attribute_.contents).in(Content_.status, visibleContentStatus);
-
-        List<Attribute> attrs = query.build().find();
-
-        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
-        // => Group by and count have to be done manually (thanks God Stream exists !)
-        // Group and count by name
-        Map<String, List<Attribute>> map = Stream.of(attrs).collect(Collectors.groupingBy(Attribute::getName));
-        for (String s : map.keySet()) {
-            result.add(new Attribute(AttributeType.SOURCE, s, "").setCount(map.get(s).size())); // external ID was irrelevant
-        }
-        // Order by count desc, name asc
-        return Stream.of(result).sortBy(a -> -a.getCount()).sortBy(Attribute::getName).collect(toList());
-    }
-
-    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributes, String filter, boolean filterFavourites) {
-        QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
-
-        if (attributes != null) {
-            // Detect the presence of sources within given attributes
-            List<Long> sources = new ArrayList<>();
-            List<Attribute> attrs = new ArrayList<>();
-            for (Attribute a : attributes)
-                if (a.getType().equals(AttributeType.SOURCE)) sources.add(a.getId());
-                else attrs.add(a);
-
-            query.equal(Attribute_.type, type.getCode());
-
-            if (filter != null && !filter.trim().isEmpty()) {
-                query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-            }
-
-            if (attrs.size() > 0) {
-                query.in(Attribute_.name, getNamesFromAttributes(attrs), QueryBuilder.StringOrder.CASE_INSENSITIVE); // TODO - not sure it's as simple as that -- see original query
-            }
-
-            QueryBuilder<Content> contentQuery = query.link(Attribute_.contents).in(Content_.status, visibleContentStatus);
-            if (filterFavourites) contentQuery.equal(Content_.favourite, true);
-            if (sources.size() > 0)
-                contentQuery.in(Content_.site, Stream.of(sources).mapToLong(l -> l).toArray());
-        }
+        if (filter != null && !filter.trim().isEmpty()) query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        if (filteredContent.length > 0) query.link(Attribute_.contents).in(Content_.id, filteredContent);
 
         List<Attribute> result = query.build().find();
 
@@ -469,18 +431,16 @@ public class ObjectBoxDB {
         return countAvailableAttributesPerType(null);
     }
 
-    SparseIntArray countAvailableAttributesPerType(List<Attribute> filter) {
-
-        SparseIntArray result = new SparseIntArray();
-
+    SparseIntArray countAvailableAttributesPerType(List<Attribute> attributeFilter) {
         // Get Content filtered by current selection
-        long[] filteredContent = getFilteredContent(filter);
+        long[] filteredContent = getFilteredContent(attributeFilter, false);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         if (filteredContent.length > 0) query.link(Attribute_.contents).in(Content_.id, filteredContent);
 
         List<Attribute> attributes = query.build().find();
 
+        SparseIntArray result = new SparseIntArray();
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by type
