@@ -16,7 +16,6 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 
 import com.annimon.stream.function.IntConsumer;
 import com.bumptech.glide.Glide;
@@ -151,7 +150,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         // Initializes the ViewHolder that contains the books
         updateLayoutVisibility(holder, content, pos);
         attachTitle(holder, content);
-        attachCover(holder, content);
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
@@ -178,9 +176,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
             holder.fullLayout.setVisibility(View.GONE);
             holder.miniLayout.setVisibility(View.VISIBLE);
+
+            Glide.with(context.getApplicationContext())
+                    .load(FileHelper.getThumb(content))
+                    .apply(glideRequestOptions)
+                    .into(holder.ivCover2);
         } else {
             holder.fullLayout.setVisibility(View.VISIBLE);
             holder.miniLayout.setVisibility(View.GONE);
+
+            Glide.with(context.getApplicationContext())
+                    .load(FileHelper.getThumb(content))
+                    .apply(glideRequestOptions)
+                    .into(holder.ivCover);
         }
     }
 
@@ -198,15 +206,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
 
         holder.ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
-    }
-
-    private void attachCover(ContentHolder holder, Content content) {
-        ImageView image = holder.itemView.isSelected() ? holder.ivCover2 : holder.ivCover;
-        
-        Glide.with(context.getApplicationContext())
-                .load(FileHelper.getThumb(content))
-                .apply(glideRequestOptions)
-                .into(image);
     }
 
     private void attachSeries(ContentHolder holder, Content content) {
