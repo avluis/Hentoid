@@ -163,8 +163,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             onScrollToEndListener.run();
         }
 
-        int itemPos = holder.getLayoutPosition();
-        holder.itemView.setSelected(isSelectedAt(itemPos));
+        holder.itemView.setSelected(content.isSelected());
 
         if (holder.itemView.isSelected()) {
             Timber.d("Position: %s %s is a selected item currently in view.", pos, content.getTitle());
