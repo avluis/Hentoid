@@ -9,7 +9,6 @@ import android.os.StrictMode;
 import android.util.Pair;
 
 import com.crashlytics.android.Crashlytics;
-import com.facebook.stetho.Stetho;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.leakcanary.LeakCanary;
@@ -92,9 +91,11 @@ public class HentoidApp extends Application {
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!isAnalyticsDisabled);
 
         // Stetho
+/*
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this);
         }
+*/
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);

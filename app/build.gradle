@@ -58,7 +58,7 @@ dependencies {
     // Crashlytics
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
     // Stetho core
-    implementation 'com.facebook.stetho:stetho:1.5.0'
+//    implementation 'com.facebook.stetho:stetho:1.5.0'
     // Support libraries
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
