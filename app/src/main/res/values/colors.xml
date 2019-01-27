@@ -20,7 +20,7 @@
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>
-    <color name="transparent_item">#28FFFFFF</color>
+    <color name="item_highlight">#28FFFFFF</color>
 
     <!-- Drawer Layout -->
     <color name="drawer_list_background">@color/dark_red</color>
