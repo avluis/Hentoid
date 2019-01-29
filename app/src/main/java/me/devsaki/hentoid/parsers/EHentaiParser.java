@@ -28,12 +28,11 @@ public class EHentaiParser extends BaseParser {
         Element e;
         Document doc = getOnlineDocument(content.getGalleryUrl() + "/?nw=always"); // nw=always avoids the Offensive Content popup
         if (doc != null) {
-            Elements elements = doc.select("table.ptt");
+            Elements elements = doc.select("table.ptt a");
             if (null == elements || 0 == elements.size()) return result;
 
-            e = elements.first();
-            e = e.select("tbody").first().select("tr").first();
-            int nbGalleryPages = e.children().size() - 2;
+            int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
+            int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
             // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
             List<String> pageUrls = new ArrayList<>();
