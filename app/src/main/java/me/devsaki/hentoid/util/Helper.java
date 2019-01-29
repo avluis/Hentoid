@@ -13,7 +13,6 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -144,11 +143,6 @@ public final class Helper {
         toast.show();
     }
 
-    @SafeVarargs
-    public static <T> void executeAsyncTask(AsyncTask<T, ?, ?> task, T... params) {
-        task.execute(params);
-    }
-
     public static void launchMainActivity(Context context) {
         if (Preferences.getAppLockPin().isEmpty()) {
             Intent intent = new Intent(context, DownloadsActivity.class);
@@ -204,7 +198,7 @@ public final class Helper {
         return activityName;
     }
 
-    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+    static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
         if (d != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {

@@ -116,7 +116,7 @@ public final class MimeTypes {
         MIME_TYPES.put("mkv", "video/x-matroska");
     }
 
-    public static String getMimeType(File file) {
+    static String getMimeType(File file) {
         if (file.isDirectory()) {
             return null;
         }
