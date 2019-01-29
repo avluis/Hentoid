@@ -350,7 +350,7 @@ public class ObjectBoxDB {
             else {
                 // Filter results with newly found IDs (only common IDs should stay)
                 List<Long> idsAsList = Helper.getListFromPrimitiveArray(ids);
-                results = Stream.of(results).filter(idsAsList::contains).collect(toList());
+                results.retainAll(idsAsList);
             }
         }
 
