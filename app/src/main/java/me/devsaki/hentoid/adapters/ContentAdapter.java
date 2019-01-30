@@ -47,6 +47,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 /**
@@ -467,7 +468,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         ContentQueueManager.getInstance().resumeQueue(context);
 
-        Helper.toast(context, R.string.add_to_queue);
+        ToastUtil.toast(context, R.string.add_to_queue);
     }
 
     private void shareContent(final Content item) {
@@ -483,7 +484,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void archiveContent(final Content item) {
-        Helper.toast(R.string.packaging_content);
+        ToastUtil.toast(R.string.packaging_content);
         FileHelper.archiveContent(context, item);
     }
 
@@ -593,7 +594,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             } else {
                 // TODO: Implement multi-item share
                 Timber.d("How even?");
-                Helper.toast("Not yet implemented!!");
+                ToastUtil.toast("Not yet implemented!!");
             }
         } else {
             itemSelectListener.onItemClear(0);
@@ -653,7 +654,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             } else {
                 // TODO: Implement multi-item archival
                 Timber.d("How even?");
-                Helper.toast("Not yet implemented!!");
+                ToastUtil.toast("Not yet implemented!!");
             }
         } else {
             itemSelectListener.onItemClear(0);
@@ -671,7 +672,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             Timber.d("Removed item: %s from db and file system.", item.getTitle());
         });
 
-        Helper.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
+        ToastUtil.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
     }
 
     private void deleteItems(final List<Content> contents) {
@@ -693,7 +694,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
         });
 
-        Helper.toast(context, "Selected items have been deleted.");
+        ToastUtil.toast(context, "Selected items have been deleted.");
     }
 
     private void remove(Content content) {

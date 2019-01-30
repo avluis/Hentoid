@@ -55,6 +55,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 import static android.os.Build.VERSION_CODES.KITKAT;
@@ -329,7 +330,7 @@ public class ImportActivity extends BaseActivity {
             Timber.d("Received no write-able external directories.");
             if (Build.VERSION.SDK_INT >= LOLLIPOP) {
                 if (externalDirs.length > 0) {
-                    Helper.toast("Attempting SAF");
+                    ToastUtil.toast("Attempting SAF");
                     requestWritePermission();
                 } else {
                     noSDSupport();
@@ -356,7 +357,7 @@ public class ImportActivity extends BaseActivity {
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
                         if (handlers != null && handlers.size() > 0) {
                             Timber.d("Device should be able to handle the SAF request");
-                            Helper.toast("Attempting SAF");
+                            ToastUtil.toast("Attempting SAF");
                             requestWritePermission();
                         } else {
                             Timber.d("No apps can handle the requested intent.");
@@ -383,7 +384,7 @@ public class ImportActivity extends BaseActivity {
 
     private void noSDSupport() {
         Timber.d("No write-able directories :(");
-        Helper.toast(R.string.no_sd_support);
+        ToastUtil.toast(R.string.no_sd_support);
     }
 
     @Override

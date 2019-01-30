@@ -11,6 +11,7 @@ import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.ui.CarouselDecorator;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 /**
@@ -50,7 +51,7 @@ public class PagerFragment extends DownloadsFragment {
                 pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
                 searchLibrary(true);
             } else if (booksPerPage > 0 && !isLoading) {
-                Helper.toast(mContext, R.string.not_previous_page);
+                ToastUtil.toast(mContext, R.string.not_previous_page);
             } else {
                 Timber.d("No limit per page.");
             }
@@ -68,7 +69,7 @@ public class PagerFragment extends DownloadsFragment {
                     pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
                     searchLibrary(true);
                 } else if (isLastPage()) {
-                    Helper.toast(mContext, R.string.not_next_page);
+                    ToastUtil.toast(mContext, R.string.not_next_page);
                 }
             }
         });

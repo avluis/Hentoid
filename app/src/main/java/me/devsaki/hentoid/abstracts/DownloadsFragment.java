@@ -65,9 +65,10 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
-import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
+import static me.devsaki.hentoid.util.ToastUtil.DURATION.LONG;
 
 /**
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
@@ -353,7 +354,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             File storage = new File(Preferences.getRootFolderName());
             if (FileHelper.getExtSdCardFolder(storage) == null) {
                 Timber.d("Where are my files?!");
-                Helper.toast(requireActivity(),
+                ToastUtil.toast(requireActivity(),
                         "Could not find library!\nPlease check your storage device.", LONG);
                 setQuery("      ");
 
@@ -379,7 +380,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             output.flush();
         } catch (NullPointerException npe) {
             Timber.e(npe, "Invalid Stream");
-            Helper.toast(R.string.sd_access_error);
+            ToastUtil.toast(R.string.sd_access_error);
             new AlertDialog.Builder(requireActivity())
                     .setMessage(R.string.sd_access_fatal_error)
                     .setTitle("Error!")
@@ -626,7 +627,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             return true;
         } else {
             backButtonPressed = System.currentTimeMillis();
-            Helper.toast(mContext, R.string.press_back_again);
+            ToastUtil.toast(mContext, R.string.press_back_again);
 
             if (llm != null) {
                 llm.scrollToPositionWithOffset(0, 0);

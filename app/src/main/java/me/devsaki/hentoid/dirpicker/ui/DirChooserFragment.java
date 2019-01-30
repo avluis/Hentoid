@@ -33,6 +33,7 @@ import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
 import me.devsaki.hentoid.dirpicker.util.Bus;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 /**
@@ -126,7 +127,7 @@ public class DirChooserFragment extends DialogFragment implements
     @Subscribe
     public void onOpFailedEvent(OpFailedEvent event) {
         Timber.d(getString(R.string.op_not_allowed));
-        Helper.toast(getActivity(), R.string.op_not_allowed);
+        ToastUtil.toast(getActivity(), R.string.op_not_allowed);
     }
 
     @Subscribe
