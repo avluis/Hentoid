@@ -49,15 +49,9 @@ public class ToastUtil {
             return;
         }
 
-        if (toast == null) {
-            toast = Toast.makeText(context, message, duration);
-            toast.show();
-        } else {
-            toast.cancel();
-            toast.setText(message);
-            toast.setDuration(duration);
-            toast.show();
-        }
+        cancelToast();
+        toast = Toast.makeText(context, message, duration);
+        toast.show();
     }
 
     @IntDef({Toast.LENGTH_SHORT, Toast.LENGTH_LONG})
