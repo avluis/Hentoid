@@ -9,6 +9,7 @@ import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.webkit.MimeTypeMap;
+import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
@@ -496,7 +497,7 @@ public class FileHelper {
             context.startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "Activity not found to open %s", aFile.getAbsolutePath());
-            ToastUtil.toast(context, R.string.error_open, ToastUtil.DURATION.LONG);
+            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 
