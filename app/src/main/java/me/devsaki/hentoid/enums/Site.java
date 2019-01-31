@@ -2,7 +2,6 @@ package me.devsaki.hentoid.enums;
 
 import javax.annotation.Nullable;
 
-import io.objectbox.annotation.Entity;
 import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
@@ -100,9 +99,9 @@ public enum Site {
         }
     }
 
-    public static class SiteConverter implements PropertyConverter<Site, Integer> {
+    public static class SiteConverter implements PropertyConverter<Site, Long> {
         @Override
-        public Site convertToEntityProperty(Integer databaseValue) {
+        public Site convertToEntityProperty(Long databaseValue) {
             if (databaseValue == null) {
                 return null;
             }
@@ -115,8 +114,8 @@ public enum Site {
         }
 
         @Override
-        public Integer convertToDatabaseValue(Site entityProperty) {
-            return entityProperty == null ? null : entityProperty.getCode();
+        public Long convertToDatabaseValue(Site entityProperty) {
+            return entityProperty == null ? null : (long) entityProperty.getCode();
         }
     }
 }

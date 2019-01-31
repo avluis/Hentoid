@@ -60,7 +60,7 @@ public class Content implements Serializable {
     @Expose
     private List<ImageFile> imageFiles;
     @Expose
-    @Convert(converter = Site.SiteConverter.class, dbType = Integer.class)
+    @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
     private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
     @Expose

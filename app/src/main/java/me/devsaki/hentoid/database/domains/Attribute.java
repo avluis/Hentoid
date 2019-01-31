@@ -50,13 +50,10 @@ public class Attribute {
         this.name = name;
         this.url = url;
     }
-    // TODO check behaviour
-/*
-    public Integer getId() {
-        return (0 == externalId) ? url.hashCode() : externalId;
+
+    public long getId() {
+        return (0 == externalId) ? this.id: this.externalId;
     }
-*/
-    public long getId() { return this.id; }
     public void setId(long id ) { this.id = id; }
 
     public String getUrl() {
