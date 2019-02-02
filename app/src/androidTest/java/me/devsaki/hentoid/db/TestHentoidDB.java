@@ -106,7 +106,7 @@ public class TestHentoidDB extends AndroidTestCase {
                 }
             }
             contents.add(new Content()
-                    .setAttributeMap(attributeMap)
+                    .addAttributes(attributeMap)
                     .setUrl("/doujinshi/u" + k)
                     .setCoverImageUrl("c" + k)
                     .setDownloadDate(1000 * k)

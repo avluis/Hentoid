@@ -139,7 +139,7 @@ public class ContentV1 {
                 .setSite(getSite())
                 .setUrl(url)
                 .setUploadDate(uploadDate)
-                .setAttributeMap(attributes)
+                .addAttributes(attributes)
                 .setImageFiles(imageFiles)
                 .setCoverImageUrl(coverImageUrl)
                 .setTitle(title)

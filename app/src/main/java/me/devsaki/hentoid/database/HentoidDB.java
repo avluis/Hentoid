@@ -757,7 +757,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setQueryOrder(cursorContent.getPosition());
 
         if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
-                .setAttributeMap(selectAttributesByContentId(db, content.getId()));
+                .addAttributes(selectAttributesByContentId(db, content.getId()));
 
         content.populateAuthor();
 

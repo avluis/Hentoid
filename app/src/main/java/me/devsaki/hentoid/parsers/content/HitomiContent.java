@@ -49,8 +49,6 @@ public class HitomiContent {
         result.setQtyPages(pages.size());
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributeMap(attributes);
-
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
@@ -59,6 +57,7 @@ public class HitomiContent {
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true);
 
+        result.addAttributes(attributes);
         result.populateAuthor();
         result.setStatus(StatusContent.SAVED);
 

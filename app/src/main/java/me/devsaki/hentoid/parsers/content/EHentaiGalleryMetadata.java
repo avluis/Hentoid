@@ -57,8 +57,6 @@ public class EHentaiGalleryMetadata {
                 .setSite(Site.EHENTAI);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributeMap(attributes);
-
         String[] tagParts;
         AttributeType type;
         String name;
@@ -95,6 +93,7 @@ public class EHentaiGalleryMetadata {
 
             attributes.add(new Attribute(type, name, type.name()+"/"+name));
         }
+        result.addAttributes(attributes);
 
         return result;
     }

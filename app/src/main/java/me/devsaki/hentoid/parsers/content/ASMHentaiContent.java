@@ -52,7 +52,6 @@ public class ASMHentaiContent {
         result.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributeMap(attributes);
 
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
@@ -60,6 +59,7 @@ public class ASMHentaiContent {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
 
+        result.addAttributes(attributes);
         result.populateAuthor();
         result.setStatus(StatusContent.SAVED);
 

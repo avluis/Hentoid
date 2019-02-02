@@ -49,14 +49,13 @@ public class TsuminoContent {
         result.setQtyPages((pages.length() > 0) ? Integer.parseInt(pages) : 0);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributeMap(attributes);
-
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
         ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true);
+        result.addAttributes(attributes);
 
         result.populateAuthor();
         result.setStatus(StatusContent.SAVED);

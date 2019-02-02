@@ -55,8 +55,6 @@ public class NhentaiContent {
         result.setTitle(title);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributeMap(attributes);
-
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
@@ -64,6 +62,7 @@ public class NhentaiContent {
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true);
+        result.addAttributes(attributes);
 
         String[] coverParts = coverUrl.split("/");
         String mediaId = coverParts[coverParts.length - 2];

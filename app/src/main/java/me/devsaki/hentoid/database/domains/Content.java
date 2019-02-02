@@ -102,7 +102,7 @@ public class Content implements Serializable {
         return result;
     }
 
-    public Content setAttributeMap(AttributeMap attributes) {
+    public Content addAttributes(AttributeMap attributes) {
         if (attributes != null) {
             for (AttributeType type : attributes.keySet()) {
                 this.attributes.addAll(attributes.get(type));
@@ -111,11 +111,6 @@ public class Content implements Serializable {
         return this;
     }
 
-    /*
-        public int getId() {
-            return url.hashCode();
-        }
-    */
     public long getId() {
         return this.id;
     }
@@ -293,20 +288,19 @@ public class Content implements Serializable {
         return this;
     }
 
-    public Content preJSONExport() {
+    public Content preJSONExport() { // TODO - this is shabby
         this.attributeMap = getAttributeMap();
         this.imageList = new ArrayList<>(imageFiles);
         return this;
     }
 
-    public Content postJSONImport() {
+    public Content postJSONImport() {   // TODO - this is shabby
         if (this.attributeMap != null) {
             this.attributes.clear();
             for (AttributeType type : this.attributeMap.keySet())
                 this.attributes.addAll(this.attributeMap.get(type));
         }
-        if (this.imageList != null)
-        {
+        if (this.imageList != null) {
             this.imageFiles.clear();
             this.imageFiles.addAll(this.imageList);
         }

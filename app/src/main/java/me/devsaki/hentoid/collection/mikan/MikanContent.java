@@ -54,7 +54,6 @@ public class MikanContent implements Serializable {
         result.setTitle(name);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributeMap(attributes);
 
         for (MikanAttribute a : artist) attributes.add(new Attribute(AttributeType.ARTIST, a.name, a.url));
         for (MikanAttribute a : group) attributes.add(new Attribute(AttributeType.CIRCLE, a.name, a.url));
@@ -64,6 +63,7 @@ public class MikanContent implements Serializable {
         if (type != null) attributes.add(new Attribute(AttributeType.CATEGORY, type.name, type.url));
         if (language != null) attributes.add(new Attribute(AttributeType.LANGUAGE, language.name, language.url));
 
+        result.addAttributes(attributes);
         result.setCoverImageUrl(image);
         result.setUploadDate(time.getTime());
 
