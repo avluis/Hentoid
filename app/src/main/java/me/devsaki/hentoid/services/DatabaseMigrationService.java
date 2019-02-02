@@ -128,11 +128,11 @@ public class DatabaseMigrationService extends IntentService {
             if (targetKey != null) {
                 newDB.insertQueue(targetKey, queueIds.get(queueIds.keyAt(i)));
                 queueOK++;
-                log = "Import queue OK : " + targetKey;
+                log = "Import queue OK : target ID" + targetKey;
                 Timber.d(log);
             } else {
                 queueKO++;
-                log = "Import queue KO : ID" + queueIds.keyAt(i);
+                log = "Import queue KO : source ID" + queueIds.keyAt(i);
                 Timber.w(log);
             }
             importLog.add(log);
