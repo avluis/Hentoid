@@ -25,7 +25,7 @@ public class PururinContent {
     private List<Element> artists;
     @Selector(value = "table.table-gallery-info a[href*='/tags/circle']")
     private List<Element> circles;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/contents']")
+    @Selector(value = "table.table-gallery-info a[href*='/tags/content']")
     private List<Element> tags;
     @Selector(value = "table.table-gallery-info a[href*='/tags/parody']")
     private List<Element> series;

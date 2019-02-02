@@ -2,7 +2,6 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -415,6 +414,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         // Remove content altogether from the DB (including queue)
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.deleteContent(content);
+        db.deleteQueue(content);
         // Remove the content from the disk
         FileHelper.removeContent(content);
         // Remove the content from the in-memory list and the UI
@@ -426,8 +426,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     public void removeFromQueue(Content content)
     {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        db.deleteQueueById(content.getId());
-
+        // Remove content from the queue in the DB
+        db.deleteQueue(content);
+        // Remove the content from the in-memory list and the UI
         super.remove(content);
     }
 

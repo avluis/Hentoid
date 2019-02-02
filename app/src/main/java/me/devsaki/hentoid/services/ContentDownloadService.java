@@ -2,7 +2,6 @@ package me.devsaki.hentoid.services;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.util.Pair;
 import android.util.SparseIntArray;
 
 import com.android.volley.Request;
@@ -20,9 +19,10 @@ import java.util.Locale;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.HentoidApp;
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
@@ -47,7 +47,7 @@ import timber.log.Timber;
  */
 public class ContentDownloadService extends IntentService {
 
-    private HentoidDB db;                                   // Hentoid database
+    private ObjectBoxDB db;                                   // Hentoid database
     private NotificationManager notificationManager;
     private NotificationManager warningNotificationManager;
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
@@ -60,7 +60,7 @@ public class ContentDownloadService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
-        db = HentoidDB.getInstance(this);
+        db = ObjectBoxDB.getInstance(this);
 
         notificationManager = new NotificationManager(this, 0);
         notificationManager.cancel();
@@ -108,13 +108,13 @@ public class ContentDownloadService extends IntentService {
         }
 
         // Works on first item of queue
-        List<Pair<Integer, Integer>> queue = db.selectQueue();
+        List<QueueRecord> queue = db.selectQueue();
         if (0 == queue.size()) {
             Timber.w("Queue is empty. Aborting download.");
             return null;
         }
 
-        Content content = db.selectContentById(queue.get(0).first);
+        Content content = db.selectContentById(queue.get(0).content.getTargetId());
 
         if (null == content || StatusContent.DOWNLOADED == content.getStatus()) {
             Timber.w("Content is unavailable, or already downloaded. Aborting download.");
@@ -122,7 +122,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         content.setStatus(StatusContent.DOWNLOADING);
-        db.updateContentStatus(content);
+        db.insertContent(content);
 
         // Check if images are already known
         List<ImageFile> images = content.getImageFiles();
@@ -130,7 +130,7 @@ public class ContentDownloadService extends IntentService {
             // Create image list in DB
             images = fetchImageURLs(content);
             content.setImageFiles(images);
-            db.insertImageFiles(content);
+            db.insertContent(content);
         }
 
         if (0 == images.size()) {
@@ -149,7 +149,7 @@ public class ContentDownloadService extends IntentService {
 
         String fileRoot = Preferences.getRootFolderName();
         content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
-        db.updateContentStorageFolder(content);
+        db.insertContent(content);
 
 
         // Tracking Event (Download Added)
@@ -160,10 +160,10 @@ public class ContentDownloadService extends IntentService {
         downloadSkipped = false;
 
         // Reset ERROR status of images to count them as "to be downloaded" (in DB and in memory)
-        db.updateImageFileStatus(content, StatusContent.ERROR, StatusContent.SAVED);
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.ERROR)) img.setStatus(StatusContent.SAVED);
         }
+        db.insertContent(content);
 
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
@@ -208,7 +208,7 @@ public class ContentDownloadService extends IntentService {
                 e.printStackTrace();
             }
         }
-        while (!isDone && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused());
+        while (!isDone && !downloadCanceled && !downloadSkipped && !contentQueueManager.isQueuePaused()); // TODO - Observe DB instead ?
 
         if (contentQueueManager.isQueuePaused()) {
             Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
@@ -238,7 +238,7 @@ public class ContentDownloadService extends IntentService {
 
             // Save JSON file
             try {
-                JsonHelper.saveJson(content.populateAttributeMap(), dir);
+                JsonHelper.saveJson(content.preJSONExport(), dir);
             } catch (IOException e) {
                 Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
             }
@@ -246,7 +246,7 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
 
             // Delete book from queue
-            db.deleteQueueById(content.getId());
+            db.deleteQueue(content);
 
             // Increase downloads count
             contentQueueManager.downloadComplete();
@@ -358,7 +358,7 @@ public class ContentDownloadService extends IntentService {
      */
     private void updateImageStatus(ImageFile img, boolean success) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-        db.updateImageFileStatus(img);
+        if (img.getId() > 0) db.updateImageFileStatus(img); // because thumb image isn't in the DB
     }
 
     /**

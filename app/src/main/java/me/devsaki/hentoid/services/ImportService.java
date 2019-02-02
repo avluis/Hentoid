@@ -314,7 +314,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
             try {
-                JsonHelper.saveJson(contentV2.populateAttributeMap(), file);
+                JsonHelper.saveJson(contentV2.preJSONExport(), file);
             } catch (IOException e) {
                 Timber.e(e,
                         "Error converting JSON (old) to JSON (v2): %s", content.getTitle());
@@ -342,7 +342,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
             try {
-                JsonHelper.saveJson(contentV2.populateAttributeMap(), file);
+                JsonHelper.saveJson(contentV2.preJSONExport(), file);
             } catch (IOException e) {
                 Timber.e(e, "Error converting JSON (v1) to JSON (v2): %s", content.getTitle());
             }
@@ -359,7 +359,7 @@ public class ImportService extends IntentService {
     private static Content importJsonV2(File json) {
         try {
             Content content = JsonHelper.jsonToObject(json, Content.class);
-            content.populateAttributes();
+            content.postJSONImport();
 
             String fileRoot = Preferences.getRootFolderName();
             content.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));

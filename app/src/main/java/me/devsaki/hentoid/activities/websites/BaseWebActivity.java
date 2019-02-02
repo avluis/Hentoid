@@ -436,7 +436,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      * @param content Content to be added to the DB
      */
     private void addContentToDB(Content content) {
-        Content contentDB = db.selectContentById(content.getUrl().hashCode());
+        Content contentDB = db.selectContentByUrl(content.getUrl());
         if (contentDB != null) {
             content.setStatus(contentDB.getStatus())
                     .setImageFiles(contentDB.getImageFiles())

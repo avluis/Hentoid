@@ -4,9 +4,12 @@ import com.google.gson.annotations.Expose;
 
 import java.util.Locale;
 
+import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.relation.ToMany;
+import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
 
 /**
@@ -27,6 +30,8 @@ public class ImageFile {
     @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
+    public ToOne<Content> content;
+
 
 
     public ImageFile() {};

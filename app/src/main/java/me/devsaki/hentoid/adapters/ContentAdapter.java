@@ -539,7 +539,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         File dir = new File(rootFolderName, item.getStorageFolder());
 
         try {
-            JsonHelper.saveJson(item.populateAttributeMap(), dir);
+            JsonHelper.saveJson(item.preJSONExport(), dir);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to " + dir.getAbsolutePath());
         }

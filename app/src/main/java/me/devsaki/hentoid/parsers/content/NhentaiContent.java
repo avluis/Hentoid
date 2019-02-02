@@ -65,18 +65,17 @@ public class NhentaiContent {
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true);
 
-        List<ImageFile> images = new ArrayList<>();
-        result.setImageFiles(images);
-
         String[] coverParts = coverUrl.split("/");
         String mediaId = coverParts[coverParts.length - 2];
         String serverUrl = "https://i.nhentai.net/galleries/" + mediaId + "/"; // We infer the whole book is stored on the same server
 
         int index = 1;
+        List<ImageFile> images = new ArrayList<>();
         for (String s : thumbs) {
             images.add(new ImageFile(index, serverUrl + index + "." + FileHelper.getExtension(s), StatusContent.SAVED)); // We infer actual book page images have the same format as their thumbs
             index++;
         }
+        result.setImageFiles(images);
         result.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
 
         result.populateAuthor();

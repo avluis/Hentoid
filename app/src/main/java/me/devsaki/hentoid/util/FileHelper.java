@@ -220,7 +220,7 @@ public class FileHelper {
      */
     private static boolean tryCleanDirectory(@NonNull File directory) throws IOException, SecurityException {
         File[] files = directory.listFiles();
-        if (files == null) throw new IOException("Failed to list contents of " + directory);
+        if (files == null) throw new IOException("Failed to list content of " + directory);
 
         boolean isSuccess = true;
 
@@ -474,7 +474,7 @@ public class FileHelper {
         db.updateContentReads(content);
 
         try {
-            JsonHelper.saveJson(content.populateAttributeMap(), dir);
+            JsonHelper.saveJson(content.preJSONExport(), dir);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }

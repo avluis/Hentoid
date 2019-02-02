@@ -1431,7 +1431,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public void deleteQueueById(long contentId) {
         synchronized (locker) {
-            Timber.d("deleteQueueById");
+            Timber.d("deleteQueue");
             SQLiteDatabase db = null;
             SQLiteStatement statement = null;
 

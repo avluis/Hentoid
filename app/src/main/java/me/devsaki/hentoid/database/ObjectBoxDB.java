@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.database;
 
 import android.content.Context;
+import android.util.Log;
 import android.util.SparseIntArray;
 
 import com.annimon.stream.Collectors;
@@ -15,12 +16,17 @@ import javax.annotation.Nonnull;
 
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
+import io.objectbox.android.AndroidObjectBrowser;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
+import io.reactivex.internal.operators.completable.CompletableOnErrorComplete;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
+import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.database.domains.QueueRecord_;
@@ -46,6 +52,10 @@ public class ObjectBoxDB {
 
     private ObjectBoxDB(Context context) {
         store = MyObjectBox.builder().androidContext(context).build();
+        if (BuildConfig.DEBUG) {
+            boolean started = new AndroidObjectBrowser(store).start(context);
+            Log.i("ObjectBrowser", "Started: " + started);
+        }
     }
 
 
@@ -135,8 +145,13 @@ public class ObjectBoxDB {
         }
     }
 
-    public void deleteQueueById(long contentId) {
-        store.boxFor(Content.class).remove(contentId);
+    public void deleteQueue(Content content) {
+        Box<QueueRecord> queueRecordBox = store.boxFor(QueueRecord.class);
+        QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, content.getId()).build().findFirst();
+
+        if (record != null) {
+            queueRecordBox.remove(record);
+        }
     }
 
     long countAllContent() {
@@ -145,6 +160,10 @@ public class ObjectBoxDB {
 
     public Content selectContentById(long id) {
         return store.boxFor(Content.class).get(id);
+    }
+
+    public Content selectContentByUrl(String url) {
+        return store.boxFor(Content.class).query().equal(Content_.url, url).build().findFirst();
     }
 
     private List<Content> selectContentByIds(long[] ids) {
@@ -341,7 +360,7 @@ public class ObjectBoxDB {
 
         for (Attribute attr : attrs) {
             if (attr.getType().equals(AttributeType.SOURCE)) {
-                ids = contentFromSourceQuery.setParameter(Content_.site, attr.getId()).findIds(); // TODO - check if site code is indeed stored in attr.getId ??
+                ids = contentFromSourceQuery.setParameter(Content_.site, attr.getId()).findIds();
             } else {
                 ids = contentFromAttributesQuery.setParameter(Attribute_.type, attr.getType().getCode())
                         .setParameter(Attribute_.name, attr.getName()).findIds();
@@ -445,6 +464,31 @@ public class ObjectBoxDB {
         // Group and count by type
         Map<AttributeType, List<Attribute>> map = Stream.of(attributes).collect(Collectors.groupingBy(Attribute::getType));
         for (AttributeType t : map.keySet()) {
+            result.append(t.getCode(), map.get(t).size());
+        }
+
+        return result;
+    }
+
+    public void updateImageFileStatus(ImageFile image) {
+        Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
+        ImageFile img = imgBox.get(image.getId());
+        img.setStatus(image.getStatus());
+        imgBox.put(img);
+    }
+
+    public SparseIntArray countProcessedImagesById(long contentId) {
+        QueryBuilder<ImageFile> imgQuery = store.boxFor(ImageFile.class).query();
+        imgQuery.link(ImageFile_.content).equal(Content_.id, contentId);
+
+        List<ImageFile> images = imgQuery.build().find();
+
+        SparseIntArray result = new SparseIntArray();
+        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
+        // => Group by and count have to be done manually (thanks God Stream exists !)
+        // Group and count by type
+        Map<StatusContent, List<ImageFile>> map = Stream.of(images).collect(Collectors.groupingBy(ImageFile::getStatus));
+        for (StatusContent t : map.keySet()) {
             result.append(t.getCode(), map.get(t).size());
         }
 

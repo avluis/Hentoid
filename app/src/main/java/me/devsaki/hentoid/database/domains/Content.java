@@ -4,15 +4,15 @@ import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
-import io.objectbox.annotation.Unique;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.websites.BaseWebActivity;
@@ -57,8 +57,9 @@ public class Content implements Serializable {
     @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
-    @Expose
-    private List<ImageFile> imageFiles;
+    @Expose(serialize = false, deserialize = false)
+    @Backlink(to = "content")
+    private ToMany<ImageFile> imageFiles;
     @Expose
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
@@ -81,6 +82,11 @@ public class Content implements Serializable {
     @Expose
     @SerializedName("attributes")
     private AttributeMap attributeMap;
+    @Transient
+    @Expose
+    @SerializedName("imageFiles")
+    private ArrayList<ImageFile> imageList;
+
 
     public List<Attribute> getAttributes() {
         return this.attributes;
@@ -287,16 +293,22 @@ public class Content implements Serializable {
         return this;
     }
 
-    public Content populateAttributeMap() {
+    public Content preJSONExport() {
         this.attributeMap = getAttributeMap();
+        this.imageList = new ArrayList<>(imageFiles);
         return this;
     }
 
-    public Content populateAttributes() {
-        if (attributeMap != null) {
+    public Content postJSONImport() {
+        if (this.attributeMap != null) {
             this.attributes.clear();
-            for (AttributeType type : attributeMap.keySet())
-                this.attributes.addAll(attributeMap.get(type));
+            for (AttributeType type : this.attributeMap.keySet())
+                this.attributes.addAll(this.attributeMap.get(type));
+        }
+        if (this.imageList != null)
+        {
+            this.imageFiles.clear();
+            this.imageFiles.addAll(this.imageList);
         }
         return this;
     }
@@ -365,13 +377,13 @@ public class Content implements Serializable {
         return this;
     }
 
-    public List<ImageFile> getImageFiles() {
-        if (null == imageFiles) imageFiles = Collections.emptyList();
+    public ToMany<ImageFile> getImageFiles() {
         return imageFiles;
     }
 
     public Content setImageFiles(List<ImageFile> imageFiles) {
-        this.imageFiles = imageFiles;
+        this.imageFiles.clear();
+        this.imageFiles.addAll(imageFiles);
         return this;
     }
 
