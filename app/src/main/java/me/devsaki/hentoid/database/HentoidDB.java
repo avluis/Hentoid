@@ -742,6 +742,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     private Content populateContent(Cursor cursorContent, SQLiteDatabase db, boolean getImages) {
         Content content = new Content()
+                .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SOURCECODE - 1)))
                 .setUrl(cursorContent.getString(ContentTable.IDX_URL - 1))
                 .setTitle(cursorContent.getString(ContentTable.IDX_TITLE - 1))
                 .setQtyPages(cursorContent.getInt(ContentTable.IDX_QTYPAGES - 1))
@@ -749,7 +750,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setDownloadDate(cursorContent.getLong(ContentTable.IDX_DLDATE - 1))
                 .setStatus(StatusContent.searchByCode(cursorContent.getInt(ContentTable.IDX_STATUSCODE - 1)))
                 .setCoverImageUrl(cursorContent.getString(ContentTable.IDX_COVERURL - 1))
-                .setSite(Site.searchByCode(cursorContent.getInt(ContentTable.IDX_SOURCECODE - 1)))
                 .setAuthor(cursorContent.getString(ContentTable.IDX_AUTHOR - 1))
                 .setStorageFolder(cursorContent.getString(ContentTable.IDX_STORAGE_FOLDER - 1))
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
