@@ -332,7 +332,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         currentContent.setDownloadDate(new Date().getTime())
                 .setStatus(StatusContent.DOWNLOADING);
-        db.updateContentStatus(currentContent);
+        db.updateContentStatusAndDate(currentContent);
 
         List<QueueRecord> queue = db.selectQueue();
         int lastIndex = 1;

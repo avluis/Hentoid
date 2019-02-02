@@ -77,10 +77,11 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).count();
     }
 
-    public void updateContentStatus(Content row) {
+    public void updateContentStatusAndDate(Content row) {
         Box<Content> contentBox = store.boxFor(Content.class);
         Content c = contentBox.get(row.getId());
         c.setStatus(row.getStatus());
+        c.setDownloadDate(row.getDownloadDate());
         contentBox.put(c);
     }
 

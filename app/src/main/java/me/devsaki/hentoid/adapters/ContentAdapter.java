@@ -463,7 +463,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             db.insertContent(item);
         } else {
             item.setStatus(StatusContent.DOWNLOADING);
-            db.updateContentStatus(item);
+            db.updateContentStatusAndDate(item);
         }
 
         List<QueueRecord> queue = db.selectQueue();

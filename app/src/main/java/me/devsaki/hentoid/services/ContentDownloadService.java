@@ -234,7 +234,7 @@ public class ContentDownloadService extends IntentService {
             // Mark content as downloaded
             content.setDownloadDate(new Date().getTime());
             content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-            db.updateContentStatus(content);
+            db.updateContentStatusAndDate(content);
 
             // Save JSON file
             try {
