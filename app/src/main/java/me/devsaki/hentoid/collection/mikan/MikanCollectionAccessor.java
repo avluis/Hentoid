@@ -275,7 +275,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
             List<Content> list = new ArrayList<Content>() {{
                 add(content);
             }};
-            content.setImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
+            content.addImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
             listener.onContentReady(list, 1, 1);
         }
     }

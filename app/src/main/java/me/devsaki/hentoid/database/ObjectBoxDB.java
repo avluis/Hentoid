@@ -72,6 +72,10 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).put(row);
     }
 
+    public void attach(Content c) {
+        store.boxFor(Content.class).attach(c);
+    }
+
     public long countContentEntries() {
         return store.boxFor(Content.class).count();
     }
@@ -363,7 +367,7 @@ public class ObjectBoxDB {
         List<Long> results = Collections.emptyList();
         long[] ids;
 
-        for (Attribute attr : attrs) {
+        for (Attribute attr : attrs) { // TODO - to run within a transaction ?
             if (attr.getType().equals(AttributeType.SOURCE)) {
                 ids = contentFromSourceQuery.setParameter(Content_.site, attr.getId()).findIds();
             } else {

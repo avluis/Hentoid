@@ -439,7 +439,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         Content contentDB = db.selectContentByUrl(content.getUrl());
         if (contentDB != null) {
             content.setStatus(contentDB.getStatus())
-                    .setImageFiles(contentDB.getImageFiles())
+                    .addImageFiles(contentDB.getImageFiles())
                     .setStorageFolder(contentDB.getStorageFolder())
                     .setDownloadDate(contentDB.getDownloadDate());
         }

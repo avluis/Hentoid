@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Pair;
-import android.util.SparseArray;
 import android.util.SparseIntArray;
 
 import java.util.ArrayList;
@@ -757,8 +756,10 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setLastReadDate(cursorContent.getLong(ContentTable.IDX_LAST_READ_DATE - 1))
                 .setQueryOrder(cursorContent.getPosition());
 
-        if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
-                .addAttributes(selectAttributesByContentId(db, content.getId()));
+        long id = content.getUrl().hashCode(); // Yes, that was the definition of the ID according to the old DB's convention
+
+        if (getImages) content.addImageFiles(selectImageFilesByContentId(db, id))
+                .addAttributes(selectAttributesByContentId(db, id));
 
         content.populateAuthor();
 

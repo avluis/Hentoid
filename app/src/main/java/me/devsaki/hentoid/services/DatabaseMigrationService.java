@@ -101,6 +101,7 @@ public class DatabaseMigrationService extends IntentService {
             Content content = oldDB.selectContentById(bookIds.get(i));
 
             if (content != null) {
+//                newDB.attach(content);
                 newKey = newDB.insertContent(content);
                 keyMapping.put(bookIds.get(i), newKey);
                 booksOK++;

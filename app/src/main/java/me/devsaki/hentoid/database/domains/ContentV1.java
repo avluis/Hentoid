@@ -140,7 +140,7 @@ public class ContentV1 {
                 .setUrl(url)
                 .setUploadDate(uploadDate)
                 .addAttributes(attributes)
-                .setImageFiles(imageFiles)
+                .addImageFiles(imageFiles)
                 .setCoverImageUrl(coverImageUrl)
                 .setTitle(title)
                 .setAuthor(author)

@@ -129,7 +129,7 @@ public class ContentDownloadService extends IntentService {
         if (0 == images.size()) {
             // Create image list in DB
             images = fetchImageURLs(content);
-            content.setImageFiles(images);
+            content.addImageFiles(images);
             db.insertContent(content);
         }
 
