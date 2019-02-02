@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
-import android.util.Pair;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
@@ -13,14 +12,11 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
@@ -128,8 +124,7 @@ public class DatabaseMigrationService extends IntentService {
         for (int i = 0; i < queueIds.size(); i++) {
             Long targetKey = keyMapping.get(queueIds.keyAt(i));
 
-            if (targetKey != null)
-            {
+            if (targetKey != null) {
                 newDB.insertQueue(targetKey, queueIds.get(queueIds.keyAt(i)));
                 queueOK++;
                 log = "Import queue OK : " + targetKey;

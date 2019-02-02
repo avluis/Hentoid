@@ -28,8 +28,7 @@ public class DatabaseMaintenance {
         for (Content c : obsoleteTempContent) db.deleteContent(c);
 
         // Perform technical data updates on the old database engine
-        if (oldDb.countContentEntries() > 0)
-        {
+        if (oldDb.countContentEntries() > 0) {
             oldDb.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
             UpgradeTo(oldDb); // Yes, this _is_ useful to have the old DB ready for ObjectBox migration
         }

@@ -12,11 +12,8 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.DatabaseMigrationService;
-import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.util.AssetsCache;
-import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 
@@ -63,8 +60,7 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    private void handleDatabaseMigration()
-    {
+    private void handleDatabaseMigration() {
         // Send results to scan
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle(R.string.migrate_db);
