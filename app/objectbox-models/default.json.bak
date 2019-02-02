@@ -93,16 +93,12 @@
         {
           "id": "1:4430709372206389603",
           "name": "attributes"
-        },
-        {
-          "id": "2:4182320255043105081",
-          "name": "imageFiles"
         }
       ]
     },
     {
       "id": "3:2849837771881495731",
-      "lastPropertyId": "5:7613843228223628057",
+      "lastPropertyId": "6:6745828261307358394",
       "name": "ImageFile",
       "properties": [
         {
@@ -124,6 +120,11 @@
         {
           "id": "5:7613843228223628057",
           "name": "status"
+        },
+        {
+          "id": "6:6745828261307358394",
+          "indexId": "4:7771600038559568217",
+          "name": "contentId"
         }
       ],
       "relations": []
@@ -151,7 +152,7 @@
     }
   ],
   "lastEntityId": "6:4536601977896522985",
-  "lastIndexId": "3:6276640449349847797",
+  "lastIndexId": "4:7771600038559568217",
   "lastRelationId": "2:4182320255043105081",
   "lastSequenceId": "0:0",
   "modelVersion": 4,
@@ -174,6 +175,8 @@
     7592738185335406663,
     2516142253958987500
   ],
-  "retiredRelationUids": [],
+  "retiredRelationUids": [
+    4182320255043105081
+  ],
   "version": 1
 }

@@ -38,8 +38,9 @@ public class Content implements Serializable {
     @Id
     private long id;
     @Expose
-//    @Unique
     private String url;
+    @Expose(serialize = false, deserialize = false)
+    private String uniqueSiteId; // Has to be queryable in DB, hence has to be a field
     @Expose
     private String title;
     @Expose
@@ -119,7 +120,9 @@ public class Content implements Serializable {
         this.id = id;
     }
 
-    public String getUniqueSiteId() {
+    public String getUniqueSiteId() { return this.uniqueSiteId; }
+
+    private String computeUniqueSiteId() {
         String[] paths;
 
         switch (site) {
@@ -218,6 +221,7 @@ public class Content implements Serializable {
 
     public Content setUrl(String url) {
         this.url = url;
+        this.uniqueSiteId = computeUniqueSiteId();
         return this;
     }
 
@@ -304,6 +308,7 @@ public class Content implements Serializable {
             this.imageFiles.clear();
             this.imageFiles.addAll(this.imageList);
         }
+        this.uniqueSiteId = computeUniqueSiteId();
         return this;
     }
 

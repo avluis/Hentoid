@@ -36,6 +36,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
 
@@ -54,7 +55,7 @@ public class ObjectBoxDB {
         store = MyObjectBox.builder().androidContext(context).build();
         if (BuildConfig.DEBUG) {
             boolean started = new AndroidObjectBrowser(store).start(context);
-            Log.i("ObjectBrowser", "Started: " + started);
+            Timber.i("ObjectBrowser started: %s", started);
         }
     }
 
@@ -494,5 +495,18 @@ public class ObjectBoxDB {
         }
 
         return result;
+    }
+
+    public List<Content> selectContentBySourceId(Site site, List<String> uniqueIds) {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+        query.in(Content_.status, new int[]{StatusContent.DOWNLOADED.getCode(),
+                StatusContent.ERROR.getCode(),
+                StatusContent.MIGRATED.getCode(),
+                StatusContent.DOWNLOADING.getCode(),
+                StatusContent.PAUSED.getCode()});
+        query.equal(Content_.site, site.getCode());
+        query.in(Content_.uniqueSiteId, uniqueIds.toArray(new String[0]));
+
+        return query.build().find();
     }
 }
