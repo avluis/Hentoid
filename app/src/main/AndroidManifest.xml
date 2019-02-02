@@ -255,6 +255,8 @@
 
         <service android:name=".services.ImportService" />
 
+        <service android:name=".services.DatabaseMigrationService" />
+
         <receiver android:name=".receiver.DownloadNotificationDeleteReceiver" />
 
         <provider

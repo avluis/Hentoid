@@ -17,7 +17,7 @@ public class ImportEvent {
     public final int booksOK;                   // Number of pages that have been downloaded successfully for current book
     public final int booksKO;                   // Number of pages that have been downloaded with errors for current book
     public final int booksTotal;                // Number of pages to download for current book
-    public final File cleanupLogFile;           // Cleanup log file, if exists (for EV_COMPLETE)
+    public final File logFile;                  // Log file, if exists (for EV_COMPLETE)
 
     /**
      * Use for EV_PROGRESS events
@@ -34,7 +34,7 @@ public class ImportEvent {
         this.booksOK = booksOK;
         this.booksKO = booksKO;
         this.booksTotal = booksTotal;
-        this.cleanupLogFile = null;
+        this.logFile = null;
     }
 
     /**
@@ -45,13 +45,13 @@ public class ImportEvent {
      * @param booksKO    pages downloaded with errors
      * @param booksTotal total pages to download
      */
-    public ImportEvent(int eventType, int booksOK, int booksKO, int booksTotal, File cleanupLogFile) {
+    public ImportEvent(int eventType, int booksOK, int booksKO, int booksTotal, File logFile) {
         this.content = null;
         this.eventType = eventType;
         this.booksOK = booksOK;
         this.booksKO = booksKO;
         this.booksTotal = booksTotal;
-        this.cleanupLogFile = cleanupLogFile;
+        this.logFile = logFile;
     }
 
 }

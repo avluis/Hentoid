@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.database;
 
 import android.content.Context;
-import android.util.Log;
 import android.util.SparseIntArray;
 
 import com.annimon.stream.Collectors;
@@ -19,7 +18,6 @@ import io.objectbox.BoxStore;
 import io.objectbox.android.AndroidObjectBrowser;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
-import io.reactivex.internal.operators.completable.CompletableOnErrorComplete;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Attribute_;
@@ -70,8 +68,8 @@ public class ObjectBoxDB {
         return instance;
     }
 
-    public void insertContent(Content row) {
-        store.boxFor(Content.class).put(row);
+    public long insertContent(Content row) {
+        return store.boxFor(Content.class).put(row);
     }
 
     public long countContentEntries() {
@@ -106,6 +104,11 @@ public class ObjectBoxDB {
 
     public void deleteContent(Content content) {
         store.boxFor(Content.class).remove(content);
+    }
+
+    public void deleteAllBooks() {
+        store.boxFor(Content.class).removeAll();
+        store.boxFor(QueueRecord.class).removeAll();
     }
 
     public void updateContentReads(Content content) {

@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
 import android.util.Pair;
+import android.util.SparseArray;
 import android.util.SparseIntArray;
 
 import java.util.ArrayList;
@@ -1477,5 +1478,72 @@ public class HentoidDB extends SQLiteOpenHelper {
                 }
             }
         }
+    }
+
+    public List<Integer> selectMigrableContentIds()
+    {
+        ArrayList<Integer> result = new ArrayList<>();
+
+        Timber.d("selectMigrableContentIds");
+        SQLiteDatabase db = null;
+        Cursor cursorQueue = null;
+
+        try {
+            db = getReadableDatabase();
+            cursorQueue = db.rawQuery(ContentTable.SELECT_MIGRABLE_CONTENT, new String[]{
+                    StatusContent.DOWNLOADED.getCode() + "",
+                    StatusContent.ERROR.getCode() + "",
+                    StatusContent.MIGRATED.getCode() + "",
+                    StatusContent.DOWNLOADING.getCode() + "",
+                    StatusContent.PAUSED.getCode() + ""
+            });
+
+            // looping through all rows and adding to list
+            if (cursorQueue.moveToFirst()) {
+                do {
+                    result.add(cursorQueue.getInt(0));
+                } while (cursorQueue.moveToNext());
+            }
+        } finally {
+            if (cursorQueue != null) {
+                cursorQueue.close();
+            }
+            if (db != null && db.isOpen()) {
+                db.close(); // Closing database connection
+            }
+        }
+
+        return result;
+    }
+
+    public SparseIntArray selectQueueForMigration() {
+        SparseIntArray result = new SparseIntArray();
+
+        synchronized (locker) {
+            Timber.d("selectQueueForMigration");
+            SQLiteDatabase db = null;
+            Cursor cursorQueue = null;
+
+            try {
+                db = getReadableDatabase();
+                cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{});
+
+                // looping through all rows and adding to list
+                if (cursorQueue.moveToFirst()) {
+                    do {
+                        result.put(cursorQueue.getInt(0), cursorQueue.getInt(1));
+                    } while (cursorQueue.moveToNext());
+                }
+            } finally {
+                if (cursorQueue != null) {
+                    cursorQueue.close();
+                }
+                if (db != null && db.isOpen()) {
+                    db.close(); // Closing database connection
+                }
+            }
+        }
+
+        return result;
     }
 }

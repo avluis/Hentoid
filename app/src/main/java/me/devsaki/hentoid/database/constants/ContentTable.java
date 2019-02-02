@@ -99,6 +99,8 @@ public abstract class ContentTable {
 
     public static final String SELECT_BY_STATUS = "SELECT * FROM " + TABLE_NAME + " C WHERE C." + STATUS_COLUMN + " = ?";
 
+    public static final String SELECT_MIGRABLE_CONTENT = "SELECT "+ID_COLUMN + " FROM "+TABLE_NAME+" WHERE "+STATUS_COLUMN + " IN (?,?,?,?,?)";
+
 
     // SEARCH QUERIES "TOOLBOX"
 
