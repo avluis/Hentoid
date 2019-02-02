@@ -12,7 +12,6 @@ import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
 import io.objectbox.annotation.Transient;
-import io.objectbox.annotation.Unique;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.enums.AttributeType;
 
@@ -52,9 +51,12 @@ public class Attribute {
     }
 
     public long getId() {
-        return (0 == externalId) ? this.id: this.externalId;
+        return (0 == externalId) ? this.id : this.externalId;
     }
-    public void setId(long id ) { this.id = id; }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getUrl() {
         return url;

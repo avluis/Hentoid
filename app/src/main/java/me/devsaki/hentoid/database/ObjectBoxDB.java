@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
@@ -72,11 +73,7 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).put(row);
     }
 
-    public void attach(Content c) {
-        store.boxFor(Content.class).attach(c);
-    }
-
-    public long countContentEntries() {
+    long countContentEntries() {
         return store.boxFor(Content.class).count();
     }
 
@@ -102,7 +99,7 @@ public class ObjectBoxDB {
         contentBox.put(c);
     }
 
-    public List<Content> selectContentByStatus(StatusContent status) {
+    List<Content> selectContentByStatus(StatusContent status) {
         return store.boxFor(Content.class).query().equal(Content_.status, status.getCode()).build().find();
     }
 
@@ -167,10 +164,12 @@ public class ObjectBoxDB {
         return countContentByQuery("", Collections.emptyList(), false);
     }
 
+    @Nullable
     public Content selectContentById(long id) {
         return store.boxFor(Content.class).get(id);
     }
 
+    @Nullable
     public Content selectContentByUrl(String url) {
         return store.boxFor(Content.class).query().equal(Content_.url, url).build().findFirst();
     }
@@ -179,6 +178,7 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().in(Content_.id, ids).build().find();
     }
 
+    @Nullable
     public Attribute selectAttributeById(long id) {
         return store.boxFor(Attribute.class).get(id);
     }

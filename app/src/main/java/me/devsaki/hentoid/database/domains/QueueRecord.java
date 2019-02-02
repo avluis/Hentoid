@@ -12,9 +12,10 @@ public class QueueRecord {
     public ToOne<Content> content;
     public int rank;
 
-    public QueueRecord() {}
-    public QueueRecord(long id, int order)
-    {
+    public QueueRecord() {
+    }
+
+    public QueueRecord(long id, int order) {
         content.setTargetId(id);
         rank = order;
     }

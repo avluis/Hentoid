@@ -120,7 +120,9 @@ public class Content implements Serializable {
         this.id = id;
     }
 
-    public String getUniqueSiteId() { return this.uniqueSiteId; }
+    public String getUniqueSiteId() {
+        return this.uniqueSiteId;
+    }
 
     private String computeUniqueSiteId() {
         String[] paths;

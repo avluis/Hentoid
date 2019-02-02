@@ -8,7 +8,7 @@ import me.devsaki.hentoid.enums.StatusContent;
  */
 public abstract class QueueTable {
 
-    public static final String TABLE_NAME = "queue";
+    private static final String TABLE_NAME = "queue";
 
     public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO " + TABLE_NAME + " VALUES (?,?);";
 
@@ -20,19 +20,12 @@ public abstract class QueueTable {
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
             + ID_COLUMN + " INTEGER PRIMARY KEY, " + ORDER_COLUMN + " INTEGER DEFAULT 0)";
 
-    // DELETE
-    public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE " + ID_COLUMN + " = ?";
-
-    // UPDATE
-    public static final String UPDATE_STATEMENT = "UPDATE "
-            + TABLE_NAME + " SET " + ORDER_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
-
     // SELECT
     public static final String SELECT_QUEUE = "SELECT * FROM " + TABLE_NAME + " C ORDER BY " + ORDER_COLUMN + " ASC";
 
     // QUEUE MIGRATION AD HOC QUERY
     public static final String SELECT_CONTENT_FOR_QUEUE_MIGRATION = "SELECT * FROM " + ContentTable.TABLE_NAME + " "
-            + "WHERE "+ContentTable.STATUS_COLUMN +" IN ("+ StatusContent.DOWNLOADING.getCode()+","+StatusContent.PAUSED.getCode()+") "
-            + "AND "+ContentTable.ID_COLUMN +" NOT IN ( SELECT "+ID_COLUMN+" FROM "+TABLE_NAME+") "
+            + "WHERE " + ContentTable.STATUS_COLUMN + " IN (" + StatusContent.DOWNLOADING.getCode() + "," + StatusContent.PAUSED.getCode() + ") "
+            + "AND " + ContentTable.ID_COLUMN + " NOT IN ( SELECT " + ID_COLUMN + " FROM " + TABLE_NAME + ") "
             + "ORDER BY " + ContentTable.STATUS_COLUMN + "," + ContentTable.DOWNLOAD_DATE_COLUMN;
 }

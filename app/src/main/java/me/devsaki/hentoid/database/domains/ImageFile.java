@@ -4,11 +4,9 @@ import com.google.gson.annotations.Expose;
 
 import java.util.Locale;
 
-import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
-import io.objectbox.relation.ToMany;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
 
@@ -33,11 +31,12 @@ public class ImageFile {
     public ToOne<Content> content;
 
 
+    public ImageFile() {
+    }
 
-    public ImageFile() {};
+    ;
 
-    public ImageFile(int order, String url, StatusContent status)
-    {
+    public ImageFile(int order, String url, StatusContent status) {
         this.order = order;
         this.name = String.format(Locale.US, "%03d", order);
         this.url = url;
@@ -50,8 +49,13 @@ public class ImageFile {
     }
 */
 
-    public long getId() { return this.id; }
-    public void setId(long id ) { this.id = id; }
+    public long getId() {
+        return this.id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public Integer getOrder() {
         return order;
