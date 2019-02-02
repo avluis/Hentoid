@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
@@ -25,6 +26,7 @@ import me.devsaki.hentoid.util.Preferences;
 public class SplashActivity extends AppCompatActivity {
 
     private ProgressDialog progressDialog;
+    private boolean busRegistered = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +41,21 @@ public class SplashActivity extends AppCompatActivity {
             finish();
         } else {
             if (DatabaseMaintenance.hasToMigrate(this)) handleDatabaseMigration();
-            Helper.launchMainActivity(this);
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            finish();
+            else runMain();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (busRegistered) EventBus.getDefault().unregister(this);
+
+        super.onDestroy();
+    }
+
+    private void runMain() {
+        Helper.launchMainActivity(this);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        finish();
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -58,9 +71,13 @@ public class SplashActivity extends AppCompatActivity {
         if (ImportEvent.EV_COMPLETE == event.eventType) {
             if (progressDialog != null) progressDialog.dismiss();
         }
+        runMain();
     }
 
     private void handleDatabaseMigration() {
+        EventBus.getDefault().register(this);
+        busRegistered = true;
+
         // Send results to scan
         progressDialog = new ProgressDialog(this);
         progressDialog.setTitle(R.string.migrate_db);
