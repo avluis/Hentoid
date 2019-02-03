@@ -1116,7 +1116,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void updateTitle() {
         if (MODE_LIBRARY == mode) {
             Activity activity = getActivity();
-            if (activity != null) {
+            if (activity != null) { // Has to be crash-proof; sometimes there's no activity there...
                 String title;
                 if (mTotalSelectedCount == mTotalCount)
                     title = "(" + mTotalCount + ")";
