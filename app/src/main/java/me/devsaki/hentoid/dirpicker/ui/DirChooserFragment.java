@@ -145,9 +145,9 @@ public class DirChooserFragment extends DialogFragment implements
     public void onMakeDirEvent(OnMakeDirEvent event) {
         try {
             MakeDir.TryMakeDir(event.root, event.dirName);
-        } catch(DirExistsException dee) {
+        } catch (DirExistsException dee) {
             Helper.toast(getActivity(), R.string.folder_already_exists);
-        } catch(PermissionDeniedException dee) {
+        } catch (PermissionDeniedException dee) {
             Helper.toast(getActivity(), R.string.permission_denied);
         } catch (IOException e) {
             Helper.toast(getActivity(), R.string.op_not_allowed);
