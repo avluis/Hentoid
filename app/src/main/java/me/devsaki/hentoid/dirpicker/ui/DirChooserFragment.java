@@ -32,6 +32,7 @@ import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
 import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
@@ -202,8 +203,7 @@ public class DirChooserFragment extends DialogFragment implements
     }
 
     private void createDirBtnClicked() {
-        new CreateDirDialog(requireActivity(),
-                requireActivity().getString(R.string.app_name)).dialog(currentRootDir);
+        new CreateDirDialog(requireActivity(), Consts.DEFAULT_LOCAL_DIRECTORY).dialog(currentRootDir);
     }
 
     private void requestSDBtnClicked() {
