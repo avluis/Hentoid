@@ -18,19 +18,17 @@ import me.devsaki.hentoid.dirpicker.observers.MakeDirObserver;
  */
 class MakeDir {
     private final DirTree dirTree;
-    private final EventBus bus;
 //    private Subscription subscription;
 
-    MakeDir(DirTree dirTree, EventBus bus) {
+    MakeDir(DirTree dirTree) {
         this.dirTree = dirTree;
-        this.bus = bus;
     }
 
     void process(File rootDir, String name) {
 //        cancelPrevOp();
 
         Observable<File> observable = new MakeDirObservable().create(rootDir, name);
-        Observer<File> observer = new MakeDirObserver(dirTree, bus);
+        Observer<File> observer = new MakeDirObserver(dirTree);
 
 /*        subscription = */ observable.observeOn(Schedulers.io())
 //                .onBackpressureDrop()

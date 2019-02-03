@@ -18,12 +18,10 @@ import timber.log.Timber;
 public class MakeDirObserver implements Observer<File> {
 
     private final DirTree dirTree;
-    private final EventBus bus;
     private File newDir;
 
-    public MakeDirObserver(DirTree dirTree, EventBus bus) {
+    public MakeDirObserver(DirTree dirTree) {
         this.dirTree = dirTree;
-        this.bus = bus;
     }
 
     private boolean isNewDirInCurrentDir() {
@@ -40,7 +38,7 @@ public class MakeDirObserver implements Observer<File> {
     @Override
     public void onComplete() {
         if (isNewDirInCurrentDir()) {
-            bus.post(new UpdateDirTreeEvent(dirTree.getRoot()));
+            EventBus.getDefault().post(new UpdateDirTreeEvent(dirTree.getRoot()));
         }
         Timber.d("Make directory completed.");
     }
@@ -48,7 +46,7 @@ public class MakeDirObserver implements Observer<File> {
     @Override
     public void onError(Throwable e) {
         Timber.d("onError: %s", e.toString());
-        bus.post(new OpFailedEvent());
+        EventBus.getDefault().post(new OpFailedEvent());
     }
 
     @Override

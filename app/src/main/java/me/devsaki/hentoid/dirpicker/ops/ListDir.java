@@ -20,12 +20,10 @@ import timber.log.Timber;
 class ListDir {
 
     private final DirTree dirTree;
-    private final EventBus bus;
 //    private Subscription subscription;
 
-    ListDir(DirTree dirTree, EventBus bus) {
+    ListDir(DirTree dirTree) {
         this.dirTree = dirTree;
-        this.bus = bus;
     }
 
     void process(File rootDir) {
@@ -45,7 +43,7 @@ class ListDir {
                     .subscribe(this::onNext, this::onError, this::onComplete);
         } else {
             Timber.d("Failed to process directory list.");
-            bus.post(new OpFailedEvent());
+            EventBus.getDefault().post(new OpFailedEvent());
         }
     }
 
@@ -79,7 +77,7 @@ class ListDir {
 
     private void onError(Throwable e) {
         Timber.d("onError: %s", e.toString());
-        bus.post(new OpFailedEvent());
+        EventBus.getDefault().post(new OpFailedEvent());
     }
 
     private void onComplete() {
@@ -88,7 +86,7 @@ class ListDir {
         if (dirTree.getParent() != null) {
             dirTree.dirList.add(0, dirTree.getParent());
         }
-        bus.post(new DataSetChangedEvent());
+        EventBus.getDefault().post(new DataSetChangedEvent());
         Timber.d("Update directory list completed.");
     }
 }

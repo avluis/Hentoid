@@ -12,7 +12,7 @@ import java.io.File;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.dirpicker.events.OnMakeDirEvent;
-import me.devsaki.hentoid.dirpicker.util.Convert;
+import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by avluis on 06/12/2016.
@@ -21,14 +21,12 @@ import me.devsaki.hentoid.dirpicker.util.Convert;
 class CreateDirDialog {
     private final EditText text;
     private final Context ctx;
-    private final EventBus bus;
 
-    CreateDirDialog(Context ctx, EventBus bus, @Nullable String dirName) {
+    CreateDirDialog(Context ctx, @Nullable String dirName) {
         this.ctx = ctx;
-        this.bus = bus;
 
         text = new EditText(ctx);
-        int paddingPx = Convert.dpToPixel(ctx, 16);
+        int paddingPx = Helper.dpToPixel(ctx, 16);
         text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
 
         if (dirName != null) {
@@ -43,7 +41,7 @@ class CreateDirDialog {
                 .setView(text)
                 .setPositiveButton(android.R.string.ok, (dialog, which) -> {
                     Editable value = text.getText();
-                    bus.post(new OnMakeDirEvent(currentDir, value.toString()));
+                    EventBus.getDefault().post(new OnMakeDirEvent(currentDir, value.toString()));
                 }).setNegativeButton(android.R.string.cancel, null)
                 .show();
     }

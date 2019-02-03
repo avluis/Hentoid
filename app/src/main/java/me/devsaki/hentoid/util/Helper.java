@@ -21,6 +21,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.DisplayMetrics;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
 
@@ -376,4 +377,13 @@ public final class Helper {
 
         return result;
     }
+
+    public static int dpToPixel(Context context, int dp) {
+        float scaleFactor =
+                (1.0f / DisplayMetrics.DENSITY_DEFAULT)
+                        * context.getResources().getDisplayMetrics().densityDpi;
+
+        return (int) (dp * scaleFactor);
+    }
+
 }

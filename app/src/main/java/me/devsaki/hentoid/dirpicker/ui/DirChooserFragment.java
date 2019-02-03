@@ -23,14 +23,15 @@ import java.io.File;
 import io.fabric.sdk.android.InitializationException;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.dirpicker.events.CurrentRootDirChangedEvent;
+import me.devsaki.hentoid.dirpicker.events.DataSetChangedEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
+import me.devsaki.hentoid.dirpicker.events.OnMakeDirEvent;
 import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
 import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
 import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
-import me.devsaki.hentoid.dirpicker.util.Bus;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import timber.log.Timber;
@@ -49,8 +50,8 @@ public class DirChooserFragment extends DialogFragment implements
     private FloatingActionButton fabCreateDir,
             fabRequestSD;
     private Button selectDirBtn;
-    private EventBus bus;
     private File currentRootDir;
+    DirListBuilder dirListBuilder;
 
     public static DirChooserFragment newInstance(File rootDir) {
         DirChooserFragment dirChooserFragment = new DirChooserFragment();
@@ -70,15 +71,15 @@ public class DirChooserFragment extends DialogFragment implements
     }
 
     @Override
-    public void onActivityCreated(Bundle savedState) {
-        super.onActivityCreated(savedState);
-        if (bus != null) Bus.register(bus, getActivity());
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
     }
 
     @Override
-    public void onDestroy() {
-        if (bus != null) Bus.unregister(bus, getActivity());
-        super.onDestroy();
+    public void onStop() {
+        super.onStop();
+        EventBus.getDefault().unregister(this);
     }
 
     @Override
@@ -94,13 +95,8 @@ public class DirChooserFragment extends DialogFragment implements
 
         initUI(rootView);
 
-        bus = new EventBus();
-        bus.register(this);
-
-        DirListBuilder dirListBuilder = new DirListBuilder(
-                requireActivity().getApplicationContext(), bus, recyclerView);
-        Bus.register(bus, dirListBuilder);
-        dirListBuilder.onUpdateDirTreeEvent(new UpdateDirTreeEvent(currentRootDir));
+        dirListBuilder = new DirListBuilder(requireActivity().getApplicationContext(), recyclerView);
+        dirListBuilder.processListDirEvent(currentRootDir);
 
         return rootView;
     }
@@ -135,6 +131,22 @@ public class DirChooserFragment extends DialogFragment implements
         textView.setText(event.getCurrentDirectory().toString());
     }
 
+    @Subscribe
+    public void onUpdateDirTreeEvent(UpdateDirTreeEvent event) {
+        dirListBuilder.processListDirEvent(event.rootDir);
+    }
+
+    @Subscribe
+    public void onMakeDirEvent(OnMakeDirEvent event) {
+        dirListBuilder.processMakeDirEvent(event.root, event.dirName);
+    }
+
+    @Subscribe
+    public void onDataSetChangedEvent(DataSetChangedEvent event) {
+        dirListBuilder.notifyDatasetChanged();
+    }
+
+
     private void setCurrentRootDir(Bundle savedState) {
         if (savedState != null) {
             currentRootDir = (File) savedState.getSerializable(CURRENT_ROOT_DIR);
@@ -144,7 +156,8 @@ public class DirChooserFragment extends DialogFragment implements
     }
 
     private void setCurrentDir() {
-        if (null == getArguments()) throw new InitializationException("Init failed : arguments have not been set");
+        if (null == getArguments())
+            throw new InitializationException("Init failed : arguments have not been set");
 
         File rootDir = (File) getArguments().getSerializable(ROOT_DIR);
         if (rootDir == null) {
@@ -156,7 +169,7 @@ public class DirChooserFragment extends DialogFragment implements
 
     @Override
     public void onCancel(DialogInterface dialog) {
-        bus.post(new OnDirCancelEvent());
+        EventBus.getDefault().post(new OnDirCancelEvent());
         super.onCancel(dialog);
     }
 
@@ -185,21 +198,21 @@ public class DirChooserFragment extends DialogFragment implements
 
     private void onTextViewClicked(boolean longClick) {
         Timber.d("On TextView Clicked Event");
-        bus.post(new OnTextViewClickedEvent(longClick));
+        EventBus.getDefault().post(new OnTextViewClickedEvent(longClick));
     }
 
     private void createDirBtnClicked() {
-        new CreateDirDialog(requireActivity(), bus,
+        new CreateDirDialog(requireActivity(),
                 requireActivity().getString(R.string.app_name)).dialog(currentRootDir);
     }
 
     private void requestSDBtnClicked() {
         Timber.d("SAF Request Event");
-        bus.post(new OnSAFRequestEvent());
+        EventBus.getDefault().post(new OnSAFRequestEvent());
     }
 
     private void selectDirBtnClicked() {
-        bus.post(new OnDirChosenEvent(currentRootDir));
+        EventBus.getDefault().post(new OnDirChosenEvent(currentRootDir));
         dismiss();
     }
 }
