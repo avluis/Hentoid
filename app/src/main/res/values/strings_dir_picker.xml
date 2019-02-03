@@ -2,7 +2,9 @@
 <resources>
     <string name="dir_name">Create a new directory</string>
     <string name="dir_name_inst">Please enter the name of the directory you wish to create:</string>
-    <string name="op_not_allowed">Operation not allowed!</string>
+    <string name="permission_denied">Write permission denied !</string>
+    <string name="folder_already_exists">Folder already exists !</string>
+    <string name="op_not_allowed">Operation not allowed !</string>
     <string name="select">Select</string>
 
     <string name="dir_path">Manual Input</string>

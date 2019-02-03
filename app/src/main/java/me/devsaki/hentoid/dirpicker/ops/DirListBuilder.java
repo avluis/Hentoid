@@ -17,7 +17,6 @@ public class DirListBuilder {
     private final DirTree dirTree;
     private RecyclerView.Adapter adapter;
     private ListDir listDir;
-    private MakeDir makeDir;
 
     public DirListBuilder(Context context, RecyclerView recyclerView) {
         this.dirTree = new DirTree();
@@ -28,7 +27,6 @@ public class DirListBuilder {
 
     private void initOps() {
         listDir = new ListDir(dirTree);
-        makeDir = new MakeDir(dirTree);
     }
 
     private void attachRecyclerView(Context context, RecyclerView recyclerView) {
@@ -40,10 +38,6 @@ public class DirListBuilder {
 
     public void processListDirEvent(File rootDir) {
         listDir.process(rootDir);
-    }
-
-    public void processMakeDirEvent(File rootDir, String dirName) {
-        makeDir.process(rootDir, dirName);
     }
 
     public void notifyDatasetChanged() {

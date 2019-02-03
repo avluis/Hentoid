@@ -19,6 +19,7 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 
 import java.io.File;
+import java.io.IOException;
 
 import io.fabric.sdk.android.InitializationException;
 import me.devsaki.hentoid.R;
@@ -31,7 +32,10 @@ import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
 import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
+import me.devsaki.hentoid.dirpicker.exceptions.DirExistsException;
+import me.devsaki.hentoid.dirpicker.exceptions.PermissionDeniedException;
 import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
+import me.devsaki.hentoid.dirpicker.ops.MakeDir;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -139,14 +143,22 @@ public class DirChooserFragment extends DialogFragment implements
 
     @Subscribe
     public void onMakeDirEvent(OnMakeDirEvent event) {
-        dirListBuilder.processMakeDirEvent(event.root, event.dirName);
+        try {
+            MakeDir.TryMakeDir(event.root, event.dirName);
+        } catch(DirExistsException dee) {
+            Helper.toast(getActivity(), R.string.folder_already_exists);
+        } catch(PermissionDeniedException dee) {
+            Helper.toast(getActivity(), R.string.permission_denied);
+        } catch (IOException e) {
+            Helper.toast(getActivity(), R.string.op_not_allowed);
+        }
+        dirListBuilder.processListDirEvent(event.root);
     }
 
     @Subscribe
     public void onDataSetChangedEvent(DataSetChangedEvent event) {
         dirListBuilder.notifyDatasetChanged();
     }
-
 
     private void setCurrentRootDir(Bundle savedState) {
         if (savedState != null) {
