@@ -8,4 +8,4 @@ This document style is not enforced, but it is highly recommended to be followed
 
 * In order to update the documentation, you can make use of the editor provided by GitHub (you will need to create a free account in order to do so) or by cloning the files to your system and editing them there. The Hentoid Documentation can be accessed [here](https://github.com/AVnetWS/Hentoid/wiki).
 
-*If you are uncomfortable working with GitHub and/or git, please submit your changes online (either a wiki or attached as a file) and link them to a discussion on our [Google+ Community](https://plus.google.com/communities/110496467189870321840). I will be keeping an eye for any documentation submitted this way. -- You can also get of hold of me via our [Discord Server](https://discord.gg/QEZ3qk9)*
+*If you are uncomfortable working with GitHub and/or git, please submit your changes online (either a wiki or attached as a file) and link them to a discussion on our [Discord Server](https://discord.gg/QEZ3qk9)*
