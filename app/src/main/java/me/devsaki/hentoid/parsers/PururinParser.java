@@ -16,7 +16,7 @@ import me.devsaki.hentoid.database.domains.Content;
  */
 public class PururinParser extends BaseParser {
 
-    private final static String IMAGE_PATH = "//api.pururin.io/images/";
+    private final static String IMAGE_PATH = "//cdn.pururin.io/assets/images/data/";
 
     private class PururinInfo {
         @Expose

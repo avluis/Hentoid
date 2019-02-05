@@ -22,6 +22,7 @@ import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -103,7 +104,7 @@ public class PrefsActivity extends BaseActivity {
                     return onCheckUpdatePrefClick();
                 case Preferences.Key.PREF_REFRESH_LIBRARY:
                     if (ImportService.isRunning()) {
-                        Helper.toast("Import is already running");
+                        ToastUtil.toast("Import is already running");
                     } else {
                         LibRefreshLauncher.invoke(requireFragmentManager());
                     }
@@ -137,16 +138,16 @@ public class PrefsActivity extends BaseActivity {
         }
 
         private boolean onPrefRequiringRestartChanged() {
-            Helper.toast(R.string.restart_needed);
+            ToastUtil.toast(R.string.restart_needed);
             return true;
         }
 
         private boolean onAppLockPinChanged(Object newValue) {
             String pin = (String) newValue;
             if (pin.isEmpty()) {
-                Helper.toast(getActivity(), R.string.app_lock_disabled);
+                ToastUtil.toast(getActivity(), R.string.app_lock_disabled);
             } else {
-                Helper.toast(getActivity(), R.string.app_lock_enable);
+                ToastUtil.toast(getActivity(), R.string.app_lock_enable);
             }
             return true;
         }

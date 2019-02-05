@@ -39,13 +39,13 @@ import timber.log.Timber;
  */
 public class HentoidDB extends SQLiteOpenHelper {
 
-    private static final Object locker = new Object();
     private static final int DATABASE_VERSION = 7;
     private static HentoidDB instance;
+    private SQLiteDatabase mDatabase;
+    private int mOpenCounter;
 
 
     // TODO : enable foreign keys & indexes
-    // TODO : is it necessary to use a locker during read-only operations ??
 
     private HentoidDB(Context context) {
         super(context, Consts.DATABASE_NAME, null, DATABASE_VERSION);
@@ -102,17 +102,35 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
+    // The two following methods to handle multiple threads accessing the DB simultaneously
+    // => only the last active thread will close the DB
+    private synchronized SQLiteDatabase openDatabase() {
+        mOpenCounter++;
+        if (mOpenCounter == 1) {
+            Timber.d("Opening db connection.");
+            mDatabase = this.getWritableDatabase();
+        }
+        return mDatabase;
+    }
+
+    private synchronized void closeDatabase() {
+        mOpenCounter--;
+        if (0 == mOpenCounter && mDatabase != null && mDatabase.isOpen()) {
+            Timber.d("Closing db connection.");
+            mDatabase.close();
+        }
+    }
+
+    // FUNCTIONAL METHODS
+
     public long countContentEntries() {
         long count;
 
-        SQLiteDatabase db = null;
         try {
-            db = getReadableDatabase();
+            SQLiteDatabase db = openDatabase();
             count = DatabaseUtils.queryNumEntries(db, ContentTable.TABLE_NAME);
         } finally {
-            if (db != null && db.isOpen()) {
-                db.close(); // Closing database connection
-            }
+            closeDatabase();
         }
 
         return count;
@@ -154,7 +172,7 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         sql.append(AttributeTable.SELECT_COUNT_BY_TYPE_GROUP);
 
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = openDatabase();
         try (Cursor cursorContent = db.rawQuery(sql.toString(), new String[]{})) {
 
             if (cursorContent.moveToFirst()) {
@@ -163,10 +181,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 } while (cursorContent.moveToNext());
             }
         } finally {
-            Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-            if (db != null && db.isOpen()) {
-                db.close(); // Closing database connection
-            }
+            closeDatabase();
         }
 
         return result;
@@ -177,115 +192,105 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public void insertContents(Content[] rows) {
-        synchronized (locker) {
-            Timber.d("insertContents");
+        Timber.d("insertContents");
 
-            SQLiteDatabase db = getWritableDatabase();
-            try (SQLiteStatement statement = db.compileStatement(ContentTable.INSERT_STATEMENT)) {
-                db.beginTransaction();
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ContentTable.INSERT_STATEMENT)) {
+            db.beginTransaction();
 
-                try {
-                    for (Content row : rows) {
-                        deleteContent(db, row, false);
+            try {
+                for (Content row : rows) {
+                    deleteContent(db, row, false);
 
-                        statement.clearBindings();
-                        statement.bindLong(ContentTable.IDX_INTERNALID, row.getId());
-                        statement.bindString(ContentTable.IDX_SITEID, row.getUniqueSiteId());
-                        String category = row.getCategory();
+                    statement.clearBindings();
+                    statement.bindLong(ContentTable.IDX_INTERNALID, row.getId());
+                    statement.bindString(ContentTable.IDX_SITEID, row.getUniqueSiteId());
+                    String category = row.getCategory();
 
-                        if (category == null) {
-                            statement.bindNull(ContentTable.IDX_CATEGORY);
-                        } else {
-                            statement.bindString(ContentTable.IDX_CATEGORY, category);
-                        }
-
-                        statement.bindString(ContentTable.IDX_URL, row.getUrl());
-
-                        if (row.getTitle() == null) {
-                            statement.bindNull(ContentTable.IDX_TITLE);
-                        } else {
-                            statement.bindString(ContentTable.IDX_TITLE, row.getTitle());
-                        }
-
-                        statement.bindLong(ContentTable.IDX_QTYPAGES, row.getQtyPages());
-                        statement.bindLong(ContentTable.IDX_ULDATE, row.getUploadDate());
-                        statement.bindLong(ContentTable.IDX_DLDATE, row.getDownloadDate());
-                        statement.bindLong(ContentTable.IDX_STATUSCODE, row.getStatus().getCode());
-
-                        if (row.getCoverImageUrl() == null) {
-                            statement.bindNull(ContentTable.IDX_COVERURL);
-                        } else {
-                            statement.bindString(ContentTable.IDX_COVERURL, row.getCoverImageUrl());
-                        }
-
-                        statement.bindLong(ContentTable.IDX_SOURCECODE, row.getSite().getCode());
-                        statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor()) ? "" : row.getAuthor());
-                        statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder()) ? "" : row.getStorageFolder());
-                        statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
-                        statement.bindLong(ContentTable.IDX_READS, row.getReads());
-                        statement.bindLong(ContentTable.IDX_LAST_READ_DATE, row.getLastReadDate());
-
-                        statement.execute();
-
-                        if (row.getImageFiles() != null) {
-                            insertImageFiles(db, row);
-                        }
-
-                        List<Attribute> attributes = new ArrayList<>();
-                        for (AttributeType attributeType : AttributeType.values()) {
-                            if (row.getAttributes().get(attributeType) != null) {
-                                attributes.addAll(row.getAttributes().get(attributeType));
-                            }
-                        }
-                        insertAttributes(db, row, attributes);
+                    if (category == null) {
+                        statement.bindNull(ContentTable.IDX_CATEGORY);
+                    } else {
+                        statement.bindString(ContentTable.IDX_CATEGORY, category);
                     }
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
+
+                    statement.bindString(ContentTable.IDX_URL, row.getUrl());
+
+                    if (row.getTitle() == null) {
+                        statement.bindNull(ContentTable.IDX_TITLE);
+                    } else {
+                        statement.bindString(ContentTable.IDX_TITLE, row.getTitle());
+                    }
+
+                    statement.bindLong(ContentTable.IDX_QTYPAGES, row.getQtyPages());
+                    statement.bindLong(ContentTable.IDX_ULDATE, row.getUploadDate());
+                    statement.bindLong(ContentTable.IDX_DLDATE, row.getDownloadDate());
+                    statement.bindLong(ContentTable.IDX_STATUSCODE, row.getStatus().getCode());
+
+                    if (row.getCoverImageUrl() == null) {
+                        statement.bindNull(ContentTable.IDX_COVERURL);
+                    } else {
+                        statement.bindString(ContentTable.IDX_COVERURL, row.getCoverImageUrl());
+                    }
+
+                    statement.bindLong(ContentTable.IDX_SOURCECODE, row.getSite().getCode());
+                    statement.bindString(ContentTable.IDX_AUTHOR, (null == row.getAuthor()) ? "" : row.getAuthor());
+                    statement.bindString(ContentTable.IDX_STORAGE_FOLDER, (null == row.getStorageFolder()) ? "" : row.getStorageFolder());
+                    statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
+                    statement.bindLong(ContentTable.IDX_READS, row.getReads());
+                    statement.bindLong(ContentTable.IDX_LAST_READ_DATE, row.getLastReadDate());
+
+                    statement.execute();
+
+                    if (row.getImageFiles() != null) {
+                        insertImageFiles(db, row);
+                    }
+
+                    List<Attribute> attributes = new ArrayList<>();
+                    for (AttributeType attributeType : AttributeType.values()) {
+                        if (row.getAttributes().get(attributeType) != null) {
+                            attributes.addAll(row.getAttributes().get(attributeType));
+                        }
+                    }
+                    insertAttributes(db, row, attributes);
                 }
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
     public void insertImageFiles(Content content) {
-        synchronized (locker) {
-            Timber.d("insertImageFiles");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
-            SQLiteStatement statementImages = null;
+        Timber.d("insertImageFiles");
+        SQLiteStatement statement = null;
+        SQLiteStatement statementImages = null;
 
+        try {
+            SQLiteDatabase db = openDatabase();
             try {
-                db = getWritableDatabase();
-                try {
-                    db.beginTransaction();
-                    statement = db.compileStatement(ImageFileTable.INSERT_STATEMENT);
-                    statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
-                    statementImages.clearBindings();
-                    statementImages.bindLong(1, content.getId());
-                    statementImages.execute();
+                db.beginTransaction();
+                statement = db.compileStatement(ImageFileTable.INSERT_STATEMENT);
+                statementImages = db.compileStatement(ImageFileTable.DELETE_STATEMENT);
+                statementImages.clearBindings();
+                statementImages.bindLong(1, content.getId());
+                statementImages.execute();
 
-                    insertImageFiles(statement, content);
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                insertImageFiles(statement, content);
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
-                if (statementImages != null) {
-                    statementImages.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+            if (statementImages != null) {
+                statementImages.close();
+            }
+
+            closeDatabase();
         }
     }
 
@@ -332,20 +337,13 @@ public class HentoidDB extends SQLiteOpenHelper {
     @Nullable
     public Content selectContentById(int id) {
         Content result;
-        synchronized (locker) {
-            Timber.d("selectContentById");
-            SQLiteDatabase db = null;
-            try {
-                db = getReadableDatabase();
-                result = selectContentById(db, id);
-            } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
+        Timber.d("selectContentById");
+        SQLiteDatabase db = openDatabase();
+        try {
+            result = selectContentById(db, id);
+        } finally {
+            closeDatabase();
         }
-
         return result;
     }
 
@@ -365,17 +363,12 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     public List<Content> selectContentEmptyFolder() {
         List<Content> result;
-        synchronized (locker) {
-            Timber.d("selectContentEmptyFolder");
-            SQLiteDatabase db = null;
-            Cursor cursorContent = null;
-            try {
-                db = getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_NULL_FOLDERS, new String[]{});
-                result = populateResult(cursorContent, db);
-            } finally {
-                closeCursor(cursorContent, db);
-            }
+        Timber.d("selectContentEmptyFolder");
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorContent = db.rawQuery(ContentTable.SELECT_NULL_FOLDERS, new String[]{})) {
+            result = populateResult(cursorContent, db);
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -385,63 +378,60 @@ public class HentoidDB extends SQLiteOpenHelper {
     List<Content> selectContentByQuery(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
         List<Content> result = Collections.emptyList();
 
-        synchronized (locker) {
-            Timber.d("selectContentByQuery");
+        Timber.d("selectContentByQuery");
 
-            SQLiteDatabase db = null;
-            Cursor cursorContent = null;
-            int start = (page - 1) * booksPerPage;
-            try {
-                db = getReadableDatabase();
-                String sql = buildContentSearchQuery(title, tags, filterFavourites);
+        int start = (page - 1) * booksPerPage;
+        String sql = buildContentSearchQuery(title, tags, filterFavourites);
 
-                switch (orderStyle) {
-                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                        sql += ContentTable.ORDER_BY_DATE + " DESC";
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
-                        sql += ContentTable.ORDER_BY_DATE;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
-                        sql += ContentTable.ORDER_ALPHABETIC;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
-                        sql += ContentTable.ORDER_ALPHABETIC + " DESC";
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
-                        sql += ContentTable.ORDER_READS_ASC;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
-                        sql += ContentTable.ORDER_READS_DESC;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
-                        sql += ContentTable.ORDER_READ_DATE;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                        sql += ContentTable.ORDER_RANDOM.replace("@6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
-                        break;
-                    default:
-                        // Nothing
-                }
+        switch (orderStyle) {
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
+                sql += ContentTable.ORDER_BY_DATE + " DESC";
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
+                sql += ContentTable.ORDER_BY_DATE;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+                sql += ContentTable.ORDER_ALPHABETIC;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+                sql += ContentTable.ORDER_ALPHABETIC + " DESC";
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
+                sql += ContentTable.ORDER_READS_ASC;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
+                sql += ContentTable.ORDER_READS_DESC;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
+                sql += ContentTable.ORDER_READ_DATE;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
+                sql += ContentTable.ORDER_RANDOM.replace("@6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
+                break;
+            default:
+                // Nothing
+        }
 
-                Timber.d("Query : %s; %s, %s", sql, start, booksPerPage);
+        Timber.d("Query : %s; %s, %s", sql, start, booksPerPage);
+        String[] arguments;
 
-                if (booksPerPage < 0) {
-                    cursorContent = db.rawQuery(sql,
-                            new String[]{StatusContent.DOWNLOADED.getCode() + "",
-                                    StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + ""});
-                } else {
-                    cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE,
-                            new String[]{StatusContent.DOWNLOADED.getCode() + "",
-                                    StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + "",
-                                    start + "", booksPerPage + ""});
-                }
-                result = populateResult(cursorContent, db);
-            } finally {
-                closeCursor(cursorContent, db);
-            }
+
+        if (booksPerPage < 0) arguments = new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                StatusContent.ERROR.getCode() + "",
+                StatusContent.MIGRATED.getCode() + ""};
+        else
+            arguments =
+                    new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                            StatusContent.ERROR.getCode() + "",
+                            StatusContent.MIGRATED.getCode() + "",
+                            start + "", booksPerPage + ""};
+
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE, arguments)) {
+
+            result = populateResult(cursorContent, db);
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -451,63 +441,56 @@ public class HentoidDB extends SQLiteOpenHelper {
     List<Content> selectContentByUniqueQuery(String query, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
         List<Content> result = Collections.emptyList();
 
-        synchronized (locker) {
-            Timber.d("selectContentByUniqueQuery");
+        Timber.d("selectContentByUniqueQuery");
 
-            SQLiteDatabase db = null;
-            Cursor cursorContent = null;
-            int start = (page - 1) * booksPerPage;
-            try {
-                db = getReadableDatabase();
-                String sql = buildUniversalContentSearchQuery(query, filterFavourites);
+        int start = (page - 1) * booksPerPage;
+        String sql = buildUniversalContentSearchQuery(query, filterFavourites);
 
-                switch (orderStyle) {
-                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                        sql += ContentTable.ORDER_BY_DATE + " DESC";
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
-                        sql += ContentTable.ORDER_BY_DATE;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
-                        sql += ContentTable.ORDER_ALPHABETIC;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
-                        sql += ContentTable.ORDER_ALPHABETIC + " DESC";
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
-                        sql += ContentTable.ORDER_READS_ASC;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
-                        sql += ContentTable.ORDER_READS_DESC;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
-                        sql += ContentTable.ORDER_READ_DATE;
-                        break;
-                    case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                        sql += ContentTable.ORDER_RANDOM.replace("@6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
-                        break;
-                    default:
-                        // Nothing
-                }
+        switch (orderStyle) {
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
+                sql += ContentTable.ORDER_BY_DATE + " DESC";
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
+                sql += ContentTable.ORDER_BY_DATE;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+                sql += ContentTable.ORDER_ALPHABETIC;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+                sql += ContentTable.ORDER_ALPHABETIC + " DESC";
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
+                sql += ContentTable.ORDER_READS_ASC;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
+                sql += ContentTable.ORDER_READS_DESC;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
+                sql += ContentTable.ORDER_READ_DATE;
+                break;
+            case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
+                sql += ContentTable.ORDER_RANDOM.replace("@6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
+                break;
+            default:
+                // Nothing
+        }
 
-                Timber.d("Query : %s; %s, %s", sql, start, booksPerPage);
+        Timber.i("Query : %s; %s, %s", sql, start, booksPerPage);
 
-                if (booksPerPage < 0) {
-                    cursorContent = db.rawQuery(sql,
-                            new String[]{StatusContent.DOWNLOADED.getCode() + "",
-                                    StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + ""});
-                } else {
-                    cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE,
-                            new String[]{StatusContent.DOWNLOADED.getCode() + "",
-                                    StatusContent.ERROR.getCode() + "",
-                                    StatusContent.MIGRATED.getCode() + "",
-                                    start + "", booksPerPage + ""});
-                }
-                result = populateResult(cursorContent, db);
-            } finally {
-                closeCursor(cursorContent, db);
-            }
+        String[] arguments;
+        if (booksPerPage < 0) arguments = new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                StatusContent.ERROR.getCode() + "",
+                StatusContent.MIGRATED.getCode() + ""};
+        else arguments = new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                StatusContent.ERROR.getCode() + "",
+                StatusContent.MIGRATED.getCode() + "",
+                start + "", booksPerPage + ""};
+
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE, arguments)) {
+            result = populateResult(cursorContent, db);
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -519,29 +502,25 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     int countContentByQuery(String title, List<Attribute> tags, boolean filterFavourites) {
         int count = 0;
-        SQLiteDatabase db = null;
-        Cursor cursorCount = null;
 
-        synchronized (locker) {
-            Timber.d("countContentByQuery");
+        Timber.d("countContentByQuery");
 
-            try {
-                db = getReadableDatabase();
-                String sql = buildContentSearchQuery(title, tags, filterFavourites);
-                sql = sql.replace("C.*", "COUNT(*)");
+        String sql = buildContentSearchQuery(title, tags, filterFavourites);
+        sql = sql.replace("C.*", "COUNT(*)");
 
-                Timber.d("Query : %s", sql);
+        Timber.d("Query : %s", sql);
 
-                cursorCount = db.rawQuery(sql, new String[]{StatusContent.DOWNLOADED.getCode() + "",
-                        StatusContent.ERROR.getCode() + "",
-                        StatusContent.MIGRATED.getCode() + ""});
+        SQLiteDatabase db = openDatabase();
 
-                if (cursorCount.moveToFirst()) {
-                    count = cursorCount.getInt(0);
-                }
-            } finally {
-                closeCursor(cursorCount, db);
+        try (Cursor cursorCount = db.rawQuery(sql, new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                StatusContent.ERROR.getCode() + "",
+                StatusContent.MIGRATED.getCode() + ""})) {
+
+            if (cursorCount.moveToFirst()) {
+                count = cursorCount.getInt(0);
             }
+        } finally {
+            closeDatabase();
         }
 
         return count;
@@ -549,29 +528,24 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     int countContentByUniqueQuery(String query, boolean filterFavourites) {
         int count = 0;
-        SQLiteDatabase db = null;
-        Cursor cursorCount = null;
 
-        synchronized (locker) {
-            Timber.d("countContentByQuery");
+        Timber.d("countContentByQuery");
 
-            try {
-                db = getReadableDatabase();
-                String sql = buildUniversalContentSearchQuery(query, filterFavourites);
-                sql = sql.replace("C.*", "COUNT(*)");
+        String sql = buildUniversalContentSearchQuery(query, filterFavourites);
+        sql = sql.replace("C.*", "COUNT(*)");
 
-                Timber.d("Query : %s", sql);
+        Timber.d("Query : %s", sql);
 
-                cursorCount = db.rawQuery(sql, new String[]{StatusContent.DOWNLOADED.getCode() + "",
-                        StatusContent.ERROR.getCode() + "",
-                        StatusContent.MIGRATED.getCode() + ""});
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorCount = db.rawQuery(sql, new String[]{StatusContent.DOWNLOADED.getCode() + "",
+                StatusContent.ERROR.getCode() + "",
+                StatusContent.MIGRATED.getCode() + ""})) {
 
-                if (cursorCount.moveToFirst()) {
-                    count = cursorCount.getInt(0);
-                }
-            } finally {
-                closeCursor(cursorCount, db);
+            if (cursorCount.moveToFirst()) {
+                count = cursorCount.getInt(0);
             }
+        } finally {
+            closeDatabase();
         }
 
         return count;
@@ -646,36 +620,32 @@ public class HentoidDB extends SQLiteOpenHelper {
     public List<Content> selectContentByExternalRef(Site site, List<String> uniqueIds) {
         List<Content> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectContentByExternalRef");
-            String sql = ContentTable.SELECT_BY_EXTERNAL_REF;
+        Timber.d("selectContentByExternalRef");
+        String sql = ContentTable.SELECT_BY_EXTERNAL_REF;
 
-            sql = sql.replace("@1", Helper.buildListAsString(uniqueIds, "'"));
+        sql = sql.replace("@1", Helper.buildListAsString(uniqueIds, "'"));
 
-            Timber.v(sql);
+        Timber.v(sql);
 
-            SQLiteDatabase db = getReadableDatabase();
-            try (Cursor cursorContent = db.rawQuery(sql, new String[]{
-                    site.getCode() + "",
-                    StatusContent.DOWNLOADED.getCode() + "",
-                    StatusContent.ERROR.getCode() + "",
-                    StatusContent.MIGRATED.getCode() + "",
-                    StatusContent.DOWNLOADING.getCode() + "",
-                    StatusContent.PAUSED.getCode() + ""
-            })) {
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorContent = db.rawQuery(sql, new String[]{
+                site.getCode() + "",
+                StatusContent.DOWNLOADED.getCode() + "",
+                StatusContent.ERROR.getCode() + "",
+                StatusContent.MIGRATED.getCode() + "",
+                StatusContent.DOWNLOADING.getCode() + "",
+                StatusContent.PAUSED.getCode() + ""
+        })) {
 
-                // looping through all rows and adding to list
-                if (cursorContent.moveToFirst()) {
+            // looping through all rows and adding to list
+            if (cursorContent.moveToFirst()) {
 
-                    do {
-                        result.add(populateContent(cursorContent, db, false));
-                    } while (cursorContent.moveToNext());
-                }
-            } finally {
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                do {
+                    result.add(populateContent(cursorContent, db, false));
+                } while (cursorContent.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -684,30 +654,23 @@ public class HentoidDB extends SQLiteOpenHelper {
     public List<Content> selectContentByStatus(StatusContent status) {
         List<Content> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectContentByStatus");
+        Timber.d("selectContentByStatus");
+        String sql = ContentTable.SELECT_BY_STATUS;
 
-            String sql = ContentTable.SELECT_BY_STATUS;
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorContent = db.rawQuery(sql, new String[]{
+                status.getCode() + ""
+        })) {
 
-            Timber.v(sql);
+            // looping through all rows and adding to list
+            if (cursorContent.moveToFirst()) {
 
-            SQLiteDatabase db = getReadableDatabase();
-            try (Cursor cursorContent = db.rawQuery(sql, new String[]{
-                    status.getCode() + ""
-            })) {
-
-                // looping through all rows and adding to list
-                if (cursorContent.moveToFirst()) {
-
-                    do {
-                        result.add(populateContent(cursorContent, db, false));
-                    } while (cursorContent.moveToNext());
-                }
-            } finally {
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                do {
+                    result.add(populateContent(cursorContent, db, false));
+                } while (cursorContent.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -723,16 +686,6 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
 
         return result;
-    }
-
-    private void closeCursor(Cursor cursorContent, SQLiteDatabase db) {
-        if (cursorContent != null) {
-            cursorContent.close();
-        }
-        Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-        if (db != null && db.isOpen()) {
-            db.close(); // Closing database connection
-        }
     }
 
     private Content populateContent(Cursor cursorContent, SQLiteDatabase db) {
@@ -766,10 +719,8 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     private List<ImageFile> selectImageFilesByContentId(SQLiteDatabase db, int id) {
         List<ImageFile> result = Collections.emptyList();
-        Cursor cursorImageFiles = null;
-        try {
-            cursorImageFiles = db.rawQuery(ImageFileTable.SELECT_BY_CONTENT_ID,
-                    new String[]{id + ""});
+        try (Cursor cursorImageFiles = db.rawQuery(ImageFileTable.SELECT_BY_CONTENT_ID,
+                new String[]{id + ""})) {
 
             // looping through all rows and adding to list
             if (cursorImageFiles.moveToFirst()) {
@@ -782,10 +733,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                             .setName(cursorImageFiles.getString(5)));
                 } while (cursorImageFiles.moveToNext());
             }
-        } finally {
-            if (cursorImageFiles != null) {
-                cursorImageFiles.close();
-            }
         }
 
         return result;
@@ -794,30 +741,18 @@ public class HentoidDB extends SQLiteOpenHelper {
     public SparseIntArray countProcessedImagesById(int contentId) {
         SparseIntArray result = new SparseIntArray();
 
-        synchronized (locker) {
-            Timber.d("countProcessedImagesById");
+        Timber.d("countProcessedImagesById");
 
-            SQLiteDatabase db = null;
-            Cursor cursorContent = null;
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorContent = db.rawQuery(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID, new String[]{contentId + ""})) {
 
-            try {
-                db = getReadableDatabase();
-                cursorContent = db.rawQuery(ImageFileTable.SELECT_PROCESSED_BY_CONTENT_ID, new String[]{contentId + ""});
-
-                if (cursorContent.moveToFirst()) {
-                    do {
-                        result.append(cursorContent.getInt(0), cursorContent.getInt(1));
-                    } while (cursorContent.moveToNext());
-                }
-            } finally {
-                if (cursorContent != null) {
-                    cursorContent.close();
-                }
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+            if (cursorContent.moveToFirst()) {
+                do {
+                    result.append(cursorContent.getInt(0), cursorContent.getInt(1));
+                } while (cursorContent.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -825,10 +760,8 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     private AttributeMap selectAttributesByContentId(SQLiteDatabase db, int id) {
         AttributeMap result = null;
-        Cursor cursorAttributes = null;
-        try {
-            cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_CONTENT_ID,
-                    new String[]{id + ""});
+        try (Cursor cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_CONTENT_ID,
+                new String[]{id + ""})) {
 
             // looping through all rows and adding to list
             if (cursorAttributes.moveToFirst()) {
@@ -840,10 +773,6 @@ public class HentoidDB extends SQLiteOpenHelper {
                             .setType(AttributeType.searchByCode(cursorAttributes.getInt(3))));
                 } while (cursorAttributes.moveToNext());
             }
-        } finally {
-            if (cursorAttributes != null) {
-                cursorAttributes.close();
-            }
         }
 
         return result;
@@ -852,27 +781,19 @@ public class HentoidDB extends SQLiteOpenHelper {
     public Attribute selectAttributeById(int id) {
         Attribute result = null;
 
-        synchronized (locker) {
-            Timber.d("selectAttributeById");
+        Timber.d("selectAttributeById");
 
-            SQLiteDatabase db = null;
-            Cursor cursorAttributes = null;
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_ID, new String[]{id + ""})) {
 
-            try {
-                db = getReadableDatabase();
-                cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_ID, new String[]{id + ""});
-
-                if (cursorAttributes.moveToFirst()) {
-                    result = new Attribute()
-                            .setUrl(cursorAttributes.getString(1))
-                            .setName(cursorAttributes.getString(2))
-                            .setType(AttributeType.searchByCode(cursorAttributes.getInt(3)));
-                }
-            } finally {
-                if (cursorAttributes != null) cursorAttributes.close();
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) db.close();
+            if (cursorAttributes.moveToFirst()) {
+                result = new Attribute()
+                        .setUrl(cursorAttributes.getString(1))
+                        .setName(cursorAttributes.getString(2))
+                        .setType(AttributeType.searchByCode(cursorAttributes.getInt(3)));
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -881,56 +802,52 @@ public class HentoidDB extends SQLiteOpenHelper {
     List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributes, String filter, boolean filterFavourites) {
         ArrayList<Attribute> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectAvailableAttributes");
-            String sql = AttributeTable.SELECT_ALL_BY_TYPE;
+        Timber.d("selectAvailableAttributes");
+        String sql = AttributeTable.SELECT_ALL_BY_TYPE;
 
-            if (attributes != null) {
-                // Detect the presence of sources within given attributes
-                List<Integer> sources = new ArrayList<>();
-                List<Attribute> attrs = new ArrayList<>();
-                for (Attribute a : attributes)
-                    if (a.getType().equals(AttributeType.SOURCE)) sources.add(a.getId());
-                    else attrs.add(a);
+        if (attributes != null) {
+            // Detect the presence of sources within given attributes
+            List<Integer> sources = new ArrayList<>();
+            List<Attribute> attrs = new ArrayList<>();
+            for (Attribute a : attributes)
+                if (a.getType().equals(AttributeType.SOURCE)) sources.add(a.getId());
+                else attrs.add(a);
 
-                if (filter != null && !filter.trim().isEmpty()) {
-                    sql += AttributeTable.SELECT_ALL_ATTR_FILTER;
-                    sql = sql.replace("@2", filter);
-                }
-
-                if (sources.size() > 0) {
-                    sql += AttributeTable.SELECT_ALL_SOURCE_FILTER;
-                    sql = sql.replace("@1", Helper.buildListAsString(sources, ""));
-                }
-
-                if (attrs.size() > 0) {
-                    sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
-                    sql = sql.replace("@2", Helper.buildListAsString(attrs, "'"));
-                    sql = sql.replace("@3", attrs.size() + "");
-                }
+            if (filter != null && !filter.trim().isEmpty()) {
+                sql += AttributeTable.SELECT_ALL_ATTR_FILTER;
+                sql = sql.replace("@2", filter);
             }
 
-            if (filterFavourites) sql += AttributeTable.SELECT_ALL_BY_USAGE_FAVS;
-
-            sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
-
-            Timber.v(sql);
-
-            SQLiteDatabase db = getReadableDatabase();
-            try (Cursor cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""})) {
-
-                // looping through all rows and adding to list
-                if (cursorAttributes.moveToFirst()) {
-
-                    do {
-                        result.add(new Attribute(AttributeType.searchByCode(type.getCode()), cursorAttributes.getString(1), cursorAttributes.getString(2)).setCount(cursorAttributes.getInt(3)));
-                    } while (cursorAttributes.moveToNext());
-                }
-            } finally {
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+            if (sources.size() > 0) {
+                sql += AttributeTable.SELECT_ALL_SOURCE_FILTER;
+                sql = sql.replace("@1", Helper.buildListAsString(sources, ""));
             }
+
+            if (attrs.size() > 0) {
+                sql += AttributeTable.SELECT_ALL_BY_USAGE_TAG_FILTER;
+                sql = sql.replace("@2", Helper.buildListAsString(attrs, "'"));
+                sql = sql.replace("@3", attrs.size() + "");
+            }
+        }
+
+        if (filterFavourites) sql += AttributeTable.SELECT_ALL_BY_USAGE_FAVS;
+
+        sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
+
+        Timber.v(sql);
+
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""})) {
+
+            // looping through all rows and adding to list
+            if (cursorAttributes.moveToFirst()) {
+
+                do {
+                    result.add(new Attribute(AttributeType.searchByCode(type.getCode()), cursorAttributes.getString(1), cursorAttributes.getString(2)).setCount(cursorAttributes.getInt(3)));
+                } while (cursorAttributes.moveToNext());
+            }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -939,36 +856,31 @@ public class HentoidDB extends SQLiteOpenHelper {
     List<Attribute> selectAllAttributesByType(AttributeType type, String filter) {
         ArrayList<Attribute> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectAllAttributesByType");
-            SQLiteDatabase db = null;
+        Timber.d("selectAllAttributesByType");
 
-            String sql = AttributeTable.SELECT_ALL_BY_TYPE;
+        String sql = AttributeTable.SELECT_ALL_BY_TYPE;
 
-            if (filter != null && !filter.trim().isEmpty()) {
-                sql += AttributeTable.SELECT_ALL_ATTR_FILTER;
-                sql = sql.replace("@2", filter);
+        if (filter != null && !filter.trim().isEmpty()) {
+            sql += AttributeTable.SELECT_ALL_ATTR_FILTER;
+            sql = sql.replace("@2", filter);
+        }
+
+        sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
+
+        Timber.v(sql);
+
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""})) {
+
+            // looping through all rows and adding to list
+            if (cursorAttributes.moveToFirst()) {
+
+                do {
+                    result.add(new Attribute(type, cursorAttributes.getString(1), "").setExternalId(cursorAttributes.getInt(0)).setCount(cursorAttributes.getInt(3)));
+                } while (cursorAttributes.moveToNext());
             }
-
-            sql += AttributeTable.SELECT_ALL_BY_USAGE_END;
-
-            Timber.v(sql);
-
-            db = getReadableDatabase();
-            try (Cursor cursorAttributes = db.rawQuery(sql, new String[]{type.getCode() + ""})) {
-
-                // looping through all rows and adding to list
-                if (cursorAttributes.moveToFirst()) {
-
-                    do {
-                        result.add(new Attribute(type, cursorAttributes.getString(1), "").setExternalId(cursorAttributes.getInt(0)).setCount(cursorAttributes.getInt(3)));
-                    } while (cursorAttributes.moveToNext());
-                }
-            } finally {
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -1009,82 +921,63 @@ public class HentoidDB extends SQLiteOpenHelper {
 
         sql.append(AttributeTable.SELECT_COUNT_BY_SOURCE_GROUP);
 
-        synchronized (locker) {
-            SQLiteDatabase db = getReadableDatabase();
-            try (Cursor cursorAttributes = db.rawQuery(sql.toString(), new String[]{})) {
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorAttributes = db.rawQuery(sql.toString(), new String[]{})) {
 
-                // looping through all rows and adding to list
-                if (cursorAttributes.moveToFirst()) {
+            // looping through all rows and adding to list
+            if (cursorAttributes.moveToFirst()) {
 
-                    do {
-                        Site s = Site.searchByCode(cursorAttributes.getInt(0));
-                        if (null != s)
-                            result.add(new Attribute(AttributeType.SOURCE, s.getDescription(), "").setExternalId(s.getCode()).setCount(cursorAttributes.getInt(1)));
-                    } while (cursorAttributes.moveToNext());
-                }
-            } finally {
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                do {
+                    Site s = Site.searchByCode(cursorAttributes.getInt(0));
+                    if (null != s)
+                        result.add(new Attribute(AttributeType.SOURCE, s.getDescription(), "").setExternalId(s.getCode()).setCount(cursorAttributes.getInt(1)));
+                } while (cursorAttributes.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
     }
 
     public void updateImageFileStatus(ImageFile row) {
-        synchronized (locker) {
-            Timber.d("updateImageFileStatus");
-            SQLiteDatabase db = getWritableDatabase();
-            try (SQLiteStatement statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_FROM_ID)) {
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindLong(1, row.getStatus().getCode());
-                    statement.bindLong(2, row.getId());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+
+        Timber.d("updateImageFileStatus");
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_FROM_ID)) {
+            db.beginTransaction();
+            try {
+                statement.clearBindings();
+                statement.bindLong(1, row.getStatus().getCode());
+                statement.bindLong(2, row.getId());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
     public void updateImageFileStatus(Content content, StatusContent updateFrom, StatusContent updateTo) {
-        synchronized (locker) {
-            Timber.d("updateImageFileStatus2");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
+        Timber.d("updateImageFileStatus2");
 
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_FROM_ID_AND_STATUS)) {
+            db.beginTransaction();
             try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(ImageFileTable.UPDATE_IMAGE_FILE_STATUS_FROM_ID_AND_STATUS);
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindLong(1, updateTo.getCode());
-                    statement.bindLong(2, content.getId());
-                    statement.bindLong(3, updateFrom.getCode());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                statement.clearBindings();
+                statement.bindLong(1, updateTo.getCode());
+                statement.bindLong(2, content.getId());
+                statement.bindLong(3, updateFrom.getCode());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
@@ -1135,205 +1028,143 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     public void deleteContent(Content content) {
-        synchronized (locker) {
-            Timber.d("deleteContent");
-            SQLiteDatabase db = null;
-
+        Timber.d("deleteContent");
+        SQLiteDatabase db = openDatabase();
+        try {
+            db.beginTransaction();
             try {
-                db = getWritableDatabase();
-                db.beginTransaction();
-                try {
-                    deleteContent(db, content);
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                deleteContent(db, content);
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
     public void updateContentStatus(Content row) {
-        synchronized (locker) {
-            Timber.d("updateContentStatus");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
+        Timber.d("updateContentStatus");
 
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ContentTable
+                .UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT)) {
+            db.beginTransaction();
             try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(ContentTable
-                        .UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT);
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindLong(1, row.getDownloadDate());
-                    statement.bindLong(2, row.getStatus().getCode());
-                    statement.bindLong(3, row.getId());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                statement.clearBindings();
+                statement.bindLong(1, row.getDownloadDate());
+                statement.bindLong(2, row.getStatus().getCode());
+                statement.bindLong(3, row.getId());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
     public void updateContentStorageFolder(Content row) {
-        synchronized (locker) {
-            Timber.d("updateContentStorageFolder");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
+        Timber.d("updateContentStorageFolder");
 
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STORAGE_FOLDER)) {
+            db.beginTransaction();
             try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STORAGE_FOLDER);
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindString(1, row.getStorageFolder());
-                    statement.bindLong(2, row.getId());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                statement.clearBindings();
+                statement.bindString(1, row.getStorageFolder());
+                statement.bindLong(2, row.getId());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
     public void updateContentFavourite(Content content) {
-        synchronized (locker) {
-            Timber.d("updateContentFavourite");
-            SQLiteDatabase db = null;
+        Timber.d("updateContentFavourite");
 
-            db = getWritableDatabase();
-            try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_FAVOURITE)) {
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_FAVOURITE)) {
 
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindString(1, content.isFavourite() ? "1" : "0");
-                    statement.bindLong(2, content.getId());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+            db.beginTransaction();
+            try {
+                statement.clearBindings();
+                statement.bindString(1, content.isFavourite() ? "1" : "0");
+                statement.bindLong(2, content.getId());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
     public void updateContentReads(Content content) {
-        synchronized (locker) {
-            Timber.d("updateContentReads");
-            SQLiteDatabase db = null;
+        Timber.d("updateContentReads");
 
-            db = getWritableDatabase();
-            try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_READS)) {
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_READS)) {
 
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindLong(1, content.getReads());
-                    statement.bindLong(2, content.getLastReadDate());
-                    statement.bindLong(3, content.getId());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+            db.beginTransaction();
+            try {
+                statement.clearBindings();
+                statement.bindLong(1, content.getReads());
+                statement.bindLong(2, content.getLastReadDate());
+                statement.bindLong(3, content.getId());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
 
     public void updateContentStatus(StatusContent updateFrom, StatusContent updateTo) {
-        synchronized (locker) {
-            Timber.d("updateContentStatus2");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
+        Timber.d("updateContentStatus2");
 
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STATUS_STATEMENT)) {
+            db.beginTransaction();
             try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STATUS_STATEMENT);
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindLong(1, updateTo.getCode());
-                    statement.bindLong(2, updateFrom.getCode());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                statement.clearBindings();
+                statement.bindLong(1, updateTo.getCode());
+                statement.bindLong(2, updateFrom.getCode());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
     public List<Pair<Integer, Integer>> selectQueue() {
         ArrayList<Pair<Integer, Integer>> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectQueue");
-            SQLiteDatabase db = null;
-            Cursor cursorQueue = null;
+        Timber.d("selectQueue");
 
-            try {
-                db = getReadableDatabase();
-                cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{});
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{})) {
 
-                // looping through all rows and adding to list
-                if (cursorQueue.moveToFirst()) {
-                    do {
-                        result.add(new Pair<>(cursorQueue.getInt(0), cursorQueue.getInt(1)));
-                    } while (cursorQueue.moveToNext());
-                }
-            } finally {
-                if (cursorQueue != null) {
-                    cursorQueue.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+            // looping through all rows and adding to list
+            if (cursorQueue.moveToFirst()) {
+                do {
+                    result.add(new Pair<>(cursorQueue.getInt(0), cursorQueue.getInt(1)));
+                } while (cursorQueue.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -1342,31 +1173,21 @@ public class HentoidDB extends SQLiteOpenHelper {
     public List<Content> selectQueueContents() {
         ArrayList<Content> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectQueue");
-            SQLiteDatabase db = null;
-            Cursor cursorQueue = null;
+        Timber.d("selectQueue");
 
-            try {
-                db = getReadableDatabase();
-                cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{});
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{})) {
 
-                // looping through all rows and adding to list
-                if (cursorQueue.moveToFirst()) {
-                    do {
-                        Integer i = cursorQueue.getInt(0);
-                        Content content = selectContentById(db, i);
-                        if (content != null) result.add(content);
-                    } while (cursorQueue.moveToNext());
-                }
-            } finally {
-                if (cursorQueue != null) {
-                    cursorQueue.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+            // looping through all rows and adding to list
+            if (cursorQueue.moveToFirst()) {
+                do {
+                    Integer i = cursorQueue.getInt(0);
+                    Content content = selectContentById(db, i);
+                    if (content != null) result.add(content);
+                } while (cursorQueue.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -1375,107 +1196,65 @@ public class HentoidDB extends SQLiteOpenHelper {
     public List<Integer> selectContentsForQueueMigration() {
         ArrayList<Integer> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectContentsForQueueMigration");
-            SQLiteDatabase db = null;
-            Cursor cursorQueue = null;
+        Timber.d("selectContentsForQueueMigration");
 
-            try {
-                db = getReadableDatabase();
-                cursorQueue = db.rawQuery(QueueTable.SELECT_CONTENT_FOR_QUEUE_MIGRATION, new String[]{});
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorQueue = db.rawQuery(QueueTable.SELECT_CONTENT_FOR_QUEUE_MIGRATION, new String[]{})) {
 
-                // looping through all rows and adding to list
-                if (cursorQueue.moveToFirst()) {
-                    do {
-                        result.add(cursorQueue.getInt(0));
-                    } while (cursorQueue.moveToNext());
-                }
-            } finally {
-                if (cursorQueue != null) {
-                    cursorQueue.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+            // looping through all rows and adding to list
+            if (cursorQueue.moveToFirst()) {
+                do {
+                    result.add(cursorQueue.getInt(0));
+                } while (cursorQueue.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
     }
 
     public void insertQueue(int id, int order) {
-        synchronized (locker) {
-            Timber.d("insertQueue");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
+        Timber.d("insertQueue");
 
-            try {
-                db = getWritableDatabase();
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(QueueTable.INSERT_STATEMENT)) {
+            statement.clearBindings();
 
-                statement = db.compileStatement(QueueTable.INSERT_STATEMENT);
-                statement.clearBindings();
-
-                statement.bindLong(1, id);
-                statement.bindLong(2, order);
-                statement.execute();
-            } finally {
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
+            statement.bindLong(1, id);
+            statement.bindLong(2, order);
+            statement.execute();
+        } finally {
+            closeDatabase();
         }
     }
 
     public void deleteQueueById(int contentId) {
-        synchronized (locker) {
-            Timber.d("deleteQueueById");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
+        Timber.d("deleteQueueById");
 
-            try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(QueueTable.DELETE_STATEMENT);
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(QueueTable.DELETE_STATEMENT)) {
 
-                statement.clearBindings();
-                statement.bindLong(1, contentId);
-                statement.execute();
-            } finally {
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
+            statement.clearBindings();
+            statement.bindLong(1, contentId);
+            statement.execute();
+        } finally {
+            closeDatabase();
         }
     }
 
     public void udpateQueue(int contentId, int newOrder) {
-        synchronized (locker) {
-            Timber.d("udpateQueue");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
+        Timber.d("udpateQueue");
 
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(QueueTable.UPDATE_STATEMENT)) {
 
-            try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(QueueTable.UPDATE_STATEMENT);
-
-                statement.clearBindings();
-                statement.bindLong(1, newOrder);
-                statement.bindLong(2, contentId);
-                statement.execute();
-            } finally {
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
+            statement.clearBindings();
+            statement.bindLong(1, newOrder);
+            statement.bindLong(2, contentId);
+            statement.execute();
+        } finally {
+            closeDatabase();
         }
     }
 }

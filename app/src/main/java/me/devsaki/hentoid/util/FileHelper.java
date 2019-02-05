@@ -9,6 +9,7 @@ import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.webkit.MimeTypeMap;
+import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
@@ -242,7 +243,7 @@ public class FileHelper {
         File file = new File(folder);
         if (!file.exists() && !file.isDirectory() && !FileUtil.makeDir(file)) {
             if (notify) {
-                Helper.toast(context, R.string.error_creating_folder);
+                ToastUtil.toast(context, R.string.error_creating_folder);
             }
             return false;
         }
@@ -261,7 +262,7 @@ public class FileHelper {
 
         if (!hasPermission) {
             if (notify) {
-                Helper.toast(context, R.string.error_write_permission);
+                ToastUtil.toast(context, R.string.error_write_permission);
             }
             return false;
         }
@@ -269,7 +270,7 @@ public class FileHelper {
         boolean directorySaved = Preferences.setRootFolderName(folder);
         if (!directorySaved) {
             if (notify) {
-                Helper.toast(context, R.string.error_creating_folder);
+                ToastUtil.toast(context, R.string.error_creating_folder);
             }
             return false;
         }
@@ -285,7 +286,7 @@ public class FileHelper {
         File noMedia = new File(settingDir, ".nomedia");
 
         if (FileUtil.makeFile(noMedia)) {
-            Helper.toast(R.string.nomedia_file_created);
+            ToastUtil.toast(R.string.nomedia_file_created);
         } else {
             Timber.d(".nomedia file already exists.");
         }
@@ -436,11 +437,11 @@ public class FileHelper {
         Timber.d("Opening: " + content.getTitle() + " from: " + dir);
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
-            Helper.toast(R.string.sd_access_error);
+            ToastUtil.toast(R.string.sd_access_error);
             return;
         }
 
-        Helper.toast("Opening: " + content.getTitle());
+        ToastUtil.toast("Opening: " + content.getTitle());
 
         File imageFile = null;
         File[] files = dir.listFiles();
@@ -459,7 +460,7 @@ public class FileHelper {
         if (imageFile == null) {
             String message = context.getString(R.string.image_file_not_found)
                     .replace("@dir", dir.getAbsolutePath());
-            Helper.toast(context, message);
+            ToastUtil.toast(context, message);
         } else {
             int readContentPreference = Preferences.getContentReadAction();
             if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_DEFAULT) {
@@ -496,7 +497,7 @@ public class FileHelper {
             context.startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
             Timber.e(e, "Activity not found to open %s", aFile.getAbsolutePath());
-            Helper.toast(context, R.string.error_open, Helper.DURATION.LONG);
+            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
 
@@ -515,7 +516,7 @@ public class FileHelper {
             intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
             context.startActivity(intent);
         } catch (Exception e) {
-            Helper.toast(context, R.string.error_open_perfect_viewer);
+            ToastUtil.toast(context, R.string.error_open_perfect_viewer);
         }
     }
 

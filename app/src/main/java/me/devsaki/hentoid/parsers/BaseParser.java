@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers;
 
+import android.util.Pair;
 import android.webkit.URLUtil;
 
 import org.jsoup.Jsoup;
@@ -26,8 +27,16 @@ public abstract class BaseParser implements ContentParser {
 
     @Nullable
     Document getOnlineDocument(String url) throws IOException {
+        return getOnlineDocument(url, null);
+    }
+
+    @Nullable
+    Document getOnlineDocument(String url, List<Pair<String, String>> headers) throws IOException {
         OkHttpClient okHttp = OkHttpClientSingleton.getInstance(TIMEOUT);
-        Request request = new Request.Builder().url(url).get().build();
+        Request.Builder requestBuilder = new Request.Builder().url(url);
+        if (headers != null) for (Pair<String, String> header : headers)
+            requestBuilder.addHeader(header.first, header.second);
+        Request request = requestBuilder.get().build();
         ResponseBody body = okHttp.newCall(request).execute().body();
         if (body != null) {
             return Jsoup.parse(body.string());

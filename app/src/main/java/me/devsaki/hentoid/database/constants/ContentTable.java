@@ -125,5 +125,5 @@ public abstract class ContentTable {
 
     public static final String SELECT_DOWNLOADS_TAGS = "(lower(A." + AttributeTable.NAME_COLUMN + ") in (@4) AND A."
             + AttributeTable.TYPE_COLUMN + " = @5) GROUP BY 1 HAVING COUNT(*)=@6 ))";
-    public static final String SELECT_DOWNLOADS_TAGS_UNIVERSAL = "lower(A." + AttributeTable.NAME_COLUMN + ") LIKE lower('%4') ) ))";
+    public static final String SELECT_DOWNLOADS_TAGS_UNIVERSAL = "lower(A." + AttributeTable.NAME_COLUMN + ") LIKE lower('@4') ) ))";
 }

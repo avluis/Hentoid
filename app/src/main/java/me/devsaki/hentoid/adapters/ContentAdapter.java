@@ -16,12 +16,10 @@ import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 
 import com.annimon.stream.function.IntConsumer;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
@@ -49,6 +47,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
 /**
@@ -152,7 +151,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         // Initializes the ViewHolder that contains the books
         updateLayoutVisibility(holder, content, pos);
         attachTitle(holder, content);
-        attachCover(holder, content);
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
@@ -160,27 +158,38 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachOnClickListeners(holder, content, pos);
     }
 
+    @Override
+    public void onViewRecycled(@NonNull ContentHolder holder) {
+        RequestManager requestManager = Glide.with(context.getApplicationContext());
+        requestManager.clear(holder.ivCover2);
+        requestManager.clear(holder.ivCover);
+    }
+
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
         if (pos == getItemCount() - VISIBLE_THRESHOLD && onScrollToEndListener != null) {
             onScrollToEndListener.run();
         }
 
-        int itemPos = holder.getLayoutPosition();
-        holder.itemView.setSelected(isSelectedAt(itemPos));
-
-        final RelativeLayout items = holder.itemView.findViewById(R.id.item);
-        LinearLayout minimal = holder.itemView.findViewById(R.id.item_minimal);
+        holder.itemView.setSelected(content.isSelected());
 
         if (holder.itemView.isSelected()) {
             Timber.d("Position: %s %s is a selected item currently in view.", pos, content.getTitle());
 
-            if (getSelectedItemsCount() >= 1) {
-                items.setVisibility(View.GONE);
-                minimal.setVisibility(View.VISIBLE);
-            }
+            holder.fullLayout.setVisibility(View.GONE);
+            holder.miniLayout.setVisibility(View.VISIBLE);
+
+            Glide.with(context.getApplicationContext())
+                    .load(FileHelper.getThumb(content))
+                    .apply(glideRequestOptions)
+                    .into(holder.ivCover2);
         } else {
-            items.setVisibility(View.VISIBLE);
-            minimal.setVisibility(View.GONE);
+            holder.fullLayout.setVisibility(View.VISIBLE);
+            holder.miniLayout.setVisibility(View.GONE);
+
+            Glide.with(context.getApplicationContext())
+                    .load(FileHelper.getThumb(content))
+                    .apply(glideRequestOptions)
+                    .into(holder.ivCover);
         }
     }
 
@@ -198,22 +207,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
 
         holder.ivNew.setVisibility((0 == content.getReads()) ? View.VISIBLE : View.GONE);
-    }
-
-    private void attachCover(ContentHolder holder, Content content) {
-        ImageView image = holder.itemView.isSelected() ? holder.ivCover2 : holder.ivCover;
-
-        // The following is needed due to RecyclerView recycling layouts and
-        // Glide not considering the layout invalid for the current image:
-        // https://github.com/bumptech/glide/issues/835#issuecomment-167438903
-        //
-        // Using application context to avoid crashes when activity is destroyed
-        // https://stackoverflow.com/questions/39093730/you-cannot-start-a-load-for-a-destroyed-activity-in-relativelayout-image-using-g
-        Glide.with(context.getApplicationContext()).clear(image);
-        Glide.with(context.getApplicationContext())
-                .load(FileHelper.getThumb(content))
-                .apply(glideRequestOptions)
-                .into(image);
     }
 
     private void attachSeries(ContentHolder holder, Content content) {
@@ -475,7 +468,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         ContentQueueManager.getInstance().resumeQueue(context);
 
-        Helper.toast(context, R.string.add_to_queue);
+        ToastUtil.toast(context, R.string.add_to_queue);
     }
 
     private void shareContent(final Content item) {
@@ -491,7 +484,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void archiveContent(final Content item) {
-        Helper.toast(R.string.packaging_content);
+        ToastUtil.toast(R.string.packaging_content);
         FileHelper.archiveContent(context, item);
     }
 
@@ -601,7 +594,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             } else {
                 // TODO: Implement multi-item share
                 Timber.d("How even?");
-                Helper.toast("Not yet implemented!!");
+                ToastUtil.toast("Not yet implemented!!");
             }
         } else {
             itemSelectListener.onItemClear(0);
@@ -661,7 +654,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             } else {
                 // TODO: Implement multi-item archival
                 Timber.d("How even?");
-                Helper.toast("Not yet implemented!!");
+                ToastUtil.toast("Not yet implemented!!");
             }
         } else {
             itemSelectListener.onItemClear(0);
@@ -679,7 +672,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             Timber.d("Removed item: %s from db and file system.", item.getTitle());
         });
 
-        Helper.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
+        ToastUtil.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
     }
 
     private void deleteItems(final List<Content> contents) {
@@ -701,7 +694,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
         });
 
-        Helper.toast(context, "Selected items have been deleted.");
+        ToastUtil.toast(context, "Selected items have been deleted.");
     }
 
     private void remove(Content content) {
