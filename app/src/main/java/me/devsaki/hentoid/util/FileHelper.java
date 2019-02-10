@@ -405,6 +405,26 @@ public class FileHelper {
     }
 
     /**
+     * Recursively search for files of a given type from a base directory
+     * @param workingDir the base directory
+     * @return list containing all files with matching extension
+     */
+    public static List<File> findFilesRecursively(File workingDir, String extension) {
+        List<File> files = new ArrayList<>();
+        File[] baseDirs = workingDir.listFiles();
+        for (File entry: baseDirs) {
+            if (entry.isDirectory()) {
+                files.addAll(findFilesRecursively(entry, extension));
+            } else {
+                if (getExtension(entry.getName()).equals(extension)) {
+                    files.add(entry);
+                }
+            }
+        }
+        return files;
+    }
+
+    /**
      * Method is used by onBindViewHolder(), speed is key
      */
     public static String getThumb(Content content) {

@@ -121,13 +121,7 @@ public class ImportService extends IntentService {
 
         notificationManager.startForeground(new ImportStartNotification());
 
-        List<File> files = Stream.of(Site.values())
-                .map(site -> FileHelper.getSiteDownloadDir(this, site))
-                .map(File::listFiles)
-                .flatMap(Stream::of)
-                .filter(File::isDirectory)
-                .distinct() // Since there are two ASM Hentai sites ("ASM classic" and "ASM comics"), ASM values are duplicated => deduplicate list
-                .collect(toList());
+        List<File> files = FileHelper.findFilesRecursively(new File(Preferences.getRootFolderName()), "json");
 
         Timber.i("Import books starting : %s books total", files.size());
         Timber.i("Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
@@ -216,18 +210,15 @@ public class ImportService extends IntentService {
         return null;
     }
 
+    private static Content importJson(File file) {
+        if (file.getName().equals(Consts.JSON_FILE_NAME_V2))
+            return importJsonV2(file);  // (v2) JSON file format
+        if (file.getName().equals(Consts.JSON_FILE_NAME))
+            return importJsonV1(file, new File(file.getParent()));  // (v1) JSON file format
+        if (file.getName().equals(Consts.OLD_JSON_FILE_NAME))
+            return importJsonLegacy(file, new File(file.getParent()));  // (old) JSON file format (legacy and/or FAKKUDroid App)
 
-    private static Content importJson(File folder) {
-        File json = new File(folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
-        if (json.exists()) return importJsonV2(json);
-
-        json = new File(folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
-        if (json.exists()) return importJsonV1(json, folder);
-
-        json = new File(folder, Consts.OLD_JSON_FILE_NAME); // (old) JSON file format (legacy and/or FAKKUDroid App)
-        if (json.exists()) return importJsonLegacy(json, folder);
-
-        Timber.w("Book folder %s : no JSON file found !", folder.getAbsolutePath());
+        Timber.w("Book folder %s : no JSON file found !", new File(file.getParent()).getAbsolutePath());
 
         return null;
     }
