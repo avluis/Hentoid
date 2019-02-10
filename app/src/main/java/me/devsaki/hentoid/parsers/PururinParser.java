@@ -10,6 +10,8 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 
+import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+
 /**
  * Created by robb_w on 01/31/2018.
  * Handles parsing of content from pururin.io

@@ -8,6 +8,8 @@ import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 
+import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+
 public class ASMHentaiParser extends BaseParser {
 
     @Override

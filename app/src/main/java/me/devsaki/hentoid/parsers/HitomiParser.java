@@ -10,6 +10,8 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+
 /**
  * Created by neko on 08/07/2015.
  * Handles parsing of content from hitomi.la

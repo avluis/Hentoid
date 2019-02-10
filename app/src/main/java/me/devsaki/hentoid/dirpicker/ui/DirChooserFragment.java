@@ -38,7 +38,6 @@ import me.devsaki.hentoid.dirpicker.ops.DirListBuilder;
 import me.devsaki.hentoid.dirpicker.ops.MakeDir;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
@@ -147,11 +146,11 @@ public class DirChooserFragment extends DialogFragment implements
         try {
             MakeDir.TryMakeDir(event.root, event.dirName);
         } catch (DirExistsException dee) {
-            Helper.toast(getActivity(), R.string.folder_already_exists);
+            ToastUtil.toast(R.string.folder_already_exists);
         } catch (PermissionDeniedException dee) {
-            Helper.toast(getActivity(), R.string.permission_denied);
+            ToastUtil.toast(R.string.permission_denied);
         } catch (IOException e) {
-            Helper.toast(getActivity(), R.string.op_not_allowed);
+            ToastUtil.toast(R.string.op_not_allowed);
         }
         dirListBuilder.processListDirEvent(event.root);
     }

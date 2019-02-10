@@ -29,6 +29,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
+import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
 /**
  * Created by Shiro on 1/22/2016.

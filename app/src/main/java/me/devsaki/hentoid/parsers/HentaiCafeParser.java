@@ -18,6 +18,8 @@ import java.util.regex.Pattern;
 import me.devsaki.hentoid.database.domains.Content;
 import timber.log.Timber;
 
+import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
+
 /**
  * Created by avluis on 07/26/2016.
  * Handles parsing of content from Hentai Cafe

@@ -29,12 +29,15 @@ import timber.log.Timber;
  */
 public class JsonHelper {
 
+    public static String serializeToJson(Object o) {
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+        // convert java object to JSON format, and return as a JSON formatted string
+        return gson.toJson(o);
+    }
+
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
-        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-
-        // convert java object to JSON format, and return as a JSON formatted string
-        String json = gson.toJson(object);
+        String json = serializeToJson(object);
 
         try (OutputStream output = FileHelper.getOutputStream(file)) {
 
