@@ -121,7 +121,7 @@ public class ImportService extends IntentService {
 
         notificationManager.startForeground(new ImportStartNotification());
 
-        List<File> files = FileHelper.findJsonFilesRecursively(new File(Preferences.getRootFolderName()));
+        List<File> files = FileHelper.findFilesRecursively(new File(Preferences.getRootFolderName()), "json");
 
         Timber.i("Import books starting : %s books total", files.size());
         Timber.i("Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));

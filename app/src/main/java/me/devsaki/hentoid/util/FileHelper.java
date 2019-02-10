@@ -405,24 +405,23 @@ public class FileHelper {
     }
 
     /**
-     * Recursively search for JSON files from a base directory
+     * Recursively search for files of a given type from a base directory
      * @param workingDir the base directory
-     * @return list containing all JSON files
+     * @return list containing all files with matching extension
      */
-    public static List<File> findJsonFilesRecursively(File workingDir) {
-        List<File> jsons = new ArrayList<>();
+    public static List<File> findFilesRecursively(File workingDir, String extension) {
+        List<File> files = new ArrayList<>();
         File[] baseDirs = workingDir.listFiles();
         for (File entry: baseDirs) {
             if (entry.isDirectory()) {
-                jsons.addAll(findJsonFilesRecursively(entry));
+                files.addAll(findFilesRecursively(entry, extension));
             } else {
-                String fileName = entry.getName();
-                if (fileName.substring(fileName.length() - 5, fileName.length()).equalsIgnoreCase(".json")) {
-                    jsons.add(entry);
+                if (getExtension(entry.getName()).equals(extension)) {
+                    files.add(entry);
                 }
             }
         }
-        return jsons;
+        return files;
     }
 
     /**
