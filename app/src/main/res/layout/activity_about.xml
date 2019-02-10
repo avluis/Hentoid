@@ -26,7 +26,7 @@
             android:layout_width="@dimen/about_ic_icons_width"
             android:layout_height="@dimen/about_ic_icons_height"
             android:cropToPadding="true"
-            app:layout_constraintBottom_toTopOf="@id/gplusIcon"
+            app:layout_constraintBottom_toTopOf="@id/discordIcon"
             app:layout_constraintStart_toEndOf="@id/iv_app_logo"
             app:layout_constraintTop_toTopOf="parent"
             android:src="@drawable/ic_favicon_github"
@@ -46,36 +46,13 @@
             tools:layout_editor_absoluteY="5dp" />
 
         <ImageView
-            android:id="@+id/gplusIcon"
-            android:layout_width="@dimen/about_ic_icons_width"
-            android:layout_height="@dimen/about_ic_icons_height"
-            android:cropToPadding="true"
-            app:layout_constraintBottom_toTopOf="@id/discordIcon"
-            app:layout_constraintStart_toEndOf="@id/iv_app_logo"
-            app:layout_constraintTop_toBottomOf="@id/githubIcon"
-            android:src="@drawable/ic_favicon_gplus"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            android:id="@+id/tv_community"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginStart="5dp"
-            android:text="@string/about_community"
-            android:textSize="@dimen/about_ic_icons_textSize"
-            app:layout_constraintBottom_toBottomOf="@id/gplusIcon"
-            app:layout_constraintStart_toEndOf="@id/gplusIcon"
-            app:layout_constraintTop_toTopOf="@id/gplusIcon" />
-
-        <ImageView
             android:id="@+id/discordIcon"
             android:layout_width="@dimen/about_ic_icons_width"
             android:layout_height="@dimen/about_ic_icons_height"
             android:cropToPadding="true"
             app:layout_constraintBottom_toTopOf="@id/redditIcon"
             app:layout_constraintStart_toEndOf="@id/iv_app_logo"
-            app:layout_constraintTop_toBottomOf="@id/gplusIcon"
+            app:layout_constraintTop_toBottomOf="@id/githubIcon"
             android:src="@drawable/ic_favicon_discord"
             tools:ignore="ContentDescription" />
 
@@ -120,7 +97,7 @@
             android:layout_marginTop="16dp"
             android:textSize="@dimen/about_textSize"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/redditIcon"
+            app:layout_constraintTop_toBottomOf="@id/iv_app_logo"
             tools:text="Hentoid X.X.X" />
 
         <TextView
