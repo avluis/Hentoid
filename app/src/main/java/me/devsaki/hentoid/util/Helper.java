@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.util;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -13,16 +12,14 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.Html;
 import android.text.Spanned;
+import android.util.DisplayMetrics;
 import android.webkit.WebResourceResponse;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,7 +50,6 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
  * TODO: Add additional image viewers.
  */
 public final class Helper {
-    private static Toast toast;
 
     public static void viewContent(final Context context, Content content) {
         Intent intent = new Intent(context, content.getWebActivityClass());
@@ -65,88 +61,6 @@ public final class Helper {
     public static void viewQueue(final Context context) {
         Intent intent = new Intent(context, QueueActivity.class);
         context.startActivity(intent);
-    }
-
-    public static void cancelToast() {
-        if (toast != null) {
-            toast.cancel();
-            toast = null;
-        }
-    }
-
-    // For use whenever Toast messages could stack (e.g., repeated calls to Toast.makeText())
-    public static void toast(String text) {
-        Context context = HentoidApp.getAppContext();
-        if (context != null) {
-            toast(context, text);
-        }
-    }
-
-    public static void toast(int resource) {
-        Context context = HentoidApp.getAppContext();
-        if (context != null) {
-            toast(context, context.getResources().getString(resource));
-        }
-    }
-
-    public static void toast(Context context, String text) {
-        toast(context, text, DURATION.SHORT);
-    }
-
-    public static void toast(Context context, int resource) {
-        toast(context, resource, DURATION.SHORT);
-    }
-
-    public static void toast(Context context, String text, DURATION duration) {
-        toast(context, text, -1, duration);
-    }
-
-    public static void toast(Context context, int resource, DURATION duration) {
-        toast(context, null, resource, duration);
-    }
-
-    @SuppressLint("ShowToast")
-    private static void toast(@NonNull Context context, @Nullable String text, int res,
-                              DURATION duration) {
-        String message = null;
-        if (text != null) {
-            message = text;
-        } else if (res != -1) {
-            message = context.getString(res);
-        } else {
-            Throwable noResource = new Throwable("You must provide a String or Resource ID!");
-            try {
-                throw noResource;
-            } catch (Throwable throwable) {
-                throwable.printStackTrace();
-            }
-        }
-
-        int time;
-        switch (duration) {
-            case LONG:
-                time = Toast.LENGTH_LONG;
-                break;
-            case SHORT:
-            default:
-                time = Toast.LENGTH_SHORT;
-                break;
-        }
-
-        try {
-            toast.getView().isShown();
-            toast.setText(message);
-        } catch (Exception e) {
-            Timber.d("toast is null, creating one instead;");
-            toast = Toast.makeText(context, message, time);
-        }
-
-        toast.show();
-    }
-
-    @SafeVarargs
-    public static <T> void executeAsyncTask(AsyncTask<T, ?, ?> task, T... params) {
-        task.execute(params);
     }
 
     public static void launchMainActivity(Context context) {
@@ -161,7 +75,7 @@ public final class Helper {
 
     // We have asked for permissions, but still denied.
     public static void reset(Context context, Activity activity) {
-        Helper.toast(R.string.reset);
+        ToastUtil.toast(R.string.reset);
         Preferences.setIsFirstRun(true);
         Intent intent = new Intent(activity, IntroActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -204,7 +118,7 @@ public final class Helper {
         return activityName;
     }
 
-    public static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
+    static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
         if (d != null && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
@@ -270,8 +184,6 @@ public final class Helper {
             return Html.fromHtml(source);
         }
     }
-
-    public enum DURATION {SHORT, LONG}
 
     public enum TYPE {JS, CSS, HTML, PLAIN}
 
@@ -376,6 +288,15 @@ public final class Helper {
 
         return result;
     }
+
+    public static int dpToPixel(Context context, int dp) {
+        float scaleFactor =
+                (1.0f / DisplayMetrics.DENSITY_DEFAULT)
+                        * context.getResources().getDisplayMetrics().densityDpi;
+
+        return (int) (dp * scaleFactor);
+    }
+
 
     public static List<Long> getListFromPrimitiveArray(long[] input) {
         List<Long> list = new ArrayList<>(input.length);

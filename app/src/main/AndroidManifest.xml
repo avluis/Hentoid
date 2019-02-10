@@ -104,7 +104,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/AppTheme"
+            android:theme="@style/PrefsTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -254,6 +254,8 @@
         <service android:name=".services.UpdateDownloadService" />
 
         <service android:name=".services.ImportService" />
+
+        <service android:name=".services.DatabaseMaintenanceService" />
 
         <service android:name=".services.DatabaseMigrationService" />
 

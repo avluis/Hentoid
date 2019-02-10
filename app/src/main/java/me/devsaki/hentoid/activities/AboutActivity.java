@@ -30,7 +30,6 @@ public class AboutActivity extends BaseActivity {
 
         bindTextViewLink(R.id.iv_app_logo, R.string.about_github_wiki_url);
         bindTextViewLink(R.id.tv_github, R.string.about_github_url);
-        bindTextViewLink(R.id.tv_community, R.string.about_community_url);
         bindTextViewLink(R.id.tv_discord, R.string.about_discord_url);
         bindTextViewLink(R.id.tv_reddit, R.string.about_reddit_url);
 

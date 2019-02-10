@@ -29,6 +29,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -66,9 +67,8 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
+import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.Helper.DURATION.LONG;
 
 /**
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
@@ -354,8 +354,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             File storage = new File(Preferences.getRootFolderName());
             if (FileHelper.getExtSdCardFolder(storage) == null) {
                 Timber.d("Where are my files?!");
-                Helper.toast(requireActivity(),
-                        "Could not find library!\nPlease check your storage device.", LONG);
+                ToastUtil.toast(requireActivity(),
+                        "Could not find library!\nPlease check your storage device.", Toast.LENGTH_LONG);
                 setQuery("      ");
 
                 Handler handler = new Handler();
@@ -380,7 +380,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             output.flush();
         } catch (NullPointerException npe) {
             Timber.e(npe, "Invalid Stream");
-            Helper.toast(R.string.sd_access_error);
+            ToastUtil.toast(R.string.sd_access_error);
             new AlertDialog.Builder(requireActivity())
                     .setMessage(R.string.sd_access_fatal_error)
                     .setTitle("Error!")
@@ -633,7 +633,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             return true;
         } else {
             backButtonPressed = System.currentTimeMillis();
-            Helper.toast(mContext, R.string.press_back_again);
+            ToastUtil.toast(mContext, R.string.press_back_again);
 
             if (llm != null) {
                 llm.scrollToPositionWithOffset(0, 0);
@@ -1122,9 +1122,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private void updateTitle() {
         if (MODE_LIBRARY == mode) {
-            if (mTotalSelectedCount == mTotalCount)
-                requireActivity().setTitle("(" + mTotalCount + ")");
-            else requireActivity().setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
+            Activity activity = getActivity();
+            if (activity != null) { // Has to be crash-proof; sometimes there's no activity there...
+                String title;
+                if (mTotalSelectedCount == mTotalCount)
+                    title = "(" + mTotalCount + ")";
+                else title = "(" + mTotalSelectedCount + "/" + mTotalCount + ")";
+                activity.setTitle(title);
+            }
         }
     }
 

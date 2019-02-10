@@ -2,38 +2,16 @@ package me.devsaki.hentoid.parsers;
 
 import android.webkit.URLUtil;
 
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.OkHttpClientSingleton;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.ResponseBody;
 import timber.log.Timber;
 
 public abstract class BaseParser implements ContentParser {
 
-    private static final int TIMEOUT = 30000; // 30 seconds
-
     protected abstract List<String> parseImages(Content content) throws Exception;
-
-    @Nullable
-    Document getOnlineDocument(String url) throws IOException {
-        OkHttpClient okHttp = OkHttpClientSingleton.getInstance(TIMEOUT);
-        Request request = new Request.Builder().url(url).get().build();
-        ResponseBody body = okHttp.newCall(request).execute().body();
-        if (body != null) {
-            return Jsoup.parse(body.string());
-        }
-        return null;
-    }
 
     public List<String> parseImageList(Content content) {
         String readerUrl = content.getReaderUrl();

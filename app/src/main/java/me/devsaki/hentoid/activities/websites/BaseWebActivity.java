@@ -46,6 +46,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.views.ObservableWebView;
 import timber.log.Timber;
 
@@ -323,12 +324,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     void processDownload() {
         currentContent = db.selectContentById(currentContent.getId());
         if (currentContent != null && StatusContent.DOWNLOADED == currentContent.getStatus()) {
-            Helper.toast(this, R.string.already_downloaded);
+            ToastUtil.toast(this, R.string.already_downloaded);
             hideFab(fabDownload);
 
             return;
         }
-        Helper.toast(this, R.string.add_to_queue);
+        ToastUtil.toast(this, R.string.add_to_queue);
 
         currentContent.setDownloadDate(new Date().getTime())
                 .setStatus(StatusContent.DOWNLOADING);
@@ -451,7 +452,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     public void onResultFailed(String message) {
-        runOnUiThread(() -> Helper.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
+        runOnUiThread(() -> ToastUtil.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
     }
 
 

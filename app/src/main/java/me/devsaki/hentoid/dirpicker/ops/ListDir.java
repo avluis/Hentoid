@@ -4,16 +4,13 @@ import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
 
+import io.reactivex.Observable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.dirpicker.events.DataSetChangedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.model.DirTree;
 import me.devsaki.hentoid.dirpicker.model.FileBuilder;
-import me.devsaki.hentoid.dirpicker.observable.ListDirObservable;
-import me.devsaki.hentoid.dirpicker.observers.ListDirObserver;
-import rx.Observable;
-import rx.Observer;
-import rx.Subscription;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 import timber.log.Timber;
 
 /**
@@ -23,39 +20,41 @@ import timber.log.Timber;
 class ListDir {
 
     private final DirTree dirTree;
-    private final EventBus bus;
-    private Subscription subscription;
+//    private Subscription subscription;
 
-    ListDir(DirTree dirTree, EventBus bus) {
+    ListDir(DirTree dirTree) {
         this.dirTree = dirTree;
-        this.bus = bus;
     }
 
     void process(File rootDir) {
         if (rootDir.canRead()) {
-            cancelPrevOp();
+//            cancelPrevOp();
             updateDirList(rootDir);
 
-            Observable<File> observable = new ListDirObservable().create(rootDir);
-            Observer<File> observer = new ListDirObserver(dirTree, bus);
+            dirTree.dirList.clear();
 
-            subscription = observable.subscribeOn(Schedulers.io())
-                    .onBackpressureBuffer()
+            // TODO - anti-leak measures
+            /*            subscription =*/
+            Observable.fromArray(rootDir.listFiles())
+                    .filter(File::isDirectory)
+                    .subscribeOn(Schedulers.io())
+//                    .onBackpressureBuffer()
                     .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(observer);
+                    .subscribe(this::onNext, this::onError, this::onComplete);
         } else {
             Timber.d("Failed to process directory list.");
-            bus.post(new OpFailedEvent());
+            EventBus.getDefault().post(new OpFailedEvent());
         }
     }
 
-    private void cancelPrevOp() {
-        if (subscription != null && !subscription.isUnsubscribed()) {
-            subscription.unsubscribe();
+    /*
+        private void cancelPrevOp() {
+            if (subscription != null && !subscription.isUnsubscribed()) {
+                subscription.unsubscribe();
+            }
+            subscription = null;
         }
-        subscription = null;
-    }
-
+    */
     private void updateDirList(File rootDir) {
         dirTree.setRootDir(rootDir);
         updateParentDir(rootDir);
@@ -70,5 +69,24 @@ class ListDir {
             parent.setName("../");
             dirTree.setParentDir(parent);
         }
+    }
+
+    private void onNext(File file) {
+        dirTree.dirList.add(file);
+    }
+
+    private void onError(Throwable e) {
+        Timber.d("onError: %s", e.toString());
+        EventBus.getDefault().post(new OpFailedEvent());
+    }
+
+    private void onComplete() {
+        dirTree.dirList.sort();
+
+        if (dirTree.getParent() != null) {
+            dirTree.dirList.add(0, dirTree.getParent());
+        }
+        EventBus.getDefault().post(new DataSetChangedEvent());
+        Timber.d("Update directory list completed.");
     }
 }

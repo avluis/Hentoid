@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.parsers;
 
+import android.util.Pair;
+
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -9,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+
+import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 
 public class EHentaiParser extends BaseParser {
 
@@ -26,14 +30,15 @@ public class EHentaiParser extends BaseParser {
 
         // 1- Detect the number of pages of the gallery
         Element e;
-        Document doc = getOnlineDocument(content.getGalleryUrl() + "/?nw=always"); // nw=always avoids the Offensive Content popup
+        List<Pair<String, String>> cookies = new ArrayList<>();
+        cookies.add(new Pair<>("cookie","nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+        Document doc = getOnlineDocument(content.getGalleryUrl(), cookies);
         if (doc != null) {
-            Elements elements = doc.select("table.ptt");
+            Elements elements = doc.select("table.ptt a");
             if (null == elements || 0 == elements.size()) return result;
 
-            e = elements.first();
-            e = e.select("tbody").first().select("tr").first();
-            int nbGalleryPages = e.children().size() - 2;
+            int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
+            int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
             // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
             List<String> pageUrls = new ArrayList<>();

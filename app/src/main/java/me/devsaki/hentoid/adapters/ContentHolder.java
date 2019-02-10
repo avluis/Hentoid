@@ -15,6 +15,8 @@ import me.devsaki.hentoid.R;
  */
 class ContentHolder extends RecyclerView.ViewHolder {
 
+    final View fullLayout;
+    final View miniLayout;
     final TextView tvTitle;
     final TextView tvTitle2;
     final ImageView ivNew;
@@ -31,6 +33,8 @@ class ContentHolder extends RecyclerView.ViewHolder {
     ContentHolder(final View itemView) {
         super(itemView);
 
+        fullLayout = itemView.findViewById(R.id.item);
+        miniLayout = itemView.findViewById(R.id.item_minimal);
         tvTitle = itemView.findViewById(R.id.tvTitle);
         ivNew = itemView.findViewById(R.id.iconNew);
         tvTitle2 = itemView.findViewById(R.id.tvTitle2);

@@ -12,18 +12,16 @@ import me.devsaki.hentoid.dirpicker.events.CurrentRootDirChangedEvent;
  */
 public class DirTree {
     public final DirList dirList;
-    private final EventBus bus;
     private File root;
     private File parent;
 
-    public DirTree(EventBus bus) {
-        this.bus = bus;
+    public DirTree() {
         dirList = new DirList();
     }
 
     public void setRootDir(File rootDir) {
         this.root = rootDir;
-        bus.post(new CurrentRootDirChangedEvent(rootDir));
+        EventBus.getDefault().post(new CurrentRootDirChangedEvent(rootDir));
     }
 
     public void setParentDir(File parentDir) {
