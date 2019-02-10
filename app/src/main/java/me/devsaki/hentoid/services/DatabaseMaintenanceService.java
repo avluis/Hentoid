@@ -64,12 +64,12 @@ public class DatabaseMaintenanceService extends IntentService {
      */
     private void performDatabaseHousekeeping() {
         HentoidDB db = HentoidDB.getInstance(this);
-        // Set items that were being downloaded in previous session as paused
+        // Set items that were being downloaded in previous session as paused (since versionCode 44 / v1.2.2)
         Timber.i("Updating queue status : start");
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
         Timber.i("Updating queue status : done");
 
-        // Clear temporary books created from browsing a book page without downloading it
+        // Clear temporary books created from browsing a book page without downloading it (since versionCode 60 / v1.3.7)
         Timber.i("Clearing temporary books : start");
         List<Content> obsoleteTempContent = db.selectContentByStatus(StatusContent.SAVED);
         Timber.i("Clearing temporary books : %s books detected", obsoleteTempContent.size());
