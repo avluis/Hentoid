@@ -1115,9 +1115,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     private void updateTitle() {
         if (MODE_LIBRARY == mode) {
-            if (mTotalSelectedCount == mTotalCount)
-                requireActivity().setTitle("(" + mTotalCount + ")");
-            else requireActivity().setTitle("(" + mTotalSelectedCount + "/" + mTotalCount + ")");
+            Activity activity = getActivity();
+            if (activity != null) { // Has to be crash-proof; sometimes there's no activity there...
+                String title;
+                if (mTotalSelectedCount == mTotalCount)
+                    title = "(" + mTotalCount + ")";
+                else title = "(" + mTotalSelectedCount + "/" + mTotalCount + ")";
+                activity.setTitle(title);
+            }
         }
     }
 

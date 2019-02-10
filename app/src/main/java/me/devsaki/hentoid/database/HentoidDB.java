@@ -475,7 +475,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 // Nothing
         }
 
-        Timber.d("Query : %s; %s, %s", sql, start, booksPerPage);
+        Timber.i("Query : %s; %s, %s", sql, start, booksPerPage);
 
         String[] arguments;
         if (booksPerPage < 0) arguments = new String[]{StatusContent.DOWNLOADED.getCode() + "",
@@ -487,7 +487,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 start + "", booksPerPage + ""};
 
         SQLiteDatabase db = openDatabase();
-        try (Cursor cursorContent = db.rawQuery(sql, arguments)) {
+        try (Cursor cursorContent = db.rawQuery(sql + ContentTable.LIMIT_BY_PAGE, arguments)) {
             result = populateResult(cursorContent, db);
         } finally {
             closeDatabase();
