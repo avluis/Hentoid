@@ -3,7 +3,7 @@ package me.devsaki.hentoid.util;
 public class RandomSeedSingleton {
     private static volatile RandomSeedSingleton instance = null;
 
-    private double randomNumber;
+    private long seed;
 
 
     private RandomSeedSingleton() {
@@ -12,7 +12,7 @@ public class RandomSeedSingleton {
 
     public static RandomSeedSingleton getInstance() {
         if (RandomSeedSingleton.instance == null) {
-            synchronized(RandomSeedSingleton.class) {
+            synchronized (RandomSeedSingleton.class) {
                 if (RandomSeedSingleton.instance == null) {
                     RandomSeedSingleton.instance = new RandomSeedSingleton();
                 }
@@ -21,11 +21,11 @@ public class RandomSeedSingleton {
         return RandomSeedSingleton.instance;
     }
 
-    public double getRandomNumber() {
-        return randomNumber;
+    public long getSeed() {
+        return seed;
     }
 
     public void renewSeed() {
-        randomNumber = Math.random();
+        seed = Math.round(Math.random() * Long.MAX_VALUE);
     }
 }

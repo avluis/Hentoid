@@ -94,6 +94,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             db.execSQL("UPDATE " + ContentTable.TABLE_NAME + " SET " + ContentTable.LAST_READ_DATE_COLUMN + " = " + ContentTable.DOWNLOAD_DATE_COLUMN);
             Timber.i("Upgrading DB version to v7");
         }
+        // Warning : v8 is reserved to fakku branch
     }
 
     long countContentEntries() {

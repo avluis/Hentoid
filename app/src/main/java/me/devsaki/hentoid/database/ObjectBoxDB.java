@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,6 +18,7 @@ import javax.annotation.Nullable;
 import io.objectbox.Box;
 import io.objectbox.BoxStore;
 import io.objectbox.android.AndroidObjectBrowser;
+import io.objectbox.query.LazyList;
 import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import me.devsaki.hentoid.BuildConfig;
@@ -35,6 +37,7 @@ import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.RandomSeedSingleton;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toList;
@@ -225,8 +228,7 @@ public class ObjectBoxDB {
                 query.orderDesc(Content_.lastReadDate);
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                // TODO - that one's tricky - see https://github.com/objectbox/objectbox-java/issues/17
-//                sql += ContentTable.ORDER_RANDOM.replace("@6", String.valueOf(RandomSeedSingleton.getInstance().getRandomNumber()));
+                // That one's tricky - see https://github.com/objectbox/objectbox-java/issues/17 => Implemented post-query build
                 break;
             default:
                 // Nothing
@@ -262,25 +264,13 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    // Target Function; does not work with ObjectBox v2.3.1
-    private Query<Content> buildUniversalContentSearchQuery(String queryStr, boolean filterFavourites, int orderStyle) {
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
-
-        if (filterFavourites) query.equal(Content_.favourite, true);
-        query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet
-        applyOrderStyle(query, orderStyle);
-
-        return query.build();
-    }
-
     private Query<Content> buildUniversalContentSearchQueryContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
 
         if (filterFavourites) query.equal(Content_.favourite, true);
         query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+//        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
         applyOrderStyle(query, orderStyle);
 
@@ -312,35 +302,54 @@ public class ObjectBoxDB {
         return query.count();
     }
 
+    List<Content> shuffleRandomSort(Query<Content> query, int start, int booksPerPage) {
+        LazyList<Content> lazyList = query.findLazy();
+        List<Integer> order = new ArrayList<>();
+        for (int i = 0; i < lazyList.size(); i++) order.add(i);
+        Collections.shuffle(order, new Random(RandomSeedSingleton.getInstance().getSeed()));
+
+        int maxPage;
+        if (booksPerPage < 0) maxPage = order.size();
+        else maxPage = Math.min(start + booksPerPage, order.size());
+
+        List<Content> result = new ArrayList<>();
+        for (int i = start; i < maxPage; i++) {
+            result.add(lazyList.get(order.get(i)));
+        }
+        return result;
+    }
+
     List<Content> selectContentByQuery(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
         int start = (page - 1) * booksPerPage;
         Query<Content> query = buildContentSearchQuery(title, tags, filterFavourites, orderStyle);
 
-        if (booksPerPage < 0) return query.find();
-        else return query.find(start, booksPerPage);
+        if (orderStyle != Preferences.Constant.PREF_ORDER_CONTENT_RANDOM) {
+            if (booksPerPage < 0) return query.find();
+            else return query.find(start, booksPerPage);
+        } else {
+            return shuffleRandomSort(query, start, booksPerPage);
+        }
     }
 
     List<Content> selectContentByUniqueQuery(String queryStr, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
         int start = (page - 1) * booksPerPage;
-/*
-        Query<Content> query = buildUniversalContentSearchQuery(queryStr, filterFavourites, orderStyle);
-*/
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
-        // querying Content and attributes will have to be done separately
+        // querying Content and attributes have to be done separately
         // TODO optimize by reusing query with parameters
         Query<Content> contentAttrSubQuery = buildUniversalContentSearchQueryAttributes(queryStr, filterFavourites);
         Query<Content> query = buildUniversalContentSearchQueryContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
 
-        if (booksPerPage < 0) return query.find();
-        else return query.find(start, booksPerPage);
+        if (orderStyle != Preferences.Constant.PREF_ORDER_CONTENT_RANDOM) {
+            if (booksPerPage < 0) return query.find();
+            else return query.find(start, booksPerPage);
+        } else {
+            return shuffleRandomSort(query, start, booksPerPage);
+        }
     }
 
     long countContentByUniqueQuery(String queryStr, boolean filterFavourites) {
-/*
-        Query<Content> query = buildUniversalContentSearchQuery(queryStr, filterFavourites, orderStyle);
-*/
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
-        // querying Content and attributes will have to be done separately
+        // querying Content and attributes have to be done separately
         // TODO optimize by reusing query with parameters
         Query<Content> contentAttrSubQuery = buildUniversalContentSearchQueryAttributes(queryStr, filterFavourites);
         Query<Content> query = buildUniversalContentSearchQueryContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.PREF_ORDER_CONTENT_NONE);
@@ -367,7 +376,7 @@ public class ObjectBoxDB {
         List<Long> results = Collections.emptyList();
         long[] ids;
 
-        for (Attribute attr : attrs) { // TODO - to run within a transaction ?
+        for (Attribute attr : attrs) {
             if (attr.getType().equals(AttributeType.SOURCE)) {
                 ids = contentFromSourceQuery.setParameter(Content_.site, attr.getId()).findIds();
             } else {
