@@ -20,12 +20,10 @@ import me.devsaki.hentoid.dirpicker.model.DirList;
  * Directory Adapter
  */
 public class DirAdapter extends RecyclerView.Adapter<DirAdapter.ViewHolder> {
-    private final EventBus bus;
     private final DirList dirList;
 
-    public DirAdapter(DirList dirList, EventBus bus) {
+    public DirAdapter(DirList dirList) {
         this.dirList = dirList;
-        this.bus = bus;
     }
 
     @NonNull
@@ -59,7 +57,7 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.ViewHolder> {
 
         @Override
         public void onClick(View v) {
-            bus.post(new UpdateDirTreeEvent(dirList.get(getAdapterPosition())));
+            EventBus.getDefault().post(new UpdateDirTreeEvent(dirList.get(getAdapterPosition())));
         }
     }
 }

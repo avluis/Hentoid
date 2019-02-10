@@ -4,13 +4,9 @@ import android.content.Context;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
-import org.greenrobot.eventbus.EventBus;
-import org.greenrobot.eventbus.Subscribe;
+import java.io.File;
 
 import me.devsaki.hentoid.dirpicker.adapter.DirAdapter;
-import me.devsaki.hentoid.dirpicker.events.DataSetChangedEvent;
-import me.devsaki.hentoid.dirpicker.events.OnMakeDirEvent;
-import me.devsaki.hentoid.dirpicker.events.UpdateDirTreeEvent;
 import me.devsaki.hentoid.dirpicker.model.DirTree;
 
 /**
@@ -19,43 +15,32 @@ import me.devsaki.hentoid.dirpicker.model.DirTree;
  */
 public class DirListBuilder {
     private final DirTree dirTree;
-    private final EventBus bus;
     private RecyclerView.Adapter adapter;
     private ListDir listDir;
-    private MakeDir makeDir;
 
-    public DirListBuilder(Context context, EventBus bus, RecyclerView recyclerView) {
-        this.bus = bus;
-        this.dirTree = new DirTree(bus);
+    public DirListBuilder(Context context, RecyclerView recyclerView) {
+        this.dirTree = new DirTree();
 
         initOps();
         attachRecyclerView(context, recyclerView);
     }
 
     private void initOps() {
-        listDir = new ListDir(dirTree, bus);
-        makeDir = new MakeDir(dirTree, bus);
+        listDir = new ListDir(dirTree);
     }
 
     private void attachRecyclerView(Context context, RecyclerView recyclerView) {
-        adapter = new DirAdapter(dirTree.dirList, bus);
+        adapter = new DirAdapter(dirTree.dirList);
         recyclerView.setLayoutManager(new LinearLayoutManager(context));
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
     }
 
-    @Subscribe
-    public void onUpdateDirTreeEvent(UpdateDirTreeEvent event) {
-        listDir.process(event.rootDir);
+    public void processListDirEvent(File rootDir) {
+        listDir.process(rootDir);
     }
 
-    @Subscribe
-    public void onMakeDirEvent(OnMakeDirEvent event) {
-        makeDir.process(event.root, event.dirName);
-    }
-
-    @Subscribe
-    public void onDataSetChangedEvent(DataSetChangedEvent event) {
+    public void notifyDatasetChanged() {
         adapter.notifyDataSetChanged();
     }
 }

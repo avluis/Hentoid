@@ -44,7 +44,6 @@ import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
 import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.ui.DirChooserFragment;
-import me.devsaki.hentoid.dirpicker.util.Convert;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
@@ -272,7 +271,7 @@ public class ImportActivity extends BaseActivity {
             pickDownloadDirectory(currentRootDir);
         } else {
             final EditText text = new EditText(this);
-            int paddingPx = Convert.dpToPixel(this, 16);
+            int paddingPx = Helper.dpToPixel(this, 16);
             text.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
             text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
             text.setText(currentRootDir.toString());
