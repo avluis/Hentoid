@@ -13,6 +13,7 @@ public class DatabaseMaintenance {
 
     /**
      * Clean up and upgrade database
+     * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
     public static void performDatabaseHousekeeping(Context context) {
         HentoidDB oldDb = HentoidDB.getInstance(context);
@@ -21,16 +22,20 @@ public class DatabaseMaintenance {
         Timber.d("Content item(s) count: %s", db.countContentEntries());
 
         // Set items that were being downloaded in previous session as paused
+        Timber.i("Updating queue status : start");
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
+        Timber.i("Updating queue status : done");
 
-        // Clear temporary books created from browsing a book page without downloading it
+        // Clear temporary books created from browsing a book page without downloading it (since versionCode 60 / v1.3.7)
+        Timber.i("Clearing temporary books : start");
         List<Content> obsoleteTempContent = db.selectContentByStatus(StatusContent.SAVED);
+        Timber.i("Clearing temporary books : %s books detected", obsoleteTempContent.size());
         for (Content c : obsoleteTempContent) db.deleteContent(c);
+        Timber.i("Clearing temporary books : done");
 
         // Perform technical data updates on the old database engine
         if (oldDb.countContentEntries() > 0) {
             oldDb.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-            UpgradeTo(oldDb); // Yes, this _is_ useful to have the old DB ready for ObjectBox migration
         }
     }
 
@@ -38,8 +43,8 @@ public class DatabaseMaintenance {
      * Handles complex DB version updates at startup
      */
     @SuppressWarnings("deprecation")
-    private static void UpgradeTo(HentoidDB db) {
-        // Update all "storage_folder" fields in CONTENT table (mandatory)
+    public static void performOldDatabaseUpdate(HentoidDB db) {
+        // Update all "storage_folder" fields in CONTENT table (mandatory) (since versionCode 44 / v1.2.2)
         List<Content> contents = db.selectContentEmptyFolder();
         if (contents != null && contents.size() > 0) {
             for (int i = 0; i < contents.size(); i++) {
@@ -49,7 +54,7 @@ public class DatabaseMaintenance {
             }
         }
 
-        // Migrate the old download queue (books in DOWNLOADING or PAUSED status) in the queue table
+        // Migrate the old download queue (books in DOWNLOADING or PAUSED status) in the queue table (since versionCode 60 / v1.3.7)
         // Gets books that should be in the queue but aren't
         List<Integer> contentToMigrate = db.selectContentsForQueueMigration();
 
