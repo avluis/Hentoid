@@ -405,6 +405,27 @@ public class FileHelper {
     }
 
     /**
+     * Recursively search for JSON files from a base directory
+     * @param workingDir the base directory
+     * @return list containing all JSON files
+     */
+    public static List<File> findJsonFilesRecursively(File workingDir) {
+        List<File> jsons = new ArrayList<>();
+        File[] baseDirs = workingDir.listFiles();
+        for (File entry: baseDirs) {
+            if (entry.isDirectory()) {
+                jsons.addAll(findJsonFilesRecursively(entry));
+            } else {
+                String fileName = entry.getName();
+                if (fileName.substring(fileName.length() - 5, fileName.length()).equalsIgnoreCase(".json")) {
+                    jsons.add(entry);
+                }
+            }
+        }
+        return jsons;
+    }
+
+    /**
      * Method is used by onBindViewHolder(), speed is key
      */
     public static String getThumb(Content content) {
