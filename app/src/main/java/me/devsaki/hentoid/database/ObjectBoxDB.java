@@ -44,7 +44,7 @@ import static com.annimon.stream.Collectors.toList;
 
 public class ObjectBoxDB {
 
-    // TODO - put indexes in the DB
+    // TODO - put indexes
 
     private static ObjectBoxDB instance;
 
@@ -72,8 +72,28 @@ public class ObjectBoxDB {
         return instance;
     }
 
-    public long insertContent(Content row) {
-        return store.boxFor(Content.class).put(row);
+    public long insertContent(Content content) {
+        Box<Attribute> attrBox = store.boxFor(Attribute.class);
+        Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
+        List<Attribute> attributes = content.getAttributes();
+
+        // Master data management managed manually
+        // Ensure all known attributes are replaced by their ID before being inserted
+        // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
+        Attribute dbAttr, inputAttr;
+        for (int i = 0; i < attributes.size(); i++) {
+            inputAttr = attributes.get(i);
+            dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
+                    .setParameter(Attribute_.type, inputAttr.getType().getCode())
+                    .findFirst();
+            if (dbAttr != null) {
+                attributes.set(i, dbAttr); // If existing -> set the existing attribute
+            } else {
+                inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
+            }
+        }
+
+        return store.boxFor(Content.class).put(content);
     }
 
     long countContentEntries() {
@@ -111,6 +131,8 @@ public class ObjectBoxDB {
     }
 
     public void deleteAllBooks() {
+        store.boxFor(ImageFile.class).removeAll();
+        store.boxFor(Attribute.class).removeAll();
         store.boxFor(Content.class).removeAll();
         store.boxFor(QueueRecord.class).removeAll();
     }
@@ -302,7 +324,7 @@ public class ObjectBoxDB {
         return query.count();
     }
 
-    List<Content> shuffleRandomSort(Query<Content> query, int start, int booksPerPage) {
+    private List<Content> shuffleRandomSort(Query<Content> query, int start, int booksPerPage) {
         LazyList<Content> lazyList = query.findLazy();
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < lazyList.size(); i++) order.add(i);

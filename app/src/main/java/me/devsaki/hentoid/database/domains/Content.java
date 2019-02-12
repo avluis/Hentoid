@@ -71,6 +71,7 @@ public class Content implements Serializable {
     private long reads = 0;
     @Expose
     private long lastReadDate;
+
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
     private double percent;

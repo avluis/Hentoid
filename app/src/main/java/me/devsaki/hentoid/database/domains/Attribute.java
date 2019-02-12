@@ -7,10 +7,13 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
 
+import javax.annotation.Nonnull;
+
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -24,15 +27,18 @@ public class Attribute {
 
     private final static int ATTRIBUTE_FILE_VERSION = 1;
 
-    @Id(assignable = true) // Attributes are master data; primary key are name and type
+    @Id
     private long id;
     @Expose
-    private final String url;
+    @Index
+    private String name;
     @Expose
-    private final String name;
-    @Expose
+    @Index
     @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
     private AttributeType type;
+    @Expose
+    private String url;
+
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
     private int count;
@@ -42,29 +48,29 @@ public class Attribute {
     public ToMany<Content> contents;
 
 
-    public Attribute(AttributeType type, String name, String url) {
+    public Attribute() {
+    } // No-arg constructor required by ObjectBox
+
+    public Attribute(@Nonnull AttributeType type, @Nonnull String name, @Nonnull String url) {
         this.type = type;
         this.name = name;
         this.url = url;
-        this.id = (type.getCode() + "." + name).hashCode();
     }
 
-    public Attribute(DataInputStream input) throws IOException {
+    public Attribute(@Nonnull DataInputStream input) throws IOException {
         input.readInt(); // file version
         url = input.readUTF();
         name = input.readUTF();
         type = AttributeType.searchByCode(input.readInt());
         count = input.readInt();
         externalId = input.readInt();
-        id = (type.getCode() + "." + name).hashCode();
     }
-
 
     public long getId() {
         return (0 == externalId) ? this.id : this.externalId;
     }
 
-    public void setId(long id) { // Required for ObjectBox to compile even though id is final
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -73,11 +79,19 @@ public class Attribute {
     }
 
     public String getName() {
-        return name.toLowerCase();
+        return name;
+    }
+
+    public void setName(@Nonnull String name) {
+        this.name = name;
     }
 
     public AttributeType getType() {
         return type;
+    }
+
+    public void setType(@Nonnull AttributeType type) {
+        this.type = type;
     }
 
     public int getCount() {

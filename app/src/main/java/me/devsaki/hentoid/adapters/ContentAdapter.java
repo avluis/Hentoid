@@ -166,10 +166,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
+/* Disabled 2019/02/12 - waiting for wightwulf's feedback
         if (pos == getItemCount() - VISIBLE_THRESHOLD && onScrollToEndListener != null) {
             onScrollToEndListener.run();
         }
-
+*/
         holder.itemView.setSelected(content.isSelected());
 
         if (holder.itemView.isSelected()) {
