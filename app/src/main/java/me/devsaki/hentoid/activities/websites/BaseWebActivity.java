@@ -106,7 +106,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     /**
      * Add an content block filter to current site
      *
-     * @param filter Filter to add to content block system
+     * @param filter Filter to addAll to content block system
      */
     protected void addContentBlockFilter(String[] filter) {
         if (null == localBlockedContent) localBlockedContent = new ArrayList<>();

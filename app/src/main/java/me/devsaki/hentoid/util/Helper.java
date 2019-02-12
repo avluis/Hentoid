@@ -257,7 +257,7 @@ public final class Helper {
 
     public static Uri buildSearchUri(List<Attribute> attributes) {
         AttributeMap metadataMap = new AttributeMap();
-        metadataMap.add(attributes);
+        metadataMap.addAll(attributes);
 
         Uri.Builder searchUri = new Uri.Builder()
                 .scheme("search")

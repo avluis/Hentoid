@@ -79,6 +79,7 @@ public class Content implements Serializable {
     private int queryOrder;
     @Transient
     private boolean selected = false;
+
     // Kept for retro-compatibility with contentV2.json Hentoid files
     @Transient
     @Expose
@@ -100,7 +101,7 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        result.add(attributes);
+        result.addAll(attributes);
         return result;
     }
 

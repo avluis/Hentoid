@@ -111,7 +111,7 @@ public class RequestQueueManager<T> implements RequestQueue.RequestFinishedListe
     /**
      * Add a request to the app's queue
      *
-     * @param request Request to add to the queue
+     * @param request Request to addAll to the queue
      */
     void queueRequest(Request<T> request) {
         if (!allowParallelDownloads) {

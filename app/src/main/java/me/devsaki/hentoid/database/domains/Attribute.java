@@ -36,8 +36,6 @@ public class Attribute {
     @Index
     @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
     private AttributeType type;
-    @Expose
-    private String url;
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
@@ -46,6 +44,11 @@ public class Attribute {
     private int externalId = 0;
     @Backlink(to = "attributes") // backed by the to-many relation in Content
     public ToMany<Content> contents;
+
+    // Kept for retro-compatibility with contentV2.json Hentoid files
+    @Transient
+    @Expose
+    private String url;
 
 
     public Attribute() {

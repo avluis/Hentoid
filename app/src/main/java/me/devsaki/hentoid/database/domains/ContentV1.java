@@ -118,10 +118,10 @@ public class ContentV1 {
 
     public Content toV2Content() {
         AttributeMap attributes = new AttributeMap();
-        attributes.add(artists);
-        attributes.add(publishers);
-        attributes.add(translators);
-        attributes.add(tags);
+        attributes.addAll(artists);
+        attributes.addAll(publishers);
+        attributes.addAll(translators);
+        attributes.addAll(tags);
         if (serie != null) attributes.add(serie);
         if (language != null) attributes.add(language);
         if (user != null) attributes.add(user);

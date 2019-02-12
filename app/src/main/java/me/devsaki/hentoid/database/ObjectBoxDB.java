@@ -77,6 +77,8 @@ public class ObjectBoxDB {
         Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
         List<Attribute> attributes = content.getAttributes();
 
+        // TODO - when
+
         // Master data management managed manually
         // Ensure all known attributes are replaced by their ID before being inserted
         // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
@@ -259,7 +261,7 @@ public class ObjectBoxDB {
 
     private Query<Content> buildContentSearchQuery(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
         AttributeMap metadataMap = new AttributeMap();
-        metadataMap.add(metadata);
+        metadataMap.addAll(metadata);
 
         boolean hasTitleFilter = (title != null && title.length() > 0);
         boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE) && (metadataMap.get(AttributeType.SOURCE) != null) && (metadataMap.get(AttributeType.SOURCE).size() > 0);
@@ -428,7 +430,7 @@ public class ObjectBoxDB {
 
         if (filter != null && !filter.isEmpty()) {
             AttributeMap metadataMap = new AttributeMap();
-            metadataMap.add(filter);
+            metadataMap.addAll(filter);
 
             List<Attribute> params = metadataMap.get(AttributeType.SOURCE);
             if (params != null && !params.isEmpty())
