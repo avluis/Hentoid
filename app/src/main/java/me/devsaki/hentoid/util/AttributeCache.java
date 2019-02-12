@@ -171,8 +171,7 @@ public class AttributeCache {
         int collectionSize = input.readInt();
 
         for (int i = 0; i < collectionSize; i++) {
-            Attribute a = new Attribute();
-            attrs.add(a.loadFromStream(input));
+            attrs.add(new Attribute(input));
         }
 
         collection.put(key, attrs);

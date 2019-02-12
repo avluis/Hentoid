@@ -24,16 +24,16 @@ public class Attribute {
 
     private final static int ATTRIBUTE_FILE_VERSION = 1;
 
-    @Id
+    @Id(assignable = true) // Attributes are master data; primary key are name and type
     private long id;
     @Expose
-//    @Unique
-    private String url;
+    private final String url;
     @Expose
-    private String name;
+    private final String name;
     @Expose
     @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
     private AttributeType type;
+    // Runtime attributes; no need to expose them nor to persist them
     @Transient
     private int count;
     @Transient
@@ -41,20 +41,30 @@ public class Attribute {
     @Backlink(to = "attributes") // backed by the to-many relation in Content
     public ToMany<Content> contents;
 
-    public Attribute() {
-    }
 
     public Attribute(AttributeType type, String name, String url) {
         this.type = type;
         this.name = name;
         this.url = url;
+        this.id = (type.getCode() + "." + name).hashCode();
     }
+
+    public Attribute(DataInputStream input) throws IOException {
+        input.readInt(); // file version
+        url = input.readUTF();
+        name = input.readUTF();
+        type = AttributeType.searchByCode(input.readInt());
+        count = input.readInt();
+        externalId = input.readInt();
+        id = (type.getCode() + "." + name).hashCode();
+    }
+
 
     public long getId() {
         return (0 == externalId) ? this.id : this.externalId;
     }
 
-    public void setId(long id) {
+    public void setId(long id) { // Required for ObjectBox to compile even though id is final
         this.id = id;
     }
 
@@ -62,27 +72,12 @@ public class Attribute {
         return url;
     }
 
-    public Attribute setUrl(String url) {
-        this.url = url;
-        return this;
-    }
-
     public String getName() {
         return name.toLowerCase();
     }
 
-    public Attribute setName(String name) {
-        this.name = name;
-        return this;
-    }
-
     public AttributeType getType() {
         return type;
-    }
-
-    public Attribute setType(AttributeType type) {
-        this.type = type;
-        return this;
     }
 
     public int getCount() {
@@ -112,17 +107,6 @@ public class Attribute {
         output.writeInt(count);
         output.writeInt(externalId);
     }
-
-    public Attribute loadFromStream(DataInputStream input) throws IOException {
-        input.readInt(); // file version
-        url = input.readUTF();
-        name = input.readUTF();
-        type = AttributeType.searchByCode(input.readInt());
-        count = input.readInt();
-        externalId = input.readInt();
-        return this;
-    }
-
 
     public static final Comparator<Attribute> NAME_COMPARATOR = (a, b) -> a.getName().compareTo(b.getName());
 

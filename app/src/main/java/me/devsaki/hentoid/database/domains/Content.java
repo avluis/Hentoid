@@ -46,7 +46,7 @@ public class Content implements Serializable {
     @Expose
     private String author;
     @Expose(serialize = false, deserialize = false)
-    private ToMany<Attribute> attributes; // TODO - not sure this will result in an n-n relationship. Attributes must be seen as master data - to code app-side ?
+    private ToMany<Attribute> attributes;
     @Expose
     private String coverImageUrl;
     @Expose

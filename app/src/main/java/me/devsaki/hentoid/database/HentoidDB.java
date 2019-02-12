@@ -244,10 +244,13 @@ public class HentoidDB extends SQLiteOpenHelper {
             if (cursorAttributes.moveToFirst()) {
                 result = new AttributeMap();
                 do {
-                    result.add(new Attribute()
-                            .setUrl(cursorAttributes.getString(1))
-                            .setName(cursorAttributes.getString(2))
-                            .setType(AttributeType.searchByCode(cursorAttributes.getInt(3))));
+                    result.add(
+                            new Attribute(
+                                    AttributeType.searchByCode(cursorAttributes.getInt(3)),
+                                    cursorAttributes.getString(2),
+                                    cursorAttributes.getString(1)
+                            )
+                    );
                 } while (cursorAttributes.moveToNext());
             }
         }
