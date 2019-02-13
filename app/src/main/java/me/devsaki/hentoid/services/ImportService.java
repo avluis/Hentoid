@@ -235,7 +235,7 @@ public class ImportService extends IntentService {
     }
 
     @SuppressWarnings("deprecation")
-    private static List<Attribute> from(List<URLBuilder> urlBuilders) {
+    private static List<Attribute> from(List<URLBuilder> urlBuilders, Site site) {
         List<Attribute> attributes = null;
         if (urlBuilders == null) {
             return null;
@@ -243,7 +243,7 @@ public class ImportService extends IntentService {
         if (urlBuilders.size() > 0) {
             attributes = new ArrayList<>();
             for (URLBuilder urlBuilder : urlBuilders) {
-                Attribute attribute = from(urlBuilder, AttributeType.TAG);
+                Attribute attribute = from(urlBuilder, AttributeType.TAG, site);
                 if (attribute != null) {
                     attributes.add(attribute);
                 }
@@ -254,7 +254,7 @@ public class ImportService extends IntentService {
     }
 
     @SuppressWarnings("deprecation")
-    private static Attribute from(URLBuilder urlBuilder, AttributeType type) {
+    private static Attribute from(URLBuilder urlBuilder, AttributeType type, Site site) {
         if (urlBuilder == null) {
             return null;
         }
@@ -263,7 +263,7 @@ public class ImportService extends IntentService {
                 throw new AttributeException("Problems loading attribute v2.");
             }
 
-            return new Attribute(type, urlBuilder.getDescription(), urlBuilder.getId());
+            return new Attribute(type, urlBuilder.getDescription(), urlBuilder.getId(), site);
         } catch (Exception e) {
             Timber.e(e, "Parsing URL to attribute");
             return null;
@@ -283,9 +283,9 @@ public class ImportService extends IntentService {
             content.setHtmlDescription(doujinBuilder.getDescription());
             content.setTitle(doujinBuilder.getTitle());
             content.setSeries(from(doujinBuilder.getSeries(),
-                    AttributeType.SERIE));
+                    AttributeType.SERIE, content.getSite()));
             Attribute artist = from(doujinBuilder.getArtist(),
-                    AttributeType.ARTIST);
+                    AttributeType.ARTIST, content.getSite());
             List<Attribute> artists = null;
             if (artist != null) {
                 artists = new ArrayList<>(1);
@@ -296,15 +296,15 @@ public class ImportService extends IntentService {
             content.setCoverImageUrl(doujinBuilder.getUrlImageTitle());
             content.setQtyPages(doujinBuilder.getQtyPages());
             Attribute translator = from(doujinBuilder.getTranslator(),
-                    AttributeType.TRANSLATOR);
+                    AttributeType.TRANSLATOR, content.getSite());
             List<Attribute> translators = null;
             if (translator != null) {
                 translators = new ArrayList<>(1);
                 translators.add(translator);
             }
             content.setTranslators(translators);
-            content.setTags(from(doujinBuilder.getLstTags()));
-            content.setLanguage(from(doujinBuilder.getLanguage(), AttributeType.LANGUAGE));
+            content.setTags(from(doujinBuilder.getLstTags(), content.getSite()));
+            content.setLanguage(from(doujinBuilder.getLanguage(), AttributeType.LANGUAGE, content.getSite()));
 
             content.setMigratedStatus();
             content.setDownloadDate(new Date().getTime());

@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
 
 public class MikanAttribute {
     // Published by both Collection and Attributes endpoints
@@ -40,7 +41,7 @@ public class MikanAttribute {
             default:
                 type = AttributeType.TAG;
         }
-        Attribute result = new Attribute(type, name, url);
+        Attribute result = new Attribute(type, name, url, Site.HITOMI);
         result.setCount(count);
         result.setExternalId(id);
 

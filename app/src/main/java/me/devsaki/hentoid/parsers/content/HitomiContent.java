@@ -49,13 +49,13 @@ public class HitomiContent {
         result.setQtyPages(pages.size());
 
         AttributeMap attributes = new AttributeMap();
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.HITOMI);
 
         result.addAttributes(attributes);
         result.populateAuthor();

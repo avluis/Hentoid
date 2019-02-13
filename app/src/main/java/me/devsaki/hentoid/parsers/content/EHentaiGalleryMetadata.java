@@ -45,8 +45,7 @@ public class EHentaiGalleryMetadata {
     public List<String> tags;
 
 
-    public Content toContent()
-    {
+    public Content toContent() {
         Content result = new Content();
 
         result.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
@@ -61,15 +60,12 @@ public class EHentaiGalleryMetadata {
         AttributeType type;
         String name;
 
-        for (String s : tags)
-        {
+        for (String s : tags) {
             tagParts = s.split(":");
             if (1 == tagParts.length) {
                 type = AttributeType.TAG;
                 name = s;
-            }
-            else
-            {
+            } else {
                 name = tagParts[1];
                 switch (tagParts[0]) {
                     case "parody":
@@ -91,7 +87,7 @@ public class EHentaiGalleryMetadata {
                 }
             }
 
-            attributes.add(new Attribute(type, name, type.name()+"/"+name));
+            attributes.add(new Attribute(type, name, type.name() + "/" + name, Site.EHENTAI));
         }
         result.addAttributes(attributes);
 

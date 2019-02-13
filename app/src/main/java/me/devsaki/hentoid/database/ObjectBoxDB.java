@@ -77,8 +77,6 @@ public class ObjectBoxDB {
         Query attrByUniqueKey = attrBox.query().equal(Attribute_.type, 0).equal(Attribute_.name, "").build();
         List<Attribute> attributes = content.getAttributes();
 
-        // TODO - when
-
         // Master data management managed manually
         // Ensure all known attributes are replaced by their ID before being inserted
         // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
@@ -90,6 +88,7 @@ public class ObjectBoxDB {
                     .findFirst();
             if (dbAttr != null) {
                 attributes.set(i, dbAttr); // If existing -> set the existing attribute
+                dbAttr.addLocationsFrom(inputAttr);
             } else {
                 inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
             }
@@ -454,7 +453,7 @@ public class ObjectBoxDB {
         // Group and count by source
         Map<Site, List<Content>> map = Stream.of(content).collect(Collectors.groupingBy(Content::getSite));
         for (Site s : map.keySet()) {
-            result.add(new Attribute(AttributeType.SOURCE, s.getDescription(), "").setExternalId(s.getCode()).setCount(map.get(s).size()));
+            result.add(new Attribute(AttributeType.SOURCE, s.getDescription()).setExternalId(s.getCode()).setCount(map.get(s).size()));
         }
         // Order by count desc
         result = Stream.of(result).sortBy(a -> -a.getCount()).collect(toList());
@@ -480,7 +479,7 @@ public class ObjectBoxDB {
         // Group and count by name
         Map<String, List<Attribute>> map = Stream.of(result).collect(Collectors.groupingBy(Attribute::getName));
         for (String s : map.keySet()) {
-            result.add(new Attribute(type, s, "").setCount(map.get(s).size())); // URL was irrelevant
+            result.add(new Attribute(type, s).setCount(map.get(s).size())); // URL was irrelevant
         }
         // Order by count desc, name asc
         return Stream.of(result).sortBy(a -> -a.getCount()).sortBy(Attribute::getName).collect(toList());

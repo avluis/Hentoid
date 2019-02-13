@@ -42,26 +42,32 @@ public class MikanContent implements Serializable {
     public Date time;
 
 
-    public Content toContent()
-    {
+    public Content toContent() {
         Content result = new Content();
 
         if (null == url) return result; // Corrupted result
 
 
         String[] urlStr = url.split("/");
-        result.setUrl("/"+urlStr[urlStr.length-1]);
+        result.setUrl("/" + urlStr[urlStr.length - 1]);
         result.setTitle(name);
 
         AttributeMap attributes = new AttributeMap();
 
-        for (MikanAttribute a : artist) attributes.add(new Attribute(AttributeType.ARTIST, a.name, a.url));
-        for (MikanAttribute a : group) attributes.add(new Attribute(AttributeType.CIRCLE, a.name, a.url));
-        for (MikanAttribute a : series) attributes.add(new Attribute(AttributeType.SERIE, a.name, a.url));
-        for (MikanAttribute a : characters) attributes.add(new Attribute(AttributeType.CHARACTER, a.name, a.url));
-        for (MikanAttribute a : tags) attributes.add(new Attribute(AttributeType.TAG, a.name, a.url));
-        if (type != null) attributes.add(new Attribute(AttributeType.CATEGORY, type.name, type.url));
-        if (language != null) attributes.add(new Attribute(AttributeType.LANGUAGE, language.name, language.url));
+        for (MikanAttribute a : artist)
+            attributes.add(new Attribute(AttributeType.ARTIST, a.name, a.url, Site.HITOMI));
+        for (MikanAttribute a : group)
+            attributes.add(new Attribute(AttributeType.CIRCLE, a.name, a.url, Site.HITOMI));
+        for (MikanAttribute a : series)
+            attributes.add(new Attribute(AttributeType.SERIE, a.name, a.url, Site.HITOMI));
+        for (MikanAttribute a : characters)
+            attributes.add(new Attribute(AttributeType.CHARACTER, a.name, a.url, Site.HITOMI));
+        for (MikanAttribute a : tags)
+            attributes.add(new Attribute(AttributeType.TAG, a.name, a.url, Site.HITOMI));
+        if (type != null)
+            attributes.add(new Attribute(AttributeType.CATEGORY, type.name, type.url, Site.HITOMI));
+        if (language != null)
+            attributes.add(new Attribute(AttributeType.LANGUAGE, language.name, language.url, Site.HITOMI));
 
         result.addAttributes(attributes);
         result.setCoverImageUrl(image);

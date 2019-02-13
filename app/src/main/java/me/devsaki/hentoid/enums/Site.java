@@ -23,6 +23,7 @@ public enum Site {
     ASMHENTAI(6, "asmhentai", "https://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai, true),
     ASMHENTAI_COMICS(7, "asmhentai comics", "https://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, true),
     EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, true),
+    NONE(98, "none", "", "none", R.drawable.ic_menu_about, true),
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true); // Safe-for-work/wife/gf option
 
 
@@ -56,7 +57,7 @@ public enum Site {
 
     @Nullable
     public static Site searchByUrl(String url) {
-        if (null == url || 0 == url.length()) {
+        if (null == url || url.isEmpty()) {
             Timber.w("Invalid url");
             return null;
         }

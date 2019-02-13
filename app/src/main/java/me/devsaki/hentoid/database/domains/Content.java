@@ -101,7 +101,10 @@ public class Content implements Serializable {
 
     public AttributeMap getAttributeMap() {
         AttributeMap result = new AttributeMap();
-        result.addAll(attributes);
+        for (Attribute a : attributes) {
+            a.computeUrl(this.getSite());
+            result.add(a);
+        }
         return result;
     }
 
@@ -305,8 +308,10 @@ public class Content implements Serializable {
     public Content postJSONImport() {   // TODO - this is shabby
         if (this.attributeMap != null) {
             this.attributes.clear();
-            for (AttributeType type : this.attributeMap.keySet())
-                this.attributes.addAll(this.attributeMap.get(type));
+            for (AttributeType type : this.attributeMap.keySet()) {
+                for (Attribute attr : this.attributeMap.get(type))
+                    this.attributes.add(attr.computeLocation(site));
+            }
         }
         if (this.imageList != null) {
             this.imageFiles.clear();

@@ -17,6 +17,8 @@ import io.objectbox.annotation.Index;
 import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
+import timber.log.Timber;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -36,6 +38,8 @@ public class Attribute {
     @Index
     @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
     private AttributeType type;
+    @Expose(serialize = false, deserialize = false)
+    private ToMany<AttributeLocation> locations; // One entry per site
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
@@ -54,19 +58,27 @@ public class Attribute {
     public Attribute() {
     } // No-arg constructor required by ObjectBox
 
-    public Attribute(@Nonnull AttributeType type, @Nonnull String name, @Nonnull String url) {
+    public Attribute(@Nonnull AttributeType type, @Nonnull String name) {
+        this.type = type;
+        this.name = name;
+        this.url = "";
+    }
+
+    public Attribute(@Nonnull AttributeType type, @Nonnull String name, @Nonnull String url, @Nonnull Site site) {
         this.type = type;
         this.name = name;
         this.url = url;
+        computeLocation(site);
     }
 
     public Attribute(@Nonnull DataInputStream input) throws IOException {
         input.readInt(); // file version
-        url = input.readUTF();
         name = input.readUTF();
         type = AttributeType.searchByCode(input.readInt());
         count = input.readInt();
         externalId = input.readInt();
+        int nbLocations = input.readInt();
+        for (int i = 0; i < nbLocations; i++) locations.add(new AttributeLocation(input));
     }
 
     public long getId() {
@@ -97,6 +109,14 @@ public class Attribute {
         this.type = type;
     }
 
+    public ToMany<AttributeLocation> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(ToMany<AttributeLocation> locations) {
+        this.locations = locations;
+    }
+
     public int getCount() {
         return count;
     }
@@ -111,6 +131,35 @@ public class Attribute {
         return this;
     }
 
+    void computeUrl(Site site) {
+        for (AttributeLocation location : locations) {
+            if (location.site.equals(site)) {
+                url = location.url;
+                break;
+            }
+        }
+    }
+
+    Attribute computeLocation(Site site) {
+        locations.add(new AttributeLocation(site, url));
+        return this;
+    }
+
+    public void addLocationsFrom(Attribute sourceAttribute) {
+        for (AttributeLocation sourceLocation : sourceAttribute.getLocations()) {
+            boolean foundSite = false;
+            for (AttributeLocation loc : this.locations) {
+                if (sourceLocation.site.equals(loc.site)) {
+                    foundSite = true;
+                    if (!sourceLocation.url.equals(loc.url))
+                        Timber.w("'%s' Attribute location mismatch : current '%s' vs. add's target '%s'", this.name, loc.url, sourceLocation.url);
+                    break;
+                }
+            }
+            if (!foundSite) this.locations.add(sourceLocation);
+        }
+    }
+
     @Override
     public String toString() {
         return getName();
@@ -118,11 +167,14 @@ public class Attribute {
 
     public void saveToStream(DataOutputStream output) throws IOException {
         output.writeInt(ATTRIBUTE_FILE_VERSION);
-        output.writeUTF(null == url ? "" : url);
         output.writeUTF(name);
         output.writeInt(type.getCode());
         output.writeInt(count);
         output.writeInt(externalId);
+        output.writeInt(locations.size());
+        for (AttributeLocation location : locations) {
+            location.saveToStream(output);
+        }
     }
 
     public static final Comparator<Attribute> NAME_COMPARATOR = (a, b) -> a.getName().compareTo(b.getName());

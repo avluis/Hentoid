@@ -53,11 +53,11 @@ public class ASMHentaiContent {
 
         AttributeMap attributes = new AttributeMap();
 
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.ASMHENTAI);
 
         result.addAttributes(attributes);
         result.populateAuthor();

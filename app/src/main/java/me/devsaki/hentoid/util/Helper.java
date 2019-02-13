@@ -281,7 +281,7 @@ public final class Helper {
                     for (String attrStr : uri.getQueryParameters(typeStr)) {
                         String[] attrParams = attrStr.split(";");
                         if (2 == attrParams.length) {
-                            result.add(new Attribute(type, attrParams[1], "").setExternalId(Integer.parseInt(attrParams[0])));
+                            result.add(new Attribute(type, attrParams[1]).setExternalId(Integer.parseInt(attrParams[0])));
                         }
                     }
             }

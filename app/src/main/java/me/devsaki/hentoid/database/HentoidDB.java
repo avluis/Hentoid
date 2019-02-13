@@ -207,7 +207,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         long id = cursorContent.getLong(ContentTable.IDX_INTERNALID - 1);
 
         content.addImageFiles(selectImageFilesByContentId(db, id))
-                .addAttributes(selectAttributesByContentId(db, id));
+                .addAttributes(selectAttributesByContentId(db, id, content.getSite()));
 
         content.populateAuthor();
 
@@ -235,7 +235,7 @@ public class HentoidDB extends SQLiteOpenHelper {
         return result;
     }
 
-    private AttributeMap selectAttributesByContentId(SQLiteDatabase db, long id) {
+    private AttributeMap selectAttributesByContentId(SQLiteDatabase db, long id, Site site) {
         AttributeMap result = null;
         try (Cursor cursorAttributes = db.rawQuery(AttributeTable.SELECT_BY_CONTENT_ID,
                 new String[]{id + ""})) {
@@ -248,7 +248,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                             new Attribute(
                                     AttributeType.searchByCode(cursorAttributes.getInt(3)),
                                     cursorAttributes.getString(2),
-                                    cursorAttributes.getString(1)
+                                    cursorAttributes.getString(1),
+                                    site
                             )
                     );
                 } while (cursorAttributes.moveToNext());
