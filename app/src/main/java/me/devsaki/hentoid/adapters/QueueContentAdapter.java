@@ -413,8 +413,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void cancel(Content content) {
         // Remove content altogether from the DB (including queue)
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        db.deleteContent(content);
         db.deleteQueue(content);
+        db.deleteContent(content);
         // Remove the content from the disk
         FileHelper.removeContent(content);
         // Remove the content from the in-memory list and the UI
