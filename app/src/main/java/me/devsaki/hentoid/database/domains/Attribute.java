@@ -39,6 +39,7 @@ public class Attribute {
     @Convert(converter = AttributeType.AttributeTypeConverter.class, dbType = Integer.class)
     private AttributeType type;
     @Expose(serialize = false, deserialize = false)
+    @Backlink(to = "attribute")
     private ToMany<AttributeLocation> locations; // One entry per site
 
     // Runtime attributes; no need to expose them nor to persist them
@@ -156,7 +157,10 @@ public class Attribute {
                     break;
                 }
             }
-            if (!foundSite) this.locations.add(sourceLocation);
+            if (!foundSite) {
+                Timber.i("Adding location %s to attribute %s", sourceLocation.site.name(), this.name);
+                this.locations.add(sourceLocation);
+            }
         }
     }
 

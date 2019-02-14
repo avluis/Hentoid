@@ -20,6 +20,7 @@ public class AttributeLocation {
     @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     public Site site;
     public String url;
+    public ToOne<Attribute> attribute;
 
     public AttributeLocation() { // Required by ObjectBox
     }

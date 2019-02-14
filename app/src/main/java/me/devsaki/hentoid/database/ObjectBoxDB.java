@@ -89,6 +89,7 @@ public class ObjectBoxDB {
             if (dbAttr != null) {
                 attributes.set(i, dbAttr); // If existing -> set the existing attribute
                 dbAttr.addLocationsFrom(inputAttr);
+                attrBox.put(dbAttr);
             } else {
                 inputAttr.setName(inputAttr.getName().toLowerCase().trim()); // If new -> normalize the attribute
             }
