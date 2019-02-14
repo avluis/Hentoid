@@ -9,10 +9,10 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 
-public class ASMHentaiServer {
+public class ASMComicsServer {
 
     public static final Api API = new Retrofit.Builder()
-            .baseUrl(Site.ASMHENTAI.getUrl())
+            .baseUrl(Site.ASMHENTAI_COMICS.getUrl())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(JspoonConverterFactory.create())
             .build()

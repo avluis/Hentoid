@@ -3,6 +3,7 @@ package me.devsaki.hentoid.activities.websites;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.retrofit.ASMComicsServer;
 import me.devsaki.hentoid.retrofit.ASMHentaiServer;
 import timber.log.Timber;
 
@@ -38,13 +39,23 @@ public class ASMHentaiActivity extends BaseWebActivity {
         @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
-            compositeDisposable.add(ASMHentaiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
-                    .subscribe(
-                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
-                                Timber.e(throwable, "Error parsing content.");
-                                listener.onResultFailed("");
-                            })
-            );
+            if (url.contains("comics.asm")) {
+                compositeDisposable.add(ASMComicsServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+                        .subscribe(
+                                metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                                    Timber.e(throwable, "Error parsing content.");
+                                    listener.onResultFailed("");
+                                })
+                );
+            } else {
+                compositeDisposable.add(ASMHentaiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+                        .subscribe(
+                                metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                                    Timber.e(throwable, "Error parsing content.");
+                                    listener.onResultFailed("");
+                                })
+                );
+            }
         }
     }
 }
