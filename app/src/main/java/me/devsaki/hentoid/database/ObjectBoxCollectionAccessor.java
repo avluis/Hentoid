@@ -104,19 +104,23 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
     private void contentSearch(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
 
-        List<Content> result = Collections.emptyList();
-        long totalSelectedContent = 0;
+        List<Content> result;
+        long totalSelectedContent;
 
         if (MODE_SEARCH_CONTENT_MODULAR == mode) {
             result = db.selectContentByQuery(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
         } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode) {
             result = db.selectContentByUniqueQuery(filter, page, booksPerPage, favouritesOnly, orderStyle);
+        } else {
+            result = Collections.emptyList();
         }
         // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
         if (MODE_SEARCH_CONTENT_MODULAR == mode || MODE_COUNT_CONTENT_MODULAR == mode) {
             totalSelectedContent = db.countContentByQuery(filter, metadata, favouritesOnly);
         } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode || MODE_COUNT_CONTENT_UNIVERSAL == mode) {
             totalSelectedContent = db.countContentByUniqueQuery(filter, favouritesOnly);
+        } else {
+            totalSelectedContent = 0;
         }
         // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
         long totalContent = db.countAllContent();
@@ -152,8 +156,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         listener.onResultReady(result, result.size());
     }
 
-    private void count(List<Attribute> filter, ResultListener<SparseIntArray> listener)
-    {
+    private void count(List<Attribute> filter, ResultListener<SparseIntArray> listener) {
         SparseIntArray result;
 
         if (null == filter || filter.isEmpty()) {
