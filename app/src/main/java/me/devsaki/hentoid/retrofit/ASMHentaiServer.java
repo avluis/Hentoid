@@ -20,7 +20,7 @@ public class ASMHentaiServer {
 
     public interface Api {
 
-        @GET("/g/{id}")
+        @GET("/g/{id}/")
         Single<ASMHentaiContent> getGalleryMetadata(@Path("id") String contentId);
     }
 }
