@@ -26,21 +26,21 @@ public class Attribute {
     private int count;
     private int externalId = 0;
 
-    public Attribute() {}
+    public Attribute() {
+    }
 
-    public Attribute(AttributeType type, String name, String url)
-    {
+    public Attribute(AttributeType type, String name, String url) {
         this.type = type;
         this.name = name;
         this.url = url;
     }
 
     public Integer getId() {
-        return (0 == externalId)? url.hashCode() : externalId;
+        return (0 == externalId) ? getUrl().hashCode() : externalId;
     }
 
     public String getUrl() {
-        return url;
+        return (null == url) ? "" : url;
     }
 
     public Attribute setUrl(String url) {
@@ -57,14 +57,18 @@ public class Attribute {
         return this;
     }
 
-    public AttributeType getType() { return type; }
+    public AttributeType getType() {
+        return type;
+    }
 
     public Attribute setType(AttributeType type) {
         this.type = type;
         return this;
     }
 
-    public int getCount() { return count; }
+    public int getCount() {
+        return count;
+    }
 
     public Attribute setCount(int count) {
         this.count = count;
@@ -81,18 +85,16 @@ public class Attribute {
         return getName();
     }
 
-    public void saveToStream(DataOutputStream output) throws IOException
-    {
+    public void saveToStream(DataOutputStream output) throws IOException {
         output.writeInt(ATTRIBUTE_FILE_VERSION);
-        output.writeUTF(null==url?"":url);
+        output.writeUTF(null == url ? "" : url);
         output.writeUTF(name);
         output.writeInt(type.getCode());
         output.writeInt(count);
         output.writeInt(externalId);
     }
 
-    public Attribute loadFromStream(DataInputStream input) throws IOException
-    {
+    public Attribute loadFromStream(DataInputStream input) throws IOException {
         input.readInt(); // file version
         url = input.readUTF();
         name = input.readUTF();
@@ -116,7 +118,8 @@ public class Attribute {
 
         Attribute attribute = (Attribute) o;
 
-        if ((externalId != 0 && attribute.externalId != 0) && externalId != attribute.externalId) return false;
+        if ((externalId != 0 && attribute.externalId != 0) && externalId != attribute.externalId)
+            return false;
         if (!name.equals(attribute.name)) return false;
         return type == attribute.type;
     }
