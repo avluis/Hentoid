@@ -78,7 +78,7 @@ public class DatabaseMigrationService extends IntentService {
     }
 
     private void eventComplete(int nbBooks, int booksOK, int booksKO, File importLogFile) {
-        EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, importLogFile));
+        EventBus.getDefault().post(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, importLogFile));
     }
 
     private void trace(int priority, List<String> memoryLog, String s, String... t) {

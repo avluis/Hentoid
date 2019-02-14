@@ -59,19 +59,20 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onImportEventProgress(ImportEvent event) {
+    public void onImportEvent(ImportEvent event) {
         if (ImportEvent.EV_PROGRESS == event.eventType) {
             progressDialog.setMax(event.booksTotal);
             progressDialog.setProgress(event.booksOK + event.booksKO);
         }
+        else if (ImportEvent.EV_COMPLETE == event.eventType) {
+            if (progressDialog != null) progressDialog.dismiss();
+            runMain();
+        }
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    @Subscribe(threadMode = ThreadMode.MAIN)
     public void onImportEventComplete(ImportEvent event) {
-        if (ImportEvent.EV_COMPLETE == event.eventType) {
-            if (progressDialog != null) progressDialog.dismiss();
-        }
-        runMain();
+
     }
 
     private void handleDatabaseMigration() {
