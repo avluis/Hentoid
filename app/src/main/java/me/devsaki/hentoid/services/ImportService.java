@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.annimon.stream.Stream;
 
@@ -108,6 +109,13 @@ public class ImportService extends IntentService {
         EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
+    private void trace(int priority, List<String> memoryLog, String s, String... t) {
+        s = String.format(s, (Object[]) t);
+        Timber.log(priority, s);
+        if (null != memoryLog) memoryLog.add(s);
+    }
+
+
     /**
      * Import books from known source folders
      *
@@ -116,7 +124,6 @@ public class ImportService extends IntentService {
     private void startImport(boolean cleanup) {
         int booksOK = 0;
         int booksKO = 0;
-        String message;
         List<String> cleanupLog = cleanup ? new ArrayList<>() : null;
 
         notificationManager.startForeground(new ImportStartNotification());
@@ -129,8 +136,8 @@ public class ImportService extends IntentService {
                 .distinct() // Since there are two ASM Hentai sites ("ASM classic" and "ASM comics"), ASM values are duplicated => deduplicate list
                 .collect(toList());
 
-        Timber.i("Import books starting : %s books total", files.size());
-        Timber.i("Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
+        trace(Log.DEBUG, cleanupLog, "Import books starting : %s books total", files.size() + "");
+        trace(Log.INFO, cleanupLog, "Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
         for (int i = 0; i < files.size(); i++) {
             File file = files.get(i);
 
@@ -150,32 +157,28 @@ public class ImportService extends IntentService {
 
                         if (FileHelper.renameDirectory(file, new File(settingDir, canonicalBookDir))) {
                             content.setStorageFolder(canonicalBookDir);
-                            message = String.format("[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
+                            trace(Log.INFO, cleanupLog, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
                         } else {
-                            message = String.format("[Rename KO] Could not rename file %s to %s", currentBookDir, canonicalBookDir);
+                            trace(Log.WARN, cleanupLog, "[Rename KO] Could not rename file %s to %s", currentBookDir, canonicalBookDir);
                         }
-                        cleanupLog.add(message);
-                        Timber.i(message);
                     }
                 }
                 ObjectBoxDB.getInstance(this).insertContent(content);
                 booksOK++;
-                Timber.d("Import book OK : %s", file.getAbsolutePath());
+                trace(Log.INFO, cleanupLog, "Import book OK : %s", file.getAbsolutePath());
             } else {
                 booksKO++;
-                Timber.w("Import book KO : %s", file.getAbsolutePath());
+                trace(Log.WARN, cleanupLog, "Import book KO : %s", file.getAbsolutePath());
                 // Deletes the folder if cleanup is active
                 if (cleanup) {
                     boolean success = FileHelper.removeFile(file);
-                    message = String.format("[Remove %s] Folder %s", success ? "OK" : "KO", file.getAbsolutePath());
-                    cleanupLog.add(message);
-                    Timber.i(message);
+                    trace(Log.INFO, cleanupLog, "[Remove %s] Folder %s", success ? "OK" : "KO", file.getAbsolutePath());
                 }
             }
 
             eventProgress(content, files.size(), booksOK, booksKO);
         }
-        Timber.i("Import books complete : %s OK; %s KO", booksOK, booksKO);
+        trace(Log.INFO, cleanupLog, "Import books complete : %s OK; %s KO", booksOK + "", booksKO + "");
 
         // Write cleanup log in root folder
         File cleanupLogFile = null;

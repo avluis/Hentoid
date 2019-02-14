@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
 
@@ -80,13 +81,18 @@ public class DatabaseMigrationService extends IntentService {
         EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, importLogFile));
     }
 
+    private void trace(int priority, List<String> memoryLog, String s, String... t) {
+        s = String.format(s, (Object[]) t);
+        Timber.log(priority, s);
+        if (null != memoryLog) memoryLog.add(s);
+    }
+
     /**
      * Migrate HentoidDB books to ObjectBoxDB
      */
     private void startMigration() {
         int booksOK = 0;
         int booksKO = 0;
-        String log;
         long newKey;
 
         HentoidDB oldDB = HentoidDB.getInstance(this);
@@ -94,54 +100,47 @@ public class DatabaseMigrationService extends IntentService {
 
         List<Integer> bookIds = oldDB.selectMigrableContentIds();
         List<String> importLog = new ArrayList<>();
-        SparseArray<Long> keyMapping = new SparseArray<Long>();
+        SparseArray<Long> keyMapping = new SparseArray<>();
 
-        Timber.i("Import books starting : %s books total", bookIds.size());
+        trace(Log.INFO, importLog, "Import books starting : %s books total", bookIds.size() + "");
         for (int i = 0; i < bookIds.size(); i++) {
             Content content = oldDB.selectContentById(bookIds.get(i));
 
             if (content != null) {
-//                newDB.attach(content);
                 newKey = newDB.insertContent(content);
                 keyMapping.put(bookIds.get(i), newKey);
                 booksOK++;
-                log = "Import book OK : " + content.getTitle();
-                Timber.d(log);
+                trace(Log.DEBUG, importLog, "Import book OK : " + content.getTitle());
             } else {
                 booksKO++;
-                log = "Import book KO : ID" + bookIds.get(i);
-                Timber.w(log);
+                trace(Log.WARN, importLog, "Import book KO : ID" + bookIds.get(i));
             }
-            importLog.add(log);
 
             eventProgress(content, bookIds.size(), booksOK, booksKO);
         }
-        Timber.i("Import books complete : %s OK; %s KO", booksOK, booksKO);
+        trace(Log.INFO, importLog, "Import books complete : %s OK; %s KO", booksOK + "", booksKO + "");
 
         int queueOK = 0;
         int queueKO = 0;
         SparseIntArray queueIds = oldDB.selectQueueForMigration();
-        Timber.i("Import queue starting : %s entries total", queueIds.size());
+        trace(Log.INFO, importLog, "Import queue starting : %s entries total", queueIds.size() + "");
         for (int i = 0; i < queueIds.size(); i++) {
             Long targetKey = keyMapping.get(queueIds.keyAt(i));
 
             if (targetKey != null) {
                 newDB.insertQueue(targetKey, queueIds.get(queueIds.keyAt(i)));
                 queueOK++;
-                log = "Import queue OK : target ID" + targetKey;
-                Timber.d(log);
+                trace(Log.INFO, importLog, "Import queue OK : target ID" + targetKey);
             } else {
                 queueKO++;
-                log = "Import queue KO : source ID" + queueIds.keyAt(i);
-                Timber.w(log);
+                trace(Log.WARN, importLog, "Import queue KO : source ID" + queueIds.keyAt(i));
             }
-            importLog.add(log);
         }
-        Timber.i("Import queue complete : %s OK; %s KO", queueOK, queueKO);
+        trace(Log.INFO, importLog, "Import queue complete : %s OK; %s KO", queueOK + "", queueKO + "");
         this.getApplicationContext().deleteDatabase(Consts.DATABASE_NAME);
 
         // Write log in root folder
-        File importLogFile = writeImportLog(importLog);
+        File importLogFile = writeMigrationLog(importLog);
 
         eventComplete(bookIds.size(), booksOK, booksKO, importLogFile);
 
@@ -149,7 +148,7 @@ public class DatabaseMigrationService extends IntentService {
         stopSelf();
     }
 
-    private File writeImportLog(List<String> log) {
+    private File writeMigrationLog(List<String> log) {
         // Create the log
         StringBuilder logStr = new StringBuilder();
         logStr.append("Import log : begin").append(System.getProperty("line.separator"));
@@ -168,7 +167,7 @@ public class DatabaseMigrationService extends IntentService {
             } else {
                 root = new File(settingDir);
             }
-            File importLogFile = new File(root, "import_log.txt");
+            File importLogFile = new File(root, "migration_log.txt");
             FileHelper.saveBinaryInFile(importLogFile, logStr.toString().getBytes());
             return importLogFile;
         } catch (Exception e) {
