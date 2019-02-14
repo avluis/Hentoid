@@ -157,10 +157,7 @@ public class Attribute {
                     break;
                 }
             }
-            if (!foundSite) {
-                Timber.i("Adding location %s to attribute %s", sourceLocation.site.name(), this.name);
-                this.locations.add(sourceLocation);
-            }
+            if (!foundSite) this.locations.add(sourceLocation);
         }
     }
 
