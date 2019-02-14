@@ -139,6 +139,7 @@ public class Attribute {
                 break;
             }
         }
+        url = ""; // Field shouldn't be null
     }
 
     Attribute computeLocation(Site site) {
