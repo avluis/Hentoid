@@ -7,6 +7,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -19,6 +23,7 @@ import me.devsaki.hentoid.listener.ResultListener;
 public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
     private final ObjectBoxDB db;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private final int MODE_SEARCH_CONTENT_MODULAR = 0;
     private final int MODE_COUNT_CONTENT_MODULAR = 1;
@@ -29,6 +34,12 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     private final int MODE_SEARCH_ATTRIBUTE_AVAILABLE = 1;
     private final int MODE_SEARCH_ATTRIBUTE_COMBINED = 2;
 
+    static class ContentQueryResult {
+        List<Content> pagedContents;
+        long totalContent;
+        long totalSelectedContent;
+    }
+
 
     public ObjectBoxCollectionAccessor(Context ctx) {
         db = ObjectBoxDB.getInstance(ctx);
@@ -37,7 +48,16 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
-        contentSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly, listener);
+        compositeDisposable.add(
+                Single.just(
+                        contentSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(contentQueryResult -> {
+                            listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent);
+                        })
+        );
     }
 
     @Override
@@ -47,34 +67,89 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
-        contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly, listener);
+        compositeDisposable.add(
+                Single.just(
+                        contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(contentQueryResult -> {
+                            listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent);
+                        })
+        );
     }
 
     @Override
     public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
-        contentSearch(MODE_COUNT_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly, listener);
+        compositeDisposable.add(
+                Single.just(
+                        contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(contentQueryResult -> {
+                            listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent);
+                        })
+        );
     }
 
     @Override
     public void searchBooksUniversal(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
-        contentSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly, listener);
+        compositeDisposable.add(
+                Single.just(
+                        contentSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(contentQueryResult -> {
+                            listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent);
+                        })
+        );
     }
 
     @Override
     public void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener) {
-        contentSearch(MODE_COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly, listener);
+        compositeDisposable.add(
+                Single.just(
+                        contentSearch(MODE_COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(contentQueryResult -> {
+                            listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent);
+                        })
+        );
     }
 
     @Override
     public void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener) {
         List<AttributeType> attrTypes = new ArrayList<>();
         attrTypes.add(type);
-        attributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, attrTypes, filter, Collections.emptyList(), false, listener);
+
+        compositeDisposable.add(
+                Single.just(
+                        attributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, attrTypes, filter, Collections.emptyList(), false)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+                            listener.onResultReady(result, result.size());
+                        })
+        );
     }
 
     @Override
     public void getAttributeMasterData(List<AttributeType> types, String filter, ResultListener<List<Attribute>> listener) {
-        attributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, types, filter, Collections.emptyList(), false, listener);
+        compositeDisposable.add(
+                Single.just(
+                        attributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, types, filter, Collections.emptyList(), false)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+                            listener.onResultReady(result, result.size());
+                        })
+        );
     }
 
     @Override
@@ -84,51 +159,77 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
-        attributeSearch(MODE_SEARCH_ATTRIBUTE_COMBINED, types, filter, attrs, filterFavourites, listener);
+        compositeDisposable.add(
+                Single.just(
+                        attributeSearch(MODE_SEARCH_ATTRIBUTE_COMBINED, types, filter, attrs, filterFavourites)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+                            listener.onResultReady(result, result.size());
+                        })
+        );
     }
 
     @Override
     public void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
-        attributeSearch(MODE_SEARCH_ATTRIBUTE_AVAILABLE, types, "", attrs, filterFavourites, listener);
+        compositeDisposable.add(
+                Single.just(
+                        attributeSearch(MODE_SEARCH_ATTRIBUTE_AVAILABLE, types, "", attrs, filterFavourites)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+                            listener.onResultReady(result, result.size());
+                        })
+        );
     }
 
     @Override
     public void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener) {
-        count(filter, listener);
+        compositeDisposable.add(
+                Single.just(
+                        count(filter)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(result -> {
+                            listener.onResultReady(result, result.size());
+                        })
+        );
     }
 
     @Override
     public void dispose() {
-        // Nothing special
+        compositeDisposable.clear();
     }
 
-    private void contentSearch(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+    private ContentQueryResult contentSearch(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
 
-        List<Content> result;
-        long totalSelectedContent;
+        ContentQueryResult result = new ContentQueryResult();
 
         if (MODE_SEARCH_CONTENT_MODULAR == mode) {
-            result = db.selectContentByQuery(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
+            result.pagedContents = db.selectContentByQuery(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
         } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode) {
-            result = db.selectContentByUniqueQuery(filter, page, booksPerPage, favouritesOnly, orderStyle);
+            result.pagedContents = db.selectContentByUniqueQuery(filter, page, booksPerPage, favouritesOnly, orderStyle);
         } else {
-            result = Collections.emptyList();
+            result.pagedContents = Collections.emptyList();
         }
         // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
         if (MODE_SEARCH_CONTENT_MODULAR == mode || MODE_COUNT_CONTENT_MODULAR == mode) {
-            totalSelectedContent = db.countContentByQuery(filter, metadata, favouritesOnly);
+            result.totalSelectedContent = db.countContentByQuery(filter, metadata, favouritesOnly);
         } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode || MODE_COUNT_CONTENT_UNIVERSAL == mode) {
-            totalSelectedContent = db.countContentByUniqueQuery(filter, favouritesOnly);
+            result.totalSelectedContent = db.countContentByUniqueQuery(filter, favouritesOnly);
         } else {
-            totalSelectedContent = 0;
+            result.totalSelectedContent = 0;
         }
         // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
-        long totalContent = db.countAllContent();
+        result.totalContent = db.countAllContent();
 
-        listener.onContentReady(result, totalSelectedContent, totalContent);
+        return result;
     }
 
-    private void attributeSearch(int mode, List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
+    private List<Attribute> attributeSearch(int mode, List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites) {
         List<Attribute> result = new ArrayList<>();
 
         if (attrTypes != null && !attrTypes.isEmpty()) {
@@ -153,10 +254,10 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
             }
         }
 
-        listener.onResultReady(result, result.size());
+        return result;
     }
 
-    private void count(List<Attribute> filter, ResultListener<SparseIntArray> listener) {
+    private SparseIntArray count(List<Attribute> filter) {
         SparseIntArray result;
 
         if (null == filter || filter.isEmpty()) {
@@ -167,6 +268,6 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
             result.put(AttributeType.SOURCE.getCode(), db.selectAvailableSources(filter).size());
         }
 
-        listener.onResultReady(result, result.size());
+        return result;
     }
 }

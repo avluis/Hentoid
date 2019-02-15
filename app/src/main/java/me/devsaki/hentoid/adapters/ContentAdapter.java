@@ -154,7 +154,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
-        attachButtons(holder, content, pos);
+        attachButtons(holder, content);
         attachOnClickListeners(holder, content, pos);
     }
 
@@ -166,11 +166,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void updateLayoutVisibility(ContentHolder holder, Content content, int pos) {
-/* Disabled 2019/02/12 - waiting for wightwulf's feedback
         if (pos == getItemCount() - VISIBLE_THRESHOLD && onScrollToEndListener != null) {
             onScrollToEndListener.run();
         }
-*/
+
         holder.itemView.setSelected(content.isSelected());
 
         if (holder.itemView.isSelected()) {
@@ -282,7 +281,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         holder.tvTags.setText(Helper.fromHtml(tagsBuilder.toString()));
     }
 
-    private void attachButtons(ContentHolder holder, final Content content, int pos) {
+    private void attachButtons(ContentHolder holder, final Content content) {
         // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
@@ -535,7 +534,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         try {
             JsonHelper.saveJson(item.preJSONExport(), dir);
         } catch (IOException e) {
-            Timber.e(e, "Error while writing to " + dir.getAbsolutePath());
+            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }
 
     }
