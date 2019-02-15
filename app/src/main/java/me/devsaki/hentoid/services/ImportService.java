@@ -8,8 +8,6 @@ import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
-import com.annimon.stream.Stream;
-
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
@@ -37,8 +35,6 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
-
-import static com.annimon.stream.Collectors.toList;
 
 /**
  * Service responsible for importing an existing library.
@@ -124,7 +120,7 @@ public class ImportService extends IntentService {
     private void startImport(boolean cleanup) {
         int booksOK = 0;
         int booksKO = 0;
-        List<String> cleanupLog = cleanup ? new ArrayList<>() : null;
+        List<String> cleanupLog = new ArrayList<>();
 
         notificationManager.startForeground(new ImportStartNotification());
 
@@ -175,8 +171,7 @@ public class ImportService extends IntentService {
         trace(Log.INFO, cleanupLog, "Import books complete : %s OK; %s KO", booksOK + "", booksKO + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = null;
-        if (cleanup) cleanupLogFile = writeCleanupLog(cleanupLog);
+        File cleanupLogFile = writeCleanupLog(cleanupLog, cleanup);
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -185,7 +180,7 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    private File writeCleanupLog(List<String> log) {
+    private File writeCleanupLog(List<String> log, boolean isCleanup) {
         // Create the log
         StringBuilder logStr = new StringBuilder();
         logStr.append("Cleanup log : begin").append(System.getProperty("line.separator"));
@@ -205,7 +200,7 @@ public class ImportService extends IntentService {
             } else {
                 root = new File(settingDir);
             }
-            File cleanupLogFile = new File(root, "cleanup_log.txt");
+            File cleanupLogFile = new File(root, isCleanup ? "cleanup_log.txt" : "import_log.txt");
             FileHelper.saveBinaryInFile(cleanupLogFile, logStr.toString().getBytes());
             return cleanupLogFile;
         } catch (Exception e) {
