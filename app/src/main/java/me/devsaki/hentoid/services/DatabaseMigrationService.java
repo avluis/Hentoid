@@ -18,6 +18,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
@@ -94,53 +95,61 @@ public class DatabaseMigrationService extends IntentService {
         int booksOK = 0;
         int booksKO = 0;
         long newKey;
+        Content content;
 
         HentoidDB oldDB = HentoidDB.getInstance(this);
         ObjectBoxDB newDB = ObjectBoxDB.getInstance(this);
 
         List<Integer> bookIds = oldDB.selectMigrableContentIds();
-        List<String> importLog = new ArrayList<>();
+        List<String> log = new ArrayList<>();
         SparseArray<Long> keyMapping = new SparseArray<>();
 
-        trace(Log.INFO, importLog, "Import books starting : %s books total", bookIds.size() + "");
+        trace(Log.INFO, log, "Books migration starting : %s books total", bookIds.size() + "");
         for (int i = 0; i < bookIds.size(); i++) {
-            Content content = oldDB.selectContentById(bookIds.get(i));
+            content = oldDB.selectContentById(bookIds.get(i));
 
-            if (content != null) {
-                newKey = newDB.insertContent(content);
-                keyMapping.put(bookIds.get(i), newKey);
-                booksOK++;
-                trace(Log.DEBUG, importLog, "Import book OK : " + content.getTitle());
-            } else {
+            try {
+                if (content != null) {
+                    newKey = newDB.insertContent(content);
+                    keyMapping.put(bookIds.get(i), newKey);
+                    booksOK++;
+                    trace(Log.DEBUG, log, "Migrate book OK : " + content.getTitle());
+                } else {
+                    booksKO++;
+                    trace(Log.WARN, log, "Migrate book KO : ID" + bookIds.get(i));
+                }
+            } catch (Exception e) {
                 booksKO++;
-                trace(Log.WARN, importLog, "Import book KO : ID" + bookIds.get(i));
+                if (null == content)
+                    content = new Content().setTitle("none").setUrl("").setSite(Site.NONE);
+                trace(Log.ERROR, log, "Migrate book ERROR : %s %s %s", e.getMessage(), bookIds.get(i) + "", content.getTitle());
             }
 
             eventProgress(content, bookIds.size(), booksOK, booksKO);
         }
-        trace(Log.INFO, importLog, "Import books complete : %s OK; %s KO", booksOK + "", booksKO + "");
+        trace(Log.INFO, log, "Books migration complete : %s OK; %s KO", booksOK + "", booksKO + "");
 
         int queueOK = 0;
         int queueKO = 0;
         SparseIntArray queueIds = oldDB.selectQueueForMigration();
-        trace(Log.INFO, importLog, "Import queue starting : %s entries total", queueIds.size() + "");
+        trace(Log.INFO, log, "Queue migration starting : %s entries total", queueIds.size() + "");
         for (int i = 0; i < queueIds.size(); i++) {
             Long targetKey = keyMapping.get(queueIds.keyAt(i));
 
             if (targetKey != null) {
                 newDB.insertQueue(targetKey, queueIds.get(queueIds.keyAt(i)));
                 queueOK++;
-                trace(Log.INFO, importLog, "Import queue OK : target ID" + targetKey);
+                trace(Log.INFO, log, "Migrate queue OK : target ID" + targetKey);
             } else {
                 queueKO++;
-                trace(Log.WARN, importLog, "Import queue KO : source ID" + queueIds.keyAt(i));
+                trace(Log.WARN, log, "Migrate queue KO : source ID" + queueIds.keyAt(i));
             }
         }
-        trace(Log.INFO, importLog, "Import queue complete : %s OK; %s KO", queueOK + "", queueKO + "");
+        trace(Log.INFO, log, "Queue migration complete : %s OK; %s KO", queueOK + "", queueKO + "");
         this.getApplicationContext().deleteDatabase(Consts.DATABASE_NAME);
 
         // Write log in root folder
-        File importLogFile = writeMigrationLog(importLog);
+        File importLogFile = writeMigrationLog(log);
 
         eventComplete(bookIds.size(), booksOK, booksKO, importLogFile);
 
@@ -151,12 +160,12 @@ public class DatabaseMigrationService extends IntentService {
     private File writeMigrationLog(List<String> log) {
         // Create the log
         StringBuilder logStr = new StringBuilder();
-        logStr.append("Import log : begin").append(System.getProperty("line.separator"));
+        logStr.append("Migration log : begin").append(System.getProperty("line.separator"));
         if (log.isEmpty())
             logStr.append("No activity to report - No migrable content detected on existing database");
         else for (String line : log)
             logStr.append(line).append(System.getProperty("line.separator"));
-        logStr.append("Import log : end");
+        logStr.append("Migration log : end");
 
         // Save it
         File root;

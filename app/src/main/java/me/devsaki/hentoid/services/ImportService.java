@@ -120,58 +120,67 @@ public class ImportService extends IntentService {
     private void startImport(boolean cleanup) {
         int booksOK = 0;
         int booksKO = 0;
-        List<String> cleanupLog = new ArrayList<>();
+        Content content = null;
+        List<String> log = new ArrayList<>();
 
         notificationManager.startForeground(new ImportStartNotification());
 
         List<File> files = FileHelper.findFilesRecursively(new File(Preferences.getRootFolderName()), "json");
 
-        trace(Log.DEBUG, cleanupLog, "Import books starting : %s books total", files.size() + "");
-        trace(Log.INFO, cleanupLog, "Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
+
+        trace(Log.DEBUG, log, "Import books starting : %s books total", files.size() + "");
+        trace(Log.INFO, log, "Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
         for (int i = 0; i < files.size(); i++) {
             File file = files.get(i);
 
-            Content content = importJson(file);
-            if (content != null) {
-                if (cleanup) {
-                    String canonicalBookDir = FileHelper.formatDirPath(content);
+            try {
+                content = importJson(file);
+                if (content != null) {
+                    if (cleanup) {
+                        String canonicalBookDir = FileHelper.formatDirPath(content);
 
-                    String[] currentPathParts = file.getAbsolutePath().split("/");
-                    String currentBookDir = "/" + currentPathParts[currentPathParts.length - 2] + "/" + currentPathParts[currentPathParts.length - 1];
+                        String[] currentPathParts = file.getAbsolutePath().split("/");
+                        String currentBookDir = "/" + currentPathParts[currentPathParts.length - 2] + "/" + currentPathParts[currentPathParts.length - 1];
 
-                    if (!canonicalBookDir.equals(currentBookDir)) {
-                        String settingDir = Preferences.getRootFolderName();
-                        if (settingDir.isEmpty()) {
-                            settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
-                        }
+                        if (!canonicalBookDir.equals(currentBookDir)) {
+                            String settingDir = Preferences.getRootFolderName();
+                            if (settingDir.isEmpty()) {
+                                settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
+                            }
 
-                        if (FileHelper.renameDirectory(file, new File(settingDir, canonicalBookDir))) {
-                            content.setStorageFolder(canonicalBookDir);
-                            trace(Log.INFO, cleanupLog, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
-                        } else {
-                            trace(Log.WARN, cleanupLog, "[Rename KO] Could not rename file %s to %s", currentBookDir, canonicalBookDir);
+                            if (FileHelper.renameDirectory(file, new File(settingDir, canonicalBookDir))) {
+                                content.setStorageFolder(canonicalBookDir);
+                                trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
+                            } else {
+                                trace(Log.WARN, log, "[Rename KO] Could not rename file %s to %s", currentBookDir, canonicalBookDir);
+                            }
                         }
                     }
+                    ObjectBoxDB.getInstance(this).insertContent(content);
+                    booksOK++;
+                    trace(Log.INFO, log, "Import book OK : %s", file.getAbsolutePath());
+                } else {
+                    booksKO++;
+                    trace(Log.WARN, log, "Import book KO : %s", file.getAbsolutePath());
+                    // Deletes the folder if cleanup is active
+                    if (cleanup) {
+                        boolean success = FileHelper.removeFile(file);
+                        trace(Log.INFO, log, "[Remove %s] Folder %s", success ? "OK" : "KO", file.getAbsolutePath());
+                    }
                 }
-                ObjectBoxDB.getInstance(this).insertContent(content);
-                booksOK++;
-                trace(Log.INFO, cleanupLog, "Import book OK : %s", file.getAbsolutePath());
-            } else {
+            } catch (Exception e) {
+                if (null == content)
+                    content = new Content().setTitle("none").setUrl("").setSite(Site.NONE);
                 booksKO++;
-                trace(Log.WARN, cleanupLog, "Import book KO : %s", file.getAbsolutePath());
-                // Deletes the folder if cleanup is active
-                if (cleanup) {
-                    boolean success = FileHelper.removeFile(file);
-                    trace(Log.INFO, cleanupLog, "[Remove %s] Folder %s", success ? "OK" : "KO", file.getAbsolutePath());
-                }
+                trace(Log.ERROR, log, "Import book ERROR : %s %s", e.getMessage(), file.getAbsolutePath());
             }
 
             eventProgress(content, files.size(), booksOK, booksKO);
         }
-        trace(Log.INFO, cleanupLog, "Import books complete : %s OK; %s KO", booksOK + "", booksKO + "");
+        trace(Log.INFO, log, "Import books complete : %s OK; %s KO", booksOK + "", booksKO + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = writeCleanupLog(cleanupLog, cleanup);
+        File cleanupLogFile = writeLog(log, cleanup);
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -180,7 +189,7 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    private File writeCleanupLog(List<String> log, boolean isCleanup) {
+    private File writeLog(List<String> log, boolean isCleanup) {
         // Create the log
         StringBuilder logStr = new StringBuilder();
         logStr.append("Cleanup log : begin").append(System.getProperty("line.separator"));
