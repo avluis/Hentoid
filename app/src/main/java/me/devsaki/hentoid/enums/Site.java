@@ -43,7 +43,6 @@ public enum Site {
         this.allowParallelDownloads = allowParallelDownloads;
     }
 
-    @Nullable
     public static Site searchByCode(long code) {
         if (code == -1) {
             Timber.w("Invalid site code!");
@@ -52,10 +51,9 @@ public enum Site {
             if (s.getCode() == code)
                 return s;
         }
-        return null;
+        return Site.NONE;
     }
 
-    @Nullable
     public static Site searchByUrl(String url) {
         if (null == url || url.isEmpty()) {
             Timber.w("Invalid url");
@@ -65,7 +63,7 @@ public enum Site {
             if (url.contains(s.getUniqueKeyword()))
                 return s;
         }
-        return null;
+        return Site.NONE;
     }
 
     public int getCode() {
@@ -104,14 +102,14 @@ public enum Site {
         @Override
         public Site convertToEntityProperty(Long databaseValue) {
             if (databaseValue == null) {
-                return null;
+                return Site.NONE;
             }
             for (Site site : Site.values()) {
                 if (site.getCode() == databaseValue) {
                     return site;
                 }
             }
-            return Site.FAKKU;
+            return Site.NONE;
         }
 
         @Override

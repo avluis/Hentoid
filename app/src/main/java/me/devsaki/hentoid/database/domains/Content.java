@@ -306,6 +306,8 @@ public class Content implements Serializable {
     }
 
     public Content postJSONImport() {   // TODO - this is shabby
+        if (null == site) site = Site.NONE;
+
         if (this.attributeMap != null) {
             this.attributes.clear();
             for (AttributeType type : this.attributeMap.keySet()) {
@@ -317,6 +319,7 @@ public class Content implements Serializable {
             this.imageFiles.clear();
             this.imageFiles.addAll(this.imageList);
         }
+        this.populateAuthor();
         this.uniqueSiteId = computeUniqueSiteId();
         return this;
     }
