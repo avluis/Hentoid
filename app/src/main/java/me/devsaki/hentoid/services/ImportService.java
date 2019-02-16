@@ -352,6 +352,7 @@ public class ImportService extends IntentService {
             Content content = JsonHelper.jsonToObject(json, Content.class);
 
             if (null == content.getAuthor()) content.populateAuthor();
+            if (null == content.getSite()) content.setSite(Site.NONE);
 
             String fileRoot = Preferences.getRootFolderName();
             content.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
