@@ -39,15 +39,14 @@ public class HitomiParser extends BaseParser {
             String imageSubdomain = Character.toString((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
 
             for (Element element : imgElements) {
-                result.add("https:" + replaceHostWith(element.text(), imageSubdomain));
-//                result.add("https:" + element.text().replace("//g.", "//" + imageSubdomain + "."));
+                result.add("https:" + replaceSubdomainWith(element.text(), imageSubdomain));
             }
         }
 
         return result;
     }
 
-    private String replaceHostWith(String url, String newSubdomain) {
+    private String replaceSubdomainWith(String url, String newSubdomain) {
         // Get the beginning and end of subdomain
         int subdomainBegin = 2; // Just after '//'
         int subdomainEnd = url.indexOf(".hitomi");
