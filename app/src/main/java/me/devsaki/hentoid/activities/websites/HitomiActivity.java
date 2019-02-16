@@ -32,7 +32,7 @@ public class HitomiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new HitomiWebViewClient(GALLERY_FILTER, getStartSite(), this);
+        CustomWebViewClient client = new HitomiWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
@@ -40,8 +40,8 @@ public class HitomiActivity extends BaseWebActivity {
 
     private class HitomiWebViewClient extends CustomWebViewClient {
 
-        HitomiWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
-            super(filteredUrl, startSite, listener);
+        HitomiWebViewClient(String filteredUrl, ResultListener<Content> listener) {
+            super(filteredUrl,  listener);
             addContentBlockFilter(blockedContent);
         }
 

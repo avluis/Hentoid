@@ -24,15 +24,15 @@ public class HentaiCafeActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new HentaiCafeWebViewClient(GALLERY_FILTER, getStartSite(), this);
+        CustomWebViewClient client = new HentaiCafeWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
 
     private class HentaiCafeWebViewClient extends CustomWebViewClient {
 
-        HentaiCafeWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
-            super(filteredUrl, startSite, listener);
+        HentaiCafeWebViewClient(String filteredUrl, ResultListener<Content> listener) {
+            super(filteredUrl, listener);
         }
 
         @Override
