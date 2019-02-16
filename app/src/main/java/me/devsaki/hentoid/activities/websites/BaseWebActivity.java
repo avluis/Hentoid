@@ -458,20 +458,20 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
     abstract class CustomWebViewClient extends WebViewClient {
 
-        private String domainName = "";
-        private final String filteredUrl;
-        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
         protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-        final Site startSite;
         protected final ResultListener<Content> listener;
+        private final Pattern filteredUrlPattern;
+
+        private String domainName = "";
 
         protected abstract void onGalleryFound(String url);
 
 
-        CustomWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
-            this.filteredUrl = filteredUrl;
-            this.startSite = startSite;
+        CustomWebViewClient(String filteredUrl, ResultListener<Content> listener) {
             this.listener = listener;
+            if (filteredUrl.length() > 0) filteredUrlPattern = Pattern.compile(filteredUrl);
+            else filteredUrlPattern = null;
         }
 
         void destroy() {
@@ -481,6 +481,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         void restrictTo(String s) {
             domainName = s;
+        }
+
+        private boolean isPageFiltered(String url) {
+            if (null == filteredUrlPattern) return false;
+
+            Matcher matcher = filteredUrlPattern.matcher(url);
+            return matcher.find();
         }
 
         @Override
@@ -505,11 +512,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             hideFab(fabDownload);
             hideFab(fabRead);
 
-            if (filteredUrl.length() > 0) {
-                Pattern pattern = Pattern.compile(filteredUrl);
-                Matcher matcher = pattern.matcher(url);
-                if (matcher.find()) onGalleryFound(url);
-            }
+            if (isPageFiltered(url)) onGalleryFound(url);
         }
 
         @Override

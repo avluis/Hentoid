@@ -24,15 +24,15 @@ public class ASMHentaiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new ASMViewClient(GALLERY_FILTER, getStartSite(), this);
+        CustomWebViewClient client = new ASMViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
 
     private class ASMViewClient extends CustomWebViewClient {
 
-        ASMViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
-            super(filteredUrl, startSite, listener);
+        ASMViewClient(String filteredUrl, ResultListener<Content> listener) {
+            super(filteredUrl, listener);
             addContentBlockFilter(blockedContent);
         }
 

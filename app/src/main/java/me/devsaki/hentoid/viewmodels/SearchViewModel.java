@@ -50,7 +50,6 @@ public class SearchViewModel extends AndroidViewModel {
 
     private List<AttributeType> category;
 
-
     // === LISTENER HELPERS
     private class AttributesResultListener implements ResultListener<List<Attribute>> {
         private final MutableLiveData<AttributeSearchResult> list;
@@ -252,5 +251,11 @@ public class SearchViewModel extends AndroidViewModel {
         public long totalSelected;
         public boolean success = true;
         public String message;
+    }
+
+    @Override
+    protected void onCleared() {
+        if (collectionAccessor != null) collectionAccessor.dispose();
+        super.onCleared();
     }
 }

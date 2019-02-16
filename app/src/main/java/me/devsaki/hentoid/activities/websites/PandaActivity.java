@@ -22,15 +22,15 @@ public class PandaActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new PandaWebViewClient(GALLERY_FILTER, getStartSite(), this);
+        CustomWebViewClient client = new PandaWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
 
     private class PandaWebViewClient extends CustomWebViewClient {
 
-        PandaWebViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
-            super(filteredUrl, startSite, listener);
+        PandaWebViewClient(String filteredUrl, ResultListener<Content> listener) {
+            super(filteredUrl, listener);
         }
 
         @Override

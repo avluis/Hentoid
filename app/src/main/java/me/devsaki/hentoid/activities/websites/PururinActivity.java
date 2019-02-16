@@ -17,15 +17,15 @@ public class PururinActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new PururinViewClient(GALLERY_FILTER, getStartSite(), this);
+        CustomWebViewClient client = new PururinViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
 
     private class PururinViewClient extends CustomWebViewClient {
 
-        PururinViewClient(String filteredUrl, Site startSite, ResultListener<Content> listener) {
-            super(filteredUrl, startSite, listener);
+        PururinViewClient(String filteredUrl, ResultListener<Content> listener) {
+            super(filteredUrl, listener);
         }
 
         @Override

@@ -32,15 +32,15 @@ public class NhentaiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new NhentaiWebViewClient(GALLERY_FILTER, getStartSite(), this);
+        CustomWebViewClient client = new NhentaiWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
 
     private class NhentaiWebViewClient extends CustomWebViewClient {
 
-        NhentaiWebViewClient(String galleryUrl, Site startSite, ResultListener<Content> listener) {
-            super(galleryUrl, startSite, listener);
+        NhentaiWebViewClient(String galleryUrl, ResultListener<Content> listener) {
+            super(galleryUrl, listener);
         }
 
         @Override

@@ -36,13 +36,21 @@ public class HitomiParser extends BaseParser {
             int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
             if (1 == referenceId)
                 referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
-            String imageHostname = Character.toString((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
+            String imageSubdomain = Character.toString((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
 
             for (Element element : imgElements) {
-                result.add("https:" + element.text().replace("//g.", "//" + imageHostname + "."));
+                result.add("https:" + replaceSubdomainWith(element.text(), imageSubdomain));
             }
         }
 
         return result;
+    }
+
+    private String replaceSubdomainWith(String url, String newSubdomain) {
+        // Get the beginning and end of subdomain
+        int subdomainBegin = 2; // Just after '//'
+        int subdomainEnd = url.indexOf(".hitomi");
+
+        return url.substring(0, subdomainBegin) + newSubdomain + url.substring(subdomainEnd);
     }
 }

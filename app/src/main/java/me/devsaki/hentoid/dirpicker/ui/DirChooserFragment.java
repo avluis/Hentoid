@@ -56,7 +56,7 @@ public class DirChooserFragment extends DialogFragment implements
             fabRequestSD;
     private Button selectDirBtn;
     private File currentRootDir;
-    DirListBuilder dirListBuilder;
+    private DirListBuilder dirListBuilder;
 
     public static DirChooserFragment newInstance(File rootDir) {
         DirChooserFragment dirChooserFragment = new DirChooserFragment();
@@ -155,6 +155,8 @@ public class DirChooserFragment extends DialogFragment implements
         dirListBuilder.processListDirEvent(event.root);
     }
 
+
+
     @Subscribe
     public void onDataSetChangedEvent(DataSetChangedEvent event) {
         dirListBuilder.notifyDatasetChanged();
@@ -226,5 +228,11 @@ public class DirChooserFragment extends DialogFragment implements
     private void selectDirBtnClicked() {
         EventBus.getDefault().post(new OnDirChosenEvent(currentRootDir));
         dismiss();
+    }
+
+    @Override
+    public void onDestroy() {
+        if (dirListBuilder != null) dirListBuilder.dispose();
+        super.onDestroy();
     }
 }

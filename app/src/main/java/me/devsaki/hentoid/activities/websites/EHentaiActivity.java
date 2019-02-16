@@ -22,15 +22,15 @@ public class EHentaiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new EHentaiWebClient(GALLERY_FILTER, getStartSite(), this);
+        CustomWebViewClient client = new EHentaiWebClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
 
     private class EHentaiWebClient extends CustomWebViewClient {
 
-        EHentaiWebClient(String filter, Site startSite, ResultListener<Content> listener) {
-            super(filter, startSite, listener);
+        EHentaiWebClient(String filter, ResultListener<Content> listener) {
+            super(filter, listener);
         }
 
         @Override
