@@ -136,7 +136,7 @@ public class Attribute {
         for (AttributeLocation location : locations) {
             if (location.site.equals(site)) {
                 url = location.url;
-                break;
+                return;
             }
         }
         url = ""; // Field shouldn't be null
