@@ -6,6 +6,7 @@ import java.io.File;
 
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.dirpicker.events.DataSetChangedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
@@ -20,7 +21,7 @@ import timber.log.Timber;
 class ListDir {
 
     private final DirTree dirTree;
-//    private Subscription subscription;
+    protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     ListDir(DirTree dirTree) {
         this.dirTree = dirTree;
@@ -28,33 +29,23 @@ class ListDir {
 
     void process(File rootDir) {
         if (rootDir.canRead()) {
-//            cancelPrevOp();
             updateDirList(rootDir);
 
             dirTree.dirList.clear();
 
-            // TODO - anti-leak measures
-            /*            subscription =*/
-            Observable.fromArray(rootDir.listFiles())
-                    .filter(File::isDirectory)
-                    .subscribeOn(Schedulers.io())
-//                    .onBackpressureBuffer()
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(this::onNext, this::onError, this::onComplete);
+            compositeDisposable.add(
+                    Observable.fromArray(rootDir.listFiles())
+                            .filter(File::isDirectory)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(this::onNext, this::onError, this::onComplete)
+            );
         } else {
             Timber.d("Failed to process directory list.");
             EventBus.getDefault().post(new OpFailedEvent());
         }
     }
 
-    /*
-        private void cancelPrevOp() {
-            if (subscription != null && !subscription.isUnsubscribed()) {
-                subscription.unsubscribe();
-            }
-            subscription = null;
-        }
-    */
     private void updateDirList(File rootDir) {
         dirTree.setRootDir(rootDir);
         updateParentDir(rootDir);
@@ -88,5 +79,9 @@ class ListDir {
         }
         EventBus.getDefault().post(new DataSetChangedEvent());
         Timber.d("Update directory list completed.");
+    }
+
+    void dispose() {
+        compositeDisposable.clear();
     }
 }

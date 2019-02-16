@@ -15,18 +15,14 @@ import me.devsaki.hentoid.dirpicker.model.DirTree;
  */
 public class DirListBuilder {
     private final DirTree dirTree;
+    private final ListDir listDir;
+
     private RecyclerView.Adapter adapter;
-    private ListDir listDir;
 
     public DirListBuilder(Context context, RecyclerView recyclerView) {
-        this.dirTree = new DirTree();
-
-        initOps();
-        attachRecyclerView(context, recyclerView);
-    }
-
-    private void initOps() {
+        dirTree = new DirTree();
         listDir = new ListDir(dirTree);
+        attachRecyclerView(context, recyclerView);
     }
 
     private void attachRecyclerView(Context context, RecyclerView recyclerView) {
@@ -42,5 +38,10 @@ public class DirListBuilder {
 
     public void notifyDatasetChanged() {
         adapter.notifyDataSetChanged();
+    }
+
+    public void dispose()
+    {
+        if (listDir != null) listDir.dispose();
     }
 }
