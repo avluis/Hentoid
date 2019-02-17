@@ -29,6 +29,10 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.collection.CollectionAccessor;
@@ -65,6 +69,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final CollectionAccessor collectionAccessor;
     private final int displayMode;
     private final RequestOptions glideRequestOptions;
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+
     private RecyclerView libraryView; // Kept as reference for querying by Content through ID
     private Runnable onScrollToEndListener;
     private Comparator<Content> sortComparator;
@@ -317,12 +323,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                         clearSelections();
                         itemSelectListener.onItemClear(0);
                     }
-                    if (content.isFavourite()) {
-                        holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                    } else {
-                        holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                    }
-                    toggleFavourite(content);
+                    compositeDisposable.add(
+                            Completable.fromRunnable(() -> {
+                                toggleFavourite(content);
+                            })
+                                    .subscribeOn(Schedulers.io())
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(() -> {
+                                        if (content.isFavourite()) {
+                                            holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                                        } else {
+                                            holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                                        }
+                                    }));
                 });
 
                 // Error icon
@@ -521,21 +534,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .create().show();
     }
 
-    private void toggleFavourite(Content item) {
-        item.setFavourite(!item.isFavourite());
+    private void toggleFavourite(Content content) {
+        content.setFavourite(!content.isFavourite());
 
         // Persist in it DB
         final HentoidDB db = HentoidDB.getInstance(context);
-        db.updateContentFavourite(item);
+        db.updateContentFavourite(content);
 
         // Persist in it JSON
         String rootFolderName = Preferences.getRootFolderName();
-        File dir = new File(rootFolderName, item.getStorageFolder());
+        File dir = new File(rootFolderName, content.getStorageFolder());
 
         try {
-            JsonHelper.saveJson(item, dir);
+            JsonHelper.saveJson(content, dir);
         } catch (IOException e) {
-            Timber.e(e, "Error while writing to " + dir.getAbsolutePath());
+            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }
 
     }
@@ -829,5 +842,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         public ContentAdapter build() {
             return new ContentAdapter(this);
         }
+    }
+
+    public void dispose() {
+        compositeDisposable.clear();
     }
 }
