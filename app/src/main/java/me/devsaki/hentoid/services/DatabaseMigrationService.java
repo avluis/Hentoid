@@ -15,6 +15,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -51,7 +52,6 @@ public class DatabaseMigrationService extends IntentService {
         super.onCreate();
 
         running = true;
-
         Timber.w("Service created");
     }
 
@@ -71,7 +71,8 @@ public class DatabaseMigrationService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        startMigration();
+        cleanUpDB();
+        migrate();
     }
 
     private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO) {
@@ -88,10 +89,17 @@ public class DatabaseMigrationService extends IntentService {
         if (null != memoryLog) memoryLog.add(s);
     }
 
+    private void cleanUpDB() {
+        Timber.d("Cleaning up DB.");
+        Context context = HentoidApp.getAppContext();
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        db.deleteAllBooks();
+    }
+
     /**
      * Migrate HentoidDB books to ObjectBoxDB
      */
-    private void startMigration() {
+    private void migrate() {
         int booksOK = 0;
         int booksKO = 0;
         long newKey;
