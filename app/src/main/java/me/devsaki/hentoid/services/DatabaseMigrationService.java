@@ -113,12 +113,13 @@ public class DatabaseMigrationService extends IntentService {
                     newKey = newDB.insertContent(content);
                     keyMapping.put(bookIds.get(i), newKey);
                     booksOK++;
-                    trace(Log.DEBUG, log, "Migrate book OK : " + content.getTitle());
+                    trace(Log.DEBUG, log, "Migrate book OK : %s", content.getTitle());
                 } else {
                     booksKO++;
-                    trace(Log.WARN, log, "Migrate book KO : ID" + bookIds.get(i));
+                    trace(Log.WARN, log, "Migrate book KO : ID %s", bookIds.get(i) + "");
                 }
             } catch (Exception e) {
+                Timber.e(e, "Migrate book ERROR");
                 booksKO++;
                 if (null == content)
                     content = new Content().setTitle("none").setUrl("").setSite(Site.NONE);
@@ -139,10 +140,10 @@ public class DatabaseMigrationService extends IntentService {
             if (targetKey != null) {
                 newDB.insertQueue(targetKey, queueIds.get(queueIds.keyAt(i)));
                 queueOK++;
-                trace(Log.INFO, log, "Migrate queue OK : target ID" + targetKey);
+                trace(Log.INFO, log, "Migrate queue OK : target ID %s", targetKey + "");
             } else {
                 queueKO++;
-                trace(Log.WARN, log, "Migrate queue KO : source ID" + queueIds.keyAt(i));
+                trace(Log.WARN, log, "Migrate queue KO : source ID %s", queueIds.keyAt(i) + "");
             }
         }
         trace(Log.INFO, log, "Queue migration complete : %s OK; %s KO", queueOK + "", queueKO + "");

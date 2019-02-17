@@ -169,6 +169,7 @@ public class ImportService extends IntentService {
                     }
                 }
             } catch (Exception e) {
+                Timber.e(e, "Import book ERROR");
                 if (null == content)
                     content = new Content().setTitle("none").setUrl("").setSite(Site.NONE);
                 booksKO++;
