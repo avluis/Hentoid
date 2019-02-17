@@ -20,7 +20,6 @@ public class DatabaseMaintenance {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         Timber.d("Content item(s) count: %s", db.countContentEntries());
-        Timber.d("Content item(s) count ALT: %s", db.countAllContent());
 
         // Set items that were being downloaded in previous session as paused
         Timber.i("Updating queue status : start");
