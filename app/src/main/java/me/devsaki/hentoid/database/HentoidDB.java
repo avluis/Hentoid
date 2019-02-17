@@ -39,7 +39,7 @@ import timber.log.Timber;
  */
 public class HentoidDB extends SQLiteOpenHelper {
 
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     private static HentoidDB instance;
     private SQLiteDatabase mDatabase;
     private int mOpenCounter;
@@ -99,6 +99,13 @@ public class HentoidDB extends SQLiteOpenHelper {
             db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.LAST_READ_DATE_COLUMN + " INTEGER");
             db.execSQL("UPDATE " + ContentTable.TABLE_NAME + " SET " + ContentTable.LAST_READ_DATE_COLUMN + " = " + ContentTable.DOWNLOAD_DATE_COLUMN);
             Timber.i("Upgrading DB version to v7");
+        }
+        if (oldVersion < 8) {
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.DOWNLOAD_PARAMS_COLUMN + " TEXT");
+            db.execSQL("UPDATE " + ContentTable.TABLE_NAME + " SET " + ContentTable.DOWNLOAD_PARAMS_COLUMN + " = ''");
+            db.execSQL("ALTER TABLE " + ImageFileTable.TABLE_NAME + " ADD COLUMN " + ImageFileTable.DOWNLOAD_PARAMS_COLUMN + " TEXT");
+            db.execSQL("UPDATE " + ImageFileTable.TABLE_NAME + " SET " + ImageFileTable.DOWNLOAD_PARAMS_COLUMN + " = ''");
+            Timber.i("Upgrading DB version to v8");
         }
     }
 
@@ -238,6 +245,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                     statement.bindLong(ContentTable.IDX_FAVOURITE, row.isFavourite() ? 1 : 0);
                     statement.bindLong(ContentTable.IDX_READS, row.getReads());
                     statement.bindLong(ContentTable.IDX_LAST_READ_DATE, row.getLastReadDate());
+                    statement.bindString(ContentTable.IDX_DOWNLOAD_PARAMS, row.getDownloadParams());
 
                     statement.execute();
 
@@ -330,6 +338,7 @@ public class HentoidDB extends SQLiteOpenHelper {
             statement.bindString(4, row.getUrl());
             statement.bindString(5, row.getName());
             statement.bindLong(6, row.getStatus().getCode());
+            statement.bindString(7, row.getDownloadParams());
             statement.execute();
         }
     }
@@ -707,6 +716,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
                 .setReads(cursorContent.getLong(ContentTable.IDX_READS - 1))
                 .setLastReadDate(cursorContent.getLong(ContentTable.IDX_LAST_READ_DATE - 1))
+                .setDownloadParams(cursorContent.getString(ContentTable.IDX_DOWNLOAD_PARAMS - 1))
                 .setQueryOrder(cursorContent.getPosition());
 
         if (getImages) content.setImageFiles(selectImageFilesByContentId(db, content.getId()))
@@ -730,7 +740,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                             .setOrder(cursorImageFiles.getInt(2))
                             .setStatus(StatusContent.searchByCode(cursorImageFiles.getInt(3)))
                             .setUrl(cursorImageFiles.getString(4))
-                            .setName(cursorImageFiles.getString(5)));
+                            .setName(cursorImageFiles.getString(5))
+                            .setDownloadParams(cursorImageFiles.getString(6))
+                    );
                 } while (cursorImageFiles.moveToNext());
             }
         }
@@ -1054,7 +1066,8 @@ public class HentoidDB extends SQLiteOpenHelper {
                 statement.clearBindings();
                 statement.bindLong(1, row.getDownloadDate());
                 statement.bindLong(2, row.getStatus().getCode());
-                statement.bindLong(3, row.getId());
+                statement.bindString(3, row.getDownloadParams());
+                statement.bindLong(4, row.getId());
                 statement.execute();
                 db.setTransactionSuccessful();
             } finally {

@@ -12,18 +12,19 @@ import timber.log.Timber;
  */
 public enum Site {
 
-    // TODO : https://hentai2read.com/
-    FAKKU(0, "Fakku", "https://www.fakku.net", "fakku", R.drawable.ic_menu_fakku, true),
-    PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin, true),
-    HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi, true),
-    NHENTAI(3, "nhentai", "https://nhentai.net", "nhentai", R.drawable.ic_menu_nhentai, true),
-    TSUMINO(4, "tsumino", "https://www.tsumino.com", "tsumino", R.drawable.ic_menu_tsumino, true),
-    HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe, true),
-    ASMHENTAI(6, "asmhentai", "https://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai, true),
-    ASMHENTAI_COMICS(7, "asmhentai comics", "https://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, true),
-    EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, true),
-    NONE(98, "none", "", "none", R.drawable.ic_menu_about, true),
-    PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true); // Safe-for-work/wife/gf option
+    // TODO : https://hentai2read.com/,
+    FAKKU(0, "Fakku", "https://www.fakku.net", "fakku", R.drawable.ic_menu_fakku, true, true), // Legacy support for old fakku archives
+    PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin, true, true),
+    HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi, true, true),
+    NHENTAI(3, "nhentai", "https://nhentai.net", "nhentai", R.drawable.ic_menu_nhentai, true, true),
+    TSUMINO(4, "tsumino", "https://www.tsumino.com", "tsumino", R.drawable.ic_menu_tsumino, true, true),
+    HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe, true, true),
+    ASMHENTAI(6, "asmhentai", "https://asmhentai.com", "/asmhentai", R.drawable.ic_menu_asmhentai, true, true),
+    ASMHENTAI_COMICS(7, "asmhentai comics", "https://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, true, true),
+    EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, true, true),
+    FAKKU2(9, "Fakku", "https://www.fakku.net", "fakku2", R.drawable.ic_menu_fakku, true, false),
+    NONE(98, "none", "", "none", R.drawable.ic_menu_about, true, true),
+    PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true, true); // Safe-for-work/wife/gf option
 
 
     private final int code;
@@ -32,14 +33,16 @@ public enum Site {
     private final String url;
     private final int ico;
     private final boolean allowParallelDownloads;
+    private final boolean canKnowHentoidAgent;
 
-    Site(int code, String description, String url, String uniqueKeyword, int ico, boolean allowParallelDownloads) {
+    Site(int code, String description, String url, String uniqueKeyword, int ico, boolean allowParallelDownloads, boolean canKnowHentoidAgent) {
         this.code = code;
         this.description = description;
         this.url = url;
         this.uniqueKeyword = uniqueKeyword;
         this.ico = ico;
         this.allowParallelDownloads = allowParallelDownloads;
+        this.canKnowHentoidAgent = canKnowHentoidAgent;
     }
 
     @Nullable
@@ -89,6 +92,10 @@ public enum Site {
 
     public boolean isAllowParallelDownloads() {
         return allowParallelDownloads;
+    }
+
+    public boolean canKnowHentoidAgent() {
+        return canKnowHentoidAgent;
     }
 
     public String getFolder() {

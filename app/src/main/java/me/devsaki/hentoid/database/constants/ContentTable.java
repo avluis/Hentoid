@@ -9,7 +9,7 @@ public abstract class ContentTable {
     public static final String TABLE_NAME = "content";
 
     public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO " + TABLE_NAME
-            + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
+            + " VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);";
     public static final String LIMIT_BY_PAGE = " LIMIT ?,?";
 
     // COLUMN NAMES
@@ -30,6 +30,7 @@ public abstract class ContentTable {
     public static final String FAVOURITE_COLUMN = "favourite";
     public static final String READS_COLUMN = "reads";
     public static final String LAST_READ_DATE_COLUMN = "last_read_date";
+    public static final String DOWNLOAD_PARAMS_COLUMN = "download_params";
 
     // COLUMN INDEXES
     public static final int IDX_INTERNALID = 1;
@@ -49,6 +50,7 @@ public abstract class ContentTable {
     public static final int IDX_FAVOURITE = 15;
     public static final int IDX_READS = 16;
     public static final int IDX_LAST_READ_DATE = 17;
+    public static final int IDX_DOWNLOAD_PARAMS = 18;
 
     // ORDER
     public static final String ORDER_BY_DATE = " ORDER BY C." + DOWNLOAD_DATE_COLUMN;
@@ -66,7 +68,8 @@ public abstract class ContentTable {
             + UPLOAD_DATE_COLUMN + " INTEGER" + "," + DOWNLOAD_DATE_COLUMN + " INTEGER" + ","
             + STATUS_COLUMN + " INTEGER" + "," + COVER_IMAGE_URL_COLUMN + " TEXT"
             + "," + SOURCE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT, "
-            + FAVOURITE_COLUMN + " INTEGER, " + READS_COLUMN + " INTEGER, " + LAST_READ_DATE_COLUMN + " INTEGER "
+            + FAVOURITE_COLUMN + " INTEGER, " + READS_COLUMN + " INTEGER, " + LAST_READ_DATE_COLUMN + " INTEGER, "
+            + DOWNLOAD_PARAMS_COLUMN + " TEXT "
             + " DEFAULT 0 )";
 
     // DELETE
@@ -76,7 +79,7 @@ public abstract class ContentTable {
     // UPDATE
     public static final String UPDATE_CONTENT_DOWNLOAD_DATE_STATUS_STATEMENT = "UPDATE "
             + TABLE_NAME + " SET " + DOWNLOAD_DATE_COLUMN + " = ?, " + STATUS_COLUMN
-            + " = ? WHERE " + ID_COLUMN + " = ?";
+            + " = ?, " + DOWNLOAD_PARAMS_COLUMN + " = ? " + " WHERE " + ID_COLUMN + " = ?";
 
     public static final String UPDATE_CONTENT_STATUS_STATEMENT = "UPDATE " + TABLE_NAME + " SET "
             + STATUS_COLUMN + " = ? WHERE " + STATUS_COLUMN + " = ?";

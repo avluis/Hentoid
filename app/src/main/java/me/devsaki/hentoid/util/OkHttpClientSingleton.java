@@ -52,7 +52,6 @@ public class OkHttpClientSingleton {
         Request request = chain.request()
                 .newBuilder()
                 .header("User-Agent", Consts.USER_AGENT)
-//                .header("Data-type", "application/json")
                 .build();
         return chain.proceed(request);
     }

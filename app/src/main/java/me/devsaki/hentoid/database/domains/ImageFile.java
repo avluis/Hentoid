@@ -20,12 +20,16 @@ public class ImageFile {
     private String name;
     @Expose
     private StatusContent status;
+    // Temporary during SAVED state only; no need to expose them for JSON persistence
+    private String downloadParams;
 
 
-    public ImageFile() {};
+    public ImageFile() {
+    }
 
-    public ImageFile(int order, String url, StatusContent status)
-    {
+    ;
+
+    public ImageFile(int order, String url, StatusContent status) {
         this.order = order;
         this.name = String.format(Locale.US, "%03d", order);
         this.url = url;
@@ -70,6 +74,15 @@ public class ImageFile {
 
     public ImageFile setStatus(StatusContent status) {
         this.status = status;
+        return this;
+    }
+
+    public String getDownloadParams() {
+        return (null == downloadParams) ? "" : downloadParams;
+    }
+
+    public ImageFile setDownloadParams(String params) {
+        downloadParams = params;
         return this;
     }
 }

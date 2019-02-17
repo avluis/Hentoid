@@ -289,6 +289,14 @@ public final class Helper {
         return result;
     }
 
+    public static String decode64(String encodedString) {
+        // Pure Java
+        //byte[] decodedBytes = org.apache.commons.codec.binary.Base64.decodeBase64(encodedString);
+        // Android
+        byte[] decodedBytes = android.util.Base64.decode(encodedString, android.util.Base64.DEFAULT);
+        return new String(decodedBytes);
+    }
+
     public static int dpToPixel(Context context, int dp) {
         float scaleFactor =
                 (1.0f / DisplayMetrics.DENSITY_DEFAULT)

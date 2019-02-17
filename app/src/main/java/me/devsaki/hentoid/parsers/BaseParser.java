@@ -7,32 +7,34 @@ import java.util.Collections;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import timber.log.Timber;
 
 public abstract class BaseParser implements ContentParser {
 
     protected abstract List<String> parseImages(Content content) throws Exception;
 
-    public List<String> parseImageList(Content content) {
+    public List<ImageFile> parseImageList(Content content) {
         String readerUrl = content.getReaderUrl();
-        List<String> imgUrls = Collections.emptyList();
+        List<ImageFile> images = Collections.emptyList();
 
         if (!URLUtil.isValidUrl(readerUrl)) {
             Timber.e("Invalid gallery URL : %s", readerUrl);
-            return imgUrls;
+            return images;
         }
         Timber.d("Gallery URL: %s", readerUrl);
 
         try {
-            imgUrls = parseImages(content);
+            List<String> imgUrls = parseImages(content);
+            images = ParseHelper.urlsToImageFiles(imgUrls);
         } catch (IOException e) {
-            Timber.e(e, "I/O Error while attempting to connect to: %s", readerUrl);
+            Timber.e(e, "I/O Error while attempting to connect to %s", readerUrl);
         } catch (Exception e) {
-            Timber.e(e, "Unexpected Error while attempting to connect to: %s", readerUrl);
+            Timber.e(e, "Unexpected Error while attempting to connect to %s", readerUrl);
         }
-        Timber.d("%s", imgUrls);
+        Timber.d("%s", images);
 
-        return imgUrls;
+        return images;
     }
 
 }
