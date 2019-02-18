@@ -127,11 +127,11 @@ public class ImportService extends IntentService {
 
         List<File> files = FileHelper.findFilesRecursively(new File(Preferences.getRootFolderName()), "json");
 
-
         trace(Log.DEBUG, log, "Import books starting : %s books total", files.size() + "");
         trace(Log.INFO, log, "Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
         for (int i = 0; i < files.size(); i++) {
             File file = files.get(i);
+            File folder = file.getAbsoluteFile().getParentFile();
 
             try {
                 content = importJson(file);
@@ -139,7 +139,7 @@ public class ImportService extends IntentService {
                     if (cleanup) {
                         String canonicalBookDir = FileHelper.formatDirPath(content);
 
-                        String[] currentPathParts = file.getAbsolutePath().split("/");
+                        String[] currentPathParts = folder.getAbsolutePath().split("/");
                         String currentBookDir = "/" + currentPathParts[currentPathParts.length - 2] + "/" + currentPathParts[currentPathParts.length - 1];
 
                         if (!canonicalBookDir.equals(currentBookDir)) {
@@ -148,7 +148,7 @@ public class ImportService extends IntentService {
                                 settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
                             }
 
-                            if (FileHelper.renameDirectory(file, new File(settingDir, canonicalBookDir))) {
+                            if (FileHelper.renameDirectory(folder, new File(settingDir, canonicalBookDir))) {
                                 content.setStorageFolder(canonicalBookDir);
                                 trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
                             } else {
@@ -158,14 +158,14 @@ public class ImportService extends IntentService {
                     }
                     ObjectBoxDB.getInstance(this).insertContent(content);
                     booksOK++;
-                    trace(Log.INFO, log, "Import book OK : %s", file.getAbsolutePath());
+                    trace(Log.INFO, log, "Import book OK : %s", folder.getAbsolutePath());
                 } else {
                     booksKO++;
-                    trace(Log.WARN, log, "Import book KO : %s", file.getAbsolutePath());
+                    trace(Log.WARN, log, "Import book KO : %s", folder.getAbsolutePath());
                     // Deletes the folder if cleanup is active
                     if (cleanup) {
-                        boolean success = FileHelper.removeFile(file);
-                        trace(Log.INFO, log, "[Remove %s] Folder %s", success ? "OK" : "KO", file.getAbsolutePath());
+                        boolean success = FileHelper.removeFile(folder);
+                        trace(Log.INFO, log, "[Remove %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
                     }
                 }
             } catch (Exception e) {
@@ -173,7 +173,7 @@ public class ImportService extends IntentService {
                 if (null == content)
                     content = new Content().setTitle("none").setUrl("").setSite(Site.NONE);
                 booksKO++;
-                trace(Log.ERROR, log, "Import book ERROR : %s %s", e.getMessage(), file.getAbsolutePath());
+                trace(Log.ERROR, log, "Import book ERROR : %s %s", e.getMessage(), folder.getAbsolutePath());
             }
 
             eventProgress(content, files.size(), booksOK, booksKO);
@@ -224,9 +224,9 @@ public class ImportService extends IntentService {
         if (file.getName().equals(Consts.JSON_FILE_NAME_V2))
             return importJsonV2(file);  // (v2) JSON file format
         if (file.getName().equals(Consts.JSON_FILE_NAME))
-            return importJsonV1(file, new File(file.getParent()));  // (v1) JSON file format
+            return importJsonV1(file);  // (v1) JSON file format
         if (file.getName().equals(Consts.OLD_JSON_FILE_NAME))
-            return importJsonLegacy(file, new File(file.getParent()));  // (old) JSON file format (legacy and/or FAKKUDroid App)
+            return importJsonLegacy(file);  // (old) JSON file format (legacy and/or FAKKUDroid App)
 
         Timber.w("Book folder %s : no JSON file found !", new File(file.getParent()).getAbsolutePath());
 
@@ -272,7 +272,7 @@ public class ImportService extends IntentService {
     @Nullable
     @CheckResult
     @SuppressWarnings("deprecation")
-    private static Content importJsonLegacy(File json, File file) {
+    private static Content importJsonLegacy(File json) {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
@@ -312,7 +312,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
             try {
-                JsonHelper.saveJson(contentV2.preJSONExport(), file);
+                JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
             } catch (IOException e) {
                 Timber.e(e,
                         "Error converting JSON (old) to JSON (v2): %s", content.getTitle());
@@ -327,7 +327,7 @@ public class ImportService extends IntentService {
 
     @Nullable
     @CheckResult
-    private static Content importJsonV1(File json, File file) {
+    private static Content importJsonV1(File json) {
         try {
             //noinspection deprecation
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
@@ -340,7 +340,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
             try {
-                JsonHelper.saveJson(contentV2.preJSONExport(), file);
+                JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
             } catch (IOException e) {
                 Timber.e(e, "Error converting JSON (v1) to JSON (v2): %s", content.getTitle());
             }

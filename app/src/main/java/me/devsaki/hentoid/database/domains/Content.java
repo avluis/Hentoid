@@ -405,8 +405,10 @@ public class Content implements Serializable {
     }
 
     public Content addImageFiles(List<ImageFile> imageFiles) {
-        this.imageFiles.clear();
-        this.imageFiles.addAll(imageFiles);
+        if (imageFiles != null) {
+            this.imageFiles.clear();
+            this.imageFiles.addAll(imageFiles);
+        }
         return this;
     }
 

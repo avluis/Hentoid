@@ -1,12 +1,16 @@
 package me.devsaki.hentoid.model;
 
+import com.google.gson.annotations.Expose;
+
 /**
  * General builder for URLs
  */
 @Deprecated
 public class URLBuilder {
 
+    @Expose
     private String url;
+    @Expose
     private String description;
 
     public String getId() {
