@@ -20,7 +20,6 @@ import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 
@@ -60,10 +59,9 @@ public class PrefsActivity extends BaseActivity {
 
     @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
     public void onImportEventComplete(ImportEvent event) {
-        if (ImportEvent.EV_COMPLETE == event.eventType && event.logFile != null)
-        {
+        if (ImportEvent.EV_COMPLETE == event.eventType && event.logFile != null) {
             Snackbar snackbar = Snackbar.make(this.findViewById(android.R.id.content), R.string.cleanup_done, Snackbar.LENGTH_LONG);
-            snackbar.setAction("READ LOG", v -> FileHelper.openFile(this, event.logFile) );
+            snackbar.setAction("READ LOG", v -> FileHelper.openFile(this, event.logFile));
             snackbar.show();
         }
     }
@@ -125,7 +123,7 @@ public class PrefsActivity extends BaseActivity {
             requireFragmentManager()
                     .beginTransaction()
                     .replace(android.R.id.content, preferenceFragment)
-                    .addToBackStack(null)
+                    .addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
                     .commit();
         }
 
