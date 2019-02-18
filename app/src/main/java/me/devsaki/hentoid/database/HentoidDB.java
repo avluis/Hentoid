@@ -103,17 +103,6 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
-    // The two following methods to handle multiple threads accessing the DB simultaneously
-    // => only the last active thread will close the DB
-    private synchronized SQLiteDatabase openDatabase() {
-        mOpenCounter++;
-        if (mOpenCounter == 1) {
-            Timber.d("Opening db connection.");
-            mDatabase = this.getWritableDatabase();
-        }
-        return mDatabase;
-    }
-
     long countContentEntries() {
         long count;
 

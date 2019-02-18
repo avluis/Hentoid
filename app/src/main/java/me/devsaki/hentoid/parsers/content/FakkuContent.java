@@ -55,7 +55,7 @@ public class FakkuContent {
         for (Element e : information) {
             elementName = e.child(0).text().trim().toLowerCase();
             if (elementName.equals("language")) {
-                ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, e.child(1).children(), true); // Language are A links
+                ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, e.child(1).children(), true, Site.FAKKU2); // Language are A links
             }
             if (elementName.equals("pages")) {
                 qtyPages = Integer.parseInt(e.child(1).text().toLowerCase().replace("pages", "").trim());
@@ -63,11 +63,11 @@ public class FakkuContent {
         }
         result.setQtyPages(qtyPages);
 
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.FAKKU2);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.FAKKU2);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.FAKKU2);
 
-        result.setAttributes(attributes);
+        result.addAttributes(attributes);
         result.populateAuthor();
         result.setStatus(StatusContent.SAVED);
 

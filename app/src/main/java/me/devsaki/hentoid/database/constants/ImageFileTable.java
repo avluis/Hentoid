@@ -6,7 +6,7 @@ package me.devsaki.hentoid.database.constants;
  */
 public abstract class ImageFileTable {
 
-    private static final String TABLE_NAME = "image_file";
+    public static final String TABLE_NAME = "image_file";
 
     private static final String ID_COLUMN = "id";
     private static final String CONTENT_ID_COLUMN = "content_id";
