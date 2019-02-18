@@ -3,7 +3,8 @@ package me.devsaki.hentoid.parsers;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 
 public interface ContentParser {
-    List<String> parseImageList(Content content);
+    List<ImageFile> parseImageList(Content content);
 }

@@ -29,7 +29,8 @@ import timber.log.Timber;
  */
 public class JsonHelper {
 
-    public static String serializeToJson(Object o) {
+    public static String serializeToJson(Object o)
+    {
         Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
         // convert java object to JSON format, and return as a JSON formatted string
         return gson.toJson(o);

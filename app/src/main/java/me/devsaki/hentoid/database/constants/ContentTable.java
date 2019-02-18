@@ -26,6 +26,7 @@ public abstract class ContentTable {
     public static final String FAVOURITE_COLUMN = "favourite";
     public static final String READS_COLUMN = "reads";
     public static final String LAST_READ_DATE_COLUMN = "last_read_date";
+    public static final String DOWNLOAD_PARAMS_COLUMN = "download_params";
 
     // COLUMN INDEXES
     public static final int IDX_INTERNALID = 1;
@@ -45,6 +46,7 @@ public abstract class ContentTable {
     public static final int IDX_FAVOURITE = 15;
     public static final int IDX_READS = 16;
     public static final int IDX_LAST_READ_DATE = 17;
+    public static final int IDX_DOWNLOAD_PARAMS = 18;
 
     // CREATE
     public static final String CREATE_TABLE = "CREATE TABLE " + TABLE_NAME + "("
@@ -54,7 +56,8 @@ public abstract class ContentTable {
             + UPLOAD_DATE_COLUMN + " INTEGER" + "," + DOWNLOAD_DATE_COLUMN + " INTEGER" + ","
             + STATUS_COLUMN + " INTEGER" + "," + COVER_IMAGE_URL_COLUMN + " TEXT"
             + "," + SOURCE_COLUMN + " INTEGER, " + AUTHOR_COLUMN + " TEXT, " + STORAGE_FOLDER_COLUMN + " TEXT, "
-            + FAVOURITE_COLUMN + " INTEGER, " + READS_COLUMN + " INTEGER, " + LAST_READ_DATE_COLUMN + " INTEGER "
+            + FAVOURITE_COLUMN + " INTEGER, " + READS_COLUMN + " INTEGER, " + LAST_READ_DATE_COLUMN + " INTEGER, "
+            + DOWNLOAD_PARAMS_COLUMN + " TEXT "
             + " DEFAULT 0 )";
 
 

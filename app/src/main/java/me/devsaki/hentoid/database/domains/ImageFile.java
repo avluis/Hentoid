@@ -28,8 +28,9 @@ public class ImageFile {
     @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
+    // Temporary during SAVED state only; no need to expose them for JSON persistence
+    private String downloadParams;
     public ToOne<Content> content;
-
 
     public ImageFile() {
     }
@@ -90,6 +91,15 @@ public class ImageFile {
 
     public ImageFile setStatus(StatusContent status) {
         this.status = status;
+        return this;
+    }
+
+    public String getDownloadParams() {
+        return (null == downloadParams) ? "" : downloadParams;
+    }
+
+    public ImageFile setDownloadParams(String params) {
+        downloadParams = params;
         return this;
     }
 }

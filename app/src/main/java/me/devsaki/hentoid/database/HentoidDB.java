@@ -37,7 +37,7 @@ import timber.log.Timber;
 public class HentoidDB extends SQLiteOpenHelper {
 
     private static final Object locker = new Object();
-    private static final int DATABASE_VERSION = 7;
+    private static final int DATABASE_VERSION = 8;
     private static HentoidDB instance;
 
 
@@ -94,7 +94,24 @@ public class HentoidDB extends SQLiteOpenHelper {
             db.execSQL("UPDATE " + ContentTable.TABLE_NAME + " SET " + ContentTable.LAST_READ_DATE_COLUMN + " = " + ContentTable.DOWNLOAD_DATE_COLUMN);
             Timber.i("Upgrading DB version to v7");
         }
-        // Warning : v8 is reserved to fakku branch
+        if (oldVersion < 8) {
+            db.execSQL("ALTER TABLE " + ContentTable.TABLE_NAME + " ADD COLUMN " + ContentTable.DOWNLOAD_PARAMS_COLUMN + " TEXT");
+            db.execSQL("UPDATE " + ContentTable.TABLE_NAME + " SET " + ContentTable.DOWNLOAD_PARAMS_COLUMN + " = ''");
+            db.execSQL("ALTER TABLE " + ImageFileTable.TABLE_NAME + " ADD COLUMN " + ImageFileTable.DOWNLOAD_PARAMS_COLUMN + " TEXT");
+            db.execSQL("UPDATE " + ImageFileTable.TABLE_NAME + " SET " + ImageFileTable.DOWNLOAD_PARAMS_COLUMN + " = ''");
+            Timber.i("Upgrading DB version to v8");
+        }
+    }
+
+    // The two following methods to handle multiple threads accessing the DB simultaneously
+    // => only the last active thread will close the DB
+    private synchronized SQLiteDatabase openDatabase() {
+        mOpenCounter++;
+        if (mOpenCounter == 1) {
+            Timber.d("Opening db connection.");
+            mDatabase = this.getWritableDatabase();
+        }
+        return mDatabase;
     }
 
     long countContentEntries() {
@@ -202,6 +219,7 @@ public class HentoidDB extends SQLiteOpenHelper {
                 .setFavourite(1 == cursorContent.getInt(ContentTable.IDX_FAVOURITE - 1))
                 .setReads(cursorContent.getLong(ContentTable.IDX_READS - 1))
                 .setLastReadDate(cursorContent.getLong(ContentTable.IDX_LAST_READ_DATE - 1))
+                .setDownloadParams(cursorContent.getString(ContentTable.IDX_DOWNLOAD_PARAMS - 1))
                 .setQueryOrder(cursorContent.getPosition());
 
         long id = cursorContent.getLong(ContentTable.IDX_INTERNALID - 1);
@@ -227,7 +245,9 @@ public class HentoidDB extends SQLiteOpenHelper {
                             .setOrder(cursorImageFiles.getInt(2))
                             .setStatus(StatusContent.searchByCode(cursorImageFiles.getInt(3)))
                             .setUrl(cursorImageFiles.getString(4))
-                            .setName(cursorImageFiles.getString(5)));
+                            .setName(cursorImageFiles.getString(5))
+                            .setDownloadParams(cursorImageFiles.getString(6))
+                    );
                 } while (cursorImageFiles.moveToNext());
             }
         }

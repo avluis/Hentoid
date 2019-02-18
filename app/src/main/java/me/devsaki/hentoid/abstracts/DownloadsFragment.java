@@ -468,6 +468,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onDestroy() {
         collectionAccessor.dispose();
+        mAdapter.dispose();
         super.onDestroy();
     }
 

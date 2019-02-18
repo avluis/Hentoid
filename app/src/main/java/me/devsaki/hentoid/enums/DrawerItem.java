@@ -3,11 +3,11 @@ package me.devsaki.hentoid.enums;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
-import me.devsaki.hentoid.activities.MikanSearchActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.websites.EHentaiActivity;
+import me.devsaki.hentoid.activities.websites.FakkuActivity;
 import me.devsaki.hentoid.activities.websites.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.websites.HitomiActivity;
 import me.devsaki.hentoid.activities.websites.NhentaiActivity;
@@ -25,7 +25,8 @@ public enum DrawerItem {
     PURURIN("PURURIN", R.drawable.ic_menu_pururin, PururinActivity.class),
     PANDA("PANDA", R.drawable.ic_menu_panda, PandaActivity.class),
     EHENTAI("E-HENTAI", R.drawable.ic_menu_ehentai, EHentaiActivity.class),
-//    MIKAN("MIKAN SEARCH", R.drawable.ic_menu_mikan, MikanSearchActivity.class),
+    FAKKU("FAKKU", R.drawable.ic_menu_fakku, FakkuActivity.class),
+    //    MIKAN("MIKAN SEARCH", R.drawable.ic_menu_mikan, MikanSearchActivity.class),
     HOME("HOME", R.drawable.ic_menu_downloads, DownloadsActivity.class),
     QUEUE("QUEUE", R.drawable.ic_menu_queue, QueueActivity.class),
     PREFS("PREFERENCES", R.drawable.ic_menu_prefs, PrefsActivity.class),

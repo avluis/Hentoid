@@ -22,12 +22,12 @@ public class HttpHelper {
 
     @Nullable
     public static Document getOnlineDocument(String url) throws IOException {
-        return getOnlineDocument(url, null);
+        return getOnlineDocument(url, null, true);
     }
 
     @Nullable
-    public static Document getOnlineDocument(String url, List<Pair<String, String>> headers) throws IOException {
-        ResponseBody resource = getOnlineResource(url, headers);
+    public static Document getOnlineDocument(String url, List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
+        ResponseBody resource = getOnlineResource(url, headers, useHentoidAgent);
         if (resource != null) {
             return Jsoup.parse(resource.string());
         }
@@ -35,8 +35,13 @@ public class HttpHelper {
     }
 
     @Nullable
-    public static <T> T getOnlineJson(String url, List<Pair<String, String>> headers, Class<T> type) throws IOException {
-        ResponseBody resource = getOnlineResource(url, headers);
+    public static <T> T getOnlineJson(String url, Class<T> type) throws IOException {
+        return getOnlineJson(url, null, true, type);
+    }
+
+    @Nullable
+    public static <T> T getOnlineJson(String url, List<Pair<String, String>> headers, boolean useHentoidAgent, Class<T> type) throws IOException {
+        ResponseBody resource = getOnlineResource(url, headers, useHentoidAgent);
         if (resource != null) {
             String s = resource.string();
             if (s.startsWith("{")) return new Gson().fromJson(s, type);
@@ -45,13 +50,12 @@ public class HttpHelper {
     }
 
     @Nullable
-    private static ResponseBody getOnlineResource(String url, List<Pair<String, String>> headers) throws IOException {
+    private static ResponseBody getOnlineResource(String url, List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
         OkHttpClient okHttp = OkHttpClientSingleton.getInstance(TIMEOUT);
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (headers != null) for (Pair<String, String> header : headers)
             requestBuilder.addHeader(header.first, header.second);
-//        requestBuilder.header("User-Agent", useHentoidAgent ? Consts.USER_AGENT : Consts.USER_AGENT_NEUTRAL);
-        requestBuilder.header("User-Agent", Consts.USER_AGENT);
+        requestBuilder.header("User-Agent", useHentoidAgent ? Consts.USER_AGENT : Consts.USER_AGENT_NEUTRAL);
         Request request = requestBuilder.get().build();
         return okHttp.newCall(request).execute().body();
     }

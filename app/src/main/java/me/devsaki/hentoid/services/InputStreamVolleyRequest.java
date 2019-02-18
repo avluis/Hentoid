@@ -23,14 +23,20 @@ import me.devsaki.hentoid.util.Consts;
 class InputStreamVolleyRequest extends Request<Object> {
     // Callback listener
     private final Response.Listener<Map.Entry<byte[], Map<String, String>>> mParseListener;
+    private final Map<String, String> headers;
+    private final boolean useHentoidAgent;
 
 
     InputStreamVolleyRequest(
             int method,
             String mUrl,
+            Map<String, String> headers,
+            boolean useHentoidAgent,
             Response.Listener<Map.Entry<byte[], Map<String, String>>> parseListener,
             Response.ErrorListener errorListener) {
         super(method, mUrl, errorListener);
+        this.headers = headers;
+        this.useHentoidAgent = useHentoidAgent;
         // this request would never use cache.
         setShouldCache(false);
         mParseListener = parseListener;
@@ -54,9 +60,9 @@ class InputStreamVolleyRequest extends Request<Object> {
 
     @Override
     public Map<String, String> getHeaders() {
-        Map<String, String>  params = new HashMap<>();
-        params.put("User-Agent", Consts.USER_AGENT);
-
+        Map<String, String> params = new HashMap<>();
+        params.put("User-Agent", useHentoidAgent ? Consts.USER_AGENT : Consts.USER_AGENT_NEUTRAL);
+        params.putAll(headers);
         return params;
     }
 }

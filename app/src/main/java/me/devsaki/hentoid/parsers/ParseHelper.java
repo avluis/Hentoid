@@ -2,11 +2,17 @@ package me.devsaki.hentoid.parsers;
 
 import org.jsoup.nodes.Element;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 public class ParseHelper {
@@ -35,5 +41,23 @@ public class ParseHelper {
 
                 map.add(attribute);
             }
+    }
+
+    static ImageFile urlToImageFile(@Nonnull String imgUrl, int order) {
+        ImageFile result = new ImageFile();
+
+        String name = String.format(Locale.US, "%03d", order);
+        result.setName(name).setOrder(order).setUrl(imgUrl).setStatus(StatusContent.ONLINE);
+
+        return result;
+    }
+
+    static List<ImageFile> urlsToImageFiles(@Nonnull List<String> imgUrls) {
+        List<ImageFile> result = new ArrayList<>();
+
+        int order = 1;
+        for (String s : imgUrls) result.add(urlToImageFile(s, order++));
+
+        return result;
     }
 }

@@ -17,6 +17,7 @@ import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.websites.BaseWebActivity;
 import me.devsaki.hentoid.activities.websites.EHentaiActivity;
+import me.devsaki.hentoid.activities.websites.FakkuActivity;
 import me.devsaki.hentoid.activities.websites.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.websites.HitomiActivity;
 import me.devsaki.hentoid.activities.websites.NhentaiActivity;
@@ -71,6 +72,9 @@ public class Content implements Serializable {
     private long reads = 0;
     @Expose
     private long lastReadDate;
+    // Temporary during SAVED state only; no need to expose them for JSON persistence
+    @Expose(serialize = false, deserialize = false)
+    private String downloadParams;
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
@@ -150,6 +154,9 @@ public class Content implements Serializable {
                 return url.replace("/", "");
             case HENTAICAFE:
                 return url.replace("/?p=", "");
+            case FAKKU2:
+                paths = url.split("/");
+                return paths[paths.length - 1];
             default:
                 return "";
         }
@@ -202,6 +209,8 @@ public class Content implements Serializable {
                 return EHentaiActivity.class;
             case PANDA:
                 return PandaActivity.class;
+            case FAKKU2:
+                return FakkuActivity.class;
             default:
                 return BaseWebActivity.class; // Fallback for FAKKU
         }
@@ -250,11 +259,14 @@ public class Content implements Serializable {
             case TSUMINO:
                 galleryConst = "/Book/Info";
                 break;
+            case FAKKU2:
+                galleryConst = "/hentai/";
+                break;
+            case FAKKU:
             case HENTAICAFE:
             case PANDA:
             default:
                 galleryConst = "";
-                break; // Includes FAKKU & Hentai Cafe
         }
 
         return site.getUrl() + galleryConst + url;
@@ -264,8 +276,6 @@ public class Content implements Serializable {
         switch (site) {
             case HITOMI:
                 return site.getUrl() + "/reader" + url;
-//            case NHENTAI:
-//                return getGalleryUrl() + "1/";
             case TSUMINO:
                 return site.getUrl() + "/Read/View" + url;
             case ASMHENTAI:
@@ -279,6 +289,8 @@ public class Content implements Serializable {
                 return getGalleryUrl();
             case PURURIN:
                 return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
+            case FAKKU2:
+                return getGalleryUrl() + "/read/page/1";
             default:
                 return null;
         }
@@ -472,6 +484,15 @@ public class Content implements Serializable {
 
     public Content setLastReadDate(long lastReadDate) {
         this.lastReadDate = lastReadDate;
+        return this;
+    }
+
+    public String getDownloadParams() {
+        return (null == downloadParams) ? "" : downloadParams;
+    }
+
+    public Content setDownloadParams(String params) {
+        downloadParams = params;
         return this;
     }
 

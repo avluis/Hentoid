@@ -30,9 +30,9 @@ public class EHentaiParser extends BaseParser {
 
         // 1- Detect the number of pages of the gallery
         Element e;
-        List<Pair<String, String>> cookies = new ArrayList<>();
-        cookies.add(new Pair<>("cookie","nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
-        Document doc = getOnlineDocument(content.getGalleryUrl(), cookies);
+        List<Pair<String, String>> headers = new ArrayList<>();
+        headers.add(new Pair<>("cookie", "nw=1")); // nw=1 (always) avoids the Offensive Content popup (equivalent to clicking the "Never warn me again" link)
+        Document doc = getOnlineDocument(content.getGalleryUrl(), headers, true);
         if (doc != null) {
             Elements elements = doc.select("table.ptt a");
             if (null == elements || 0 == elements.size()) return result;
