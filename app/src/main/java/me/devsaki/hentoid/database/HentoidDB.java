@@ -36,9 +36,11 @@ import timber.log.Timber;
  */
 public class HentoidDB extends SQLiteOpenHelper {
 
-    private static final Object locker = new Object();
     private static final int DATABASE_VERSION = 8;
     private static HentoidDB instance;
+
+    private SQLiteDatabase mDatabase;
+    private int mOpenCounter;
 
 
     private HentoidDB(Context context) {
@@ -103,39 +105,51 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
     }
 
+    // The two following methods to handle multiple threads accessing the DB simultaneously
+    // => only the last active thread will close the DB
+    private synchronized SQLiteDatabase openDatabase() {
+        mOpenCounter++;
+        if (mOpenCounter == 1) {
+            Timber.d("Opening db connection.");
+            mDatabase = this.getWritableDatabase();
+        }
+        return mDatabase;
+    }
+
+    private synchronized void closeDatabase() {
+        mOpenCounter--;
+        if (0 == mOpenCounter && mDatabase != null && mDatabase.isOpen()) {
+            Timber.d("Closing db connection.");
+            mDatabase.close();
+        }
+    }
+
+
+    // FUNCTIONAL METHODS
+
     long countContentEntries() {
         long count;
 
-        SQLiteDatabase db = null;
+        SQLiteDatabase db = openDatabase();
         try {
-            db = getReadableDatabase();
             count = DatabaseUtils.queryNumEntries(db, ContentTable.TABLE_NAME);
         } finally {
-            if (db != null && db.isOpen()) {
-                db.close(); // Closing database connection
-            }
+            closeDatabase();
         }
 
         return count;
     }
 
     @Nullable
-    public Content selectContentById(long id) {
+    public Content selectContentById(int id) {
         Content result;
-        synchronized (locker) {
-            Timber.d("selectContentById");
-            SQLiteDatabase db = null;
-            try {
-                db = getReadableDatabase();
-                result = selectContentById(db, id);
-            } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
+        Timber.d("selectContentById");
+        SQLiteDatabase db = openDatabase();
+        try {
+            result = selectContentById(db, id);
+        } finally {
+            closeDatabase();
         }
-
         return result;
     }
 
@@ -155,17 +169,12 @@ public class HentoidDB extends SQLiteOpenHelper {
 
     List<Content> selectContentEmptyFolder() {
         List<Content> result;
-        synchronized (locker) {
-            Timber.d("selectContentEmptyFolder");
-            SQLiteDatabase db = null;
-            Cursor cursorContent = null;
-            try {
-                db = getReadableDatabase();
-                cursorContent = db.rawQuery(ContentTable.SELECT_NULL_FOLDERS, new String[]{});
-                result = populateResult(cursorContent, db);
-            } finally {
-                closeCursor(cursorContent, db);
-            }
+        Timber.d("selectContentEmptyFolder");
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorContent = db.rawQuery(ContentTable.SELECT_NULL_FOLDERS, new String[]{})) {
+            result = populateResult(cursorContent, db);
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -181,16 +190,6 @@ public class HentoidDB extends SQLiteOpenHelper {
         }
 
         return result;
-    }
-
-    private void closeCursor(Cursor cursorContent, SQLiteDatabase db) {
-        if (cursorContent != null) {
-            cursorContent.close();
-        }
-        Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-        if (db != null && db.isOpen()) {
-            db.close(); // Closing database connection
-        }
     }
 
     private Content populateContent(Cursor cursorContent, SQLiteDatabase db) {
@@ -269,171 +268,75 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     void updateContentStorageFolder(Content row) {
-        synchronized (locker) {
-            Timber.d("updateContentStorageFolder");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
+        Timber.d("updateContentStorageFolder");
 
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STORAGE_FOLDER)) {
+            db.beginTransaction();
             try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STORAGE_FOLDER);
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindString(1, row.getStorageFolder());
-                    statement.bindLong(2, row.getId());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                statement.clearBindings();
+                statement.bindString(1, row.getStorageFolder());
+                statement.bindLong(2, row.getId());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
-    void updateContentStatus(StatusContent updateFrom, StatusContent updateTo) {
-        synchronized (locker) {
-            Timber.d("updateContentStatus2");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
 
+    void updateContentStatus(StatusContent updateFrom, StatusContent updateTo) {
+        Timber.d("updateContentStatus2");
+
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STATUS_STATEMENT)) {
+            db.beginTransaction();
             try {
-                db = getWritableDatabase();
-                statement = db.compileStatement(ContentTable.UPDATE_CONTENT_STATUS_STATEMENT);
-                db.beginTransaction();
-                try {
-                    statement.clearBindings();
-                    statement.bindLong(1, updateTo.getCode());
-                    statement.bindLong(2, updateFrom.getCode());
-                    statement.execute();
-                    db.setTransactionSuccessful();
-                } finally {
-                    db.endTransaction();
-                }
+                statement.clearBindings();
+                statement.bindLong(1, updateTo.getCode());
+                statement.bindLong(2, updateFrom.getCode());
+                statement.execute();
+                db.setTransactionSuccessful();
             } finally {
-                Timber.d("Closing db connection. Condition: %s", (db != null && db.isOpen()));
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+                db.endTransaction();
             }
+        } finally {
+            closeDatabase();
         }
     }
 
     List<Pair<Integer, Integer>> selectQueue() {
         ArrayList<Pair<Integer, Integer>> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectQueue");
-            SQLiteDatabase db = null;
-            Cursor cursorQueue = null;
+        Timber.d("selectQueue");
 
-            try {
-                db = getReadableDatabase();
-                cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{});
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{})) {
 
-                // looping through all rows and adding to list
-                if (cursorQueue.moveToFirst()) {
-                    do {
-                        result.add(new Pair<>(cursorQueue.getInt(0), cursorQueue.getInt(1)));
-                    } while (cursorQueue.moveToNext());
-                }
-            } finally {
-                if (cursorQueue != null) {
-                    cursorQueue.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+            // looping through all rows and adding to list
+            if (cursorQueue.moveToFirst()) {
+                do {
+                    result.add(new Pair<>(cursorQueue.getInt(0), cursorQueue.getInt(1)));
+                } while (cursorQueue.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
     }
+
 
     List<Integer> selectContentsForQueueMigration() {
         ArrayList<Integer> result = new ArrayList<>();
 
-        synchronized (locker) {
-            Timber.d("selectContentsForQueueMigration");
-            SQLiteDatabase db = null;
-            Cursor cursorQueue = null;
+        Timber.d("selectContentsForQueueMigration");
 
-            try {
-                db = getReadableDatabase();
-                cursorQueue = db.rawQuery(QueueTable.SELECT_CONTENT_FOR_QUEUE_MIGRATION, new String[]{});
-
-                // looping through all rows and adding to list
-                if (cursorQueue.moveToFirst()) {
-                    do {
-                        result.add(cursorQueue.getInt(0));
-                    } while (cursorQueue.moveToNext());
-                }
-            } finally {
-                if (cursorQueue != null) {
-                    cursorQueue.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
-        }
-
-        return result;
-    }
-
-    void insertQueue(long id, int order) {
-        synchronized (locker) {
-            Timber.d("insertQueue");
-            SQLiteDatabase db = null;
-            SQLiteStatement statement = null;
-
-            try {
-                db = getWritableDatabase();
-
-                statement = db.compileStatement(QueueTable.INSERT_STATEMENT);
-                statement.clearBindings();
-
-                statement.bindLong(1, id);
-                statement.bindLong(2, order);
-                statement.execute();
-            } finally {
-                if (statement != null) {
-                    statement.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
-            }
-        }
-    }
-
-    public List<Integer> selectMigrableContentIds() {
-        ArrayList<Integer> result = new ArrayList<>();
-
-        Timber.d("selectMigrableContentIds");
-        SQLiteDatabase db = null;
-        Cursor cursorQueue = null;
-
-        try {
-            db = getReadableDatabase();
-            cursorQueue = db.rawQuery(ContentTable.SELECT_MIGRABLE_CONTENT, new String[]{
-                    StatusContent.DOWNLOADED.getCode() + "",
-                    StatusContent.ERROR.getCode() + "",
-                    StatusContent.MIGRATED.getCode() + "",
-                    StatusContent.DOWNLOADING.getCode() + "",
-                    StatusContent.PAUSED.getCode() + ""
-            });
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorQueue = db.rawQuery(QueueTable.SELECT_CONTENT_FOR_QUEUE_MIGRATION, new String[]{})) {
 
             // looping through all rows and adding to list
             if (cursorQueue.moveToFirst()) {
@@ -442,12 +345,50 @@ public class HentoidDB extends SQLiteOpenHelper {
                 } while (cursorQueue.moveToNext());
             }
         } finally {
-            if (cursorQueue != null) {
-                cursorQueue.close();
+            closeDatabase();
+        }
+
+        return result;
+    }
+
+
+    void insertQueue(int id, int order) {
+        Timber.d("insertQueue");
+
+        SQLiteDatabase db = openDatabase();
+        try (SQLiteStatement statement = db.compileStatement(QueueTable.INSERT_STATEMENT)) {
+            statement.clearBindings();
+
+            statement.bindLong(1, id);
+            statement.bindLong(2, order);
+            statement.execute();
+        } finally {
+            closeDatabase();
+        }
+    }
+
+    public List<Integer> selectMigrableContentIds() {
+        ArrayList<Integer> result = new ArrayList<>();
+
+        Timber.d("selectMigrableContentIds");
+
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorQueue = db.rawQuery(ContentTable.SELECT_MIGRABLE_CONTENT, new String[]{
+                StatusContent.DOWNLOADED.getCode() + "",
+                StatusContent.ERROR.getCode() + "",
+                StatusContent.MIGRATED.getCode() + "",
+                StatusContent.DOWNLOADING.getCode() + "",
+                StatusContent.PAUSED.getCode() + ""
+        })) {
+
+            // looping through all rows and adding to list
+            if (cursorQueue.moveToFirst()) {
+                do {
+                    result.add(cursorQueue.getInt(0));
+                } while (cursorQueue.moveToNext());
             }
-            if (db != null && db.isOpen()) {
-                db.close(); // Closing database connection
-            }
+        } finally {
+            closeDatabase();
         }
 
         return result;
@@ -456,29 +397,19 @@ public class HentoidDB extends SQLiteOpenHelper {
     public SparseIntArray selectQueueForMigration() {
         SparseIntArray result = new SparseIntArray();
 
-        synchronized (locker) {
-            Timber.d("selectQueueForMigration");
-            SQLiteDatabase db = null;
-            Cursor cursorQueue = null;
+        Timber.d("selectQueueForMigration");
 
-            try {
-                db = getReadableDatabase();
-                cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{});
+        SQLiteDatabase db = openDatabase();
+        try (Cursor cursorQueue = db.rawQuery(QueueTable.SELECT_QUEUE, new String[]{})) {
 
-                // looping through all rows and adding to list
-                if (cursorQueue.moveToFirst()) {
-                    do {
-                        result.put(cursorQueue.getInt(0), cursorQueue.getInt(1));
-                    } while (cursorQueue.moveToNext());
-                }
-            } finally {
-                if (cursorQueue != null) {
-                    cursorQueue.close();
-                }
-                if (db != null && db.isOpen()) {
-                    db.close(); // Closing database connection
-                }
+            // looping through all rows and adding to list
+            if (cursorQueue.moveToFirst()) {
+                do {
+                    result.put(cursorQueue.getInt(0), cursorQueue.getInt(1));
+                } while (cursorQueue.moveToNext());
             }
+        } finally {
+            closeDatabase();
         }
 
         return result;
