@@ -39,6 +39,7 @@ public class PrefsActivity extends BaseActivity {
                 .replace(android.R.id.content, new MyPreferenceFragment())
                 .commit();
         EventBus.getDefault().register(this);
+//        setTheme(R.style.PrefsThemeDark);
     }
 
     @Override
@@ -118,6 +119,7 @@ public class PrefsActivity extends BaseActivity {
             args.putString(PreferenceFragmentCompat.ARG_PREFERENCE_ROOT, preferenceScreen.getKey());
 
             MyPreferenceFragment preferenceFragment = new MyPreferenceFragment();
+
             preferenceFragment.setArguments(args);
 
             requireFragmentManager()

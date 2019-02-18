@@ -108,7 +108,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/PrefsTheme"
+            android:theme="@style/PrefsThemeDark"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

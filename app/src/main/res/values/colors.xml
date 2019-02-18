@@ -15,7 +15,7 @@
 
     <!-- Neutral Colors -->
     <color name="white">#FFFFFF</color>
-    <color name="lightGray">#1010</color>
+    <color name="lightGray">#e6e6e6</color>
     <color name="darkGray">#FF444444</color>
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
