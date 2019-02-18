@@ -20,13 +20,13 @@
 
 #### **Do you intend to add a new feature or change an existing one?**
 
-* Suggest your change in the [Google+ Community](https://plus.google.com/communities/110496467189870321840) under the Discussion topic or on our [Discord Server](https://discord.gg/QEZ3qk9).
+* Suggest your change in the [Subreddit](https://www.reddit.com/r/Hentoid/) under the #general topic or on our [Discord Server](https://discord.gg/QEZ3qk9).
 
 * Do not open an issue on GitHub until you have collected positive feedback about the change. GitHub issues are primarily intended for bug reports and fixes.
 
 #### **Do you have questions about the source code?**
 
-* Ask any question in the [Google+ Community](https://plus.google.com/communities/110496467189870321840) or ask away on our [Discord Server](https://discord.gg/QEZ3qk9).
+* Ask any question in the [Subreddit](https://www.reddit.com/r/Hentoid/) or ask away on our [Discord Server](https://discord.gg/QEZ3qk9).
 
 #### **Do you want to contribute to the documentation?**
 

@@ -4,6 +4,8 @@
 -->
 ___
 
+CI status (dev branch) : [![Build status](https://app.bitrise.io/app/70539fbfc39cb9d8/status.svg?token=_kOMCvtscTfWpw7mdsqvJA&branch=dev)](https://app.bitrise.io/app/70539fbfc39cb9d8)
+
 ![Hentoid App Icon](https://raw.githubusercontent.com/AVnetWS/Hentoid-Resources/master/repo/assets/img/ic_launcher-web.png)
 
 ##### `Hentoid` is a Doujinshi & H-Manga archiving app.
