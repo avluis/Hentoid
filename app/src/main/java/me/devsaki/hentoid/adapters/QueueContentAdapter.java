@@ -50,7 +50,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     public View getView(int pos, View view, @NonNull ViewGroup parent) {
         View v = view;
         ViewHolder holder;
-        if (null == container) container = (ListView)parent;
+        if (null == container) container = (ListView) parent;
         // Check if an existing view is being reused, otherwise inflate the view
         if (v == null) {
             holder = new ViewHolder();
@@ -269,20 +269,18 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         }
     }
 
-    public void updateProgress(int index, Content content)
-    {
+    public void updateProgress(int index, Content content) {
         if (null == container) return;
 
         View view = container.getChildAt(index - container.getFirstVisiblePosition());
-        if(view == null) return;
+        if (view == null) return;
 
         updateProgress(view, content);
     }
 
-    private void swap(int firstPosition, int secondPosition)
-    {
-        Content first = getItem(firstPosition<secondPosition?firstPosition:secondPosition);
-        Content second = getItem(firstPosition<secondPosition?secondPosition:firstPosition);
+    private void swap(int firstPosition, int secondPosition) {
+        Content first = getItem(firstPosition < secondPosition ? firstPosition : secondPosition);
+        Content second = getItem(firstPosition < secondPosition ? secondPosition : firstPosition);
 
         remove(first);
         remove(second);
@@ -335,33 +333,38 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void moveTop(long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         List<QueueRecord> queue = db.selectQueue();
+        QueueRecord p;
 
         long topItemId = 0;
         int topItemQueuePosition = -1;
-        int loopPosition = 0;
 
         setNotifyOnChange(false);  // Prevents every update from calling a screen refresh
 
-        for (QueueRecord p : queue) {
-            if (0 == topItemId)
-            {
+        for (int i = 0; i < queue.size(); i++) {
+            p = queue.get(i);
+            if (0 == topItemId) {
                 topItemId = p.content.getTargetId();
                 topItemQueuePosition = p.rank;
             }
 
             if (p.content.getTargetId() == contentId) {
-                db.udpateQueue(p.content.getTargetId(), topItemQueuePosition); // Put selected item on top of list
+                // Put selected item on top of list in the DB
+                db.udpateQueue(p.content.getTargetId(), topItemQueuePosition);
 
-                Content c = getItem(loopPosition);
-                remove(c);
-                insert(c, 0);
+                // Update the displayed items
+                if (i < getCount()) { // That should never happen, but we do have rare crashes here, so...
+                    Content c = getItem(i);
+                    remove(c);
+                    insert(c, 0);
+                }
 
+                // Skip download for the 1st item of the adapter
                 EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
+
                 break;
             } else {
-                db.udpateQueue(p.content.getTargetId(), p.rank+ 1); // Depriorize every item by 1
+                db.udpateQueue(p.content.getTargetId(), p.rank + 1); // Depriorize every item by 1
             }
-            loopPosition++;
         }
 
         notifyDataSetChanged(); // Final screen refresh once everything had been updated
@@ -423,8 +426,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
     }
 
-    public void removeFromQueue(Content content)
-    {
+    public void removeFromQueue(Content content) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         // Remove content from the queue in the DB
         db.deleteQueue(content);
