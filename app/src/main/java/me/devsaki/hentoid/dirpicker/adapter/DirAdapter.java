@@ -45,18 +45,17 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.ViewHolder> {
         return dirList.size();
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+    class ViewHolder extends RecyclerView.ViewHolder {
         final TextView textView;
 
         ViewHolder(View root) {
             super(root);
 
             textView = root.findViewById(R.id.dir_name);
-            textView.setOnClickListener(this);
+            textView.setOnClickListener(this::onClick);
         }
 
-        @Override
-        public void onClick(View v) {
+        void onClick(View v) {
             EventBus.getDefault().post(new UpdateDirTreeEvent(dirList.get(getAdapterPosition())));
         }
     }
