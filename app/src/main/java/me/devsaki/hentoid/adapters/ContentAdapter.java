@@ -396,8 +396,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 public void onClick(View v) {
                     if (getSelectedItemsCount() > 0) { // Selection mode is on
                         int itemPos = holder.getLayoutPosition();
-                        toggleSelection(itemPos);
-                        setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                        if (itemPos > -1) {
+                            toggleSelection(itemPos);
+                            setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                        }
                         onLongClick(v);
                     } else {
                         clearSelections();
@@ -421,8 +423,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 @Override
                 public boolean onLongClick(View v) {
                     int itemPos = holder.getLayoutPosition();
-                    toggleSelection(itemPos);
-                    setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                    if (itemPos > -1) {
+                        toggleSelection(itemPos);
+                        setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                    }
 
                     super.onLongClick(v);
 
