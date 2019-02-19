@@ -11,7 +11,7 @@ public class OnTextViewClickedEvent {
         this.longClick = longClick;
     }
 
-    public boolean getClickType() {
+    public boolean isLongClick() {
         return longClick;
     }
 }

@@ -26,6 +26,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -178,7 +180,7 @@ public class FileHelper {
      * Create a folder.
      *
      * @param file The folder to be created.
-     * @return true if creation was successful.
+     * @return true if creation was successful or the folder already exists
      */
     public static boolean createDirectory(@NonNull File file) {
         return FileUtil.makeDir(file);
@@ -233,12 +235,13 @@ public class FileHelper {
         return isSuccess;
     }
 
-    public static boolean validateFolder(String folder) {
-        return validateFolder(folder, false);
+    public static boolean checkAndSetRootFolder(String folder) {
+        return checkAndSetRootFolder(folder, false);
     }
 
-    public static boolean validateFolder(String folder, boolean notify) {
+    public static boolean checkAndSetRootFolder(String folder, boolean notify) {
         Context context = HentoidApp.getAppContext();
+
         // Validate folder
         File file = new File(folder);
         if (!file.exists() && !file.isDirectory() && !FileUtil.makeDir(file)) {
@@ -406,13 +409,14 @@ public class FileHelper {
 
     /**
      * Recursively search for files of a given type from a base directory
+     *
      * @param workingDir the base directory
      * @return list containing all files with matching extension
      */
     public static List<File> findFilesRecursively(File workingDir, String extension) {
         List<File> files = new ArrayList<>();
         File[] baseDirs = workingDir.listFiles();
-        for (File entry: baseDirs) {
+        for (File entry : baseDirs) {
             if (entry.isDirectory()) {
                 files.addAll(findFilesRecursively(entry, extension));
             } else {
@@ -681,4 +685,14 @@ public class FileHelper {
             context.startActivity(sendIntent);
         }
     }
+
+    // Please keep that, I need some way to trace actions when working with SD card features - Robb
+    public static void createFileWisthMsg(@Nonnull String file, String msg) {
+        try {
+            FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getAppContext(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
