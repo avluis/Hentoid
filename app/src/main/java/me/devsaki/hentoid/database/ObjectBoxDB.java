@@ -153,14 +153,9 @@ public class ObjectBoxDB {
     }
 
     public List<Content> selectQueueContents() {
-        List<Content> result = Collections.emptyList();
+        List<Content> result = new ArrayList<>();
         List<QueueRecord> queueRecords = selectQueue();
-        if (queueRecords.size() > 0) {
-            long[] contentIds = new long[queueRecords.size()];
-            int index = 0;
-            for (QueueRecord q : queueRecords) contentIds[index++] = q.content.getTargetId();
-            result = selectContentByIds(contentIds);
-        }
+        for (QueueRecord q : queueRecords) result.add(q.content.getTarget());
         return result;
     }
 
@@ -199,10 +194,6 @@ public class ObjectBoxDB {
     @Nullable
     public Content selectContentByUrl(String url) {
         return store.boxFor(Content.class).query().equal(Content_.url, url).build().findFirst();
-    }
-
-    private List<Content> selectContentByIds(long[] ids) {
-        return store.boxFor(Content.class).query().in(Content_.id, ids).build().find();
     }
 
     @Nullable
