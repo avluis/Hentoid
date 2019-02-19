@@ -112,7 +112,7 @@ public class DirChooserFragment extends DialogFragment {
         fabRequestSD = rootView.findViewById(R.id.request_sd);
         selectDirBtn = rootView.findViewById(R.id.select_dir);
 
-        textView.setOnClickListener(this::onLongClick);
+        textView.setOnClickListener(this::onClick);
         textView.setOnLongClickListener(this::onLongClick);
         fabCreateDir.setOnClickListener(this::onClick);
         selectDirBtn.setOnClickListener(this::onClick);
