@@ -45,8 +45,7 @@ import timber.log.Timber;
  * Created by avluis on 06/12/2016.
  * Directory Chooser (Picker) Fragment Dialog
  */
-public class DirChooserFragment extends DialogFragment implements
-        View.OnClickListener, View.OnLongClickListener {
+public class DirChooserFragment extends DialogFragment {
     private static final String CURRENT_ROOT_DIR = "currentRootDir";
     private static final String ROOT_DIR = "rootDir";
 
@@ -113,13 +112,13 @@ public class DirChooserFragment extends DialogFragment implements
         fabRequestSD = rootView.findViewById(R.id.request_sd);
         selectDirBtn = rootView.findViewById(R.id.select_dir);
 
-        textView.setOnClickListener(this);
-        textView.setOnLongClickListener(this);
-        fabCreateDir.setOnClickListener(this);
-        selectDirBtn.setOnClickListener(this);
+        textView.setOnClickListener(this::onLongClick);
+        textView.setOnLongClickListener(this::onLongClick);
+        fabCreateDir.setOnClickListener(this::onClick);
+        selectDirBtn.setOnClickListener(this::onClick);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSDPresent) {
-            fabRequestSD.setOnClickListener(this);
+            fabRequestSD.setOnClickListener(this::onClick);
             fabRequestSD.setVisibility(View.VISIBLE);
         }
     }
@@ -127,7 +126,7 @@ public class DirChooserFragment extends DialogFragment implements
     @Subscribe
     public void onOpFailedEvent(OpFailedEvent event) {
         Timber.d(getString(R.string.op_not_allowed));
-        ToastUtil.toast(getActivity(), R.string.op_not_allowed);
+        ToastUtil.toast(R.string.op_not_allowed);
     }
 
     @Subscribe
@@ -154,7 +153,6 @@ public class DirChooserFragment extends DialogFragment implements
         }
         dirListBuilder.processListDirEvent(event.root);
     }
-
 
 
     @Subscribe
@@ -188,7 +186,6 @@ public class DirChooserFragment extends DialogFragment implements
         super.onCancel(dialog);
     }
 
-    @Override
     public void onClick(View v) {
         if (v.equals(textView)) {
             onTextViewClicked(false);
@@ -201,7 +198,6 @@ public class DirChooserFragment extends DialogFragment implements
         }
     }
 
-    @Override
     public boolean onLongClick(View v) {
         if (v.equals(textView)) {
             onTextViewClicked(true);
