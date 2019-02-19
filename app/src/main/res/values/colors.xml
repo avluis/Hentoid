@@ -2,6 +2,7 @@
 <resources>
     <color name="primary">@color/dark_red</color>
     <color name="primary_dark">@color/very_dark_red</color>
+    <color name="windowBackground">@color/taupe</color>
     <color name="ripple">@color/light_red</color>
     <color name="accent">@color/accent_red</color>
 

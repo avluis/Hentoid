@@ -137,7 +137,7 @@
         <activity
             android:name=".activities.AppLockActivity"
             android:launchMode="singleTask"
-            android:theme="@style/AppTheme.DarkBackgroundNoActionBar"
+            android:theme="@style/AppTheme.TaupeBackgroundNoActionBar"
             android:windowSoftInputMode="stateAlwaysVisible" />
         <activity
             android:name=".activities.IntentActivity"

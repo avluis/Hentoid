@@ -19,9 +19,20 @@
         <item name="android:textColorHint">@color/lightGray</item>
     </style>
 
+    <!-- Backgrounds -->
+    <style name="AppTheme.TaupeBackground" parent="AppTheme">
+        <item name="android:windowBackground">@color/windowBackground</item>
+    </style>
+
+    <style name="AppTheme.TaupeBackgroundNoActionBar" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@color/windowBackground</item>
+        <item name="windowActionModeOverlay">true</item>
+    </style>
+
+
     <!-- AppIntro Activity & Slides -->
-    <style name="AppTheme.AppIntro" parent="AppTheme.DarkBackground">
-        <item name="android:background">@color/primary_dark</item>
+    <style name="AppTheme.AppIntro" parent="AppTheme.TaupeBackground">
+        <item name="android:background">@color/windowBackground</item>
     </style>
 
     <!-- Splash Activity -->
@@ -37,7 +48,7 @@
         <item name="android:textColorHint">@android:color/black</item>
     </style>
     <style name="PrefsThemeDark" parent="AppTheme">
-        <item name="android:background">@color/primary</item>
+        <item name="android:background">@color/windowBackground</item>
         <item name="android:divider">@color/accent</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:textColorPrimary">@color/white</item>
@@ -71,25 +82,6 @@
         <item name="android:windowIsFloating">false</item>
     </style>
 
-    <!-- Backgrounds -->
-    <style name="AppTheme.TaupeBackground" parent="AppTheme">
-        <item name="android:windowBackground">@color/taupe</item>
-    </style>
-
-    <style name="AppTheme.TaupeBackgroundNoActionBar" parent="AppTheme.NoActionBar">
-        <item name="android:windowBackground">@color/taupe</item>
-        <item name="windowActionModeOverlay">true</item>
-    </style>
-
-    <style name="AppTheme.DarkBackground" parent="AppTheme">
-        <item name="android:windowBackground">@color/primary_dark</item>
-    </style>
-
-    <style name="AppTheme.DarkBackgroundNoActionBar" parent="AppTheme.NoActionBar">
-        <item name="android:windowBackground">@color/primary_dark</item>
-        <item name="windowActionModeOverlay">true</item>
-    </style>
-
     <!-- Downloads -->
     <style name="AppTheme.Downloads" parent="AppTheme.TaupeBackgroundNoActionBar">
         <item name="android:textColorHint">@color/lightGray</item>
@@ -97,13 +89,13 @@
     </style>
 
     <!-- Mikan -->
-    <style name="AppTheme.Mikan" parent="AppTheme.DarkBackground">
+    <style name="AppTheme.Mikan" parent="AppTheme.TaupeBackground">
         <item name="android:textColorHint">@color/lightGray</item>
         <item name="android:textColorSecondary">@color/lightGray</item>
     </style>
 
     <!-- Toolbar -->
-    <style name="AppTheme.Toolbar" parent="AppTheme.DarkBackground">
+    <style name="AppTheme.Toolbar" parent="AppTheme.TaupeBackground">
         <item name="android:textColorHint">@color/lightGray</item>
         <item name="android:textColorPrimary">@color/lightGray</item>
         <item name="android:textColorSecondary">@color/lightGray</item>
@@ -114,7 +106,7 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
-        <item name="android:windowBackground">@color/taupe</item>
+        <item name="android:windowBackground">@color/windowBackground</item>
     </style>
 
     <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
@@ -125,7 +117,7 @@
     </style>
 
     <style name="ModalStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@color/taupe</item>
+        <item name="android:background">@color/windowBackground</item>
     </style>
 
     <style name="LargeItem">
