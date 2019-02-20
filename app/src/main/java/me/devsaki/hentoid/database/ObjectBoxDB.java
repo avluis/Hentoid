@@ -107,6 +107,7 @@ public class ObjectBoxDB {
         Content c = contentBox.get(row.getId());
         c.setStatus(row.getStatus());
         c.setDownloadDate(row.getDownloadDate());
+        c.setDownloadParams(row.getDownloadParams());
         contentBox.put(c);
     }
 
