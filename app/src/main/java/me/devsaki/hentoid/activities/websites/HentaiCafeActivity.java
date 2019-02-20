@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.activities.websites;
 
+import android.net.Uri;
+
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -15,7 +17,7 @@ import static me.devsaki.hentoid.enums.Site.HENTAICAFE;
 public class HentaiCafeActivity extends BaseWebActivity {
 
     private static final String DOMAIN_FILTER = "hentai.cafe";
-    private static final String GALLERY_FILTER = "//hentai.cafe/[A-Za-z0-9\\-_]+/";
+    private static final String GALLERY_FILTER = "//hentai.cafe/[^/]+/$";
 
     Site getStartSite() {
         return Site.HENTAICAFE;
@@ -37,13 +39,15 @@ public class HentaiCafeActivity extends BaseWebActivity {
 
         @Override
         protected void onGalleryFound(String url) {
-            if (url.contains(HENTAICAFE.getUrl() + "/78-2/") ||       // ignore tags page
-                    url.contains(HENTAICAFE.getUrl() + "/artists/")) {    // ignore artist page
+            if (    url.startsWith(HENTAICAFE.getUrl() + "/78-2/")          // ignore tags page
+                    || url.startsWith(HENTAICAFE.getUrl() + "/artists/")    // ignore artist page
+                    || url.startsWith(HENTAICAFE.getUrl() + "/?s=")         // ignore text search results
+                ) {
                 return;
             }
 
             String[] galleryUrlParts = url.split("/");
-            compositeDisposable.add(HentaiCafeServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+            compositeDisposable.add(HentaiCafeServer.API.getGalleryMetadata(Uri.decode(galleryUrlParts[galleryUrlParts.length - 1]))
                     .subscribe(
                             metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                 Timber.e(throwable, "Error parsing content.");
