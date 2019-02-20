@@ -274,7 +274,7 @@ public class ContentDownloadService extends IntentService {
                 notificationManager.notify(new DownloadErrorNotification(content));
 
                 // Tracking Event (Download Error)
-                HentoidApp.trackDownloadEvent("Success");
+                HentoidApp.trackDownloadEvent("Error");
             }
 
             // Signals current download as completed
