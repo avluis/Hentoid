@@ -58,8 +58,6 @@ public class HitomiContent {
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.HITOMI);
 
         result.addAttributes(attributes);
-        result.populateAuthor();
-        result.setStatus(StatusContent.SAVED);
 
         return result;
     }

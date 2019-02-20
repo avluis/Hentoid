@@ -42,9 +42,6 @@ public class PandaContent {
             result.addAttributes(attributes);
         }
 
-        result.populateAuthor();
-        result.setStatus(StatusContent.SAVED);
-
         return result;
     }
 }

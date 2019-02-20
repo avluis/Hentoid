@@ -42,8 +42,6 @@ public class HentaiCafeContent {
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.HENTAICAFE);
 
         result.addAttributes(attributes);
-        result.populateAuthor();
-        result.setStatus(StatusContent.SAVED);
 
         return result;
     }

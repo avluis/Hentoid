@@ -60,8 +60,6 @@ public class ASMHentaiContent {
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.ASMHENTAI);
 
         result.addAttributes(attributes);
-        result.populateAuthor();
-        result.setStatus(StatusContent.SAVED);
 
         return result;
     }

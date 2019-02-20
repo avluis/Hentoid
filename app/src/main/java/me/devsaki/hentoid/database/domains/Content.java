@@ -125,8 +125,9 @@ public class Content implements Serializable {
         return this.id;
     }
 
-    public void setId(long id) {
+    public Content setId(long id) {
         this.id = id;
+        return this;
     }
 
     public String getUniqueSiteId() {

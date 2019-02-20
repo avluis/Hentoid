@@ -71,9 +71,6 @@ public class PururinContent {
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.PURURIN);
         result.addAttributes(attributes);
 
-        result.populateAuthor();
-        result.setStatus(StatusContent.SAVED);
-
         return result;
     }
 }

@@ -57,9 +57,6 @@ public class TsuminoContent {
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.TSUMINO);
         result.addAttributes(attributes);
 
-        result.populateAuthor();
-        result.setStatus(StatusContent.SAVED);
-
         return result;
     }
 }

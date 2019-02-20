@@ -68,8 +68,6 @@ public class FakkuContent {
         ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.FAKKU2);
 
         result.addAttributes(attributes);
-        result.populateAuthor();
-        result.setStatus(StatusContent.SAVED);
 
         return result;
     }

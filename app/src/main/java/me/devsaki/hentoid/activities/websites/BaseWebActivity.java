@@ -34,6 +34,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
+import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -62,9 +63,12 @@ import timber.log.Timber;
  */
 public abstract class BaseWebActivity extends BaseActivity implements ResultListener<Content> {
 
+    private static final int MODE_DL = 0;
+    private static final int MODE_QUEUE = 1;
+
     // UI
-    protected ObservableWebView webView;                                              // Associated webview
-    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;   // Action buttons
+    protected ObservableWebView webView;                                                // Associated webview
+    private FloatingActionButton fabRead, fabDownload, fabRefreshOrStop, fabHome;       // Action buttons
     private SwipeRefreshLayout swipeLayout;
 
     // Content currently viewed
@@ -75,6 +79,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private boolean webViewIsLoading;
     // Indicates if corresponding action buttons are enabled
     private boolean fabReadEnabled, fabDownloadEnabled;
+    // Indicated which mode the download FAB is in
+    private int fabDownloadMode;
 
     protected CustomWebViewClient webClient;
 
@@ -299,7 +305,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      */
     public void onReadFabClick(View view) {
         if (currentContent != null) {
-            currentContent = db.selectContentById(currentContent.getId()); // TODO - wasn't it by URL ?
+            currentContent = db.selectContentByUrl(currentContent.getUrl());
             if (currentContent != null) {
                 if (StatusContent.DOWNLOADED == currentContent.getStatus()
                         || StatusContent.ERROR == currentContent.getStatus()) {
@@ -317,7 +323,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      * @param view Calling view (part of the mandatory signature)
      */
     public void onDownloadFabClick(View view) {
-        processDownload();
+        if (MODE_DL == fabDownloadMode) processDownload();
+        else if (MODE_QUEUE == fabDownloadMode) goToQueue();
     }
 
     /**
@@ -347,6 +354,16 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         ContentQueueManager.getInstance().resumeQueue(this);
 
         hideFab(fabDownload);
+    }
+
+    private void goToQueue() {
+        Intent intent = new Intent(this, QueueActivity.class);
+        // If FLAG_ACTIVITY_CLEAR_TOP is not set,
+        // it can interfere with Double-Back (press back twice) to exit
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+        finish();
     }
 
     /**
@@ -409,44 +426,47 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             return;
         }
 
-        addContentToDB(content);
+        Timber.i("Content URL : %s", content.getUrl());
+        Content contentDB = db.selectContentByUrl(content.getUrl());
 
-        // Set Download action button visibility
-        StatusContent contentStatus = content.getStatus();
-        if (contentStatus != StatusContent.DOWNLOADED
-                && contentStatus != StatusContent.DOWNLOADING
-                && contentStatus != StatusContent.MIGRATED) {
-            currentContent = content;
+        boolean isInCollection = (contentDB != null && (
+                contentDB.getStatus().equals(StatusContent.DOWNLOADED)
+                        || contentDB.getStatus().equals(StatusContent.MIGRATED)
+                        || contentDB.getStatus().equals(StatusContent.ERROR)
+        ));
+        boolean isInQueue = (contentDB != null && (
+                contentDB.getStatus().equals(StatusContent.DOWNLOADING)
+                        || contentDB.getStatus().equals(StatusContent.PAUSED)
+        ));
+
+        if (!isInCollection && !isInQueue) {
+            if (contentDB != null) {
+                content.setId(contentDB.getId())
+                        .setStatus(contentDB.getStatus())
+                        .addImageFiles(contentDB.getImageFiles())
+                        .setStorageFolder(contentDB.getStorageFolder())
+                        .setDownloadDate(contentDB.getDownloadDate());
+            } else {
+                content.setStatus(StatusContent.SAVED);
+                content.populateAuthor();
+            }
+            db.insertContent(content);
             runOnUiThread(() -> showFab(fabDownload));
-        } else {
+            runOnUiThread(() -> hideFab(fabRead));
+            fabDownloadMode = MODE_DL;
+        }
+
+        if (isInCollection) {
+            runOnUiThread(() -> showFab(fabRead));
             runOnUiThread(() -> hideFab(fabDownload));
         }
-
-        // Set Read action button visibility
-        if (contentStatus == StatusContent.DOWNLOADED
-                || contentStatus == StatusContent.MIGRATED
-                || contentStatus == StatusContent.ERROR) {
-            currentContent = content;
-            runOnUiThread(() -> showFab(fabRead));
-        } else {
+        if (isInQueue) {
+            runOnUiThread(() -> showFab(fabDownload));
             runOnUiThread(() -> hideFab(fabRead));
+            fabDownloadMode = MODE_QUEUE;
         }
-    }
 
-    /**
-     * Add designated Content to the Hentoid DB
-     *
-     * @param content Content to be added to the DB
-     */
-    private void addContentToDB(Content content) {
-        Content contentDB = db.selectContentByUrl(content.getUrl());
-        if (contentDB != null) {
-            content.setStatus(contentDB.getStatus())
-                    .addImageFiles(contentDB.getImageFiles())
-                    .setStorageFolder(contentDB.getStorageFolder())
-                    .setDownloadDate(contentDB.getDownloadDate());
-        }
-        db.insertContent(content);
+        currentContent = content;
     }
 
     public void onResultReady(Content results, int totalContent) {

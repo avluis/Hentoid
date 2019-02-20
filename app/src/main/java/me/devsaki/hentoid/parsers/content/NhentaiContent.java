@@ -77,9 +77,6 @@ public class NhentaiContent {
         result.addImageFiles(images);
         result.setQtyPages(thumbs.size()); // We infer there are as many thumbs as actual book pages on the gallery summary webpage
 
-        result.populateAuthor();
-        result.setStatus(StatusContent.SAVED);
-
         return result;
     }
 
