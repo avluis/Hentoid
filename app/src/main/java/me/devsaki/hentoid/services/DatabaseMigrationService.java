@@ -177,15 +177,15 @@ public class DatabaseMigrationService extends IntentService {
         logStr.append("Migration log : end");
 
         // Save it
-        File root;
+        File rootFolder;
         try {
             String settingDir = Preferences.getRootFolderName();
-            if (settingDir.isEmpty()) {
-                root = FileHelper.getDefaultDir(this, "");
+            if (!settingDir.isEmpty() && FileHelper.isWritable(new File(settingDir))) {
+                rootFolder = new File(settingDir); // Use selected and output-tested location (possibly SD card)
             } else {
-                root = new File(settingDir);
+                rootFolder = FileHelper.getDefaultDir(this, ""); // Fallback to default location (phone memory)
             }
-            File importLogFile = new File(root, "migration_log.txt");
+            File importLogFile = new File(rootFolder, "migration_log.txt");
             FileHelper.saveBinaryInFile(importLogFile, logStr.toString().getBytes());
             return importLogFile;
         } catch (Exception e) {
