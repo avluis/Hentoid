@@ -27,7 +27,7 @@
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "15:7783986187434244415",
+      "lastPropertyId": "16:4321603102287256155",
       "name": "Content",
       "properties": [
         {
@@ -89,6 +89,10 @@
         {
           "id": "15:7783986187434244415",
           "name": "uniqueSiteId"
+        },
+        {
+          "id": "16:4321603102287256155",
+          "name": "downloadParams"
         }
       ],
       "relations": [
@@ -100,7 +104,7 @@
     },
     {
       "id": "3:2849837771881495731",
-      "lastPropertyId": "6:6745828261307358394",
+      "lastPropertyId": "7:8627441942081468691",
       "name": "ImageFile",
       "properties": [
         {
@@ -127,6 +131,10 @@
           "id": "6:6745828261307358394",
           "indexId": "4:7771600038559568217",
           "name": "contentId"
+        },
+        {
+          "id": "7:8627441942081468691",
+          "name": "downloadParams"
         }
       ],
       "relations": []
