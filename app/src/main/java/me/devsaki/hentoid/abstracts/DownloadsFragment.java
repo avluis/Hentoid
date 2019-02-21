@@ -370,30 +370,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void checkSDHealth() {
-        File file = new File(Preferences.getRootFolderName(), "test");
-        try (OutputStream output = FileHelper.getOutputStream(file)) {
-            // build
-            byte[] bytes = "test".getBytes();
-            // write
-            output.write(bytes);
-            FileHelper.sync(output);
-            output.flush();
-        } catch (NullPointerException npe) {
-            Timber.e(npe, "Invalid Stream");
+        if (!FileHelper.isWritable(new File(Preferences.getRootFolderName())))
+        {
             ToastUtil.toast(R.string.sd_access_error);
             new AlertDialog.Builder(requireActivity())
                     .setMessage(R.string.sd_access_fatal_error)
                     .setTitle("Error!")
                     .setPositiveButton(android.R.string.ok, null)
                     .show();
-        } catch (IOException e) {
-            Timber.e(e, "IOException while checking SD Health");
-        } finally {
-            // finished
-            // Ignore
-            if (file.exists()) {
-                Timber.d("Test file removed: %s", FileHelper.removeFile(file));
-            }
         }
     }
 
