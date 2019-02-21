@@ -17,6 +17,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="false"
+        android:extractNativeLibs="true"
         tools:replace="android:allowBackup, android:supportsRtl">
         <activity
             android:name=".activities.SplashActivity"
