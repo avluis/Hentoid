@@ -193,24 +193,23 @@ public class ImportService extends IntentService {
     private File writeLog(List<String> log, boolean isCleanup) {
         // Create the log
         StringBuilder logStr = new StringBuilder();
-        logStr.append("Cleanup log : begin").append(System.getProperty("line.separator"));
+        logStr.append(isCleanup ? "Cleanup":"Import").append(" log : begin").append(System.getProperty("line.separator"));
         if (log.isEmpty())
             logStr.append("No activity to report - All folder names are formatted as expected.");
         else for (String line : log)
             logStr.append(line).append(System.getProperty("line.separator"));
-        logStr.append("Cleanup log : end");
+        logStr.append(isCleanup ? "Cleanup":"Import").append(" log : end");
 
         // Save it
-        File root;
+        File rootFolder;
         try {
-
             String settingDir = Preferences.getRootFolderName();
-            if (settingDir.isEmpty()) {
-                root = FileHelper.getDefaultDir(this, "");
+            if (!settingDir.isEmpty() && FileHelper.isWritable(new File(settingDir))) {
+                rootFolder = new File(settingDir); // Use selected and output-tested location (possibly SD card)
             } else {
-                root = new File(settingDir);
+                rootFolder = FileHelper.getDefaultDir(this, ""); // Fallback to default location (phone memory)
             }
-            File cleanupLogFile = new File(root, isCleanup ? "cleanup_log.txt" : "import_log.txt");
+            File cleanupLogFile = new File(rootFolder, isCleanup ? "cleanup_log.txt" : "import_log.txt");
             FileHelper.saveBinaryInFile(cleanupLogFile, logStr.toString().getBytes());
             return cleanupLogFile;
         } catch (Exception e) {

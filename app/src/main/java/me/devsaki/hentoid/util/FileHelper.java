@@ -33,7 +33,6 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
 import static android.os.Environment.MEDIA_MOUNTED;
@@ -126,13 +125,59 @@ public class FileHelper {
     }
 
     /**
+     * Check if a file or directory is writable.
+     * Detects write issues on external SD card.
+     *
+     * @param file The file or directory.
+     * @return true if the file or directory is writable.
+     */
+    public static boolean isWritable(@NonNull final File file) {
+
+        if (file.isDirectory()) return isDirectoryWritable(file);
+        else return isFileWritable(file);
+    }
+
+    /**
+     * Check if a directory is writable.
+     * Detects write issues on external SD card.
+     *
+     * @param file The directory.
+     * @return true if the directory is writable.
+     */
+    private static boolean isDirectoryWritable(@NonNull final File file) {
+        File testFile = new File(file, "test.txt");
+
+        boolean hasPermission = false;
+
+        try {
+            hasPermission = FileUtil.makeFile(testFile);
+            try (OutputStream output = FileHelper.getOutputStream(testFile)) {
+                output.write("test".getBytes());
+                sync(output);
+                output.flush();
+            } catch (NullPointerException npe) {
+                Timber.e(npe, "Invalid Stream");
+                hasPermission = false;
+            } catch (IOException e) {
+                Timber.e(e, "IOException while checking permissions on %s", file.getAbsolutePath());
+                hasPermission = false;
+            }
+        } finally {
+            if (testFile.exists()) {
+                removeFile(testFile);
+            }
+        }
+        return hasPermission;
+    }
+
+    /**
      * Check if a file is writable.
      * Detects write issues on external SD card.
      *
      * @param file The file.
      * @return true if the file is writable.
      */
-    public static boolean isWritable(@NonNull final File file) {
+    private static boolean isFileWritable(@NonNull final File file) {
         if (!file.canWrite()) return false;
 
         // Ensure that it is indeed writable by opening an output stream
@@ -389,24 +434,6 @@ public class FileHelper {
         return file;
     }
 
-    public static File getSiteDownloadDir(Context context, Site site) {
-        File file;
-        String settingDir = Preferences.getRootFolderName();
-        String folderDir = site.getFolder();
-        if (settingDir.isEmpty()) {
-            return getDefaultDir(context, folderDir);
-        }
-        file = new File(settingDir, folderDir);
-        if (!file.exists() && !FileUtil.makeDir(file)) {
-            file = new File(settingDir + folderDir);
-            if (!file.exists()) {
-                FileUtil.makeDir(file);
-            }
-        }
-
-        return file;
-    }
-
     /**
      * Recursively search for files of a given type from a base directory
      *
@@ -536,9 +563,11 @@ public class FileHelper {
             Intent intent = context
                     .getPackageManager()
                     .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
-            intent.setAction(Intent.ACTION_VIEW);
-            intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
-            context.startActivity(intent);
+            if (intent != null) {
+                intent.setAction(Intent.ACTION_VIEW);
+                intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
+                context.startActivity(intent);
+            }
         } catch (Exception e) {
             ToastUtil.toast(context, R.string.error_open_perfect_viewer);
         }
@@ -687,7 +716,7 @@ public class FileHelper {
     }
 
     // Please keep that, I need some way to trace actions when working with SD card features - Robb
-    public static void createFileWisthMsg(@Nonnull String file, String msg) {
+    public static void createFileWithMsg(@Nonnull String file, String msg) {
         try {
             FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getAppContext(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
         } catch (Exception e) {
