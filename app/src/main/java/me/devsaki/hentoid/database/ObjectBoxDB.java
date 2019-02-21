@@ -55,7 +55,7 @@ public class ObjectBoxDB {
 
     private ObjectBoxDB(Context context) {
         store = MyObjectBox.builder().androidContext(context).build();
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG && BuildConfig.FK_TOKEN.isEmpty()) {
             boolean started = new AndroidObjectBrowser(store).start(context);
             Timber.i("ObjectBrowser started: %s", started);
         }
