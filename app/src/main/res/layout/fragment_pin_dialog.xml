@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/text_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="?colorAccent"
+        android:textSize="@dimen/text_header_5"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="@string/app_lock_pin" />
+
+    <ImageView
+        android:id="@+id/image_placeholder_1"
+        style="@style/PinPlaceholder"
+        app:layout_constraintBottom_toTopOf="@id/barrier_numpad"
+        app:layout_constraintEnd_toStartOf="@id/image_placeholder_2"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_header"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/image_placeholder_2"
+        style="@style/PinPlaceholder"
+        app:layout_constraintBottom_toTopOf="@id/barrier_numpad"
+        app:layout_constraintEnd_toStartOf="@id/image_placeholder_3"
+        app:layout_constraintStart_toEndOf="@id/image_placeholder_1"
+        app:layout_constraintTop_toBottomOf="@id/text_header"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/image_placeholder_3"
+        style="@style/PinPlaceholder"
+        app:layout_constraintBottom_toTopOf="@id/barrier_numpad"
+        app:layout_constraintEnd_toStartOf="@id/image_placeholder_4"
+        app:layout_constraintStart_toEndOf="@id/image_placeholder_2"
+        app:layout_constraintTop_toBottomOf="@id/text_header"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/image_placeholder_4"
+        style="@style/PinPlaceholder"
+        app:layout_constraintBottom_toTopOf="@id/barrier_numpad"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/image_placeholder_3"
+        app:layout_constraintTop_toBottomOf="@id/text_header"
+        tools:ignore="ContentDescription" />
+
+    <View
+        android:id="@+id/line_1"
+        style="@style/PlaceholderUnderline"
+        app:layout_constraintEnd_toEndOf="@id/image_placeholder_1"
+        app:layout_constraintStart_toStartOf="@id/image_placeholder_1"
+        app:layout_constraintTop_toBottomOf="@id/image_placeholder_1" />
+
+    <View
+        android:id="@+id/line_2"
+        style="@style/PlaceholderUnderline"
+        app:layout_constraintEnd_toEndOf="@id/image_placeholder_2"
+        app:layout_constraintStart_toStartOf="@id/image_placeholder_2"
+        app:layout_constraintTop_toBottomOf="@id/image_placeholder_2" />
+
+    <View
+        android:id="@+id/line_3"
+        style="@style/PlaceholderUnderline"
+        app:layout_constraintEnd_toEndOf="@id/image_placeholder_3"
+        app:layout_constraintStart_toStartOf="@id/image_placeholder_3"
+        app:layout_constraintTop_toBottomOf="@id/image_placeholder_3" />
+
+    <View
+        android:id="@+id/line_4"
+        style="@style/PlaceholderUnderline"
+        app:layout_constraintEnd_toEndOf="@id/image_placeholder_4"
+        app:layout_constraintStart_toStartOf="@id/image_placeholder_4"
+        app:layout_constraintTop_toBottomOf="@id/image_placeholder_4" />
+
+    <android.support.constraint.Barrier
+        android:id="@+id/barrier_numpad"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:barrierDirection="top"
+        app:constraint_referenced_ids="button_1,button_2,button_3" />
+
+    <TextView
+        android:id="@+id/button_1"
+        style="@style/NumpadDigits"
+        android:layout_marginBottom="8dp"
+        android:text="1"
+        app:layout_constraintBottom_toTopOf="@+id/button_4"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/button_2"
+        style="@style/NumpadDigits"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="2"
+        app:layout_constraintBottom_toTopOf="@id/button_5"
+        app:layout_constraintEnd_toStartOf="@id/button_3"
+        app:layout_constraintStart_toEndOf="@id/button_1"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/button_3"
+        style="@style/NumpadDigits"
+        android:layout_marginBottom="8dp"
+        android:text="3"
+        app:layout_constraintBottom_toTopOf="@id/button_6"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/button_4"
+        style="@style/NumpadDigits"
+        android:layout_marginBottom="8dp"
+        android:text="4"
+        app:layout_constraintBottom_toTopOf="@id/button_7"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/button_5"
+        style="@style/NumpadDigits"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="5"
+        app:layout_constraintBottom_toTopOf="@id/button_8"
+        app:layout_constraintEnd_toStartOf="@id/button_6"
+        app:layout_constraintStart_toEndOf="@id/button_4"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/button_6"
+        style="@style/NumpadDigits"
+        android:layout_marginBottom="8dp"
+        android:text="6"
+        app:layout_constraintBottom_toTopOf="@id/button_9"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/button_7"
+        style="@style/NumpadDigits"
+        android:layout_marginBottom="8dp"
+        android:text="7"
+        app:layout_constraintBottom_toTopOf="@id/spacer"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/button_8"
+        style="@style/NumpadDigits"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="8"
+        app:layout_constraintBottom_toTopOf="@id/button_0"
+        app:layout_constraintEnd_toStartOf="@id/button_9"
+        app:layout_constraintStart_toEndOf="@id/button_7"
+        tools:ignore="HardcodedText" />
+
+    <TextView
+        android:id="@+id/button_9"
+        style="@style/NumpadDigits"
+        android:layout_marginBottom="8dp"
+        android:text="9"
+        app:layout_constraintBottom_toTopOf="@id/button_backspace"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="HardcodedText" />
+
+    <View
+        android:id="@+id/spacer"
+        style="@style/NumpadItem"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/button_0"
+        style="@style/NumpadDigits"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:text="0"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/button_backspace"
+        app:layout_constraintStart_toEndOf="@id/spacer"
+        tools:ignore="HardcodedText" />
+
+    <ImageButton
+        android:id="@+id/button_backspace"
+        style="@style/NumpadItem"
+        android:background="@null"
+        android:src="@drawable/ic_backspace"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:ignore="ContentDescription" />
+
+</android.support.constraint.ConstraintLayout>

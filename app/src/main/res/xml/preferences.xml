@@ -97,21 +97,10 @@
             android:summary="@string/pref_webview_initial_zoom_summary"
             android:title="@string/pref_webview_initial_zoom_title" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="@string/pref_applock_category">
-
-        <EditTextPreference
-            android:icon="@null"
-            android:inputType="number"
+    <PreferenceCategory android:title="Privacy">
+        <Preference
             android:key="pref_app_lock"
-            android:selectAllOnFocus="true"
-            android:summary="@string/pref_app_lock_summary"
-            android:title="@string/pref_app_lock_title" />
-        <CheckBoxPreference
-            android:defaultValue="@string/pref_app_lock_vibrate_default"
-            android:icon="@null"
-            android:key="pref_app_lock_vibrate"
-            android:summary="@string/pref_app_lock_vibrate_summary"
-            android:title="@string/pref_app_lock_vibrate_title" />
+            android:title="App Lock" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_updates_category">
 

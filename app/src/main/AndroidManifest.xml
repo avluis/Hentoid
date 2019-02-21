@@ -136,10 +136,14 @@
             android:configChanges="orientation|screenSize"
             android:theme="@style/ImportTheme" />
         <activity
-            android:name=".activities.AppLockActivity"
-            android:launchMode="singleTask"
-            android:theme="@style/AppTheme.TaupeBackgroundNoActionBar"
-            android:windowSoftInputMode="stateAlwaysVisible" />
+            android:name=".activities.UnlockActivity"
+            android:noHistory="true"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.TaupeBackgroundNoActionBar" />
+        <activity
+            android:name=".activities.PinPreferenceActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.Search" />
         <activity
             android:name=".activities.IntentActivity"
             android:theme="@style/BrowserTheme">

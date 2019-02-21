@@ -91,10 +91,6 @@ public final class Preferences {
                 .apply();
     }
 
-    public static boolean getAppLockVibrate() {
-        return sharedPreferences.getBoolean(Key.PREF_APP_LOCK_VIBRATE, Default.PREF_APP_LOCK_VIBRATE_DEFAULT);
-    }
-
     public static boolean getEndlessScroll() {
         return sharedPreferences.getBoolean(Key.PREF_ENDLESS_SCROLL, Default.PREF_ENDLESS_SCROLL_DEFAULT);
     }
@@ -185,7 +181,6 @@ public final class Preferences {
         static final String PREF_ORDER_CONTENT_LISTS = "pref_order_content_lists";
         static final String PREF_ORDER_ATTRIBUTE_LISTS = "pref_order_attribute_lists";
         static final String PREF_FIRST_RUN = "pref_first_run";
-        static final String PREF_APP_LOCK_VIBRATE = "pref_app_lock_vibrate";
         static final String PREF_ENDLESS_SCROLL = "pref_endless_scroll";
         static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
@@ -206,7 +201,6 @@ public final class Preferences {
         static final int PREF_ORDER_CONTENT_DEFAULT = Constant.PREF_ORDER_CONTENT_TITLE_ALPHA;
         static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.PREF_ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
-        static final boolean PREF_APP_LOCK_VIBRATE_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
         static final boolean PREF_HIDE_RECENT_DEFAULT = (!BuildConfig.DEBUG); // Debug apps always visible to facilitate video capture
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;

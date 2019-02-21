@@ -32,7 +32,7 @@
     <screenName name="me.devsaki.hentoid.activities.IntentActivity">Launch: Intent</screenName>
     <screenName name="me.devsaki.hentoid.activities.SplashActivity">Launch: Splash</screenName>
     <screenName name="me.devsaki.hentoid.activities.IntroActivity">Launch: Intro</screenName>
-    <screenName name="me.devsaki.hentoid.activities.AppLockActivity">Launch: App Lock</screenName>
+    <screenName name="me.devsaki.hentoid.activities.UnlockActivity">Launch: App Lock</screenName>
 
     <screenName name="me.devsaki.hentoid.activities.AboutActivity">Misc: About</screenName>
     <screenName name="me.devsaki.hentoid.activities.ImportActivity">Misc: Import</screenName>

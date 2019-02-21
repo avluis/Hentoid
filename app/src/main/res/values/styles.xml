@@ -41,4 +41,32 @@
         <item name="android:paddingRight">8dp</item>
     </style>
 
+    <style name="PinPlaceholder">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">48dp</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:visibility">invisible</item>
+        <item name="android:src">@drawable/ic_circle</item>
+    </style>
+
+    <style name="PlaceholderUnderline">
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">24dp</item>
+        <item name="android:background">@android:color/white</item>
+    </style>
+
+    <style name="NumpadItem">
+        <item name="android:layout_width">64dp</item>
+        <item name="android:layout_height">64dp</item>
+    </style>
+
+    <style name="NumpadDigits" parent="NumpadItem">
+        <item name="android:background">@drawable/bg_button_circle</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:gravity">center</item>
+    </style>
+
 </resources>
