@@ -7,19 +7,15 @@ import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
-import android.util.Pair;
 
 import com.crashlytics.android.Crashlytics;
-import com.facebook.stetho.Stetho;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.leakcanary.LeakCanary;
 
-import java.util.List;
-
 import io.fabric.sdk.android.Fabric;
+import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.HentoidDB;
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.DatabaseMaintenanceService;
@@ -92,9 +88,11 @@ public class HentoidApp extends Application {
         FirebaseAnalytics.getInstance(this).setAnalyticsCollectionEnabled(!isAnalyticsDisabled);
 
         // Stetho
+/*
         if (BuildConfig.DEBUG) {
             Stetho.initializeWithDefaults(this);
         }
+*/
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -120,53 +118,13 @@ public class HentoidApp extends Application {
      * Clean up and upgrade database
      */
     private void performDatabaseHousekeeping() {
-        HentoidDB db = HentoidDB.getInstance(this);
-        Timber.d("Content item(s) count: %s", db.countContentEntries());
+        HentoidDB oldDB = HentoidDB.getInstance(this);
 
         // Perform technical data updates that need to be done before app launches
-        UpgradeTo(BuildConfig.VERSION_CODE, db);
+        DatabaseMaintenance.performOldDatabaseUpdate(oldDB);
 
         // Launch a service that will perform non-structural DB housekeeping tasks
         Intent intent = DatabaseMaintenanceService.makeIntent(this);
         startService(intent);
-    }
-
-    /**
-     * Handles complex DB version updates at startup
-     *
-     * @param versionCode Current app version
-     * @param db          Hentoid DB
-     */
-    @SuppressWarnings("deprecation")
-    private void UpgradeTo(int versionCode, HentoidDB db) {
-        if (versionCode > 43) // Update all "storage_folder" fields in CONTENT table (mandatory)
-        {
-            List<Content> contents = db.selectContentEmptyFolder();
-            if (contents != null && contents.size() > 0) {
-                for (int i = 0; i < contents.size(); i++) {
-                    Content content = contents.get(i);
-                    content.setStorageFolder("/" + content.getSite().getDescription() + "/" + content.getOldUniqueSiteId()); // This line must use deprecated code, as it migrates it to newest version
-                    db.updateContentStorageFolder(content);
-                }
-            }
-        }
-        if (versionCode > 59) // Migrate the old download queue (books in DOWNLOADING or PAUSED status) in the queue table
-        {
-            // Gets books that should be in the queue but aren't
-            List<Integer> contentToMigrate = db.selectContentsForQueueMigration();
-
-            if (contentToMigrate.size() > 0) {
-                // Gets last index of the queue
-                List<Pair<Integer, Integer>> queue = db.selectQueue();
-                int lastIndex = 1;
-                if (queue.size() > 0) {
-                    lastIndex = queue.get(queue.size() - 1).second + 1;
-                }
-
-                for (int i : contentToMigrate) {
-                    db.insertQueue(i, lastIndex++);
-                }
-            }
-        }
     }
 }

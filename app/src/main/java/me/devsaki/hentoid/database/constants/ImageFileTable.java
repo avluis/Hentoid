@@ -6,7 +6,7 @@ package me.devsaki.hentoid.database.constants;
  */
 public abstract class ImageFileTable {
 
-    public static final String TABLE_NAME = "image_file";
+    private static final String TABLE_NAME = "image_file";
 
     private static final String ID_COLUMN = "id";
     private static final String CONTENT_ID_COLUMN = "content_id";
@@ -22,17 +22,6 @@ public abstract class ImageFileTable {
             + DOWNLOAD_PARAMS_COLUMN + " TEXT"
             + ")";
 
-    // INSERT
-    public static final String INSERT_STATEMENT = "INSERT OR REPLACE INTO " + TABLE_NAME
-            + " VALUES (?,?,?,?,?,?,?);";
-
-    // DELETE
-    public static final String DELETE_STATEMENT = "DELETE FROM " + TABLE_NAME + " WHERE "
-            + CONTENT_ID_COLUMN + " = ?";
-
-    // UDPATE
-    public static final String UPDATE_IMAGE_FILE_STATUS_FROM_ID = "UPDATE " + TABLE_NAME + " SET " + STATUS_COLUMN + " = ? WHERE " + ID_COLUMN + " = ?";
-    public static final String UPDATE_IMAGE_FILE_STATUS_FROM_ID_AND_STATUS = "UPDATE " + TABLE_NAME + " SET " + STATUS_COLUMN + " = ? WHERE " + CONTENT_ID_COLUMN + " = ? AND "+STATUS_COLUMN +" = ?";
 
     // SELECT
     public static final String SELECT_BY_CONTENT_ID = "SELECT " + ID_COLUMN + ", "
@@ -40,7 +29,6 @@ public abstract class ImageFileTable {
             + ", " + NAME_COLUMN + ", " + DOWNLOAD_PARAMS_COLUMN + " FROM " + TABLE_NAME + " C WHERE C." + CONTENT_ID_COLUMN
             + " = ? ORDER BY " + ORDER_COLUMN;
 
-    public static final String SELECT_PROCESSED_BY_CONTENT_ID = "SELECT " + STATUS_COLUMN + ", COUNT(*) FROM " + TABLE_NAME + " WHERE " + CONTENT_ID_COLUMN + " = ? GROUP BY 1";
     // Corresponding index
-    public static final String SELECT_PROCESSED_BY_CONTENT_ID_IDX  = "CREATE INDEX image_file_content ON " + TABLE_NAME + " (" + CONTENT_ID_COLUMN + ", " + STATUS_COLUMN + ")";
+    public static final String SELECT_PROCESSED_BY_CONTENT_ID_IDX = "CREATE INDEX image_file_content ON " + TABLE_NAME + " (" + CONTENT_ID_COLUMN + ", " + STATUS_COLUMN + ")";
 }

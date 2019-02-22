@@ -1,12 +1,19 @@
 package me.devsaki.hentoid.database.domains;
 
 import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import io.objectbox.annotation.Backlink;
+import io.objectbox.annotation.Convert;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Transient;
+import io.objectbox.relation.ToMany;
 import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
 import me.devsaki.hentoid.activities.websites.BaseWebActivity;
 import me.devsaki.hentoid.activities.websites.EHentaiActivity;
@@ -26,16 +33,21 @@ import me.devsaki.hentoid.util.AttributeMap;
  * Created by DevSaki on 09/05/2015.
  * Content builder
  */
+@Entity
 public class Content implements Serializable {
 
+    @Id
+    private long id;
     @Expose
     private String url;
+    @Expose(serialize = false, deserialize = false)
+    private String uniqueSiteId; // Has to be queryable in DB, hence has to be a field
     @Expose
     private String title;
     @Expose
     private String author;
-    @Expose
-    private AttributeMap attributes;
+    @Expose(serialize = false, deserialize = false)
+    private ToMany<Attribute> attributes;
     @Expose
     private String coverImageUrl;
     @Expose
@@ -45,10 +57,13 @@ public class Content implements Serializable {
     @Expose
     private long downloadDate;
     @Expose
+    @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
+    @Expose(serialize = false, deserialize = false)
+    @Backlink(to = "content")
+    private ToMany<ImageFile> imageFiles;
     @Expose
-    private List<ImageFile> imageFiles;
-    @Expose
+    @Convert(converter = Site.SiteConverter.class, dbType = Long.class)
     private Site site;
     private String storageFolder; // Not exposed because it will vary according to book location -> valued at import
     @Expose
@@ -58,28 +73,67 @@ public class Content implements Serializable {
     @Expose
     private long lastReadDate;
     // Temporary during SAVED state only; no need to expose them for JSON persistence
+    @Expose(serialize = false, deserialize = false)
     private String downloadParams;
-    // Runtime attributes; no need to expose them for JSON persistence
+
+    // Runtime attributes; no need to expose them nor to persist them
+    @Transient
     private double percent;
+    @Transient
     private int queryOrder;
+    @Transient
     private boolean selected = false;
 
+    // Kept for retro-compatibility with contentV2.json Hentoid files
+    @Transient
+    @Expose
+    @SerializedName("attributes")
+    private AttributeMap attributeMap;
+    @Transient
+    @Expose
+    @SerializedName("imageFiles")
+    private ArrayList<ImageFile> imageList;
 
-    public AttributeMap getAttributes() {
-        if (null == attributes) attributes = new AttributeMap();
-        return attributes;
+
+    public List<Attribute> getAttributes() {
+        return this.attributes;
     }
 
-    public Content setAttributes(AttributeMap attributes) {
+    public void setAttributes(ToMany<Attribute> attributes) {
         this.attributes = attributes;
+    }
+
+    public AttributeMap getAttributeMap() {
+        AttributeMap result = new AttributeMap();
+        for (Attribute a : attributes) {
+            a.computeUrl(this.getSite());
+            result.add(a);
+        }
+        return result;
+    }
+
+    public Content addAttributes(AttributeMap attributes) {
+        if (attributes != null) {
+            for (AttributeType type : attributes.keySet()) {
+                this.attributes.addAll(attributes.get(type));
+            }
+        }
         return this;
     }
 
-    public int getId() {
-        return url.hashCode();
+    public long getId() {
+        return this.id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public String getUniqueSiteId() {
+        return this.uniqueSiteId;
+    }
+
+    private String computeUniqueSiteId() {
         String[] paths;
 
         switch (site) {
@@ -167,7 +221,7 @@ public class Content implements Serializable {
             return url.substring(1, url.lastIndexOf("/"));
         } else {
             if (attributes != null) {
-                List<Attribute> attributesList = attributes.get(AttributeType.CATEGORY);
+                List<Attribute> attributesList = getAttributeMap().get(AttributeType.CATEGORY);
                 if (attributesList != null && attributesList.size() > 0) {
                     return attributesList.get(0).getName();
                 }
@@ -183,6 +237,7 @@ public class Content implements Serializable {
 
     public Content setUrl(String url) {
         this.url = url;
+        this.uniqueSiteId = computeUniqueSiteId();
         return this;
     }
 
@@ -243,15 +298,41 @@ public class Content implements Serializable {
 
     public Content populateAuthor() {
         String author = "";
-        if (getAttributes().containsKey(AttributeType.ARTIST) && attributes.get(AttributeType.ARTIST).size() > 0)
-            author = attributes.get(AttributeType.ARTIST).get(0).getName();
+        AttributeMap attrMap = getAttributeMap();
+        if (attrMap.containsKey(AttributeType.ARTIST) && attrMap.get(AttributeType.ARTIST).size() > 0)
+            author = attrMap.get(AttributeType.ARTIST).get(0).getName();
         if (null == author || author.equals("")) // Try and get Circle
         {
-            if (attributes.containsKey(AttributeType.CIRCLE) && attributes.get(AttributeType.CIRCLE).size() > 0)
-                author = attributes.get(AttributeType.CIRCLE).get(0).getName();
+            if (attrMap.containsKey(AttributeType.CIRCLE) && attrMap.get(AttributeType.CIRCLE).size() > 0)
+                author = attrMap.get(AttributeType.CIRCLE).get(0).getName();
         }
         if (null == author) author = "";
         setAuthor(author);
+        return this;
+    }
+
+    public Content preJSONExport() { // TODO - this is shabby
+        this.attributeMap = getAttributeMap();
+        this.imageList = new ArrayList<>(imageFiles);
+        return this;
+    }
+
+    public Content postJSONImport() {   // TODO - this is shabby
+        if (null == site) site = Site.NONE;
+
+        if (this.attributeMap != null) {
+            this.attributes.clear();
+            for (AttributeType type : this.attributeMap.keySet()) {
+                for (Attribute attr : this.attributeMap.get(type))
+                    this.attributes.add(attr.computeLocation(site));
+            }
+        }
+        if (this.imageList != null) {
+            this.imageFiles.clear();
+            this.imageFiles.addAll(this.imageList);
+        }
+        this.populateAuthor();
+        this.uniqueSiteId = computeUniqueSiteId();
         return this;
     }
 
@@ -319,13 +400,13 @@ public class Content implements Serializable {
         return this;
     }
 
-    public List<ImageFile> getImageFiles() {
-        if (null == imageFiles) imageFiles = Collections.emptyList();
+    public ToMany<ImageFile> getImageFiles() {
         return imageFiles;
     }
 
-    public Content setImageFiles(List<ImageFile> imageFiles) {
-        this.imageFiles = imageFiles;
+    public Content addImageFiles(List<ImageFile> imageFiles) {
+        this.imageFiles.clear();
+        this.imageFiles.addAll(imageFiles);
         return this;
     }
 

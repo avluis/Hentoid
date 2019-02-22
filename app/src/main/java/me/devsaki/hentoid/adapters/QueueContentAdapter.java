@@ -2,7 +2,6 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +21,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -141,7 +141,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void attachSeries(ViewHolder holder, Content content) {
         String templateSeries = context.getString(R.string.work_series);
         StringBuilder series = new StringBuilder();
-        List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
+        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
             holder.tvSeries.setVisibility(View.GONE);
         } else {
@@ -173,9 +173,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         String templateArtist = context.getString(R.string.work_artist);
         StringBuilder artists = new StringBuilder();
         List<Attribute> attributes = new ArrayList<>();
-        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
+        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
         if (artistAttributes != null) attributes.addAll(artistAttributes);
-        List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
+        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
         if (circleAttributes != null) attributes.addAll(circleAttributes);
 
         boolean first = true;
@@ -204,7 +204,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void attachTags(ViewHolder holder, Content content) {
         String templateTags = context.getString(R.string.work_tags);
         StringBuilder tags = new StringBuilder();
-        List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
+        List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
@@ -296,29 +296,29 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      *
      * @param contentId ID of Content whose priority has to be raised
      */
-    private void moveUp(int contentId) {
-        HentoidDB db = HentoidDB.getInstance(context);
-        List<Pair<Integer, Integer>> queue = db.selectQueue();
+    private void moveUp(long contentId) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        List<QueueRecord> queue = db.selectQueue();
 
-        int prevItemId = 0;
+        long prevItemId = 0;
         int prevItemQueuePosition = -1;
         int prevItemPosition = -1;
         int loopPosition = 0;
 
         setNotifyOnChange(false); // Prevents every update from calling a screen refresh
 
-        for (Pair<Integer, Integer> p : queue) {
-            if (p.first.equals(contentId) && prevItemId != 0) {
-                db.udpateQueue(p.first, prevItemQueuePosition);
-                db.udpateQueue(prevItemId, p.second);
+        for (QueueRecord p : queue) {
+            if (p.content.getTargetId() == contentId && prevItemId != 0) {
+                db.udpateQueue(p.content.getTargetId(), prevItemQueuePosition);
+                db.udpateQueue(prevItemId, p.rank);
 
                 swap(prevItemPosition, loopPosition);
                 if (0 == prevItemPosition)
                     EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             } else {
-                prevItemId = p.first;
-                prevItemQueuePosition = p.second;
+                prevItemId = p.content.getTargetId();
+                prevItemQueuePosition = p.rank;
                 prevItemPosition = loopPosition;
             }
             loopPosition++;
@@ -332,25 +332,25 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      *
      * @param contentId ID of Content whose priority has to be raised to the top
      */
-    private void moveTop(int contentId) {
-        HentoidDB db = HentoidDB.getInstance(context);
-        List<Pair<Integer, Integer>> queue = db.selectQueue();
+    private void moveTop(long contentId) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        List<QueueRecord> queue = db.selectQueue();
 
-        int topItemId = 0;
+        long topItemId = 0;
         int topItemQueuePosition = -1;
         int loopPosition = 0;
 
         setNotifyOnChange(false);  // Prevents every update from calling a screen refresh
 
-        for (Pair<Integer, Integer> p : queue) {
+        for (QueueRecord p : queue) {
             if (0 == topItemId)
             {
-                topItemId = p.first;
-                topItemQueuePosition = p.second;
+                topItemId = p.content.getTargetId();
+                topItemQueuePosition = p.rank;
             }
 
-            if (p.first.equals(contentId)) {
-                db.udpateQueue(p.first, topItemQueuePosition); // Put selected item on top of list
+            if (p.content.getTargetId() == contentId) {
+                db.udpateQueue(p.content.getTargetId(), topItemQueuePosition); // Put selected item on top of list
 
                 Content c = getItem(loopPosition);
                 remove(c);
@@ -359,7 +359,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_SKIP));
                 break;
             } else {
-                db.udpateQueue(p.first, p.second + 1); // Depriorize every item by 1
+                db.udpateQueue(p.content.getTargetId(), p.rank+ 1); // Depriorize every item by 1
             }
             loopPosition++;
         }
@@ -372,25 +372,25 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      *
      * @param contentId ID of Content whose priority has to be lowered
      */
-    private void moveDown(int contentId) {
-        HentoidDB db = HentoidDB.getInstance(context);
-        List<Pair<Integer, Integer>> queue = db.selectQueue();
+    private void moveDown(long contentId) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        List<QueueRecord> queue = db.selectQueue();
 
-        int itemId = 0;
+        long itemId = 0;
         int itemQueuePosition = -1;
         int itemPosition = -1;
         int loopPosition = 0;
 
         setNotifyOnChange(false);  // Prevents every update from calling a screen refresh
 
-        for (Pair<Integer, Integer> p : queue) {
-            if (p.first.equals(contentId)) {
-                itemId = p.first;
-                itemQueuePosition = p.second;
+        for (QueueRecord p : queue) {
+            if (p.content.getTargetId() == contentId) {
+                itemId = p.content.getTargetId();
+                itemQueuePosition = p.rank;
                 itemPosition = loopPosition;
             } else if (itemId != 0) {
-                db.udpateQueue(p.first, itemQueuePosition);
-                db.udpateQueue(itemId, p.second);
+                db.udpateQueue(p.content.getTargetId(), itemQueuePosition);
+                db.udpateQueue(itemId, p.rank);
 
                 swap(itemPosition, loopPosition);
 
@@ -412,7 +412,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void cancel(Content content) {
         // Remove content altogether from the DB (including queue)
-        HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        db.deleteQueue(content);
         db.deleteContent(content);
         // Remove the content from the disk
         FileHelper.removeContent(content);
@@ -424,9 +425,10 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     public void removeFromQueue(Content content)
     {
-        HentoidDB db = HentoidDB.getInstance(context);
-        db.deleteQueueById(content.getId());
-
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        // Remove content from the queue in the DB
+        db.deleteQueue(content);
+        // Remove the content from the in-memory list and the UI
         super.remove(content);
     }
 

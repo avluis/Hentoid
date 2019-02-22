@@ -12,7 +12,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.util.SortedListAdapterCallback;
-import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -36,10 +35,11 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ContentListener;
@@ -160,7 +160,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
-        attachButtons(holder, content, pos);
+        attachButtons(holder, content);
         attachOnClickListeners(holder, content, pos);
     }
 
@@ -218,7 +218,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void attachSeries(ContentHolder holder, Content content) {
         String templateSeries = context.getResources().getString(R.string.work_series);
         StringBuilder seriesBuilder = new StringBuilder();
-        List<Attribute> seriesAttributes = content.getAttributes().get(AttributeType.SERIE);
+        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
         if (seriesAttributes == null) {
             holder.tvSeries.setVisibility(View.GONE);
         } else {
@@ -244,9 +244,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         String templateArtist = context.getResources().getString(R.string.work_artist);
         StringBuilder artistsBuilder = new StringBuilder();
         List<Attribute> attributes = new ArrayList<>();
-        List<Attribute> artistAttributes = content.getAttributes().get(AttributeType.ARTIST);
+        List<Attribute> artistAttributes = content.getAttributeMap().get(AttributeType.ARTIST);
         if (artistAttributes != null) attributes.addAll(artistAttributes);
-        List<Attribute> circleAttributes = content.getAttributes().get(AttributeType.CIRCLE);
+        List<Attribute> circleAttributes = content.getAttributeMap().get(AttributeType.CIRCLE);
         if (circleAttributes != null) attributes.addAll(circleAttributes);
 
         if (attributes.isEmpty()) {
@@ -272,7 +272,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void attachTags(ContentHolder holder, Content content) {
         String templateTags = context.getResources().getString(R.string.work_tags);
         StringBuilder tagsBuilder = new StringBuilder();
-        List<Attribute> tagsAttributes = content.getAttributes().get(AttributeType.TAG);
+        List<Attribute> tagsAttributes = content.getAttributeMap().get(AttributeType.TAG);
         if (tagsAttributes != null) {
             for (int i = 0; i < tagsAttributes.size(); i++) {
                 Attribute attribute = tagsAttributes.get(i);
@@ -287,7 +287,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         holder.tvTags.setText(Helper.fromHtml(tagsBuilder.toString()));
     }
 
-    private void attachButtons(ContentHolder holder, final Content content, int pos) {
+    private void attachButtons(ContentHolder holder, final Content content) {
         // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
@@ -458,7 +458,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void downloadContent(Content item) {
-        HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         item.setDownloadDate(new Date().getTime());
 
@@ -469,13 +469,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             db.insertContent(item);
         } else {
             item.setStatus(StatusContent.DOWNLOADING);
-            db.updateContentStatus(item);
+            db.updateContentStatusAndDate(item);
         }
 
-        List<Pair<Integer, Integer>> queue = db.selectQueue();
+        List<QueueRecord> queue = db.selectQueue();
         int lastIndex = 1;
         if (queue.size() > 0) {
-            lastIndex = queue.get(queue.size() - 1).second + 1;
+            lastIndex = queue.get(queue.size() - 1).rank + 1;
         }
         db.insertQueue(item.getId(), lastIndex);
 
@@ -538,7 +538,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         content.setFavourite(!content.isFavourite());
 
         // Persist in it DB
-        final HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.updateContentFavourite(content);
 
         // Persist in it JSON
@@ -546,7 +546,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         File dir = new File(rootFolderName, content.getStorageFolder());
 
         try {
-            JsonHelper.saveJson(content, dir);
+            JsonHelper.saveJson(content.preJSONExport(), dir);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }
@@ -679,7 +679,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void deleteItem(final Content item) {
         remove(item);
 
-        final HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         AsyncTask.execute(() -> {
             FileHelper.removeContent(item);
             db.deleteContent(item);
@@ -698,7 +698,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         mSortedList.endBatchedUpdates();
         itemSelectListener.onItemClear(0);
 
-        final HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         AsyncTask.execute(() -> {
             for (Content item : contents) {
@@ -750,7 +750,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     // ContentListener implementation
     @Override
-    public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) { // Listener for pages retrieval in Mikan mode
+    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) { // Listener for pages retrieval in Mikan mode
         if (1 == results.size()) // 1 content with pages
         {
             downloadContent(results.get(0));

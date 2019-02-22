@@ -37,10 +37,9 @@ public class PandaContent {
             result.setQtyPages(qtyPages);
 
             AttributeMap attributes = new AttributeMap();
-            result.setAttributes(attributes);
-
-            Attribute attribute = new Attribute(AttributeType.SERIE, series.text().substring(0, series.text().toLowerCase().lastIndexOf("manga") - 1), series.attr("href"));
+            Attribute attribute = new Attribute(AttributeType.SERIE, series.text().substring(0, series.text().toLowerCase().lastIndexOf("manga") - 1), series.attr("href"), Site.PANDA);
             attributes.add(attribute);
+            result.addAttributes(attributes);
         }
 
         result.populateAuthor();

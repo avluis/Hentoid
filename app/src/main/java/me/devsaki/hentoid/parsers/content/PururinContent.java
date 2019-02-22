@@ -25,7 +25,7 @@ public class PururinContent {
     private List<Element> artists;
     @Selector(value = "table.table-gallery-info a[href*='/tags/circle']")
     private List<Element> circles;
-    @Selector(value = "table.table-gallery-info a[href*='/tags/contents']")
+    @Selector(value = "table.table-gallery-info a[href*='/tags/content']")
     private List<Element> tags;
     @Selector(value = "table.table-gallery-info a[href*='/tags/parody']")
     private List<Element> series;
@@ -62,15 +62,14 @@ public class PururinContent {
         result.setQtyPages(qtyPages);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
-
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.PURURIN);
+        result.addAttributes(attributes);
 
         result.populateAuthor();
         result.setStatus(StatusContent.SAVED);

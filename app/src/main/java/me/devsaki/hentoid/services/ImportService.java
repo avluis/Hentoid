@@ -6,8 +6,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
-
-import com.annimon.stream.Stream;
+import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -17,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ContentV1;
@@ -36,8 +35,6 @@ import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
-
-import static com.annimon.stream.Collectors.toList;
 
 /**
  * Service responsible for importing an existing library.
@@ -108,6 +105,13 @@ public class ImportService extends IntentService {
         EventBus.getDefault().postSticky(new ImportEvent(ImportEvent.EV_COMPLETE, booksOK, booksKO, nbBooks, cleanupLogFile));
     }
 
+    private void trace(int priority, List<String> memoryLog, String s, String... t) {
+        s = String.format(s, (Object[]) t);
+        Timber.log(priority, s);
+        if (null != memoryLog) memoryLog.add(s);
+    }
+
+
     /**
      * Import books from known source folders
      *
@@ -116,64 +120,68 @@ public class ImportService extends IntentService {
     private void startImport(boolean cleanup) {
         int booksOK = 0;
         int booksKO = 0;
-        String message;
-        List<String> cleanupLog = cleanup ? new ArrayList<>() : null;
+        Content content = null;
+        List<String> log = new ArrayList<>();
 
         notificationManager.startForeground(new ImportStartNotification());
 
         List<File> files = FileHelper.findFilesRecursively(new File(Preferences.getRootFolderName()), "json");
 
-        Timber.i("Import books starting : %s books total", files.size());
-        Timber.i("Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
+
+        trace(Log.DEBUG, log, "Import books starting : %s books total", files.size() + "");
+        trace(Log.INFO, log, "Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
         for (int i = 0; i < files.size(); i++) {
             File file = files.get(i);
 
-            Content content = importJson(file);
-            if (content != null) {
-                if (cleanup) {
-                    String canonicalBookDir = FileHelper.formatDirPath(content);
+            try {
+                content = importJson(file);
+                if (content != null) {
+                    if (cleanup) {
+                        String canonicalBookDir = FileHelper.formatDirPath(content);
 
-                    String[] currentPathParts = file.getAbsolutePath().split("/");
-                    String currentBookDir = "/" + currentPathParts[currentPathParts.length - 2] + "/" + currentPathParts[currentPathParts.length - 1];
+                        String[] currentPathParts = file.getAbsolutePath().split("/");
+                        String currentBookDir = "/" + currentPathParts[currentPathParts.length - 2] + "/" + currentPathParts[currentPathParts.length - 1];
 
-                    if (!canonicalBookDir.equals(currentBookDir)) {
-                        String settingDir = Preferences.getRootFolderName();
-                        if (settingDir.isEmpty()) {
-                            settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
+                        if (!canonicalBookDir.equals(currentBookDir)) {
+                            String settingDir = Preferences.getRootFolderName();
+                            if (settingDir.isEmpty()) {
+                                settingDir = FileHelper.getDefaultDir(this, canonicalBookDir).getAbsolutePath();
+                            }
+
+                            if (FileHelper.renameDirectory(file, new File(settingDir, canonicalBookDir))) {
+                                content.setStorageFolder(canonicalBookDir);
+                                trace(Log.INFO, log, "[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
+                            } else {
+                                trace(Log.WARN, log, "[Rename KO] Could not rename file %s to %s", currentBookDir, canonicalBookDir);
+                            }
                         }
-
-                        if (FileHelper.renameDirectory(file, new File(settingDir, canonicalBookDir))) {
-                            content.setStorageFolder(canonicalBookDir);
-                            message = String.format("[Rename OK] Folder %s renamed to %s", currentBookDir, canonicalBookDir);
-                        } else {
-                            message = String.format("[Rename KO] Could not rename file %s to %s", currentBookDir, canonicalBookDir);
-                        }
-                        cleanupLog.add(message);
-                        Timber.i(message);
+                    }
+                    ObjectBoxDB.getInstance(this).insertContent(content);
+                    booksOK++;
+                    trace(Log.INFO, log, "Import book OK : %s", file.getAbsolutePath());
+                } else {
+                    booksKO++;
+                    trace(Log.WARN, log, "Import book KO : %s", file.getAbsolutePath());
+                    // Deletes the folder if cleanup is active
+                    if (cleanup) {
+                        boolean success = FileHelper.removeFile(file);
+                        trace(Log.INFO, log, "[Remove %s] Folder %s", success ? "OK" : "KO", file.getAbsolutePath());
                     }
                 }
-                HentoidDB.getInstance(this).insertContent(content);
-                booksOK++;
-                Timber.d("Import book OK : %s", file.getAbsolutePath());
-            } else {
+            } catch (Exception e) {
+                Timber.e(e, "Import book ERROR");
+                if (null == content)
+                    content = new Content().setTitle("none").setUrl("").setSite(Site.NONE);
                 booksKO++;
-                Timber.w("Import book KO : %s", file.getAbsolutePath());
-                // Deletes the folder if cleanup is active
-                if (cleanup) {
-                    boolean success = FileHelper.removeFile(file);
-                    message = String.format("[Remove %s] Folder %s", success ? "OK" : "KO", file.getAbsolutePath());
-                    cleanupLog.add(message);
-                    Timber.i(message);
-                }
+                trace(Log.ERROR, log, "Import book ERROR : %s %s", e.getMessage(), file.getAbsolutePath());
             }
 
             eventProgress(content, files.size(), booksOK, booksKO);
         }
-        Timber.i("Import books complete : %s OK; %s KO", booksOK, booksKO);
+        trace(Log.INFO, log, "Import books complete : %s OK; %s KO", booksOK + "", booksKO + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = null;
-        if (cleanup) cleanupLogFile = writeCleanupLog(cleanupLog);
+        File cleanupLogFile = writeLog(log, cleanup);
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -182,12 +190,14 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    private File writeCleanupLog(List<String> log) {
+    private File writeLog(List<String> log, boolean isCleanup) {
         // Create the log
         StringBuilder logStr = new StringBuilder();
         logStr.append("Cleanup log : begin").append(System.getProperty("line.separator"));
-        if (log.isEmpty()) logStr.append("No activity to report - All folder names are formatted as expected.");
-        else for (String line : log) logStr.append(line).append(System.getProperty("line.separator"));
+        if (log.isEmpty())
+            logStr.append("No activity to report - All folder names are formatted as expected.");
+        else for (String line : log)
+            logStr.append(line).append(System.getProperty("line.separator"));
         logStr.append("Cleanup log : end");
 
         // Save it
@@ -200,7 +210,7 @@ public class ImportService extends IntentService {
             } else {
                 root = new File(settingDir);
             }
-            File cleanupLogFile = new File(root, "cleanup_log.txt");
+            File cleanupLogFile = new File(root, isCleanup ? "cleanup_log.txt" : "import_log.txt");
             FileHelper.saveBinaryInFile(cleanupLogFile, logStr.toString().getBytes());
             return cleanupLogFile;
         } catch (Exception e) {
@@ -224,7 +234,7 @@ public class ImportService extends IntentService {
     }
 
     @SuppressWarnings("deprecation")
-    private static List<Attribute> from(List<URLBuilder> urlBuilders) {
+    private static List<Attribute> from(List<URLBuilder> urlBuilders, Site site) {
         List<Attribute> attributes = null;
         if (urlBuilders == null) {
             return null;
@@ -232,7 +242,7 @@ public class ImportService extends IntentService {
         if (urlBuilders.size() > 0) {
             attributes = new ArrayList<>();
             for (URLBuilder urlBuilder : urlBuilders) {
-                Attribute attribute = from(urlBuilder, AttributeType.TAG);
+                Attribute attribute = from(urlBuilder, AttributeType.TAG, site);
                 if (attribute != null) {
                     attributes.add(attribute);
                 }
@@ -243,7 +253,7 @@ public class ImportService extends IntentService {
     }
 
     @SuppressWarnings("deprecation")
-    private static Attribute from(URLBuilder urlBuilder, AttributeType type) {
+    private static Attribute from(URLBuilder urlBuilder, AttributeType type, Site site) {
         if (urlBuilder == null) {
             return null;
         }
@@ -252,10 +262,7 @@ public class ImportService extends IntentService {
                 throw new AttributeException("Problems loading attribute v2.");
             }
 
-            return new Attribute()
-                    .setName(urlBuilder.getDescription())
-                    .setUrl(urlBuilder.getId())
-                    .setType(type);
+            return new Attribute(type, urlBuilder.getDescription(), urlBuilder.getId(), site);
         } catch (Exception e) {
             Timber.e(e, "Parsing URL to attribute");
             return null;
@@ -275,9 +282,9 @@ public class ImportService extends IntentService {
             content.setHtmlDescription(doujinBuilder.getDescription());
             content.setTitle(doujinBuilder.getTitle());
             content.setSeries(from(doujinBuilder.getSeries(),
-                    AttributeType.SERIE));
+                    AttributeType.SERIE, content.getSite()));
             Attribute artist = from(doujinBuilder.getArtist(),
-                    AttributeType.ARTIST);
+                    AttributeType.ARTIST, content.getSite());
             List<Attribute> artists = null;
             if (artist != null) {
                 artists = new ArrayList<>(1);
@@ -288,15 +295,15 @@ public class ImportService extends IntentService {
             content.setCoverImageUrl(doujinBuilder.getUrlImageTitle());
             content.setQtyPages(doujinBuilder.getQtyPages());
             Attribute translator = from(doujinBuilder.getTranslator(),
-                    AttributeType.TRANSLATOR);
+                    AttributeType.TRANSLATOR, content.getSite());
             List<Attribute> translators = null;
             if (translator != null) {
                 translators = new ArrayList<>(1);
                 translators.add(translator);
             }
             content.setTranslators(translators);
-            content.setTags(from(doujinBuilder.getLstTags()));
-            content.setLanguage(from(doujinBuilder.getLanguage(), AttributeType.LANGUAGE));
+            content.setTags(from(doujinBuilder.getLstTags(), content.getSite()));
+            content.setLanguage(from(doujinBuilder.getLanguage(), AttributeType.LANGUAGE, content.getSite()));
 
             content.setMigratedStatus();
             content.setDownloadDate(new Date().getTime());
@@ -305,7 +312,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
             try {
-                JsonHelper.saveJson(contentV2, file);
+                JsonHelper.saveJson(contentV2.preJSONExport(), file);
             } catch (IOException e) {
                 Timber.e(e,
                         "Error converting JSON (old) to JSON (v2): %s", content.getTitle());
@@ -333,7 +340,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
             try {
-                JsonHelper.saveJson(contentV2, file);
+                JsonHelper.saveJson(contentV2.preJSONExport(), file);
             } catch (IOException e) {
                 Timber.e(e, "Error converting JSON (v1) to JSON (v2): %s", content.getTitle());
             }
@@ -350,9 +357,7 @@ public class ImportService extends IntentService {
     private static Content importJsonV2(File json) {
         try {
             Content content = JsonHelper.jsonToObject(json, Content.class);
-
-            if (null == content.getAuthor()) content.populateAuthor();
-            if (null == content.getSite()) content.setSite(Site.NONE);
+            content.postJSONImport();
 
             String fileRoot = Preferences.getRootFolderName();
             content.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));

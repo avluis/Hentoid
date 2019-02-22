@@ -5,7 +5,7 @@ import android.content.Context;
 import java.util.ArrayList;
 import java.util.List;
 
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
@@ -30,8 +30,8 @@ public class LibraryMatcher {
             }
 
             // Get matching content from library
-            HentoidDB db = HentoidDB.getInstance(context);
-            List<Content> matchedContent = db.selectContentByExternalRef(site, uniqueIds);
+            ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+            List<Content> matchedContent = db.selectContentBySourceId(site, uniqueIds);
 
             // Given matched content properties from their library counterpart
             //   - status (instead of default ONLINE status)

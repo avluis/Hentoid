@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
@@ -31,12 +32,12 @@ public class ParseHelper {
         return s;
     }
 
-    public static void parseAttributes(AttributeMap map, AttributeType type, List<Element> elements, boolean filterCount) {
+    public static void parseAttributes(AttributeMap map, AttributeType type, List<Element> elements, boolean filterCount, Site site) {
         if (elements != null)
             for (Element a : elements) {
                 String name = a.text();
                 if (filterCount) name = removeBrackets(name);
-                Attribute attribute = new Attribute(type, name, a.attr("href"));
+                Attribute attribute = new Attribute(type, name, a.attr("href"), site);
 
                 map.add(attribute);
             }

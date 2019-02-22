@@ -48,7 +48,8 @@ import me.devsaki.hentoid.activities.SearchActivity;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
-import me.devsaki.hentoid.database.DatabaseCollectionAccessor;
+import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Language;
@@ -167,9 +168,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Collection accessor (DB or external, depending on mode)
     private CollectionAccessor collectionAccessor;
     // Total count of book in entire selected/queried collection (Adapter is in charge of updating it)
-    private int mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
+    private long mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
     // Total count of book in entire collection (Adapter is in charge of updating it)
-    private int mTotalCount = -1; // -1 = uninitialized (no query done yet)
+    private long mTotalCount = -1; // -1 = uninitialized (no query done yet)
     // Used to ignore native calls to onQueryTextChange
     boolean invalidateNextQueryTextChange = false;
     // Used to detect if the library has been refreshed
@@ -419,9 +420,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         outState.putInt(CURRENT_PAGE, currentPage);
         outState.putInt(MODE, mode);
 
-        ArrayList<Integer> selectedTagIds = new ArrayList<>();
-        for (Attribute a : selectedSearchTags) selectedTagIds.add(a.getId());
-        outState.putIntegerArrayList(SELECTED_TAGS, selectedTagIds);
+        long[] selectedTagIds = new long[selectedSearchTags.size()];
+        int index = 0;
+        for (Attribute a : selectedSearchTags) {
+            selectedTagIds[index++] = a.getId();
+        }
+        outState.putLongArray(SELECTED_TAGS, selectedTagIds);
+//        outState.putIntegerArrayList(SELECTED_TAGS, selectedTagIds);
     }
 
     @Override
@@ -434,10 +439,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             currentPage = state.getInt(CURRENT_PAGE);
             mode = state.getInt(MODE);
 
-            List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
+            long[] selectedTagIds = state.getLongArray(SELECTED_TAGS);
+//            List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
+            ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
             if (selectedTagIds != null) {
-                for (Integer i : selectedTagIds) {
-                    Attribute a = getDB().selectAttributeById(i);
+                for (long i : selectedTagIds) {
+                    Attribute a = db.selectAttributeById(i);
                     if (a != null) {
                         selectedSearchTags.add(a);
                     }
@@ -469,7 +476,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        collectionAccessor = (MODE_LIBRARY == mode) ? new DatabaseCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
+        collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
 
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
@@ -498,10 +505,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                 comparator = Content.DLDATE_INV_COMPARATOR;
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
                 comparator = Content.TITLE_ALPHA_COMPARATOR;
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                 comparator = Content.TITLE_ALPHA_INV_COMPARATOR;
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST:
@@ -766,10 +773,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED:
+            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 break;
             case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
@@ -816,7 +823,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         switch (item.getItemId()) {
             case R.id.action_order_AZ:
                 cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA;
                 mAdapter.setSortComparator(Content.TITLE_ALPHA_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
                 searchLibrary(true);
@@ -834,7 +841,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 break;
             case R.id.action_order_ZA:
                 cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_ALPHABETIC_INVERTED;
+                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED;
                 mAdapter.setSortComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
                 orderMenu.setIcon(R.drawable.ic_menu_sort_za);
                 searchLibrary(true);
@@ -1087,7 +1094,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     protected abstract void showToolbar(boolean show);
 
-    protected abstract void displayResults(List<Content> results, int totalSelectedContent);
+    protected abstract void displayResults(List<Content> results, long totalSelectedContent);
 
     /**
      * Indicates if current page is the last page of the library
@@ -1131,7 +1138,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     ContentListener implementation
      */
     @Override
-    public void onContentReady(List<Content> results, int totalSelectedContent, int totalContent) {
+    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
         Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
         isLoading = false;
 

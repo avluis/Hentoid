@@ -4,6 +4,7 @@ import com.google.gson.annotations.Expose;
 
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.enums.Site;
 
 public class MikanAttribute {
     // Published by both Collection and Attributes endpoints
@@ -22,24 +23,27 @@ public class MikanAttribute {
     @Expose
     public String type;
 
-    public Attribute toAttribute()
-    {
-        Attribute result = new Attribute();
-
-        result.setName(name);
-        result.setUrl(url);
-        result.setCount(count);
-        result.setExternalId(id);
-
+    Attribute toAttribute() {
         AttributeType type;
         switch (this.type) {
-            case "language" : type = AttributeType.LANGUAGE; break;
-            case "character" : type = AttributeType.CHARACTER; break;
-            case "artist" : type = AttributeType.ARTIST; break;
-            case "group" : type = AttributeType.CIRCLE; break;
-            default : type = AttributeType.TAG;
+            case "language":
+                type = AttributeType.LANGUAGE;
+                break;
+            case "character":
+                type = AttributeType.CHARACTER;
+                break;
+            case "artist":
+                type = AttributeType.ARTIST;
+                break;
+            case "group":
+                type = AttributeType.CIRCLE;
+                break;
+            default:
+                type = AttributeType.TAG;
         }
-        result.setType(type);
+        Attribute result = new Attribute(type, name, url, Site.HITOMI);
+        result.setCount(count);
+        result.setExternalId(id);
 
         return result;
     }

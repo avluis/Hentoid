@@ -2,6 +2,8 @@ package me.devsaki.hentoid.enums;
 
 import javax.annotation.Nullable;
 
+import io.objectbox.converter.PropertyConverter;
+
 /**
  * Created by DevSaki on 10/05/2015.
  * Content Status enumerator
@@ -37,4 +39,26 @@ public enum StatusContent {
     public String getDescription() {
         return description;
     }
+
+
+    public static class StatusContentConverter implements PropertyConverter<StatusContent, Integer> {
+        @Override
+        public StatusContent convertToEntityProperty(Integer databaseValue) {
+            if (databaseValue == null) {
+                return null;
+            }
+            for (StatusContent statusContent : StatusContent.values()) {
+                if (statusContent.getCode() == databaseValue) {
+                    return statusContent;
+                }
+            }
+            return StatusContent.SAVED;
+        }
+
+        @Override
+        public Integer convertToDatabaseValue(StatusContent entityProperty) {
+            return entityProperty == null ? null : entityProperty.getCode();
+        }
+    }
+
 }

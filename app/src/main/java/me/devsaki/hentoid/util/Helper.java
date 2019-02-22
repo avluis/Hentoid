@@ -233,12 +233,12 @@ public final class Helper {
         return str.toString();
     }
 
-    public static List<Integer> extractAttributeIdsByType(List<Attribute> attrs, AttributeType type) {
+    public static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType type) {
         return extractAttributeIdsByType(attrs, new AttributeType[]{type});
     }
 
-    private static List<Integer> extractAttributeIdsByType(List<Attribute> attrs, AttributeType[] types) {
-        List<Integer> result = new ArrayList<>();
+    private static List<Long> extractAttributeIdsByType(List<Attribute> attrs, AttributeType[] types) {
+        List<Long> result = new ArrayList<>();
 
         for (Attribute a : attrs) {
             for (AttributeType type : types) {
@@ -249,15 +249,15 @@ public final class Helper {
         return result;
     }
 
-    public static List<Integer> extractAttributesIds(List<Attribute> attrs) {
-        List<Integer> result = new ArrayList<>();
+    public static List<Long> extractAttributesIds(List<Attribute> attrs) {
+        List<Long> result = new ArrayList<>();
         for (Attribute attr : attrs) result.add(attr.getId());
         return result;
     }
 
     public static Uri buildSearchUri(List<Attribute> attributes) {
         AttributeMap metadataMap = new AttributeMap();
-        metadataMap.add(attributes);
+        metadataMap.addAll(attributes);
 
         Uri.Builder searchUri = new Uri.Builder()
                 .scheme("search")
@@ -281,7 +281,7 @@ public final class Helper {
                     for (String attrStr : uri.getQueryParameters(typeStr)) {
                         String[] attrParams = attrStr.split(";");
                         if (2 == attrParams.length) {
-                            result.add(new Attribute(type, attrParams[1], "").setExternalId(Integer.parseInt(attrParams[0])));
+                            result.add(new Attribute(type, attrParams[1]).setExternalId(Integer.parseInt(attrParams[0])));
                         }
                     }
             }
@@ -305,4 +305,10 @@ public final class Helper {
         return (int) (dp * scaleFactor);
     }
 
+
+    public static List<Long> getListFromPrimitiveArray(long[] input) {
+        List<Long> list = new ArrayList<>(input.length);
+        for (long n : input) list.add(n);
+        return list;
+    }
 }

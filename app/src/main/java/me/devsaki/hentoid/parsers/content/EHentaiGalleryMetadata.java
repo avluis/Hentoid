@@ -11,8 +11,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 
-import static me.devsaki.hentoid.enums.Site.NHENTAI;
-
 public class EHentaiGalleryMetadata {
 
     @Expose
@@ -47,8 +45,7 @@ public class EHentaiGalleryMetadata {
     public List<String> tags;
 
 
-    public Content toContent()
-    {
+    public Content toContent() {
         Content result = new Content();
 
         result.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
@@ -59,21 +56,16 @@ public class EHentaiGalleryMetadata {
                 .setSite(Site.EHENTAI);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
-
         String[] tagParts;
         AttributeType type;
         String name;
 
-        for (String s : tags)
-        {
+        for (String s : tags) {
             tagParts = s.split(":");
             if (1 == tagParts.length) {
                 type = AttributeType.TAG;
                 name = s;
-            }
-            else
-            {
+            } else {
                 name = tagParts[1];
                 switch (tagParts[0]) {
                     case "parody":
@@ -95,8 +87,9 @@ public class EHentaiGalleryMetadata {
                 }
             }
 
-            attributes.add(new Attribute(type, name, type.name()+"/"+name));
+            attributes.add(new Attribute(type, name, type.name() + "/" + name, Site.EHENTAI));
         }
+        result.addAttributes(attributes);
 
         return result;
     }

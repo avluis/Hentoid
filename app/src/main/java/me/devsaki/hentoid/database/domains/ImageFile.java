@@ -4,14 +4,21 @@ import com.google.gson.annotations.Expose;
 
 import java.util.Locale;
 
+import io.objectbox.annotation.Convert;
+import io.objectbox.annotation.Entity;
+import io.objectbox.annotation.Id;
+import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
 
 /**
  * Created by DevSaki on 10/05/2015.
  * Image File builder
  */
+@Entity
 public class ImageFile {
 
+    @Id
+    private long id;
     @Expose
     private Integer order;
     @Expose
@@ -19,10 +26,11 @@ public class ImageFile {
     @Expose
     private String name;
     @Expose
+    @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
     // Temporary during SAVED state only; no need to expose them for JSON persistence
     private String downloadParams;
-
+    public ToOne<Content> content;
 
     public ImageFile() {
     }
@@ -36,9 +44,18 @@ public class ImageFile {
         this.status = status;
     }
 
-
+/*
     public Integer getId() {
         return url.hashCode();
+    }
+*/
+
+    public long getId() {
+        return this.id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 
     public Integer getOrder() {

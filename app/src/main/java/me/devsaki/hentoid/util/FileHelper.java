@@ -29,7 +29,7 @@ import java.util.Locale;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
@@ -221,7 +221,7 @@ public class FileHelper {
      */
     private static boolean tryCleanDirectory(@NonNull File directory) throws IOException, SecurityException {
         File[] files = directory.listFiles();
-        if (files == null) throw new IOException("Failed to list contents of " + directory);
+        if (files == null) throw new IOException("Failed to list content of " + directory);
 
         boolean isSuccess = true;
 
@@ -490,12 +490,12 @@ public class FileHelper {
             }
         }
 
-        HentoidDB db = HentoidDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         content.increaseReads().setLastReadDate(new Date().getTime());
         db.updateContentReads(content);
 
         try {
-            JsonHelper.saveJson(content, dir);
+            JsonHelper.saveJson(content.preJSONExport(), dir);
         } catch (IOException e) {
             Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
         }

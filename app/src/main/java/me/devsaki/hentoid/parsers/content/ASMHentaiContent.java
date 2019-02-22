@@ -52,14 +52,14 @@ public class ASMHentaiContent {
         result.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
 
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.ASMHENTAI);
 
+        result.addAttributes(attributes);
         result.populateAuthor();
         result.setStatus(StatusContent.SAVED);
 

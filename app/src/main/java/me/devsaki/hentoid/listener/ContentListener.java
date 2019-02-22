@@ -5,7 +5,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 
 public interface ContentListener {
-    void onContentReady(List<Content> results, int totalSelectedContent, int totalContent);
+    void onContentReady(List<Content> results, long totalSelectedContent, long totalContent);
 
     void onContentFailed(Content content, String message);
 }

@@ -142,7 +142,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
     @Override
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         // NB : Mikan does not support booksPerPage and orderStyle params
-        List<Integer> sites = Helper.extractAttributeIdsByType(metadata, AttributeType.SOURCE);
+        List<Long> sites = Helper.extractAttributeIdsByType(metadata, AttributeType.SOURCE);
 
         if (sites.size() > 1) {
             throw new UnsupportedOperationException("Searching through multiple sites not supported yet by Mikan search");
@@ -160,7 +160,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         Map<String, String> params = new HashMap<>();
         params.put("page", page + "");
 
-        List<Integer> attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
+        List<Long> attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
         if (attributes.size() > 0) params.put("artist", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CIRCLE);
@@ -275,7 +275,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
             List<Content> list = new ArrayList<Content>() {{
                 add(content);
             }};
-            content.setImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
+            content.addImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
             listener.onContentReady(list, 1, 1);
         }
     }

@@ -21,6 +21,7 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.adapters.QueueContentAdapter;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -89,7 +90,8 @@ public class QueueFragment extends BaseFragment {
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
 
-        List<Content> contents = getDB().selectQueueContents();
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        List<Content> contents = db.selectQueueContents();
         mAdapter = new QueueContentAdapter(context, contents);
         mListView.setAdapter(mAdapter);
 
@@ -112,7 +114,8 @@ public class QueueFragment extends BaseFragment {
                 break;
             case DownloadEvent.EV_UNPAUSE:
                 ContentQueueManager.getInstance().unpauseQueue();
-                getDB().updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
+                ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+                db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
                 ContentQueueManager.getInstance().resumeQueue(context);
                 update(event.eventType);
                 break;

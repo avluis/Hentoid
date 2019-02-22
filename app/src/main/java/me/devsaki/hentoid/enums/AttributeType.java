@@ -2,6 +2,8 @@ package me.devsaki.hentoid.enums;
 
 import javax.annotation.Nullable;
 
+import io.objectbox.annotation.Entity;
+import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 
 /**
@@ -27,8 +29,7 @@ public enum AttributeType {
     private final int code;
     private final int icon;
 
-    AttributeType(int code, int icon)
-    {
+    AttributeType(int code, int icon) {
         this.code = code;
         this.icon = icon;
     }
@@ -61,5 +62,26 @@ public enum AttributeType {
 
     public int getIcon() {
         return icon;
+    }
+
+
+    public static class AttributeTypeConverter implements PropertyConverter<AttributeType, Integer> {
+        @Override
+        public AttributeType convertToEntityProperty(Integer databaseValue) {
+            if (databaseValue == null) {
+                return null;
+            }
+            for (AttributeType type : AttributeType.values()) {
+                if (type.getCode() == databaseValue) {
+                    return type;
+                }
+            }
+            return AttributeType.TAG;
+        }
+
+        @Override
+        public Integer convertToDatabaseValue(AttributeType entityProperty) {
+            return entityProperty == null ? null : entityProperty.getCode();
+        }
     }
 }

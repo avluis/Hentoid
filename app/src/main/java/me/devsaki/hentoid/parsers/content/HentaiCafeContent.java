@@ -38,11 +38,10 @@ public class HentaiCafeContent {
         result.setQtyPages(-1);
 
         AttributeMap attributes = new AttributeMap();
-        result.setAttributes(attributes);
+        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.HENTAICAFE);
+        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.HENTAICAFE);
 
-        ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true);
-        ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true);
-
+        result.addAttributes(attributes);
         result.populateAuthor();
         result.setStatus(StatusContent.SAVED);
 

@@ -67,7 +67,8 @@ public class JsonHelper {
         }
         // Ignore
 
-        return new Gson().fromJson(json.toString(), type);
+        Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
+        return gson.fromJson(json.toString(), type);
     }
 
     @Nullable

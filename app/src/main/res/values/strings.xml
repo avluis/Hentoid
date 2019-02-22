@@ -54,7 +54,7 @@
     <string name="cleanup_folders">Do you want to cleanup your library while refreshing ?\nCleanup removes all empty folders and renames the others according to the current naming and max length preference.</string>
     <string name="action_refresh">Just refresh</string>
     <string name="action_refresh_cleanup">Refresh and cleanup</string>
-    <string name="cleanup_done">Cleanup complete - see details in the log</string>
+    <string name="cleanup_done">Task complete - see details in the log</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
     <string name="add_dialog">Adding files to DB</string>
@@ -148,4 +148,7 @@
     <string name="category_language">Language (%1$d)</string>
     <string name="category_source">Source (%1$d)</string>
     <string name="search_button">%1 Result%2 found</string>
+
+    <!-- DB migration -->
+    <string name="migrate_db">Migrating the database</string>
 </resources>

@@ -38,6 +38,7 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
 import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
@@ -590,7 +591,8 @@ public class ImportActivity extends BaseActivity {
     private void cleanUpDB() {
         Timber.d("Cleaning up DB.");
         Context context = HentoidApp.getAppContext();
-        context.deleteDatabase(Consts.DATABASE_NAME);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        db.deleteAllBooks();
     }
 
     private void cleanUp(String result) {

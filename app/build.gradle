@@ -57,6 +57,9 @@ dependencies {
     // Compile any included libraries
     implementation fileTree(include: ['*jar'], dir: 'libs')
     implementation fileTree(include: ['*aar'], dir: 'libs')
+
+    implementation project(':fakkuLib')
+
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
@@ -68,8 +71,7 @@ dependencies {
     implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
 
     // Stetho core
-    implementation 'com.facebook.stetho:stetho:1.5.0'
-
+//    implementation 'com.facebook.stetho:stetho:1.5.0'
     // Support libraries
     implementation 'com.android.support:recyclerview-v7:27.1.1'
     implementation 'com.android.support:appcompat-v7:27.1.1'
@@ -146,9 +148,13 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
 
     // For ViewModel to work
-    implementation 'android.arch.lifecycle:extensions:1.1.1'
-    implementation 'android.arch.lifecycle:viewmodel:1.1.1'
-    implementation project(':fakkuLib')
+    implementation "android.arch.lifecycle:extensions:1.1.1"
+    implementation "android.arch.lifecycle:viewmodel:1.1.1"
+
+    // ObjectBox browser
+    debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.3.1"
+    releaseImplementation "io.objectbox:objectbox-android:2.3.1"
 }
 
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'io.objectbox' // apply last
