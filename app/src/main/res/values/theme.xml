@@ -46,13 +46,18 @@
     <style name="PrefsThemeDark" parent="AppTheme">
         <item name="android:windowBackground">@color/windowBackground</item>
         <item name="android:divider">@color/accent</item>
-        <item name="android:textColor">@color/white</item>
-        <item name="android:textColorPrimary">@color/white</item>
-        <item name="android:textColorSecondary">@color/lightGray</item>
+        <item name="android:textColor">@color/primary_text_color_selector</item>
+        <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
+        <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
         <item name="android:editTextColor">@color/white</item>
         <item name="android:textColorHint">@color/lightGray</item>
         <item name="textColorAlertDialogListItem">@color/lightGray</item>
     </style>
+
+    <style name="PrefsThemeDialog" parent="PrefsThemeDark">
+        <item name="android:background">@color/windowBackground</item>
+    </style>
+
 
     <!-- Import Activity -->
     <style name="ImportTheme" parent="AppTheme.NoActionBar">
