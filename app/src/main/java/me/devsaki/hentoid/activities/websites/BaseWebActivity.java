@@ -331,7 +331,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      * Add current content (i.e. content of the currently viewed book) to the download queue
      */
     void processDownload() {
-        currentContent = db.selectContentById(currentContent.getId());
+        if (null == currentContent) return;
+
+        if (currentContent.getId() > 0) currentContent = db.selectContentById(currentContent.getId());
+
         if (currentContent != null && StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(this, R.string.already_downloaded);
             hideFab(fabDownload);
@@ -440,17 +443,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         ));
 
         if (!isInCollection && !isInQueue) {
-            if (contentDB != null) {
-                content.setId(contentDB.getId())
-                        .setStatus(contentDB.getStatus())
-                        .addImageFiles(contentDB.getImageFiles())
-                        .setStorageFolder(contentDB.getStorageFolder())
-                        .setDownloadDate(contentDB.getDownloadDate());
-            } else {
+            if (null == contentDB) {    // The book has just been detected -> finalize before saving in DB
                 content.setStatus(StatusContent.SAVED);
                 content.populateAuthor();
+                db.insertContent(content);
+            } else {
+                content = contentDB;
             }
-            db.insertContent(content);
             runOnUiThread(() -> showFab(fabDownload));
             runOnUiThread(() -> hideFab(fabRead));
             fabDownloadMode = MODE_DL;

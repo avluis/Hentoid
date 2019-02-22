@@ -24,6 +24,7 @@ import me.devsaki.hentoid.activities.websites.NhentaiActivity;
 import me.devsaki.hentoid.activities.websites.PandaActivity;
 import me.devsaki.hentoid.activities.websites.PururinActivity;
 import me.devsaki.hentoid.activities.websites.TsuminoActivity;
+import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
@@ -95,7 +96,7 @@ public class Content implements Serializable {
     private ArrayList<ImageFile> imageList;
 
 
-    public List<Attribute> getAttributes() {
+    public ToMany<Attribute> getAttributes() {
         return this.attributes;
     }
 
