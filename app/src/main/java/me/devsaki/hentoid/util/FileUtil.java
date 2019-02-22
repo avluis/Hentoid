@@ -79,22 +79,20 @@ class FileUtil {
         }
 
         String sdStorageUriStr = Preferences.getSdStorageUri();
+        if (sdStorageUriStr.isEmpty()) return null;
 
-        Uri sdStorageUri;
-        if (sdStorageUriStr != null) {
-            sdStorageUri = Uri.parse(sdStorageUriStr);
+        Uri sdStorageUri = Uri.parse(sdStorageUriStr);
 
-            // Shorten relativePath if part of it is already in sdStorageUri
-            String[] uriContents = sdStorageUri.getPath().split(":");
-            if (uriContents.length > 1) {
-                String relativeUriPath = uriContents[1];
-                if (relativePath.equals(relativeUriPath)) {
-                    relativePath = "";
-                } else if (relativePath.startsWith(relativeUriPath)) {
-                    relativePath = relativePath.substring(relativeUriPath.length() + 1);
-                }
+        // Shorten relativePath if part of it is already in sdStorageUri
+        String[] uriContents = sdStorageUri.getPath().split(":");
+        if (uriContents.length > 1) {
+            String relativeUriPath = uriContents[1];
+            if (relativePath.equals(relativeUriPath)) {
+                relativePath = "";
+            } else if (relativePath.startsWith(relativeUriPath)) {
+                relativePath = relativePath.substring(relativeUriPath.length() + 1);
             }
-        } else return null;
+        }
 
         return documentFileHelper(sdStorageUri, returnSDRoot, relativePath, isDirectory);
     }

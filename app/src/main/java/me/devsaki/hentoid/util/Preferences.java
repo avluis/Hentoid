@@ -103,17 +103,17 @@ public final class Preferences {
         return sharedPreferences.getBoolean(Key.PREF_HIDE_RECENT, Default.PREF_HIDE_RECENT_DEFAULT);
     }
 
-    public static String getSdStorageUri() {
-        return sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, null);
+    static String getSdStorageUri() {
+        return sharedPreferences.getString(Key.PREF_SD_STORAGE_URI, "");
     }
 
-    public static void setSdStorageUri(String uri) {
+    static void setSdStorageUri(String uri) {
         sharedPreferences.edit()
                 .putString(Key.PREF_SD_STORAGE_URI, uri)
                 .apply();
     }
 
-    public static int getFolderNameFormat() {
+    static int getFolderNameFormat() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.PREF_FOLDER_NAMING_CONTENT_LISTS,
                         Default.PREF_FOLDER_NAMING_CONTENT_DEFAULT + ""));
@@ -123,13 +123,13 @@ public final class Preferences {
         return sharedPreferences.getString(Key.PREF_SETTINGS_FOLDER, "");
     }
 
-    public static boolean setRootFolderName(String rootFolderName) {
+    static boolean setRootFolderName(String rootFolderName) {
         return sharedPreferences.edit()
                 .putString(Key.PREF_SETTINGS_FOLDER, rootFolderName)
                 .commit();
     }
 
-    public static int getContentReadAction() {
+    static int getContentReadAction() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.PREF_READ_CONTENT_LISTS,
                         Default.PREF_READ_CONTENT_ACTION + ""));
@@ -167,7 +167,7 @@ public final class Preferences {
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + ""));
     }
 
-    public static int getFolderTruncationNbChars() {
+    static int getFolderTruncationNbChars() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_FOLDER_TRUNCATION_LISTS,
                 Default.PREF_FOLDER_TRUNCATION_DEFAULT + ""));
     }

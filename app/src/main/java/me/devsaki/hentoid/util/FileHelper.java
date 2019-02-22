@@ -61,7 +61,7 @@ public class FileHelper {
     }
 
     public static boolean isSAF() {
-        return Preferences.getSdStorageUri() != null && !Preferences.getSdStorageUri().equals("");
+        return !Preferences.getSdStorageUri().isEmpty();
     }
 
     /**

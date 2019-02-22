@@ -201,7 +201,6 @@ public class ImportActivity extends BaseActivity {
             downloadDir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
                     "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
         }
-
         if (useDefaultFolder) {
             prevRootDir = currentRootDir;
             initImport();
@@ -312,10 +311,12 @@ public class ImportActivity extends BaseActivity {
         List<File> writeableDirs = new ArrayList<>();
         if (externalDirs.length > 0) {
             Timber.d("External Directory(ies): %s", Arrays.toString(externalDirs));
+            FileHelper.createFileWithMsg("a3",Arrays.toString(externalDirs));
             for (String externalDir : externalDirs) {
                 File file = new File(externalDir);
                 Timber.d("Is %s write-able? %s", externalDir, FileHelper.isWritable(file));
                 if (FileHelper.isWritable(file)) {
+                    FileHelper.createFileWithMsg("a4",file.getAbsolutePath());
                     writeableDirs.add(file);
                 }
             }
@@ -340,7 +341,7 @@ public class ImportActivity extends BaseActivity {
             if (writeableDirs.size() == 1) {
                 // If we get exactly one write-able path returned, attempt to make use of it
                 String sdDir = writeableDirs.get(0) + "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
-                if (FileHelper.checkAndSetRootFolder(sdDir)) {
+                if (!FileHelper.isOnExtSdCard(writeableDirs.get(0)) && FileHelper.checkAndSetRootFolder(sdDir)) { // TODO - dirChooserFragment can't actually browse SD card : to fix later ?
                     Timber.d("Got access to SD Card.");
                     currentRootDir = new File(sdDir);
                     dirChooserFragment.dismiss();
@@ -349,7 +350,7 @@ public class ImportActivity extends BaseActivity {
                     if (Build.VERSION.SDK_INT == KITKAT) {
                         Timber.d("Unable to write to SD Card.");
                         showKitkatRationale();
-                    } else if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+                    } else if (Build.VERSION.SDK_INT >= LOLLIPOP) { // Browse the SD card using the device's SAF dialog
                         PackageManager manager = this.getPackageManager();
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
