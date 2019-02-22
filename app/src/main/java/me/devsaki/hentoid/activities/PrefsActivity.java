@@ -39,7 +39,6 @@ public class PrefsActivity extends BaseActivity {
                 .replace(android.R.id.content, new MyPreferenceFragment())
                 .commit();
         EventBus.getDefault().register(this);
-//        setTheme(R.style.PrefsThemeDark);
     }
 
     @Override
