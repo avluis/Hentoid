@@ -151,17 +151,18 @@ public class FileHelper {
 
         try {
             hasPermission = FileUtil.makeFile(testFile);
-            try (OutputStream output = FileHelper.getOutputStream(testFile)) {
-                output.write("test".getBytes());
-                sync(output);
-                output.flush();
-            } catch (NullPointerException npe) {
-                Timber.e(npe, "Invalid Stream");
-                hasPermission = false;
-            } catch (IOException e) {
-                Timber.e(e, "IOException while checking permissions on %s", file.getAbsolutePath());
-                hasPermission = false;
-            }
+            if (hasPermission)
+                try (OutputStream output = FileHelper.getOutputStream(testFile)) {
+                    output.write("test".getBytes());
+                    sync(output);
+                    output.flush();
+                } catch (NullPointerException npe) {
+                    Timber.e(npe, "Invalid Stream");
+                    hasPermission = false;
+                } catch (IOException e) {
+                    Timber.e(e, "IOException while checking permissions on %s", file.getAbsolutePath());
+                    hasPermission = false;
+                }
         } finally {
             if (testFile.exists()) {
                 removeFile(testFile);
