@@ -62,7 +62,7 @@
 
     <TextView
         android:id="@+id/textCategoryAny"
-        style="@style/LargeItem"
+        style="@style/SearchCategoryButton"
         android:text="@string/category_any"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
@@ -75,7 +75,7 @@
 
     <TextView
         android:id="@+id/textCategoryTag"
-        style="@style/LargeItem"
+        style="@style/SearchCategoryButton"
         android:text="@string/category_tag"
         android:layout_marginStart="4dp"
         android:layout_marginLeft="4dp"
@@ -88,7 +88,7 @@
 
     <TextView
         android:id="@+id/textCategoryCharacter"
-        style="@style/LargeItem"
+        style="@style/SearchCategoryButton"
         android:text="@string/category_character"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
@@ -101,7 +101,7 @@
 
     <TextView
         android:id="@+id/textCategoryArtist"
-        style="@style/LargeItem"
+        style="@style/SearchCategoryButton"
         android:text="@string/category_artist"
         android:layout_marginStart="4dp"
         android:layout_marginLeft="4dp"
@@ -114,7 +114,7 @@
 
     <TextView
         android:id="@+id/textCategorySeries"
-        style="@style/LargeItem"
+        style="@style/SearchCategoryButton"
         android:text="@string/category_series"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
@@ -127,7 +127,7 @@
 
     <TextView
         android:id="@+id/textCategoryLanguage"
-        style="@style/LargeItem"
+        style="@style/SearchCategoryButton"
         android:text="@string/category_language"
         android:layout_marginStart="4dp"
         android:layout_marginLeft="4dp"
@@ -140,7 +140,7 @@
 
     <TextView
         android:id="@+id/textCategorySource"
-        style="@style/LargeItem"
+        style="@style/SearchCategoryButton"
         android:text="@string/category_source"
         android:layout_marginStart="8dp"
         android:layout_marginLeft="8dp"
