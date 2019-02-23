@@ -29,12 +29,6 @@
         <item name="windowActionModeOverlay">true</item>
     </style>
 
-
-    <!-- AppIntro Activity & Slides -->
-    <style name="AppTheme.AppIntro" parent="AppTheme.TaupeBackground">
-        <item name="android:background">@color/windowBackground</item>
-    </style>
-
     <!-- Splash Activity -->
     <style name="SplashTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@drawable/bg_splash</item>
