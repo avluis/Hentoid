@@ -1,10 +1,5 @@
 <resources>
 
-    <!-- Import Dialog -->
-    <style name="ImportDialog" parent="ImportTheme">
-        <item name="android:background">@color/white</item>
-    </style>
-
     <style name="TextButton">
         <item name="android:padding">16dp</item>
         <item name="android:textAllCaps">true</item>
