@@ -121,7 +121,7 @@ public class FileHelper {
             }
         }
 
-        return paths.toArray(new String[paths.size()]);
+        return paths.toArray(new String[0]);
     }
 
     /**
@@ -203,7 +203,7 @@ public class FileHelper {
      * @param stream - OutputStream
      * @return true if all OK.
      */
-    public static boolean sync(@NonNull final OutputStream stream) {
+    static boolean sync(@NonNull final OutputStream stream) {
         return (stream instanceof FileOutputStream) && FileUtil.sync((FileOutputStream) stream);
     }
 
@@ -213,7 +213,7 @@ public class FileHelper {
      * @param target The file.
      * @return FileOutputStream.
      */
-    public static OutputStream getOutputStream(@NonNull final File target) throws IOException {
+    static OutputStream getOutputStream(@NonNull final File target) throws IOException {
         return FileUtil.getOutputStream(target);
     }
 
@@ -619,7 +619,7 @@ public class FileHelper {
             Timber.d("Destination file: %s", dest);
 
             // Convert ArrayList to Array
-            File[] fileArray = fileList.toArray(new File[fileList.size()]);
+            File[] fileArray = fileList.toArray(new File[0]);
             // Compress files
             new AsyncUnzip(context, dest).execute(fileArray, dest);
         }
