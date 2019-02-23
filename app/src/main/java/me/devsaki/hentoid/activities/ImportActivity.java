@@ -17,7 +17,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -35,8 +34,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -317,12 +314,12 @@ public class ImportActivity extends BaseActivity {
         List<File> writeableDirs = new ArrayList<>();
         if (externalDirs.length > 0) {
             Timber.d("External Directory(ies): %s", Arrays.toString(externalDirs));
-            FileHelper.createFileWithMsg("a3",Arrays.toString(externalDirs));
+            FileHelper.createFileWithMsg("a3", Arrays.toString(externalDirs));
             for (String externalDir : externalDirs) {
                 File file = new File(externalDir);
                 Timber.d("Is %s write-able? %s", externalDir, FileHelper.isWritable(file));
                 if (FileHelper.isWritable(file)) {
-                    FileHelper.createFileWithMsg("a4",file.getAbsolutePath());
+                    FileHelper.createFileWithMsg("a4", file.getAbsolutePath());
                     writeableDirs.add(file);
                 }
             }
@@ -453,7 +450,7 @@ public class ImportActivity extends BaseActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         // Return from the SD card directory chooser
-        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) {
+        if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) { // TODO - what happens when resultCode is _not_ RESULT_OK ?
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
 
@@ -471,7 +468,6 @@ public class ImportActivity extends BaseActivity {
                 String[] uriContents = treeUri.getPath().split(":");
                 String folderName = (uriContents.length > 1) ? uriContents[1] : "";
                 String folderPath = paths[0] + "/" + folderName;
-                String folderPath1 = folderPath;
                 if (!folderName.endsWith(Consts.DEFAULT_LOCAL_DIRECTORY)) // Don't create a .Hentoid subfolder inside the .Hentoid folder the user just selected...
                 {
                     if (!folderPath.endsWith("/")) folderPath += "/";
