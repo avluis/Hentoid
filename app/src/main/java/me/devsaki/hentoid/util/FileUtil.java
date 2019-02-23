@@ -7,6 +7,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.provider.DocumentFile;
 
+import com.crashlytics.android.Crashlytics;
+
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -56,9 +58,11 @@ class FileUtil {
      */
     @Nullable
     private static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+        Crashlytics.log("start logging getDocumentFile for " + file.getAbsolutePath());
         String baseFolder = FileHelper.getExtSdCardFolder(file);
         boolean returnSDRoot = false;
         if (baseFolder == null) {
+            Crashlytics.log("getExtSdCardFolder returned null for " + file.getAbsolutePath());
             return null;
         }
 
@@ -72,6 +76,7 @@ class FileUtil {
                 returnSDRoot = true;
             }
         } catch (IOException e) {
+            Crashlytics.log("IOException [" + e.getMessage() + "]during resolve for " + file.getAbsolutePath());
             return null;
         } catch (Exception f) {
             returnSDRoot = true;
@@ -79,6 +84,7 @@ class FileUtil {
         }
 
         String sdStorageUriStr = Preferences.getSdStorageUri();
+        Crashlytics.log("sdStorageUriStr='" + sdStorageUriStr + "' for " + file.getAbsolutePath());
         if (sdStorageUriStr.isEmpty()) return null;
 
         Uri sdStorageUri = Uri.parse(sdStorageUriStr);
@@ -93,6 +99,7 @@ class FileUtil {
                 relativePath = relativePath.substring(relativeUriPath.length() + 1);
             }
         }
+        Crashlytics.log("relativePath='" + relativePath + "' for " + file.getAbsolutePath());
 
         return documentFileHelper(sdStorageUri, returnSDRoot, relativePath, isDirectory);
     }
@@ -113,6 +120,7 @@ class FileUtil {
         Context context = HentoidApp.getAppContext();
         DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
 
+        if (null == document) Crashlytics.log("document null");
         if (null == document) return null;
         if (returnRoot || null == relativePath || relativePath.isEmpty()) return document;
 
@@ -131,11 +139,13 @@ class FileUtil {
                     nextDocument = document.createDirectory(parts[i]);
                     if (null == nextDocument) {
                         Timber.e("Failed to create subdirectory %s/%s", document.getName(), parts[i]);
+                        Crashlytics.log("Failed to create subdirectory " + document.getName() + "/" + parts[i]);
                     }
                 } else {
                     nextDocument = document.createFile("image", parts[i]);
                     if (null == nextDocument) {
                         Timber.e("Failed to create file %s/image%s", document.getName(), parts[i]);
+                        Crashlytics.log("Failed to create file " + document.getName() + "/image" + parts[i]);
                     }
                 }
             }
@@ -169,11 +179,12 @@ class FileUtil {
                             targetDocument.getUri());
                 }
             }
-            throw new IOException("Error while attempting to get file : " + target.getAbsolutePath());
         } catch (Exception e) {
-            Timber.e(e, "Error while attempting to get file: %s", target.getAbsolutePath());
+            Timber.e(e, "Error [%s] while attempting to get file: %s ", e.getMessage(), target.getAbsolutePath());
             throw new IOException(e);
         }
+
+        throw new IOException("Error while attempting to get file : " + target.getAbsolutePath());
     }
 
     static InputStream getInputStream(@NonNull final File target) throws IOException {
