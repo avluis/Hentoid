@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.dirpicker.ui;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,6 +57,10 @@ public class DirChooserFragment extends DialogFragment {
     private Button selectDirBtn;
     private File currentRootDir;
     private DirListBuilder dirListBuilder;
+
+    public DirChooserFragment() {
+        // Empty constructor required for DialogFragment
+    }
 
     public static DirChooserFragment newInstance(File rootDir) {
         DirChooserFragment dirChooserFragment = new DirChooserFragment();
