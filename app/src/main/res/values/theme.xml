@@ -128,13 +128,6 @@
         <item name="android:background">@color/windowBackground</item>
     </style>
 
-    <style name="LargeItem">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">48dp</item>
-        <item name="android:gravity">center</item>
-        <item name="android:background">@drawable/bg_card</item>
-    </style>
-
     <style name="Chip">
         <item name="android:layout_height">32dp</item>
         <item name="android:layout_width">wrap_content</item>
