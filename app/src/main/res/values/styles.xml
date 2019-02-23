@@ -1,20 +1,4 @@
 <resources>
-    <!-- Progress Bar -->
-    <style name="LinearProgress" parent="Theme.AppCompat.Light">
-        <item name="colorAccent">@color/accent</item>
-    </style>
-
-    <!-- Toolbar -->
-    <style name="Toolbar" parent="AppTheme.NoActionBar">
-        <item name="android:background">@color/primary</item>
-    </style>
-
-    <!-- Import Dialog -->
-    <style name="ImportDialog" parent="ImportTheme">
-        <item name="android:background">@color/white</item>
-    </style>
-
-    <style name="NotificationTitle" parent="@android:style/TextAppearance.StatusBar.EventContent.Title" />
 
     <style name="TextButton">
         <item name="android:padding">16dp</item>
@@ -25,4 +9,36 @@
         <item name="android:clickable">true</item>
         <item name="android:focusable">true</item>
     </style>
+
+    <style name="SearchCategoryButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">48dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_card</item>
+    </style>
+
+    <style name="Chip">
+        <item name="android:layout_height">32dp</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginEnd">8dp</item>
+        <item name="android:layout_marginRight">8dp</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">@drawable/bg_chip</item>
+    </style>
+
+    <style name="Chip.Choice">
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+    </style>
+
+    <style name="Chip.Input">
+        <item name="android:drawableEnd">@drawable/ic_cancel</item>
+        <item name="android:drawablePadding">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+    </style>
+
 </resources>

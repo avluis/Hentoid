@@ -29,12 +29,6 @@
         <item name="windowActionModeOverlay">true</item>
     </style>
 
-
-    <!-- AppIntro Activity & Slides -->
-    <style name="AppTheme.AppIntro" parent="AppTheme.TaupeBackground">
-        <item name="android:background">@color/windowBackground</item>
-    </style>
-
     <!-- Splash Activity -->
     <style name="SplashTheme" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@drawable/bg_splash</item>
@@ -121,30 +115,7 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
-        <item name="bottomSheetStyle">@style/ModalStyle</item>
+        <item name="android:colorBackground">@color/windowBackground</item>
     </style>
 
-    <style name="ModalStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@color/windowBackground</item>
-    </style>
-
-    <style name="LargeItem">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">48dp</item>
-        <item name="android:gravity">center</item>
-        <item name="android:background">@drawable/bg_card</item>
-    </style>
-
-    <style name="Chip">
-        <item name="android:layout_height">32dp</item>
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_marginTop">8dp</item>
-        <item name="android:gravity">center</item>
-        <item name="android:background">@drawable/bg_chip</item>
-    </style>
-
-    <style name="Chip.Input">
-        <item name="android:drawableEnd">@drawable/ic_cancel</item>
-        <item name="android:drawablePadding">8dp</item>
-    </style>
 </resources>

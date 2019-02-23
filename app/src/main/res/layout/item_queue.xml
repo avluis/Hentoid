@@ -18,9 +18,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:indeterminate="true"
-            android:theme="@style/LinearProgress"
-            android:tint="@android:color/holo_red_dark" />
+            android:indeterminate="true" />
 
         <LinearLayout
             android:layout_width="match_parent"

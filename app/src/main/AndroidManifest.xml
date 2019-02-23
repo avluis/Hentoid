@@ -32,7 +32,7 @@
         <activity
             android:name=".activities.IntroActivity"
             android:label="@string/app_intro"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme.TaupeBackground" />
         <activity
             android:name=".activities.websites.HitomiActivity"
             android:configChanges="orientation|screenSize"
