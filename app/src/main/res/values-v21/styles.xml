@@ -6,5 +6,4 @@
         <item name="android:progressBackgroundTint">@color/ripple</item>
     </style>
 
-    <style name="NotificationTitle" parent="@android:style/TextAppearance.Material.Notification.Title" />
 </resources>
