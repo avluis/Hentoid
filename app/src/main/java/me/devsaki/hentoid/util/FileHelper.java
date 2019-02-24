@@ -443,14 +443,13 @@ public class FileHelper {
      */
     public static List<File> findFilesRecursively(File workingDir, String extension) {
         List<File> files = new ArrayList<>();
-        File[] baseDirs = workingDir.listFiles();
+        File[] baseDirs = workingDir.listFiles(pathname -> (pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension)));
+
         for (File entry : baseDirs) {
             if (entry.isDirectory()) {
                 files.addAll(findFilesRecursively(entry, extension));
             } else {
-                if (getExtension(entry.getName()).equals(extension)) {
-                    files.add(entry);
-                }
+                files.add(entry);
             }
         }
         return files;
