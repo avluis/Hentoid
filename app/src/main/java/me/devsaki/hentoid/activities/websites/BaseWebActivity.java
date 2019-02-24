@@ -102,6 +102,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         universalBlockedContent.add("bebi.com");
         universalBlockedContent.add("aftv-serving.bid");
         universalBlockedContent.add("smatoo.net");
+        universalBlockedContent.add("adtng.net");
+        universalBlockedContent.add("adtng.com");
     }
 
     protected abstract CustomWebViewClient getWebClient();
