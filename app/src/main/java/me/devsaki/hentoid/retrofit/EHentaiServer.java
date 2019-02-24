@@ -3,6 +3,7 @@ package me.devsaki.hentoid.retrofit;
 import io.reactivex.Single;
 import me.devsaki.hentoid.parsers.content.EHentaiGalleriesMetadata;
 import me.devsaki.hentoid.parsers.content.EHentaiGalleryQuery;
+import me.devsaki.hentoid.util.OkHttpClientSingleton;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -15,6 +16,7 @@ public class EHentaiServer {
 
     public static final Api API = new Retrofit.Builder()
             .baseUrl(API_URL)
+            .client(OkHttpClientSingleton.getInstance())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(GsonConverterFactory.create())
             .build()

@@ -16,6 +16,7 @@ public class NhentaiServer {
 
     public static final Api API = new Retrofit.Builder()
             .baseUrl(Site.NHENTAI.getUrl())
+            .client(OkHttpClientSingleton.getInstance())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(JspoonConverterFactory.create())
             .build()
