@@ -36,6 +36,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.enums.Site;
 import timber.log.Timber;
 
 import static android.os.Environment.MEDIA_MOUNTED;
@@ -438,6 +439,24 @@ public class FileHelper {
         return file;
     }
 
+    public static File getSiteDownloadDir(Context context, Site site) {
+        File file;
+        String settingDir = Preferences.getRootFolderName();
+        String folderDir = site.getFolder();
+        if (settingDir.isEmpty()) {
+            return getDefaultDir(context, folderDir);
+        }
+        file = new File(settingDir, folderDir);
+        if (!file.exists() && !FileUtil.makeDir(file)) {
+            file = new File(settingDir + folderDir);
+            if (!file.exists()) {
+                FileUtil.makeDir(file);
+            }
+        }
+
+        return file;
+    }
+
     /**
      * Recursively search for files of a given type from a base directory
      *
@@ -445,12 +464,15 @@ public class FileHelper {
      * @return list containing all files with matching extension
      */
     public static List<File> findFilesRecursively(File workingDir, String extension) {
+        return findFilesRecursively(workingDir, extension, 0);
+    }
+    private static List<File> findFilesRecursively(File workingDir, String extension, int depth) {
         List<File> files = new ArrayList<>();
         File[] baseDirs = workingDir.listFiles(pathname -> (pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension)));
 
         for (File entry : baseDirs) {
             if (entry.isDirectory()) {
-                files.addAll(findFilesRecursively(entry, extension));
+                if (depth < 6) files.addAll(findFilesRecursively(entry, extension, depth + 1)); // Hard recursive limit to avoid catastrophes
             } else {
                 files.add(entry);
             }

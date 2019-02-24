@@ -45,6 +45,7 @@ import me.devsaki.hentoid.dirpicker.events.OnSAFRequestEvent;
 import me.devsaki.hentoid.dirpicker.events.OnTextViewClickedEvent;
 import me.devsaki.hentoid.dirpicker.events.OpFailedEvent;
 import me.devsaki.hentoid.dirpicker.ui.DirChooserFragment;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
@@ -447,27 +448,21 @@ public class ImportActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-FileHelper.createFileWithMsg("check01", resultCode + "");
-
         // Return from the SD card directory chooser
         if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) { // TODO - what happens when resultCode is _not_ RESULT_OK ?
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
-FileHelper.createFileWithMsg("check02", treeUri.toString());
             // Persist URI in shared preference so that you can use it later
             FileHelper.saveUri(treeUri);
-FileHelper.createFileWithMsg("check03", "");
 
             // Persist access permissions
             getContentResolver().takePersistableUriPermission(treeUri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
             dirChooserFragment.dismiss();
-FileHelper.createFileWithMsg("check04", "");
 
             if (FileHelper.getExtSdCardPaths().length > 0) {
                 String[] paths = FileHelper.getExtSdCardPaths();
-FileHelper.createFileWithMsg("check05", paths[0]);
                 String[] uriContents = treeUri.getPath().split(":");
                 String folderName = (uriContents.length > 1) ? uriContents[1] : "";
                 String folderPath = paths[0] + "/" + folderName;
@@ -479,7 +474,6 @@ FileHelper.createFileWithMsg("check05", paths[0]);
 
                 File folder = new File(folderPath);
                 Timber.d("Directory created successfully: %s", FileHelper.createDirectory(folder));
-FileHelper.createFileWithMsg("check06", "");
                 importFolder(folder);
             }
         }
@@ -502,18 +496,35 @@ FileHelper.createFileWithMsg("check06", "");
         }
     }
 
+    // Count the elements inside each site's download folder (but not its subfolders)
+    //
+    // NB : this method works approximately because it doesn't try to count JSON files
+    // However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
+    // and might cause freezes -> we stick to that approximate method for ImportActivity
+    private long countSiteFiles()
+    {
+        long result = 0;
+
+        List<File> downloadDirs = new ArrayList<>();
+        for (Site s : Site.values()) {
+            downloadDirs.add(FileHelper.getSiteDownloadDir(this, s));
+        }
+
+        for (File downloadDir : downloadDirs) {
+            File[] contentFiles = downloadDir.listFiles();
+            if (contentFiles != null) result += contentFiles.length;
+        }
+
+        return result;
+    }
 
     private void importFolder(File folder) {
         if (!FileHelper.checkAndSetRootFolder(folder.getAbsolutePath(), true)) {
-FileHelper.createFileWithMsg("check07", "");
             prepImport(null);
             return;
         }
 
-FileHelper.createFileWithMsg("check08", "");
-        List<File> files = FileHelper.findFilesRecursively(new File(Preferences.getRootFolderName()), "json");
-FileHelper.createFileWithMsg("check09", files.size() + "");
-        if (files.size() > 0) {
+        if (countSiteFiles() > 0) {
 
             if (isRefresh)
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
