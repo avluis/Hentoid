@@ -61,6 +61,11 @@ public class UnlockActivity extends BaseActivity implements UnlockPinDialogFragm
         goToNextActivity();
     }
 
+    @Override
+    public void onPinCancel() {
+        finish();
+    }
+
     private void goToNextActivity() {
         Parcelable parcelableExtra = getIntent().getParcelableExtra(EXTRA_DEFAULT);
         startActivity((Intent) parcelableExtra);

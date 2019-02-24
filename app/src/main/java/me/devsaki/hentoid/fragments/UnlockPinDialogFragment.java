@@ -39,10 +39,13 @@ public final class UnlockPinDialogFragment extends PinDialogFragment {
     @Override
     public void onCancel(DialogInterface dialog) {
         super.onCancel(dialog);
-        requireActivity().finish();
+        parent.onPinCancel();
     }
 
     public interface Parent {
+
         void onPinSuccess();
+
+        void onPinCancel();
     }
 }
