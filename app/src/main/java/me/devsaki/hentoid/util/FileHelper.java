@@ -28,6 +28,9 @@ import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -485,7 +488,7 @@ public class FileHelper {
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
 
-        Timber.d("Opening: " + content.getTitle() + " from: " + dir);
+        Timber.d("Opening: %s from: %s", content.getTitle(), dir);
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
             ToastUtil.toast(R.string.sd_access_error);
@@ -521,6 +524,14 @@ public class FileHelper {
             }
         }
 
+        // TODO - properly dispose this Completable (for best practices' sake, even though it hasn't triggered any leak so far)
+        Completable.fromRunnable(() -> updateContentReads(context, content, dir))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe();
+    }
+
+    private static void updateContentReads(Context context, Content content, File dir) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         content.increaseReads().setLastReadDate(new Date().getTime());
         db.updateContentReads(content);
