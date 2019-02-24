@@ -314,12 +314,10 @@ public class ImportActivity extends BaseActivity {
         List<File> writeableDirs = new ArrayList<>();
         if (externalDirs.length > 0) {
             Timber.d("External Directory(ies): %s", Arrays.toString(externalDirs));
-            FileHelper.createFileWithMsg("a3", Arrays.toString(externalDirs));
             for (String externalDir : externalDirs) {
                 File file = new File(externalDir);
                 Timber.d("Is %s write-able? %s", externalDir, FileHelper.isWritable(file));
                 if (FileHelper.isWritable(file)) {
-                    FileHelper.createFileWithMsg("a4", file.getAbsolutePath());
                     writeableDirs.add(file);
                 }
             }
@@ -449,22 +447,27 @@ public class ImportActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
+FileHelper.createFileWithMsg("check01", resultCode + "");
+
         // Return from the SD card directory chooser
         if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) { // TODO - what happens when resultCode is _not_ RESULT_OK ?
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
-
+FileHelper.createFileWithMsg("check02", treeUri.toString());
             // Persist URI in shared preference so that you can use it later
             FileHelper.saveUri(treeUri);
+FileHelper.createFileWithMsg("check03", "");
 
             // Persist access permissions
             getContentResolver().takePersistableUriPermission(treeUri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
             dirChooserFragment.dismiss();
+FileHelper.createFileWithMsg("check04", "");
 
             if (FileHelper.getExtSdCardPaths().length > 0) {
                 String[] paths = FileHelper.getExtSdCardPaths();
+FileHelper.createFileWithMsg("check05", paths[0]);
                 String[] uriContents = treeUri.getPath().split(":");
                 String folderName = (uriContents.length > 1) ? uriContents[1] : "";
                 String folderPath = paths[0] + "/" + folderName;
@@ -476,7 +479,7 @@ public class ImportActivity extends BaseActivity {
 
                 File folder = new File(folderPath);
                 Timber.d("Directory created successfully: %s", FileHelper.createDirectory(folder));
-
+FileHelper.createFileWithMsg("check06", "");
                 importFolder(folder);
             }
         }
