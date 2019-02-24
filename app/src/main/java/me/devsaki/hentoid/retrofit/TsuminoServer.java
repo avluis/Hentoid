@@ -14,6 +14,7 @@ public class TsuminoServer {
 
     public static final Api API = new Retrofit.Builder()
             .baseUrl(Site.TSUMINO.getUrl())
+            .client(OkHttpClientSingleton.getInstance())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(JspoonConverterFactory.create())
             .client(OkHttpClientSingleton.getInstance())

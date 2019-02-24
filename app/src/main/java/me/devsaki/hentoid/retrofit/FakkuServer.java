@@ -3,6 +3,7 @@ package me.devsaki.hentoid.retrofit;
 import io.reactivex.Single;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.parsers.content.FakkuContent;
+import me.devsaki.hentoid.util.OkHttpClientSingleton;
 import pl.droidsonroids.retrofit2.JspoonConverterFactory;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
@@ -14,6 +15,7 @@ public class FakkuServer {
 
     public static final Api API = new Retrofit.Builder()
             .baseUrl(Site.FAKKU2.getUrl())
+            .client(OkHttpClientSingleton.getInstance())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(JspoonConverterFactory.create())
             .build()
