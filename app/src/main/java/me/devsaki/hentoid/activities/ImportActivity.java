@@ -505,12 +505,14 @@ FileHelper.createFileWithMsg("check06", "");
 
     private void importFolder(File folder) {
         if (!FileHelper.checkAndSetRootFolder(folder.getAbsolutePath(), true)) {
+FileHelper.createFileWithMsg("check07", "");
             prepImport(null);
             return;
         }
 
+FileHelper.createFileWithMsg("check08", "");
         List<File> files = FileHelper.findFilesRecursively(new File(Preferences.getRootFolderName()), "json");
-
+FileHelper.createFileWithMsg("check09", files.size() + "");
         if (files.size() > 0) {
 
             if (isRefresh)
