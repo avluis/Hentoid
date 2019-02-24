@@ -324,9 +324,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                         itemSelectListener.onItemClear(0);
                     }
                     compositeDisposable.add(
-                            Completable.fromRunnable(() -> {
-                                toggleFavourite(content);
-                            })
+                            Completable.fromRunnable(() -> toggleFavourite(content))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(() -> {
