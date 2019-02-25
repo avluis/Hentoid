@@ -32,6 +32,8 @@
         android:paddingEnd="16dp"
         android:paddingRight="16dp"
         android:text="Reset PIN"
+        android:textAllCaps="true"
+        android:textColor="?colorAccent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/switch_off" />
