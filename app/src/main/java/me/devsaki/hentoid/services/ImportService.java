@@ -13,6 +13,7 @@ import org.greenrobot.eventbus.EventBus;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -124,17 +125,23 @@ public class ImportService extends IntentService {
         List<String> log = new ArrayList<>();
 
         notificationManager.startForeground(new ImportStartNotification());
+        File rootFolder = new File(Preferences.getRootFolderName());
 
-        List<File> files = FileHelper.findFilesRecursively(new File(Preferences.getRootFolderName()), "json");
+        // 1st pass : count subfolders of every site folder
+        List<File> files = new ArrayList<>();
+        File[] siteFolders = rootFolder.listFiles(File::isDirectory);
+        if (siteFolders != null) {
+            for (File f : siteFolders) files.addAll(Arrays.asList(f.listFiles(File::isDirectory)));
+        }
 
-        trace(Log.DEBUG, log, "Import books starting : %s books total", files.size() + "");
+        // 2nd pass : scan every folder for a JSON file or subdirectories
+        trace(Log.DEBUG, log, "Import books starting - initial detected count : %s", files.size() + "");
         trace(Log.INFO, log, "Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
         for (int i = 0; i < files.size(); i++) {
-            File file = files.get(i);
-            File folder = file.getAbsoluteFile().getParentFile();
+            File folder = files.get(i);
 
             try {
-                content = importJson(file);
+                content = importJson(folder);
                 if (content != null) {
                     if (cleanup) {
                         String canonicalBookDir = FileHelper.formatDirPath(content);
@@ -157,19 +164,26 @@ public class ImportService extends IntentService {
                         }
                     }
                     ObjectBoxDB.getInstance(this).insertContent(content);
-                    booksOK++;
                     trace(Log.INFO, log, "Import book OK : %s", folder.getAbsolutePath());
-                } else {
-                    booksKO++;
-                    trace(Log.WARN, log, "Import book KO : %s", folder.getAbsolutePath());
-                    // Deletes the folder if cleanup is active
-                    if (cleanup) {
-                        boolean success = FileHelper.removeFile(folder);
-                        trace(Log.INFO, log, "[Remove %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
+                } else { // JSON not found
+                    File[] subdirs = folder.listFiles(File::isDirectory);
+                    if (subdirs != null && subdirs.length > 0) // Folder doesn't contain books but contains subdirectories
+                    {
+                        files.addAll(Arrays.asList(subdirs));
+                        trace(Log.INFO, log, "Import book KO (was an empty folder with subfolders) : %s", folder.getAbsolutePath());
+                    } else { // No JSON nor any subdirectory
+                        trace(Log.WARN, log, "Import book KO! (no JSON found) : %s", folder.getAbsolutePath());
+                        // Deletes the folder if cleanup is active
+                        if (cleanup) {
+                            boolean success = FileHelper.removeFile(folder);
+                            trace(Log.INFO, log, "[Remove %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
+                        }
                     }
                 }
+
+                if (null == content) booksKO++;
+                else booksOK++;
             } catch (Exception e) {
-                Timber.e(e, "Import book ERROR");
                 if (null == content)
                     content = new Content().setTitle("none").setUrl("").setSite(Site.NONE);
                 booksKO++;
@@ -178,7 +192,7 @@ public class ImportService extends IntentService {
 
             eventProgress(content, files.size(), booksOK, booksKO);
         }
-        trace(Log.INFO, log, "Import books complete : %s OK; %s KO", booksOK + "", booksKO + "");
+        trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", booksKO + booksOK + "");
 
         // Write cleanup log in root folder
         File cleanupLogFile = writeLog(log, cleanup);
@@ -190,15 +204,16 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
+    @Nullable
     private File writeLog(List<String> log, boolean isCleanup) {
         // Create the log
         StringBuilder logStr = new StringBuilder();
-        logStr.append(isCleanup ? "Cleanup":"Import").append(" log : begin").append(System.getProperty("line.separator"));
+        logStr.append(isCleanup ? "Cleanup" : "Import").append(" log : begin").append(System.getProperty("line.separator"));
         if (log.isEmpty())
             logStr.append("No activity to report - All folder names are formatted as expected.");
         else for (String line : log)
             logStr.append(line).append(System.getProperty("line.separator"));
-        logStr.append(isCleanup ? "Cleanup":"Import").append(" log : end");
+        logStr.append(isCleanup ? "Cleanup" : "Import").append(" log : end");
 
         // Save it
         File rootFolder;
@@ -219,15 +234,16 @@ public class ImportService extends IntentService {
         return null;
     }
 
-    private static Content importJson(File file) {
-        if (file.getName().equals(Consts.JSON_FILE_NAME_V2))
-            return importJsonV2(file);  // (v2) JSON file format
-        if (file.getName().equals(Consts.JSON_FILE_NAME))
-            return importJsonV1(file);  // (v1) JSON file format
-        if (file.getName().equals(Consts.OLD_JSON_FILE_NAME))
-            return importJsonLegacy(file);  // (old) JSON file format (legacy and/or FAKKUDroid App)
+    @Nullable
+    private static Content importJson(File folder) {
+        File json = new File(folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
+        if (json.exists()) return importJsonV2(json);
 
-        Timber.w("Book folder %s : no JSON file found !", new File(file.getParent()).getAbsolutePath());
+        json = new File(folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
+        if (json.exists()) return importJsonV1(json);
+
+        json = new File(folder, Consts.OLD_JSON_FILE_NAME); // (old) JSON file format (legacy and/or FAKKUDroid App)
+        if (json.exists()) return importJsonLegacy(json);
 
         return null;
     }
