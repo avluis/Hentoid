@@ -48,12 +48,13 @@ public class EHentaiGalleryMetadata {
     public Content toContent() {
         Content result = new Content();
 
+        result.setSite(Site.EHENTAI);
+
         result.setUrl("/" + gid + "/" + token) // The rest will not be useful anyway because of temporary keys
                 .setCoverImageUrl(thumb)
                 .setTitle(title)
                 .setQtyPages(Integer.parseInt(filecount))
-                .setStatus(StatusContent.SAVED)
-                .setSite(Site.EHENTAI);
+                .setStatus(StatusContent.SAVED);
 
         AttributeMap attributes = new AttributeMap();
         String[] tagParts;
