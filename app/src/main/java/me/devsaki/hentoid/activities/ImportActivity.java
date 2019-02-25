@@ -501,10 +501,8 @@ public class ImportActivity extends BaseActivity {
     // NB : this method works approximately because it doesn't try to count JSON files
     // However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
     // and might cause freezes -> we stick to that approximate method for ImportActivity
-    private long countSiteFiles()
+    private boolean hasBooks()
     {
-        long result = 0;
-
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
             downloadDirs.add(FileHelper.getSiteDownloadDir(this, s));
@@ -512,10 +510,10 @@ public class ImportActivity extends BaseActivity {
 
         for (File downloadDir : downloadDirs) {
             File[] contentFiles = downloadDir.listFiles();
-            if (contentFiles != null) result += contentFiles.length;
+            if (contentFiles != null && contentFiles.length > 0) return true;
         }
 
-        return result;
+        return false;
     }
 
     private void importFolder(File folder) {
@@ -524,7 +522,7 @@ public class ImportActivity extends BaseActivity {
             return;
         }
 
-        if (countSiteFiles() > 0) {
+        if (hasBooks()) {
 
             if (isRefresh)
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
