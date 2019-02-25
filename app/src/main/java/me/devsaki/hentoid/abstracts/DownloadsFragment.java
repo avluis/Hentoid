@@ -1136,7 +1136,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
             filterBookCount.setText(String.format(getText(R.string.downloads_filter_book_count).toString(), totalSelectedContent + "", (1 == totalSelectedContent) ? "" : "s"));
             filterBar.setVisibility(View.VISIBLE);
-            if (totalSelectedContent > 0) searchMenu.collapseActionView();
+            if (totalSelectedContent > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
             filterBar.setVisibility(View.GONE);
         }
