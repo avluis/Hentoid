@@ -45,6 +45,10 @@ public class UnlockActivity extends BaseActivity implements UnlockPinDialogFragm
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (Preferences.getAppLockPin().length() != 4) {
+            Preferences.setAppLockPin("");
+        }
+
         if (Preferences.getAppLockPin().isEmpty() || isUnlocked) {
             goToNextActivity();
             return;
