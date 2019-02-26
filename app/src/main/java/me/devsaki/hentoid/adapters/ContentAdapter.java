@@ -462,17 +462,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void downloadContent(Content item) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
+        if (StatusContent.ONLINE == item.getStatus())
+            for (ImageFile im : item.getImageFiles())
+                db.updateImageFileStatus(im.setStatus(StatusContent.SAVED));
+
         item.setDownloadDate(new Date().getTime());
-
-        if (StatusContent.ONLINE == item.getStatus()) {
-            item.setStatus(StatusContent.DOWNLOADING);
-            for (ImageFile im : item.getImageFiles()) im.setStatus(StatusContent.SAVED);
-
-            db.insertContent(item);
-        } else {
-            item.setStatus(StatusContent.DOWNLOADING);
-            db.updateContentStatusAndDate(item);
-        }
+        item.setStatus(StatusContent.DOWNLOADING);
+        db.insertContent(item);
 
         List<QueueRecord> queue = db.selectQueue();
         int lastIndex = 1;

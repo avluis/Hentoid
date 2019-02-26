@@ -53,7 +53,7 @@ public class DatabaseMaintenance {
             c.setCoverImageUrl(c.getCoverImageUrl().replace("api.pururin.io/images/","cdn.pururin.io/assets/images/data/"));
             for (ImageFile i : c.getImageFiles())
             {
-                i.setUrl(i.getUrl().replace("api.pururin.io/images/","cdn.pururin.io/assets/images/data/"));
+                db.updateImageFileUrl( i.setUrl(i.getUrl().replace("api.pururin.io/images/","cdn.pururin.io/assets/images/data/")) );
             }
             db.insertContent(c);
         }

@@ -6,7 +6,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
-import android.util.Pair;
 import android.util.SparseIntArray;
 
 import com.android.volley.Request;
@@ -246,8 +245,10 @@ public class ContentDownloadService extends IntentService {
             // Mark content as downloaded
             content.setDownloadDate(new Date().getTime());
             content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+            // Clear download params from content and images
             content.setDownloadParams("");
-            db.updateContentStatusAndDate(content);
+
+            db.insertContent(content);
 
             // Save JSON file
             try {

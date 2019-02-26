@@ -106,15 +106,6 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).count();
     }
 
-    public void updateContentStatusAndDate(Content content) {
-        Box<Content> contentBox = store.boxFor(Content.class);
-        Content c = contentBox.get(content.getId());
-        c.setStatus(content.getStatus());
-        c.setDownloadDate(content.getDownloadDate());
-        c.setDownloadParams(content.getDownloadParams());
-        contentBox.put(c);
-    }
-
     public void updateContentStatus(StatusContent updateFrom, StatusContent updateTo) {
         List<Content> content = selectContentByStatus(updateFrom);
         for (int i = 0; i < content.size(); i++) content.get(i).setStatus(updateTo);
@@ -569,6 +560,13 @@ public class ObjectBoxDB {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
         img.setStatus(image.getStatus());
+        imgBox.put(img);
+    }
+
+    void updateImageFileUrl(ImageFile image) {
+        Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
+        ImageFile img = imgBox.get(image.getId());
+        img.setUrl(image.getUrl());
         imgBox.put(img);
     }
 
