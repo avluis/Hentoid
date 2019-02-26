@@ -119,8 +119,9 @@ public class ImportService extends IntentService {
      * @param cleanup True if the user has asked for a cleanup when calling import from Preferences
      */
     private void startImport(boolean cleanup) {
-        int booksOK = 0;
-        int booksKO = 0;
+        int booksOK = 0;                        // Number of books imported
+        int booksKO = 0;                        // Number of folders found with no valid book inside
+        int nbFolders = 0;                      // Number of folders found with no content but subfolders
         Content content = null;
         List<String> log = new ArrayList<>();
 
@@ -170,7 +171,9 @@ public class ImportService extends IntentService {
                     if (subdirs != null && subdirs.length > 0) // Folder doesn't contain books but contains subdirectories
                     {
                         files.addAll(Arrays.asList(subdirs));
-                        trace(Log.INFO, log, "Import book KO (was an empty folder with subfolders) : %s", folder.getAbsolutePath());
+                        trace(Log.INFO, log, "Subfolders found in : %s", folder.getAbsolutePath());
+                        nbFolders++;
+                        continue;
                     } else { // No JSON nor any subdirectory
                         trace(Log.WARN, log, "Import book KO! (no JSON found) : %s", folder.getAbsolutePath());
                         // Deletes the folder if cleanup is active
@@ -190,9 +193,9 @@ public class ImportService extends IntentService {
                 trace(Log.ERROR, log, "Import book ERROR : %s %s", e.getMessage(), folder.getAbsolutePath());
             }
 
-            eventProgress(content, files.size(), booksOK, booksKO);
+            eventProgress(content, files.size() - nbFolders, booksOK, booksKO);
         }
-        trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", booksKO + booksOK + "");
+        trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 
         // Write cleanup log in root folder
         File cleanupLogFile = writeLog(log, cleanup);

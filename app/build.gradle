@@ -26,12 +26,14 @@ android {
     }
     buildTypes {
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
+        def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
 
         debug {
             minifyEnabled true
             applicationIdSuffix ".debug"
             versionNameSuffix "-DEBUG"
             buildConfigField "String", "FK_TOKEN", fkToken
+            buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
 
             proguardFile 'proguard-rules-debug.pro'
         }
@@ -53,6 +55,7 @@ android {
 }
 
 dependencies {
+    def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
 
     // Compile any included libraries
     implementation fileTree(include: ['*jar'], dir: 'libs')
@@ -152,7 +155,9 @@ dependencies {
     implementation "android.arch.lifecycle:viewmodel:1.1.1"
 
     // ObjectBox browser
-    debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.3.1"
+    if (includeObjectBoxBrowser.toBoolean()) {
+        debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.3.1"
+    }
     releaseImplementation "io.objectbox:objectbox-android:2.3.1"
 }
 
