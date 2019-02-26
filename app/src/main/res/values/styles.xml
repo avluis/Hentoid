@@ -1,5 +1,10 @@
 <resources>
 
+    <!-- Progress Bar -->
+    <style name="LinearProgress" parent="Theme.AppCompat.Light">
+        <item name="colorAccent">@color/accent</item>
+    </style>
+
     <style name="TextButton">
         <item name="android:padding">16dp</item>
         <item name="android:textAllCaps">true</item>
