@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.security.InvalidParameterException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
@@ -178,10 +180,11 @@ public class ContentDownloadService extends IntentService {
 
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
-        RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads()).queueRequest(buildDownloadRequest(cover, dir, content.getSite().canKnowHentoidAgent()));
+        Site site = content.getSite();
+        RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads()).queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
-                RequestQueueManager.getInstance().queueRequest(buildDownloadRequest(img, dir, content.getSite().canKnowHentoidAgent()));
+                RequestQueueManager.getInstance().queueRequest(buildDownloadRequest(img, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         }
 
         return content;
@@ -318,7 +321,11 @@ public class ContentDownloadService extends IntentService {
      * @param dir Destination folder
      * @return Volley request and its handler
      */
-    private Request<Object> buildDownloadRequest(ImageFile img, File dir, boolean canKnowHentoidAgent) {
+    private Request<Object> buildDownloadRequest(
+            ImageFile img,
+            File dir,
+            boolean canKnowHentoidAgent,
+            boolean hasImageProcessing) {
 
         Map<String, String> headers = new HashMap<>();
         String downloadParamsStr = img.getDownloadParams();
@@ -341,9 +348,13 @@ public class ContentDownloadService extends IntentService {
                 parse -> {
                     try {
                         if (parse != null)
-                            processAndSaveImage(img, dir, parse.getValue().get("Content-Type"), parse.getKey());
+                            processAndSaveImage(img, dir, parse.getValue().get("Content-Type"), parse.getKey(), hasImageProcessing);
                         updateImageStatus(img, (parse != null));
-                    } catch (IOException e) {
+                    } catch (InvalidParameterException e) {
+                        Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
+                        updateImageStatus(img, false);
+                    }
+                    catch (IOException e) {
                         Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
                         updateImageStatus(img, false);
                     }
@@ -356,13 +367,13 @@ public class ContentDownloadService extends IntentService {
                 });
     }
 
-    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) {
+    private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException {
         Type type = new TypeToken<Map<String, String>>() {
         }.getType();
         Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
 
         if (!downloadParams.containsKey("pageInfo")) {
-            return binaryContent;
+            throw new InvalidParameterException("No pageInfo");
         }
 
 //        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
@@ -374,6 +385,8 @@ public class ContentDownloadService extends IntentService {
         Canvas destCanvas = new Canvas(destPicture);
 
         FakkuDecode.getTranslations(page);
+
+        if (page.translations.isEmpty()) throw new InvalidParameterException("No translation found");
 
         for (PointTranslation t : page.translations) {
             Rect sourceRect = new Rect(t.sourceX, t.sourceY, t.sourceX + FakkuDecode.TILE_EDGE_LENGTH, t.sourceY + FakkuDecode.TILE_EDGE_LENGTH);
@@ -395,11 +408,13 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static void processAndSaveImage(ImageFile img, File dir, String contentType, byte[] binaryContent) throws IOException {
+    private static void processAndSaveImage(ImageFile img, File dir, String contentType, byte[] binaryContent, boolean hasImageProcessing) throws IOException, InvalidParameterException  {
 
         byte[] finalBinaryContent = null;
-        if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty()) {
-            finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
+        if (hasImageProcessing)
+        {
+            if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty()) finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
+            else throw new InvalidParameterException("No processing parameters found");
         }
 
         saveImage(img.getName(), dir, contentType, (null == finalBinaryContent) ? binaryContent : finalBinaryContent);
