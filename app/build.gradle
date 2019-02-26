@@ -21,19 +21,21 @@ android {
         targetSdkVersion 23
         versionCode 81
         versionName '1.6.2'
-        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/"'
-    }
-    buildTypes {
+
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
 
+        buildConfigField 'String', 'UPDATE_URL', '"https://raw.githubusercontent.com/avluis/Hentoid/master/app/"'
+        buildConfigField "String", "FK_TOKEN", fkToken
+        buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
+
+        proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+    }
+    buildTypes {
         debug {
             minifyEnabled true
             applicationIdSuffix ".debug"
             versionNameSuffix "-DEBUG"
-            buildConfigField "String", "FK_TOKEN", fkToken
-            buildConfigField "boolean", "INCLUDE_OBJECTBOX_BROWSER", includeObjectBoxBrowser
 
             proguardFile 'proguard-rules-debug.pro'
         }
@@ -43,7 +45,6 @@ android {
 
             proguardFile 'proguard-rules-release.pro'
             testProguardFile 'proguard-rules-test.pro'
-            buildConfigField "String", "FK_TOKEN", fkToken
 
             // Library specific proguard files
             proguardFiles fileTree(dir: '../.proguard', include: ['*.pro']).asList().toArray()
