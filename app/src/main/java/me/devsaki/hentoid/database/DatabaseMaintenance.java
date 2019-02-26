@@ -6,6 +6,7 @@ import android.util.Pair;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
 import timber.log.Timber;
 
@@ -16,11 +17,21 @@ public class DatabaseMaintenance {
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
     public static void performDatabaseHousekeeping(Context context) {
-        HentoidDB oldDb = HentoidDB.getInstance(context);
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         Timber.d("Content item(s) count: %s", db.countContentEntries());
 
+        // Perform functional data updates
+        performDatabaseCleanups(db);
+
+        HentoidDB oldDb = HentoidDB.getInstance(context);
+        // Perform technical data updates on the old database engine
+        if (oldDb.countContentEntries() > 0) {
+            oldDb.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
+        }
+    }
+
+    private static void performDatabaseCleanups(ObjectBoxDB db) {
         // Set items that were being downloaded in previous session as paused
         Timber.i("Updating queue status : start");
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
@@ -28,15 +39,25 @@ public class DatabaseMaintenance {
 
         // Clear temporary books created from browsing a book page without downloading it (since versionCode 60 / v1.3.7)
         Timber.i("Clearing temporary books : start");
-        List<Content> obsoleteTempContent = db.selectContentByStatus(StatusContent.SAVED);
-        Timber.i("Clearing temporary books : %s books detected", obsoleteTempContent.size());
-        for (Content c : obsoleteTempContent) db.deleteContent(c);
+        List<Content> contents = db.selectContentByStatus(StatusContent.SAVED);
+        Timber.i("Clearing temporary books : %s books detected", contents.size());
+        for (Content c : contents) db.deleteContent(c);
         Timber.i("Clearing temporary books : done");
 
-        // Perform technical data updates on the old database engine
-        if (oldDb.countContentEntries() > 0) {
-            oldDb.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
+        // Update URLs from deprecated Pururin hosts
+        Timber.i("Upgrading Pururin image hosts : start");
+        contents = db.selectContentWithOldPururinHost();
+        Timber.i("Upgrading Pururin image hosts : %s books detected", contents.size());
+        for (Content c : contents)
+        {
+            c.setCoverImageUrl(c.getCoverImageUrl().replace("api.pururin.io/images/","cdn.pururin.io/assets/images/data/"));
+            for (ImageFile i : c.getImageFiles())
+            {
+                i.setUrl(i.getUrl().replace("api.pururin.io/images/","cdn.pururin.io/assets/images/data/"));
+            }
+            db.insertContent(c);
         }
+        Timber.i("Upgrading Pururin image hosts : done");
     }
 
     /**

@@ -601,4 +601,9 @@ public class ObjectBoxDB {
 
         return query.build().find();
     }
+
+    List<Content> selectContentWithOldPururinHost()
+    {
+        return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
+    }
 }
