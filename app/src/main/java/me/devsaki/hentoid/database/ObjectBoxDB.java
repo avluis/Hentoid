@@ -23,6 +23,7 @@ import io.objectbox.query.Query;
 import io.objectbox.query.QueryBuilder;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
@@ -46,15 +47,18 @@ public class ObjectBoxDB {
 
     // TODO - put indexes
 
-    private static ObjectBoxDB instance;
-
-    private final BoxStore store;
-    private final int[] visibleContentStatus = new int[]{StatusContent.DOWNLOADED.getCode(),
+    private final static int[] visibleContentStatus = new int[]{StatusContent.DOWNLOADED.getCode(),
             StatusContent.ERROR.getCode(),
             StatusContent.MIGRATED.getCode()};
 
+    private static ObjectBoxDB instance;
+
+    private final BoxStore store;
+
+
     private ObjectBoxDB(Context context) {
         store = MyObjectBox.builder().androidContext(context).build();
+
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
             boolean started = new AndroidObjectBrowser(store).start(context);
             Timber.i("ObjectBrowser started: %s", started);
@@ -102,12 +106,12 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).count();
     }
 
-    public void updateContentStatusAndDate(Content row) {
+    public void updateContentStatusAndDate(Content content) {
         Box<Content> contentBox = store.boxFor(Content.class);
-        Content c = contentBox.get(row.getId());
-        c.setStatus(row.getStatus());
-        c.setDownloadDate(row.getDownloadDate());
-        c.setDownloadParams(row.getDownloadParams());
+        Content c = contentBox.get(content.getId());
+        c.setStatus(content.getStatus());
+        c.setDownloadDate(content.getDownloadDate());
+        c.setDownloadParams(content.getDownloadParams());
         contentBox.put(c);
     }
 
@@ -126,18 +130,71 @@ public class ObjectBoxDB {
     }
 
     List<Content> selectContentByStatus(StatusContent status) {
-        return store.boxFor(Content.class).query().equal(Content_.status, status.getCode()).build().find();
+        return selectContentByStatusCodes(new int[]{status.getCode()});
+    }
+
+    private List<Content> selectContentByStatusCodes(int[] statusCodes) {
+        return store.boxFor(Content.class).query().in(Content_.status, statusCodes).build().find();
+    }
+
+    /*
+    Remove all books in the library but keep the download queue intact
+     */
+    public void deleteAllBooks() {
+        // All statuses except DOWNLOADING and PAUSED that imply the book is in the download queue
+        int[] storedContentStatus = new int[]{
+                StatusContent.SAVED.getCode(),
+                StatusContent.DOWNLOADED.getCode(),
+                StatusContent.ERROR.getCode(),
+                StatusContent.MIGRATED.getCode(),
+                StatusContent.IGNORED.getCode(),
+                StatusContent.UNHANDLED_ERROR.getCode(),
+                StatusContent.CANCELED.getCode(),
+                StatusContent.ONLINE.getCode()
+        };
+
+        // Base content that has to be removed
+        long[] deletableContentId = store.boxFor(Content.class).query().in(Content_.status, storedContentStatus).build().findIds();
+        deleteContentById(deletableContentId);
     }
 
     public void deleteContent(Content content) {
-        store.boxFor(Content.class).remove(content);
+        deleteContentById(content.getId());
     }
 
-    public void deleteAllBooks() {
-        store.boxFor(ImageFile.class).removeAll();
-        store.boxFor(Attribute.class).removeAll();
-        store.boxFor(Content.class).removeAll();
-        store.boxFor(QueueRecord.class).removeAll();
+    private void deleteContentById(long contentId) {
+        deleteContentById(new long[]{contentId});
+    }
+
+    /**
+     * Remove the given content and all related objects from the DB
+     * NB : ObjectBox v2.3.1 does not support cascade delete, so everything has to be done manually
+     *
+     * @param contentId IDs of the contents to be removed from the DB
+     */
+    private void deleteContentById(long[] contentId) {
+        Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
+        Box<Attribute> attributeBox = store.boxFor(Attribute.class);
+        Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
+        Box<Content> contentBox = store.boxFor(Content.class);
+        List<Content> contents = contentBox.get(contentId);
+
+        for (Content c : contents) {
+            store.runInTx(() -> {
+                for (ImageFile i : c.getImageFiles()) imageFileBox.remove(i);   // Delete imageFiles
+                c.getImageFiles().clear();                                      // Clear links to all imageFiles
+
+                // Delete attribute when current content is the only content left on the attribute
+                for (Attribute a : c.getAttributes()) if (1 == a.contents.size()) {
+                    for (AttributeLocation l : a.getLocations()) locationBox.remove(l); // Delete all locations
+                    a.getLocations().clear();                                           // Clear location links
+                    attributeBox.remove(a);                                             // Delete the attribute itself
+                }
+                c.getAttributes().clear();                                      // Clear links to all attributes
+
+                contentBox.remove(c);                                           // Remove the content itself
+            });
+        }
     }
 
     public void updateContentReads(Content content) {
@@ -181,6 +238,10 @@ public class ObjectBoxDB {
         if (record != null) {
             queueRecordBox.remove(record);
         }
+    }
+
+    public void deleteAllQueue() {
+        store.boxFor(QueueRecord.class).removeAll();
     }
 
     long countAllContent() {
@@ -513,8 +574,7 @@ public class ObjectBoxDB {
 
     public SparseIntArray countProcessedImagesById(long contentId) {
         QueryBuilder<ImageFile> imgQuery = store.boxFor(ImageFile.class).query();
-        imgQuery.link(ImageFile_.content).equal(Content_.id, contentId);
-
+        imgQuery.equal(ImageFile_.contentId, contentId);
         List<ImageFile> images = imgQuery.build().find();
 
         SparseIntArray result = new SparseIntArray();

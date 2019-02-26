@@ -94,6 +94,7 @@ public class DatabaseMigrationService extends IntentService {
         Context context = HentoidApp.getAppContext();
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.deleteAllBooks();
+        db.deleteAllQueue();
     }
 
     /**
