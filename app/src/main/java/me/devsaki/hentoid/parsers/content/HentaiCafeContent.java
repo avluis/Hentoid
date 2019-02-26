@@ -7,16 +7,15 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class HentaiCafeContent {
-    @Selector(value = "div.x-main.full article", attr="id", defValue = "")
+    @Selector(value = "div.x-main.full article", attr = "id", defValue = "")
     private String galleryUrl;
-    @Selector(value = "div.x-column.x-sm.x-1-2 img", attr="src")
-    private String coverUrl;
+    @Selector(value = "div.entry-content img", attr = "src")
+    private Element coverImg;
     @Selector("div.x-column.x-sm.x-1-2.last h3")
     private String title;
     @Selector(value = "div.x-column.x-sm.x-1-2.last a[href*='/artist/']")
@@ -25,15 +24,18 @@ public class HentaiCafeContent {
     private List<Element> tags;
 
 
-    public Content toContent()
-    {
+    public Content toContent() {
         Content result = new Content();
 
         result.setSite(Site.HENTAICAFE);
         if (galleryUrl.isEmpty()) return result;
 
         result.setUrl(galleryUrl.replace("post-", "/?p="));
+
+        String coverUrl = coverImg.attr("src");
+        if (coverUrl.isEmpty()) coverUrl = coverImg.attr("data-cfsrc"); // Cloudflare-served image
         result.setCoverImageUrl(coverUrl);
+
         result.setTitle(title);
         result.setQtyPages(-1);
 
