@@ -36,8 +36,6 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -135,8 +133,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // ======== UTIL OBJECTS
     private ObjectAnimator animator;
-    // Handler for text searches; needs to be there to be cancelable upon new key press
-    private final Handler searchHandler = new Handler();
 
     // ======== VARIABLES TAKEN FROM PREFERENCES / GLOBAL SETTINGS TO DETECT CHANGES
     // Books per page
@@ -360,8 +356,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                         "Could not find library!\nPlease check your storage device.", Toast.LENGTH_LONG);
                 setQuery("      ");
 
-                Handler handler = new Handler();
-                handler.postDelayed(() -> {
+                new Handler().postDelayed(() -> {
                     FragmentActivity activity = requireActivity();
                     activity.finish();
                     Runtime.getRuntime().exit(0);
@@ -372,8 +367,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void checkSDHealth() {
-        if (!FileHelper.isWritable(new File(Preferences.getRootFolderName())))
-        {
+        if (!FileHelper.isWritable(new File(Preferences.getRootFolderName()))) {
             ToastUtil.toast(R.string.sd_access_error);
             new AlertDialog.Builder(requireActivity())
                     .setMessage(R.string.sd_access_fatal_error)
@@ -696,7 +690,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
                 if (query != null && !query.isEmpty())
-                    searchHandler.postDelayed(() -> {
+                    // Use of handler allows to set the value _after_ the UI has auto-cleared it
+                    // Without that handler the view displays with an empty value
+                    new Handler().postDelayed(() -> {
                         invalidateNextQueryTextChange = true;
                         mainSearchView.setQuery(query, false);
                     }, 100);
@@ -915,19 +911,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         favsMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
     }
 
-    private void submitContentSearchQuery(String s) {
-        submitContentSearchQuery(s, 0);
-    }
-
-    private void submitContentSearchQuery(final String s, long delay) {
+    private void submitContentSearchQuery(final String s) {
         query = s;
         selectedSearchTags.clear(); // If user searches in main toolbar, universal search takes over advanced search
-        searchHandler.removeCallbacksAndMessages(null);
-        searchHandler.postDelayed(() -> {
-            setQuery(s);
-            cleanResults();
-            searchLibrary(true);
-        }, delay);
+        setQuery(s);
+        cleanResults();
+        searchLibrary(true);
     }
 
     private void showReloadToolTip() {
