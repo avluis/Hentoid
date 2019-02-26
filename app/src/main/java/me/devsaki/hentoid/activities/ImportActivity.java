@@ -16,7 +16,7 @@ import android.provider.DocumentsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.Editable;
@@ -204,14 +204,9 @@ public class ImportActivity extends BaseActivity {
             prevRootDir = currentRootDir;
             initImport();
         } else {
-            /*
             FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
             dirChooserFragment = DirChooserFragment.newInstance(downloadDir);
             dirChooserFragment.show(transaction, "DirectoryChooserFragment");
-            */
-            FragmentManager fm = getSupportFragmentManager();
-            dirChooserFragment = DirChooserFragment.newInstance(downloadDir);
-            dirChooserFragment.show(fm, "DirectoryChooserFragment");
         }
     }
 
@@ -501,8 +496,7 @@ public class ImportActivity extends BaseActivity {
     // NB : this method works approximately because it doesn't try to count JSON files
     // However, findFilesRecursively -the method used by ImportService- is too slow on certain phones
     // and might cause freezes -> we stick to that approximate method for ImportActivity
-    private boolean hasBooks()
-    {
+    private boolean hasBooks() {
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
             downloadDirs.add(FileHelper.getSiteDownloadDir(this, s));
