@@ -464,7 +464,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         if (StatusContent.ONLINE == item.getStatus())
             for (ImageFile im : item.getImageFiles())
-                db.updateImageFileStatus(im.setStatus(StatusContent.SAVED));
+                db.updateImageFile(im.setStatus(StatusContent.SAVED));
 
         item.setDownloadDate(new Date().getTime());
         item.setStatus(StatusContent.DOWNLOADING);

@@ -427,7 +427,8 @@ public class ContentDownloadService extends IntentService {
      */
     private void updateImageStatus(ImageFile img, boolean success) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-        if (img.getId() > 0) db.updateImageFileStatus(img); // because thumb image isn't in the DB
+        if (success) img.setDownloadParams("");
+        if (img.getId() > 0) db.updateImageFile(img); // because thumb image isn't in the DB
     }
 
     /**

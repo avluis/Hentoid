@@ -556,11 +556,8 @@ public class ObjectBoxDB {
         return result;
     }
 
-    public void updateImageFileStatus(ImageFile image) {
-        Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
-        ImageFile img = imgBox.get(image.getId());
-        img.setStatus(image.getStatus());
-        imgBox.put(img);
+    public void updateImageFile(ImageFile image) {
+        store.boxFor(ImageFile.class).put(image);
     }
 
     void updateImageFileUrl(ImageFile image) {
