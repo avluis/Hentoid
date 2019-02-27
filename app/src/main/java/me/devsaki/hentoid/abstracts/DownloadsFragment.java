@@ -1081,19 +1081,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         return (currentPage * booksPerPage >= mTotalSelectedCount);
     }
 
-    protected void displayNoResults() {
-        displayNoResults(true);
-    }
-
-    protected void displayNoResults(boolean canShowBookIdSearch) {
+    private void displayNoResults() {
         if (!query.isEmpty()) {
-            if (Helper.isNumeric(query)) // User searches a book ID
-            {
-                emptyText.setText(R.string.search_bookid_not_found);
-                SearchBookIdDialogFragment.invoke(requireActivity().getSupportFragmentManager(), query);
-            } else {
-                emptyText.setText(R.string.search_entry_not_found);
-            }
+            emptyText.setText(R.string.search_entry_not_found);
         } else {
             emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
         }
@@ -1137,6 +1127,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (totalSelectedContent > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
             filterBar.setVisibility(View.GONE);
+        }
+
+        if (Helper.isNumeric(query)) // User searches a book ID
+        {
+            SearchBookIdDialogFragment.invoke(requireActivity().getSupportFragmentManager(), query);
         }
 
         if (0 == totalSelectedContent) {
@@ -1247,7 +1242,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mTotalCount = 0;
         currentPage = 1;
 
-        displayNoResults(false);
+        displayNoResults();
         clearSelection();
         updateTitle();
     }
