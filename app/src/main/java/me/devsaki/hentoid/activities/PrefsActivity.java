@@ -15,7 +15,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.events.ImportEvent;
-import me.devsaki.hentoid.fragments.LibRefreshLauncher;
+import me.devsaki.hentoid.fragments.LibRefreshDialogFragment;
 import me.devsaki.hentoid.services.ImportService;
 import me.devsaki.hentoid.services.UpdateCheckService;
 import me.devsaki.hentoid.services.UpdateDownloadService;
@@ -104,7 +104,7 @@ public class PrefsActivity extends BaseActivity {
                     if (ImportService.isRunning()) {
                         ToastUtil.toast("Import is already running");
                     } else {
-                        LibRefreshLauncher.invoke(requireFragmentManager());
+                        LibRefreshDialogFragment.invoke(requireFragmentManager());
                     }
                     return true;
                 default:

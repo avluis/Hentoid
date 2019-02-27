@@ -15,10 +15,10 @@ import me.devsaki.hentoid.activities.ImportActivity;
  * Created by Robb on 11/2018
  * Launcher dialog for the library refresh feature
  */
-public class LibRefreshLauncher extends DialogFragment {
+public class LibRefreshDialogFragment extends DialogFragment {
 
     public static void invoke(FragmentManager fragmentManager) {
-        LibRefreshLauncher fragment = new LibRefreshLauncher();
+        LibRefreshDialogFragment fragment = new LibRefreshDialogFragment();
         fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.ImportDialogTheme);
         fragment.show(fragmentManager, null);
     }
