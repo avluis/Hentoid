@@ -138,10 +138,12 @@
         <activity
             android:name=".activities.UnlockActivity"
             android:noHistory="true"
+            android:resizeableActivity="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.TaupeBackgroundNoActionBar" />
         <activity
             android:name=".activities.PinPreferenceActivity"
+            android:resizeableActivity="false"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Search" />
         <activity
