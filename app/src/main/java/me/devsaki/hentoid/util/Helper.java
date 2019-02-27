@@ -311,4 +311,9 @@ public final class Helper {
         for (long n : input) list.add(n);
         return list;
     }
+
+    public static boolean isNumeric(String str)
+    {
+        return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+    }
 }

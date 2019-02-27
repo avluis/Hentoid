@@ -56,6 +56,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.fragments.AboutMikanDialogFragment;
+import me.devsaki.hentoid.fragments.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -1081,15 +1082,22 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     protected void displayNoResults() {
-        if (!isLoading && !("").equals(query)) {
-            emptyText.setText(R.string.search_entry_not_found);
-            toggleUI(SHOW_BLANK);
-        } else if (!isLoading) {
-            emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
-            toggleUI(SHOW_BLANK);
+        displayNoResults(true);
+    }
+
+    protected void displayNoResults(boolean canShowBookIdSearch) {
+        if (!query.isEmpty()) {
+            if (Helper.isNumeric(query)) // User searches a book ID
+            {
+                emptyText.setText(R.string.search_bookid_not_found);
+                SearchBookIdDialogFragment.invoke(requireActivity().getSupportFragmentManager(), query);
+            } else {
+                emptyText.setText(R.string.search_entry_not_found);
+            }
         } else {
-            Timber.w("Why are we in here?");
+            emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
         }
+        toggleUI(SHOW_BLANK);
     }
 
     /**
@@ -1118,6 +1126,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isLoading = false;
 
         if (isSearchQueryActive()) {
+            // Disable "New content" popup
             if (isNewContentAvailable) {
                 newContentToolTip.setVisibility(View.GONE);
                 isNewContentAvailable = false;
@@ -1130,8 +1139,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             filterBar.setVisibility(View.GONE);
         }
 
-        // Display new results
-        displayResults(results, totalSelectedContent);
+        if (0 == totalSelectedContent) {
+            displayNoResults();
+        } else {
+            displayResults(results, totalSelectedContent);
+        }
 
         mTotalSelectedCount = totalSelectedContent;
         mTotalCount = totalContent;
@@ -1235,7 +1247,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mTotalCount = 0;
         currentPage = 1;
 
-        displayNoResults();
+        displayNoResults(false);
         clearSelection();
         updateTitle();
     }

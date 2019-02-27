@@ -10,7 +10,6 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.ui.CarouselDecorator;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
@@ -88,19 +87,15 @@ public class PagerFragment extends DownloadsFragment {
 
     @Override
     protected void showToolbar(boolean show) {
-        pagerToolbar.setVisibility(show?View.VISIBLE:View.GONE);
+        pagerToolbar.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     @Override
     protected void displayResults(List<Content> results, long totalSelectedContent) {
-        if (0 == results.size()) {
-            Timber.d("Result: Nothing to match.");
-            displayNoResults();
-        } else {
-            mAdapter.replaceAll(results);
-            toggleUI(SHOW_RESULT);
-        }
-        pager.setPageCount((int)Math.ceil(totalSelectedContent *1.0/booksPerPage));
+        mAdapter.replaceAll(results);
+        toggleUI(SHOW_RESULT);
+
+        pager.setPageCount((int) Math.ceil(totalSelectedContent * 1.0 / booksPerPage));
         pager.setCurrentPage(currentPage);
     }
 }
