@@ -338,6 +338,7 @@ public class ObjectBoxDB {
 
         if (filterFavourites) query.equal(Content_.favourite, true);
         query.contains(Content_.title, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+        query.or().equal(Content_.uniqueSiteId, queryStr);
 //        query.or().link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE); // Use of or() here is not possible yet with ObjectBox v2.3.1
         query.or().in(Content_.id, additionalIds);
         applyOrderStyle(query, orderStyle);
