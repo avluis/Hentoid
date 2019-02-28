@@ -60,20 +60,7 @@ public class SearchViewModel extends AndroidViewModel {
 
         @Override
         public void onResultReady(List<Attribute> results, int totalContent) {
-
-            // Sort items according to prefs
-            Comparator<Attribute> comparator;
-            switch (Preferences.getAttributesSortOrder()) {
-                case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
-                    comparator = Attribute.NAME_COMPARATOR;
-                    break;
-                default:
-                    comparator = Attribute.COUNT_COMPARATOR;
-            }
-            Attribute[] attrs = results.toArray(new Attribute[0]); // Well, yes, since results.sort(comparator) requires API 24...
-            Arrays.sort(attrs, comparator);
-
-            AttributeSearchResult result = new AttributeSearchResult(attrs);
+            AttributeSearchResult result = new AttributeSearchResult(results, totalContent);
             list.postValue(result);
         }
 
@@ -177,11 +164,18 @@ public class SearchViewModel extends AndroidViewModel {
         getAvailableAttributes();
     }
 
-    public void onCategoryFilterChanged(String query) {
-        if (collectionAccessor.supportsAvailabilityFilter())
-            collectionAccessor.getAttributeMasterData(category, query, selectedAttributes.getValue(), false, new AttributesResultListener(proposedAttributes));
-        else
-            collectionAccessor.getAttributeMasterData(category, query, new AttributesResultListener(proposedAttributes));
+    public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
+        if (collectionAccessor.supportsAttributesPaging()) {
+            if (collectionAccessor.supportsAvailabilityFilter())
+                collectionAccessor.getPagedAttributeMasterData(category, query, selectedAttributes.getValue(), false, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
+            else
+                collectionAccessor.getPagedAttributeMasterData(category, query, pageNum, itemsPerPage, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
+        } else {
+            if (collectionAccessor.supportsAvailabilityFilter())
+                collectionAccessor.getAttributeMasterData(category, query, selectedAttributes.getValue(), false, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
+            else
+                collectionAccessor.getAttributeMasterData(category, query, Preferences.getAttributesSortOrder(), new AttributesResultListener(proposedAttributes));
+        }
     }
 
     public void onAttributeSelected(Attribute a) {
@@ -233,17 +227,19 @@ public class SearchViewModel extends AndroidViewModel {
 
     // === HELPER RESULT STRUCTURES
     public class AttributeSearchResult {
-        public List<Attribute> attributes;
+        public final List<Attribute> attributes;
+        public final int totalContent;
         public boolean success = true;
         public String message;
 
 
         AttributeSearchResult() {
-            this.attributes = new ArrayList<>();
+            this.attributes = new ArrayList<>(); this.totalContent = 0;
         }
 
-        AttributeSearchResult(Attribute[] attributes) {
-            this.attributes = Arrays.asList(attributes);
+        AttributeSearchResult(List<Attribute> attributes, int totalContent) {
+            this.attributes = new ArrayList<>(attributes);
+            this.totalContent = totalContent;
         }
     }
 

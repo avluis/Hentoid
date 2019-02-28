@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/Chip.Choice"
+    android:id="@+id/attributeChip"
     app:layout_flexGrow="1"
     tools:context=".activities.SearchActivity"
     tools:text="tag name (123)" />

@@ -10,6 +10,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -199,8 +200,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         searchBooks(query, Collections.emptyList(), 1, 1, 1, favouritesOnly, listener);
     }
 
-    @Override
-    public void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener) {
+    private void getAttributeMasterData(AttributeType type, String filter, int sortOrder, ResultListener<List<Attribute>> listener) {
 
         // Try and get response from cache
         List<Attribute> attributes = AttributeCache.getFromCache(type.name());
@@ -211,7 +211,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
             compositeDisposable.add(MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())
                     .subscribe((result) -> {
-                        onMasterDataSuccess(result, type.name(), filter, listener); // TODO handle caching in computing thread
+                        onMasterDataSuccess(result, type.name(), filter, sortOrder, listener); // TODO handle caching in computing thread
                     }, (throwable) -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
         } else {
             List<Attribute> result = filter(attributes, filter);
@@ -220,9 +220,14 @@ public class MikanCollectionAccessor implements CollectionAccessor {
     }
 
     @Override
-    public void getAttributeMasterData(List<AttributeType> types, String filter, ResultListener<List<Attribute>> listener) {
+    public void getAttributeMasterData(List<AttributeType> types, String filter, int sortOrder, ResultListener<List<Attribute>> listener) {
         // Because Mikan is unable to do that, and trying to assemble it manually would be a disaster
-        getAttributeMasterData(types.get(0), filter, listener);
+        getAttributeMasterData(types.get(0), filter, sortOrder, listener);
+    }
+
+    @Override
+    public void getPagedAttributeMasterData(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
+        throw new UnsupportedOperationException("Not implemented with Mikan");
     }
 
     @Override
@@ -231,7 +236,17 @@ public class MikanCollectionAccessor implements CollectionAccessor {
     }
 
     @Override
-    public void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
+    public boolean supportsAttributesPaging() {
+        return false;
+    }
+
+    @Override
+    public void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, ResultListener<List<Attribute>> listener) {
+        throw new UnsupportedOperationException("Not implemented with Mikan");
+    }
+
+    @Override
+    public void getPagedAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
         throw new UnsupportedOperationException("Not implemented with Mikan");
     }
 
@@ -280,7 +295,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         }
     }
 
-    private void onMasterDataSuccess(Response<MikanAttributeResponse> response, String attrName, String filter, ResultListener<List<Attribute>> listener) {
+    private void onMasterDataSuccess(Response<MikanAttributeResponse> response, String attrName, String filter, int sortOrder, ResultListener<List<Attribute>> listener) {
         MikanAttributeResponse result = response.body();
         if (null == result) {
             listener.onResultFailed("Attributes failed to load - Empty response");
@@ -302,6 +317,17 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 //        Timber.d("Mikan response [%s] : %s", attrResponse.request, json.toString());
 
         List<Attribute> finalResult = filter(attributes, filter);
+
+        Comparator<Attribute> comparator;
+        switch (sortOrder) {
+            case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
+                comparator = Attribute.NAME_COMPARATOR;
+                break;
+            default:
+                comparator = Attribute.COUNT_COMPARATOR;
+        }
+        Collections.sort(finalResult, comparator);
+
         listener.onResultReady(finalResult, finalResult.size());
     }
 

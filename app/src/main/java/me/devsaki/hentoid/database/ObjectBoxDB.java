@@ -176,11 +176,13 @@ public class ObjectBoxDB {
                 c.getImageFiles().clear();                                      // Clear links to all imageFiles
 
                 // Delete attribute when current content is the only content left on the attribute
-                for (Attribute a : c.getAttributes()) if (1 == a.contents.size()) {
-                    for (AttributeLocation l : a.getLocations()) locationBox.remove(l); // Delete all locations
-                    a.getLocations().clear();                                           // Clear location links
-                    attributeBox.remove(a);                                             // Delete the attribute itself
-                }
+                for (Attribute a : c.getAttributes())
+                    if (1 == a.contents.size()) {
+                        for (AttributeLocation l : a.getLocations())
+                            locationBox.remove(l); // Delete all locations
+                        a.getLocations().clear();                                           // Clear location links
+                        attributeBox.remove(a);                                             // Delete the attribute itself
+                    }
                 c.getAttributes().clear();                                      // Clear links to all attributes
 
                 contentBox.remove(c);                                           // Remove the content itself
@@ -507,7 +509,7 @@ public class ObjectBoxDB {
         return result;
     }
 
-    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
+    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
         // Get Content filtered by current selection
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         // Get available attributes of the resulting content list
@@ -520,15 +522,33 @@ public class ObjectBoxDB {
 
         List<Attribute> result = query.build().find();
 
+// TODO count the number of Content by attribute
+
         // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
         // => Group by and count have to be done manually (thanks God Stream exists !)
         // Group and count by name
-        Map<String, List<Attribute>> map = Stream.of(result).collect(Collectors.groupingBy(Attribute::getName));
-        for (String s : map.keySet()) {
-            result.add(new Attribute(type, s).setCount(map.get(s).size())); // URL was irrelevant
+//        Map<String, List<Attribute>> map = Stream.of(result).collect(Collectors.groupingBy(Attribute -> {  }));
+//        result.clear();
+
+        for (Attribute a : result) {
+            a.setCount(a.contents.size());
         }
+
+        // Apply sort order and paging
         // Order by count desc, name asc
-        return Stream.of(result).sortBy(a -> -a.getCount()).sortBy(Attribute::getName).collect(toList());
+        Stream<Attribute> s = Stream.of(result);
+        if (Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
+            s = s.sortBy(Attribute::getName).sortBy(a -> -a.getCount());
+        } else {
+            s = s.sortBy(a -> -a.getCount()).sortBy(Attribute::getName);
+        }
+
+        // Apply paging
+        if (itemsPerPage > 0) {
+            int start = (page - 1) * itemsPerPage;
+            s = s.limit(page * itemsPerPage).skip(start);
+        }
+        return s.collect(toList());
     }
 
     SparseIntArray countAvailableAttributesPerType() {
@@ -598,8 +618,7 @@ public class ObjectBoxDB {
         return query.build().find();
     }
 
-    List<Content> selectContentWithOldPururinHost()
-    {
+    List<Content> selectContentWithOldPururinHost() {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
     }
 }

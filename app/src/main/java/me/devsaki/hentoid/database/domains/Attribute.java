@@ -167,6 +167,10 @@ public class Attribute {
         return getName();
     }
 
+    public String formatLabel() {
+        return String.format("%s %s", getName(), getCount() > 0 ? "(" + getCount() + ")" : "");
+    }
+
     public void saveToStream(DataOutputStream output) throws IOException {
         output.writeInt(ATTRIBUTE_FILE_VERSION);
         output.writeUTF(name);

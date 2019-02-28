@@ -26,13 +26,17 @@ public interface CollectionAccessor {
 
     void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener);
 
-    void getAttributeMasterData(AttributeType type, String filter, ResultListener<List<Attribute>> listener);
+    void getAttributeMasterData(List<AttributeType> types, String filter, int sortOrder, ResultListener<List<Attribute>> listener);
 
-    void getAttributeMasterData(List<AttributeType> types, String filter, ResultListener<List<Attribute>> listener);
+    void getPagedAttributeMasterData(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener);
 
     boolean supportsAvailabilityFilter();
 
-    void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener);
+    boolean supportsAttributesPaging();
+
+    void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, ResultListener<List<Attribute>> listener);
+
+    void getPagedAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener);
 
     void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener);
 
