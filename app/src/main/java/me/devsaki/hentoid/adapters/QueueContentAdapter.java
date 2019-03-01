@@ -20,6 +20,10 @@ import org.greenrobot.eventbus.EventBus;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -39,6 +43,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
 
     private final Context context;
     private ListView container = null;
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     public QueueContentAdapter(Context context, List<Content> contents) {
         super(context, R.layout.item_queue, contents);
@@ -414,16 +419,24 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content whose download has to be canceled
      */
     private void cancel(Content content) {
+        compositeDisposable.add(
+                Completable.fromRunnable(() -> doCancel(content))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(() -> {
+                            // Remove the content from the in-memory list and the UI
+                            super.remove(content);
+                            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+                        }));
+    }
+
+    private void doCancel(Content content) {
         // Remove content altogether from the DB (including queue)
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         db.deleteQueue(content);
         db.deleteContent(content);
         // Remove the content from the disk
         FileHelper.removeContent(content);
-        // Remove the content from the in-memory list and the UI
-        super.remove(content);
-
-        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
     }
 
     public void removeFromQueue(Content content) {
@@ -442,5 +455,9 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         TextView tvArtist;
         TextView tvTags;
         ImageView ivSource;
+    }
+
+    public void dispose() {
+        compositeDisposable.clear();
     }
 }

@@ -69,6 +69,12 @@ public class QueueFragment extends BaseFragment {
     }
 
     @Override
+    public void onDestroy() {
+        mAdapter.dispose();
+        super.onDestroy();
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_queue, container, false);
