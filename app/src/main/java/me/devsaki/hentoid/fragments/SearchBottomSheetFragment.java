@@ -6,6 +6,7 @@ import android.app.SearchableInfo;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
@@ -20,7 +21,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.annimon.stream.Stream;
-import com.google.android.flexbox.AlignContent;
 import com.google.android.flexbox.FlexWrap;
 import com.google.android.flexbox.FlexboxLayoutManager;
 
@@ -60,7 +60,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private final Debouncer<String> searchMasterDataDebouncer = new Debouncer<>(1000, this::searchMasterData);
 
 
-
     // Panel that displays the "waiting for metadata info" visuals
     private View tagWaitPanel;
     // Image that displays metadata search message (e.g. loading up / too many results / no result)
@@ -70,6 +69,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // Container where all proposed attributes are loaded
 //    private RecyclerView attributeMosaic;
     private AttributeAdapter attributeAdapter;
+
+    private boolean clearOnSuccess; // Flag to clear the adapter on content reception
 
     private int currentPage;
     private int mTotalSelectedCount;
@@ -82,6 +83,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     // ViewModel of the current activity
     private SearchViewModel viewModel;
+
+    private boolean isInitiated = false; // https://stackoverflow.com/a/50474911
 
 
     // ======== CONSTANTS
@@ -116,7 +119,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 throw new RuntimeException("Initialization failed");
             }
 
-            viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
+            viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
             viewModel.setMode(mode);
             viewModel.onCategoryChanged(selectedAttributeTypes);
         }
@@ -139,13 +142,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         tagWaitMessage = view.findViewById(R.id.tag_wait_description);
         RecyclerView attributeMosaic = view.findViewById(R.id.tag_suggestion);
         FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(this.getContext());
-//        layoutManager.setAlignContent(AlignContent.FLEX_START);
+//        layoutManager.setAlignContent(AlignContent.FLEX_START); <-- not possible
         layoutManager.setFlexWrap(FlexWrap.WRAP);
-//        layoutManager.setFlexDirection(FlexDirection.COLUMN);
-//        layoutManager.setJustifyContent(JustifyContent.FLEX_END);
         attributeMosaic.setLayoutManager(layoutManager);
         attributeAdapter = new AttributeAdapter();
         attributeAdapter.setOnScrollToEndListener(this::loadMore);
+        attributeAdapter.setOnClickListener(this::onAttributeChosen);
         attributeMosaic.setAdapter(attributeAdapter);
 
         tagSearchView = view.findViewById(R.id.tag_filter);
@@ -187,7 +189,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         searchMasterData("");
     }
 
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        isInitiated = true;
+    }
 
     @Override
     public void onDestroyView() {
@@ -203,21 +209,28 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      *               %s%)
      */
     private void searchMasterData(final String filter) {
+        searchMasterData(filter, false);
+    }
+
+    private void searchMasterData(final String filter, boolean clearOnSuccess) {
         tagWaitMessage.startAnimation(new BlinkAnimation(750, 20));
         tagWaitMessage.setText(R.string.downloads_loading);
 
         tagWaitPanel.setVisibility(View.VISIBLE);
 
+        this.clearOnSuccess = clearOnSuccess;
+
         viewModel.onCategoryFilterChanged(filter, currentPage, ATTRS_PER_PAGE);
     }
 
     private void onAttributesReady(SearchViewModel.AttributeSearchResult results) {
+        if (!isInitiated) return;
+
         if (!results.success) {
             onAttributesFailed(results.message);
             return;
         }
 
-//        attributeMosaic.removeAllViews();
         tagWaitMessage.clearAnimation();
 
         List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
@@ -229,23 +242,15 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 .filter(value -> !finalSelectedAttributes.contains(value))
                 .collect(toList());
 
-        mTotalSelectedCount = results.totalContent;
+        mTotalSelectedCount = attributes.size();
         if (0 == mTotalSelectedCount) {
             String searchQuery = tagSearchView.getQuery().toString();
             if (searchQuery.isEmpty()) this.dismiss();
             else tagWaitMessage.setText(R.string.masterdata_no_result);
-        }/* else if (attributes.size() > MAX_ATTRIBUTES_DISPLAYED) {
-            String errMsg = (searchQuery.isEmpty()) ? getString(R.string.masterdata_too_many_results_noquery) : getString(R.string.masterdata_too_many_results_query);
-            tagWaitMessage.setText(errMsg.replace("%1", searchQuery));
-        }*/ else {
+        } else {
+            if (clearOnSuccess) attributeAdapter.clear();
             tagWaitPanel.setVisibility(View.GONE);
             attributeAdapter.add(attributes);
-/*
-            // Display buttons
-            for (Attribute attr : attributes) {
-                addChoiceChip(attributeMosaic, attr);
-            }
-*/
         }
     }
 
@@ -262,17 +267,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         tagWaitPanel.setVisibility(View.GONE);
     }
 
-    private void addChoiceChip(ViewGroup parent, Attribute attribute) {
-        String label = attribute.formatLabel();
-
-        TextView chip = (TextView) getLayoutInflater().inflate(R.layout.item_chip_choice, parent, false);
-        chip.setText(label);
-        chip.setTag(attribute);
-        chip.setOnClickListener(this::onAttributeChosen);
-
-        parent.addView(chip);
-    }
-
     /**
      * Handler for Attribute button click
      *
@@ -284,7 +278,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
             viewModel.onAttributeSelected(a);
-            searchMasterData(tagSearchView.getQuery().toString());
+            searchMasterData(tagSearchView.getQuery().toString(), true);
         }
     }
 
@@ -303,11 +297,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         return (currentPage * ATTRS_PER_PAGE >= mTotalSelectedCount);
     }
 
-    private void loadMore()
-    {
+    private void loadMore() {
         if (!isLastPage()) { // NB : A "page" is a group of loaded attributes. Last page is reached when scrolling reaches the very end of the list
             currentPage++;
             Timber.d("Load more data now~");
+            // TODO - actually load moar
         }
     }
 }

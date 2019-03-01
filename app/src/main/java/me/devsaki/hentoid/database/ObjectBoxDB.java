@@ -7,6 +7,7 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,8 @@ public class ObjectBoxDB {
     private final static int[] visibleContentStatus = new int[]{StatusContent.DOWNLOADED.getCode(),
             StatusContent.ERROR.getCode(),
             StatusContent.MIGRATED.getCode()};
+
+    private final static List<Integer> visibleContentStatusList = Helper.getListFromPrimitiveArray(visibleContentStatus);
 
     private static ObjectBoxDB instance;
 
@@ -512,23 +515,32 @@ public class ObjectBoxDB {
     List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
         // Get Content filtered by current selection
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        List<Long> filteredContentList = Helper.getListFromPrimitiveArray(filteredContent);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
         if (filteredContent.length > 0)
-            query.link(Attribute_.contents).in(Content_.id, filteredContent);
+            query.filter((attr) -> (Stream.of(attr.contents).filter(c -> filteredContentList.contains(c.getId())).filter(c -> visibleContentStatusList.contains(c.getStatus().getCode())) .count() > 0));
+//            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus); <-- does not work for an obscure reason
 
         List<Attribute> result = query.build().find();
 
+        // Compute attribute count
+        int count;
         for (Attribute a : result) {
-            a.setCount(a.contents.size());
+            if (0 == filteredContent.length) count = a.contents.size();
+            else {
+                count = 0;
+                for (Content c : a.contents) if (filteredContentList.contains(c.getId())) count++;
+            }
+            a.setCount(count);
         }
 
-        // Apply sort order and paging
-        // Order by count desc, name asc
+        // Remove unavailable attributes, apply sort order and paging
         Stream<Attribute> s = Stream.of(result);
+//        s = s.filter(a -> a.getCount() > 0);
         if (Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
             s = s.sortBy(a -> -a.getCount()).sortBy(Attribute::getName);
         } else {
@@ -553,7 +565,7 @@ public class ObjectBoxDB {
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         if (filteredContent.length > 0)
-            query.link(Attribute_.contents).in(Content_.id, filteredContent);
+            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus);
 
         List<Attribute> attributes = query.build().find();
 

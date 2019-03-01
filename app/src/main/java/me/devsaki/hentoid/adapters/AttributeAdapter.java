@@ -19,6 +19,7 @@ public class AttributeAdapter extends RecyclerView.Adapter<AttributeViewHolder> 
 
     private List<Attribute> dataset = new ArrayList<>();
     private Runnable onScrollToEndListener = null;
+    private View.OnClickListener onClickListener = null;
 
     @NonNull
     @Override
@@ -31,13 +32,17 @@ public class AttributeAdapter extends RecyclerView.Adapter<AttributeViewHolder> 
         this.onScrollToEndListener = listener;
     }
 
+    public void setOnClickListener(View.OnClickListener listener) {
+        this.onClickListener = listener;
+    }
+
     @Override
     public void onBindViewHolder(@NonNull AttributeViewHolder holder, int position) {
         if (position == getItemCount() - VISIBLE_THRESHOLD && onScrollToEndListener != null) {
             onScrollToEndListener.run();
         }
         holder.bindTo(dataset.get(position));
-        // TODO implement onClick behaviour
+        holder.itemView.setOnClickListener(onClickListener);
     }
 
     @Override
@@ -46,9 +51,12 @@ public class AttributeAdapter extends RecyclerView.Adapter<AttributeViewHolder> 
     }
 
     public void add(List<Attribute> contents) {
-//        int position = dataset.size();
         dataset.addAll(contents);
         notifyDataSetChanged();
-//        notifyItemRangeInserted(position, contents.size());
+    }
+
+    public void clear() {
+        dataset.clear();
+        notifyDataSetChanged();
     }
 }
