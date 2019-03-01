@@ -67,7 +67,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private TextView tagWaitMessage;
     // Search bar
     private SearchView tagSearchView;
-    // Container where all available attributes are loaded
+    // Container where all proposed attributes are loaded
 //    private RecyclerView attributeMosaic;
     private AttributeAdapter attributeAdapter;
 
@@ -116,7 +116,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 throw new RuntimeException("Initialization failed");
             }
 
-            viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
+            viewModel = ViewModelProviders.of(this).get(SearchViewModel.class);
             viewModel.setMode(mode);
             viewModel.onCategoryChanged(selectedAttributeTypes);
         }
@@ -183,12 +183,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        searchMasterData("");
-        // Update attribute mosaic buttons state according to available metadata
-//        viewModel.getAvailableAttributes(selectedAttributeTypes);
-//        viewModel.getAvailableAttributesData().observe(this, this::updateAttributeMosaic);
         viewModel.getProposedAttributesData().observe(this, this::onAttributesReady);
+        searchMasterData("");
     }
+
+
 
     @Override
     public void onDestroyView() {

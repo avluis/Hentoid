@@ -32,7 +32,6 @@ public class SearchViewModel extends AndroidViewModel {
 
     private final MutableLiveData<List<Attribute>> selectedAttributes = new MutableLiveData<>();
     private final MutableLiveData<AttributeSearchResult> proposedAttributes = new MutableLiveData<>();
-    private final MutableLiveData<AttributeSearchResult> availableAttributes = new MutableLiveData<>();
     private final MutableLiveData<ContentSearchResult> selectedContent = new MutableLiveData<>();
     private final MutableLiveData<SparseIntArray> attributesPerType = new MutableLiveData<>();
 
@@ -161,7 +160,6 @@ public class SearchViewModel extends AndroidViewModel {
 
     public void onCategoryChanged(List<AttributeType> category) {
         this.category = category;
-        getAvailableAttributes();
     }
 
     public void onCategoryFilterChanged(String query, int pageNum, int itemsPerPage) {
@@ -187,7 +185,6 @@ public class SearchViewModel extends AndroidViewModel {
 
         // Indirect impact on attributesPerType and availableAttributes
         countAttributesPerType();
-        getAvailableAttributes();
         updateSelectionResult();
     }
 
@@ -208,17 +205,11 @@ public class SearchViewModel extends AndroidViewModel {
 
         // Indirect impact on attributesPerType and availableAttributes
         countAttributesPerType();
-        getAvailableAttributes();
         updateSelectionResult();
     }
 
     private void countAttributesPerType() {
         collectionAccessor.countAttributesPerType(selectedAttributes.getValue(), countPerTypeResultListener);
-    }
-
-    private void getAvailableAttributes() {
-        if (collectionAccessor.supportsAvailabilityFilter())
-            collectionAccessor.getAvailableAttributes(category, selectedAttributes.getValue(), false, new AttributesResultListener(availableAttributes));
     }
 
     private void updateSelectionResult() {
