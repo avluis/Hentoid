@@ -522,14 +522,6 @@ public class ObjectBoxDB {
 
         List<Attribute> result = query.build().find();
 
-// TODO count the number of Content by attribute
-
-        // SELECT field, COUNT(*) GROUP BY (field) is not implemented in ObjectBox v2.3.1
-        // => Group by and count have to be done manually (thanks God Stream exists !)
-        // Group and count by name
-//        Map<String, List<Attribute>> map = Stream.of(result).collect(Collectors.groupingBy(Attribute -> {  }));
-//        result.clear();
-
         for (Attribute a : result) {
             a.setCount(a.contents.size());
         }
@@ -538,9 +530,9 @@ public class ObjectBoxDB {
         // Order by count desc, name asc
         Stream<Attribute> s = Stream.of(result);
         if (Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
-            s = s.sortBy(Attribute::getName).sortBy(a -> -a.getCount());
-        } else {
             s = s.sortBy(a -> -a.getCount()).sortBy(Attribute::getName);
+        } else {
+            s = s.sortBy(Attribute::getName).sortBy(a -> -a.getCount());
         }
 
         // Apply paging
