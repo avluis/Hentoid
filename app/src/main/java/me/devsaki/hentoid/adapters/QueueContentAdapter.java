@@ -426,7 +426,6 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                         .subscribe(() -> {
                             // Remove the content from the in-memory list and the UI
                             super.remove(content);
-                            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
                         }));
     }
 
@@ -435,6 +434,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
         if (content != null) {
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+
             db.deleteQueue(content);
             db.deleteContent(content);
             // Remove the content from the disk

@@ -254,10 +254,14 @@ public class ContentDownloadService extends IntentService {
             db.insertContent(content);
 
             // Save JSON file
-            try {
-                JsonHelper.saveJson(content.preJSONExport(), dir);
-            } catch (IOException e) {
-                Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
+            if (dir.exists()) {
+                try {
+                    JsonHelper.saveJson(content.preJSONExport(), dir);
+                } catch (IOException e) {
+                    Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
+                }
+            } else {
+                Timber.w("downloadCompleted : Directory %s does not exist - JSON not saved", dir.getAbsolutePath());
             }
 
             Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
@@ -409,6 +413,11 @@ public class ContentDownloadService extends IntentService {
      * @throws IOException IOException if image cannot be saved at given location
      */
     private static void processAndSaveImage(ImageFile img, File dir, String contentType, byte[] binaryContent, boolean hasImageProcessing) throws IOException, InvalidParameterException  {
+
+        if (!dir.exists()) {
+            Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getAbsolutePath());
+            return;
+        }
 
         byte[] finalBinaryContent = null;
         if (hasImageProcessing)
