@@ -33,6 +33,7 @@ import me.devsaki.hentoid.adapters.AttributeAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
@@ -233,14 +234,19 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         tagWaitMessage.clearAnimation();
 
         List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
+        selectedAttributes = (null == selectedAttributes) ? Collections.emptyList() : selectedAttributes;
+        selectedAttributes = Stream.of(selectedAttributes).filter(a -> selectedAttributeTypes.contains(a.getType())).toList();
 
-        // Remove unavailable and selected attributes
+        // Remove selected attributes
+        results.attributes.removeAll(selectedAttributes);
+/*
         List<Attribute> finalSelectedAttributes = (selectedAttributes == null) ? Collections.emptyList() : selectedAttributes;
         List<Attribute> attributes = Stream.of(results.attributes)
                 .filter(value -> !finalSelectedAttributes.contains(value))
                 .collect(toList());
+*/
 
-        mTotalSelectedCount = results.totalContent - finalSelectedAttributes.size();
+        mTotalSelectedCount = results.totalContent - selectedAttributes.size();
         if (0 == mTotalSelectedCount) {
             String searchQuery = tagSearchView.getQuery().toString();
             if (searchQuery.isEmpty()) this.dismiss();
@@ -248,7 +254,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         } else {
             if (clearOnSuccess) attributeAdapter.clear();
             tagWaitPanel.setVisibility(View.GONE);
-            attributeAdapter.add(attributes);
+            attributeAdapter.add(results.attributes);
         }
     }
 
@@ -275,6 +281,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
+            currentPage = 1;
             viewModel.onAttributeSelected(a);
             searchMasterData(tagSearchView.getQuery().toString(), true, true);
         }
