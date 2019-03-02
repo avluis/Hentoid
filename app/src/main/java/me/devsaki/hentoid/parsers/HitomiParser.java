@@ -31,6 +31,13 @@ public class HitomiParser extends BaseParser {
         if (doc != null) {
             Timber.d("Parsing: %s", content.getReaderUrl());
             Elements imgElements = doc.select(".img-url");
+
+            if (null == imgElements || 0 == imgElements.size())
+            {
+                Timber.w("No images found @ %s", content.getReaderUrl()); // TODO catch this in download queue
+                return result;
+            }
+
             // New Hitomi image URLs starting from june 2018
             //  If book ID is even, starts with 'aa'; else starts with 'ba'
             int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
@@ -41,6 +48,8 @@ public class HitomiParser extends BaseParser {
             for (Element element : imgElements) {
                 result.add("https:" + replaceSubdomainWith(element.text(), imageSubdomain));
             }
+        } else {
+            Timber.w("Document null @ %s", content.getReaderUrl()); // TODO catch this in download queue
         }
 
         return result;
