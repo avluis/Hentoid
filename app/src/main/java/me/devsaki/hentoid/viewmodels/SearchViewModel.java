@@ -9,8 +9,6 @@ import android.support.annotation.NonNull;
 import android.util.SparseIntArray;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 import me.devsaki.hentoid.collection.CollectionAccessor;
@@ -58,7 +56,7 @@ public class SearchViewModel extends AndroidViewModel {
         }
 
         @Override
-        public void onResultReady(List<Attribute> results, int totalContent) {
+        public void onResultReady(List<Attribute> results, long totalContent) {
             AttributeSearchResult result = new AttributeSearchResult(results, totalContent);
             list.postValue(result);
         }
@@ -91,7 +89,7 @@ public class SearchViewModel extends AndroidViewModel {
 
     private ResultListener<SparseIntArray> countPerTypeResultListener = new ResultListener<SparseIntArray>() {
         @Override
-        public void onResultReady(SparseIntArray results, int totalContent) {
+        public void onResultReady(SparseIntArray results, long totalContent) {
             // Result has to take into account the number of attributes already selected (hence unavailable)
             List<Attribute> selectedAttrs = selectedAttributes.getValue();
             if (selectedAttrs != null) {
@@ -219,16 +217,17 @@ public class SearchViewModel extends AndroidViewModel {
     // === HELPER RESULT STRUCTURES
     public class AttributeSearchResult {
         public final List<Attribute> attributes;
-        public final int totalContent;
+        public final long totalContent;
         public boolean success = true;
         public String message;
 
 
         AttributeSearchResult() {
-            this.attributes = new ArrayList<>(); this.totalContent = 0;
+            this.attributes = new ArrayList<>();
+            this.totalContent = 0;
         }
 
-        AttributeSearchResult(List<Attribute> attributes, int totalContent) {
+        AttributeSearchResult(List<Attribute> attributes, long totalContent) {
             this.attributes = new ArrayList<>(attributes);
             this.totalContent = totalContent;
         }

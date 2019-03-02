@@ -429,8 +429,8 @@ public class ObjectBoxDB {
         return query.count();
     }
 
-    private long[] getFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
-        if (null == attrs || 0 == attrs.size()) return new long[0];
+    private List<Long> getFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
+        if (null == attrs || 0 == attrs.size()) return Collections.emptyList();
 
         QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
         contentFromSourceQueryBuilder.in(Content_.status, visibleContentStatus);
@@ -464,7 +464,8 @@ public class ObjectBoxDB {
             }
         }
 
-        return Stream.of(results).mapToLong(l -> l).toArray();
+        return results;
+//        return Stream.of(results).mapToLong(l -> l).toArray();
     }
 
     List<Attribute> selectAvailableSources() {
@@ -511,35 +512,40 @@ public class ObjectBoxDB {
         return result;
     }
 
-    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
-        // Get Content filtered by current selection
-        long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
-        List<Long> filteredContentList = Helper.getListFromPrimitiveArray(filteredContent);
-        // Get available attributes of the resulting content list
+    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, List<Long> filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
+        if (filteredContent.size() > 0)
+            query.link(Attribute_.contents).notIn(Content_.id, Helper.getPrimitiveLongArrayFromList(filteredContent)).in(Content_.status, visibleContentStatus);
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-        if (filteredContent.length > 0)
-            query.filter((attr) -> (Stream.of(attr.contents).filter(c -> filteredContentList.contains(c.getId())).filter(c -> visibleContentStatusList.contains(c.getStatus().getCode())) .count() > 0));
-//            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus); <-- does not work for an obscure reason
 
-        List<Attribute> result = query.build().find();
+        return query.build();
+    }
+
+    long countAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) { // TODO does not take filter into account when counting
+        List<Long> filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        return queryAvailableAttributes(type, filter, filteredContent).count();
+    }
+
+    List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
+        List<Long> filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
 
         // Compute attribute count
         int count;
         for (Attribute a : result) {
-            if (0 == filteredContent.length) count = a.contents.size();
+            if (0 == filteredContent.size()) count = a.contents.size();
             else {
                 count = 0;
-                for (Content c : a.contents) if (filteredContentList.contains(c.getId())) count++;
+                for (Content c : a.contents) if (filteredContent.contains(c.getId())) count++;
             }
             a.setCount(count);
         }
 
         // Remove unavailable attributes, apply sort order and paging
         Stream<Attribute> s = Stream.of(result);
-//        s = s.filter(a -> a.getCount() > 0);
+//        s = s.filter(a -> a.getCount() > 0); TODO - still relevant ?
         if (Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
             s = s.sortBy(a -> -a.getCount()).sortBy(Attribute::getName);
         } else {
@@ -560,7 +566,7 @@ public class ObjectBoxDB {
 
     SparseIntArray countAvailableAttributesPerType(List<Attribute> attributeFilter) {
         // Get Content filtered by current selection
-        long[] filteredContent = getFilteredContent(attributeFilter, false);
+        long[] filteredContent = Helper.getPrimitiveLongArrayFromList( getFilteredContent(attributeFilter, false) );
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         if (filteredContent.length > 0)

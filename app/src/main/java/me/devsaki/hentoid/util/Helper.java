@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 
@@ -316,6 +317,28 @@ public final class Helper {
         List<Integer> list = new ArrayList<>(input.length);
         for (int n : input) list.add(n);
         return list;
+    }
+
+    public static int[] getPrimitiveIntArrayFromList(List<Integer> integers)
+    {
+        int[] ret = new int[integers.size()];
+        Iterator<Integer> iterator = integers.iterator();
+        for (int i = 0; i < ret.length; i++)
+        {
+            ret[i] = iterator.next();
+        }
+        return ret;
+    }
+
+    public static long[] getPrimitiveLongArrayFromList(List<Long> integers)
+    {
+        long[] ret = new long[integers.size()];
+        Iterator<Long> iterator = integers.iterator();
+        for (int i = 0; i < ret.length; i++)
+        {
+            ret[i] = iterator.next();
+        }
+        return ret;
     }
 
     public static boolean isNumeric(String str)

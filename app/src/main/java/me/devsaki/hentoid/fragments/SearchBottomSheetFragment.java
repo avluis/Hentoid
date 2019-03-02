@@ -6,7 +6,6 @@ import android.app.SearchableInfo;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetDialogFragment;
@@ -73,7 +72,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private boolean clearOnSuccess; // Flag to clear the adapter on content reception
 
     private int currentPage;
-    private int mTotalSelectedCount;
+    private long mTotalSelectedCount;
 
     // Mode : show library or show Mikan search
     private int mode;
@@ -238,11 +237,11 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         // Remove unavailable and selected attributes
         List<Attribute> finalSelectedAttributes = (selectedAttributes == null) ? Collections.emptyList() : selectedAttributes;
         List<Attribute> attributes = Stream.of(results.attributes)
-                .filter(value -> value.getCount() > 0)
+//                .filter(value -> value.getCount() > 0)
                 .filter(value -> !finalSelectedAttributes.contains(value))
                 .collect(toList());
 
-        mTotalSelectedCount = attributes.size();
+        mTotalSelectedCount = results.totalContent - finalSelectedAttributes.size();
         if (0 == mTotalSelectedCount) {
             String searchQuery = tagSearchView.getQuery().toString();
             if (searchQuery.isEmpty()) this.dismiss();
@@ -299,9 +298,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     private void loadMore() {
         if (!isLastPage()) { // NB : A "page" is a group of loaded attributes. Last page is reached when scrolling reaches the very end of the list
-            currentPage++;
             Timber.d("Load more data now~");
-            // TODO - actually load moar
+            currentPage++;
+            searchMasterData(tagSearchView.getQuery().toString());
         }
     }
 }

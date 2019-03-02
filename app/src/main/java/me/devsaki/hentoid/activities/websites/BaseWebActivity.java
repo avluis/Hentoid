@@ -470,7 +470,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         currentContent = content;
     }
 
-    public void onResultReady(Content results, int totalContent) {
+    public void onResultReady(Content results, long totalContent) {
         processContent(results);
     }
 

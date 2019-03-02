@@ -40,6 +40,15 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         long totalSelectedContent;
     }
 
+    static class AttributeQueryResult {
+        List<Attribute> pagedAttributes = new ArrayList<>();
+        long totalSelectedAttributes;
+
+        public void addAll(List<Attribute> list) {
+            pagedAttributes.addAll(list);
+        }
+    }
+
 
     public ObjectBoxCollectionAccessor(Context ctx) {
         db = ObjectBoxDB.getInstance(ctx);
@@ -119,7 +128,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(result -> listener.onResultReady(result, result.size()))
+                        .subscribe(result -> listener.onResultReady(result.pagedAttributes, result.totalSelectedAttributes))
         );
     }
 
@@ -131,7 +140,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(result -> listener.onResultReady(result, result.size()))
+                        .subscribe(result -> listener.onResultReady(result.pagedAttributes, result.totalSelectedAttributes))
         );
     }
 
@@ -153,7 +162,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(result -> listener.onResultReady(result, result.size()))
+                        .subscribe(result -> listener.onResultReady(result.pagedAttributes, result.totalSelectedAttributes))
         );
     }
 
@@ -165,7 +174,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(result -> listener.onResultReady(result, result.size()))
+                        .subscribe(result -> listener.onResultReady(result.pagedAttributes, result.totalSelectedAttributes))
         );
     }
 
@@ -177,7 +186,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(result -> listener.onResultReady(result, result.size()))
+                        .subscribe(result -> listener.onResultReady(result.pagedAttributes, result.totalSelectedAttributes))
         );
     }
 
@@ -223,12 +232,12 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         return result;
     }
 
-    private List<Attribute> attributeSearch(int mode, List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder) {
+    private AttributeQueryResult attributeSearch(int mode, List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder) {
         return pagedAttributeSearch(mode, attrTypes, filter, attrs, filterFavourites, sortOrder, 1, -1);
     }
 
-    private List<Attribute> pagedAttributeSearch(int mode, List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, int pageNum, int itemPerPage) {
-        List<Attribute> result = new ArrayList<>();
+    private AttributeQueryResult pagedAttributeSearch(int mode, List<AttributeType> attrTypes, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, int pageNum, int itemPerPage) {
+        AttributeQueryResult result = new AttributeQueryResult();
 
         if (attrTypes != null && !attrTypes.isEmpty()) {
 
@@ -237,17 +246,23 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
                     if (AttributeType.SOURCE == type) // Specific case
                     {
                         result.addAll(db.selectAvailableSources());
+                        result.totalSelectedAttributes = result.pagedAttributes.size();
                     } else {
                         result.addAll(db.selectAvailableAttributes(type, attrs, filter, filterFavourites, sortOrder, pageNum, itemPerPage));
+                        result.totalSelectedAttributes = db.countAvailableAttributes(type, attrs, filter, filterFavourites);
                     }
                 }
             } else if (MODE_SEARCH_ATTRIBUTE_AVAILABLE == mode || MODE_SEARCH_ATTRIBUTE_COMBINED == mode) {
                 if (attrTypes.get(0).equals(AttributeType.SOURCE)) {
-                    result = db.selectAvailableSources(attrs);
+                    result.addAll(db.selectAvailableSources(attrs));
+                    result.totalSelectedAttributes = result.pagedAttributes.size();
                 } else {
-                    result = new ArrayList<>();
-                    for (AttributeType type : attrTypes)
+                    result.totalSelectedAttributes = 0;
+                    for (AttributeType type : attrTypes) {
+                        // TODO fix sorting when concatenating both lists
                         result.addAll(db.selectAvailableAttributes(type, attrs, filter, filterFavourites, sortOrder, pageNum, itemPerPage)); // No favourites button in SearchActivity
+                        result.totalSelectedAttributes += db.countAvailableAttributes(type, attrs, filter, filterFavourites);
+                    }
                 }
             }
         }
