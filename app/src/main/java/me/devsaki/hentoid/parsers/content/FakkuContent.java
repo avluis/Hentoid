@@ -34,10 +34,12 @@ public class FakkuContent {
 
     @Nullable
     public Content toContent() {
-        // Check if book is available
-        for (Element e : greenButton) {
-            if (e.text().toLowerCase().contains("subscribe") || e.text().toLowerCase().contains("purchase"))
-                return null;
+        if (greenButton != null) {
+            // Check if book is available
+            for (Element e : greenButton) {
+                if (e.text().toLowerCase().contains("subscribe") || e.text().toLowerCase().contains("purchase"))
+                    return null;
+            }
         }
 
         Content result = new Content();
