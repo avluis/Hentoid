@@ -28,6 +28,7 @@ import me.devsaki.hentoid.database.domains.AttributeLocation;
 import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
@@ -607,5 +608,14 @@ public class ObjectBoxDB {
 
     List<Content> selectContentWithOldPururinHost() {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
+    }
+
+    public void insertErrorRecord(ErrorRecord record) {
+        store.boxFor(ErrorRecord.class).put(record);
+    }
+
+    public void deleteErrorRecords(long contentId) {
+        Content content = selectContentById(contentId);
+        if (content != null) store.boxFor(ErrorRecord.class).remove(content.getErrorLog());
     }
 }

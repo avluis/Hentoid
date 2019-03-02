@@ -75,6 +75,10 @@ public class Content implements Serializable {
     // Temporary during SAVED state only; no need to expose them for JSON persistence
     @Expose(serialize = false, deserialize = false)
     private String downloadParams;
+    // Temporary during ERROR state only; no need to expose them for JSON persistence
+    @Expose(serialize = false, deserialize = false)
+    @Backlink(to = "content")
+    private ToMany<ErrorRecord> errorLog;
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
@@ -413,6 +417,26 @@ public class Content implements Serializable {
         if (imageFiles != null) {
             this.imageFiles.clear();
             this.imageFiles.addAll(imageFiles);
+        }
+        return this;
+    }
+
+    public ToMany<ErrorRecord> getErrorLog() {
+        return errorLog;
+    }
+
+    public Content addErrorRecord(ErrorRecord errorRecord) {
+        if (errorLog != null) {
+            this.errorLog.clear();
+            this.errorLog.add(errorRecord);
+        }
+        return this;
+    }
+
+    public Content addErrorRecords(List<ErrorRecord> errorRecords) {
+        if (errorLog != null) {
+            this.errorLog.clear();
+            this.errorLog.addAll(errorRecords);
         }
         return this;
     }

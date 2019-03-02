@@ -8,7 +8,14 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.SparseIntArray;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
+import com.android.volley.NoConnectionError;
+import com.android.volley.ParseError;
 import com.android.volley.Request;
+import com.android.volley.ServerError;
+import com.android.volley.TimeoutError;
+import com.android.volley.VolleyError;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -33,8 +40,10 @@ import me.devsaki.fakku.PointTranslation;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
+import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -308,7 +317,7 @@ public class ContentDownloadService extends IntentService {
      * @param content Book whose pages to retrieve
      * @return List of pages with original URLs and file name
      */
-    private static List<ImageFile> fetchImageURLs(Content content) {
+    private static List<ImageFile> fetchImageURLs(Content content) { // TODO log the error (parsing / networking)
         // Use ContentParser to query the source
         ContentParser parser = ContentParserFactory.getInstance().getParser(content);
         List<ImageFile> imgs = parser.parseImageList(content);
@@ -349,26 +358,49 @@ public class ContentDownloadService extends IntentService {
                 img.getUrl(),
                 headers,
                 canKnowHentoidAgent,
-                parse -> {
-                    try {
-                        if (parse != null)
-                            processAndSaveImage(img, dir, parse.getValue().get("Content-Type"), parse.getKey(), hasImageProcessing);
-                        updateImageStatus(img, (parse != null));
-                    } catch (InvalidParameterException e) {
-                        Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
-                        updateImageStatus(img, false);
-                    }
-                    catch (IOException e) {
-                        Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
-                        updateImageStatus(img, false);
-                    }
-                },
-                error -> {
-                    String statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode + "" : "N/A";
-                    Timber.w("Download error - Image %s not retrieved (HTTP status code %s)", img.getUrl(), statusCode);
-                    error.printStackTrace();
-                    updateImageStatus(img, false);
-                });
+                result -> onRequestSuccess(result, img, dir, hasImageProcessing),
+                error -> onRequestError(error, img));
+    }
+
+    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, ImageFile img, File dir, boolean hasImageProcessing)  // TODO log the error (processing)
+    {
+        try {
+            if (result != null)
+                processAndSaveImage(img, dir, result.getValue().get("Content-Type"), result.getKey(), hasImageProcessing);
+            updateImageStatus(img, (result != null));
+        } catch (InvalidParameterException e) {
+            Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
+            updateImageStatus(img, false);
+        } catch (IOException e) {
+            Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
+            updateImageStatus(img, false);
+        }
+    }
+
+    private void onRequestError(VolleyError error, ImageFile img) // TODO log the error (network)
+    {
+        String statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode + "" : "N/A";
+        String message = error.getMessage();
+        String cause = "";
+
+        if (error instanceof TimeoutError) {
+            cause = "Timeout";
+        } else if (error instanceof NoConnectionError) {
+            cause = "No connection";
+        } else if (error instanceof AuthFailureError) {
+            cause = "Auth failure";
+        } else if (error instanceof ServerError) {
+            cause = "Server error";
+        } else if (error instanceof NetworkError) {
+            cause = "Network error";
+        } else if (error instanceof ParseError) {
+            cause = "Network parse error";
+        }
+
+        error.printStackTrace();
+
+        updateImageStatus(img, false);
+        logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);
     }
 
     private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException {
@@ -390,7 +422,8 @@ public class ContentDownloadService extends IntentService {
 
         FakkuDecode.getTranslations(page);
 
-        if (page.translations.isEmpty()) throw new InvalidParameterException("No translation found");
+        if (page.translations.isEmpty())
+            throw new InvalidParameterException("No translation found");
 
         for (PointTranslation t : page.translations) {
             Rect sourceRect = new Rect(t.sourceX, t.sourceY, t.sourceX + FakkuDecode.TILE_EDGE_LENGTH, t.sourceY + FakkuDecode.TILE_EDGE_LENGTH);
@@ -412,7 +445,7 @@ public class ContentDownloadService extends IntentService {
      * @param binaryContent Binary content of the image
      * @throws IOException IOException if image cannot be saved at given location
      */
-    private static void processAndSaveImage(ImageFile img, File dir, String contentType, byte[] binaryContent, boolean hasImageProcessing) throws IOException, InvalidParameterException  {
+    private static void processAndSaveImage(ImageFile img, File dir, String contentType, byte[] binaryContent, boolean hasImageProcessing) throws IOException, InvalidParameterException {
 
         if (!dir.exists()) {
             Timber.w("processAndSaveImage : Directory %s does not exist - image not saved", dir.getAbsolutePath());
@@ -420,9 +453,9 @@ public class ContentDownloadService extends IntentService {
         }
 
         byte[] finalBinaryContent = null;
-        if (hasImageProcessing)
-        {
-            if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty()) finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
+        if (hasImageProcessing) {
+            if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty())
+                finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
             else throw new InvalidParameterException("No processing parameters found");
         }
 
@@ -483,5 +516,10 @@ public class ContentDownloadService extends IntentService {
                 HentoidApp.trackDownloadEvent("Skipped");
                 break;
         }
+    }
+
+    public void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
+        ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description);
+        if (contentId > 0) db.insertErrorRecord(record);
     }
 }
