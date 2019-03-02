@@ -51,8 +51,6 @@ public class ObjectBoxDB {
             StatusContent.ERROR.getCode(),
             StatusContent.MIGRATED.getCode()};
 
-    private final static List<Integer> visibleContentStatusList = Helper.getListFromPrimitiveArray(visibleContentStatus);
-
     private static ObjectBoxDB instance;
 
     private final BoxStore store;
@@ -515,7 +513,9 @@ public class ObjectBoxDB {
     private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, List<Long> filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         if (filteredContent.size() > 0)
-            query.link(Attribute_.contents).notIn(Content_.id, Helper.getPrimitiveLongArrayFromList(filteredContent)).in(Content_.status, visibleContentStatus);
+            query.link(Attribute_.contents)
+                    .notIn(Content_.id, Helper.getPrimitiveLongArrayFromList(filteredContent)) // Still don't understand why expected result is given by notIn, instead of in...
+                    .in(Content_.status, visibleContentStatus);
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
@@ -523,7 +523,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    long countAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) { // TODO does not take filter into account when counting
+    long countAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
         List<Long> filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         return queryAvailableAttributes(type, filter, filteredContent).count();
     }
@@ -532,7 +532,7 @@ public class ObjectBoxDB {
         List<Long> filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
 
-        // Compute attribute count
+        // Compute attribute count for sorting
         int count;
         for (Attribute a : result) {
             if (0 == filteredContent.size()) count = a.contents.size();
@@ -543,9 +543,8 @@ public class ObjectBoxDB {
             a.setCount(count);
         }
 
-        // Remove unavailable attributes, apply sort order and paging
+        // Apply sort order
         Stream<Attribute> s = Stream.of(result);
-//        s = s.filter(a -> a.getCount() > 0); TODO - still relevant ?
         if (Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
             s = s.sortBy(a -> -a.getCount()).sortBy(Attribute::getName);
         } else {
@@ -566,7 +565,7 @@ public class ObjectBoxDB {
 
     SparseIntArray countAvailableAttributesPerType(List<Attribute> attributeFilter) {
         // Get Content filtered by current selection
-        long[] filteredContent = Helper.getPrimitiveLongArrayFromList( getFilteredContent(attributeFilter, false) );
+        long[] filteredContent = Helper.getPrimitiveLongArrayFromList(getFilteredContent(attributeFilter, false));
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         if (filteredContent.length > 0)
