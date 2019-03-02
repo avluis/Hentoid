@@ -23,12 +23,13 @@ import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
-import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -160,7 +161,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
-        attachButtons(holder, content);
+        attachButtons(holder, content, pos);
         attachOnClickListeners(holder, content, pos);
     }
 
@@ -287,7 +288,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         holder.tvTags.setText(Helper.fromHtml(tagsBuilder.toString()));
     }
 
-    private void attachButtons(ContentHolder holder, final Content content) {
+    private void attachButtons(ContentHolder holder, final Content content, int pos) {
         // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
@@ -319,28 +320,34 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
                 }
                 holder.ivFavourite.setOnClickListener(v -> {
-                    if (getSelectedItemsCount() >= 1) {
+                    if (getSelectedItemsCount() > 0) {
                         clearSelections();
                         itemSelectListener.onItemClear(0);
                     }
+
                     compositeDisposable.add(
-                            Completable.fromRunnable(() -> toggleFavourite(content))
+                            Single.just(toggleFavourite(content.getId()))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(() -> {
-                                        if (content.isFavourite()) {
-                                            holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
-                                        } else {
-                                            holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
-                                        }
-                                    }));
+                                    .subscribe(
+                                            result -> {
+                                                content.setFavourite(result.isFavourite());
+                                                if (result.isFavourite()) {
+                                                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_full);
+                                                } else {
+                                                    holder.ivFavourite.setImageResource(R.drawable.ic_fav_empty);
+                                                }
+                                            },
+                                            Timber::e
+                                    )
+                    );
                 });
 
                 // Error icon
                 if (status == StatusContent.ERROR) {
                     holder.ivError.setVisibility(View.VISIBLE);
                     holder.ivError.setOnClickListener(v -> {
-                        if (getSelectedItemsCount() >= 1) {
+                        if (getSelectedItemsCount() > 0) {
                             clearSelections();
                             itemSelectListener.onItemClear(0);
                         }
@@ -532,23 +539,29 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .create().show();
     }
 
-    private void toggleFavourite(Content content) {
-        content.setFavourite(!content.isFavourite());
-
-        // Persist in it DB
+    private Content toggleFavourite(long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        db.updateContentFavourite(content);
+        Content content = db.selectContentById(contentId);
 
-        // Persist in it JSON
-        String rootFolderName = Preferences.getRootFolderName();
-        File dir = new File(rootFolderName, content.getStorageFolder());
+        if (content != null) {
+            content.setFavourite(!content.isFavourite());
 
-        try {
-            JsonHelper.saveJson(content.preJSONExport(), dir);
-        } catch (IOException e) {
-            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+            // Persist in it DB
+            db.insertContent(content);
+
+            // Persist in it JSON
+            String rootFolderName = Preferences.getRootFolderName();
+            File dir = new File(rootFolderName, content.getStorageFolder());
+            try {
+                JsonHelper.saveJson(content.preJSONExport(), dir);
+            } catch (IOException e) {
+                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+            }
+
+            return content;
         }
 
+        throw new InvalidParameterException("ContentId " + contentId + " does not refer to a valid content");
     }
 
     /**

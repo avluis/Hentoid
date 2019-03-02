@@ -5,6 +5,7 @@ import android.util.SparseIntArray;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
+import com.crashlytics.android.Crashlytics;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -113,13 +114,6 @@ public class ObjectBoxDB {
         store.boxFor(Content.class).put(content);
     }
 
-    public void updateContentFavourite(Content content) {
-        Box<Content> contentBox = store.boxFor(Content.class);
-        Content c = contentBox.get(content.getId());
-        c.setFavourite(!c.isFavourite());
-        contentBox.put(c);
-    }
-
     List<Content> selectContentByStatus(StatusContent status) {
         return selectContentByStatusCodes(new int[]{status.getCode()});
     }
@@ -192,7 +186,6 @@ public class ObjectBoxDB {
 
     public void updateContentReads(Content content) {
         Box<Content> contentBox = store.boxFor(Content.class);
-
         Content c = contentBox.get(content.getId());
         c.setReads(content.getReads());
         c.setLastReadDate(content.getLastReadDate());
@@ -225,8 +218,12 @@ public class ObjectBoxDB {
     }
 
     public void deleteQueue(Content content) {
+        deleteQueue(content.getId());
+    }
+
+    private void deleteQueue(long contentId) {
         Box<QueueRecord> queueRecordBox = store.boxFor(QueueRecord.class);
-        QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, content.getId()).build().findFirst();
+        QueueRecord record = queueRecordBox.query().equal(QueueRecord_.contentId, contentId).build().findFirst();
 
         if (record != null) {
             queueRecordBox.remove(record);

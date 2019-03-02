@@ -353,9 +353,9 @@ public class FileHelper {
             File dir = new File(settingDir, content.getStorageFolder());
 
             if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
-                Timber.d("Directory %s removed.", dir);
+                Timber.i("Directory %s removed.", dir);
             } else {
-                Timber.d("Failed to delete directory: %s", dir);
+                Timber.w("Failed to delete directory: %s", dir);
             }
         }
     }
@@ -547,21 +547,24 @@ public class FileHelper {
         }
 
         // TODO - properly dispose this Completable (for best practices' sake, even though it hasn't triggered any leak so far)
-        Completable.fromRunnable(() -> updateContentReads(context, content, dir))
+        Completable.fromRunnable(() -> updateContentReads(context, content.getId(), dir))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe();
     }
 
-    private static void updateContentReads(Context context, Content content, File dir) {
+    private static void updateContentReads(Context context, long contentId, File dir) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        content.increaseReads().setLastReadDate(new Date().getTime());
-        db.updateContentReads(content);
+        Content content = db.selectContentById(contentId);
+        if (content != null) {
+            content.increaseReads().setLastReadDate(new Date().getTime());
+            db.updateContentReads(content);
 
-        try {
-            JsonHelper.saveJson(content.preJSONExport(), dir);
-        } catch (IOException e) {
-            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+            try {
+                JsonHelper.saveJson(content.preJSONExport(), dir);
+            } catch (IOException e) {
+                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+            }
         }
     }
 

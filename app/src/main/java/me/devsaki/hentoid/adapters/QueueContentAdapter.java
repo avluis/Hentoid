@@ -420,7 +420,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void cancel(Content content) {
         compositeDisposable.add(
-                Completable.fromRunnable(() -> doCancel(content))
+                Completable.fromRunnable(() -> doCancel(content.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(() -> {
@@ -430,13 +430,16 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                         }));
     }
 
-    private void doCancel(Content content) {
+    private void doCancel(long contentId) {
         // Remove content altogether from the DB (including queue)
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        db.deleteQueue(content);
-        db.deleteContent(content);
-        // Remove the content from the disk
-        FileHelper.removeContent(content);
+        Content content = db.selectContentById(contentId);
+        if (content != null) {
+            db.deleteQueue(content);
+            db.deleteContent(content);
+            // Remove the content from the disk
+            FileHelper.removeContent(content);
+        }
     }
 
     public void removeFromQueue(Content content) {
