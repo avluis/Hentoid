@@ -33,7 +33,6 @@ import me.devsaki.hentoid.adapters.AttributeAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.AttributeMap;
 import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
@@ -41,7 +40,6 @@ import me.devsaki.hentoid.util.IllegalTags;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
 
-import static com.annimon.stream.Collectors.toList;
 import static java.lang.String.format;
 import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 
@@ -234,17 +232,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         tagWaitMessage.clearAnimation();
 
         List<Attribute> selectedAttributes = viewModel.getSelectedAttributesData().getValue();
-        selectedAttributes = (null == selectedAttributes) ? Collections.emptyList() : selectedAttributes;
-        selectedAttributes = Stream.of(selectedAttributes).filter(a -> selectedAttributeTypes.contains(a.getType())).toList();
+        selectedAttributes = (null == selectedAttributes) ?
+                Collections.emptyList()
+                : Stream.of(selectedAttributes).filter(a -> selectedAttributeTypes.contains(a.getType())).toList();
 
         // Remove selected attributes
         results.attributes.removeAll(selectedAttributes);
-/*
-        List<Attribute> finalSelectedAttributes = (selectedAttributes == null) ? Collections.emptyList() : selectedAttributes;
-        List<Attribute> attributes = Stream.of(results.attributes)
-                .filter(value -> !finalSelectedAttributes.contains(value))
-                .collect(toList());
-*/
 
         mTotalSelectedCount = results.totalContent - selectedAttributes.size();
         if (0 == mTotalSelectedCount) {
