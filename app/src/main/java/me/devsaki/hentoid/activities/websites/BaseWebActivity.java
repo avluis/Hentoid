@@ -110,9 +110,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
     abstract Site getStartSite();
 
-    // TODO - viewing a content that is being downloaded (status DOWNLOADING or PAUSED) resets its download status (probably resets all its images)
-    // TODO - Using download FABs that appear outside of download pages can lead to the creation of duplicates (URL being the identifier here vs. download folder elsewhere)
-
     /**
      * Add an content block filter to current site
      *

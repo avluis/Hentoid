@@ -250,12 +250,6 @@ public final class Helper {
         return result;
     }
 
-    public static List<Long> extractAttributesIds(List<Attribute> attrs) {
-        List<Long> result = new ArrayList<>();
-        for (Attribute attr : attrs) result.add(attr.getId());
-        return result;
-    }
-
     public static Uri buildSearchUri(List<Attribute> attributes) {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.addAll(attributes);
@@ -313,36 +307,16 @@ public final class Helper {
         return list;
     }
 
-    public static List<Integer> getListFromPrimitiveArray(int[] input) {
-        List<Integer> list = new ArrayList<>(input.length);
-        for (int n : input) list.add(n);
-        return list;
-    }
-
-    public static int[] getPrimitiveIntArrayFromList(List<Integer> integers)
-    {
-        int[] ret = new int[integers.size()];
-        Iterator<Integer> iterator = integers.iterator();
-        for (int i = 0; i < ret.length; i++)
-        {
-            ret[i] = iterator.next();
-        }
-        return ret;
-    }
-
-    public static long[] getPrimitiveLongArrayFromList(List<Long> integers)
-    {
+    public static long[] getPrimitiveLongArrayFromList(List<Long> integers) {
         long[] ret = new long[integers.size()];
         Iterator<Long> iterator = integers.iterator();
-        for (int i = 0; i < ret.length; i++)
-        {
+        for (int i = 0; i < ret.length; i++) {
             ret[i] = iterator.next();
         }
         return ret;
     }
 
-    public static boolean isNumeric(String str)
-    {
+    public static boolean isNumeric(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
     }
 }
