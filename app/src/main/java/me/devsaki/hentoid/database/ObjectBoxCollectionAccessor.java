@@ -203,17 +203,17 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         ContentQueryResult result = new ContentQueryResult();
 
         if (MODE_SEARCH_CONTENT_MODULAR == mode) {
-            result.pagedContents = db.selectContentByQuery(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
+            result.pagedContents = db.selectContentSearch(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
         } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode) {
-            result.pagedContents = db.selectContentByUniqueQuery(filter, page, booksPerPage, favouritesOnly, orderStyle);
+            result.pagedContents = db.selectContentUniversal(filter, page, booksPerPage, favouritesOnly, orderStyle);
         } else {
             result.pagedContents = Collections.emptyList();
         }
         // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
         if (MODE_SEARCH_CONTENT_MODULAR == mode || MODE_COUNT_CONTENT_MODULAR == mode) {
-            result.totalSelectedContent = db.countContentByQuery(filter, metadata, favouritesOnly);
+            result.totalSelectedContent = db.countContentSearch(filter, metadata, favouritesOnly);
         } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode || MODE_COUNT_CONTENT_UNIVERSAL == mode) {
-            result.totalSelectedContent = db.countContentByUniqueQuery(filter, favouritesOnly);
+            result.totalSelectedContent = db.countContentUniversal(filter, favouritesOnly);
         } else {
             result.totalSelectedContent = 0;
         }

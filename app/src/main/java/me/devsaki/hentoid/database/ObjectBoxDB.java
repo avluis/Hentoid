@@ -7,7 +7,6 @@ import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -241,7 +240,7 @@ public class ObjectBoxDB {
     }
 
     long countAllContent() {
-        return countContentByQuery("", Collections.emptyList(), false);
+        return countContentSearch("", Collections.emptyList(), false);
     }
 
     @Nullable
@@ -259,7 +258,7 @@ public class ObjectBoxDB {
         return store.boxFor(Attribute.class).get(id);
     }
 
-    private long[] getIdsFromAttributes(@Nonnull List<Attribute> attrs) {
+    private static long[] getIdsFromAttributes(@Nonnull List<Attribute> attrs) {
         long[] result = new long[attrs.size()];
         if (attrs.size() > 0) {
             int index = 0;
@@ -268,7 +267,7 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private String[] getNamesFromAttributes(@Nonnull List<Attribute> attrs) {
+    private static String[] getNamesFromAttributes(@Nonnull List<Attribute> attrs) {
         String[] result = new String[attrs.size()];
         if (attrs.size() > 0) {
             int index = 0;
@@ -308,7 +307,7 @@ public class ObjectBoxDB {
         }
     }
 
-    private Query<Content> buildContentSearchQuery(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
+    private Query<Content> queryContentSearchContent(String title, List<Attribute> metadata, boolean filterFavourites, int orderStyle) {
         AttributeMap metadataMap = new AttributeMap();
         metadataMap.addAll(metadata);
 
@@ -337,7 +336,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    private Query<Content> buildUniversalContentSearchQueryContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
+    private Query<Content> queryContentUniversalContent(String queryStr, boolean filterFavourites, long[] additionalIds, int orderStyle) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
 
@@ -351,7 +350,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    private Query<Content> buildUniversalContentSearchQueryAttributes(String queryStr, boolean filterFavourites) {
+    private Query<Content> queryContentUniversalAttributes(String queryStr, boolean filterFavourites) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
 
@@ -361,7 +360,7 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    private Query<Content> buildContentSearchQueryAttributes(AttributeType type, List<Attribute> attributes) {
+    private Query<Content> queryContentSearchAttributes(AttributeType type, List<Attribute> attributes) {
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
         query.in(Content_.status, visibleContentStatus);
 
@@ -371,12 +370,12 @@ public class ObjectBoxDB {
         return query.build();
     }
 
-    long countContentByQuery(String title, List<Attribute> tags, boolean filterFavourites) {
-        Query<Content> query = buildContentSearchQuery(title, tags, filterFavourites, Preferences.Constant.PREF_ORDER_CONTENT_NONE);
+    long countContentSearch(String title, List<Attribute> tags, boolean filterFavourites) {
+        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, Preferences.Constant.PREF_ORDER_CONTENT_NONE);
         return query.count();
     }
 
-    private List<Content> shuffleRandomSort(Query<Content> query, int start, int booksPerPage) {
+    private static List<Content> shuffleRandomSort(Query<Content> query, int start, int booksPerPage) {
         LazyList<Content> lazyList = query.findLazy();
         List<Integer> order = new ArrayList<>();
         for (int i = 0; i < lazyList.size(); i++) order.add(i);
@@ -393,9 +392,9 @@ public class ObjectBoxDB {
         return result;
     }
 
-    List<Content> selectContentByQuery(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
+    List<Content> selectContentSearch(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
         int start = (page - 1) * booksPerPage;
-        Query<Content> query = buildContentSearchQuery(title, tags, filterFavourites, orderStyle);
+        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, orderStyle);
 
         if (orderStyle != Preferences.Constant.PREF_ORDER_CONTENT_RANDOM) {
             if (booksPerPage < 0) return query.find();
@@ -405,13 +404,13 @@ public class ObjectBoxDB {
         }
     }
 
-    List<Content> selectContentByUniqueQuery(String queryStr, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
+    List<Content> selectContentUniversal(String queryStr, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
         int start = (page - 1) * booksPerPage;
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
         // querying Content and attributes have to be done separately
         // TODO optimize by reusing query with parameters
-        Query<Content> contentAttrSubQuery = buildUniversalContentSearchQueryAttributes(queryStr, filterFavourites);
-        Query<Content> query = buildUniversalContentSearchQueryContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
+        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
+        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
 
         if (orderStyle != Preferences.Constant.PREF_ORDER_CONTENT_RANDOM) {
             if (booksPerPage < 0) return query.find();
@@ -421,12 +420,12 @@ public class ObjectBoxDB {
         }
     }
 
-    long countContentByUniqueQuery(String queryStr, boolean filterFavourites) {
+    long countContentUniversal(String queryStr, boolean filterFavourites) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
         // querying Content and attributes have to be done separately
         // TODO optimize by reusing query with parameters
-        Query<Content> contentAttrSubQuery = buildUniversalContentSearchQueryAttributes(queryStr, filterFavourites);
-        Query<Content> query = buildUniversalContentSearchQueryContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.PREF_ORDER_CONTENT_NONE);
+        Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
+        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.PREF_ORDER_CONTENT_NONE);
         return query.count();
     }
 
@@ -490,7 +489,7 @@ public class ObjectBoxDB {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = metadataMap.get(attrType);
                     if (attrs.size() > 0) {
-                        Query<Content> contentAttrSubQuery = buildContentSearchQueryAttributes(attrType, attrs);
+                        Query<Content> contentAttrSubQuery = queryContentSearchAttributes(attrType, attrs);
                         query.in(Content_.id, contentAttrSubQuery.findIds());
                     }
                 }
