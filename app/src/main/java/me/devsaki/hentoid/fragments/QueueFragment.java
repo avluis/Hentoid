@@ -191,7 +191,8 @@ public class QueueFragment extends BaseFragment {
      * @param eventType Event type that triggered the update, if any (See types described in DownloadEvent); -1 if none
      */
     public void update(int eventType) {
-        boolean isEmpty = (0 == mAdapter.getCount());
+        int bookDiff = (eventType == DownloadEvent.EV_CANCEL) ? 1 : 0; // Cancel event means a book will be removed very soon from the queue
+        boolean isEmpty = (0 == mAdapter.getCount() - bookDiff);
         boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
         boolean isActive = (!isEmpty && !isPaused);
 
