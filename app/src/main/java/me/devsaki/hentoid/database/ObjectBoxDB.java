@@ -388,7 +388,6 @@ public class ObjectBoxDB {
         int start = (page - 1) * booksPerPage;
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
         // querying Content and attributes have to be done separately
-        // TODO optimize by reusing query with parameters
         Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
         Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
 
@@ -403,7 +402,6 @@ public class ObjectBoxDB {
     long countContentUniversal(String queryStr, boolean filterFavourites) {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
         // querying Content and attributes have to be done separately
-        // TODO optimize by reusing query with parameters
         Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
         Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.PREF_ORDER_CONTENT_NONE);
         return query.count();
@@ -412,11 +410,12 @@ public class ObjectBoxDB {
     private long[] getFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
         if (null == attrs || 0 == attrs.size()) return new long[0];
 
+        // Pre-build queries to reuse them efficiently within the loops
         QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
         contentFromSourceQueryBuilder.in(Content_.status, visibleContentStatus);
         contentFromSourceQueryBuilder.equal(Content_.site, 1);
         if (filterFavourites) contentFromSourceQueryBuilder.equal(Content_.favourite, true);
-        Query<Content> contentFromSourceQuery = contentFromSourceQueryBuilder.build(); // TODO - build once and for all ?
+        Query<Content> contentFromSourceQuery = contentFromSourceQueryBuilder.build();
 
         QueryBuilder<Content> contentFromAttributesQueryBuilder = store.boxFor(Content.class).query();
         contentFromAttributesQueryBuilder.in(Content_.status, visibleContentStatus);
@@ -424,8 +423,10 @@ public class ObjectBoxDB {
         contentFromAttributesQueryBuilder.link(Content_.attributes)
                 .equal(Attribute_.type, 0)
                 .equal(Attribute_.name, "");
-        Query<Content> contentFromAttributesQuery = contentFromAttributesQueryBuilder.build(); // TODO - build once and for all ?
+        Query<Content> contentFromAttributesQuery = contentFromAttributesQueryBuilder.build();
 
+        // Cumulative query loop
+        // Each iteration restricts the results of the next because advanced search uses an AND logic
         List<Long> results = Collections.emptyList();
         long[] ids;
 
