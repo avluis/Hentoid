@@ -265,15 +265,6 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private static String[] getNamesFromAttributes(@Nonnull List<Attribute> attrs) {
-        String[] result = new String[attrs.size()];
-        if (attrs.size() > 0) {
-            int index = 0;
-            for (Attribute a : attrs) result[index++] = a.getName();
-        }
-        return result;
-    }
-
     private void applyOrderStyle(QueryBuilder<Content> query, int orderStyle) {
         switch (orderStyle) {
             case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
@@ -323,9 +314,10 @@ public class ObjectBoxDB {
         if (hasTagFilter) {
             for (AttributeType attrType : metadataMap.keySet()) {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
-                    String[] attrNames = getNamesFromAttributes(metadataMap.get(attrType));
-                    if (attrNames.length > 0)
-                        query.link(Content_.attributes).equal(Attribute_.type, attrType.getCode()).in(Attribute_.name, attrNames, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+                    List<Attribute> attrs = metadataMap.get(attrType);
+                    if (attrs.size() > 0) {
+                        query.in(Content_.id, getFilteredContent(attrs, false));
+                    }
                 }
             }
         }
@@ -354,16 +346,6 @@ public class ObjectBoxDB {
 
         if (filterFavourites) query.equal(Content_.favourite, true);
         query.link(Content_.attributes).contains(Attribute_.name, queryStr, QueryBuilder.StringOrder.CASE_INSENSITIVE);
-
-        return query.build();
-    }
-
-    private Query<Content> queryContentSearchAttributes(AttributeType type, List<Attribute> attributes) {
-        QueryBuilder<Content> query = store.boxFor(Content.class).query();
-        query.in(Content_.status, visibleContentStatus);
-
-        String[] attrNames = getNamesFromAttributes(attributes);
-        query.link(Content_.attributes).equal(Attribute_.type, type.getCode()).in(Attribute_.name, attrNames, QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         return query.build();
     }
@@ -427,8 +409,8 @@ public class ObjectBoxDB {
         return query.count();
     }
 
-    private List<Long> getFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
-        if (null == attrs || 0 == attrs.size()) return Collections.emptyList();
+    private long[] getFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
+        if (null == attrs || 0 == attrs.size()) return new long[0];
 
         QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
         contentFromSourceQueryBuilder.in(Content_.status, visibleContentStatus);
@@ -462,8 +444,7 @@ public class ObjectBoxDB {
             }
         }
 
-        return results;
-//        return Stream.of(results).mapToLong(l -> l).toArray();
+        return Helper.getPrimitiveLongArrayFromList(results);
     }
 
     List<Attribute> selectAvailableSources() {
@@ -488,8 +469,7 @@ public class ObjectBoxDB {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = metadataMap.get(attrType);
                     if (attrs.size() > 0) {
-                        Query<Content> contentAttrSubQuery = queryContentSearchAttributes(attrType, attrs);
-                        query.in(Content_.id, contentAttrSubQuery.findIds());
+                        query.in(Content_.id, getFilteredContent(attrs, false));
                     }
                 }
             }
@@ -510,35 +490,36 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, List<Long> filteredContent) {
+    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, long[] filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
-        if (filteredContent.size() > 0)
+        if (filteredContent.length > 0)
             query.link(Attribute_.contents)
-                    .notIn(Content_.id, Helper.getPrimitiveLongArrayFromList(filteredContent)) // Still don't understand why expected result is given by notIn, instead of in...
+                    .notIn(Content_.id, filteredContent) // Still don't understand why expected result is given by notIn, instead of in...
                     .in(Content_.status, visibleContentStatus);
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
-            query.contains(Attribute_.name, filter, QueryBuilder.StringOrder.CASE_INSENSITIVE);
+            query.contains(Attribute_.name, filter.trim(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
 
         return query.build();
     }
 
     long countAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
-        List<Long> filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         return queryAvailableAttributes(type, filter, filteredContent).count();
     }
 
     List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
-        List<Long> filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
         List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
 
         // Compute attribute count for sorting
         int count;
         for (Attribute a : result) {
-            if (0 == filteredContent.size()) count = a.contents.size();
+            if (0 == filteredContent.length) count = a.contents.size();
             else {
                 count = 0;
-                for (Content c : a.contents) if (filteredContent.contains(c.getId())) count++;
+                for (Content c : a.contents) if (filteredContentAsList.contains(c.getId())) count++;
             }
             a.setCount(count);
         }
@@ -565,7 +546,7 @@ public class ObjectBoxDB {
 
     SparseIntArray countAvailableAttributesPerType(List<Attribute> attributeFilter) {
         // Get Content filtered by current selection
-        long[] filteredContent = Helper.getPrimitiveLongArrayFromList(getFilteredContent(attributeFilter, false));
+        long[] filteredContent = getFilteredContent(attributeFilter, false);
         // Get available attributes of the resulting content list
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         if (filteredContent.length > 0)
