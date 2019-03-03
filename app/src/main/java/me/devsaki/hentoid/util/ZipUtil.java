@@ -127,9 +127,7 @@ class ZipUtil {
                 createDir(outputFile.getParentFile());
             }
 
-            BufferedInputStream in = new BufferedInputStream(zipfile.getInputStream(entry));
-            BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile));
-            try {
+            try (BufferedInputStream in = new BufferedInputStream(zipfile.getInputStream(entry)); BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(outputFile))) {
                 byte[] buffer = new byte[BUFFER];
                 int length;
                 while ((length = in.read(buffer)) > 0) {
@@ -137,14 +135,8 @@ class ZipUtil {
                 }
                 FileHelper.sync(out);
                 out.flush();
-            } finally {
-                try {
-                    out.close();
-                    in.close();
-                } catch (IOException e) {
-                    // Ignore
-                }
             }
+            // Ignore
         }
 
         private void createDir(File dir) {
