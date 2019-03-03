@@ -116,6 +116,7 @@ public class QueueFragment extends BaseFragment {
     public void onDownloadEvent(DownloadEvent event) {
 
         Timber.d("Event received : %s", event.eventType);
+        btnStats.setVisibility((event.pagesKO > 0) ? View.VISIBLE : View.GONE);
 
         switch (event.eventType) {
             case DownloadEvent.EV_PROGRESS:
@@ -138,7 +139,7 @@ public class QueueFragment extends BaseFragment {
                 break;
             case DownloadEvent.EV_COMPLETE:
                 mAdapter.removeFromQueue(event.content);
-            default: // EV_COMPLETE, EV_PAUSE, EV_CANCEL events
+            default: // EV_PAUSE, EV_CANCEL events
                 update(event.eventType);
         }
     }
@@ -242,8 +243,7 @@ public class QueueFragment extends BaseFragment {
         return true;
     }
 
-    private void showStats()
-    {
-
+    private void showStats() {
+        ErrorStatsDialogFragment.invoke(requireActivity().getSupportFragmentManager());
     }
 }

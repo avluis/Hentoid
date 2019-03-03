@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.InvalidParameterException;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -46,6 +47,7 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadErrorEvent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
@@ -148,15 +150,17 @@ public class ContentDownloadService extends IntentService {
 
         // Check if images are already known
         List<ImageFile> images = content.getImageFiles();
-        if (0 == images.size()) {
+        if (images.isEmpty()) {
             // Create image list in DB
             images = fetchImageURLs(content);
             content.addImageFiles(images);
             db.insertContent(content);
         }
 
-        if (0 == images.size()) {
+        if (images.isEmpty()) {
             Timber.w("Image list is empty. Aborting download.");
+            content.setStatus(StatusContent.ERROR);
+            db.insertContent(content);
             return null;
         }
 
@@ -183,9 +187,11 @@ public class ContentDownloadService extends IntentService {
 
         // Reset ERROR status of images to count them as "to be downloaded" (in DB and in memory)
         for (ImageFile img : images) {
-            if (img.getStatus().equals(StatusContent.ERROR)) img.setStatus(StatusContent.SAVED);
+            if (img.getStatus().equals(StatusContent.ERROR)) {
+                img.setStatus(StatusContent.SAVED);
+                db.updateImageFile(img);
+            }
         }
-        db.insertContent(content);
 
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
@@ -297,6 +303,7 @@ public class ContentDownloadService extends IntentService {
             // Signals current download as completed
             Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, images.size()));
+            EventBus.getDefault().removeStickyEvent(DownloadErrorEvent.class);
 
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");
@@ -317,13 +324,28 @@ public class ContentDownloadService extends IntentService {
      * @param content Book whose pages to retrieve
      * @return List of pages with original URLs and file name
      */
-    private static List<ImageFile> fetchImageURLs(Content content) { // TODO log the error (parsing / networking)
+    private List<ImageFile> fetchImageURLs(Content content) {
+        List<ImageFile> imgs;
         // Use ContentParser to query the source
         ContentParser parser = ContentParserFactory.getInstance().getParser(content);
-        List<ImageFile> imgs = parser.parseImageList(content);
+        try {
+            imgs = parser.parseImageList(content);
+        } catch (UnsupportedOperationException u) {
+            Timber.w(u, "A captcha has been found while parsing %s", content.getTitle());
+            logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", "Parsing exception : " + u.getMessage());
+            return Collections.emptyList();
+        } catch (Exception e) {
+            Timber.w(e, "An exception has occured while parsing %s", content.getTitle());
+            logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", "Parsing exception : " + e.getMessage());
+            return Collections.emptyList();
+        }
+
+        if (imgs.isEmpty()) {
+            Timber.w("An empry image list has been found while parsing %s", content.getTitle());
+            logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", "Empty image list");
+        }
 
         for (ImageFile img : imgs) img.setStatus(StatusContent.SAVED);
-
         return imgs;
     }
 
@@ -362,8 +384,7 @@ public class ContentDownloadService extends IntentService {
                 error -> onRequestError(error, img));
     }
 
-    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, ImageFile img, File dir, boolean hasImageProcessing)  // TODO log the error (processing)
-    {
+    private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, ImageFile img, File dir, boolean hasImageProcessing) {
         try {
             if (result != null)
                 processAndSaveImage(img, dir, result.getValue().get("Content-Type"), result.getKey(), hasImageProcessing);
@@ -379,8 +400,7 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    private void onRequestError(VolleyError error, ImageFile img) // TODO log the error (network)
-    {
+    private void onRequestError(VolleyError error, ImageFile img) {
         String statusCode = (error.networkResponse != null) ? error.networkResponse.statusCode + "" : "N/A";
         String message = error.getMessage();
         String cause = "";
@@ -522,6 +542,9 @@ public class ContentDownloadService extends IntentService {
 
     public void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
         ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description);
-        if (contentId > 0) db.insertErrorRecord(record);
+        if (contentId > 0) {
+            db.insertErrorRecord(record);
+            EventBus.getDefault().postSticky(new DownloadErrorEvent(record));
+        }
     }
 }

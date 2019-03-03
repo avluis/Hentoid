@@ -42,17 +42,23 @@ public class TsuminoParser extends BaseParser {
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (null != doc) {
             Elements contents = doc.select("#image-container");
-            String dataUrl, dataOpt, dataObj;
+            if (null != contents) {
+                String dataUrl, dataOpt, dataObj;
 
-            dataUrl = contents.attr("data-url");
-            dataOpt = contents.attr("data-opt");
-            dataObj = contents.attr("data-obj");
+                dataUrl = contents.attr("data-url");
+                dataOpt = contents.attr("data-opt");
+                dataObj = contents.attr("data-obj");
 
-            Timber.d("Data URL: %s%s, Data Opt: %s, Data Obj: %s",
-                    TSUMINO.getUrl(), dataUrl, dataOpt, dataObj);
+                Timber.d("Data URL: %s%s, Data Opt: %s, Data Obj: %s",
+                        TSUMINO.getUrl(), dataUrl, dataOpt, dataObj);
 
-            String request = sendPostRequest(dataUrl, dataOpt);
-            return buildImageUrls(dataObj, request);
+                String request = sendPostRequest(dataUrl, dataOpt);
+                return buildImageUrls(dataObj, request);
+            } else {
+                Elements captcha = doc.select(".g-recaptcha");
+                if (captcha != null && !captcha.isEmpty())
+                    throw new UnsupportedOperationException("Captcha found");
+            }
         }
         return Collections.emptyList();
     }
