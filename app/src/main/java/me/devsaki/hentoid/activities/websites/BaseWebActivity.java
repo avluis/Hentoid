@@ -106,6 +106,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         universalBlockedContent.add("adtng.com");
         universalBlockedContent.add("popads.net");
         universalBlockedContent.add("adsco.re");
+        universalBlockedContent.add("ads.exosrv.com");
     }
 
     protected abstract CustomWebViewClient getWebClient();
