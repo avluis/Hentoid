@@ -28,4 +28,9 @@ public class ErrorRecord {
         this.contentPart = contentPart;
         this.description = description;
     }
+
+    @Override
+    public String toString() {
+        return String.format("%s - [%s] : %s @ %s", contentPart, type.getName(), description, url);
+    }
 }

@@ -39,6 +39,7 @@ import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -51,6 +52,7 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
@@ -453,9 +455,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
             }
         }
 
-        String message = context.getString(R.string.download_again_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
+        String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.download_again_dialog_title)
+        builder.setTitle(R.string.redownload_dialog_title)
                 .setMessage(message)
                 .setPositiveButton(android.R.string.yes,
                         (dialog, which) -> {
@@ -463,6 +465,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                             remove(item);
                         })
                 .setNegativeButton(android.R.string.no, null)
+                .setNeutralButton(R.string.redownload_view_log,
+                        (dialog, which) -> showErrorLog(item))
                 .create().show();
     }
 
@@ -487,6 +491,26 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         ContentQueueManager.getInstance().resumeQueue(context);
 
         ToastUtil.toast(context, R.string.add_to_queue);
+    }
+
+    private void showErrorLog(final Content item) {
+        List<ErrorRecord> errorLog = item.getErrorLog();
+        List<String> log = new ArrayList<>();
+
+        LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
+        errorLogInfo.logName = "Error";
+        errorLogInfo.fileName = "error_log" + item.getId();
+        errorLogInfo.noDataMessage = "No error detected.";
+
+        for (ErrorRecord e : errorLog) log.add(e.toString());
+
+        File logFile = LogUtil.writeLog(context, log, errorLogInfo);
+        if (logFile != null)
+        {
+            Snackbar snackbar = Snackbar.make(libraryView, R.string.cleanup_done, Snackbar.LENGTH_LONG);
+            snackbar.setAction("READ LOG", v -> FileHelper.openFile(context, logFile));
+            snackbar.show();
+        }
     }
 
     private void shareContent(final Content item) {
@@ -759,15 +783,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         mSortedList.endBatchedUpdates();
     }
 
-    // ContentListener implementation
+    // ContentListener implementation -- Mikan mode only
+    // Listener for pages retrieval
     @Override
-    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) { // Listener for pages retrieval in Mikan mode
+    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
         if (1 == results.size()) // 1 content with pages
         {
             downloadContent(results.get(0));
         }
     }
 
+    // Listener for error visual feedback
     @Override
     public void onContentFailed(Content content, String message) {
         Timber.w(message);

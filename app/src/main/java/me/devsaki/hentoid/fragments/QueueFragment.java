@@ -43,6 +43,7 @@ public class QueueFragment extends BaseFragment {
     private TextView mEmptyText;    // "Empty queue" message panel
     private ImageButton btnStart;   // Start / Resume button
     private ImageButton btnPause;   // Pause button
+    private ImageButton btnStats;   // Error statistics button
     private TextView queueStatus;   // 1st line of text displayed on the right of the queue pause / play button
     private TextView queueInfo;     // 2nd line of text displayed on the right of the queue pause / play button
 
@@ -85,6 +86,7 @@ public class QueueFragment extends BaseFragment {
 
         btnStart = rootView.findViewById(R.id.btnStart);
         btnPause = rootView.findViewById(R.id.btnPause);
+        btnStats = rootView.findViewById(R.id.btnStats);
         queueStatus = rootView.findViewById(R.id.queueStatus);
         queueInfo = rootView.findViewById(R.id.queueInfo);
 
@@ -95,6 +97,7 @@ public class QueueFragment extends BaseFragment {
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
+        btnStats.setOnClickListener(v -> showStats());
 
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         List<Content> contents = db.selectQueueContents();
@@ -237,5 +240,10 @@ public class QueueFragment extends BaseFragment {
     public boolean onBackPressed() {
         // Let the activity handle it.
         return true;
+    }
+
+    private void showStats()
+    {
+
     }
 }

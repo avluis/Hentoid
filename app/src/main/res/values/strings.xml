@@ -70,9 +70,10 @@
     <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it from Google Play.</string>
     <string name="error_open">Error opening image : no image viewer found.</string>
 
-    <string name="download_again_dialog_title">Try downloading again?</string>
-    <string name="download_again_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
-    <string name="download_again_view_log">View detailed error log</string>
+    <string name="redownload_dialog_title">Try downloading again?</string>
+    <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
+    <string name="redownload_view_log">View detailed error log</string>
+    <string name="redownload_log_saved">Log saved</string>
     <string name="ask_delete">Are you sure you wish to delete this?</string>
     <string name="ask_delete_multiple">Are you sure you wish to delete the selected items?</string>
     <string name="deleted">\@content deleted.</string>

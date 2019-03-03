@@ -22,8 +22,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.LogUtil;
 import timber.log.Timber;
 
 /**
@@ -159,7 +158,7 @@ public class DatabaseMigrationService extends IntentService {
         this.getApplicationContext().deleteDatabase(Consts.DATABASE_NAME);
 
         // Write log in root folder
-        File importLogFile = writeMigrationLog(log);
+        File importLogFile = LogUtil.writeLog(this, log, buildLogInfo());
 
         eventComplete(bookIds.size(), booksOK, booksKO, importLogFile);
 
@@ -167,32 +166,11 @@ public class DatabaseMigrationService extends IntentService {
         stopSelf();
     }
 
-    private File writeMigrationLog(List<String> log) {
-        // Create the log
-        StringBuilder logStr = new StringBuilder();
-        logStr.append("Migration log : begin").append(System.getProperty("line.separator"));
-        if (log.isEmpty())
-            logStr.append("No activity to report - No migrable content detected on existing database");
-        else for (String line : log)
-            logStr.append(line).append(System.getProperty("line.separator"));
-        logStr.append("Migration log : end");
-
-        // Save it
-        File rootFolder;
-        try {
-            String settingDir = Preferences.getRootFolderName();
-            if (!settingDir.isEmpty() && FileHelper.isWritable(new File(settingDir))) {
-                rootFolder = new File(settingDir); // Use selected and output-tested location (possibly SD card)
-            } else {
-                rootFolder = FileHelper.getDefaultDir(this, ""); // Fallback to default location (phone memory)
-            }
-            File importLogFile = new File(rootFolder, "migration_log.txt");
-            FileHelper.saveBinaryInFile(importLogFile, logStr.toString().getBytes());
-            return importLogFile;
-        } catch (Exception e) {
-            Timber.e(e);
-        }
-
-        return null;
+    private LogUtil.LogInfo buildLogInfo() {
+        LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
+        logInfo.logName = "Migration";
+        logInfo.fileName = "migration_log";
+        logInfo.noDataMessage = "No migrable content detected on existing database.";
+        return logInfo;
     }
 }

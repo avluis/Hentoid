@@ -33,6 +33,7 @@ import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
@@ -198,7 +199,7 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = writeLog(log, cleanup);
+        File cleanupLogFile = LogUtil.writeLog(this, log, buildLogInfo(cleanup));
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -207,35 +208,14 @@ public class ImportService extends IntentService {
         stopSelf();
     }
 
-    @Nullable
-    private File writeLog(List<String> log, boolean isCleanup) {
-        // Create the log
-        StringBuilder logStr = new StringBuilder();
-        logStr.append(isCleanup ? "Cleanup" : "Import").append(" log : begin").append(System.getProperty("line.separator"));
-        if (log.isEmpty())
-            logStr.append("No activity to report - All folder names are formatted as expected.");
-        else for (String line : log)
-            logStr.append(line).append(System.getProperty("line.separator"));
-        logStr.append(isCleanup ? "Cleanup" : "Import").append(" log : end");
-
-        // Save it
-        File rootFolder;
-        try {
-            String settingDir = Preferences.getRootFolderName();
-            if (!settingDir.isEmpty() && FileHelper.isWritable(new File(settingDir))) {
-                rootFolder = new File(settingDir); // Use selected and output-tested location (possibly SD card)
-            } else {
-                rootFolder = FileHelper.getDefaultDir(this, ""); // Fallback to default location (phone memory)
-            }
-            File cleanupLogFile = new File(rootFolder, isCleanup ? "cleanup_log.txt" : "import_log.txt");
-            FileHelper.saveBinaryInFile(cleanupLogFile, logStr.toString().getBytes());
-            return cleanupLogFile;
-        } catch (Exception e) {
-            Timber.e(e);
-        }
-
-        return null;
+    private LogUtil.LogInfo buildLogInfo(boolean cleanup) {
+        LogUtil.LogInfo logInfo = new LogUtil.LogInfo();
+        logInfo.logName = cleanup ? "Cleanup" : "Import";
+        logInfo.fileName = cleanup ? "cleanup_log" : "import_log";
+        logInfo.noDataMessage = "No content detected.";
+        return logInfo;
     }
+
 
     @Nullable
     private static Content importJson(File folder) {

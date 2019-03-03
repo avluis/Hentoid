@@ -371,9 +371,11 @@ public class ContentDownloadService extends IntentService {
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
             updateImageStatus(img, false);
+            logErrorRecord(img.content.getTargetId(), ErrorType.IMG_PROCESSING, img.getUrl(), img.getName(), "Download params : " + img.getDownloadParams());
         } catch (IOException e) {
             Timber.w(e, "I/O error - Image %s not saved in dir %s", img.getUrl(), dir.getPath());
             updateImageStatus(img, false);
+            logErrorRecord(img.content.getTargetId(), ErrorType.IO, img.getUrl(), img.getName(), "Save failed in dir " + dir.getAbsolutePath());
         }
     }
 
@@ -397,7 +399,7 @@ public class ContentDownloadService extends IntentService {
             cause = "Network parse error";
         }
 
-        error.printStackTrace();
+        Timber.w(error);
 
         updateImageStatus(img, false);
         logErrorRecord(img.content.getTargetId(), ErrorType.NETWORKING, img.getUrl(), img.getName(), cause + "; HTTP statusCode=" + statusCode + "; message=" + message);

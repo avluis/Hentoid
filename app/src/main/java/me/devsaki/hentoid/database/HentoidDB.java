@@ -141,7 +141,7 @@ public class HentoidDB extends SQLiteOpenHelper {
     }
 
     @Nullable
-    public Content selectContentById(int id) {
+    public Content selectContentById(long id) {
         Content result;
         Timber.d("selectContentById");
         SQLiteDatabase db = openDatabase();
