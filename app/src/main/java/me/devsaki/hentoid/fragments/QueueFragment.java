@@ -139,6 +139,7 @@ public class QueueFragment extends BaseFragment {
                 break;
             case DownloadEvent.EV_COMPLETE:
                 mAdapter.removeFromQueue(event.content);
+                if (0 == mAdapter.getCount()) btnStats.setVisibility(View.GONE);
             default: // EV_PAUSE, EV_CANCEL events
                 update(event.eventType);
         }
@@ -231,6 +232,7 @@ public class QueueFragment extends BaseFragment {
                 queueInfo.startAnimation(animation);
             } else { // Empty
                 btnStart.setVisibility(View.GONE);
+                btnStats.setVisibility(View.GONE);
                 queueStatus.setText(R.string.queue_empty2);
                 queueInfo.setText(R.string.queue_empty2);
             }
