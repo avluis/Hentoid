@@ -26,7 +26,7 @@ public class TsuminoActivity extends BaseWebActivity {
 
     private static int ordinalIndexOf(String str) {
         int i = 5;
-        int pos = str.indexOf('/', 0);
+        int pos = str.indexOf('/');
         while (i-- > 0 && pos != -1) {
             pos = str.indexOf('/', pos + 1);
         }
@@ -48,15 +48,19 @@ public class TsuminoActivity extends BaseWebActivity {
     }
 
     @Override
-    public void onDownloadFabClick(View view) {
-        downloadFabPressed = true;
-        historyIndex = webView.copyBackForwardList().getCurrentIndex();
+    public void onActionFabClick(View view) {
+        if (MODE_DL == fabActionMode) {
+            downloadFabPressed = true;
+            historyIndex = webView.copyBackForwardList().getCurrentIndex();
 
-        // Hack to reach the first gallery page to initiate download, and go back to the book page
-        String newUrl = webView.getUrl().replace("Book/Info", "Read/View");
-        final int index = ordinalIndexOf(newUrl);
-        if (index > 0) newUrl = newUrl.substring(0, index);
-        webView.loadUrl(newUrl);
+            // Hack to reach the first gallery page to initiate download, and go back to the book page
+            String newUrl = webView.getUrl().replace("Book/Info", "Read/View");
+            final int index = ordinalIndexOf(newUrl);
+            if (index > 0) newUrl = newUrl.substring(0, index);
+            webView.loadUrl(newUrl);
+        } else {
+            super.onActionFabClick(view);
+        }
     }
 
     private class TsuminoWebViewClient extends CustomWebViewClient {

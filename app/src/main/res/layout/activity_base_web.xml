@@ -18,34 +18,21 @@
     </android.support.v4.widget.SwipeRefreshLayout>
 
     <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fabRead"
+        android:id="@+id/fabAction"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_margin="@dimen/download_fab_margin"
-        android:onClick="onReadFabClick"
-        app:backgroundTint="@color/primary"
-        app:elevation="@dimen/fab_default_elevation"
-        app:rippleColor="@color/ripple"
-        android:src="@drawable/ic_action_play"
-        tools:ignore="RelativeOverlap" />
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fabDownload"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        android:layout_margin="@dimen/download_fab_margin"
-        android:onClick="onDownloadFabClick"
+        android:onClick="onActionFabClick"
         app:backgroundTint="@color/primary"
         app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
         android:src="@drawable/ic_action_download"
-        tools:ignore="RelativeOverlap" />
+        tools:ignore="RelativeOverlap"
+        android:visibility="gone"
+        />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fabRefreshStop"
