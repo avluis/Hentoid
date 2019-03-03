@@ -501,11 +501,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         errorLogInfo.fileName = "error_log" + item.getId();
         errorLogInfo.noDataMessage = "No error detected.";
 
+        log.add("Error log for " + item.getTitle());
         for (ErrorRecord e : errorLog) log.add(e.toString());
 
         File logFile = LogUtil.writeLog(context, log, errorLogInfo);
-        if (logFile != null)
-        {
+        if (logFile != null) {
             Snackbar snackbar = Snackbar.make(libraryView, R.string.cleanup_done, Snackbar.LENGTH_LONG);
             snackbar.setAction("READ LOG", v -> FileHelper.openFile(context, logFile));
             snackbar.show();
