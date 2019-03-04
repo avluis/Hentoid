@@ -29,6 +29,7 @@ import me.devsaki.hentoid.database.domains.Attribute_;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.Content_;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
+import me.devsaki.hentoid.database.domains.ErrorRecord_;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.ImageFile_;
 import me.devsaki.hentoid.database.domains.MyObjectBox;
@@ -614,8 +615,12 @@ public class ObjectBoxDB {
         store.boxFor(ErrorRecord.class).put(record);
     }
 
+    public List<ErrorRecord> selectErrorRecordByContentId(long contentId) {
+        return store.boxFor(ErrorRecord.class).query().equal(ErrorRecord_.contentId, contentId).build().find();
+    }
+
     public void deleteErrorRecords(long contentId) {
-        Content content = selectContentById(contentId);
-        if (content != null) store.boxFor(ErrorRecord.class).remove(content.getErrorLog());
+        List<ErrorRecord> records = selectErrorRecordByContentId(contentId);
+        store.boxFor(ErrorRecord.class).remove(records);
     }
 }

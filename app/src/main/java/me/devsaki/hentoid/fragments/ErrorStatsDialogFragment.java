@@ -8,34 +8,50 @@ import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
+import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.HentoidDB;
+import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.enums.ErrorType;
-import me.devsaki.hentoid.events.DownloadErrorEvent;
 import me.devsaki.hentoid.events.DownloadEvent;
 
 /**
  * Created by Robb on 11/2018
- * Launcher dialog for the library refresh feature
+ * Info dialog for download errors details
  */
 public class ErrorStatsDialogFragment extends DialogFragment {
 
-    private TextView details;
-    private Map<ErrorType, Integer> errors = new HashMap<>();
+    private static String ID = "ID";
 
-    public static void invoke(FragmentManager fragmentManager) {
+    private TextView details;
+    private int previousNbErrors;
+
+    public static void invoke(FragmentManager fragmentManager, long id) {
         ErrorStatsDialogFragment fragment = new ErrorStatsDialogFragment();
+
+        Bundle args = new Bundle();
+        args.putLong(ID, id);
+        fragment.setArguments(args);
 
         fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.DownloadsDialog);
         fragment.show(fragmentManager, null);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EventBus.getDefault().register(this);
     }
 
     @Nullable
@@ -48,26 +64,38 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        details = view.findViewById(R.id.stats_details);
+        if (getArguments() != null) {
+            details = view.findViewById(R.id.stats_details);
+            details.setText(R.string.downloads_loading);
 
-        Button okButton = view.findViewById(R.id.stats_ok);
+            previousNbErrors = 0;
+            long id = getArguments().getLong(ID, 0);
+            if (id > 0) updateStats(id);
+        }
+
+        TextView okButton = view.findViewById(R.id.stats_ok);
         okButton.setOnClickListener(v -> this.dismiss());
     }
 
-    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
-    public void onErrorEvent(DownloadErrorEvent event) {
-        if (errors.containsKey(event.error.type)) {
-            int nbErrors = errors.get(event.error.type);
-            errors.put(event.error.type, ++nbErrors);
-        } else {
-            errors.put(event.error.type, 1);
+    private void updateStats(long contentId)
+    {
+        List<ErrorRecord> errors = ObjectBoxDB.getInstance(HentoidApp.getAppContext()).selectErrorRecordByContentId(contentId);
+        Map<ErrorType, Integer> errorsByType = new HashMap<>();
+
+        for (ErrorRecord error : errors) {
+            if (errorsByType.containsKey(error.type)) {
+                int nbErrors = errorsByType.get(error.type);
+                errorsByType.put(error.type, ++nbErrors);
+            } else {
+                errorsByType.put(error.type, 1);
+            }
         }
 
         StringBuilder detailsStr = new StringBuilder();
 
-        for (ErrorType type : errors.keySet()) {
+        for (ErrorType type : errorsByType.keySet()) {
             detailsStr.append(type.getName()).append(" : ");
-            detailsStr.append(errors.get(type));
+            detailsStr.append(errorsByType.get(type));
             detailsStr.append(System.getProperty("line.separator"));
         }
 
@@ -78,6 +106,21 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     public void onDownloadEvent(DownloadEvent event) {
         if (event.eventType == DownloadEvent.EV_COMPLETE) {
             details.setText("Download complete");
+            previousNbErrors = 0;
+        } else if (event.eventType == DownloadEvent.EV_CANCEL) {
+            details.setText("Download cancelled");
+            previousNbErrors = 0;
+        } else if (event.eventType == DownloadEvent.EV_PROGRESS) {
+            if (event.pagesKO > previousNbErrors && event.content != null) {
+                previousNbErrors = event.pagesKO;
+                updateStats(event.content.getId());
+            }
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        EventBus.getDefault().unregister(this);
+        super.onDestroy();
     }
 }

@@ -425,22 +425,6 @@ public class Content implements Serializable {
         return errorLog;
     }
 
-    public Content addErrorRecord(ErrorRecord errorRecord) {
-        if (errorLog != null) {
-            this.errorLog.clear();
-            this.errorLog.add(errorRecord);
-        }
-        return this;
-    }
-
-    public Content addErrorRecords(List<ErrorRecord> errorRecords) {
-        if (errorLog != null) {
-            this.errorLog.clear();
-            this.errorLog.addAll(errorRecords);
-        }
-        return this;
-    }
-
     public double getPercent() {
         return percent;
     }

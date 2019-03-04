@@ -47,7 +47,6 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.events.DownloadErrorEvent;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
@@ -133,7 +132,7 @@ public class ContentDownloadService extends IntentService {
 
         // Works on first item of queue
         List<QueueRecord> queue = db.selectQueue();
-        if (0 == queue.size()) {
+        if (queue.isEmpty()) {
             Timber.w("Queue is empty. Aborting download.");
             return null;
         }
@@ -146,6 +145,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         content.setStatus(StatusContent.DOWNLOADING);
+        content.getErrorLog().clear();
         db.insertContent(content);
 
         // Check if images are already known
@@ -181,7 +181,7 @@ public class ContentDownloadService extends IntentService {
         // Tracking Event (Download Added)
         HentoidApp.trackDownloadEvent("Added");
 
-        Timber.d("Downloading '%s' [%s]", content.getTitle(), content.getId());
+        Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
         downloadCanceled = false;
         downloadSkipped = false;
 
@@ -243,7 +243,7 @@ public class ContentDownloadService extends IntentService {
             Timber.d("Content download paused : %s [%s]", content.getTitle(), content.getId());
             if (downloadCanceled) notificationManager.cancel();
         } else {
-            downloadCompleted(content, pagesOK, pagesKO);
+            completeDownload(content, pagesOK, pagesKO);
         }
     }
 
@@ -253,7 +253,7 @@ public class ContentDownloadService extends IntentService {
      *
      * @param content Content to mark as downloaded
      */
-    private void downloadCompleted(Content content, int pagesOK, int pagesKO) {
+    private void completeDownload(Content content, int pagesOK, int pagesKO) {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
         if (!downloadCanceled && !downloadSkipped) {
@@ -276,10 +276,10 @@ public class ContentDownloadService extends IntentService {
                     Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
                 }
             } else {
-                Timber.w("downloadCompleted : Directory %s does not exist - JSON not saved", dir.getAbsolutePath());
+                Timber.w("completeDownload : Directory %s does not exist - JSON not saved", dir.getAbsolutePath());
             }
 
-            Timber.d("Content download finished: %s [%s]", content.getTitle(), content.getId());
+            Timber.i("Content download finished: %s [%s]", content.getTitle(), content.getId());
 
             // Delete book from queue
             db.deleteQueue(content);
@@ -303,7 +303,6 @@ public class ContentDownloadService extends IntentService {
             // Signals current download as completed
             Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
             EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, images.size()));
-            EventBus.getDefault().removeStickyEvent(DownloadErrorEvent.class);
 
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");
@@ -386,9 +385,13 @@ public class ContentDownloadService extends IntentService {
 
     private void onRequestSuccess(Map.Entry<byte[], Map<String, String>> result, ImageFile img, File dir, boolean hasImageProcessing) {
         try {
-            if (result != null)
+            if (result != null) {
                 processAndSaveImage(img, dir, result.getValue().get("Content-Type"), result.getKey(), hasImageProcessing);
-            updateImageStatus(img, (result != null));
+                updateImageStatus(img, true);
+            } else {
+                updateImageStatus(img, false);
+                logErrorRecord(img.content.getTargetId(), ErrorType.UNDEFINED, img.getUrl(), img.getName(), "Result null");
+            }
         } catch (InvalidParameterException e) {
             Timber.w(e, "Processing error - Image %s not processed properly", img.getUrl());
             updateImageStatus(img, false);
@@ -542,9 +545,6 @@ public class ContentDownloadService extends IntentService {
 
     public void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
         ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description);
-        if (contentId > 0) {
-            db.insertErrorRecord(record);
-            EventBus.getDefault().postSticky(new DownloadErrorEvent(record));
-        }
+        if (contentId > 0) db.insertErrorRecord(record);
     }
 }

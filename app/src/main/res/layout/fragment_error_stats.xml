@@ -32,6 +32,8 @@
         android:layout_height="wrap_content"
         android:text="@android:string/ok"
         android:textColor="@color/accent"
+        android:clickable="true"
+        android:focusable="true"
         android:textSize="@dimen/text_button"
         android:layout_marginTop="12dp"
         />
