@@ -27,7 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.security.InvalidParameterException;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +56,6 @@ import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.MimeTypes;
-import me.devsaki.hentoid.util.NetworkStatus;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
@@ -106,11 +104,6 @@ public class ContentDownloadService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        if (!NetworkStatus.isOnline()) {
-            Timber.w("No connection!");
-            return;
-        }
-
         Timber.d("New intent processed");
 
         Content content = downloadFirstInQueue();
@@ -151,17 +144,23 @@ public class ContentDownloadService extends IntentService {
         // Check if images are already known
         List<ImageFile> images = content.getImageFiles();
         if (images.isEmpty()) {
-            // Create image list in DB
-            images = fetchImageURLs(content);
-            content.addImageFiles(images);
-            db.insertContent(content);
-        }
-
-        if (images.isEmpty()) {
-            Timber.w("Image list is empty. Aborting download.");
-            content.setStatus(StatusContent.ERROR);
-            db.insertContent(content);
-            return null;
+            try {
+                images = fetchImageURLs(content);
+                content.addImageFiles(images);
+                db.insertContent(content);
+            } catch (UnsupportedOperationException u) {
+                Timber.w(u, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
+                logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", u.getMessage());
+                content.setStatus(StatusContent.ERROR);
+                db.insertContent(content);
+                return null;
+            } catch (Exception e) {
+                Timber.w(e, "An exception has occurred while parsing %s. Aborting download.", content.getTitle());
+                logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", e.getMessage());
+                content.setStatus(StatusContent.ERROR);
+                db.insertContent(content);
+                return null;
+            }
         }
 
         File dir = FileHelper.createContentDownloadDir(this, content);
@@ -323,25 +322,19 @@ public class ContentDownloadService extends IntentService {
      * @param content Book whose pages to retrieve
      * @return List of pages with original URLs and file name
      */
-    private List<ImageFile> fetchImageURLs(Content content) {
+    private List<ImageFile> fetchImageURLs(Content content) throws Exception {
         List<ImageFile> imgs;
         // Use ContentParser to query the source
         ContentParser parser = ContentParserFactory.getInstance().getParser(content);
-        try {
-            imgs = parser.parseImageList(content);
-        } catch (UnsupportedOperationException u) {
-            Timber.w(u, "A captcha has been found while parsing %s", content.getTitle());
-            logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", "Parsing exception : " + u.getMessage());
-            return Collections.emptyList();
-        } catch (Exception e) {
-            Timber.w(e, "An exception has occured while parsing %s", content.getTitle());
-            logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", "Parsing exception : " + e.getMessage());
-            return Collections.emptyList();
-        }
+        imgs = parser.parseImageList(content);
 
-        if (imgs.isEmpty()) {
-            Timber.w("An empry image list has been found while parsing %s", content.getTitle());
-            logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", "Empty image list");
+        if (imgs.isEmpty())
+            throw new Exception("An empty image list has been found while parsing " + content.getTitle());
+
+        // More than 10% difference in number of pages
+        if (Math.abs(imgs.size() - content.getQtyPages()) > content.getQtyPages() * 0.1) {
+            String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", imgs.size(), content.getQtyPages());
+            throw new Exception(errorMsg);
         }
 
         for (ImageFile img : imgs) img.setStatus(StatusContent.SAVED);

@@ -3,6 +3,7 @@ package me.devsaki.hentoid.fragments;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
@@ -14,17 +15,20 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.database.ObjectBoxDB;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ErrorRecord;
 import me.devsaki.hentoid.enums.ErrorType;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.LogUtil;
 
 /**
  * Created by Robb on 11/2018
@@ -36,6 +40,8 @@ public class ErrorStatsDialogFragment extends DialogFragment {
 
     private TextView details;
     private int previousNbErrors;
+    private long currentId;
+    private View rootView;
 
     public static void invoke(FragmentManager fragmentManager, long id) {
         ErrorStatsDialogFragment fragment = new ErrorStatsDialogFragment();
@@ -64,22 +70,27 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        rootView = view;
+
         if (getArguments() != null) {
             details = view.findViewById(R.id.stats_details);
             details.setText(R.string.downloads_loading);
 
             previousNbErrors = 0;
             long id = getArguments().getLong(ID, 0);
+            currentId = id;
             if (id > 0) updateStats(id);
         }
 
         TextView okButton = view.findViewById(R.id.stats_ok);
         okButton.setOnClickListener(v -> this.dismiss());
+
+        TextView logButton = view.findViewById(R.id.stats_log);
+        logButton.setOnClickListener(v -> this.showErrorLog());
     }
 
-    private void updateStats(long contentId)
-    {
-        List<ErrorRecord> errors = ObjectBoxDB.getInstance(HentoidApp.getAppContext()).selectErrorRecordByContentId(contentId);
+    private void updateStats(long contentId) {
+        List<ErrorRecord> errors = ObjectBoxDB.getInstance(getContext()).selectErrorRecordByContentId(contentId);
         Map<ErrorType, Integer> errorsByType = new HashMap<>();
 
         for (ErrorRecord error : errors) {
@@ -112,8 +123,32 @@ public class ErrorStatsDialogFragment extends DialogFragment {
             previousNbErrors = 0;
         } else if (event.eventType == DownloadEvent.EV_PROGRESS) {
             if (event.pagesKO > previousNbErrors && event.content != null) {
+                currentId = event.content.getId();
                 previousNbErrors = event.pagesKO;
-                updateStats(event.content.getId());
+                updateStats(currentId);
+            }
+        }
+    }
+
+    private void showErrorLog() {
+        Content content = ObjectBoxDB.getInstance(getContext()).selectContentById(currentId);
+        if (content != null) {
+            List<ErrorRecord> errorLog = content.getErrorLog();
+            List<String> log = new ArrayList<>();
+
+            LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
+            errorLogInfo.logName = "Error";
+            errorLogInfo.fileName = "error_log" + content.getId();
+            errorLogInfo.noDataMessage = "No error detected.";
+
+            log.add("Error log for " + content.getTitle());
+            for (ErrorRecord e : errorLog) log.add(e.toString());
+
+            File logFile = LogUtil.writeLog(requireContext(), log, errorLogInfo);
+            if (logFile != null) {
+                Snackbar snackbar = Snackbar.make(rootView, R.string.cleanup_done, Snackbar.LENGTH_LONG);
+                snackbar.setAction("READ LOG", v -> FileHelper.openFile(requireContext(), logFile));
+                snackbar.show();
             }
         }
     }

@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities.websites;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -32,6 +33,7 @@ public class PururinActivity extends BaseWebActivity {
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(PururinServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 2], galleryUrlParts[galleryUrlParts.length - 1])
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                 Timber.e(throwable, "Error parsing content.");

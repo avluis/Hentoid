@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities.websites;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -41,6 +42,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
             String[] galleryUrlParts = url.split("/");
             if (url.contains("comics.asm")) {
                 compositeDisposable.add(ASMComicsServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                     Timber.e(throwable, "Error parsing content.");
@@ -49,6 +51,7 @@ public class ASMHentaiActivity extends BaseWebActivity {
                 );
             } else {
                 compositeDisposable.add(ASMHentaiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
                                 metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                     Timber.e(throwable, "Error parsing content.");

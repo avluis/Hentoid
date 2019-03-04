@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.view.View;
 import android.webkit.WebView;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -75,6 +76,7 @@ public class TsuminoActivity extends BaseWebActivity {
             // Tsumino books can be called through two different URLs : "book ID" and "book ID/book-name"
             // -> need to get the book ID only
             compositeDisposable.add(TsuminoServer.API.getGalleryMetadata(galleryUrlParts[5])
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                 Timber.e(throwable, "Error parsing content.");

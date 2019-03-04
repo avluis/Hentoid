@@ -2,6 +2,7 @@ package me.devsaki.hentoid.activities.websites;
 
 import android.net.Uri;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -48,6 +49,7 @@ public class HentaiCafeActivity extends BaseWebActivity {
 
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(HentaiCafeServer.API.getGalleryMetadata(Uri.decode(galleryUrlParts[galleryUrlParts.length - 1]))
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                 Timber.e(throwable, "Error parsing content.");

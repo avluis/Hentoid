@@ -81,6 +81,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private boolean webViewIsLoading;
     // Indicated which mode the download FAB is in
     protected int fabActionMode;
+    private boolean fabActionEnabled;
 
     protected CustomWebViewClient webClient;
 
@@ -140,6 +141,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         fabAction = findViewById(R.id.fabAction);
         fabRefreshOrStop = findViewById(R.id.fabRefreshStop);
         fabHome = findViewById(R.id.fabHome);
+
+        fabActionEnabled = false;
 
         initWebView();
         initSwipeLayout();
@@ -207,7 +210,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 if (webView.canScrollVertically(1) || t == 0) {
                     fabRefreshOrStop.show();
                     fabHome.show();
-                    fabAction.show();
+                    if (fabActionEnabled) fabAction.show();
                 } else {
                     fabRefreshOrStop.hide();
                     fabHome.hide();
@@ -332,6 +335,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
         fabActionMode = mode;
         fabAction.setImageResource(resId);
+        fabActionEnabled = true;
+        fabAction.show();
     }
 
     /**
@@ -499,7 +504,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             fabRefreshOrStop.setImageResource(R.drawable.ic_action_clear);
             fabRefreshOrStop.show();
             fabHome.show();
+
             fabAction.hide();
+            fabActionEnabled = false;
 
             if (isPageFiltered(url)) onGalleryFound(url);
         }

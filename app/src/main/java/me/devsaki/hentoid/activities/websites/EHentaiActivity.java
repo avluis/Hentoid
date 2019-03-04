@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.activities.websites;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -38,6 +39,7 @@ public class EHentaiActivity extends BaseWebActivity {
             String[] galleryUrlParts = url.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
             compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                 Timber.e(throwable, "Error parsing content.");

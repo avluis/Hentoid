@@ -7,6 +7,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -49,6 +50,7 @@ public class HitomiActivity extends BaseWebActivity {
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(HitomiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
                                 Timber.e(throwable, "Error parsing content.");

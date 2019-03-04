@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="start"
@@ -11,11 +10,11 @@
         android:id="@+id/stats_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
         android:text="@string/err_stats_title"
         android:textColor="@color/accent"
         android:textSize="@dimen/text_header_6"
-        android:textStyle="bold"
-        android:layout_marginBottom="12dp"/>
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/stats_details"
@@ -23,20 +22,29 @@
         android:layout_height="wrap_content"
         android:text="@string/err_stats_title"
         android:textColor="@android:color/black"
-        android:textSize="@dimen/text_body_1"
-        />
+        android:textSize="@dimen/text_body_1" />
+
+    <TextView
+        android:id="@+id/stats_log"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:text="@string/redownload_view_log"
+        android:textColor="@color/darkGray"
+        android:textSize="@dimen/text_button" />
 
     <TextView
         android:id="@+id/stats_ok"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@android:string/ok"
-        android:textColor="@color/accent"
+        android:layout_marginTop="24dp"
+        android:textStyle="bold"
         android:clickable="true"
         android:focusable="true"
-        android:textSize="@dimen/text_button"
-        android:layout_marginTop="12dp"
-        />
-
+        android:text="@android:string/ok"
+        android:textColor="@color/accent"
+        android:textSize="@dimen/text_button" />
 
 </LinearLayout>

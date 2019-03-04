@@ -5,6 +5,7 @@ import android.webkit.CookieManager;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
@@ -39,6 +40,7 @@ public class FakkuActivity extends BaseWebActivity {
             String cookie = CookieManager.getInstance().getCookie(url);
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(FakkuServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1], cookie)
+                    .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata -> {
                                 Content content = metadata.toContent();

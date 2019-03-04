@@ -32,9 +32,8 @@ public class HitomiParser extends BaseParser {
             Timber.d("Parsing: %s", content.getReaderUrl());
             Elements imgElements = doc.select(".img-url");
 
-            if (null == imgElements || 0 == imgElements.size())
-            {
-                Timber.w("No images found @ %s", content.getReaderUrl()); // TODO catch this in download queue
+            if (null == imgElements || 0 == imgElements.size()) {
+                Timber.w("No images found @ %s", content.getReaderUrl());
                 return result;
             }
 
@@ -49,7 +48,8 @@ public class HitomiParser extends BaseParser {
                 result.add("https:" + replaceSubdomainWith(element.text(), imageSubdomain));
             }
         } else {
-            Timber.w("Document null @ %s", content.getReaderUrl()); // TODO catch this in download queue
+            Timber.w("Document null @ %s", content.getReaderUrl());
+            throw new Exception("Document null @ " + content.getReaderUrl());
         }
 
         return result;

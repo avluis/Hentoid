@@ -160,6 +160,7 @@ public class ObjectBoxDB {
      * @param contentId IDs of the contents to be removed from the DB
      */
     private void deleteContentById(long[] contentId) {
+        Box<ErrorRecord> errorBox = store.boxFor(ErrorRecord.class);
         Box<ImageFile> imageFileBox = store.boxFor(ImageFile.class);
         Box<Attribute> attributeBox = store.boxFor(Attribute.class);
         Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
@@ -170,6 +171,9 @@ public class ObjectBoxDB {
             store.runInTx(() -> {
                 for (ImageFile i : c.getImageFiles()) imageFileBox.remove(i);   // Delete imageFiles
                 c.getImageFiles().clear();                                      // Clear links to all imageFiles
+
+                for (ErrorRecord e : c.getErrorLog()) errorBox.remove(e);   // Delete error records
+                c.getErrorLog().clear();                                    // Clear links to all errorRecords
 
                 // Delete attribute when current content is the only content left on the attribute
                 for (Attribute a : c.getAttributes())

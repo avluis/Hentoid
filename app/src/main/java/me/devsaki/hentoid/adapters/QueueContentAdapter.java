@@ -419,6 +419,8 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      * @param content Content whose download has to be canceled
      */
     private void cancel(Content content) {
+        EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
+
         compositeDisposable.add(
                 Completable.fromRunnable(() -> doCancel(content.getId()))
                         .subscribeOn(Schedulers.io())
@@ -434,8 +436,6 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
         if (content != null) {
-            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_CANCEL));
-
             db.deleteQueue(content);
             db.deleteContent(content);
             // Remove the content from the disk

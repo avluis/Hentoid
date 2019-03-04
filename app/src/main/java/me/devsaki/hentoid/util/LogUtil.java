@@ -6,6 +6,8 @@ import android.support.annotation.Nullable;
 import java.io.File;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import timber.log.Timber;
 
 public class LogUtil {
@@ -17,7 +19,7 @@ public class LogUtil {
     }
 
     @Nullable
-    public static File writeLog(Context context, List<String> log, LogInfo info) {
+    public static File writeLog(@Nonnull Context context, @Nonnull List<String> log, @Nonnull LogInfo info) {
         // Create the log
         StringBuilder logStr = new StringBuilder();
         logStr.append(info.logName).append(" log : begin").append(System.getProperty("line.separator"));
