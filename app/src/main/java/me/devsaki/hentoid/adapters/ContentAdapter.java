@@ -492,16 +492,16 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         ToastUtil.toast(context, R.string.add_to_queue);
     }
 
-    private void showErrorLog(final Content item) {
-        List<ErrorRecord> errorLog = item.getErrorLog();
+    private void showErrorLog(final Content content) {
+        List<ErrorRecord> errorLog = content.getErrorLog();
         List<String> log = new ArrayList<>();
 
         LogUtil.LogInfo errorLogInfo = new LogUtil.LogInfo();
         errorLogInfo.logName = "Error";
-        errorLogInfo.fileName = "error_log" + item.getId();
+        errorLogInfo.fileName = "error_log" + content.getId();
         errorLogInfo.noDataMessage = "No error detected.";
 
-        log.add("Error log for " + item.getTitle());
+        log.add("Error log for " + content.getTitle() + " : " + errorLog.size() + " errors");
         for (ErrorRecord e : errorLog) log.add(e.toString());
 
         File logFile = LogUtil.writeLog(context, log, errorLogInfo);
