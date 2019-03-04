@@ -94,7 +94,7 @@ public class UpdateCheckService extends Service {
             stopForeground(true);
 
             String updateUrl = updateInfoJson.getUpdateUrl();
-            if (!BuildConfig.DEBUG) notificationManager.notify(new UpdateAvailableNotification(updateUrl));
+            notificationManager.notify(new UpdateAvailableNotification(updateUrl));
         } else {
             if (shouldShowToast) {
                 String message = "Update Check: No new updates.";
