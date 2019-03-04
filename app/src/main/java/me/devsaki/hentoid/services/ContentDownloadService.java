@@ -130,7 +130,7 @@ public class ContentDownloadService extends IntentService {
             return null;
         }
 
-        Content content = db.selectContentById(queue.get(0).content.getTargetId());
+        Content content = queue.get(0).content.getTarget();
 
         if (null == content || StatusContent.DOWNLOADED == content.getStatus()) {
             Timber.w("Content is unavailable, or already downloaded. Aborting download.");
@@ -188,7 +188,7 @@ public class ContentDownloadService extends IntentService {
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.ERROR)) {
                 img.setStatus(StatusContent.SAVED);
-                db.updateImageFile(img);
+                db.updateImageFileStatusAndParams(img);
             }
         }
 
@@ -332,10 +332,8 @@ public class ContentDownloadService extends IntentService {
             throw new Exception("An empty image list has been found while parsing " + content.getTitle());
 
         // More than 10% difference in number of pages
-        if (Math.abs(imgs.size() - content.getQtyPages()) > content.getQtyPages() * 0.1) {
-            String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", imgs.size(), content.getQtyPages());
-            throw new Exception(errorMsg);
-        }
+        if (Math.abs(imgs.size() - content.getQtyPages()) > content.getQtyPages() * 0.1)
+            throw new Exception(String.format("The number of images found (%s) does not match the book's number of pages (%s)", imgs.size(), content.getQtyPages()));
 
         for (ImageFile img : imgs) img.setStatus(StatusContent.SAVED);
         return imgs;
@@ -503,7 +501,7 @@ public class ContentDownloadService extends IntentService {
     private void updateImageStatus(ImageFile img, boolean success) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         if (success) img.setDownloadParams("");
-        if (img.getId() > 0) db.updateImageFile(img); // because thumb image isn't in the DB
+        if (img.getId() > 0) db.updateImageFileStatusAndParams(img); // because thumb image isn't in the DB
     }
 
     /**

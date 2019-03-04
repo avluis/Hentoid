@@ -5,7 +5,6 @@ import android.util.SparseIntArray;
 
 import com.annimon.stream.Collectors;
 import com.annimon.stream.Stream;
-import com.crashlytics.android.Crashlytics;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -193,9 +192,11 @@ public class ObjectBoxDB {
     public void updateContentReads(Content content) {
         Box<Content> contentBox = store.boxFor(Content.class);
         Content c = contentBox.get(content.getId());
-        c.setReads(content.getReads());
-        c.setLastReadDate(content.getLastReadDate());
-        contentBox.put(c);
+        if (c != null) {
+            c.setReads(content.getReads());
+            c.setLastReadDate(content.getLastReadDate());
+            contentBox.put(c);
+        }
     }
 
     public List<QueueRecord> selectQueue() {
@@ -570,15 +571,23 @@ public class ObjectBoxDB {
         return result;
     }
 
-    public void updateImageFile(ImageFile image) {
-        store.boxFor(ImageFile.class).put(image);
+    public void updateImageFileStatusAndParams(ImageFile image) {
+        Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
+        ImageFile img = imgBox.get(image.getId());
+        if (img != null) {
+            img.setStatus(image.getStatus());
+            img.setDownloadParams(image.getDownloadParams());
+            imgBox.put(img);
+        }
     }
 
     void updateImageFileUrl(ImageFile image) {
         Box<ImageFile> imgBox = store.boxFor(ImageFile.class);
         ImageFile img = imgBox.get(image.getId());
-        img.setUrl(image.getUrl());
-        imgBox.put(img);
+        if (img != null) {
+            img.setUrl(image.getUrl());
+            imgBox.put(img);
+        }
     }
 
     public SparseIntArray countProcessedImagesById(long contentId) {

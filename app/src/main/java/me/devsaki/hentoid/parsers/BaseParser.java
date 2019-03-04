@@ -14,24 +14,18 @@ public abstract class BaseParser implements ContentParser {
 
     protected abstract List<String> parseImages(Content content) throws Exception;
 
-    public List<ImageFile> parseImageList(Content content) {
+    public List<ImageFile> parseImageList(Content content) throws Exception {
         String readerUrl = content.getReaderUrl();
         List<ImageFile> images = Collections.emptyList();
 
         if (!URLUtil.isValidUrl(readerUrl)) {
-            Timber.e("Invalid gallery URL : %s", readerUrl);
-            return images;
+            throw new Exception("Invalid gallery URL : " + readerUrl);
         }
         Timber.d("Gallery URL: %s", readerUrl);
 
-        try {
-            List<String> imgUrls = parseImages(content);
-            images = ParseHelper.urlsToImageFiles(imgUrls);
-        } catch (IOException e) {
-            Timber.e(e, "I/O Error while attempting to connect to %s", readerUrl);
-        } catch (Exception e) {
-            Timber.e(e, "Unexpected Error while attempting to connect to %s", readerUrl);
-        }
+        List<String> imgUrls = parseImages(content);
+        images = ParseHelper.urlsToImageFiles(imgUrls);
+
         Timber.d("%s", images);
 
         return images;
