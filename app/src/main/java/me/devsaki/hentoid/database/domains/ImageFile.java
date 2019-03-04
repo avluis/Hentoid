@@ -35,8 +35,6 @@ public class ImageFile {
     public ImageFile() {
     }
 
-    ;
-
     public ImageFile(int order, String url, StatusContent status) {
         this.order = order;
         this.name = String.format(Locale.US, "%03d", order);
