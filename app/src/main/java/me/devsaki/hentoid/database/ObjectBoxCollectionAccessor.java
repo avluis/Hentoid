@@ -58,8 +58,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         compositeDisposable.add(
-                Single.just(
-                        contentSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                Single.fromCallable(
+                        () -> contentSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -75,8 +75,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         compositeDisposable.add(
-                Single.just(
-                        contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
+                Single.fromCallable(
+                        () -> contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -87,8 +87,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
         compositeDisposable.add(
-                Single.just(
-                        contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
+                Single.fromCallable(
+                        () -> contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -99,8 +99,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void searchBooksUniversal(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
         compositeDisposable.add(
-                Single.just(
-                        contentSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                Single.fromCallable(
+                        () -> contentSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -111,8 +111,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener) {
         compositeDisposable.add(
-                Single.just(
-                        contentSearch(MODE_COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly)
+                Single.fromCallable(
+                        () -> contentSearch(MODE_COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -123,8 +123,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void getAttributeMasterData(List<AttributeType> types, String filter, int sortOrder, ResultListener<List<Attribute>> listener) {
         compositeDisposable.add(
-                Single.just(
-                        attributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, types, filter, Collections.emptyList(), false, sortOrder)
+                Single.fromCallable(
+                        () -> attributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, types, filter, Collections.emptyList(), false, sortOrder)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -135,8 +135,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void getPagedAttributeMasterData(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
         compositeDisposable.add(
-                Single.just(
-                        pagedAttributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, types, filter, Collections.emptyList(), false, orderStyle, page, booksPerPage)
+                Single.fromCallable(
+                        () -> pagedAttributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, types, filter, Collections.emptyList(), false, orderStyle, page, booksPerPage)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -157,8 +157,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, ResultListener<List<Attribute>> listener) {
         compositeDisposable.add(
-                Single.just(
-                        attributeSearch(MODE_SEARCH_ATTRIBUTE_COMBINED, types, filter, attrs, filterFavourites, sortOrder)
+                Single.fromCallable(
+                        () -> attributeSearch(MODE_SEARCH_ATTRIBUTE_COMBINED, types, filter, attrs, filterFavourites, sortOrder)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -169,8 +169,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void getPagedAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
         compositeDisposable.add(
-                Single.just(
-                        pagedAttributeSearch(MODE_SEARCH_ATTRIBUTE_COMBINED, types, filter, attrs, filterFavourites, orderStyle, page, booksPerPage)
+                Single.fromCallable(
+                        () -> pagedAttributeSearch(MODE_SEARCH_ATTRIBUTE_COMBINED, types, filter, attrs, filterFavourites, orderStyle, page, booksPerPage)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -181,8 +181,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
         compositeDisposable.add(
-                Single.just(
-                        attributeSearch(MODE_SEARCH_ATTRIBUTE_AVAILABLE, types, "", attrs, filterFavourites, 1)
+                Single.fromCallable(
+                        () -> attributeSearch(MODE_SEARCH_ATTRIBUTE_AVAILABLE, types, "", attrs, filterFavourites, 1)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
@@ -193,8 +193,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     @Override
     public void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener) {
         compositeDisposable.add(
-                Single.just(
-                        count(filter)
+                Single.fromCallable(
+                        () -> count(filter)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
