@@ -207,7 +207,12 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      *               %s%)
      */
     private void searchMasterData(final String filter) {
-        searchMasterData(filter, true, false);
+        currentPage = 1;
+        searchMasterData(filter, true, true);
+    }
+
+    private void loadMoreMasterData(final String filter) {
+        searchMasterData(filter, false, false);
     }
 
     private void searchMasterData(final String filter, boolean displayLoadingImage, boolean clearOnSuccess) {
@@ -236,16 +241,16 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 Collections.emptyList()
                 : Stream.of(selectedAttributes).filter(a -> selectedAttributeTypes.contains(a.getType())).toList();
 
-        // Remove selected attributes
+        // Remove selected attributes from the result set
         results.attributes.removeAll(selectedAttributes);
 
         mTotalSelectedCount = results.totalContent - selectedAttributes.size();
+        if (clearOnSuccess) attributeAdapter.clear();
         if (0 == mTotalSelectedCount) {
             String searchQuery = tagSearchView.getQuery().toString();
             if (searchQuery.isEmpty()) this.dismiss();
             else tagWaitMessage.setText(R.string.masterdata_no_result);
         } else {
-            if (clearOnSuccess) attributeAdapter.clear();
             tagWaitPanel.setVisibility(View.GONE);
             attributeAdapter.add(results.attributes);
         }
@@ -274,9 +279,8 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         if (null == viewModel.getSelectedAttributesData().getValue() || !viewModel.getSelectedAttributesData().getValue().contains(a)) { // Add selected tag
             button.setPressed(true);
-            currentPage = 1;
             viewModel.onAttributeSelected(a);
-            searchMasterData(tagSearchView.getQuery().toString(), true, true);
+            searchMasterData(tagSearchView.getQuery().toString());
         }
     }
 
@@ -299,7 +303,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         if (!isLastPage()) { // NB : A "page" is a group of loaded attributes. Last page is reached when scrolling reaches the very end of the list
             Timber.d("Load more data now~");
             currentPage++;
-            searchMasterData(tagSearchView.getQuery().toString(), false, false);
+            loadMoreMasterData(tagSearchView.getQuery().toString());
         }
     }
 }
