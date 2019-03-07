@@ -327,7 +327,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     }
 
                     compositeDisposable.add(
-                            Single.just(toggleFavourite(content.getId()))
+                            Single.fromCallable(() -> toggleFavourite(content.getId()))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
