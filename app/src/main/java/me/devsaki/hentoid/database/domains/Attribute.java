@@ -86,8 +86,9 @@ public class Attribute {
         return (0 == externalId) ? this.id : this.externalId;
     }
 
-    public void setId(long id) {
+    public Attribute setId(long id) {
         this.id = id;
+        return this;
     }
 
     public String getUrl() {

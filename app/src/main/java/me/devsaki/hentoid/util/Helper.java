@@ -276,7 +276,7 @@ public final class Helper {
                     for (String attrStr : uri.getQueryParameters(typeStr)) {
                         String[] attrParams = attrStr.split(";");
                         if (2 == attrParams.length) {
-                            result.add(new Attribute(type, attrParams[1]).setExternalId(Integer.parseInt(attrParams[0])));
+                            result.add(new Attribute(type, attrParams[1]).setId(Long.parseLong(attrParams[0])));
                         }
                     }
             }
@@ -304,6 +304,12 @@ public final class Helper {
     public static List<Long> getListFromPrimitiveArray(long[] input) {
         List<Long> list = new ArrayList<>(input.length);
         for (long n : input) list.add(n);
+        return list;
+    }
+
+    public static List<Integer> getListFromPrimitiveArray(int[] input) {
+        List<Integer> list = new ArrayList<>(input.length);
+        for (int n : input) list.add(n);
         return list;
     }
 

@@ -53,6 +53,8 @@ public class ObjectBoxDB {
             StatusContent.ERROR.getCode(),
             StatusContent.MIGRATED.getCode()};
 
+    private final static List<Integer> visibleContentStatusAsList = Helper.getListFromPrimitiveArray(visibleContentStatus);
+
     private static ObjectBoxDB instance;
 
     private final BoxStore store;
@@ -495,12 +497,11 @@ public class ObjectBoxDB {
         return result;
     }
 
-    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, long[] filteredContent) {
+    private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, List<Long> filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
-        if (filteredContent.length > 0)
-            query.link(Attribute_.contents)
-                    .notIn(Content_.id, filteredContent) // Still don't understand why expected result is given by notIn, instead of in...
-                    .in(Content_.status, visibleContentStatus);
+        if (filteredContent.size() > 0)
+            query.filter((attr) -> (Stream.of(attr.contents).filter(c -> filteredContent.contains(c.getId())).filter(c -> visibleContentStatusAsList.contains(c.getStatus().getCode())).count() > 0));
+//            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus); <-- does not work for an obscure reason; need to reproduce that on a clean project and submit it to ObjectBox
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())
             query.contains(Attribute_.name, filter.trim(), QueryBuilder.StringOrder.CASE_INSENSITIVE);
@@ -509,14 +510,14 @@ public class ObjectBoxDB {
     }
 
     long countAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites) {
-        long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
+        List<Long> filteredContent = Helper.getListFromPrimitiveArray(getFilteredContent(attributeFilter, filterFavourites));
         return queryAvailableAttributes(type, filter, filteredContent).count();
     }
 
     List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
-        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContent).find();
+        List<Attribute> result = queryAvailableAttributes(type, filter, filteredContentAsList).find();
 
         // Compute attribute count for sorting
         int count;
