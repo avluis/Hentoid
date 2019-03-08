@@ -15,12 +15,11 @@ import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.services.DatabaseMigrationService;
 import me.devsaki.hentoid.util.AssetsCache;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 
 /**
- * Created by avluis on 1/9/16.
  * Displays a Splash while starting up.
+ * <p>
  * Nothing but a splash/activity selection should be defined here.
  */
 public class SplashActivity extends AppCompatActivity {
@@ -35,13 +34,11 @@ public class SplashActivity extends AppCompatActivity {
         AssetsCache.init(HentoidApp.getAppContext());
 
         if (Preferences.isFirstRun()) {
-            Intent intent = new Intent(this, IntroActivity.class);
-            startActivity(intent);
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            finish();
+            goToActivity(new Intent(this, IntroActivity.class));
+        } else if (DatabaseMaintenance.hasToMigrate(this)) {
+            handleDatabaseMigration();
         } else {
-            if (DatabaseMaintenance.hasToMigrate(this)) handleDatabaseMigration();
-            else runMain();
+            goToDownloadsActivity();
         }
     }
 
@@ -52,10 +49,16 @@ public class SplashActivity extends AppCompatActivity {
         super.onDestroy();
     }
 
-    private void runMain() {
-        Helper.launchMainActivity(this);
+    private void goToActivity(Intent intent) {
+        startActivity(intent);
         overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         finish();
+    }
+
+    private void goToDownloadsActivity() {
+        Intent intent = new Intent(this, DownloadsActivity.class);
+        intent = UnlockActivity.wrapIntent(this, intent);
+        goToActivity(intent);
     }
 
     @Subscribe(threadMode = ThreadMode.MAIN)
@@ -66,7 +69,7 @@ public class SplashActivity extends AppCompatActivity {
         }
         else if (ImportEvent.EV_COMPLETE == event.eventType) {
             if (progressDialog != null) progressDialog.dismiss();
-            runMain();
+            goToDownloadsActivity();
         }
     }
 
