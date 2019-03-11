@@ -70,18 +70,18 @@
 
             <ImageButton
                 android:id="@+id/btnStats"
-                android:layout_width="@dimen/text_body_1"
-                android:layout_height="@dimen/text_body_1"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
                 android:background="@drawable/btn_content_selector"
                 android:scaleType="fitXY"
-                android:src="@drawable/ic_menu_about"
+                android:src="@drawable/ic_error"
                 tools:ignore="ContentDescription"
                 android:layout_marginEnd="8dp"
                 android:layout_marginRight="8dp"
                 android:layout_marginBottom="6dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:visibility="gone"
+                android:visibility="visible"
                  />
         </android.support.constraint.ConstraintLayout>
     </LinearLayout>
