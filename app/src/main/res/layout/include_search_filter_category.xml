@@ -66,18 +66,6 @@
             android:textIsSelectable="false"
             />
 
-<!--
-        <com.google.android.flexbox.FlexboxLayout
-            android:id="@+id/tag_suggestion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:alignContent="flex_start"
-            app:flexWrap="wrap">
-
-            - programmatically added metadata here -
-
-        </com.google.android.flexbox.FlexboxLayout>
--->
     </com.bskim.maxheightscrollview.widgets.MaxHeightScrollView>
 
 
