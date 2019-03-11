@@ -28,7 +28,7 @@ public class PandaContent {
         result.setSite(Site.PANDA);
         if (coverUrl.isEmpty()) return result;
 
-        if (pages.size() > 0) {
+        if (pages != null && pages.size() > 0) {
             result.setUrl(pages.get(0));
             result.setCoverImageUrl(coverUrl);
             result.setTitle(title);
