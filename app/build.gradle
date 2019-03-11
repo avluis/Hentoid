@@ -19,7 +19,7 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 23
-        versionCode 81
+        versionCode 83
         versionName '1.6.4'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
