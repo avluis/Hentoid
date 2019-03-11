@@ -25,7 +25,7 @@
         android:layout_height="48dp"
         android:background="@color/primary"
         android:gravity="center"
-        android:text="Select a filter"
+        android:text="@string/search_select_a_filter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_toolbar" />
