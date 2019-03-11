@@ -328,8 +328,7 @@ public class ContentDownloadService extends IntentService {
         ContentParser parser = ContentParserFactory.getInstance().getParser(content);
         imgs = parser.parseImageList(content);
 
-        if (imgs.isEmpty())
-            throw new Exception("An empty image list has been found while parsing " + content.getTitle());
+        if (imgs.isEmpty()) throw new Exception("An empty image list has been found while parsing " + content.getGalleryUrl());
 
         // More than 10% difference in number of pages
         if (Math.abs(imgs.size() - content.getQtyPages()) > content.getQtyPages() * 0.1)
