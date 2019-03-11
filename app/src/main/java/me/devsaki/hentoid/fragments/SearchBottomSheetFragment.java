@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Objects;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.adapters.AttributeAdapter;
+import me.devsaki.hentoid.adapters.AvailableAttributeAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
@@ -66,7 +66,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     private SearchView tagSearchView;
     // Container where all proposed attributes are loaded
 //    private RecyclerView attributeMosaic;
-    private AttributeAdapter attributeAdapter;
+    private AvailableAttributeAdapter attributeAdapter;
 
     private boolean clearOnSuccess; // Flag to clear the adapter on content reception
 
@@ -143,7 +143,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 //        layoutManager.setAlignContent(AlignContent.FLEX_START); <-- not possible
         layoutManager.setFlexWrap(FlexWrap.WRAP);
         attributeMosaic.setLayoutManager(layoutManager);
-        attributeAdapter = new AttributeAdapter();
+        attributeAdapter = new AvailableAttributeAdapter();
         attributeAdapter.setOnScrollToEndListener(this::loadMore);
         attributeAdapter.setOnClickListener(this::onAttributeChosen);
         attributeMosaic.setAdapter(attributeAdapter);

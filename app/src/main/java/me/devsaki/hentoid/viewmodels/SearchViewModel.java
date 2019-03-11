@@ -175,7 +175,7 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public void onAttributeSelected(Attribute a) {
-        List<Attribute> selectedAttributesList = requireNonNull(selectedAttributes.getValue());
+        List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
         // Direct impact on selectedAttributes
         selectedAttributesList.add(a);
@@ -195,7 +195,7 @@ public class SearchViewModel extends AndroidViewModel {
     }
 
     public void onAttributeUnselected(Attribute a) {
-        List<Attribute> selectedAttributesList = requireNonNull(selectedAttributes.getValue());
+        List<Attribute> selectedAttributesList = new ArrayList<>(requireNonNull(selectedAttributes.getValue())); // Create new instance to make ListAdapter.submitList happy
 
         // Direct impact on selectedAttributes
         selectedAttributesList.remove(a);

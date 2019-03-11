@@ -30,6 +30,24 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/search_toolbar" />
 
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/search_tags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textIsSelectable="false"
+        android:orientation="horizontal"
+        android:background="@color/primary"
+        android:paddingLeft="8dp"
+        android:paddingStart="8dp"
+        android:paddingBottom="8dp"
+        android:paddingRight="8dp"
+        android:paddingEnd="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/startCaption"
+        android:visibility="gone"
+        >
+    <!--
     <com.google.android.flexbox.FlexboxLayout
         android:id="@+id/search_tags"
         android:layout_width="0dp"
@@ -47,11 +65,11 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/startCaption"
         tools:ignore="RtlSymmetry"
-        android:visibility="gone">
-
+        android:visibility="gone"/>
+-->
         <!-- programmatically added selected metadata here -->
 
-    </com.google.android.flexbox.FlexboxLayout>
+    </android.support.v7.widget.RecyclerView>
 
     <android.support.constraint.Guideline
         android:id="@+id/guidelineMiddle"

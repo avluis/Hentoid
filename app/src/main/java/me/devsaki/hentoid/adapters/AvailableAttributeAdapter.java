@@ -13,7 +13,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.viewholders.AttributeViewHolder;
 
-public class AttributeAdapter extends RecyclerView.Adapter<AttributeViewHolder> {
+public class AvailableAttributeAdapter extends RecyclerView.Adapter<AttributeViewHolder> {
 
     private static final int VISIBLE_THRESHOLD = 5;
 

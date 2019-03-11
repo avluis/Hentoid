@@ -199,6 +199,7 @@ public class Attribute {
 
         if ((externalId != 0 && attribute.externalId != 0) && externalId != attribute.externalId)
             return false;
+        if ((id != 0 && attribute.id != 0) && id != attribute.id) return false;
         if (!name.equals(attribute.name)) return false;
         return type == attribute.type;
     }
