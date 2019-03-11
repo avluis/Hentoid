@@ -41,6 +41,9 @@ public class TsuminoParser extends BaseParser {
     protected List<String> parseImages(Content content) throws Exception {
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (null != doc) {
+            Elements captcha = doc.select(".g-recaptcha");
+            if (captcha != null && !captcha.isEmpty()) throw new UnsupportedOperationException("Captcha found");
+
             Elements contents = doc.select("#image-container");
             if (null != contents) {
                 String dataUrl, dataOpt, dataObj;
@@ -54,10 +57,6 @@ public class TsuminoParser extends BaseParser {
 
                 String request = sendPostRequest(dataUrl, dataOpt);
                 return buildImageUrls(dataObj, request);
-            } else {
-                Elements captcha = doc.select(".g-recaptcha");
-                if (captcha != null && !captcha.isEmpty())
-                    throw new UnsupportedOperationException("Captcha found");
             }
         }
         return Collections.emptyList();
