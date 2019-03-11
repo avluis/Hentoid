@@ -81,7 +81,7 @@
                 android:layout_marginBottom="6dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintBottom_toBottomOf="parent"
-                android:visibility="visible"
+                android:visibility="gone"
                  />
         </android.support.constraint.ConstraintLayout>
     </LinearLayout>
