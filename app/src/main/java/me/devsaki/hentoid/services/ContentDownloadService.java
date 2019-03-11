@@ -469,7 +469,7 @@ public class ContentDownloadService extends IntentService {
         }
 
         byte[] finalBinaryContent = null;
-        if (hasImageProcessing) {
+        if (hasImageProcessing && !img.getName().equals("thumb")) {
             if (img.getDownloadParams() != null && !img.getDownloadParams().isEmpty())
                 finalBinaryContent = processImage(img.getDownloadParams(), binaryContent);
             else throw new InvalidParameterException("No processing parameters found");
