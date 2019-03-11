@@ -86,7 +86,7 @@ public class PrefsActivity extends BaseActivity {
                         .setOnPreferenceChangeListener((preference, newValue) -> onPrefRequiringRestartChanged());
 
                 findPreference(Preferences.Key.PREF_APP_LOCK)
-                        .setOnPreferenceChangeListener((preference, newValue) -> onAppLockPinChanged(newValue));
+                        .setOnPreferenceClickListener(preference -> onAppLockPreferenceClick());
             }
         }
 
@@ -141,13 +141,9 @@ public class PrefsActivity extends BaseActivity {
             return true;
         }
 
-        private boolean onAppLockPinChanged(Object newValue) {
-            String pin = (String) newValue;
-            if (pin.isEmpty()) {
-                ToastUtil.toast(getActivity(), R.string.app_lock_disabled);
-            } else {
-                ToastUtil.toast(getActivity(), R.string.app_lock_enable);
-            }
+        private boolean onAppLockPreferenceClick() {
+            Intent intent = new Intent(requireContext(), PinPreferenceActivity.class);
+            startActivity(intent);
             return true;
         }
     }

@@ -32,8 +32,6 @@ import java.util.Locale;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.activities.AppLockActivity;
-import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -62,16 +60,6 @@ public final class Helper {
     public static void viewQueue(final Context context) {
         Intent intent = new Intent(context, QueueActivity.class);
         context.startActivity(intent);
-    }
-
-    public static void launchMainActivity(Context context) {
-        if (Preferences.getAppLockPin().isEmpty()) {
-            Intent intent = new Intent(context, DownloadsActivity.class);
-            context.startActivity(intent);
-        } else {
-            Intent intent = new Intent(context, AppLockActivity.class);
-            context.startActivity(intent);
-        }
     }
 
     // We have asked for permissions, but still denied.
