@@ -1,21 +1,11 @@
 package me.devsaki.hentoid.activities.websites;
 
-import android.annotation.TargetApi;
-import android.os.Build;
-import android.support.annotation.NonNull;
-import android.webkit.WebResourceRequest;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebView;
-
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.retrofit.HitomiServer;
 import timber.log.Timber;
-
-import static me.devsaki.hentoid.util.Helper.TYPE;
-import static me.devsaki.hentoid.util.Helper.getWebResourceResponseFromAsset;
 
 /**
  * Created by Shiro on 1/20/2016.
@@ -42,7 +32,7 @@ public class HitomiActivity extends BaseWebActivity {
     private class HitomiWebViewClient extends CustomWebViewClient {
 
         HitomiWebViewClient(String filteredUrl, ResultListener<Content> listener) {
-            super(filteredUrl,  listener);
+            super(filteredUrl, listener);
             addContentBlockFilter(blockedContent);
         }
 
@@ -57,32 +47,6 @@ public class HitomiActivity extends BaseWebActivity {
                                 listener.onResultFailed("");
                             })
             );
-        }
-
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull String url) {
-            if (url.contains("hitomi.js")) {
-                return getWebResourceResponseFromAsset(getStartSite(), "hitomi.js", TYPE.JS);
-            } else if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                return super.shouldInterceptRequest(view, url);
-            }
-        }
-
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull WebResourceRequest request) {
-            String url = request.getUrl().toString();
-            if (url.contains("hitomi.js")) {
-                return getWebResourceResponseFromAsset(getStartSite(), "hitomi.js", TYPE.JS);
-            } else if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                return super.shouldInterceptRequest(view, request);
-            }
         }
     }
 }

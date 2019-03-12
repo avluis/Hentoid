@@ -9,12 +9,10 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.services.DatabaseMigrationService;
-import me.devsaki.hentoid.util.AssetsCache;
 import me.devsaki.hentoid.util.Preferences;
 
 /**
@@ -30,8 +28,6 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        AssetsCache.init(HentoidApp.getAppContext());
 
         if (Preferences.isFirstRun()) {
             goToActivity(new Intent(this, IntroActivity.class));
@@ -66,8 +62,7 @@ public class SplashActivity extends AppCompatActivity {
         if (ImportEvent.EV_PROGRESS == event.eventType) {
             progressDialog.setMax(event.booksTotal);
             progressDialog.setProgress(event.booksOK + event.booksKO);
-        }
-        else if (ImportEvent.EV_COMPLETE == event.eventType) {
+        } else if (ImportEvent.EV_COMPLETE == event.eventType) {
             if (progressDialog != null) progressDialog.dismiss();
             goToDownloadsActivity();
         }
