@@ -146,7 +146,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
     private void attachSeries(ViewHolder holder, Content content) {
         String templateSeries = context.getString(R.string.work_series);
         StringBuilder series = new StringBuilder();
-        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
+        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIES);
         if (seriesAttributes == null) {
             holder.tvSeries.setVisibility(View.GONE);
         } else {

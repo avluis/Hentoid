@@ -7,7 +7,6 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
@@ -55,7 +54,7 @@ public class ASMHentaiContent {
 
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.ASMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.ASMHENTAI);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.ASMHENTAI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIES, series, true, Site.ASMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.ASMHENTAI);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.ASMHENTAI);
 

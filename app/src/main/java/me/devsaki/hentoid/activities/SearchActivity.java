@@ -106,7 +106,7 @@ public class SearchActivity extends BaseActivity {
         // Category buttons
         TextView anyCategoryText = findViewById(R.id.textCategoryAny);
         anyCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.TAG, AttributeType.ARTIST,
-                AttributeType.CIRCLE, AttributeType.SERIE, AttributeType.CHARACTER, AttributeType.LANGUAGE)); // Everything but source !
+                AttributeType.CIRCLE, AttributeType.SERIES, AttributeType.CHARACTER, AttributeType.LANGUAGE)); // Everything but source !
         anyCategoryText.setEnabled(MODE_LIBRARY == mode); // Unsupported by Mikan
 
         tagCategoryText = findViewById(R.id.textCategoryTag);
@@ -116,7 +116,7 @@ public class SearchActivity extends BaseActivity {
         artistCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.ARTIST, AttributeType.CIRCLE));
 
         seriesCategoryText = findViewById(R.id.textCategorySeries);
-        seriesCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.SERIE));
+        seriesCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.SERIES));
 
         characterCategoryText = findViewById(R.id.textCategoryCharacter);
         characterCategoryText.setOnClickListener(v -> onAttrButtonClick(AttributeType.CHARACTER));
@@ -153,7 +153,7 @@ public class SearchActivity extends BaseActivity {
     private void onQueryUpdated(SparseIntArray attrCount) {
         updateCategoryButton(tagCategoryText, attrCount, AttributeType.TAG);
         updateCategoryButton(artistCategoryText, attrCount, AttributeType.ARTIST, AttributeType.CIRCLE);
-        updateCategoryButton(seriesCategoryText, attrCount, AttributeType.SERIE);
+        updateCategoryButton(seriesCategoryText, attrCount, AttributeType.SERIES);
         updateCategoryButton(characterCategoryText, attrCount, AttributeType.CHARACTER);
         updateCategoryButton(languageCategoryText, attrCount, AttributeType.LANGUAGE);
         if (MODE_LIBRARY == mode)

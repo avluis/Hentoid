@@ -8,7 +8,6 @@ import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
@@ -37,7 +36,7 @@ public class PandaContent {
             result.setQtyPages(qtyPages);
 
             AttributeMap attributes = new AttributeMap();
-            Attribute attribute = new Attribute(AttributeType.SERIE, series.text().substring(0, series.text().toLowerCase().lastIndexOf("manga") - 1), series.attr("href"), Site.PANDA);
+            Attribute attribute = new Attribute(AttributeType.SERIES, series.text().substring(0, series.text().toLowerCase().lastIndexOf("manga") - 1), series.attr("href"), Site.PANDA);
             attributes.add(attribute);
             result.addAttributes(attributes);
         }

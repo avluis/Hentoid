@@ -221,7 +221,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void attachSeries(ContentHolder holder, Content content) {
         String templateSeries = context.getResources().getString(R.string.work_series);
         StringBuilder seriesBuilder = new StringBuilder();
-        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIE);
+        List<Attribute> seriesAttributes = content.getAttributeMap().get(AttributeType.SERIES);
         if (seriesAttributes == null) {
             holder.tvSeries.setVisibility(View.GONE);
         } else {

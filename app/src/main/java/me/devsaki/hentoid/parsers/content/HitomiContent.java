@@ -7,7 +7,6 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
@@ -52,7 +51,7 @@ public class HitomiContent {
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.HITOMI);
         ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.HITOMI);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.HITOMI);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.HITOMI);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIES, series, true, Site.HITOMI);
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.HITOMI);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.HITOMI);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.HITOMI);
