@@ -30,7 +30,7 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.ViewHolder> {
     @Override
     public DirAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View root = LayoutInflater.from(
-                parent.getContext()).inflate(R.layout.item_dir_picker, parent, false);
+                parent.getContext()).inflate(R.layout.item_picker, parent, false);
         return new ViewHolder(root);
     }
 
@@ -51,7 +51,7 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.ViewHolder> {
         ViewHolder(View root) {
             super(root);
 
-            textView = root.findViewById(R.id.dir_name);
+            textView = root.findViewById(R.id.picker_item_name);
             textView.setOnClickListener(this::onClick);
         }
 

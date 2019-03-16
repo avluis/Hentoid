@@ -1131,7 +1131,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (Helper.isNumeric(query)) // User searches a book ID
         {
-            SearchBookIdDialogFragment.invoke(requireActivity().getSupportFragmentManager(), query);
+            // List sites of book ID
+            List<Integer> foundSideCodes = new ArrayList<>();
+            for (Content c : results)
+                if (!foundSideCodes.contains(c.getSite().getCode()))
+                    foundSideCodes.add(c.getSite().getCode());
+
+            SearchBookIdDialogFragment.invoke(requireActivity().getSupportFragmentManager(), query, foundSideCodes);
         }
 
         if (0 == totalSelectedContent) {

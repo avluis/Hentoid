@@ -17,27 +17,15 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/select_sites"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="20dp"
+        android:textIsSelectable="false"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/search_bookid_title">
+        app:layout_constraintTop_toBottomOf="@id/search_bookid_title"
+        android:fadeScrollbars="false"
+        android:scrollbars="vertical"/>
 
-        <Spinner
-            android:id="@+id/search_bookid_spinner"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <Button
-            android:id="@+id/search_bookid_searchbtn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginLeft="16dp"
-            android:background="@color/accent"
-            android:text="@string/search_bookid_action_search"
-            android:textColor="@color/white" />
-    </LinearLayout>
 </android.support.constraint.ConstraintLayout>
