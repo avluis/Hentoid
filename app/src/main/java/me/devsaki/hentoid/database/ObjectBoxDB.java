@@ -166,9 +166,9 @@ public class ObjectBoxDB {
         Box<Attribute> attributeBox = store.boxFor(Attribute.class);
         Box<AttributeLocation> locationBox = store.boxFor(AttributeLocation.class);
         Box<Content> contentBox = store.boxFor(Content.class);
-        List<Content> contents = contentBox.get(contentId);
 
-        for (Content c : contents) {
+        for (long id : contentId) {
+            Content c = contentBox.get(id);
             store.runInTx(() -> {
                 for (ImageFile i : c.getImageFiles()) imageFileBox.remove(i);   // Delete imageFiles
                 c.getImageFiles().clear();                                      // Clear links to all imageFiles
