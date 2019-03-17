@@ -267,10 +267,9 @@ public class ImportService extends IntentService {
         }
     }
 
-    @Nullable
     @CheckResult
     @SuppressWarnings("deprecation")
-    private static Content importJsonLegacy(File json) {
+    private static Content importJsonLegacy(File json) throws JSONParseException {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
@@ -319,13 +318,12 @@ public class ImportService extends IntentService {
             return contentV2;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (old) file");
+            throw new JSONParseException("Error reading JSON (old) file : " + e.getMessage());
         }
-        return null;
     }
 
-    @Nullable
     @CheckResult
-    private static Content importJsonV1(File json) {
+    private static Content importJsonV1(File json) throws JSONParseException {
         try {
             //noinspection deprecation
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
@@ -346,11 +344,10 @@ public class ImportService extends IntentService {
             return contentV2;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v1) file");
+            throw new JSONParseException("Error reading JSON (v1) file : " + e.getMessage());
         }
-        return null;
     }
 
-    @Nullable
     @CheckResult
     private static Content importJsonV2(File json) throws JSONParseException {
         try {
@@ -368,8 +365,7 @@ public class ImportService extends IntentService {
             return content;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v2) file");
-
+            throw new JSONParseException("Error reading JSON (v2) file : " + e.getMessage());
         }
-        return null;
     }
 }
