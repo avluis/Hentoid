@@ -70,7 +70,7 @@ public class EHentaiGalleryMetadata {
                 name = tagParts[1];
                 switch (tagParts[0]) {
                     case "parody":
-                        type = AttributeType.SERIES;
+                        type = AttributeType.SERIE;
                         break;
                     case "character":
                         type = AttributeType.CHARACTER;

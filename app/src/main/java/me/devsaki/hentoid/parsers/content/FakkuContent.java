@@ -66,7 +66,7 @@ public class FakkuContent {
 
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.FAKKU2);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.FAKKU2);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIES, series, true, Site.FAKKU2);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.FAKKU2);
 
         result.addAttributes(attributes);
 
