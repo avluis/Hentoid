@@ -101,7 +101,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
                 return "languages";
             case CIRCLE:
                 return "groups";
-            case SERIES:
+            case SERIE:
                 return "series";
             default:
                 throw new UnsupportedOperationException("Master data endpoint for " + attr.name() + "does not exist");

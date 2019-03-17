@@ -59,7 +59,7 @@ public class MikanContent implements Serializable {
         for (MikanAttribute a : group)
             attributes.add(new Attribute(AttributeType.CIRCLE, a.name, a.url, Site.HITOMI));
         for (MikanAttribute a : series)
-            attributes.add(new Attribute(AttributeType.SERIES, a.name, a.url, Site.HITOMI));
+            attributes.add(new Attribute(AttributeType.SERIE, a.name, a.url, Site.HITOMI));
         for (MikanAttribute a : characters)
             attributes.add(new Attribute(AttributeType.CHARACTER, a.name, a.url, Site.HITOMI));
         for (MikanAttribute a : tags)

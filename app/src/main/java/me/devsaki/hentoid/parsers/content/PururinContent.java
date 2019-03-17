@@ -64,7 +64,7 @@ public class PururinContent {
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.PURURIN);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIES, series, true, Site.PURURIN);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, languages, true, Site.PURURIN);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.PURURIN);

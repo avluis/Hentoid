@@ -280,7 +280,7 @@ public class ImportService extends IntentService {
             content.setHtmlDescription(doujinBuilder.getDescription());
             content.setTitle(doujinBuilder.getTitle());
             content.setSeries(from(doujinBuilder.getSeries(),
-                    AttributeType.SERIES, content.getSite()));
+                    AttributeType.SERIE, content.getSite()));
             Attribute artist = from(doujinBuilder.getArtist(),
                     AttributeType.ARTIST, content.getSite());
             List<Attribute> artists = null;

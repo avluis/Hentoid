@@ -51,7 +51,7 @@ public class TsuminoContent {
         ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, artists, true, Site.TSUMINO);
         ParseHelper.parseAttributes(attributes, AttributeType.CIRCLE, circles, true, Site.TSUMINO);
         ParseHelper.parseAttributes(attributes, AttributeType.TAG, tags, true, Site.TSUMINO);
-        ParseHelper.parseAttributes(attributes, AttributeType.SERIES, series, true, Site.TSUMINO);
+        ParseHelper.parseAttributes(attributes, AttributeType.SERIE, series, true, Site.TSUMINO);
         ParseHelper.parseAttributes(attributes, AttributeType.CHARACTER, characters, true, Site.TSUMINO);
         ParseHelper.parseAttributes(attributes, AttributeType.CATEGORY, categories, true, Site.TSUMINO);
         result.addAttributes(attributes);
