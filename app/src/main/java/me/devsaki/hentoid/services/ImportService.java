@@ -29,7 +29,7 @@ import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
-import me.devsaki.hentoid.util.AttributeException;
+import me.devsaki.hentoid.util.JSONParseException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -218,7 +218,7 @@ public class ImportService extends IntentService {
 
 
     @Nullable
-    private static Content importJson(File folder) {
+    private static Content importJson(File folder) throws JSONParseException {
         File json = new File(folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
         if (json.exists()) return importJsonV2(json);
 
@@ -257,7 +257,7 @@ public class ImportService extends IntentService {
         }
         try {
             if (urlBuilder.getDescription() == null) {
-                throw new AttributeException("Problems loading attribute v2.");
+                throw new JSONParseException("Problems loading attribute v2.");
             }
 
             return new Attribute(type, urlBuilder.getDescription(), urlBuilder.getId(), site);
@@ -352,7 +352,7 @@ public class ImportService extends IntentService {
 
     @Nullable
     @CheckResult
-    private static Content importJsonV2(File json) {
+    private static Content importJsonV2(File json) throws JSONParseException {
         try {
             Content content = JsonHelper.jsonToObject(json, Content.class);
             content.postJSONImport();
@@ -368,6 +368,7 @@ public class ImportService extends IntentService {
             return content;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v2) file");
+
         }
         return null;
     }
