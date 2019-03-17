@@ -164,7 +164,7 @@ public class SearchActivity extends BaseActivity {
         int count = 0;
         for (AttributeType type : types) count += attrCount.get(type.getCode(), 0);
 
-        button.setText(format("%s (%s)", Helper.capitalizeString(types[0].name()), count));
+        button.setText(format("%s (%s)", Helper.capitalizeString(types[0].getDisplayName()), count));
         button.setEnabled(count > 0);
     }
 
