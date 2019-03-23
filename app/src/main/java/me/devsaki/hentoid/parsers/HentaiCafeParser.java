@@ -30,7 +30,7 @@ public class HentaiCafeParser extends BaseParser {
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
-        Document doc = getOnlineDocument(content.getReaderUrl());
+        Document doc = getOnlineDocument(content.getGalleryUrl());
         if (doc != null) {
             Elements links = doc.select("a.x-btn");
 
@@ -46,12 +46,25 @@ public class HentaiCafeParser extends BaseParser {
                 for (int i = 0; i < links.size(); i++) {
 
                     String url = links.get(i).attr("href");
+                    if (url.equals("#")) { // Some pages are like this (e.g. 2606) -> reconstitute the reader URL manually
+                        // Get the canonical link
+                        Elements canonicalLink = doc.select("head [rel=canonical]");
+                        if (canonicalLink != null) {
+                            // Remove artist name
+                            String artist = content.getAuthor().replace(" ","-").toLowerCase()+"-";
+                            String canonicalUrl = canonicalLink.get(0).attr("href").replace(artist,"");
+                            // Get the last part
+                            String[] parts = canonicalUrl.split("/");
+                            String canonicalName = parts[parts.length - 1].replace("-","_");
+                            url = content.getReaderUrl().replace("$1", canonicalName); // $1 has to be replaced by the textual unique site ID without the author name
+                        }
+                    }
 
                     if (URLUtil.isValidUrl(url)) {
-                        Timber.d("Chapter Links: %s", links.get(i).attr("href"));
+                        Timber.d("Chapter Links: %s", url);
                         try {
 //                            doc = Jsoup.connect(links.get(i).attr("href")).timeout(TIMEOUT).get();
-                            doc = getOnlineDocument(links.get(i).attr("href"));
+                            doc = getOnlineDocument(url);
                             if (doc != null) {
                                 contents = doc.select("article#content");
                                 js = contents.select("script").last();
