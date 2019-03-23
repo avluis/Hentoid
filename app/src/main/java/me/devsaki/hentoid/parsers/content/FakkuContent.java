@@ -56,7 +56,7 @@ public class FakkuContent {
         for (Element e : information) {
             elementName = e.child(0).text().trim().toLowerCase();
             if (elementName.equals("language")) {
-                ParseHelper.parseAttributes(attributes, AttributeType.ARTIST, e.child(1).children(), true, Site.FAKKU2); // Language elements are A links
+                ParseHelper.parseAttributes(attributes, AttributeType.LANGUAGE, e.child(1).children(), true, Site.FAKKU2); // Language elements are A links
             }
             if (elementName.equals("pages")) {
                 qtyPages = Integer.parseInt(e.child(1).text().toLowerCase().replace("pages", "").replace("page", "").trim());
