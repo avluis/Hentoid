@@ -511,6 +511,8 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void importFolder(File folder) {
+        // TODO - if .Hentoid or Hentoid folder found, ask user if he wants to use that one (#267)
+
         if (!FileHelper.checkAndSetRootFolder(folder.getAbsolutePath(), true)) {
             prepImport(null);
             return;
