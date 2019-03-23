@@ -259,9 +259,17 @@ public class ContentDownloadService extends IntentService {
             File dir = FileHelper.createContentDownloadDir(this, content);
             List<ImageFile> images = content.getImageFiles();
 
+            boolean hasError = false;
+            // Less pages than initially detected - More than 10% difference in number of pages
+            if (images.size() < content.getQtyPages() && Math.abs(images.size() - content.getQtyPages()) > content.getQtyPages() * 0.1) {
+                String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", images.size(), content.getQtyPages());
+                logErrorRecord(content.getId(), ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
+                hasError = true;
+            }
+
             // Mark content as downloaded
             content.setDownloadDate(new Date().getTime());
-            content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+            content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
             // Clear download params from content and images
             content.setDownloadParams("");
 
@@ -329,10 +337,6 @@ public class ContentDownloadService extends IntentService {
         imgs = parser.parseImageList(content);
 
         if (imgs.isEmpty()) throw new Exception("An empty image list has been found while parsing " + content.getGalleryUrl());
-
-        // More than 10% difference in number of pages
-        if (Math.abs(imgs.size() - content.getQtyPages()) > content.getQtyPages() * 0.1)
-            throw new Exception(String.format("The number of images found (%s) does not match the book's number of pages (%s)", imgs.size(), content.getQtyPages()));
 
         for (ImageFile img : imgs) img.setStatus(StatusContent.SAVED);
         return imgs;
