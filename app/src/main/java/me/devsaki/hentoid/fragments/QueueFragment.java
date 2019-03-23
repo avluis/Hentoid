@@ -140,7 +140,7 @@ public class QueueFragment extends BaseFragment {
             case DownloadEvent.EV_COMPLETE:
                 mAdapter.removeFromQueue(event.content);
                 if (0 == mAdapter.getCount()) btnStats.setVisibility(View.GONE);
-            default: // EV_PAUSE, EV_CANCEL events
+            default: // EV_PAUSE, EV_CANCEL events + EV_COMPLETE that doesn't have a break
                 update(event.eventType);
         }
     }

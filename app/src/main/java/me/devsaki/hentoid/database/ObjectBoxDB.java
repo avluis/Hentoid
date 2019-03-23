@@ -170,11 +170,17 @@ public class ObjectBoxDB {
         for (long id : contentId) {
             Content c = contentBox.get(id);
             store.runInTx(() -> {
-                for (ImageFile i : c.getImageFiles()) imageFileBox.remove(i);   // Delete imageFiles
-                c.getImageFiles().clear();                                      // Clear links to all imageFiles
+                if (c.getImageFiles() != null) {
+                    for (ImageFile i : c.getImageFiles())
+                        imageFileBox.remove(i);   // Delete imageFiles
+                    c.getImageFiles().clear();                                      // Clear links to all imageFiles
+                }
 
-                for (ErrorRecord e : c.getErrorLog()) errorBox.remove(e);   // Delete error records
-                c.getErrorLog().clear();                                    // Clear links to all errorRecords
+                if (c.getErrorLog() != null) {
+                    for (ErrorRecord e : c.getErrorLog())
+                        errorBox.remove(e);   // Delete error records
+                    c.getErrorLog().clear();                                    // Clear links to all errorRecords
+                }
 
                 // Delete attribute when current content is the only content left on the attribute
                 for (Attribute a : c.getAttributes())
@@ -228,6 +234,10 @@ public class ObjectBoxDB {
 
     public void deleteQueue(Content content) {
         deleteQueue(content.getId());
+    }
+
+    public void deleteQueue(int queueIndex) {
+        store.boxFor(QueueRecord.class).remove(selectQueue().get(queueIndex).id);
     }
 
     private void deleteQueue(long contentId) {
