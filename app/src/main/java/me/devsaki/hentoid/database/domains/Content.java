@@ -336,7 +336,10 @@ public class Content implements Serializable {
             this.attributes.clear();
             for (AttributeType type : this.attributeMap.keySet()) {
                 for (Attribute attr : this.attributeMap.get(type))
+                {
+                    if (null == attr.getType()) attr.setType(AttributeType.SERIE); // Fix the issue with v1.6.5
                     this.attributes.add(attr.computeLocation(site));
+                }
             }
         }
         if (this.imageList != null) {
