@@ -132,18 +132,27 @@ public class ContentDownloadService extends IntentService {
 
         Content content = queue.get(0).content.getTarget();
 
-        if (null == content || StatusContent.DOWNLOADED == content.getStatus()) {
-            Timber.w("Content is unavailable, or already downloaded. Aborting download.");
+        if (null == content) {
+            Timber.w("Content is unavailable. Aborting download.");
+            db.deleteQueue(0);
+            content = new Content().setId(queue.get(0).content.getTargetId()); // Must supply content ID to the event for the UI to update properly
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
             return null;
         }
 
-        content.setStatus(StatusContent.DOWNLOADING);
-        content.getErrorLog().clear();
-        db.insertContent(content);
+        if (StatusContent.DOWNLOADED == content.getStatus()) {
+            Timber.w("Content is already downloaded. Aborting download.");
+            db.deleteQueue(0);
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
+            return null;
+        }
 
+        db.deleteErrorRecords(content.getId());
+
+        boolean hasError = false;
         // Check if images are already known
         List<ImageFile> images = content.getImageFiles();
-        if (images.isEmpty()) {
+        if (null == images || images.isEmpty()) {
             try {
                 images = fetchImageURLs(content);
                 content.addImageFiles(images);
@@ -151,16 +160,21 @@ public class ContentDownloadService extends IntentService {
             } catch (UnsupportedOperationException u) {
                 Timber.w(u, "A captcha has been found while parsing %s. Aborting download.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.CAPTCHA, content.getUrl(), "Image list", u.getMessage());
-                content.setStatus(StatusContent.ERROR);
-                db.insertContent(content);
-                return null;
+                hasError = true;
             } catch (Exception e) {
                 Timber.w(e, "An exception has occurred while parsing %s. Aborting download.", content.getTitle());
                 logErrorRecord(content.getId(), ErrorType.PARSING, content.getUrl(), "Image list", e.getMessage());
-                content.setStatus(StatusContent.ERROR);
-                db.insertContent(content);
-                return null;
+                hasError = true;
             }
+        }
+
+        if (hasError) {
+            content.setStatus(StatusContent.ERROR);
+            db.insertContent(content);
+            db.deleteQueue(content);
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, 0, 0, 0));
+            HentoidApp.trackDownloadEvent("Error");
+            return null;
         }
 
         File dir = FileHelper.createContentDownloadDir(this, content);
@@ -174,6 +188,7 @@ public class ContentDownloadService extends IntentService {
 
         String fileRoot = Preferences.getRootFolderName();
         content.setStorageFolder(dir.getAbsolutePath().substring(fileRoot.length()));
+        content.setStatus(StatusContent.DOWNLOADING);
         db.insertContent(content);
 
 
@@ -223,7 +238,7 @@ public class ContentDownloadService extends IntentService {
             pagesKO = statuses.get(StatusContent.ERROR.getCode());
 
             String title = content.getTitle();
-            int totalPages = images.size();
+            int totalPages = (null == images) ? 0 : images.size();
             int progress = pagesOK + pagesKO;
             isDone = progress == totalPages;
             Timber.d("Progress: OK:%s KO:%s Total:%s", pagesOK, pagesKO, totalPages);
@@ -258,10 +273,19 @@ public class ContentDownloadService extends IntentService {
         if (!downloadCanceled && !downloadSkipped) {
             File dir = FileHelper.createContentDownloadDir(this, content);
             List<ImageFile> images = content.getImageFiles();
+            int nbImages = (null == images) ? 0 : images.size();
+
+            boolean hasError = false;
+            // Less pages than initially detected - More than 10% difference in number of pages
+            if (nbImages < content.getQtyPages() && Math.abs(nbImages - content.getQtyPages()) > content.getQtyPages() * 0.1) {
+                String errorMsg = String.format("The number of images found (%s) does not match the book's number of pages (%s)", nbImages, content.getQtyPages());
+                logErrorRecord(content.getId(), ErrorType.PARSING, content.getGalleryUrl(), "pages", errorMsg);
+                hasError = true;
+            }
 
             // Mark content as downloaded
             content.setDownloadDate(new Date().getTime());
-            content.setStatus((0 == pagesKO) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
+            content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
             // Clear download params from content and images
             content.setDownloadParams("");
 
@@ -301,7 +325,7 @@ public class ContentDownloadService extends IntentService {
 
             // Signals current download as completed
             Timber.d("CompleteActivity : OK = %s; KO = %s", pagesOK, pagesKO);
-            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, images.size()));
+            EventBus.getDefault().post(new DownloadEvent(content, DownloadEvent.EV_COMPLETE, pagesOK, pagesKO, nbImages));
 
             // Tracking Event (Download Completed)
             HentoidApp.trackDownloadEvent("Completed");
@@ -328,11 +352,8 @@ public class ContentDownloadService extends IntentService {
         ContentParser parser = ContentParserFactory.getInstance().getParser(content);
         imgs = parser.parseImageList(content);
 
-        if (imgs.isEmpty()) throw new Exception("An empty image list has been found while parsing " + content.getGalleryUrl());
-
-        // More than 10% difference in number of pages
-        if (Math.abs(imgs.size() - content.getQtyPages()) > content.getQtyPages() * 0.1)
-            throw new Exception(String.format("The number of images found (%s) does not match the book's number of pages (%s)", imgs.size(), content.getQtyPages()));
+        if (imgs.isEmpty())
+            throw new Exception("An empty image list has been found while parsing " + content.getGalleryUrl());
 
         for (ImageFile img : imgs) img.setStatus(StatusContent.SAVED);
         return imgs;
@@ -500,7 +521,8 @@ public class ContentDownloadService extends IntentService {
     private void updateImageStatus(ImageFile img, boolean success) {
         img.setStatus(success ? StatusContent.DOWNLOADED : StatusContent.ERROR);
         if (success) img.setDownloadParams("");
-        if (img.getId() > 0) db.updateImageFileStatusAndParams(img); // because thumb image isn't in the DB
+        if (img.getId() > 0)
+            db.updateImageFileStatusAndParams(img); // because thumb image isn't in the DB
     }
 
     /**

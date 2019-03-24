@@ -37,7 +37,7 @@ public class ContentQueueManager {
 
 
     // QUEUE ACTIVITY CONTROL
-    public void pauseQueue() {
+    void pauseQueue() {
         isQueuePaused = true;
     }
     public void unpauseQueue() {
@@ -66,7 +66,7 @@ public class ContentQueueManager {
     /**
      * Signals a new completed download
      */
-    public void downloadComplete() {
+    void downloadComplete() {
         downloadCount++;
     }
 }

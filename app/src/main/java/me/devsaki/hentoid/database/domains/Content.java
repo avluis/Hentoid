@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import android.support.annotation.Nullable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -292,10 +294,11 @@ public class Content implements Serializable {
             case ASMHENTAI_COMICS:
                 return site.getUrl() + "/gallery" + url;
             case EHENTAI:               // Won't work anyway because of the temporary key
-            case HENTAICAFE:
             case NHENTAI:
             case PANDA:
                 return getGalleryUrl();
+            case HENTAICAFE:
+                return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
             case PURURIN:
                 return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
             case FAKKU2:
@@ -409,6 +412,7 @@ public class Content implements Serializable {
         return this;
     }
 
+    @Nullable
     public ToMany<ImageFile> getImageFiles() {
         return imageFiles;
     }
@@ -421,6 +425,7 @@ public class Content implements Serializable {
         return this;
     }
 
+    @Nullable
     public ToMany<ErrorRecord> getErrorLog() {
         return errorLog;
     }

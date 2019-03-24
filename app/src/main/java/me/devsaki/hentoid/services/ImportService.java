@@ -11,7 +11,6 @@ import android.util.Log;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -29,9 +28,9 @@ import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
-import me.devsaki.hentoid.util.AttributeException;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.JSONParseException;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.Preferences;
@@ -218,7 +217,7 @@ public class ImportService extends IntentService {
 
 
     @Nullable
-    private static Content importJson(File folder) {
+    private static Content importJson(File folder) throws JSONParseException {
         File json = new File(folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
         if (json.exists()) return importJsonV2(json);
 
@@ -257,7 +256,7 @@ public class ImportService extends IntentService {
         }
         try {
             if (urlBuilder.getDescription() == null) {
-                throw new AttributeException("Problems loading attribute v2.");
+                throw new JSONParseException("Problems loading attribute v2.");
             }
 
             return new Attribute(type, urlBuilder.getDescription(), urlBuilder.getId(), site);
@@ -267,10 +266,9 @@ public class ImportService extends IntentService {
         }
     }
 
-    @Nullable
     @CheckResult
     @SuppressWarnings("deprecation")
-    private static Content importJsonLegacy(File json) {
+    private static Content importJsonLegacy(File json) throws JSONParseException {
         try {
             DoujinBuilder doujinBuilder =
                     JsonHelper.jsonToObject(json, DoujinBuilder.class);
@@ -309,23 +307,18 @@ public class ImportService extends IntentService {
 
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
-            try {
-                JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
-            } catch (IOException e) {
-                Timber.e(e,
-                        "Error converting JSON (old) to JSON (v2): %s", content.getTitle());
-            }
+
+            JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
 
             return contentV2;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (old) file");
+            throw new JSONParseException("Error reading JSON (old) file : " + e.getMessage());
         }
-        return null;
     }
 
-    @Nullable
     @CheckResult
-    private static Content importJsonV1(File json) {
+    private static Content importJsonV1(File json) throws JSONParseException {
         try {
             //noinspection deprecation
             ContentV1 content = JsonHelper.jsonToObject(json, ContentV1.class);
@@ -337,22 +330,18 @@ public class ImportService extends IntentService {
 
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
-            try {
-                JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
-            } catch (IOException e) {
-                Timber.e(e, "Error converting JSON (v1) to JSON (v2): %s", content.getTitle());
-            }
+
+            JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
 
             return contentV2;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v1) file");
+            throw new JSONParseException("Error reading JSON (v1) file : " + e.getMessage());
         }
-        return null;
     }
 
-    @Nullable
     @CheckResult
-    private static Content importJsonV2(File json) {
+    private static Content importJsonV2(File json) throws JSONParseException {
         try {
             Content content = JsonHelper.jsonToObject(json, Content.class);
             content.postJSONImport();
@@ -368,7 +357,7 @@ public class ImportService extends IntentService {
             return content;
         } catch (Exception e) {
             Timber.e(e, "Error reading JSON (v2) file");
+            throw new JSONParseException("Error reading JSON (v2) file : " + e.getMessage());
         }
-        return null;
     }
 }

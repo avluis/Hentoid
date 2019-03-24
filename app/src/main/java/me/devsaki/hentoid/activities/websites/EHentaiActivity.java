@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.activities.websites;
 
+import android.webkit.CookieManager;
+
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -24,6 +26,7 @@ public class EHentaiActivity extends BaseWebActivity {
     @Override
     protected CustomWebViewClient getWebClient() {
         CustomWebViewClient client = new EHentaiWebClient(GALLERY_FILTER, this);
+        CookieManager.getInstance().setCookie(Site.EHENTAI.getUrl(), "sl=dm_2");
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
