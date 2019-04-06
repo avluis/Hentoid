@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
+apply plugin: 'org.sonarqube'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
@@ -160,6 +161,17 @@ dependencies {
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.3.1"
         releaseImplementation "io.objectbox:objectbox-android:2.3.1"
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "RobbWatershed_hentoid-sonar"
+        property "sonar.organization", "robbwatershed-github"
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.language", "java"
+        property "sonar.sources", "src/main/"
+        property "sonar.login", "3d0dc80792bad95f0193e7ed626cf090ac83e208"
     }
 }
 
