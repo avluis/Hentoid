@@ -20,8 +20,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 23
-        versionCode 87
-        versionName '1.6.7'
+        versionCode 88
+        versionName '1.6.8'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
