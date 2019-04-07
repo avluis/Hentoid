@@ -188,7 +188,7 @@ public class ImportService extends IntentService {
                 else booksOK++;
             } catch (Exception e) {
                 if (null == content)
-                    content = new Content().setTitle("none").setUrl("").setSite(Site.NONE);
+                    content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
                 trace(Log.ERROR, log, "Import book ERROR : %s %s", e.getMessage(), folder.getAbsolutePath());
             }

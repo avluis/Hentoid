@@ -1,5 +1,6 @@
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
+apply plugin: 'org.sonarqube'
 
 // apply signing configuration if config file exists
 if (file('signing.gradle').exists()) {
@@ -19,8 +20,8 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 23
-        versionCode 87
-        versionName '1.6.7'
+        versionCode 88
+        versionName '1.6.8'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
@@ -160,6 +161,17 @@ dependencies {
     if (includeObjectBoxBrowser.toBoolean()) {
         debugImplementation "io.objectbox:objectbox-android-objectbrowser:2.3.1"
         releaseImplementation "io.objectbox:objectbox-android:2.3.1"
+    }
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectKey", "RobbWatershed_hentoid-sonar"
+        property "sonar.organization", "robbwatershed-github"
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.language", "java"
+        property "sonar.sources", "src/main/"
+        property "sonar.login", "3d0dc80792bad95f0193e7ed626cf090ac83e208"
     }
 }
 

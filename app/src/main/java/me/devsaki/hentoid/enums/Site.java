@@ -14,7 +14,7 @@ public enum Site {
     // TODO : https://hentai2read.com/,
     FAKKU(0, "Fakku", "https://www.fakku.net", "fakku", R.drawable.ic_menu_fakku, true, true, false), // Legacy support for old fakku archives
     PURURIN(1, "Pururin", "https://pururin.io", "pururin", R.drawable.ic_menu_pururin, true, true, false),
-    HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi, true, true, false),
+    HITOMI(2, "hitomi", "https://hitomi.la", "hitomi", R.drawable.ic_menu_hitomi, true, false, false),
     NHENTAI(3, "nhentai", "https://nhentai.net", "nhentai", R.drawable.ic_menu_nhentai, true, true, false),
     TSUMINO(4, "tsumino", "https://www.tsumino.com", "tsumino", R.drawable.ic_menu_tsumino, true, true, false),
     HENTAICAFE(5, "hentaicafe", "https://hentai.cafe", "hentai.cafe", R.drawable.ic_menu_hentaicafe, true, true, false),
@@ -22,7 +22,7 @@ public enum Site {
     ASMHENTAI_COMICS(7, "asmhentai comics", "https://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, true, true, false),
     EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, true, true, false),
     FAKKU2(9, "Fakku", "https://www.fakku.net", "fakku2", R.drawable.ic_menu_fakku, true, false, true),
-    NONE(98, "none", "", "none", R.drawable.ic_menu_about, true, true, false),
+    NONE(98, "none", "", "none", R.drawable.ic_menu_about, true, true, false), // Fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true, true, false); // Safe-for-work/wife/gf option
 
 
