@@ -238,7 +238,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         webSettings.setBuiltInZoomControls(true);
         webSettings.setDisplayZoomControls(false);
 
-        webSettings.setUserAgentString(Consts.USER_AGENT);
+        webSettings.setUserAgentString(Consts.USER_AGENT_NEUTRAL);
 
         webSettings.setDomStorageEnabled(true);
         webSettings.setUseWideViewPort(true);
