@@ -51,7 +51,7 @@ public class OkHttpClientSingleton {
     private static okhttp3.Response onIntercept(Interceptor.Chain chain) throws IOException {
         Request request = chain.request()
                 .newBuilder()
-                .header("User-Agent", Consts.USER_AGENT)
+                .header("User-Agent", Consts.USER_AGENT_NEUTRAL)
                 .build();
         return chain.proceed(request);
     }
