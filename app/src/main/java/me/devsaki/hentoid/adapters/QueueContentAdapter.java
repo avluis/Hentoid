@@ -98,8 +98,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
-
-        holder.ivSource.setImageResource(content.getSite().getIco());
+        attachSource(holder, content);
     }
 
     /**
@@ -222,6 +221,22 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
             }
         }
         holder.tvTags.setText(Helper.fromHtml(tags.toString()));
+    }
+
+    /**
+     * Build the source icon layout of the book viewholder using the designated Content properties
+     *
+     * @param holder  Holder to populate
+     * @param content Content to display
+     */
+    private void attachSource(ViewHolder holder, Content content) {
+        if (content.getSite() != null) {
+            int img = content.getSite().getIco();
+            holder.ivSource.setImageResource(img);
+            holder.ivSource.setOnClickListener(v -> Helper.viewContent(context, content));
+        } else {
+            holder.ivSource.setImageResource(R.drawable.ic_stat_hentoid);
+        }
     }
 
     /**

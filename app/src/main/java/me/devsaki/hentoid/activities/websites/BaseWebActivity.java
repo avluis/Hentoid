@@ -107,7 +107,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         universalBlockedContent.add("adtng.com");
         universalBlockedContent.add("popads.net");
         universalBlockedContent.add("adsco.re");
-        universalBlockedContent.add("ads.exosrv.com");
+        universalBlockedContent.add("s24hc8xzag.com");
+        universalBlockedContent.add("/nutaku/");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -346,6 +347,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         if (null == currentContent) return;
 
         if (currentContent.getId() > 0) currentContent = db.selectContentById(currentContent.getId());
+
+        if (null == currentContent) return;
 
         if (currentContent != null && StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(this, R.string.already_downloaded);

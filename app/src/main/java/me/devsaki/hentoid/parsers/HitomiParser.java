@@ -5,9 +5,13 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
@@ -16,16 +20,15 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
  * Created by neko on 08/07/2015.
  * Handles parsing of content from hitomi.la
  */
-public class HitomiParser extends BaseParser {
+public class HitomiParser implements ContentParser {
 
     // Reproduction of the Hitomi.la Javascript to find the hostname of the image server (see subdomain_from_url@reader.js)
     private final static int NUMBER_OF_FRONTENDS = 2;
     private final static String HOSTNAME_SUFFIX = "a";
     private final static char HOSTNAME_PREFIX_BASE = 97;
 
-    @Override
-    protected List<String> parseImages(Content content) throws Exception {
-        List<String> result = new ArrayList<>();
+    public List<ImageFile> parseImageList(Content content) throws Exception {
+        List<ImageFile> result = new ArrayList<>();
 
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (doc != null) {
@@ -44,8 +47,16 @@ public class HitomiParser extends BaseParser {
                 referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
             String imageSubdomain = Character.toString((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
 
+            Map<String, String> downloadParams = new HashMap<>();
+            // Add referer information to downloadParams for future image download
+            downloadParams.put("referer", content.getReaderUrl());
+            String downloadParamsStr = JsonHelper.serializeToJson(downloadParams);
+
+            int order = 1;
             for (Element element : imgElements) {
-                result.add("https:" + replaceSubdomainWith(element.text(), imageSubdomain));
+                ImageFile img = ParseHelper.urlToImageFile("https:" + replaceSubdomainWith(element.text(), imageSubdomain), order++);
+                img.setDownloadParams(downloadParamsStr);
+                result.add(img);
             }
         } else {
             Timber.w("Document null @ %s", content.getReaderUrl());

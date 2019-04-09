@@ -461,7 +461,7 @@ public class ImportActivity extends BaseActivity {
                 String[] uriContents = treeUri.getPath().split(":");
                 String folderName = (uriContents.length > 1) ? uriContents[1] : "";
                 String folderPath = paths[0] + "/" + folderName;
-                if (!folderName.endsWith(Consts.DEFAULT_LOCAL_DIRECTORY)) // Don't create a .Hentoid subfolder inside the .Hentoid folder the user just selected...
+                if (!folderName.endsWith(Consts.DEFAULT_LOCAL_DIRECTORY.substring(1))) // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
                 {
                     if (!folderPath.endsWith("/")) folderPath += "/";
                     folderPath += Consts.DEFAULT_LOCAL_DIRECTORY;
