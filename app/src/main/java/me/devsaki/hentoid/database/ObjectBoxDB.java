@@ -169,31 +169,32 @@ public class ObjectBoxDB {
 
         for (long id : contentId) {
             Content c = contentBox.get(id);
-            store.runInTx(() -> {
-                if (c.getImageFiles() != null) {
-                    for (ImageFile i : c.getImageFiles())
-                        imageFileBox.remove(i);   // Delete imageFiles
-                    c.getImageFiles().clear();                                      // Clear links to all imageFiles
-                }
-
-                if (c.getErrorLog() != null) {
-                    for (ErrorRecord e : c.getErrorLog())
-                        errorBox.remove(e);   // Delete error records
-                    c.getErrorLog().clear();                                    // Clear links to all errorRecords
-                }
-
-                // Delete attribute when current content is the only content left on the attribute
-                for (Attribute a : c.getAttributes())
-                    if (1 == a.contents.size()) {
-                        for (AttributeLocation l : a.getLocations())
-                            locationBox.remove(l); // Delete all locations
-                        a.getLocations().clear();                                           // Clear location links
-                        attributeBox.remove(a);                                             // Delete the attribute itself
+            if (c != null)
+                store.runInTx(() -> {
+                    if (c.getImageFiles() != null) {
+                        for (ImageFile i : c.getImageFiles())
+                            imageFileBox.remove(i);   // Delete imageFiles
+                        c.getImageFiles().clear();                                      // Clear links to all imageFiles
                     }
-                c.getAttributes().clear();                                      // Clear links to all attributes
 
-                contentBox.remove(c);                                           // Remove the content itself
-            });
+                    if (c.getErrorLog() != null) {
+                        for (ErrorRecord e : c.getErrorLog())
+                            errorBox.remove(e);   // Delete error records
+                        c.getErrorLog().clear();                                    // Clear links to all errorRecords
+                    }
+
+                    // Delete attribute when current content is the only content left on the attribute
+                    for (Attribute a : c.getAttributes())
+                        if (1 == a.contents.size()) {
+                            for (AttributeLocation l : a.getLocations())
+                                locationBox.remove(l); // Delete all locations
+                            a.getLocations().clear();                                           // Clear location links
+                            attributeBox.remove(a);                                             // Delete the attribute itself
+                        }
+                    c.getAttributes().clear();                                      // Clear links to all attributes
+
+                    contentBox.remove(c);                                           // Remove the content itself
+                });
         }
     }
 
