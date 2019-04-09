@@ -348,6 +348,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         if (currentContent.getId() > 0) currentContent = db.selectContentById(currentContent.getId());
 
+        if (null == currentContent) return;
+
         if (currentContent != null && StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(this, R.string.already_downloaded);
             changeFabActionMode(MODE_READ);
