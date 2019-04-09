@@ -3,7 +3,6 @@ package me.devsaki.hentoid.adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -29,6 +28,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
+import io.reactivex.Observable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -539,10 +539,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
-                        (dialog, which) -> {
-                            clearSelections();
-                            deleteItem(item);
-                        })
+                        (dialog, which) -> deleteItem(item))
                 .setNegativeButton(android.R.string.no,
                         (dialog, which) -> {
                             clearSelections();
@@ -716,38 +713,55 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void deleteItem(final Content item) {
-        remove(item);
+        clearSelections();
+        compositeDisposable.add(
+                Single.fromCallable(() -> deleteContent(item.getId()))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                result -> {
+                                    remove(result);
+                                    ToastUtil.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
+                                },
+                                Timber::e
+                        )
+        );
+    }
 
+    private Content deleteContent(long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        AsyncTask.execute(() -> {
-            FileHelper.removeContent(item);
-            db.deleteContent(item);
-            Timber.d("Removed item: %s from db and file system.", item.getTitle());
-        });
+        Content content = db.selectContentById(contentId);
 
-        ToastUtil.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
+        if (content != null) {
+            FileHelper.removeContent(content);
+            db.deleteContent(content);
+            Timber.d("Removed item: %s from db and file system.", content.getTitle());
+
+            return content;
+        }
+        throw new InvalidParameterException("ContentId " + contentId + " does not refer to a valid content");
     }
 
     private void deleteItems(final List<Content> contents) {
+
         mSortedList.beginBatchedUpdates();
-        for (Content content : contents) {
-            mSortedList.remove(content);
-        }
-        onContentRemovedListener.accept(contents.size());
-        mSortedList.endBatchedUpdates();
-        itemSelectListener.onItemClear(0);
 
-        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-
-        AsyncTask.execute(() -> {
-            for (Content item : contents) {
-                FileHelper.removeContent(item);
-                db.deleteContent(item);
-                Timber.d("Removed item: %s from db and file system.", item.getTitle());
-            }
-        });
-
-        ToastUtil.toast(context, "Selected items have been deleted.");
+        compositeDisposable.add(
+                Observable.fromIterable(contents)
+                        .subscribeOn(Schedulers.io())
+                        .flatMap(s -> Observable.fromCallable(() -> deleteContent(s.getId())))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                mSortedList::remove,
+                                Timber::e,
+                                () -> {
+                                    onContentRemovedListener.accept(contents.size());
+                                    mSortedList.endBatchedUpdates();
+                                    itemSelectListener.onItemClear(0);
+                                    ToastUtil.toast(context, "Selected items have been deleted.");
+                                }
+                        )
+        );
     }
 
     private void remove(Content content) {
