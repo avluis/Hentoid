@@ -163,7 +163,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         attachSeries(holder, content);
         attachArtist(holder, content);
         attachTags(holder, content);
-        attachButtons(holder, content, pos);
+        attachButtons(holder, content);
         attachOnClickListeners(holder, content, pos);
     }
 
@@ -290,7 +290,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         holder.tvTags.setText(Helper.fromHtml(tagsBuilder.toString()));
     }
 
-    private void attachButtons(ContentHolder holder, final Content content, int pos) {
+    private void attachButtons(ContentHolder holder, final Content content) {
         // Set source icon
         if (content.getSite() != null) {
             int img = content.getSite().getIco();
@@ -446,35 +446,38 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         int images;
         int imgErrors = 0;
 
-        images = item.getImageFiles().size();
+        if (item.getImageFiles() != null) {
+            images = item.getImageFiles().size();
 
-        for (ImageFile imgFile : item.getImageFiles()) {
-            if (imgFile.getStatus() == StatusContent.ERROR) {
-                imgErrors++;
+            for (ImageFile imgFile : item.getImageFiles()) {
+                if (imgFile.getStatus() == StatusContent.ERROR) {
+                    imgErrors++;
+                }
             }
-        }
 
-        String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setTitle(R.string.redownload_dialog_title)
-                .setMessage(message)
-                .setPositiveButton(android.R.string.yes,
-                        (dialog, which) -> {
-                            downloadContent(item);
-                            remove(item);
-                        })
-                .setNegativeButton(android.R.string.no, null)
-                .setNeutralButton(R.string.redownload_view_log,
-                        (dialog, which) -> showErrorLog(item))
-                .create().show();
+            String message = context.getString(R.string.redownload_dialog_message).replace("@clean", images - imgErrors + "").replace("@error", imgErrors + "").replace("@total", images + "");
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(R.string.redownload_dialog_title)
+                    .setMessage(message)
+                    .setPositiveButton(android.R.string.yes,
+                            (dialog, which) -> {
+                                downloadContent(item);
+                                remove(item);
+                            })
+                    .setNegativeButton(android.R.string.no, null)
+                    .setNeutralButton(R.string.redownload_view_log,
+                            (dialog, which) -> showErrorLog(item))
+                    .create().show();
+        }
     }
 
     private void downloadContent(Content item) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         if (StatusContent.ONLINE == item.getStatus())
-            for (ImageFile im : item.getImageFiles())
-                db.updateImageFileStatusAndParams(im.setStatus(StatusContent.SAVED));
+            if (item.getImageFiles() != null)
+                for (ImageFile im : item.getImageFiles())
+                    db.updateImageFileStatusAndParams(im.setStatus(StatusContent.SAVED));
 
         item.setDownloadDate(new Date().getTime());
         item.setStatus(StatusContent.DOWNLOADING);
@@ -501,8 +504,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         errorLogInfo.fileName = "error_log" + content.getId();
         errorLogInfo.noDataMessage = "No error detected.";
 
-        log.add("Error log for " + content.getTitle() + " : " + errorLog.size() + " errors");
-        for (ErrorRecord e : errorLog) log.add(e.toString());
+        if (errorLog != null) {
+            log.add("Error log for " + content.getTitle() + " : " + errorLog.size() + " errors");
+            for (ErrorRecord e : errorLog) log.add(e.toString());
+        }
 
         File logFile = LogUtil.writeLog(context, log, errorLogInfo);
         if (logFile != null) {
