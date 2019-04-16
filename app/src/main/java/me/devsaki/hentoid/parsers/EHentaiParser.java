@@ -47,14 +47,14 @@ public class EHentaiParser extends BaseParser {
 
             if (nbGalleryPages > 1) {
                 for (int i = 1; i < nbGalleryPages; i++) {
-                    doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i);
+                    doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, true);
                     if (doc != null) fetchPageUrls(doc, pageUrls);
                 }
             }
 
             // 3- Open all pages and grab the URL of the displayed image
             for (String s : pageUrls) {
-                doc = getOnlineDocument(s);
+                doc = getOnlineDocument(s, headers, true);
                 if (doc != null) {
                     elements = doc.select("img#img");
                     if (elements != null && elements.size() > 0) {
