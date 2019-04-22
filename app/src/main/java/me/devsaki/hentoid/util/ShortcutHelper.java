@@ -13,7 +13,9 @@ import android.support.v4.content.ContextCompat;
 import java.util.Arrays;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.activities.websites.NhentaiActivity;
+import me.devsaki.hentoid.enums.Site;
 
 /**
  * Created by avluis on 11/04/2016.
@@ -25,15 +27,17 @@ public final class ShortcutHelper {
     public static void buildShortcuts(Context context) {
         // TODO: Loop across all activities
         int tint_color = ContextCompat.getColor(context, R.color.accent);
-        ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
 
         Bitmap nhentaiBitmap = Helper.getBitmapFromVectorDrawable(context, R.drawable.ic_menu_nhentai);
         nhentaiBitmap = Helper.tintBitmap(nhentaiBitmap, tint_color);
         Icon nhentaiIcon = Icon.createWithBitmap(nhentaiBitmap);
 
+        /*
         Intent nhentaiIntent = new Intent(context, NhentaiActivity.class);
         nhentaiIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         nhentaiIntent.setAction(Intent.ACTION_VIEW);
+        */
+        Intent nhentaiIntent = UnlockActivity.wrapIntent(context, Site.NHENTAI);
 
         ShortcutInfo nhentai = new ShortcutInfo.Builder(context, "nhentai")
                 .setShortLabel("nhentai")
@@ -42,6 +46,8 @@ public final class ShortcutHelper {
                 .setIntent(nhentaiIntent)
                 .build();
 
-        shortcutManager.setDynamicShortcuts(Arrays.asList(nhentai));
+        ShortcutManager shortcutManager = context.getSystemService(ShortcutManager.class);
+        if (shortcutManager != null)
+            shortcutManager.setDynamicShortcuts(Arrays.asList(nhentai));
     }
 }

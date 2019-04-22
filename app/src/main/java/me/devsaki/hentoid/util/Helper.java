@@ -34,6 +34,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.UnlockActivity;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -51,9 +52,13 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 public final class Helper {
 
     public static void viewContent(final Context context, Content content) {
+        viewContent(context, content, false);
+    }
+    public static void viewContent(final Context context, Content content, boolean wrapPin) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.putExtra(Consts.INTENT_URL, content.getGalleryUrl());
+        if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
 

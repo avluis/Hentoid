@@ -62,12 +62,14 @@ public class IntentActivity extends BaseActivity {
         Content content = new Content();
         content.setSite(site);
         content.setUrl(parsedPath);
-        Helper.viewContent(this, content);
+        Helper.viewContent(this, content, true);
     }
 
     @Nullable
     private static String parsePath(Site site, Uri data) {
         String toParse = data.getPath();
+        if (null == toParse) return null;
+
         switch (site) {
             case HITOMI:
                 return toParse.replace("/galleries", "");
