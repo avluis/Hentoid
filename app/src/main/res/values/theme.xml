@@ -21,6 +21,7 @@
 
     <style name="AppTheme.NoActionBar.viewer">
         <item name="colorPrimaryDark">@color/black_opacity_50</item>
+        <item name="android:windowBackground">@color/black</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
