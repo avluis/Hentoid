@@ -252,7 +252,7 @@ public class FileHelper {
      * @param target The folder.
      * @return true if cleaned successfully.
      */
-    static boolean cleanDirectory(@NonNull File target) {
+    private static boolean cleanDirectory(@NonNull File target) {
         try {
             return tryCleanDirectory(target);
         } catch (Exception e) {
@@ -669,7 +669,7 @@ public class FileHelper {
      * @throws IOException If any IOException occurs
      */
     public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
-        byte buffer[] = new byte[1024];
+        byte[] buffer = new byte[1024];
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryContent)) {
@@ -751,7 +751,8 @@ public class FileHelper {
         }
     }
 
-    // Please keep that, I need some way to trace actions when working with SD card features - Robb
+    // Please don't delete that method !
+    // I need some way to trace actions when working with SD card features - Robb
     public static void createFileWithMsg(@Nonnull String file, String msg) {
         try {
             FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getAppContext(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());
