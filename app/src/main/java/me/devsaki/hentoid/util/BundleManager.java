@@ -16,7 +16,7 @@ public class BundleManager {
     private static final String KEY_MODE = "mode";
     private static final String KEY_URI = "uri";
     private static final String KEY_URIS_STR = "urisStr";
-    private static final String KEY_OPEN_PAGE = "openPage";
+    private static final String KEY_CONTENT_ID = "contentId";
 
     private final Bundle bundle;
 
@@ -88,16 +88,16 @@ public class BundleManager {
         bundle.putStringArrayList(KEY_URIS_STR, uriList);
     }
 
-    void setOpenPageIndex(int pageIndex) {
-        bundle.putInt(KEY_OPEN_PAGE, pageIndex);
-    }
-
     @android.support.annotation.Nullable
     public List<String> getUrisStr() {
         return bundle.getStringArrayList(KEY_URIS_STR);
     }
 
-    public int getOpenPageIndex() {
-        return bundle.getInt(KEY_OPEN_PAGE, -1);
+    void setContentId(long contentId) {
+        bundle.putLong(KEY_CONTENT_ID, contentId);
+    }
+
+    public long getContentId() {
+        return bundle.getLong(KEY_CONTENT_ID, 0);
     }
 }

@@ -82,7 +82,7 @@ public class Content implements Serializable {
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
     @Expose(serialize = false, deserialize = false)
-    private int lastReadPageIndex;
+    private int lastReadPageIndex = 0;
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient

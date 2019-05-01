@@ -19,6 +19,8 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 public class ImageViewerActivity extends AppCompatActivity {
 
+    private ImageViewerViewModel viewModel;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,14 +37,9 @@ public class ImageViewerActivity extends AppCompatActivity {
                 throw new RuntimeException("Initialization failed");
             }
 
-            ImageViewerViewModel viewModel = ViewModelProviders.of(this)
-                    .get(ImageViewerViewModel.class);
-
+            viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
             viewModel.setImages(uris);
-
-            if (Preferences.isViewerResumeLastLeft()) {
-                viewModel.setInitialPosition(manager.getOpenPageIndex());
-            }
+            viewModel.setContentId(manager.getContentId());
         }
 
         PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION);
@@ -63,4 +60,11 @@ public class ImageViewerActivity extends AppCompatActivity {
                     .commit();
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        viewModel.saveCurrentPosition();
+        super.onBackPressed();
+    }
+
 }

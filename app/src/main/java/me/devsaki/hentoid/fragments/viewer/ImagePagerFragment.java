@@ -45,11 +45,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private TextView pageNumber;
     private RecyclerView recyclerView;
     private PageSnapWidget pageSnapWidget;
+    private ImageViewerViewModel viewModel;
 
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
 
-    private int currentPosition; // 0-based position, as in "programmatic index"
     private int maxPosition;
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -70,16 +71,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        ImageViewerViewModel viewModel = ViewModelProviders.of(requireActivity())
-                .get(ImageViewerViewModel.class);
-
+        viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
         viewModel
                 .getImages()
                 .observe(this, this::onImagesChanged);
 
-        if (savedInstanceState == null) {
-            recyclerView.scrollToPosition(viewModel.getInitialPosition());
-        }
+        if (Preferences.isViewerResumeLastLeft()) recyclerView.scrollToPosition(viewModel.getInitialPosition());
     }
 
     @Override
@@ -189,15 +186,15 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     // Scroll listener
     private void onCurrentPositionChange(int position) {
         if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
-            currentPosition = position;
+            viewModel.setCurrentPosition(position);
         else
-            currentPosition = maxPosition - position;
-        seekBar.setProgress(currentPosition);
+            viewModel.setCurrentPosition(maxPosition - position);
+        seekBar.setProgress(viewModel.getCurrentPosition());
         updatePageDisplay();
     }
 
     private void updatePageDisplay() {
-        String pageDisplayText = format("%s / %s", currentPosition + 1, maxPosition + 1);
+        String pageDisplayText = format("%s / %s", viewModel.getCurrentPosition() + 1, maxPosition + 1);
         pageNumber.setText(pageDisplayText);
     }
 
@@ -260,17 +257,17 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     public void nextPage() {
-        if (currentPosition == maxPosition) return;
-        recyclerView.smoothScrollToPosition(currentPosition + 1);
+        if (viewModel.getCurrentPosition() == maxPosition) return;
+        recyclerView.smoothScrollToPosition(viewModel.getCurrentPosition() + 1);
     }
 
     public void previousPage() {
-        if (currentPosition == 0) return;
-        recyclerView.smoothScrollToPosition(currentPosition - 1);
+        if (viewModel.getCurrentPosition() == 0) return;
+        recyclerView.smoothScrollToPosition(viewModel.getCurrentPosition() - 1);
     }
 
     private void seekToPosition(int position) {
-        if (position == currentPosition + 1 || position == currentPosition - 1) {
+        if (position == viewModel.getCurrentPosition() + 1 || position == viewModel.getCurrentPosition() - 1) {
             recyclerView.smoothScrollToPosition(position);
         } else {
             recyclerView.scrollToPosition(position);
@@ -280,7 +277,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void goToPage(int pageNum) {
         int position = pageNum - 1;
-        if (position == currentPosition || position < 0 || position > maxPosition) return;
+        if (position == viewModel.getCurrentPosition() || position < 0 || position > maxPosition) return;
         seekToPosition(position);
     }
 

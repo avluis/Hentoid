@@ -627,8 +627,8 @@ public class FileHelper {
         List<String> imagesLocations = new ArrayList<>();
         for (File f : imageFiles) imagesLocations.add(f.getAbsolutePath());
 
+        manager.setContentId(content.getId());
         manager.setUrisStr(imagesLocations);
-        manager.setOpenPageIndex(content.getLastReadPageIndex());
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
         viewer.putExtras(manager.getBundle());
