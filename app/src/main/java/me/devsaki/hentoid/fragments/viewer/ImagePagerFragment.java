@@ -48,7 +48,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
 
-    private int currentPosition;
+    private int currentPosition; // 0-based position, as in "programmatic index"
     private int maxPosition;
 
     @Override
@@ -188,7 +188,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     // Scroll listener
     private void onCurrentPositionChange(int position) {
-        currentPosition = position;
+        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
+            currentPosition = position;
+        else
+            currentPosition = maxPosition - position;
         seekBar.setProgress(currentPosition);
         updatePageDisplay();
     }
