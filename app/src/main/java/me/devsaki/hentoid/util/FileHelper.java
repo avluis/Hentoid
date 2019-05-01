@@ -539,7 +539,7 @@ public class FileHelper {
             ToastUtil.toast(context, message);
         } else {
             int readContentPreference = Preferences.getContentReadAction();
-            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_DEFAULT) {
+            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER) {
                 openFile(context, imageFile);
             } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(context, imageFile);

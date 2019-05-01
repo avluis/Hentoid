@@ -275,7 +275,7 @@ public final class Preferences {
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
         static final boolean PREF_HIDE_RECENT_DEFAULT = (!BuildConfig.DEBUG); // Debug apps always visible to facilitate video capture
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
-        static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_DEFAULT;
+        static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
         static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         static final boolean PREF_USE_SFW_DEFAULT = false;
@@ -306,8 +306,9 @@ public final class Preferences {
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
-        static final int PREF_READ_CONTENT_DEFAULT = 0;
+        static final int PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER = 0;
         static final int PREF_READ_CONTENT_PERFECT_VIEWER = 1;
+        static final int PREF_READ_CONTENT_HENTOID_VIEWER = 2;
         static final int TRUNCATE_FOLDER_NONE = 0;
         public static final int PREF_VIEWER_DISPLAY_FIT = 0;
         public static final int PREF_VIEWER_DISPLAY_FILL = 1;
