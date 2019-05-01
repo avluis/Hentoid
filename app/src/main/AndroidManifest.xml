@@ -266,6 +266,15 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".activities.ImageViewerActivity"
+            android:label="Image Viewer"
+            android:theme="@style/AppTheme.NoActionBar.viewer">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.DownloadsActivity" />
+        </activity>
+
         <service
             android:name=".services.ContentDownloadService"
             android:enabled="true"

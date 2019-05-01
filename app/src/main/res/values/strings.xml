@@ -158,4 +158,18 @@
 
     <!-- DB migration -->
     <string name="migrate_db">Migrating the database</string>
+
+    <!-- Image viewer -->
+    <string name="viewer_choose_direction">Choose your reading direction</string>
+    <string name="viewer_direction_ltr">Left to right</string>
+    <string name="viewer_direction_rtl">Right to left</string>
+    <string name="viewer_direction_ttb">Top to bottom</string>
+    <string name="viewer_prefs_title">Viewer preferences</string>
+    <string name="viewer_prefs_display_fit">Fit (image is entirely displayed on screen)</string>
+    <string name="viewer_prefs_display_fill">Fill (image takes up all screen)</string>
+    <string name="pref_viewer_resume_last_left">Resume reading at the last left page</string>
+    <string name="pref_viewer_keep_screen_on">Keep screen on</string>
+    <string name="pref_viewer_image_display">Image display mode</string>
+    <string name="pref_viewer_browse_mode">Browse mode</string>
+    <string name="pref_viewer_fling_sensitivity">Fling sensitivity</string>
 </resources>
