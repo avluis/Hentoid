@@ -224,7 +224,7 @@ public class ImportService extends IntentService {
         json = new File(folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
         if (json.exists()) return importJsonV1(json);
 
-        json = new File(folder, Consts.OLD_JSON_FILE_NAME); // (old) JSON file format (legacy and/or FAKKUDroid App)
+        json = new File(folder, Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
         if (json.exists()) return importJsonLegacy(json);
 
         return null;

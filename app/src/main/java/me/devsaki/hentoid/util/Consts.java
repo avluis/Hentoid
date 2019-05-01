@@ -12,9 +12,10 @@ public abstract class Consts {
 
     public static final String INTENT_URL = "url";
 
+    public static final String DEFAULT_LOCAL_DIRECTORY_OLD = "Hentoid";
     public static final String DEFAULT_LOCAL_DIRECTORY = ".Hentoid";
 
-    public static final String OLD_JSON_FILE_NAME = "data.json";
+    public static final String JSON_FILE_NAME_OLD = "data.json";
     public static final String JSON_FILE_NAME = "content.json";
     public static final String JSON_FILE_NAME_V2 = "contentV2.json";
 

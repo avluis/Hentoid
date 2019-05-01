@@ -141,11 +141,12 @@ public class ImportActivity extends BaseActivity {
             Timber.d(settingDir);
 
             File file;
-            if (!settingDir.isEmpty()) {
+            if (!settingDir.isEmpty())
                 file = new File(settingDir);
-            } else {
-                file = new File(Environment.getExternalStorageDirectory() +
-                        "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+            else {
+                file = getExistingHentoidDirFrom(Environment.getExternalStorageDirectory());
+                if (file.getAbsolutePath().equals(Environment.getExternalStorageDirectory().getAbsolutePath()))
+                    file = new File(Environment.getExternalStorageDirectory(), Consts.DEFAULT_LOCAL_DIRECTORY);
             }
 
             if (file.exists() && file.isDirectory()) {
@@ -158,6 +159,28 @@ public class ImportActivity extends BaseActivity {
         } else {
             Timber.d("Storage permission denied!");
         }
+    }
+
+    // Try and detect any ".Hentoid" or "Hentoid" folder inside the selected folder
+    private static File getExistingHentoidDirFrom(@NonNull File root) {
+
+        if (!root.exists() || !root.isDirectory()) return root;
+
+        if (root.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
+                || root.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD))
+            return root;
+
+        File[] hentoidDirs = root.listFiles(
+                file -> (file.isDirectory() &&
+                        (
+                        file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
+                        || file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)
+                        )
+                )
+        );
+
+        if (hentoidDirs.length > 0) return hentoidDirs[0];
+        else return root;
     }
 
     @Override
@@ -284,7 +307,8 @@ public class ImportActivity extends BaseActivity {
         }
 
         Timber.d("Storage Path: %s", currentRootDir);
-        importFolder(currentRootDir);
+
+        importFolder(getExistingHentoidDirFrom(currentRootDir));
     }
 
     private void processManualInput(@NonNull Editable value) {
@@ -438,6 +462,9 @@ public class ImportActivity extends BaseActivity {
     }
 
 
+    /*
+        Return from SAF system dialog
+     */
     @RequiresApi(api = KITKAT)
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -447,29 +474,40 @@ public class ImportActivity extends BaseActivity {
         if (requestCode == ConstsImport.RQST_STORAGE_PERMISSION && resultCode == RESULT_OK) { // TODO - what happens when resultCode is _not_ RESULT_OK ?
             // Get Uri from Storage Access Framework
             Uri treeUri = data.getData();
-            // Persist URI in shared preference so that you can use it later
-            FileHelper.saveUri(treeUri);
+            if (treeUri != null && treeUri.getPath() != null) {
+                // Persist selected folder URI in shared preferences
+                FileHelper.saveUri(treeUri);
 
-            // Persist access permissions
-            getContentResolver().takePersistableUriPermission(treeUri,
-                    Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                // Persist access permissions
+                getContentResolver().takePersistableUriPermission(treeUri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
 
-            dirChooserFragment.dismiss();
+                dirChooserFragment.dismiss();
 
-            if (FileHelper.getExtSdCardPaths().length > 0) {
-                String[] paths = FileHelper.getExtSdCardPaths();
-                String[] uriContents = treeUri.getPath().split(":");
-                String folderName = (uriContents.length > 1) ? uriContents[1] : "";
-                String folderPath = paths[0] + "/" + folderName;
-                if (!folderName.endsWith(Consts.DEFAULT_LOCAL_DIRECTORY.substring(1))) // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-                {
-                    if (!folderPath.endsWith("/")) folderPath += "/";
-                    folderPath += Consts.DEFAULT_LOCAL_DIRECTORY;
+                if (FileHelper.getExtSdCardPaths().length > 0) {
+                    String[] paths = FileHelper.getExtSdCardPaths();
+                    String[] uriContents = treeUri.getPath().split(":");
+                    String folderName = (uriContents.length > 1) ? uriContents[1] : "";
+                    String folderPath = paths[0] + File.separatorChar + folderName;
+                    // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
+                    if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD))
+                    {
+                        // Look for a Hentoid folder inside the selected folder
+                        if (!folderPath.endsWith(File.separator)) folderPath += File.separator;
+                        File folder = new File(folderPath);
+                        File targetFolder = getExistingHentoidDirFrom(folder);
+
+                        // If not, create one
+                        if (targetFolder.getAbsolutePath().equals(folder.getAbsolutePath())) targetFolder = new File(targetFolder, Consts.DEFAULT_LOCAL_DIRECTORY);
+                        folderPath = targetFolder.getAbsolutePath();
+                    }
+
+                    if (!folderPath.endsWith(File.separator)) folderPath += File.separator;
+                    File folder = new File(folderPath);
+
+                    Timber.d("Directory created successfully: %s", FileHelper.createDirectory(folder));
+                    importFolder(folder);
                 }
-
-                File folder = new File(folderPath);
-                Timber.d("Directory created successfully: %s", FileHelper.createDirectory(folder));
-                importFolder(folder);
             }
         }
     }
@@ -511,8 +549,6 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void importFolder(File folder) {
-        // TODO - if .Hentoid or Hentoid folder found, ask user if he wants to use that one (#267)
-
         if (!FileHelper.checkAndSetRootFolder(folder.getAbsolutePath(), true)) {
             prepImport(null);
             return;
