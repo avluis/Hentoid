@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities;
 
-import android.Manifest;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Build;
@@ -10,8 +9,10 @@ import android.view.WindowManager;
 
 import java.util.List;
 
-import me.devsaki.hentoid.fragments.ImagePagerFragment;
+import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
 import me.devsaki.hentoid.util.BundleManager;
+import me.devsaki.hentoid.util.ConstsImport;
+import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
@@ -44,10 +45,7 @@ public class ImageViewerActivity extends AppCompatActivity {
             }
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            String[] permissions = {Manifest.permission.READ_EXTERNAL_STORAGE};
-            this.requestPermissions(permissions, 165498);
-        }
+        PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION);
 
         // Allows an full recolor of the status bar with the custom color defined in the activity's theme
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
