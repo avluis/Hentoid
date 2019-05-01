@@ -11,7 +11,6 @@ import android.os.StrictMode;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.squareup.leakcanary.LeakCanary;
 
 import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
@@ -67,6 +66,7 @@ public class HentoidApp extends Application {
             Timber.e(e, "Google Play ProviderInstaller exception");
         }
 
+/*
         // LeakCanary
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
@@ -74,6 +74,7 @@ public class HentoidApp extends Application {
             return;
         }
         LeakCanary.install(this);
+*/
 
         // Timber
         if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());

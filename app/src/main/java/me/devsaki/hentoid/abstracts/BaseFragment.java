@@ -4,8 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 
-import com.squareup.leakcanary.LeakCanary;
-
 import org.greenrobot.eventbus.EventBus;
 
 import me.devsaki.hentoid.events.DownloadEvent;
@@ -59,7 +57,7 @@ public abstract class BaseFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
 
-        LeakCanary.installedRefWatcher().watch(this);
+//        LeakCanary.installedRefWatcher().watch(this);
     }
 
     // Implementations must annotate method with:
