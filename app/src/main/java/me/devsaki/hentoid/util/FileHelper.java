@@ -34,6 +34,7 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.ImageViewerActivity;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -466,13 +467,15 @@ public class FileHelper {
     public static List<File> findFilesRecursively(File workingDir, String extension) {
         return findFilesRecursively(workingDir, extension, 0);
     }
+
     private static List<File> findFilesRecursively(File workingDir, String extension, int depth) {
         List<File> files = new ArrayList<>();
         File[] baseDirs = workingDir.listFiles(pathname -> (pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension)));
 
         for (File entry : baseDirs) {
             if (entry.isDirectory()) {
-                if (depth < 6) files.addAll(findFilesRecursively(entry, extension, depth + 1)); // Hard recursive limit to avoid catastrophes
+                if (depth < 6)
+                    files.addAll(findFilesRecursively(entry, extension, depth + 1)); // Hard recursive limit to avoid catastrophes
             } else {
                 files.add(entry);
             }
@@ -543,6 +546,8 @@ public class FileHelper {
                 openFile(context, imageFile);
             } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(context, imageFile);
+            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
+                openHentoidViewer(context, content, files);
             }
         }
 
@@ -607,6 +612,28 @@ public class FileHelper {
         } catch (Exception e) {
             ToastUtil.toast(context, R.string.error_open_perfect_viewer);
         }
+    }
+
+    /**
+     * Open built-in image viewer telling it to display the images of the given Content
+     *
+     * @param context    Context
+     * @param content    Content to be displayed
+     * @param imageFiles Image files to be shown
+     */
+    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, @NonNull File[] imageFiles) {
+        BundleManager manager = new BundleManager();
+
+        List<String> imagesLocations = new ArrayList<>();
+        for (File f : imageFiles) imagesLocations.add(f.getAbsolutePath());
+
+        manager.setUrisStr(imagesLocations);
+        manager.setOpenPageIndex(content.getLastReadPageIndex());
+
+        Intent viewer = new Intent(context, ImageViewerActivity.class);
+        viewer.putExtras(manager.getBundle());
+
+        context.startActivity(viewer);
     }
 
     /**

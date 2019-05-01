@@ -81,6 +81,8 @@ public class Content implements Serializable {
     @Expose(serialize = false, deserialize = false)
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
+    @Expose(serialize = false, deserialize = false)
+    private int lastReadPageIndex;
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
@@ -518,6 +520,16 @@ public class Content implements Serializable {
         downloadParams = params;
         return this;
     }
+
+    public int getLastReadPageIndex() {
+        return lastReadPageIndex;
+    }
+
+    public Content setLastReadPageIndex(int index) {
+        this.lastReadPageIndex = index;
+        return this;
+    }
+
 
 
     @Override

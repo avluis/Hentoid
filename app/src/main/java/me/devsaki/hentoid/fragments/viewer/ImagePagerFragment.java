@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.viewer;
 
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;

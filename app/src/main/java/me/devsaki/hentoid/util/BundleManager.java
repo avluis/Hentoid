@@ -15,7 +15,6 @@ public class BundleManager {
     private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
     private static final String KEY_MODE = "mode";
     private static final String KEY_URI = "uri";
-    private static final String KEY_URIS = "uris";
     private static final String KEY_URIS_STR = "urisStr";
     private static final String KEY_OPEN_PAGE = "openPage";
 
@@ -84,22 +83,12 @@ public class BundleManager {
         return result;
     }
 
-    public List<Uri> getUris() {
-        List<Uri> result = new ArrayList<>();
-
-        List<String> uriList = bundle.getStringArrayList(KEY_URIS);
-        if (null != uriList && !uriList.isEmpty())
-            for (String s : uriList) result.add(Uri.parse(s));
-
-        return result;
-    }
-
-    public void setUrisStr(List<String> uris) {
+    void setUrisStr(List<String> uris) {
         ArrayList<String> uriList = new ArrayList<>(uris);
         bundle.putStringArrayList(KEY_URIS_STR, uriList);
     }
 
-    public void setOpenPageIndex(int pageIndex) {
+    void setOpenPageIndex(int pageIndex) {
         bundle.putInt(KEY_OPEN_PAGE, pageIndex);
     }
 

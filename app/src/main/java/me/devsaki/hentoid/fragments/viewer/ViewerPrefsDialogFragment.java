@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.viewer;
 
 import android.os.Build;
 import android.os.Bundle;

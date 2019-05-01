@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.viewer;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
