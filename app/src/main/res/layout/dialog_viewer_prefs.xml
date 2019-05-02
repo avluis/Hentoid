@@ -25,13 +25,17 @@
 
     <TextView
         android:id="@+id/viewer_prefs_resume_reading_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:singleLine="false"
         android:gravity="start"
         android:text="@string/pref_viewer_resume_last_left"
         android:textAlignment="viewStart"
         android:textSize="16sp"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_prefs_resume_reading_action"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_title" />
 
     <Switch
@@ -43,12 +47,11 @@
         android:gravity="start"
         android:textAlignment="viewStart"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/viewer_prefs_resume_reading_title"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_title" />
 
     <TextView
         android:id="@+id/viewer_prefs_keep_screen_title"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:gravity="start"
@@ -56,6 +59,7 @@
         android:textAlignment="viewStart"
         android:textSize="16sp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_prefs_keep_screen_action"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_resume_reading_title" />
 
     <Switch
@@ -67,7 +71,7 @@
         android:layout_marginTop="16dp"
         android:gravity="start"
         android:textAlignment="viewStart"
-        app:layout_constraintEnd_toEndOf="@id/viewer_prefs_resume_reading_action"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_resume_reading_title" />
 
     <!-- To be reactivated once fill mode works properly -->
