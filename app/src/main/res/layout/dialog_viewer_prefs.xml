@@ -18,7 +18,7 @@
         android:paddingBottom="16dp"
         android:text="@string/viewer_prefs_title"
         android:textAlignment="center"
-        android:textSize="20sp"
+        android:textSize="@dimen/text_header_6"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -31,7 +31,7 @@
         android:gravity="start"
         android:text="@string/pref_viewer_resume_last_left"
         android:textAlignment="viewStart"
-        android:textSize="16sp"
+        android:textSize="@dimen/text_body_1"
         android:layout_marginRight="8dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintStart_toStartOf="parent"
@@ -57,7 +57,7 @@
         android:gravity="start"
         android:text="@string/pref_viewer_keep_screen_on"
         android:textAlignment="viewStart"
-        android:textSize="16sp"
+        android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/viewer_prefs_keep_screen_action"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_resume_reading_title" />
@@ -84,7 +84,7 @@
         android:gravity="start"
         android:text="@string/pref_viewer_image_display"
         android:textAlignment="viewStart"
-        android:textSize="16sp"
+        android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_keep_screen_title"
         android:visibility="gone"/>
@@ -119,7 +119,7 @@
         android:gravity="start"
         android:text="@string/pref_viewer_browse_mode"
         android:textAlignment="viewStart"
-        android:textSize="16sp"
+        android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_display_mode_group" />
 
@@ -128,6 +128,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
+        android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_browse_mode_title">
 
@@ -158,7 +159,7 @@
         android:gravity="start"
         android:text="@string/pref_viewer_fling_sensitivity"
         android:textAlignment="viewStart"
-        android:textSize="16sp"
+        android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_browse_mode_group" />
 
