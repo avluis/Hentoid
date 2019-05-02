@@ -49,6 +49,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
+import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -73,8 +74,7 @@ public class ImportActivity extends BaseActivity {
     private static final String RESTART_ON_EXIT = "restartOnExit";
     private static final String CALLED_BY_PREFS = "calledByPrefs";
     private static final String USE_DEFAULT_FOLDER = "useDefaultFolder";
-    private static final String IS_CLEANUP = "isCleanup";
-    private static final String IS_REFRESH = "isRefresh";
+    private static final String REFRESH_OPTIONS = "refreshOptions";
 
 
     private File currentRootDir;
@@ -83,8 +83,12 @@ public class ImportActivity extends BaseActivity {
     private boolean restartOnExit = false;              // True if app has to be restarted when exiting the activity
     private boolean calledByPrefs = false;              // True if activity has been called by PrefsActivity
     private boolean useDefaultFolder = false;           // True if activity has been called by IntroActivity and user has selected default storage
-    private boolean isCleanup = false;                  // True if user has asked for a collection cleanup
     private boolean isRefresh = false;                  // True if user has asked for a collection refresh
+    private boolean isRename = false;                   // True if user has asked for a collection renaming
+    private boolean isCleanAbsent = false;              // True if user has asked for the cleanup of folders with no JSONs
+    private boolean isCleanNoImages = false;            // True if user has asked for the cleanup of folders with no images
+    private boolean isCleanUnreadable = false;          // True if user has asked for the cleanup of folders with unreadable JSONs
+
 
     private ProgressDialog progressDialog;
 
@@ -112,8 +116,13 @@ public class ImportActivity extends BaseActivity {
                         break;
                 }
             }
-            isRefresh = intent.getBooleanExtra("refresh", false);
-            isCleanup = intent.getBooleanExtra("cleanup", false);
+
+            BundleManager manager = new BundleManager(intent.getExtras());
+            isRefresh = manager.getRefresh();
+            isRename = manager.getRefreshRename();
+            isCleanAbsent = manager.getRefreshCleanAbsent();
+            isCleanNoImages = manager.getRefreshCleanNoImages();
+            isCleanUnreadable = manager.getRefreshCleanUnreadable();
         }
 
         EventBus.getDefault().register(this);
@@ -128,8 +137,13 @@ public class ImportActivity extends BaseActivity {
             restartOnExit = savedState.getBoolean(RESTART_ON_EXIT);
             calledByPrefs = savedState.getBoolean(CALLED_BY_PREFS);
             useDefaultFolder = savedState.getBoolean(USE_DEFAULT_FOLDER);
-            isCleanup = savedState.getBoolean(IS_CLEANUP);
-            isRefresh = savedState.getBoolean(IS_REFRESH);
+
+            BundleManager manager = new BundleManager(savedState.getBundle(REFRESH_OPTIONS));
+            isRefresh = manager.getRefresh();
+            isRename = manager.getRefreshRename();
+            isCleanAbsent = manager.getRefreshCleanAbsent();
+            isCleanNoImages = manager.getRefreshCleanNoImages();
+            isCleanUnreadable = manager.getRefreshCleanUnreadable();
         }
         checkForDefaultDirectory();
     }
@@ -190,8 +204,16 @@ public class ImportActivity extends BaseActivity {
         outState.putBoolean(RESTART_ON_EXIT, restartOnExit);
         outState.putBoolean(CALLED_BY_PREFS, calledByPrefs);
         outState.putBoolean(USE_DEFAULT_FOLDER, useDefaultFolder);
-        outState.putBoolean(IS_CLEANUP, isCleanup);
-        outState.putBoolean(IS_REFRESH, isRefresh);
+
+        BundleManager manager = new BundleManager();
+
+        manager.setRefresh(isRefresh);
+        manager.setRefreshRename(isRename);
+        manager.setRefreshCleanAbsent(isCleanAbsent);
+        manager.setRefreshCleanNoImages(isCleanNoImages);
+        manager.setRefreshCleanUnreadable(isCleanUnreadable);
+
+        outState.putBundle(REFRESH_OPTIONS,manager.getBundle());
 
         super.onSaveInstanceState(outState);
     }
@@ -605,7 +627,15 @@ public class ImportActivity extends BaseActivity {
 
         ImportNotificationChannel.init(this);
         Intent intent = ImportService.makeIntent(this);
-        intent.putExtra("cleanup", isCleanup);
+
+        BundleManager manager = new BundleManager();
+        manager.setRefresh(isRefresh);
+        manager.setRefreshRename(isRename);
+        manager.setRefreshCleanAbsent(isCleanAbsent);
+        manager.setRefreshCleanNoImages(isCleanNoImages);
+        manager.setRefreshCleanUnreadable(isCleanUnreadable);
+        intent.putExtras(manager.getBundle());
+
         startService(intent);
     }
 

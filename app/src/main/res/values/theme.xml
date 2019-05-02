@@ -64,6 +64,11 @@
         <item name="android:textColorSecondary">@color/white</item>
         <item name="android:editTextColor">@color/white</item>
         <item name="textColorAlertDialogListItem">@color/white</item>
+        <item name="android:checkboxStyle">@style/PrefsThemeDialogCheckbox</item>
+    </style>
+
+    <style name="PrefsThemeDialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textColor">@color/white</item>
     </style>
 
 

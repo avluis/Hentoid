@@ -18,34 +18,36 @@ public class BundleManager {
     private static final String KEY_URIS_STR = "urisStr";
     private static final String KEY_CONTENT_ID = "contentId";
 
+    private static final String KEY_REFRESH = "refresh";
+    private static final String KEY_REFRESH_RENAME = "rename";
+    private static final String KEY_REFRESH_CLEAN_ABSENT = "cleanAbsent";
+    private static final String KEY_REFRESH_CLEAN_NO_IMAGES = "cleanNoImages";
+    private static final String KEY_REFRESH_CLEAN_UNREADABLE = "cleanUnreadable";
+
+
     private final Bundle bundle;
 
-    public BundleManager(Bundle bundle)
-    {
+    public BundleManager(Bundle bundle) {
         this.bundle = bundle;
     }
 
-    public BundleManager()
-    {
+    public BundleManager() {
         this.bundle = new Bundle();
     }
 
 
-    public Bundle getBundle()
-    {
+    public Bundle getBundle() {
         return bundle;
     }
 
-    public void setAttributeTypes(AttributeType... attributeTypes)
-    {
+    public void setAttributeTypes(AttributeType... attributeTypes) {
         ArrayList<Integer> attrTypes = new ArrayList<>();
         for (AttributeType type : attributeTypes) attrTypes.add(type.getCode());
 
         bundle.putIntegerArrayList(KEY_ATTRIBUTE_TYPES, attrTypes);
     }
 
-    public List<AttributeType> getAttributeTypes()
-    {
+    public List<AttributeType> getAttributeTypes() {
         List<AttributeType> result = new ArrayList<>();
 
         List<Integer> attrTypesList = bundle.getIntegerArrayList(KEY_ATTRIBUTE_TYPES);
@@ -56,25 +58,21 @@ public class BundleManager {
     }
 
 
-    public void setMode(int mode)
-    {
+    public void setMode(int mode) {
         bundle.putInt(KEY_MODE, mode);
     }
 
-    public int getMode()
-    {
+    public int getMode() {
         return bundle.getInt(KEY_MODE, -1);
     }
 
 
-    public void setUri(Uri uri)
-    {
+    public void setUri(Uri uri) {
         bundle.putString(KEY_URI, uri.toString());
     }
 
     @Nullable
-    public Uri getUri()
-    {
+    public Uri getUri() {
         Uri result = null;
 
         String uriStr = bundle.getString(KEY_URI, "");
@@ -93,11 +91,53 @@ public class BundleManager {
         return bundle.getStringArrayList(KEY_URIS_STR);
     }
 
+
     void setContentId(long contentId) {
         bundle.putLong(KEY_CONTENT_ID, contentId);
     }
 
     public long getContentId() {
         return bundle.getLong(KEY_CONTENT_ID, 0);
+    }
+
+
+    public void setRefresh(boolean refresh) {
+        bundle.putBoolean(KEY_REFRESH, refresh);
+    }
+
+    public boolean getRefresh() {
+        return bundle.getBoolean(KEY_REFRESH, false);
+    }
+
+    public void setRefreshRename(boolean rename) {
+        bundle.putBoolean(KEY_REFRESH_RENAME, rename);
+    }
+
+    public boolean getRefreshRename() {
+        return bundle.getBoolean(KEY_REFRESH_RENAME, false);
+    }
+
+    public void setRefreshCleanAbsent(boolean refresh) {
+        bundle.putBoolean(KEY_REFRESH_CLEAN_ABSENT, refresh);
+    }
+
+    public boolean getRefreshCleanAbsent() {
+        return bundle.getBoolean(KEY_REFRESH_CLEAN_ABSENT, false);
+    }
+
+    public void setRefreshCleanNoImages(boolean refresh) {
+        bundle.putBoolean(KEY_REFRESH_CLEAN_NO_IMAGES, refresh);
+    }
+
+    public boolean getRefreshCleanNoImages() {
+        return bundle.getBoolean(KEY_REFRESH_CLEAN_NO_IMAGES, false);
+    }
+
+    public void setRefreshCleanUnreadable(boolean refresh) {
+        bundle.putBoolean(KEY_REFRESH_CLEAN_UNREADABLE, refresh);
+    }
+
+    public boolean getRefreshCleanUnreadable() {
+        return bundle.getBoolean(KEY_REFRESH_CLEAN_UNREADABLE, false);
     }
 }

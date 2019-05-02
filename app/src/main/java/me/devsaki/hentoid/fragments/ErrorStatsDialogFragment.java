@@ -63,7 +63,7 @@ public class ErrorStatsDialogFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        return inflater.inflate(R.layout.fragment_error_stats, container, false);
+        return inflater.inflate(R.layout.dialog_error_stats, container, false);
     }
 
     @Override
