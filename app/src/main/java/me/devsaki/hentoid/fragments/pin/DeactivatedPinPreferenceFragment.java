@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.pin;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;

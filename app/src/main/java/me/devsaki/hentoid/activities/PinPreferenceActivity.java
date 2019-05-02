@@ -7,8 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.fragments.ActivatedPinPreferenceFragment;
-import me.devsaki.hentoid.fragments.DeactivatedPinPreferenceFragment;
+import me.devsaki.hentoid.fragments.pin.ActivatedPinPreferenceFragment;
+import me.devsaki.hentoid.fragments.pin.DeactivatedPinPreferenceFragment;
 import me.devsaki.hentoid.util.Preferences;
 
 public class PinPreferenceActivity extends AppCompatActivity {

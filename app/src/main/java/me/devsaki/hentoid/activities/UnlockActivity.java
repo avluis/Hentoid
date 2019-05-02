@@ -10,7 +10,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.fragments.UnlockPinDialogFragment;
+import me.devsaki.hentoid.fragments.pin.UnlockPinDialogFragment;
 import me.devsaki.hentoid.util.Preferences;
 
 /**

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.pin;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,26 +10,27 @@ import android.view.View;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
 
-public final class UnlockPinDialogFragment extends PinDialogFragment {
+public final class DeactivatePinDialogFragment extends PinDialogFragment {
 
     private Parent parent;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        parent = (Parent) context;
+        parent = (Parent) getParentFragment();
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        setHeaderText(R.string.app_lock_pin);
+        setHeaderText(R.string.pin_current);
     }
 
     @Override
     protected void onPinAccept(String pin) {
         if (Preferences.getAppLockPin().equals(pin)) {
+            Preferences.setAppLockPin("");
             dismiss();
-            parent.onPinSuccess();
+            parent.onPinDeactivateSuccess();
         } else {
             vibrate();
             clearPin();
@@ -38,14 +39,13 @@ public final class UnlockPinDialogFragment extends PinDialogFragment {
 
     @Override
     public void onCancel(DialogInterface dialog) {
-        super.onCancel(dialog);
-        parent.onPinCancel();
+        parent.onPinDeactivateCancel();
     }
 
     public interface Parent {
 
-        void onPinSuccess();
+        void onPinDeactivateSuccess();
 
-        void onPinCancel();
+        void onPinDeactivateCancel();
     }
 }
