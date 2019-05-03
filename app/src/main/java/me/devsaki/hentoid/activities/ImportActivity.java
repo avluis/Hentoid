@@ -117,12 +117,14 @@ public class ImportActivity extends BaseActivity {
                 }
             }
 
-            BundleManager manager = new BundleManager(intent.getExtras());
-            isRefresh = manager.getRefresh();
-            isRename = manager.getRefreshRename();
-            isCleanAbsent = manager.getRefreshCleanAbsent();
-            isCleanNoImages = manager.getRefreshCleanNoImages();
-            isCleanUnreadable = manager.getRefreshCleanUnreadable();
+            if (intent.getExtras() != null) {
+                BundleManager manager = new BundleManager(intent.getExtras());
+                isRefresh = manager.getRefresh();
+                isRename = manager.getRefreshRename();
+                isCleanAbsent = manager.getRefreshCleanAbsent();
+                isCleanNoImages = manager.getRefreshCleanNoImages();
+                isCleanUnreadable = manager.getRefreshCleanUnreadable();
+            }
         }
 
         EventBus.getDefault().register(this);
@@ -138,12 +140,15 @@ public class ImportActivity extends BaseActivity {
             calledByPrefs = savedState.getBoolean(CALLED_BY_PREFS);
             useDefaultFolder = savedState.getBoolean(USE_DEFAULT_FOLDER);
 
-            BundleManager manager = new BundleManager(savedState.getBundle(REFRESH_OPTIONS));
-            isRefresh = manager.getRefresh();
-            isRename = manager.getRefreshRename();
-            isCleanAbsent = manager.getRefreshCleanAbsent();
-            isCleanNoImages = manager.getRefreshCleanNoImages();
-            isCleanUnreadable = manager.getRefreshCleanUnreadable();
+            Bundle bundle = savedState.getBundle(REFRESH_OPTIONS);
+            if (bundle != null) {
+                BundleManager manager = new BundleManager(bundle);
+                isRefresh = manager.getRefresh();
+                isRename = manager.getRefreshRename();
+                isCleanAbsent = manager.getRefreshCleanAbsent();
+                isCleanNoImages = manager.getRefreshCleanNoImages();
+                isCleanUnreadable = manager.getRefreshCleanUnreadable();
+            }
         }
         checkForDefaultDirectory();
     }
@@ -187,8 +192,8 @@ public class ImportActivity extends BaseActivity {
         File[] hentoidDirs = root.listFiles(
                 file -> (file.isDirectory() &&
                         (
-                        file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
-                        || file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)
+                                file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY)
+                                        || file.getName().equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)
                         )
                 )
         );
@@ -213,7 +218,7 @@ public class ImportActivity extends BaseActivity {
         manager.setRefreshCleanNoImages(isCleanNoImages);
         manager.setRefreshCleanUnreadable(isCleanUnreadable);
 
-        outState.putBundle(REFRESH_OPTIONS,manager.getBundle());
+        outState.putBundle(REFRESH_OPTIONS, manager.getBundle());
 
         super.onSaveInstanceState(outState);
     }
@@ -512,15 +517,15 @@ public class ImportActivity extends BaseActivity {
                     String folderName = (uriContents.length > 1) ? uriContents[1] : "";
                     String folderPath = paths[0] + File.separatorChar + folderName;
                     // Don't create a .Hentoid subfolder inside the .Hentoid (or Hentoid) folder the user just selected...
-                    if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD))
-                    {
+                    if (!folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY) && !folderName.equalsIgnoreCase(Consts.DEFAULT_LOCAL_DIRECTORY_OLD)) {
                         // Look for a Hentoid folder inside the selected folder
                         if (!folderPath.endsWith(File.separator)) folderPath += File.separator;
                         File folder = new File(folderPath);
                         File targetFolder = getExistingHentoidDirFrom(folder);
 
                         // If not, create one
-                        if (targetFolder.getAbsolutePath().equals(folder.getAbsolutePath())) targetFolder = new File(targetFolder, Consts.DEFAULT_LOCAL_DIRECTORY);
+                        if (targetFolder.getAbsolutePath().equals(folder.getAbsolutePath()))
+                            targetFolder = new File(targetFolder, Consts.DEFAULT_LOCAL_DIRECTORY);
                         folderPath = targetFolder.getAbsolutePath();
                     }
 

@@ -6,6 +6,8 @@ import android.os.Bundle;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnegative;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.enums.AttributeType;
@@ -27,7 +29,7 @@ public class BundleManager {
 
     private final Bundle bundle;
 
-    public BundleManager(Bundle bundle) {
+    public BundleManager(@Nonnull Bundle bundle) {
         this.bundle = bundle;
     }
 
