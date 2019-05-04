@@ -269,8 +269,8 @@ public final class Preferences {
     public static final class Default {
         public static final int PREF_QUANTITY_PER_PAGE_DEFAULT = 20;
         public static final int PREF_WEBVIEW_INITIAL_ZOOM_DEFAULT = 20;
-        static final int PREF_ORDER_CONTENT_DEFAULT = Constant.PREF_ORDER_CONTENT_TITLE_ALPHA;
-        static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.PREF_ORDER_ATTRIBUTES_COUNT;
+        static final int PREF_ORDER_CONTENT_DEFAULT = Constant.ORDER_CONTENT_TITLE_ALPHA;
+        static final int PREF_ORDER_ATTRIBUTES_DEFAULT = Constant.ORDER_ATTRIBUTES_COUNT;
         static final boolean PREF_FIRST_RUN_DEFAULT = true;
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
         static final boolean PREF_HIDE_RECENT_DEFAULT = (!BuildConfig.DEBUG); // Debug apps always visible to facilitate video capture
@@ -291,18 +291,18 @@ public final class Preferences {
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
     public static final class Constant {
         public static final int DOWNLOAD_THREAD_COUNT_AUTO = 0;
-        public static final int PREF_ORDER_CONTENT_NONE = -1;
-        public static final int PREF_ORDER_CONTENT_TITLE_ALPHA = 0;
-        public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
-        public static final int PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED = 2;
-        public static final int PREF_ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
-        public static final int PREF_ORDER_CONTENT_RANDOM = 4;
-        public static final int PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
-        public static final int PREF_ORDER_CONTENT_LEAST_READ = 6;
-        public static final int PREF_ORDER_CONTENT_MOST_READ = 7;
-        public static final int PREF_ORDER_CONTENT_LAST_READ = 8;
-        public static final int PREF_ORDER_ATTRIBUTES_ALPHABETIC = 0;
-        public static final int PREF_ORDER_ATTRIBUTES_COUNT = 1;
+        public static final int ORDER_CONTENT_NONE = -1;
+        public static final int ORDER_CONTENT_TITLE_ALPHA = 0;
+        public static final int ORDER_CONTENT_LAST_DL_DATE_FIRST = 1;
+        public static final int ORDER_CONTENT_TITLE_ALPHA_INVERTED = 2;
+        public static final int ORDER_CONTENT_LAST_DL_DATE_LAST = 3;
+        public static final int ORDER_CONTENT_RANDOM = 4;
+        public static final int ORDER_CONTENT_LAST_UL_DATE_FIRST = 5;
+        public static final int ORDER_CONTENT_LEAST_READ = 6;
+        public static final int ORDER_CONTENT_MOST_READ = 7;
+        public static final int ORDER_CONTENT_LAST_READ = 8;
+        public static final int ORDER_ATTRIBUTES_ALPHABETIC = 0;
+        public static final int ORDER_ATTRIBUTES_COUNT = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;

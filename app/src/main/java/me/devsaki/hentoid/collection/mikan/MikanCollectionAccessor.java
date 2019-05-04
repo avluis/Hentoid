@@ -113,7 +113,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
-        boolean showMostRecentFirst = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST == orderStyle;
+        boolean showMostRecentFirst = Preferences.Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST == orderStyle;
 
         if (isSiteUnsupported(site)) {
             throw new UnsupportedOperationException("Site " + site.getDescription() + "not supported yet by Mikan search");
@@ -320,7 +320,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
         Comparator<Attribute> comparator;
         switch (sortOrder) {
-            case Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC:
+            case Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC:
                 comparator = Attribute.NAME_COMPARATOR;
                 break;
             default:

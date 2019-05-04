@@ -30,6 +30,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Preferences;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -337,9 +338,9 @@ public class Content implements Serializable {
         if (this.attributeMap != null) {
             this.attributes.clear();
             for (AttributeType type : this.attributeMap.keySet()) {
-                for (Attribute attr : this.attributeMap.get(type))
-                {
-                    if (null == attr.getType()) attr.setType(AttributeType.SERIE); // Fix the issue with v1.6.5
+                for (Attribute attr : this.attributeMap.get(type)) {
+                    if (null == attr.getType())
+                        attr.setType(AttributeType.SERIE); // Fix the issue with v1.6.5
                     this.attributes.add(attr.computeLocation(site));
                 }
             }
@@ -531,7 +532,6 @@ public class Content implements Serializable {
     }
 
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -547,6 +547,31 @@ public class Content implements Serializable {
         int result = url != null ? url.hashCode() : 0;
         result = 31 * result + (site != null ? site.hashCode() : 0);
         return result;
+    }
+
+    public static Comparator<Content> getComparator(int compareMethod) {
+        switch (compareMethod) {
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
+                return TITLE_ALPHA_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
+                return DLDATE_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
+                return TITLE_ALPHA_INV_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
+                return DLDATE_INV_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_RANDOM:
+                return QUERY_ORDER_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST:
+                return ULDATE_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
+                return READS_ORDER_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
+                return READS_ORDER_INV_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
+                return READ_DATE_INV_COMPARATOR;
+            default:
+                return QUERY_ORDER_COMPARATOR;
+        }
     }
 
     public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
