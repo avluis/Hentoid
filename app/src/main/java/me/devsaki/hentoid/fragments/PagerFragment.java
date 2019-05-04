@@ -97,5 +97,6 @@ public class PagerFragment extends DownloadsFragment {
 
         pager.setPageCount((int) Math.ceil(totalSelectedContent * 1.0 / booksPerPage));
         pager.setCurrentPage(currentPage);
+        mListView.scrollToPosition(0);
     }
 }
