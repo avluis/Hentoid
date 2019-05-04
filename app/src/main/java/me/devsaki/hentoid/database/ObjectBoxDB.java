@@ -61,10 +61,10 @@ public class ObjectBoxDB {
 
 
     private ObjectBoxDB(Context context) {
-        store = MyObjectBox.builder().androidContext(context).build();
+        store = MyObjectBox.builder().androidContext(context.getApplicationContext()).build();
 
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
-            boolean started = new AndroidObjectBrowser(store).start(context);
+            boolean started = new AndroidObjectBrowser(store).start(context.getApplicationContext());
             Timber.i("ObjectBrowser started: %s", started);
         }
     }
