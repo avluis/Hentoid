@@ -209,6 +209,10 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
     private ContentQueryResult contentSearch(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
 
+// StringBuilder sb = new StringBuilder();
+// for (Attribute a : metadata) sb.append(a.getName()).append(";");
+// Timber.i("contentSearch " + mode +"," + filter +"," + sb.toString() + "," + page +"," +  booksPerPage +"," +  orderStyle +"," + favouritesOnly);
+
         ContentQueryResult result = new ContentQueryResult();
 
         if (MODE_SEARCH_CONTENT_MODULAR == mode) {
@@ -228,6 +232,10 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         }
         // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
         result.totalContent = db.countAllContent();
+
+// sb = new StringBuilder();
+// for (Content c : result.pagedContents) sb.append(c.getId()).append(";");
+// Timber.i("contentSearch result [%s] : %s", result.totalSelectedContent, sb.toString());
 
         return result;
     }
