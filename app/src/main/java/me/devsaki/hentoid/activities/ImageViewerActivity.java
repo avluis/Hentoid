@@ -9,8 +9,8 @@ import android.view.WindowManager;
 
 import java.util.List;
 
+import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
-import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
@@ -29,9 +29,9 @@ public class ImageViewerActivity extends AppCompatActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Intent intent = getIntent();
-        if (intent != null) {
-            BundleManager manager = new BundleManager(intent.getExtras());
-            List<String> uris = manager.getUrisStr();
+        if (intent != null && intent.getExtras() != null) {
+            ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
+            List<String> uris = parser.getUrisStr();
 
             if (null == uris) {
                 throw new RuntimeException("Initialization failed");
@@ -39,7 +39,7 @@ public class ImageViewerActivity extends AppCompatActivity {
 
             viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
             viewModel.setImages(uris);
-            viewModel.setContentId(manager.getContentId());
+            viewModel.setContentId(parser.getContentId());
         }
 
         PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION);

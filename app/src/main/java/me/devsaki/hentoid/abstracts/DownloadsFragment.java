@@ -43,6 +43,7 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
@@ -59,7 +60,6 @@ import me.devsaki.hentoid.fragments.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
-import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -733,11 +733,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void onAdvancedSearchClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
-        BundleManager manager = new BundleManager();
-        manager.setMode(mode);
+        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
+
+        builder.setMode(mode);
         if (!selectedSearchTags.isEmpty())
-            manager.setUri(Helper.buildSearchUri(selectedSearchTags));
-        search.putExtras(manager.getBundle());
+            builder.setUri(Helper.buildSearchUri(selectedSearchTags));
+        search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
         searchMenu.collapseActionView();
@@ -1128,14 +1129,15 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (requestCode == 999) {
             if (resultCode == Activity.RESULT_OK) {
-                BundleManager manager = new BundleManager(data.getExtras());
-                Uri searchUri = manager.getUri();
+                if (data != null && data.getExtras() != null) {
+                    Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
 
-                if (searchUri != null) {
-                    setQuery(searchUri.getPath());
-                    selectedSearchTags = Helper.parseSearchUri(searchUri);
+                    if (searchUri != null) {
+                        setQuery(searchUri.getPath());
+                        selectedSearchTags = Helper.parseSearchUri(searchUri);
 
-                    searchLibrary(true);
+                        searchLibrary(true);
+                    }
                 }
             }
         }
@@ -1152,8 +1154,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (0 == mTotalCount) currentPage = 1;
 
-        if (0 == mTotalSelectedCount)
-        {
+        if (0 == mTotalSelectedCount) {
             displayNoResults();
             clearSelection();
         }

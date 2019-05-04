@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -28,7 +29,6 @@ import me.devsaki.hentoid.model.DoujinBuilder;
 import me.devsaki.hentoid.model.URLBuilder;
 import me.devsaki.hentoid.notification.import_.ImportCompleteNotification;
 import me.devsaki.hentoid.notification.import_.ImportStartNotification;
-import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JSONParseException;
@@ -96,12 +96,12 @@ public class ImportService extends IntentService {
         boolean doCleanNoImages = false;
         boolean doCleanUnreadable = false;
 
-        if (intent != null) {
-            BundleManager manager = new BundleManager(intent.getExtras());
-            doRename = manager.getRefreshRename();
-            doCleanAbsent = manager.getRefreshCleanAbsent();
-            doCleanNoImages = manager.getRefreshCleanNoImages();
-            doCleanUnreadable = manager.getRefreshCleanUnreadable();
+        if (intent != null && intent.getExtras() != null) {
+            ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(intent.getExtras());
+            doRename = parser.getRefreshRename();
+            doCleanAbsent = parser.getRefreshCleanAbsent();
+            doCleanNoImages = parser.getRefreshCleanNoImages();
+            doCleanUnreadable = parser.getRefreshCleanUnreadable();
         }
         startImport(doRename, doCleanAbsent, doCleanNoImages, doCleanUnreadable);
     }

@@ -38,6 +38,7 @@ import java.util.List;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.dirpicker.events.OnDirCancelEvent;
 import me.devsaki.hentoid.dirpicker.events.OnDirChosenEvent;
@@ -49,7 +50,6 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.notification.import_.ImportNotificationChannel;
 import me.devsaki.hentoid.services.ImportService;
-import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -118,12 +118,12 @@ public class ImportActivity extends BaseActivity {
             }
 
             if (intent.getExtras() != null) {
-                BundleManager manager = new BundleManager(intent.getExtras());
-                isRefresh = manager.getRefresh();
-                isRename = manager.getRefreshRename();
-                isCleanAbsent = manager.getRefreshCleanAbsent();
-                isCleanNoImages = manager.getRefreshCleanNoImages();
-                isCleanUnreadable = manager.getRefreshCleanUnreadable();
+                ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(intent.getExtras());
+                isRefresh = parser.getRefresh();
+                isRename = parser.getRefreshRename();
+                isCleanAbsent = parser.getRefreshCleanAbsent();
+                isCleanNoImages = parser.getRefreshCleanNoImages();
+                isCleanUnreadable = parser.getRefreshCleanUnreadable();
             }
         }
 
@@ -142,12 +142,12 @@ public class ImportActivity extends BaseActivity {
 
             Bundle bundle = savedState.getBundle(REFRESH_OPTIONS);
             if (bundle != null) {
-                BundleManager manager = new BundleManager(bundle);
-                isRefresh = manager.getRefresh();
-                isRename = manager.getRefreshRename();
-                isCleanAbsent = manager.getRefreshCleanAbsent();
-                isCleanNoImages = manager.getRefreshCleanNoImages();
-                isCleanUnreadable = manager.getRefreshCleanUnreadable();
+                ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(bundle);
+                isRefresh = parser.getRefresh();
+                isRename = parser.getRefreshRename();
+                isCleanAbsent = parser.getRefreshCleanAbsent();
+                isCleanNoImages = parser.getRefreshCleanNoImages();
+                isCleanUnreadable = parser.getRefreshCleanUnreadable();
             }
         }
         checkForDefaultDirectory();
@@ -210,15 +210,15 @@ public class ImportActivity extends BaseActivity {
         outState.putBoolean(CALLED_BY_PREFS, calledByPrefs);
         outState.putBoolean(USE_DEFAULT_FOLDER, useDefaultFolder);
 
-        BundleManager manager = new BundleManager();
+        ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
 
-        manager.setRefresh(isRefresh);
-        manager.setRefreshRename(isRename);
-        manager.setRefreshCleanAbsent(isCleanAbsent);
-        manager.setRefreshCleanNoImages(isCleanNoImages);
-        manager.setRefreshCleanUnreadable(isCleanUnreadable);
+        builder.setRefresh(isRefresh);
+        builder.setRefreshRename(isRename);
+        builder.setRefreshCleanAbsent(isCleanAbsent);
+        builder.setRefreshCleanNoImages(isCleanNoImages);
+        builder.setRefreshCleanUnreadable(isCleanUnreadable);
 
-        outState.putBundle(REFRESH_OPTIONS, manager.getBundle());
+        outState.putBundle(REFRESH_OPTIONS, builder.getBundle());
 
         super.onSaveInstanceState(outState);
     }
@@ -633,13 +633,13 @@ public class ImportActivity extends BaseActivity {
         ImportNotificationChannel.init(this);
         Intent intent = ImportService.makeIntent(this);
 
-        BundleManager manager = new BundleManager();
-        manager.setRefresh(isRefresh);
-        manager.setRefreshRename(isRename);
-        manager.setRefreshCleanAbsent(isCleanAbsent);
-        manager.setRefreshCleanNoImages(isCleanNoImages);
-        manager.setRefreshCleanUnreadable(isCleanUnreadable);
-        intent.putExtras(manager.getBundle());
+        ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
+        builder.setRefresh(isRefresh);
+        builder.setRefreshRename(isRename);
+        builder.setRefreshCleanAbsent(isCleanAbsent);
+        builder.setRefreshCleanNoImages(isCleanNoImages);
+        builder.setRefreshCleanUnreadable(isCleanUnreadable);
+        intent.putExtras(builder.getBundle());
 
         startService(intent);
     }

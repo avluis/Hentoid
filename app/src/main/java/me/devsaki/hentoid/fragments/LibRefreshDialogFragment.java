@@ -14,7 +14,7 @@ import android.widget.CheckBox;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
-import me.devsaki.hentoid.util.BundleManager;
+import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 
 import static android.support.v4.view.ViewCompat.requireViewById;
 
@@ -58,15 +58,15 @@ public class LibRefreshDialogFragment extends DialogFragment {
         Intent refresh = new Intent(requireContext(), ImportActivity.class);
         refresh.setAction("android.intent.action.APPLICATION_PREFERENCES"); // Is only a constant since API 24 -> using the string
 
-        BundleManager manager = new BundleManager();
+        ImportActivityBundle.Builder builder = new ImportActivityBundle.Builder();
 
-        manager.setRefresh(true);
-        manager.setRefreshRename(rename);
-        manager.setRefreshCleanAbsent(cleanAbsent);
-        manager.setRefreshCleanNoImages(cleanNoImages);
-        manager.setRefreshCleanUnreadable(cleanUnreadable);
+        builder.setRefresh(true);
+        builder.setRefreshRename(rename);
+        builder.setRefreshCleanAbsent(cleanAbsent);
+        builder.setRefreshCleanNoImages(cleanNoImages);
+        builder.setRefreshCleanUnreadable(cleanUnreadable);
 
-        refresh.putExtras(manager.getBundle());
+        refresh.putExtras(builder.getBundle());
 
         startActivity(refresh);
         dismiss();

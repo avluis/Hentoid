@@ -17,11 +17,11 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.SelectedAttributeAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.fragments.SearchBottomSheetFragment;
-import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewmodels.SearchViewModel;
 import timber.log.Timber;
@@ -31,12 +31,6 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_LIBRARY;
 
 /**
  * Created by Robb on 2018/11
- * <p>
- * TODO - use a RecyclerView for the input and choice chips. Implement an adapter for each
- * recyclerview and feed both adapters with the same data list modeling the currently selected
- * filters. Whenever the filter list is modified, notify both adapters independently to update
- * views. This should cleanup selection behavior and delegate managing views to the RecyclerView
- * framework.
  */
 public class SearchActivity extends BaseActivity {
 
@@ -65,17 +59,17 @@ public class SearchActivity extends BaseActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        BundleManager manager = new BundleManager(outState);
-        manager.setUri(Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue()));
+
+        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
+        builder.setUri(Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue()));
+        outState.putAll(builder.getBundle());
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
 
-        BundleManager manager = new BundleManager(savedInstanceState);
-        Uri searchUri = manager.getUri();
-
+        Uri searchUri = new SearchActivityBundle.Parser(savedInstanceState).getUri();
         if (searchUri != null) {
             List<Attribute> preSelectedAttributes = Helper.parseSearchUri(searchUri);
             if (preSelectedAttributes != null)
@@ -89,10 +83,11 @@ public class SearchActivity extends BaseActivity {
 
         Intent intent = getIntent();
         List<Attribute> preSelectedAttributes = null;
-        if (intent != null) {
-            BundleManager manager = new BundleManager(intent.getExtras());
-            mode = manager.getMode();
-            Uri searchUri = manager.getUri();
+        if (intent != null && intent.getExtras() != null) {
+
+            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(intent.getExtras());
+            mode = parser.getMode();
+            Uri searchUri = parser.getUri();
             if (searchUri != null) preSelectedAttributes = Helper.parseSearchUri(searchUri);
         }
 
@@ -136,7 +131,8 @@ public class SearchActivity extends BaseActivity {
             @Override
             public void onItemRangeInserted(int positionStart, int itemCount) {
                 llm.smoothScrollToPosition(searchTags, null, selectedAttributeAdapter.getItemCount());
-            } });
+            }
+        });
         searchTags.setAdapter(selectedAttributeAdapter);
 
         searchButton = findViewById(R.id.search_fab);
@@ -207,10 +203,9 @@ public class SearchActivity extends BaseActivity {
         Uri searchUri = Helper.buildSearchUri(viewModel.getSelectedAttributesData().getValue());
         Timber.d("URI :%s", searchUri);
 
+        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder().setUri(searchUri);
         Intent returnIntent = new Intent();
-        BundleManager manager = new BundleManager();
-        manager.setUri(searchUri);
-        returnIntent.putExtras(manager.getBundle());
+        returnIntent.putExtras(builder.getBundle());
 
         setResult(Activity.RESULT_OK, returnIntent);
         finish();

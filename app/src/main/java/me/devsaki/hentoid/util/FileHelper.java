@@ -35,6 +35,7 @@ import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImageViewerActivity;
+import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -622,16 +623,15 @@ public class FileHelper {
      * @param imageFiles Image files to be shown
      */
     private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, @NonNull File[] imageFiles) {
-        BundleManager manager = new BundleManager();
-
         List<String> imagesLocations = new ArrayList<>();
         for (File f : imageFiles) imagesLocations.add(f.getAbsolutePath());
 
-        manager.setContentId(content.getId());
-        manager.setUrisStr(imagesLocations);
+        ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
+        builder.setContentId(content.getId());
+        builder.setUrisStr(imagesLocations);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
-        viewer.putExtras(manager.getBundle());
+        viewer.putExtras(builder.getBundle());
 
         context.startActivity(viewer);
     }
