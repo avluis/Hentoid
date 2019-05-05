@@ -179,4 +179,5 @@
     <string name="pref_viewer_image_display">Image display mode</string>
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_fling_sensitivity">Fling sensitivity</string>
+    <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
 </resources>

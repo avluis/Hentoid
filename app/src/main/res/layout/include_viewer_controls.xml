@@ -35,6 +35,23 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
+    <TextView
+        android:id="@+id/viewer_discord_text"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:padding="8dp"
+        android:textSize="@dimen/text_subtitle_2"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="#AAFFFFFF"
+        android:text="@string/viewer_discord"
+        app:layout_constraintLeft_toRightOf="@id/viewer_back_btn"
+        app:layout_constraintRight_toLeftOf="@id/viewer_settings_btn"
+        app:layout_constraintTop_toTopOf="parent"
+        />
+
     <View
         android:layout_width="match_parent"
         android:layout_height="96dp"
@@ -59,7 +76,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        android:textSize="16sp"
+        android:textSize="@dimen/text_body_1"
         android:textAlignment="center"
         tools:text="28/225"
         app:layout_constraintLeft_toLeftOf="parent"
