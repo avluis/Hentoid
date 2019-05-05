@@ -84,6 +84,8 @@ public class Content implements Serializable {
     private ToMany<ErrorRecord> errorLog;
     @Expose(serialize = false, deserialize = false)
     private int lastReadPageIndex = 0;
+    @Expose(serialize = false, deserialize = false)
+    private boolean isBeingDeleted = false;
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
@@ -531,6 +533,15 @@ public class Content implements Serializable {
         return this;
     }
 
+    public boolean isBeingDeleted() {
+        return isBeingDeleted;
+    }
+
+    public Content setIsBeingDeleted(boolean isBeingDeleted) {
+        this.isBeingDeleted = isBeingDeleted;
+        return this;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -574,15 +585,15 @@ public class Content implements Serializable {
         }
     }
 
-    public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
+    private static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
 
-    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; // Inverted - last download date first
+    private static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; // Inverted - last download date first
 
-    public static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; // Inverted - last upload date first
+    private static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; // Inverted - last upload date first
 
-    public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
+    private static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
 
-    public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
+    private static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
 
     public static final Comparator<Content> READS_ORDER_COMPARATOR = (a, b) -> {
         int comp = Long.compare(a.getReads(), b.getReads());
@@ -596,5 +607,5 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> READ_DATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getLastReadDate(), b.getLastReadDate()) * -1;
 
-    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
+    private static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
 }
