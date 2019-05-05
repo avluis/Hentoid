@@ -732,23 +732,15 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         for (Content c : contents) sb.append(c.getId()).append(",");
         Crashlytics.log("deleteItems " + sb.toString());
 
-        mSortedList.beginBatchedUpdates();
-
         compositeDisposable.add(
                 Observable.fromIterable(contents)
                         .subscribeOn(Schedulers.io())
                         .flatMap(s -> Observable.fromCallable(() -> deleteContent(s.getId())))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                mSortedList::remove,
+                                this::remove,
                                 Timber::e,
-                                () -> {
-                                    if (onContentRemovedListener != null)
-                                        onContentRemovedListener.accept(contents.size());
-                                    mSortedList.endBatchedUpdates();
-                                    itemSelectListener.onItemClear(0);
-                                    ToastUtil.toast(context, "Selected items have been deleted.");
-                                }
+                                () -> ToastUtil.toast(context, "Selected items have been deleted.")
                         )
         );
     }
