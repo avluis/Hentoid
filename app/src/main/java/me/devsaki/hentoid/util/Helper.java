@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.text.Html;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.webkit.WebResourceResponse;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,6 +56,7 @@ public final class Helper {
     public static void viewContent(final Context context, Content content) {
         viewContent(context, content, false);
     }
+
     public static void viewContent(final Context context, Content content, boolean wrapPin) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -326,5 +329,21 @@ public final class Helper {
 
     public static boolean isNumeric(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+    }
+
+    /**
+     * Open the given url using the device's app(s) of choice
+     *
+     * @param context Context
+     * @param url     Url to be opened
+     */
+    public static void openUrl(Context context, String url) {
+        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        try {
+            context.startActivity(myIntent);
+        } catch (ActivityNotFoundException e) {
+            Timber.e(e, "Activity not found to open %s", url);
+            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+        }
     }
 }

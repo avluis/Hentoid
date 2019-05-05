@@ -14,6 +14,7 @@ import android.widget.TextView;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
+import me.devsaki.hentoid.util.Helper;
 
 import static android.content.Intent.ACTION_VIEW;
 
@@ -53,11 +54,7 @@ public class AboutActivity extends BaseActivity {
     }
 
     private void bindTextViewLink(@IdRes int tvId, @StringRes int linkId) {
-        String url = getString(linkId);
-        Uri uri = Uri.parse(url);
-        Intent intent = new Intent(ACTION_VIEW, uri);
-
         View linkableView = findViewById(tvId);
-        linkableView.setOnClickListener(v -> startActivity(intent));
+        linkableView.setOnClickListener(v -> Helper.openUrl(this, getString(linkId)));
     }
 }
