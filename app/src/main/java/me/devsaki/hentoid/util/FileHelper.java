@@ -349,13 +349,6 @@ public class FileHelper {
 
     @WorkerThread
     public static void removeContent(Content content) {
-
-        try {
-            Thread.sleep(8000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (content.getStorageFolder().length() > 0) {
             String settingDir = Preferences.getRootFolderName();
