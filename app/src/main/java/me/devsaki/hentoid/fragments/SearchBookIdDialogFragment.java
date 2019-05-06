@@ -71,12 +71,12 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             if (!foundSitesList.contains(Site.HENTAICAFE.getCode())) sites.add(Site.HENTAICAFE);
             if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
 
-            RecyclerView sitesRecycler = view.findViewById(R.id.select_sites);
-            sitesRecycler.setLayoutManager(new LinearLayoutManager(this.getContext()));
             SiteAdapter siteAdapter = new SiteAdapter();
             siteAdapter.setOnClickListener(this::onItemSelected);
-            sitesRecycler.setAdapter(siteAdapter);
             siteAdapter.add(sites);
+
+            RecyclerView sitesRecycler = view.findViewById(R.id.select_sites);
+            sitesRecycler.setAdapter(siteAdapter);
         }
     }
 
