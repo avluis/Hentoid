@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.adapters.SiteAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Consts;
 
 /**
  * Created by Robb on 11/2018
@@ -105,7 +104,11 @@ public class SearchBookIdDialogFragment extends DialogFragment {
         if (s != null) {
             Intent intent = new Intent(requireContext(), Content.getWebActivityClass(s));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra(Consts.INTENT_URL, getUrlFromId(s, bookId));
+
+            BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
+            builder.setUrl(getUrlFromId(s, bookId));
+            intent.putExtras(builder.getBundle());
+
             requireContext().startActivity(intent);
             this.dismiss();
         }

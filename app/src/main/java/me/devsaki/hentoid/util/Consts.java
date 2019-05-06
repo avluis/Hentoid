@@ -24,4 +24,9 @@ public abstract class Consts {
                     + " Hentoid/v" + BuildConfig.VERSION_NAME;
 
     public static final String USER_AGENT_NEUTRAL = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.98 Safari/537.36";
+
+    public static final String URL_GITHUB = "https://github.com/AVnetWS/Hentoid";
+    public static final String URL_GITHUB_WIKI = "https://github.com/AVnetWS/Hentoid/wiki";
+    public static final String URL_DISCORD = "https://discord.gg/QEZ3qk9"; // If that value changes, change it in assets/about_mikan.html too
+    public static final String URL_REDDIT = "https://www.reddit.com/r/Hentoid/";
 }

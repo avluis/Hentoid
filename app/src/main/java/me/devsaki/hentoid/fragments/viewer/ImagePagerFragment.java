@@ -22,6 +22,7 @@ import java.util.Objects;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImageRecyclerAdapter;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -144,7 +145,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         settingsButton.setOnClickListener(v -> onSettingsClick());
         // Tap discord button
         View discordButton = requireViewById(rootView, R.id.viewer_discord_text);
-        discordButton.setOnClickListener(v -> Helper.openUrl(requireContext(), requireContext().getString(R.string.about_discord_url)));
+        discordButton.setOnClickListener(v -> Helper.openUrl(requireContext(), Consts.URL_DISCORD));
         // Page number button
         pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
         pageNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));

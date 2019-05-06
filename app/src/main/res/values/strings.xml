@@ -143,12 +143,8 @@
     <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library :\n  - Session ID\n  - IP address</string>
     <string name="personalDataStatement3">The abovementioned data is removed from Firebase live and backup system within 180 days (see https://firebase.google.com/support/privacy/ for more details)\n\nNo other personal data is collected nor sent to any other party.</string>
     <string name="about_github" translatable="false"><u>GitHub</u></string>
-    <string name="about_github_url" translatable="false">https://github.com/AVnetWS/Hentoid</string>
-    <string name="about_github_wiki_url" translatable="false">https://github.com/AVnetWS/Hentoid/wiki</string>
     <string name="about_discord" translatable="false"><u>Discord</u></string>
-    <string name="about_discord_url" translatable="false">https://discord.gg/QEZ3qk9</string> <!-- to update on about_mikan.html too -->
     <string name="about_reddit" translatable="false"><u>Reddit</u></string>
-    <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
     <string name="about_licenses">Display Licenses</string>
     <!-- Web viewer -->
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
