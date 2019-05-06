@@ -247,6 +247,6 @@ public class QueueFragment extends BaseFragment {
 
     private void showStats() {
         if (mAdapter != null && mAdapter.getCount() > 0 && mAdapter.getItem(0) != null)
-            ErrorStatsDialogFragment.invoke(requireActivity().getSupportFragmentManager(), mAdapter.getItem(0).getId());
+            ErrorStatsDialogFragment.invoke(requireFragmentManager(), mAdapter.getItem(0).getId());
     }
 }
