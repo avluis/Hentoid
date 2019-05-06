@@ -10,8 +10,6 @@ public abstract class Consts {
 
     public static final String DATABASE_NAME = "hentoid.db";
 
-    public static final String INTENT_URL = "url";
-
     public static final String DEFAULT_LOCAL_DIRECTORY_OLD = "Hentoid";
     public static final String DEFAULT_LOCAL_DIRECTORY = ".Hentoid";
 

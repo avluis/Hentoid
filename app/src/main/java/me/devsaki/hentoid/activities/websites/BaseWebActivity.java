@@ -36,6 +36,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -148,8 +149,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         initWebView();
         initSwipeLayout();
 
-        String intentVar = getIntent().getStringExtra(Consts.INTENT_URL);
-        webView.loadUrl(intentVar == null ? getStartSite().getUrl() : intentVar);
+        String intentUrl = "";
+        if (getIntent().getExtras() != null) {
+            BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
+            intentUrl = parser.getUrl();
+        }
+        webView.loadUrl(0 == intentUrl.length() ? getStartSite().getUrl() : intentUrl);
     }
 
     @Override

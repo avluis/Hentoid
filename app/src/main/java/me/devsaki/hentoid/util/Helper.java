@@ -37,6 +37,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.UnlockActivity;
+import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -60,7 +61,9 @@ public final class Helper {
     public static void viewContent(final Context context, Content content, boolean wrapPin) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(Consts.INTENT_URL, content.getGalleryUrl());
+        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
+        builder.setUrl(content.getGalleryUrl());
+        intent.putExtras(builder.getBundle());
         if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
