@@ -21,7 +21,6 @@ import me.devsaki.hentoid.adapters.SiteAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by Robb on 11/2018
@@ -34,14 +33,13 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
     private String bookId;
 
-    public static void invoke(FragmentManager fragmentManager, String id, List<Integer> foundSiteCodes) {
-        SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
-
+    public static void invoke(FragmentManager fragmentManager, String id, ArrayList<Integer> siteCodes) {
         Bundle args = new Bundle();
         args.putString(ID, id);
-        args.putIntArray(FOUND_SITES, Helper.getPrimitiveIntArrayFromList(foundSiteCodes));
-        fragment.setArguments(args);
+        args.putIntegerArrayList(FOUND_SITES, siteCodes);
 
+        SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
+        fragment.setArguments(args);
         fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.DownloadsDialog);
         fragment.show(fragmentManager, null);
     }
@@ -58,10 +56,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
         if (getArguments() != null) {
             bookId = getArguments().getString(ID, "");
-            int[] foundSites = getArguments().getIntArray(FOUND_SITES);
-            List<Integer> foundSitesList = new ArrayList<>();
-            if (foundSites != null)
-                foundSitesList.addAll(Helper.getListFromPrimitiveArray(foundSites));
+            ArrayList<Integer> foundSitesList = getArguments().getIntegerArrayList(FOUND_SITES);
 
             TextView title = view.findViewById(R.id.search_bookid_title);
             title.setText(String.format(getText(R.string.search_bookid_label).toString(), bookId));

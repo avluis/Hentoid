@@ -318,15 +318,6 @@ public final class Helper {
         return ret;
     }
 
-    public static int[] getPrimitiveIntArrayFromList(List<Integer> integers) {
-        int[] ret = new int[integers.size()];
-        Iterator<Integer> iterator = integers.iterator();
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = iterator.next();
-        }
-        return ret;
-    }
-
     public static boolean isNumeric(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
     }

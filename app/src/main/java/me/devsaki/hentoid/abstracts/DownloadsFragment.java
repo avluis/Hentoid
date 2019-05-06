@@ -31,6 +31,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.annimon.stream.Collectors;
+import com.annimon.stream.Stream;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -68,6 +71,8 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
+
+import static com.annimon.stream.Collectors.toCollection;
 
 /**
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
@@ -1029,15 +1034,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             filterBar.setVisibility(View.GONE);
         }
 
-        if (Helper.isNumeric(query)) // User searches a book ID
-        {
-            // List sites of book ID
-            List<Integer> foundSideCodes = new ArrayList<>();
-            for (Content c : results)
-                if (!foundSideCodes.contains(c.getSite().getCode()))
-                    foundSideCodes.add(c.getSite().getCode());
+        // User searches a book ID
+        if (Helper.isNumeric(query)) {
+            ArrayList<Integer> siteCodes = Stream.of(results)
+                    .map(Content::getSite)
+                    .map(Site::getCode)
+                    .collect(toCollection(ArrayList::new));
 
-            SearchBookIdDialogFragment.invoke(requireActivity().getSupportFragmentManager(), query, foundSideCodes);
+            SearchBookIdDialogFragment.invoke(requireFragmentManager(), query, siteCodes);
         }
 
         if (0 == totalSelectedContent) {
