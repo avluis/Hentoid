@@ -524,18 +524,19 @@ public class FileHelper {
         ToastUtil.toast("Opening: " + content.getTitle());
 
         File imageFile = null;
-        File[] files = dir.listFiles();
+        File[] files = dir.listFiles(
+                file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
+                        (
+                                file.getName().toLowerCase().endsWith("jpg")
+                                        || file.getName().toLowerCase().endsWith("jpeg")
+                                        || file.getName().toLowerCase().endsWith("png")
+                                        || file.getName().toLowerCase().endsWith("gif")
+                        )
+                )
+        );
         if (files != null && files.length > 0) {
             Arrays.sort(files);
-            for (File file : files) {
-                String filename = file.getName();
-                if (filename.endsWith(".jpg") ||
-                        filename.endsWith(".png") ||
-                        filename.endsWith(".gif")) {
-                    imageFile = file;
-                    break;
-                }
-            }
+            imageFile = files[0];
         }
         if (imageFile == null) {
             String message = context.getString(R.string.image_file_not_found)
