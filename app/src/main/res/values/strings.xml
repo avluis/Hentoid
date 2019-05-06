@@ -104,7 +104,8 @@
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
     <string name="sd_access_fatal_error">Hentoid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
-    <string name="downloads_filter_book_count">%s result%s</string>
+    <string name="downloads_filter_book_count">%d result</string>
+    <string name="downloads_filter_book_count_plural">%d results</string>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="search_bookid_action_search">Search</string>

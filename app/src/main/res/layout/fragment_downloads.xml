@@ -36,8 +36,8 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
             android:layout_marginLeft="16dp"
-            android:text="@string/downloads_filter_book_count"
-            android:textColor="@color/white" />
+            android:textColor="@color/white"
+            tools:text="@string/downloads_filter_book_count" />
 
         <TextView
             android:id="@+id/filter_clear"
