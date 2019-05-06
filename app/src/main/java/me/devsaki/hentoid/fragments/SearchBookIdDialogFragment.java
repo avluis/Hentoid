@@ -59,7 +59,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             ArrayList<Integer> foundSitesList = getArguments().getIntegerArrayList(FOUND_SITES);
 
             TextView title = view.findViewById(R.id.search_bookid_title);
-            title.setText(String.format(getText(R.string.search_bookid_label).toString(), bookId));
+            title.setText(getString(R.string.search_bookid_label, bookId));
 
             // Not possible for Pururin, e-hentai
             List<Site> sites = new ArrayList<>();
