@@ -36,7 +36,7 @@ import timber.log.Timber;
  * - {@link android.support.v4.widget.DrawerLayout} with id 'drawer_layout'.
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
-public abstract class DrawerActivity extends BaseActivity {
+public abstract class DrawerActivity extends BaseActivity implements DrawerLayout.DrawerListener {
 
     protected static final int mainLayout = R.layout.activity_hentoid;
 
@@ -50,7 +50,6 @@ public abstract class DrawerActivity extends BaseActivity {
     private int itemToOpen = -1;
     private int currentPos = -1;
     private boolean itemTapped;
-    private DrawerLayout.DrawerListener mDrawerListener;
 
     protected abstract Class<? extends BaseFragment> getFragment();
     protected abstract Bundle getCreationArguments();
@@ -117,7 +116,6 @@ public abstract class DrawerActivity extends BaseActivity {
                     "Layout is required to include a Toolbar with id 'toolbar'");
         } else {
             setSupportActionBar(mToolbar);
-            setupActionBarDrawerToggle();
             initializeNavigationDrawer();
             isToolbarInitialized = true;
         }
@@ -129,7 +127,7 @@ public abstract class DrawerActivity extends BaseActivity {
 
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 mToolbar, R.string.drawer_open, R.string.drawer_close);
-        mDrawerLayout.addDrawerListener(mDrawerListener);
+        mDrawerLayout.addDrawerListener(this);
         populateDrawerItems();
         updateDrawerToggle();
 
@@ -142,50 +140,46 @@ public abstract class DrawerActivity extends BaseActivity {
         }
     }
 
-    private void setupActionBarDrawerToggle() {
-        mDrawerListener = new DrawerLayout.DrawerListener() {
-            @Override
-            public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-                if (mDrawerToggle != null) mDrawerToggle.onDrawerSlide(drawerView, slideOffset);
-            }
+    @Override
+    public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
+        if (mDrawerToggle != null) mDrawerToggle.onDrawerSlide(drawerView, slideOffset);
+    }
 
-            @Override
-            public void onDrawerOpened(@NonNull View drawerView) {
-                if (mDrawerToggle != null) mDrawerToggle.onDrawerOpened(drawerView);
-                if (getSupportActionBar() != null) {
-                    getSupportActionBar().setTitle(getToolbarTitle());
-                }
-            }
+    @Override
+    public void onDrawerOpened(@NonNull View drawerView) {
+        if (mDrawerToggle != null) mDrawerToggle.onDrawerOpened(drawerView);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(getToolbarTitle());
+        }
+    }
 
-            @SuppressLint("NewApi")
-            @Override
-            public void onDrawerClosed(@NonNull View drawerView) {
-                if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
+    @SuppressLint("NewApi")
+    @Override
+    public void onDrawerClosed(@NonNull View drawerView) {
+        if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
 
-                int position = itemToOpen;
-                if (position >= 0 && itemTapped) {
-                    itemTapped = false;
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                        Class activityClass = mDrawerMenuContents.getActivity(position);
-                        Intent intent = new Intent(DrawerActivity.this, activityClass);
-                        Bundle bundle = ActivityOptions.makeCustomAnimation(
-                                DrawerActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                        startActivity(intent, bundle);
-                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                    } else {
-                        Class activityClass = mDrawerMenuContents.getActivity(position);
-                        startActivity(new Intent(DrawerActivity.this, activityClass));
-                        overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-                    }
-                }
+        int position = itemToOpen;
+        if (position >= 0 && itemTapped) {
+            itemTapped = false;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                Class activityClass = mDrawerMenuContents.getActivity(position);
+                Intent intent = new Intent(DrawerActivity.this, activityClass);
+                Bundle bundle = ActivityOptions.makeCustomAnimation(
+                        DrawerActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent, bundle);
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            } else {
+                Class activityClass = mDrawerMenuContents.getActivity(position);
+                startActivity(new Intent(DrawerActivity.this, activityClass));
+                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             }
+        }
+    }
 
-            @Override
-            public void onDrawerStateChanged(int newState) {
-                if (mDrawerToggle != null) mDrawerToggle.onDrawerStateChanged(newState);
-            }
-        };
+    @Override
+    public void onDrawerStateChanged(int newState) {
+        if (mDrawerToggle != null) mDrawerToggle.onDrawerStateChanged(newState);
     }
 
     private void populateDrawerItems() {
