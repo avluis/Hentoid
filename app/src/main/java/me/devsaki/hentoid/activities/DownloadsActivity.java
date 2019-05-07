@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -28,8 +29,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     private BaseFragment baseFragment;
 
-    @Override
-    protected Class<? extends BaseFragment> getFragment() {
+    private Class<? extends BaseFragment> getFragment() {
         if (Preferences.getEndlessScroll()) {
             Timber.d("getFragment: EndlessFragment.");
             return EndlessFragment.class;
@@ -39,9 +39,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         }
     }
 
-    @Override
-    protected Bundle getCreationArguments()
-    {
+    private Bundle getCreationArguments() {
         Bundle result = new Bundle();
         result.putInt("mode", DownloadsFragment.MODE_LIBRARY);
         return result;
@@ -51,13 +49,37 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        setContentView(R.layout.activity_hentoid);
+
+        FragmentManager manager = getSupportFragmentManager();
+        Fragment fragment = manager.findFragmentById(R.id.content_frame);
+
+        if (fragment == null) {
+            fragment = instantiateContentFragment();
+            fragment.setArguments(getCreationArguments());
+            String tag = fragment.getClass().getSimpleName();
+
+            manager.beginTransaction()
+                    .add(R.id.content_frame, fragment, tag)
+                    .commit();
+        }
+
         if (Preferences.getRecentVisibility()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
-        setContentView(mainLayout);
 
         initializeToolbar();
         setTitle("");
+    }
+
+    private Fragment instantiateContentFragment() {
+        if (Preferences.getEndlessScroll()) {
+            Timber.d("getFragment: EndlessFragment.");
+            return new EndlessFragment();
+        } else {
+            Timber.d("getFragment: PagerFragment.");
+            return new PagerFragment();
+        }
     }
 
     @Override
@@ -95,7 +117,7 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     private void updateSelectedFragment() {
         FragmentManager manager = getSupportFragmentManager();
-        fragment = manager.findFragmentById(R.id.content_frame);
+        Fragment fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment != null) {
             /*

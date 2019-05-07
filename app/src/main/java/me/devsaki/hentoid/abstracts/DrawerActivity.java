@@ -38,9 +38,6 @@ import timber.log.Timber;
  */
 public abstract class DrawerActivity extends BaseActivity implements DrawerLayout.DrawerListener {
 
-    protected static final int mainLayout = R.layout.activity_hentoid;
-
-    protected Fragment fragment;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private DrawerMenuContents mDrawerMenuContents;
@@ -51,40 +48,7 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
     private int currentPos = -1;
     private boolean itemTapped;
 
-    protected abstract Class<? extends BaseFragment> getFragment();
-    protected abstract Bundle getCreationArguments();
     protected abstract String getToolbarTitle();
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        setContentView(mainLayout);
-
-        FragmentManager manager = getSupportFragmentManager();
-        fragment = manager.findFragmentById(R.id.content_frame);
-
-        if (fragment == null) {
-            fragment = buildFragment();
-            fragment.setArguments(getCreationArguments());
-            String tag = fragment.getClass().getSimpleName();
-
-            manager.beginTransaction()
-                    .add(R.id.content_frame, fragment, tag)
-                    .commit();
-        }
-    }
-
-    protected Fragment buildFragment() {
-        try {
-            return getFragment().newInstance();
-        } catch (InstantiationException e) {
-            Timber.e(e, "Error: Could not access constructor");
-        } catch (IllegalAccessException e) {
-            Timber.e(e, "Error: Field or method is not accessible");
-        }
-        return null;
-    }
 
     @Override
     protected void onStart() {
