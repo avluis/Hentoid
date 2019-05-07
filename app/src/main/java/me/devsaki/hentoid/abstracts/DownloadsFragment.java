@@ -286,6 +286,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onResume() {
         super.onResume();
 
+        int currentViewer = Preferences.getContentReadAction();
+        if (Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER != currentViewer) {
+            if (!Preferences.hasViewerChoiceBeenDisplayed()) showViewerChoiceDialog(currentViewer);
+        } else {
+            Preferences.setViewerChoiceDisplayed(true);
+        }
+
         defaultLoad();
     }
 
@@ -426,7 +433,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             selectedTagIds[index++] = a.getId();
         }
         outState.putLongArray(KEY_SELECTED_TAGS, selectedTagIds);
-//        outState.putIntegerArrayList(KEY_SELECTED_TAGS, selectedTagIds);
     }
 
     @Override
@@ -440,7 +446,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             mode = state.getInt(KEY_MODE);
 
             long[] selectedTagIds = state.getLongArray(KEY_SELECTED_TAGS);
-//            List<Integer> selectedTagIds = state.getIntegerArrayList(KEY_SELECTED_TAGS);
             ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
             if (selectedTagIds != null) {
                 for (long i : selectedTagIds) {
@@ -1168,5 +1173,27 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         updateTitle();
+    }
+
+    private void showViewerChoiceDialog(int currentViewer) {
+        int resourcePosition = 0;
+        if (0 == currentViewer) resourcePosition = 1;
+        else if (1 == currentViewer) resourcePosition = 2;
+        String currentViewerStr = requireContext().getResources().getStringArray(R.array.pref_read_content_entries)[resourcePosition];
+
+        String message = requireContext().getString(R.string.downloads_suggest_image_viewer).replace("@currentOption", currentViewerStr);
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(requireContext());
+        builder.setTitle(R.string.downloads_suggest_image_viewer_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes,
+                        (dialog, which) -> {
+                            Preferences.setViewerChoiceDisplayed(true);
+                            Preferences.setContentReadAction(Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER);
+                        })
+                .setNegativeButton(R.string.no,
+                        (dialog, which) -> {
+                            Preferences.setViewerChoiceDisplayed(true);
+                        })
+                .create().show();
     }
 }

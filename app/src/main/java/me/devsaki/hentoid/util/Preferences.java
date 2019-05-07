@@ -133,10 +133,16 @@ public final class Preferences {
                 .commit();
     }
 
-    static int getContentReadAction() {
+    public static int getContentReadAction() {
         return Integer.parseInt(
                 sharedPreferences.getString(Key.PREF_READ_CONTENT_LISTS,
                         Default.PREF_READ_CONTENT_ACTION + ""));
+    }
+
+    public static void setContentReadAction(int contentReadAction) {
+        sharedPreferences.edit()
+                .putInt(Key.PREF_READ_CONTENT_LISTS, contentReadAction)
+                .apply();
     }
 
     public static boolean getMobileUpdate() {
@@ -234,6 +240,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean hasViewerChoiceBeenDisplayed() {
+        return sharedPreferences.getBoolean(Key.VIEWER_CHOICE_DISPLAYED, false);
+    }
+
+    public static void setViewerChoiceDisplayed(boolean viewerChoice) {
+        sharedPreferences.edit()
+                .putBoolean(Key.VIEWER_CHOICE_DISPLAYED, viewerChoice)
+                .apply();
+    }
+
     public static final class Key {
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
@@ -263,6 +279,7 @@ public final class Preferences {
         public static final String PREF_VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display";
         public static final String PREF_VIEWER_BROWSE_MODE = "pref_viewer_browse_mode";
         public static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
+        public static final String VIEWER_CHOICE_DISPLAYED = "pref_viewer_choice_displayed";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -306,9 +323,9 @@ public final class Preferences {
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
-        static final int PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER = 0;
-        static final int PREF_READ_CONTENT_PERFECT_VIEWER = 1;
-        static final int PREF_READ_CONTENT_HENTOID_VIEWER = 2;
+        public static final int PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER = 0;
+        public static final int PREF_READ_CONTENT_PERFECT_VIEWER = 1;
+        public static final int PREF_READ_CONTENT_HENTOID_VIEWER = 2;
         static final int TRUNCATE_FOLDER_NONE = 0;
         public static final int PREF_VIEWER_DISPLAY_FIT = 0;
         public static final int PREF_VIEWER_DISPLAY_FILL = 1;

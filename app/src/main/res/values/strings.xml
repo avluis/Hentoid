@@ -2,6 +2,8 @@
     <string name="app_name">Hentoid</string>
     <string name="app_id">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
+    <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
+    <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
@@ -77,11 +79,12 @@
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it from Google Play.</string>
     <string name="error_open">Error opening image : no image viewer found.</string>
-
+    <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
     <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
     <string name="redownload_view_log">View detailed error log</string>
     <string name="redownload_log_saved">Log saved</string>
+    <!-- Downloads fragment -->
     <string name="ask_delete">Are you sure you wish to delete this?</string>
     <string name="ask_delete_multiple">Are you sure you wish to delete the selected items?</string>
     <string name="deleted">\@content deleted.</string>
@@ -109,6 +112,8 @@
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="search_bookid_action_search">Search</string>
+    <string name="downloads_suggest_image_viewer_title">New internal image viewer</string>
+    <string name="downloads_suggest_image_viewer">Hentoid now has its own internal image viewer! Do you want to try it?\n\nYou can switch back to @currentOption at any time by using preferences.</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
