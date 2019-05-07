@@ -43,23 +43,11 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
     private DrawerMenuContents mDrawerMenuContents;
     private Toolbar mToolbar;
     private ActionBarDrawerToggle mDrawerToggle;
-    private boolean isToolbarInitialized;
     private int itemToOpen = -1;
     private int currentPos = -1;
     private boolean itemTapped;
 
     protected abstract String getToolbarTitle();
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        if (!isToolbarInitialized) {
-            throw new IllegalStateException(
-                    "You must run super.initializeToolbar at " +
-                            "the end of your onCreate method");
-        }
-    }
 
     @Override
     public void setTitle(CharSequence title) {
@@ -75,14 +63,8 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
 
     protected void initializeToolbar() {
         mToolbar = findViewById(R.id.toolbar);
-        if (mToolbar == null) {
-            throw new IllegalStateException(
-                    "Layout is required to include a Toolbar with id 'toolbar'");
-        } else {
-            setSupportActionBar(mToolbar);
-            initializeNavigationDrawer();
-            isToolbarInitialized = true;
-        }
+        setSupportActionBar(mToolbar);
+        initializeNavigationDrawer();
     }
 
     private void initializeNavigationDrawer() {
