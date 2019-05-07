@@ -23,8 +23,9 @@ public final class ScrollPositionListener extends RecyclerView.OnScrollListener 
         if (extent == 0 && offset == 0) {
             return;
         }
-        
-        int currentPosition = Math.round(offset / extent);
-        onPositionChangeListener.accept(currentPosition);
+        if (extent != 0) {
+            int currentPosition = Math.round(offset / extent);
+            onPositionChangeListener.accept(currentPosition);
+        }
     }
 }

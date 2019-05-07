@@ -96,11 +96,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // Save state constants
 
-    private static final String SELECTED_TAGS = "selected_tags";
-    private static final String FILTER_FAVOURITES = "filter_favs";
-    private static final String CURRENT_PAGE = "current_page";
-    private static final String QUERY = "query";
-    private static final String MODE = "mode";
+    private static final String KEY_SELECTED_TAGS = "selected_tags";
+    private static final String KEY_FILTER_FAVOURITES = "filter_favs";
+    private static final String KEY_CURRENT_PAGE = "current_page";
+    private static final String KEY_QUERY = "query";
+    private static final String KEY_MODE = "mode";
 
 
     // ======== UI ELEMENTS
@@ -415,18 +415,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
-        outState.putString(QUERY, query);
-        outState.putInt(CURRENT_PAGE, currentPage);
-        outState.putInt(MODE, mode);
+        outState.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
+        outState.putString(KEY_QUERY, query);
+        outState.putInt(KEY_CURRENT_PAGE, currentPage);
+        outState.putInt(KEY_MODE, mode);
 
         long[] selectedTagIds = new long[selectedSearchTags.size()];
         int index = 0;
         for (Attribute a : selectedSearchTags) {
             selectedTagIds[index++] = a.getId();
         }
-        outState.putLongArray(SELECTED_TAGS, selectedTagIds);
-//        outState.putIntegerArrayList(SELECTED_TAGS, selectedTagIds);
+        outState.putLongArray(KEY_SELECTED_TAGS, selectedTagIds);
+//        outState.putIntegerArrayList(KEY_SELECTED_TAGS, selectedTagIds);
     }
 
     @Override
@@ -434,13 +434,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         super.onViewStateRestored(state);
 
         if (state != null) {
-            filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
-            query = state.getString(QUERY, "");
-            currentPage = state.getInt(CURRENT_PAGE);
-            mode = state.getInt(MODE);
+            filterFavourites = state.getBoolean(KEY_FILTER_FAVOURITES, false);
+            query = state.getString(KEY_QUERY, "");
+            currentPage = state.getInt(KEY_CURRENT_PAGE);
+            mode = state.getInt(KEY_MODE);
 
-            long[] selectedTagIds = state.getLongArray(SELECTED_TAGS);
-//            List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
+            long[] selectedTagIds = state.getLongArray(KEY_SELECTED_TAGS);
+//            List<Integer> selectedTagIds = state.getIntegerArrayList(KEY_SELECTED_TAGS);
             ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
             if (selectedTagIds != null) {
                 for (long i : selectedTagIds) {

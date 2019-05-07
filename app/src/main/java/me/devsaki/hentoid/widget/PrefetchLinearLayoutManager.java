@@ -12,7 +12,7 @@ import android.view.View;
  */
 public class PrefetchLinearLayoutManager extends LinearLayoutManager {
 
-    private OrientationHelper mOrientationHelper;
+    private OrientationHelper mLocalOrientationHelper;
 
     /**
      * As {@link LinearLayoutManager#collectAdjacentPrefetchPositions} will prefetch one view for us,
@@ -36,7 +36,7 @@ public class PrefetchLinearLayoutManager extends LinearLayoutManager {
     }
 
     private void init() {
-        mOrientationHelper = OrientationHelper.createOrientationHelper(this, getOrientation());
+        mLocalOrientationHelper = OrientationHelper.createOrientationHelper(this, getOrientation());
     }
 
     public void setPreloadItemCount(int preloadItemCount) {
@@ -69,8 +69,8 @@ public class PrefetchLinearLayoutManager extends LinearLayoutManager {
          * will cause huge numbers of bindings.
          */
         if (layoutDirection == 1) {
-            scrollingOffset = mOrientationHelper.getDecoratedEnd(child)
-                    - mOrientationHelper.getEndAfterPadding();
+            scrollingOffset = mLocalOrientationHelper.getDecoratedEnd(child)
+                    - mLocalOrientationHelper.getEndAfterPadding();
             for (int i = currentPosition + 1; i < currentPosition + mAdditionalAdjacentPrefetchItemCount + 1; i++) {
                 if (i >= 0 && i < state.getItemCount()) {
                     layoutPrefetchRegistry.addPosition(i, Math.max(0, scrollingOffset));
