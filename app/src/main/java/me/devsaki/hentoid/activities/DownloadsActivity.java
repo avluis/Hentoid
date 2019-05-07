@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.activities;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -10,8 +9,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.view.WindowManager;
 
-import me.devsaki.hentoid.BuildConfig;
-import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseFragment;
 import me.devsaki.hentoid.abstracts.BaseFragment.BackInterface;
@@ -19,7 +16,6 @@ import me.devsaki.hentoid.abstracts.DownloadsFragment;
 import me.devsaki.hentoid.abstracts.DrawerActivity;
 import me.devsaki.hentoid.fragments.EndlessFragment;
 import me.devsaki.hentoid.fragments.PagerFragment;
-import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
