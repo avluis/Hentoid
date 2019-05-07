@@ -91,9 +91,7 @@ public abstract class DrawerActivity extends BaseActivity {
     protected Bundle getCreationArguments() { return new Bundle(); }
 
 
-    protected String getToolbarTitle() {
-        return Helper.getActivityName(context, R.string.app_name);
-    }
+    protected abstract String getToolbarTitle();
 
     private String getFragmentTag() {
         if (fragment != null) {
