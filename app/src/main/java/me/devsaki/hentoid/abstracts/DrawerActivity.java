@@ -7,7 +7,6 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -29,10 +28,7 @@ import timber.log.Timber;
  * Created by avluis on 4/11/2016.
  * Abstract activity with toolbar and navigation drawer.
  * Needs to be extended by any activity that wants to be shown as a top level activity.
- * The requirements for a subclass are:
- * calling {@link #initializeToolbar()} on onCreate, after setContentView() is called.
- * In addition, subclasses must have these layout elements:
- * - {@link android.support.v7.widget.Toolbar} with id 'toolbar'.
+ * Subclasses must have these layout elements:
  * - {@link android.support.v4.widget.DrawerLayout} with id 'drawer_layout'.
  * - {@link android.widget.ListView} with id 'drawer_list'.
  */
@@ -41,7 +37,6 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private DrawerMenuContents mDrawerMenuContents;
-    private Toolbar mToolbar;
     private ActionBarDrawerToggle mDrawerToggle;
     private int itemToOpen = -1;
     private int currentPos = -1;
@@ -49,30 +44,17 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
 
     protected abstract String getToolbarTitle();
 
-    @Override
-    public void setTitle(CharSequence title) {
-        super.setTitle(title);
-        mToolbar.setTitle(title);
-    }
-
-    @Override
-    public void setTitle(int titleId) {
-        super.setTitle(titleId);
-        mToolbar.setTitle(titleId);
-    }
-
-    protected void initializeToolbar() {
-        mToolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(mToolbar);
-        initializeNavigationDrawer();
-    }
-
-    private void initializeNavigationDrawer() {
+    protected void initializeNavigationDrawer(Toolbar toolbar) {
         mDrawerLayout = findViewById(R.id.drawer_layout);
         mDrawerList = findViewById(R.id.drawer_list);
 
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                mToolbar, R.string.drawer_open, R.string.drawer_close);
+        mDrawerToggle = new ActionBarDrawerToggle(
+                this,
+                mDrawerLayout,
+                toolbar,
+                R.string.drawer_open,
+                R.string.drawer_close
+        );
         mDrawerLayout.addDrawerListener(this);
         populateDrawerItems();
         updateDrawerToggle();

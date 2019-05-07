@@ -8,6 +8,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.support.v7.widget.Toolbar;
 import android.view.WindowManager;
 
 import me.devsaki.hentoid.R;
@@ -28,6 +29,8 @@ import timber.log.Timber;
 public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     private BaseFragment baseFragment;
+
+    private Toolbar toolbar;
 
     private Class<? extends BaseFragment> getFragment() {
         if (Preferences.getEndlessScroll()) {
@@ -68,7 +71,9 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         }
 
-        initializeToolbar();
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        initializeNavigationDrawer(toolbar);
         setTitle("");
     }
 
@@ -104,7 +109,15 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     @Override
     public void setTitle(CharSequence subtitle) {
-        super.setTitle(getToolbarTitle() + " " + subtitle);
+        String title = getToolbarTitle() + " " + subtitle;
+        super.setTitle(title);
+        toolbar.setTitle(title);
+    }
+
+    @Override
+    public void setTitle(int titleId) {
+        super.setTitle(titleId);
+        toolbar.setTitle(titleId);
     }
 
     @Override
