@@ -31,7 +31,6 @@ import timber.log.Timber;
 public class DownloadsActivity extends DrawerActivity implements BackInterface {
 
     private BaseFragment baseFragment;
-    private Context context;
 
     @Override
     protected Class<? extends BaseFragment> getFragment() {
@@ -61,7 +60,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         }
         setContentView(mainLayout);
 
-        context = HentoidApp.getAppContext();
         initializeToolbar();
         setTitle("");
     }

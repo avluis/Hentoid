@@ -44,7 +44,6 @@ public abstract class DrawerActivity extends BaseActivity {
     protected static final int mainLayout = R.layout.activity_hentoid;
 
     protected Fragment fragment;
-    private Context context;
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private DrawerMenuContents mDrawerMenuContents;
@@ -61,7 +60,6 @@ public abstract class DrawerActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(mainLayout);
-        context = HentoidApp.getAppContext();
 
         FragmentManager manager = getSupportFragmentManager();
         fragment = manager.findFragmentById(R.id.content_frame);
