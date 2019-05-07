@@ -64,9 +64,10 @@ public abstract class DrawerActivity extends BaseActivity {
         if (fragment == null) {
             fragment = buildFragment();
             fragment.setArguments(getCreationArguments());
+            String tag = fragment.getClass().getSimpleName();
 
             manager.beginTransaction()
-                    .add(R.id.content_frame, fragment, getFragmentTag())
+                    .add(R.id.content_frame, fragment, tag)
                     .commit();
         }
     }
@@ -87,13 +88,6 @@ public abstract class DrawerActivity extends BaseActivity {
 
 
     protected abstract String getToolbarTitle();
-
-    private String getFragmentTag() {
-        if (fragment != null) {
-            return fragment.getClass().getSimpleName();
-        }
-        return null;
-    }
 
     @Override
     protected void onStart() {
