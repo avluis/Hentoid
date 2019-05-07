@@ -1,12 +1,10 @@
 package me.devsaki.hentoid.abstracts;
 
-import android.annotation.SuppressLint;
-import android.app.ActivityOptions;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
@@ -81,7 +79,6 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         }
     }
 
-    @SuppressLint("NewApi")
     @Override
     public void onDrawerClosed(@NonNull View drawerView) {
         if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
@@ -89,19 +86,13 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         int position = itemToOpen;
         if (position >= 0 && itemTapped) {
             itemTapped = false;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                Class activityClass = mDrawerMenuContents.getActivity(position);
-                Intent intent = new Intent(this, activityClass);
-                Bundle bundle = ActivityOptions.makeCustomAnimation(
-                        this, R.anim.fade_in, R.anim.fade_out).toBundle();
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent, bundle);
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            } else {
-                Class activityClass = mDrawerMenuContents.getActivity(position);
-                startActivity(new Intent(this, activityClass));
-                overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
-            }
+            Class activityClass = mDrawerMenuContents.getActivity(position);
+            Intent intent = new Intent(this, activityClass);
+            Bundle bundle = ActivityOptionsCompat
+                    .makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+                    .toBundle();
+            ContextCompat.startActivity(this, intent, bundle);
+            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
         }
     }
 
