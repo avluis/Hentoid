@@ -84,7 +84,7 @@ public abstract class DrawerActivity extends BaseActivity {
     }
 
     protected abstract Class<? extends BaseFragment> getFragment();
-    protected Bundle getCreationArguments() { return new Bundle(); }
+    protected abstract Bundle getCreationArguments();
 
 
     protected abstract String getToolbarTitle();
