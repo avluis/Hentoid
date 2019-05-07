@@ -52,6 +52,10 @@ public abstract class DrawerActivity extends BaseActivity {
     private boolean itemTapped;
     private DrawerLayout.DrawerListener mDrawerListener;
 
+    protected abstract Class<? extends BaseFragment> getFragment();
+    protected abstract Bundle getCreationArguments();
+    protected abstract String getToolbarTitle();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,12 +86,6 @@ public abstract class DrawerActivity extends BaseActivity {
         }
         return null;
     }
-
-    protected abstract Class<? extends BaseFragment> getFragment();
-    protected abstract Bundle getCreationArguments();
-
-
-    protected abstract String getToolbarTitle();
 
     @Override
     protected void onStart() {
