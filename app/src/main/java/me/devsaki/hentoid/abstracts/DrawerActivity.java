@@ -163,15 +163,15 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
             itemTapped = false;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 Class activityClass = mDrawerMenuContents.getActivity(position);
-                Intent intent = new Intent(DrawerActivity.this, activityClass);
+                Intent intent = new Intent(this, activityClass);
                 Bundle bundle = ActivityOptions.makeCustomAnimation(
-                        DrawerActivity.this, R.anim.fade_in, R.anim.fade_out).toBundle();
+                        this, R.anim.fade_in, R.anim.fade_out).toBundle();
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(intent, bundle);
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             } else {
                 Class activityClass = mDrawerMenuContents.getActivity(position);
-                startActivity(new Intent(DrawerActivity.this, activityClass));
+                startActivity(new Intent(this, activityClass));
                 overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
             }
         }
