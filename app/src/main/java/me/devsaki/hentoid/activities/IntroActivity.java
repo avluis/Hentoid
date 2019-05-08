@@ -11,6 +11,8 @@ import android.support.v4.app.Fragment;
 
 import com.github.paolorotolo.appintro.AppIntro2;
 
+import java.security.InvalidParameterException;
+
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -139,6 +141,7 @@ public class IntroActivity extends AppIntro2 {
                             .show();
                     break;
                 default:
+                    throw new InvalidParameterException("Not implemented");
             }
             HentoidApp.setBeginImport(false);
         }

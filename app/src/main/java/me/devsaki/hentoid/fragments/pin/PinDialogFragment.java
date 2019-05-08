@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.security.InvalidParameterException;
+
 import me.devsaki.hentoid.R;
 
 import static android.support.v4.view.ViewCompat.requireViewById;
@@ -135,6 +137,7 @@ public abstract class PinDialogFragment extends DialogFragment {
                 onPinAccept(pinValue.toString());
                 break;
             default:
+                throw new InvalidParameterException("Not implemented");
         }
     }
 
@@ -156,6 +159,7 @@ public abstract class PinDialogFragment extends DialogFragment {
                 placeholderImage4.setVisibility(View.INVISIBLE);
                 break;
             default:
+                throw new InvalidParameterException("Not implemented");
         }
     }
 }
