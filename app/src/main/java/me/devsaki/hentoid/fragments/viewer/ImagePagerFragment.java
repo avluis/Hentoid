@@ -154,10 +154,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                // No need to do anything
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+                // No need to do anything
             }
 
             @Override
@@ -217,6 +219,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             case Preferences.Key.PREF_VIEWER_FLING_FACTOR:
                 onUpdateFlingFactor();
                 break;
+            default:
         }
     }
 

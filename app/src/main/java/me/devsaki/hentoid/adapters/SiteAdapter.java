@@ -14,7 +14,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.util.Helper;
 
-public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
+public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterViewHolder> {
 
     private View.OnClickListener onClickListener = null;
     private List<Site> dataset = new ArrayList<>();
@@ -25,13 +25,13 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public SiteAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_picker, parent, false);
-        return new ViewHolder(view);
+        return new SiteAdapterViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull SiteAdapterViewHolder holder, int position) {
         holder.bindTo(dataset.get(position));
         holder.textView.setOnClickListener(onClickListener);
     }
@@ -50,11 +50,11 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class SiteAdapterViewHolder extends RecyclerView.ViewHolder {
 
         final TextView textView;
 
-        private ViewHolder(View itemView) {
+        private SiteAdapterViewHolder(View itemView) {
             super(itemView);
             textView = itemView.findViewById(R.id.picker_item_name);
         }

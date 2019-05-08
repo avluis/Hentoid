@@ -53,8 +53,9 @@ public class HttpHelper {
     private static ResponseBody getOnlineResource(String url, List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
         OkHttpClient okHttp = OkHttpClientSingleton.getInstance(TIMEOUT);
         Request.Builder requestBuilder = new Request.Builder().url(url);
-        if (headers != null) for (Pair<String, String> header : headers)
-            requestBuilder.addHeader(header.first, header.second);
+        if (headers != null)
+            for (Pair<String, String> header : headers)
+                requestBuilder.addHeader(header.first, header.second);
         requestBuilder.header("User-Agent", useHentoidAgent ? Consts.USER_AGENT : Consts.USER_AGENT_NEUTRAL);
         Request request = requestBuilder.get().build();
         return okHttp.newCall(request).execute().body();

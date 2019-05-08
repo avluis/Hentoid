@@ -138,6 +138,7 @@ public class IntroActivity extends AppIntro2 {
                             .setAction(android.R.string.ok, v -> openAppSettings())
                             .show();
                     break;
+                default:
             }
             HentoidApp.setBeginImport(false);
         }

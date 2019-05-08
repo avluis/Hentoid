@@ -40,6 +40,7 @@ public final class ResetPinDialogFragment extends PinDialogFragment {
             case 2:
                 step2(pin);
                 break;
+            default:
         }
     }
 

@@ -16,7 +16,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
 
 
-public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdapter.ViewHolder> {
+public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdapter.ImageViewHolder> {
 
     // TODO : SubsamplingScaleImageView does _not_ support animated GIFs -> use pl.droidsonroids.gif:android-gif-drawable when serving a GIF ?
 
@@ -39,22 +39,22 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
 
     @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+    public ImageViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
         LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
         View view = inflater.inflate(R.layout.item_viewer_image, viewGroup, false);
-        return new ViewHolder(view);
+        return new ImageViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder viewHolder, int pos) {
+    public void onBindViewHolder(@NonNull ImageViewHolder viewHolder, int pos) {
         viewHolder.setImageUri(imageUris.get(pos));
     }
 
-    final class ViewHolder extends RecyclerView.ViewHolder {
+    final class ImageViewHolder extends RecyclerView.ViewHolder {
 
         private final SubsamplingScaleImageView imgView;
 
-        private ViewHolder(@NonNull View itemView) {
+        private ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imgView = (SubsamplingScaleImageView) itemView;
             imgView.setOnTouchListener(itemTouchListener);

@@ -25,8 +25,9 @@ public class LogUtil {
         logStr.append(info.logName).append(" log : begin").append(System.getProperty("line.separator"));
         if (log.isEmpty())
             logStr.append("No activity to report - ").append(info.noDataMessage);
-        else for (String line : log)
-            logStr.append(line).append(System.getProperty("line.separator"));
+        else
+            for (String line : log)
+                logStr.append(line).append(System.getProperty("line.separator"));
         logStr.append(info.logName).append(" log : end");
 
         // Save it

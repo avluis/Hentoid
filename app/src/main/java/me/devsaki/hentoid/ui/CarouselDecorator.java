@@ -15,7 +15,7 @@ public class CarouselDecorator {
 
     private final Context context;
     private final int itemLayout;
-    private final Adapter adapter;
+    private final CarouselAdapter adapter;
     private final LinearLayoutManager layoutManager;
 
     private int pageCount;
@@ -24,7 +24,7 @@ public class CarouselDecorator {
     public CarouselDecorator(Context context, @LayoutRes int itemLayout) {
         this.context = context;
         this.itemLayout = itemLayout;
-        adapter = new Adapter();
+        adapter = new CarouselAdapter();
         layoutManager = new LinearLayoutManager(context);
         layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
     }
@@ -45,13 +45,13 @@ public class CarouselDecorator {
     public void decorate(RecyclerView recyclerView) {
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-        recyclerView.addOnScrollListener(new OnScrollListener());
+        recyclerView.addOnScrollListener(new CarouselOnScrollListener());
 
         LinearSnapHelper snapHelper = new LinearSnapHelper();
         snapHelper.attachToRecyclerView(recyclerView);
     }
 
-    private class OnScrollListener extends RecyclerView.OnScrollListener {
+    private class CarouselOnScrollListener extends RecyclerView.OnScrollListener {
 
         @Override
         public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -62,18 +62,18 @@ public class CarouselDecorator {
         }
     }
 
-    private class Adapter extends RecyclerView.Adapter<ViewHolder> {
+    private class CarouselAdapter extends RecyclerView.Adapter<CarouselViewHolder> {
 
         @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        public CarouselViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             LayoutInflater inflater = LayoutInflater.from(context);
             View view = inflater.inflate(itemLayout, parent, false);
-            return new ViewHolder(view);
+            return new CarouselViewHolder(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull CarouselViewHolder holder, int position) {
             holder.textView.setText(String.valueOf(position + 1));
         }
 
@@ -83,11 +83,11 @@ public class CarouselDecorator {
         }
     }
 
-    private static class ViewHolder extends RecyclerView.ViewHolder {
+    private static class CarouselViewHolder extends RecyclerView.ViewHolder {
 
         private final TextView textView;
 
-        private ViewHolder(View itemView) {
+        private CarouselViewHolder(View itemView) {
             super(itemView);
             textView = (TextView) itemView;
         }

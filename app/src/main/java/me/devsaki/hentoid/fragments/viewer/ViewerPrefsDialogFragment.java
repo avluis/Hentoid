@@ -52,6 +52,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
             case (Preferences.Constant.PREF_VIEWER_DISPLAY_FILL):
                 theRadio.check(R.id.viewer_prefs_display_mode_action_fill);
                 break;
+            default:
         }
         theRadio.setOnCheckedChangeListener(this::onChangeDisplayMode);
 
@@ -66,6 +67,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
             case (Preferences.Constant.PREF_VIEWER_BROWSE_TTB):
                 theRadio.check(R.id.viewer_prefs_browse_mode_action_ttb);
                 break;
+            default:
         }
         theRadio.setOnCheckedChangeListener(this::onChangeBrowseMode);
 
@@ -78,10 +80,12 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
         flingSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
+                // No need to do anything
             }
 
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
+                // No need to do anything
             }
 
             @Override
@@ -99,6 +103,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
             case (R.id.viewer_prefs_display_mode_action_fill):
                 Preferences.setViewerResizeMode(Preferences.Constant.PREF_VIEWER_DISPLAY_FILL);
                 break;
+            default:
         }
     }
 
@@ -113,6 +118,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
             case (R.id.viewer_prefs_browse_mode_action_ttb):
                 Preferences.setViewerBrowseMode(Preferences.Constant.PREF_VIEWER_BROWSE_TTB);
                 break;
+            default:
         }
     }
 }

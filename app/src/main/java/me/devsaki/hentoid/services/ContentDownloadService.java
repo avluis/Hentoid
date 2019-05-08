@@ -553,6 +553,7 @@ public class ContentDownloadService extends IntentService {
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");
                 break;
+            default:
         }
     }
 

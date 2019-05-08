@@ -134,6 +134,7 @@ public abstract class PinDialogFragment extends DialogFragment {
                 placeholderImage4.setVisibility(View.VISIBLE);
                 onPinAccept(pinValue.toString());
                 break;
+            default:
         }
     }
 
@@ -154,6 +155,7 @@ public abstract class PinDialogFragment extends DialogFragment {
             case 3:
                 placeholderImage4.setVisibility(View.INVISIBLE);
                 break;
+            default:
         }
     }
 }
