@@ -48,35 +48,14 @@ class ZipUtil {
         protected Boolean doInBackground(Object... params) {
             File[] files = (File[]) params[0];
             File dest = (File) params[1];
-            FileOutputStream out = null;
-            ZipOutputStream zipOutputStream = null;
-            try {
-                out = new FileOutputStream(dest);
-                zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out));
+            try (FileOutputStream out = new FileOutputStream(dest); ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out))) {
                 final byte[] data = new byte[BUFFER];
-                for (File file : files) {
-                    add(file, zipOutputStream, data);
-                }
+                for (File file : files) add(file, zipOutputStream, data);
                 FileUtil.sync(out);
                 out.flush();
             } catch (Exception e) {
-                Timber.e(e, "Error");
+                Timber.e(e, "Error while zipping resources");
                 return false;
-            } finally {
-                if (zipOutputStream != null) {
-                    try {
-                        zipOutputStream.close();
-                    } catch (IOException e) {
-                        Timber.d(e, "IO Exception");
-                    }
-                }
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException e) {
-                        Timber.d(e, "IO Exception");
-                    }
-                }
             }
 
             return true;
