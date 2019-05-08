@@ -1187,9 +1187,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                             Preferences.setContentReadAction(Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER);
                         })
                 .setNegativeButton(R.string.no,
-                        (dialog, which) -> {
-                            Preferences.setViewerChoiceDisplayed(true);
-                        })
+                        (dialog, which) -> Preferences.setViewerChoiceDisplayed(true))
                 .create().show();
     }
 }
