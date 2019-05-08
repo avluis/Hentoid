@@ -724,11 +724,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             public boolean onQueryTextChange(String s) {
                 if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
                     invalidateNextQueryTextChange = false;
-                    return true;
-                }
-
-//                    if (!s.equals(query)) submitContentSearchQuery(s, 2000);  Auto-submit disabled
-                if (s.isEmpty()) {
+                } else if (s.isEmpty()) {
                     clearQuery();
                 }
 
