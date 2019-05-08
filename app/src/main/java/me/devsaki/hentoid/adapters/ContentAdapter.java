@@ -153,11 +153,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         libraryView = recyclerView;
     }
 
+    /**
+     * Initializes the {@link ContentHolder} that contains the books
+     */
     @Override
     public void onBindViewHolder(@NonNull ContentHolder holder, final int pos) {
         Content content = mSortedList.get(pos);
 
-        // Initializes the {@link ContentHolder} that contains the books
         updateLayoutVisibility(holder, content, pos);
         attachTitle(holder, content);
         attachSeries(holder, content);
