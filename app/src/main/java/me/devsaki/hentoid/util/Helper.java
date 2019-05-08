@@ -108,16 +108,6 @@ public final class Helper {
         }
     }
 
-    public static String getActivityName(Context context, int attribute) {
-        String activityName = context.getString(attribute);
-        if (!activityName.isEmpty()) {
-            return activityName;
-        } else {
-            activityName = context.getString(R.string.app_name);
-        }
-        return activityName;
-    }
-
     static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
         Drawable d = ContextCompat.getDrawable(context, drawableId);
 
