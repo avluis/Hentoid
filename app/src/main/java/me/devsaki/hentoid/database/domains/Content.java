@@ -154,10 +154,11 @@ public class Content implements Serializable {
             case EHENTAI:
             case PURURIN:
                 paths = url.split("/");
-                return paths[1];
+                return (paths.length > 1) ? paths[1] : paths[0];
             case HITOMI:
                 paths = url.split("/");
-                return paths[1].replace(".html", "");
+                String expression = (paths.length > 1) ? paths[1] : paths[0];
+                return expression.replace(".html", "");
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
@@ -393,7 +394,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    public long getUploadDate() {
+    long getUploadDate() {
         return uploadDate;
     }
 
@@ -402,7 +403,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    public long getDownloadDate() {
+    long getDownloadDate() {
         return downloadDate;
     }
 
@@ -442,9 +443,8 @@ public class Content implements Serializable {
         return percent;
     }
 
-    public Content setPercent(double percent) {
+    public void setPercent(double percent) {
         this.percent = percent;
-        return this;
     }
 
     public Site getSite() {
@@ -528,18 +528,16 @@ public class Content implements Serializable {
         return lastReadPageIndex;
     }
 
-    public Content setLastReadPageIndex(int index) {
+    public void setLastReadPageIndex(int index) {
         this.lastReadPageIndex = index;
-        return this;
     }
 
     public boolean isBeingDeleted() {
         return isBeingDeleted;
     }
 
-    public Content setIsBeingDeleted(boolean isBeingDeleted) {
+    public void setIsBeingDeleted(boolean isBeingDeleted) {
         this.isBeingDeleted = isBeingDeleted;
-        return this;
     }
 
 
