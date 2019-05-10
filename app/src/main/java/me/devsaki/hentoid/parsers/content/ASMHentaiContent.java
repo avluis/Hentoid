@@ -14,7 +14,7 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 public class ASMHentaiContent {
     @Selector(value = "head [rel=canonical]", attr="href", defValue = "")
     private String pageUrl;
-    @Selector(value = "div.cover a", attr="href")
+    @Selector(value = "div.cover a", attr="href", defValue = "")
     private String galleryUrl;
     @Selector(value = "div.cover a img", attr="src")
     private String coverUrl;
@@ -42,9 +42,11 @@ public class ASMHentaiContent {
     public Content toContent()
     {
         Content result = new Content();
-        if (pageUrl.isEmpty()) return result;
+        if (pageUrl.isEmpty()) return result.setSite(Site.ASMHENTAI);
 
         result.setSite(pageUrl.toLowerCase().contains("comics") ? Site.ASMHENTAI_COMICS : Site.ASMHENTAI);
+        if (galleryUrl.isEmpty()) return result;
+
         result.setUrl(galleryUrl.substring(0, galleryUrl.length() - 2).replace("/gallery", ""));
         result.setCoverImageUrl(getProtocol() + "://"+ coverUrl);
         result.setTitle(title);
