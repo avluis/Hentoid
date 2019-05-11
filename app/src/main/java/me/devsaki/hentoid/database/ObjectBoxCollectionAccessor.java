@@ -211,7 +211,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
 // StringBuilder sb = new StringBuilder();
 // for (Attribute a : metadata) sb.append(a.getName()).append(";");
-// Timber.i("contentSearch " + mode +"," + filter +"," + sb.toString() + "," + page +"," +  booksPerPage +"," +  orderStyle +"," + favouritesOnly);
+// timber.log.Timber.i("contentSearch mode=" + mode +",filter=" + filter +",meta=" + sb.toString() + ",p=" + page +",bpp=" +  booksPerPage +",os=" +  orderStyle +",fav=" + favouritesOnly);
 
         ContentQueryResult result = new ContentQueryResult();
 
@@ -234,8 +234,8 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         result.totalContent = db.countAllContent();
 
 // sb = new StringBuilder();
-// for (Content c : result.pagedContents) sb.append(c.getId()).append(";");
-// Timber.i("contentSearch result [%s] : %s", result.totalSelectedContent, sb.toString());
+//  for (Content c : result.pagedContents) sb.append(c.getId()).append(";");
+//  timber.log.Timber.i("contentSearch result [%s] : %s", result.totalSelectedContent, sb.toString());
 
         return result;
     }
