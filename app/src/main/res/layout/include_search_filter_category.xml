@@ -50,7 +50,7 @@
 
     </LinearLayout>
 
-    <me.devsaki.hentoid.widget.MaxHeightRecyclerView
+    <me.devsaki.hentoid.views.MaxHeightRecyclerView
         android:id="@+id/tag_suggestion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

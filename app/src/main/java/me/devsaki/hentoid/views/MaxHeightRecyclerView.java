@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.widget;
+package me.devsaki.hentoid.views;
 
 import android.content.Context;
 import android.content.res.TypedArray;
