@@ -14,7 +14,7 @@ import okhttp3.Request;
 /**
  * Manages a single instance of OkHttpClient per timeout delay
  */
-@SuppressWarnings("squid:S3599") // https://stackoverflow.com/questions/11639746/what-is-the-point-of-making-the-singleton-instance-volatile-while-using-double-l
+@SuppressWarnings("squid:S3077") // https://stackoverflow.com/questions/11639746/what-is-the-point-of-making-the-singleton-instance-volatile-while-using-double-l
 public class OkHttpClientSingleton {
 
     private static volatile SparseArray<OkHttpClient> instance = new SparseArray<>();

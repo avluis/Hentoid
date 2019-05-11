@@ -525,7 +525,7 @@ public class ObjectBoxDB {
         return queryAvailableAttributes(type, filter, filteredContent).count();
     }
 
-    @SuppressWarnings("squid:S3077") // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
+    @SuppressWarnings("squid:S2184") // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
     List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
@@ -553,7 +553,7 @@ public class ObjectBoxDB {
         // Apply paging
         if (itemsPerPage > 0) {
             int start = (page - 1) * itemsPerPage;
-            s = s.limit(page * itemsPerPage).skip(start); // squid:S3077 here because int * int -> int (not long)
+            s = s.limit(page * itemsPerPage).skip(start); // squid:S2184 here because int * int -> int (not long)
         }
         return s.collect(toList());
     }
