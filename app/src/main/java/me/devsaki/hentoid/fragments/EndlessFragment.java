@@ -49,6 +49,11 @@ public class EndlessFragment extends DownloadsFragment {
         toggleUI(SHOW_RESULT);
     }
 
+    @Override
+    protected boolean forceSearchFromPageOne() {
+        return !isPageLoading;
+    }
+
     private void onLoadMore() {
         if (!isLastPage()) { // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
             currentPage++;

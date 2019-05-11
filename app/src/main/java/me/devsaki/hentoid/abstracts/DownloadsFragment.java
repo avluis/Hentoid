@@ -305,7 +305,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (PermissionUtil.requestExternalStoragePermission(requireActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
                 boolean shouldUpdate = queryPrefs();
                 if (shouldUpdate || -1 == mTotalSelectedCount)
-                    searchLibrary(true); // If prefs changes detected or first run (-1 = uninitialized)
+                    searchLibrary(); // If prefs changes detected or first run (-1 = uninitialized)
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
                 showToolbar(true);
             } else {
@@ -316,7 +316,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 storagePermissionChecked = true;
             }
         } else if (MODE_MIKAN == mode) {
-            if (-1 == mTotalSelectedCount) searchLibrary(true);
+            if (-1 == mTotalSelectedCount) searchLibrary();
             showToolbar(true);
         }
     }
@@ -585,7 +585,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             setQuery("");
             selectedSearchTags.clear();
             filterBar.setVisibility(View.GONE);
-            searchLibrary(true);
+            searchLibrary();
         });
 
         refreshLayout.setEnabled(false);
@@ -623,7 +623,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     protected void clearQuery() {
         setQuery(query = "");
-        searchLibrary(true);
+        searchLibrary();
     }
 
     /**
@@ -635,7 +635,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout.setRefreshing(false);
         refreshLayout.setEnabled(false);
         isNewContentAvailable = false;
-        searchLibrary(true);
+        searchLibrary();
         resetCount();
     }
 
@@ -794,7 +794,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mAdapter.setSortComparator(Content.getComparator(contentSortOrder));
         orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
         Preferences.setContentSortOrder(contentSortOrder);
-        searchLibrary(true);
+        searchLibrary();
 
         return true;
     }
@@ -815,7 +815,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void toggleFavouriteFilter() {
         filterFavourites = !filterFavourites;
         updateFavouriteFilter();
-        searchLibrary(true);
+        searchLibrary();
     }
 
     /**
@@ -829,7 +829,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         query = s;
         selectedSearchTags.clear(); // If user searches in main toolbar, universal search takes over advanced search
         setQuery(s);
-        searchLibrary(true);
+        searchLibrary();
     }
 
     private void showReloadToolTip() {
@@ -947,6 +947,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         return result.toString();
     }
 
+    protected abstract boolean forceSearchFromPageOne();
+
+    protected void searchLibrary() {
+        searchLibrary(true);
+    }
     /**
      * Loads the library applying current search parameters
      *
@@ -958,9 +963,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (showLoadingPanel) toggleUI(SHOW_LOADING);
 
-        // New searches always start from page 1
+        // Searches start from page 1 if they are new or if the fragment implementation forces it
         String currentSearchParams = getCurrentSearchParams(contentSortOrder);
-        if (!currentSearchParams.equals(lastSearchParams)) {
+        if (!currentSearchParams.equals(lastSearchParams) || forceSearchFromPageOne()) {
             currentPage = 1;
             mListView.scrollToPosition(0);
         }
@@ -1067,7 +1072,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isLoading = false;
 
         Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
-                .setAction("RETRY", v -> searchLibrary(MODE_MIKAN == mode))
+                .setAction("RETRY", v -> searchLibrary())
                 .show();
         toggleUI(SHOW_BLANK);
     }
@@ -1145,7 +1150,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                         setQuery(searchUri.getPath());
                         selectedSearchTags = Helper.parseSearchUri(searchUri);
 
-                        searchLibrary(true);
+                        searchLibrary();
                     }
                 }
             }

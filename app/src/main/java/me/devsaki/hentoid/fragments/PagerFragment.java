@@ -42,13 +42,18 @@ public class PagerFragment extends DownloadsFragment {
         attachPageSelector();
     }
 
+    @Override
+    protected boolean forceSearchFromPageOne() {
+        return false;
+    }
+
     private void attachPrevious(View rootView) {
         ImageButton btnPrevious = rootView.findViewById(R.id.btnPrevious);
         btnPrevious.setOnClickListener(v -> {
             if (currentPage > 1 && !isLoading) {
                 currentPage--;
                 pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
-                searchLibrary(true);
+                searchLibrary();
             } else if (booksPerPage > 0 && !isLoading) {
                 ToastUtil.toast(mContext, R.string.not_previous_page);
             } else {
@@ -66,7 +71,7 @@ public class PagerFragment extends DownloadsFragment {
                 if (!isLastPage() && !isLoading) {
                     currentPage++;
                     pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
-                    searchLibrary(true);
+                    searchLibrary();
                 } else if (isLastPage()) {
                     ToastUtil.toast(mContext, R.string.not_next_page);
                 }
@@ -81,7 +86,7 @@ public class PagerFragment extends DownloadsFragment {
     private void onPageChange(int page) {
         if (page != currentPage) {
             currentPage = page;
-            searchLibrary(true);
+            searchLibrary();
         }
     }
 
