@@ -228,7 +228,7 @@
                 <!-- Accepts URIs that begin with "http://pururin.io/" -->
                 <data
                     android:host="pururin.io"
-                    android:pathPrefix="/"
+                    android:pathPrefix="/gallery"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -250,7 +250,7 @@
                 <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="e-hentai.org"
-                    android:pathPrefix="/"
+                    android:pathPrefix="/g/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>
@@ -261,7 +261,7 @@
                 <!-- Accepts URIs that begin with "https://e-hentai.org/" -->
                 <data
                     android:host="fakku.net"
-                    android:pathPrefix="/"
+                    android:pathPrefix="/hentai/"
                     android:scheme="https" />
             </intent-filter>
         </activity>
