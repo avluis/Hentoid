@@ -153,11 +153,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         libraryView = recyclerView;
     }
 
+    /**
+     * Initializes the {@link ContentHolder} that contains the books
+     */
     @Override
     public void onBindViewHolder(@NonNull ContentHolder holder, final int pos) {
         Content content = mSortedList.get(pos);
 
-        // Initializes the SiteAdapterViewHolder that contains the books
         updateLayoutVisibility(holder, content, pos);
         attachTitle(holder, content);
         attachSeries(holder, content);
@@ -541,7 +543,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         FileHelper.archiveContent(context, item);
     }
 
-    private void askDeleteContent(final Content item) {
+    private void askDeleteItem(final Content item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
@@ -554,7 +556,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .create().show();
     }
 
-    private void askDeleteContents(final List<Content> items) {
+    private void askDeleteItems(final List<Content> items) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(R.string.ask_delete_multiple)
                 .setPositiveButton(android.R.string.yes,
@@ -669,7 +671,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 items = getSelectedContents();
 
                 if (!items.isEmpty()) {
-                    askDeleteContent(items.get(0));
+                    askDeleteItem(items.get(0));
                 } else {
                     itemSelectListener.onItemClear(0);
                     Timber.d("Nothing to delete!!");
@@ -681,7 +683,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 items = getSelectedContents();
 
                 if (!items.isEmpty()) {
-                    askDeleteContents(items);
+                    askDeleteItems(items);
                 } else {
                     itemSelectListener.onItemClear(0);
                     Timber.d("No items to delete!!");

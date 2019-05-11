@@ -170,7 +170,7 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Pass the event to ActionBarDrawerToggle, if it returns
+        // Pass the event to {@link android.support.v7.app.ActionBarDrawerToggle}, if it returns
         // true, then it has handled the app icon touch event
         if (mDrawerToggle != null && mDrawerToggle.onOptionsItemSelected(item)) {
             return true;

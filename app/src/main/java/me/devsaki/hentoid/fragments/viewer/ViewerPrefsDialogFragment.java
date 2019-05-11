@@ -13,6 +13,8 @@ import android.widget.RadioGroup;
 import android.widget.SeekBar;
 import android.widget.Switch;
 
+import java.security.InvalidParameterException;
+
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
 
@@ -53,6 +55,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
                 theRadio.check(R.id.viewer_prefs_display_mode_action_fill);
                 break;
             default:
+                throw new InvalidParameterException("Not implemented");
         }
         theRadio.setOnCheckedChangeListener(this::onChangeDisplayMode);
 
@@ -68,6 +71,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
                 theRadio.check(R.id.viewer_prefs_browse_mode_action_ttb);
                 break;
             default:
+                throw new InvalidParameterException("Not implemented");
         }
         theRadio.setOnCheckedChangeListener(this::onChangeBrowseMode);
 
@@ -104,6 +108,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
                 Preferences.setViewerResizeMode(Preferences.Constant.PREF_VIEWER_DISPLAY_FILL);
                 break;
             default:
+                throw new InvalidParameterException("Not implemented");
         }
     }
 
@@ -119,6 +124,7 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
                 Preferences.setViewerBrowseMode(Preferences.Constant.PREF_VIEWER_BROWSE_TTB);
                 break;
             default:
+                throw new InvalidParameterException("Not implemented");
         }
     }
 }

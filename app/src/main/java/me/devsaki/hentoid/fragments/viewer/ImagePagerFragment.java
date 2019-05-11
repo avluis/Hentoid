@@ -17,6 +17,7 @@ import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Objects;
 
@@ -220,6 +221,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 onUpdateFlingFactor();
                 break;
             default:
+                throw new InvalidParameterException("Not implemented");
         }
     }
 

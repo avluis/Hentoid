@@ -20,7 +20,7 @@ android {
         // or Perfect Viewer implements Content URI
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 23
-        versionCode 89
+        versionCode 103
         versionName '1.7.2'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
@@ -138,9 +138,6 @@ dependencies {
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'
-
-    // ScrollView with MaxHeight (tag display in advanced search UI) : https://github.com/bskim45/MaxHeightScrollView
-    implementation 'com.bskim:maxheightscrollview:1.0.0@aar'
 
     // Retrofit-ready-ready HTML parser with CSS selectors : https://github.com/DroidsOnRoids/jspoon
     implementation 'pl.droidsonroids:jspoon:1.3.2'

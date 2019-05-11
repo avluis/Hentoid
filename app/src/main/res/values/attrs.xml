@@ -3,4 +3,8 @@
 
     <!-- Background drawable for standalone items that need focus/pressed states. -->
     <attr name="item_background" format="reference" />
+
+    <declare-styleable name="MaxHeightRecyclerView">
+        <attr name="maxHeight" format="dimension" />
+    </declare-styleable>
 </resources>

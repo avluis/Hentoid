@@ -8,7 +8,7 @@ import com.annimon.stream.Stream;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -53,12 +53,10 @@ public class MikanCollectionAccessor implements CollectionAccessor {
     // == UTILS
 
     private static String getMikanCodeForSite(Site s) {
-        switch (s) {
-            case HITOMI:
-                return "hitomi.la";
-            default:
-                return null;
+        if (s == Site.HITOMI) {
+            return "hitomi.la";
         }
+        return null;
     }
 
     private static boolean isSiteUnsupported(Site s) {
@@ -287,9 +285,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         if (null == content)
             listener.onContentFailed(null, "Pages failed to load - Unexpected empty content");
         else {
-            List<Content> list = new ArrayList<Content>() {{
-                add(content);
-            }};
+            List<Content> list = Arrays.asList(content);
             content.addImageFiles(response.toImageFileList()).setQtyPages(response.pages.size());
             listener.onContentReady(list, 1, 1);
         }
@@ -319,12 +315,10 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         List<Attribute> finalResult = filter(attributes, filter);
 
         Comparator<Attribute> comparator;
-        switch (sortOrder) {
-            case Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC:
-                comparator = Attribute.NAME_COMPARATOR;
-                break;
-            default:
-                comparator = Attribute.COUNT_COMPARATOR;
+        if (sortOrder == Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC) {
+            comparator = Attribute.NAME_COMPARATOR;
+        } else {
+            comparator = Attribute.COUNT_COMPARATOR;
         }
         Collections.sort(finalResult, comparator);
 

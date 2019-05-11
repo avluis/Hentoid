@@ -50,24 +50,13 @@
 
     </LinearLayout>
 
-
-    <com.bskim.maxheightscrollview.widgets.MaxHeightScrollView
-        xmlns:app="http://schemas.android.com/apk/res-auto"
+    <me.devsaki.hentoid.widget.MaxHeightRecyclerView
+        android:id="@+id/tag_suggestion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textIsSelectable="false"
         app:maxHeight="200dp"
-        android:fadeScrollbars="false"
-        android:scrollbars="vertical">
-
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/tag_suggestion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textIsSelectable="false"
-            />
-
-    </com.bskim.maxheightscrollview.widgets.MaxHeightScrollView>
-
+        />
 
     <android.support.v7.widget.SearchView
         android:id="@+id/tag_filter"
