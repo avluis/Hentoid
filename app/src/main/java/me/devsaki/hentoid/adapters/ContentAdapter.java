@@ -45,8 +45,8 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ContentListener;
-import me.devsaki.hentoid.listener.ItemClickListener;
-import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.listener.ContentClickListener;
+import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentNotRemovedException;
@@ -402,7 +402,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         // Simple click = open book (library mode only)
         if (DownloadsFragment.MODE_LIBRARY == displayMode) {
-            holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, itemSelectListener) {
+            holder.itemView.setOnClickListener(new ContentClickListener(context, content, pos, itemSelectListener) {
 
                 @Override
                 public void onClick(View v) {
@@ -430,7 +430,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         // Long click = select item (library mode only)
         if (DownloadsFragment.MODE_LIBRARY == displayMode) {
-            holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, itemSelectListener) {
+            holder.itemView.setOnLongClickListener(new ContentClickListener(context, content, pos, itemSelectListener) {
 
                 @Override
                 public boolean onLongClick(View v) {

@@ -61,7 +61,7 @@ import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.fragments.AboutMikanDialogFragment;
 import me.devsaki.hentoid.fragments.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.listener.ContentListener;
-import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
