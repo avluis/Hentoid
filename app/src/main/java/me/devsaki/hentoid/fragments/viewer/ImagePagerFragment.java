@@ -17,7 +17,6 @@ import android.view.WindowManager;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import java.security.InvalidParameterException;
 import java.util.List;
 import java.util.Objects;
 
@@ -79,7 +78,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .getImages()
                 .observe(this, this::onImagesChanged);
 
-        if (Preferences.isViewerResumeLastLeft()) recyclerView.scrollToPosition(viewModel.getInitialPosition());
+        if (Preferences.isViewerResumeLastLeft())
+            recyclerView.scrollToPosition(viewModel.getInitialPosition());
     }
 
     @Override
@@ -221,7 +221,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 onUpdateFlingFactor();
                 break;
             default:
-                throw new InvalidParameterException("Not implemented");
+                // Other changes aren't handled here
         }
     }
 
@@ -287,7 +287,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void goToPage(int pageNum) {
         int position = pageNum - 1;
-        if (position == viewModel.getCurrentPosition() || position < 0 || position > maxPosition) return;
+        if (position == viewModel.getCurrentPosition() || position < 0 || position > maxPosition)
+            return;
         seekToPosition(position);
     }
 

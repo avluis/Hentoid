@@ -554,7 +554,7 @@ public class ContentDownloadService extends IntentService {
                 HentoidApp.trackDownloadEvent("Skipped");
                 break;
             default:
-                throw new InvalidParameterException("Not implemented");
+                // Other events aren't handled here
         }
     }
 
