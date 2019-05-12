@@ -120,7 +120,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
-        recyclerView.setOnKeyListener(volumeKeyListener);
+        recyclerView.setOnKeyListener(volumeKeyListener.getListener());
 
         llm = new PrefetchLinearLayoutManager(getContext());
         llm.setItemPrefetchEnabled(true);
