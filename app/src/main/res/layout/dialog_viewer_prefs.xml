@@ -47,7 +47,9 @@
         android:gravity="start"
         android:textAlignment="viewStart"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_title" />
+        app:layout_constraintTop_toTopOf="@id/viewer_prefs_resume_reading_title"
+        app:layout_constraintBottom_toBottomOf="@id/viewer_prefs_resume_reading_title"
+        />
 
     <TextView
         android:id="@+id/viewer_prefs_keep_screen_title"
@@ -68,11 +70,36 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginLeft="24dp"
-        android:layout_marginTop="16dp"
         android:gravity="start"
         android:textAlignment="viewStart"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_resume_reading_title" />
+        app:layout_constraintTop_toTopOf="@id/viewer_prefs_keep_screen_title"
+        app:layout_constraintBottom_toBottomOf="@id/viewer_prefs_keep_screen_title" />
+
+    <TextView
+        android:id="@+id/viewer_prefs_display_pagenum_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="start"
+        android:text="@string/pref_viewer_display_pagenum"
+        android:textAlignment="viewStart"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_prefs_display_pagenum_action"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_keep_screen_title" />
+
+    <Switch
+        android:id="@+id/viewer_prefs_display_pagenum_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:gravity="start"
+        android:textAlignment="viewStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/viewer_prefs_display_pagenum_title"
+        app:layout_constraintBottom_toBottomOf="@id/viewer_prefs_display_pagenum_title" />
 
     <!-- To be reactivated once fill mode works properly -->
 
@@ -86,7 +113,7 @@
         android:textAlignment="viewStart"
         android:textSize="@dimen/text_body_1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_keep_screen_title"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_display_pagenum_title"
         android:visibility="gone"/>
 
     <RadioGroup
@@ -168,8 +195,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="8dp"
-        app:layout_constraintStart_toStartOf="@id/viewer_prefs_fling_sensitivity_title"
-        app:layout_constraintEnd_toEndOf="@id/viewer_prefs_keep_screen_action"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_fling_sensitivity_title"
         />
 

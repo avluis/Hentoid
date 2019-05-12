@@ -224,6 +224,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isViewerDisplayPageNum() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, Default.PREF_VIEWER_DISPLAY_PAGENUM);
+    }
+
+    public static void setViewerDisplayPageNum(boolean displayPageNum) {
+        sharedPreferences.edit()
+                .putBoolean(Key.PREF_VIEWER_DISPLAY_PAGENUM, displayPageNum)
+                .apply();
+    }
+
     public static boolean hasViewerChoiceBeenDisplayed() {
         return sharedPreferences.getBoolean(Key.VIEWER_CHOICE_DISPLAYED, false);
     }
@@ -263,6 +273,7 @@ public final class Preferences {
         public static final String PREF_VIEWER_IMAGE_DISPLAY = "pref_viewer_image_display";
         public static final String PREF_VIEWER_BROWSE_MODE = "pref_viewer_browse_mode";
         public static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
+        public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         static final String VIEWER_CHOICE_DISPLAYED = "pref_viewer_choice_displayed";
     }
 
@@ -286,6 +297,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_KEEP_SCREEN_ON = true;
         static final int PREF_VIEWER_IMAGE_DISPLAY = Constant.PREF_VIEWER_DISPLAY_FIT;
         static final int PREF_VIEWER_BROWSE_MODE = Constant.PREF_VIEWER_BROWSE_NONE;
+        static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final int PREF_VIEWER_FLING_FACTOR = 50;
     }
 

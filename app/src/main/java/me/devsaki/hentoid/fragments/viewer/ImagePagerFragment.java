@@ -45,6 +45,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ImageRecyclerAdapter adapter;
     private SeekBar seekBar;
     private TextView pageNumber;
+    private TextView pageCurrentNumber;
     private TextView pageMaxNumber;
     private RecyclerView recyclerView;
     private PageSnapWidget pageSnapWidget;
@@ -66,6 +67,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         onBrowseModeChange();
         onUpdateFlingFactor();
+        onUpdatePageNumDisplay();
 
         return view;
     }
@@ -149,9 +151,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         View discordButton = requireViewById(rootView, R.id.viewer_discord_text);
         discordButton.setOnClickListener(v -> Helper.openUrl(requireContext(), Consts.URL_DISCORD));
         // Page number button
-        pageNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
-        pageNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
+        pageCurrentNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
+        pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
         pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
+        pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
         // Slider
         seekBar = requireViewById(rootView, R.id.viewer_seekbar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -204,9 +207,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void updatePageDisplay() {
-        String pageDisplayText = format("%s / %s", viewModel.getCurrentPosition() + 1, maxPosition + 1);
-        pageNumber.setText(viewModel.getCurrentPosition() + 1 + "");
-        pageMaxNumber.setText(maxPosition + 1 + "");
+        String pageNum = viewModel.getCurrentPosition() + 1 + "";
+        String maxPage = maxPosition + 1 + "";
+
+        pageCurrentNumber.setText(pageNum);
+        pageMaxNumber.setText(maxPage);
+        pageNumber.setText(format("%s / %s", pageNum, maxPage));
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
@@ -222,6 +228,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 break;
             case Preferences.Key.PREF_VIEWER_FLING_FACTOR:
                 onUpdateFlingFactor();
+                break;
+            case Preferences.Key.PREF_VIEWER_DISPLAY_PAGENUM:
+                onUpdatePageNumDisplay();
                 break;
             default:
                 // Other changes aren't handled here
@@ -241,6 +250,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void onUpdateImageDisplay() {
         adapter.notifyDataSetChanged(); // NB : will re-run onBindViewHolder for all displayed pictures
+    }
+
+    private void onUpdatePageNumDisplay() {
+        pageNumber.setVisibility(Preferences.isViewerDisplayPageNum() ? View.VISIBLE : View.GONE);
     }
 
     @Override
