@@ -1182,7 +1182,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         else if (1 == currentViewer) resourcePosition = 2;
         String currentViewerStr = requireContext().getResources().getStringArray(R.array.pref_read_content_entries)[resourcePosition];
 
-        String message = requireContext().getString(R.string.downloads_suggest_image_viewer).replace("@currentOption", currentViewerStr);
+        String message = getString(R.string.downloads_suggest_image_viewer, currentViewerStr);
         android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(requireContext());
         builder.setTitle(R.string.downloads_suggest_image_viewer_title)
                 .setMessage(message)
