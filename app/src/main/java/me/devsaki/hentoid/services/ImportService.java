@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
@@ -90,12 +91,19 @@ public class ImportService extends IntentService {
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
         // True if the user has asked for a cleanup when calling import from Preferences
-        boolean doCleanup = false;
+        boolean doRename = false;
+        boolean doCleanAbsent = false;
+        boolean doCleanNoImages = false;
+        boolean doCleanUnreadable = false;
 
-        if (intent != null) {
-            doCleanup = intent.getBooleanExtra("cleanup", false);
+        if (intent != null && intent.getExtras() != null) {
+            ImportActivityBundle.Parser parser = new ImportActivityBundle.Parser(intent.getExtras());
+            doRename = parser.getRefreshRename();
+            doCleanAbsent = parser.getRefreshCleanAbsent();
+            doCleanNoImages = parser.getRefreshCleanNoImages();
+            doCleanUnreadable = parser.getRefreshCleanUnreadable();
         }
-        startImport(doCleanup);
+        startImport(doRename, doCleanAbsent, doCleanNoImages, doCleanUnreadable);
     }
 
     private void eventProgress(Content content, int nbBooks, int booksOK, int booksKO) {
@@ -116,9 +124,12 @@ public class ImportService extends IntentService {
     /**
      * Import books from known source folders
      *
-     * @param cleanup True if the user has asked for a cleanup when calling import from Preferences
+     * @param rename              True if the user has asked for a folder renaming when calling import from Preferences
+     * @param cleanNoJSON         True if the user has asked for a cleanup of folders with no JSONs when calling import from Preferences
+     * @param cleanNoImages       True if the user has asked for a cleanup of folders with no images when calling import from Preferences
+     * @param cleanUnreadableJSON True if the user has asked for a cleanup of folders with unreadable JSONs when calling import from Preferences
      */
-    private void startImport(boolean cleanup) {
+    private void startImport(boolean rename, boolean cleanNoJSON, boolean cleanNoImages, boolean cleanUnreadableJSON) {
         int booksOK = 0;                        // Number of books imported
         int booksKO = 0;                        // Number of folders found with no valid book inside
         int nbFolders = 0;                      // Number of folders found with no content but subfolders
@@ -137,14 +148,37 @@ public class ImportService extends IntentService {
 
         // 2nd pass : scan every folder for a JSON file or subdirectories
         trace(Log.DEBUG, log, "Import books starting - initial detected count : %s", files.size() + "");
-        trace(Log.INFO, log, "Cleanup %s", (cleanup ? "ENABLED" : "DISABLED"));
+        trace(Log.INFO, log, "Rename folders %s", (rename ? "ENABLED" : "DISABLED"));
+        trace(Log.INFO, log, "Remove folders with no JSONs %s", (cleanNoJSON ? "ENABLED" : "DISABLED"));
+        trace(Log.INFO, log, "Remove folders with no images %s", (cleanNoImages ? "ENABLED" : "DISABLED"));
+        trace(Log.INFO, log, "Remove folders with unreadable JSONs %s", (cleanUnreadableJSON ? "ENABLED" : "DISABLED"));
         for (int i = 0; i < files.size(); i++) {
             File folder = files.get(i);
 
+            // Detect the presence of images if the corresponding cleanup option has been enabled
+            if (cleanNoImages) {
+                File[] images = folder.listFiles(
+                        file -> (file.isDirectory()
+                                || file.getName().toLowerCase().endsWith(".jpg")
+                                || file.getName().toLowerCase().endsWith(".jpeg")
+                                || file.getName().toLowerCase().endsWith(".png")
+                                || file.getName().toLowerCase().endsWith(".gif")
+                        )
+                );
+
+                if (0 == images.length) { // No images nor subfolders
+                    booksKO++;
+                    boolean success = FileHelper.removeFile(folder);
+                    trace(Log.INFO, log, "[Remove no image %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
+                    continue;
+                }
+            }
+
+            // Detect JSON and try to parse it
             try {
                 content = importJson(folder);
                 if (content != null) {
-                    if (cleanup) {
+                    if (rename) {
                         String canonicalBookDir = FileHelper.formatDirPath(content);
 
                         String[] currentPathParts = folder.getAbsolutePath().split("/");
@@ -177,20 +211,29 @@ public class ImportService extends IntentService {
                     } else { // No JSON nor any subdirectory
                         trace(Log.WARN, log, "Import book KO! (no JSON found) : %s", folder.getAbsolutePath());
                         // Deletes the folder if cleanup is active
-                        if (cleanup) {
+                        if (cleanNoJSON) {
                             boolean success = FileHelper.removeFile(folder);
-                            trace(Log.INFO, log, "[Remove %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
+                            trace(Log.INFO, log, "[Remove no JSON %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
                         }
                     }
                 }
 
                 if (null == content) booksKO++;
                 else booksOK++;
+            } catch (JSONParseException jse) {
+                if (null == content)
+                    content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
+                booksKO++;
+                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", jse.getMessage(), folder.getAbsolutePath());
+                if (cleanUnreadableJSON) {
+                    boolean success = FileHelper.removeFile(folder);
+                    trace(Log.INFO, log, "[Remove unreadable JSON %s] Folder %s", success ? "OK" : "KO", folder.getAbsolutePath());
+                }
             } catch (Exception e) {
                 if (null == content)
                     content = new Content().setTitle("none").setSite(Site.NONE).setUrl("");
                 booksKO++;
-                trace(Log.ERROR, log, "Import book ERROR : %s %s", e.getMessage(), folder.getAbsolutePath());
+                trace(Log.ERROR, log, "Import book ERROR : %s for Folder %s", e.getMessage(), folder.getAbsolutePath());
             }
 
             eventProgress(content, files.size() - nbFolders, booksOK, booksKO);
@@ -198,7 +241,7 @@ public class ImportService extends IntentService {
         trace(Log.INFO, log, "Import books complete - %s OK; %s KO; %s final count", booksOK + "", booksKO + "", files.size() - nbFolders + "");
 
         // Write cleanup log in root folder
-        File cleanupLogFile = LogUtil.writeLog(this, log, buildLogInfo(cleanup));
+        File cleanupLogFile = LogUtil.writeLog(this, log, buildLogInfo(rename || cleanNoJSON || cleanNoImages || cleanUnreadableJSON));
 
         eventComplete(files.size(), booksOK, booksKO, cleanupLogFile);
         notificationManager.notify(new ImportCompleteNotification(booksOK, booksKO));
@@ -224,7 +267,7 @@ public class ImportService extends IntentService {
         json = new File(folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
         if (json.exists()) return importJsonV1(json);
 
-        json = new File(folder, Consts.OLD_JSON_FILE_NAME); // (old) JSON file format (legacy and/or FAKKUDroid App)
+        json = new File(folder, Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
         if (json.exists()) return importJsonLegacy(json);
 
         return null;

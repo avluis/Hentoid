@@ -30,6 +30,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
+import me.devsaki.hentoid.util.Preferences;
 
 /**
  * Created by DevSaki on 09/05/2015.
@@ -81,6 +82,10 @@ public class Content implements Serializable {
     @Expose(serialize = false, deserialize = false)
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
+    @Expose(serialize = false, deserialize = false)
+    private int lastReadPageIndex = 0;
+    @Expose(serialize = false, deserialize = false)
+    private boolean isBeingDeleted = false;
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
@@ -149,10 +154,11 @@ public class Content implements Serializable {
             case EHENTAI:
             case PURURIN:
                 paths = url.split("/");
-                return paths[1];
+                return (paths.length > 1) ? paths[1] : paths[0];
             case HITOMI:
                 paths = url.split("/");
-                return paths[1].replace(".html", "");
+                String expression = (paths.length > 1) ? paths[1] : paths[0];
+                return expression.replace(".html", "");
             case ASMHENTAI:
             case ASMHENTAI_COMICS:
             case NHENTAI:
@@ -335,9 +341,9 @@ public class Content implements Serializable {
         if (this.attributeMap != null) {
             this.attributes.clear();
             for (AttributeType type : this.attributeMap.keySet()) {
-                for (Attribute attr : this.attributeMap.get(type))
-                {
-                    if (null == attr.getType()) attr.setType(AttributeType.SERIE); // Fix the issue with v1.6.5
+                for (Attribute attr : this.attributeMap.get(type)) {
+                    if (null == attr.getType())
+                        attr.setType(AttributeType.SERIE); // Fix the issue with v1.6.5
                     this.attributes.add(attr.computeLocation(site));
                 }
             }
@@ -388,7 +394,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    public long getUploadDate() {
+    long getUploadDate() {
         return uploadDate;
     }
 
@@ -397,7 +403,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    public long getDownloadDate() {
+    long getDownloadDate() {
         return downloadDate;
     }
 
@@ -437,9 +443,8 @@ public class Content implements Serializable {
         return percent;
     }
 
-    public Content setPercent(double percent) {
+    public void setPercent(double percent) {
         this.percent = percent;
-        return this;
     }
 
     public Site getSite() {
@@ -519,6 +524,22 @@ public class Content implements Serializable {
         return this;
     }
 
+    public int getLastReadPageIndex() {
+        return lastReadPageIndex;
+    }
+
+    public void setLastReadPageIndex(int index) {
+        this.lastReadPageIndex = index;
+    }
+
+    public boolean isBeingDeleted() {
+        return isBeingDeleted;
+    }
+
+    public void setIsBeingDeleted(boolean isBeingDeleted) {
+        this.isBeingDeleted = isBeingDeleted;
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -537,15 +558,40 @@ public class Content implements Serializable {
         return result;
     }
 
-    public static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
+    public static Comparator<Content> getComparator(int compareMethod) {
+        switch (compareMethod) {
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
+                return TITLE_ALPHA_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
+                return DLDATE_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
+                return TITLE_ALPHA_INV_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
+                return DLDATE_INV_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_RANDOM:
+                return QUERY_ORDER_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST:
+                return ULDATE_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
+                return READS_ORDER_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
+                return READS_ORDER_INV_COMPARATOR;
+            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
+                return READ_DATE_INV_COMPARATOR;
+            default:
+                return QUERY_ORDER_COMPARATOR;
+        }
+    }
 
-    public static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; // Inverted - last download date first
+    private static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
 
-    public static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; // Inverted - last upload date first
+    private static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; // Inverted - last download date first
 
-    public static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
+    private static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; // Inverted - last upload date first
 
-    public static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
+    private static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
+
+    private static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
 
     public static final Comparator<Content> READS_ORDER_COMPARATOR = (a, b) -> {
         int comp = Long.compare(a.getReads(), b.getReads());
@@ -559,5 +605,5 @@ public class Content implements Serializable {
 
     public static final Comparator<Content> READ_DATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getLastReadDate(), b.getLastReadDate()) * -1;
 
-    public static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
+    private static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
 }

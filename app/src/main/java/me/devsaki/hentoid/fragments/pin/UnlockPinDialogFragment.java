@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.pin;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -10,36 +10,27 @@ import android.view.View;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.Preferences;
 
-public final class ActivatePinDialogFragment extends PinDialogFragment {
+public final class UnlockPinDialogFragment extends PinDialogFragment {
 
     private Parent parent;
-
-    private String proposedPin;
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        parent = (Parent) getParentFragment();
+        parent = (Parent) context;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        setHeaderText(R.string.pin_new);
+        setHeaderText(R.string.app_lock_pin);
     }
 
     @Override
     protected void onPinAccept(String pin) {
-        if (proposedPin == null) {
-            proposedPin = pin;
-            clearPin();
-            setHeaderText(R.string.pin_new_confirm);
-        } else if (proposedPin.equals(pin)) {
-            Preferences.setAppLockPin(proposedPin);
+        if (Preferences.getAppLockPin().equals(pin)) {
             dismiss();
-            parent.onPinActivateSuccess();
+            parent.onPinSuccess();
         } else {
-            proposedPin = null;
-            setHeaderText(R.string.pin_new);
             vibrate();
             clearPin();
         }
@@ -47,13 +38,14 @@ public final class ActivatePinDialogFragment extends PinDialogFragment {
 
     @Override
     public void onCancel(DialogInterface dialog) {
-        parent.onPinActivateCancel();
+        super.onCancel(dialog);
+        parent.onPinCancel();
     }
 
     public interface Parent {
 
-        void onPinActivateSuccess();
+        void onPinSuccess();
 
-        void onPinActivateCancel();
+        void onPinCancel();
     }
 }

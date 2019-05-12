@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -31,19 +32,21 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.annimon.stream.Stream;
+
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.SearchActivity;
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
@@ -58,9 +61,8 @@ import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.fragments.AboutMikanDialogFragment;
 import me.devsaki.hentoid.fragments.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.listener.ContentListener;
-import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
-import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
@@ -69,6 +71,8 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
+
+import static com.annimon.stream.Collectors.toCollection;
 
 /**
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
@@ -92,11 +96,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // Save state constants
 
-    private static final String SELECTED_TAGS = "selected_tags";
-    private static final String FILTER_FAVOURITES = "filter_favs";
-    private static final String CURRENT_PAGE = "current_page";
-    private static final String QUERY = "query";
-    private static final String MODE = "mode";
+    private static final String KEY_SELECTED_TAGS = "selected_tags";
+    private static final String KEY_FILTER_FAVOURITES = "filter_favs";
+    private static final String KEY_CURRENT_PAGE = "current_page";
+    private static final String KEY_QUERY = "query";
+    private static final String KEY_MODE = "mode";
 
 
     // ======== UI ELEMENTS
@@ -138,8 +142,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // ======== VARIABLES TAKEN FROM PREFERENCES / GLOBAL SETTINGS TO DETECT CHANGES
     // Books per page
     protected int booksPerPage;
-    // Books sort order
-    private int bookSortOrder;
 
     // ======== VARIABLES
 
@@ -191,6 +193,30 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // To be documented
     private ActionMode mActionMode;
     private boolean selectTrigger = false;
+
+
+    private static int getIconFromSortOrder(int sortOrder) {
+        switch (sortOrder) {
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
+                return R.drawable.ic_menu_sort_321;
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
+                return R.drawable.ic_menu_sort_by_date;
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
+                return R.drawable.ic_menu_sort_alpha;
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
+                return R.drawable.ic_menu_sort_za;
+            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
+                return R.drawable.ic_menu_sort_unread;
+            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
+                return R.drawable.ic_menu_sort_read;
+            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
+                return R.drawable.ic_menu_sort_last_read;
+            case Preferences.Constant.ORDER_CONTENT_RANDOM:
+                return R.drawable.ic_menu_sort_random;
+            default:
+                return R.drawable.ic_error;
+        }
+    }
 
 
     // == METHODS
@@ -260,6 +286,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onResume() {
         super.onResume();
 
+        int currentViewer = Preferences.getContentReadAction();
+        if (Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER != currentViewer) {
+            if (!Preferences.hasViewerChoiceBeenDisplayed()) showViewerChoiceDialog(currentViewer);
+        } else {
+            Preferences.setViewerChoiceDisplayed(true);
+        }
+
         defaultLoad();
     }
 
@@ -272,7 +305,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (PermissionUtil.requestExternalStoragePermission(requireActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
                 boolean shouldUpdate = queryPrefs();
                 if (shouldUpdate || -1 == mTotalSelectedCount)
-                    searchLibrary(true); // If prefs changes detected or first run (-1 = uninitialized)
+                    searchLibrary(); // If prefs changes detected or first run (-1 = uninitialized)
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
                 showToolbar(true);
             } else {
@@ -283,7 +316,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 storagePermissionChecked = true;
             }
         } else if (MODE_MIKAN == mode) {
-            if (-1 == mTotalSelectedCount) searchLibrary(true);
+            if (-1 == mTotalSelectedCount) searchLibrary();
             showToolbar(true);
         }
     }
@@ -319,7 +352,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             if (refreshedContentCount > mTotalCount) { // More books added
                 showReloadToolTip();
             } else { // Library cleaned up
-                cleanResults();
                 shouldUpdate = true;
             }
             libraryHasBeenRefreshed = false;
@@ -337,12 +369,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             this.booksPerPage = booksPerPage;
             setQuery("");
             shouldUpdate = true;
-        }
-
-        int bookOrder = Preferences.getContentSortOrder();
-        if (this.bookSortOrder != bookOrder) {
-            Timber.d("book sort order updated.");
-            this.bookSortOrder = bookOrder;
         }
 
         return shouldUpdate;
@@ -396,18 +422,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
 
-        outState.putBoolean(FILTER_FAVOURITES, filterFavourites);
-        outState.putString(QUERY, query);
-        outState.putInt(CURRENT_PAGE, currentPage);
-        outState.putInt(MODE, mode);
+        outState.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
+        outState.putString(KEY_QUERY, query);
+        outState.putInt(KEY_CURRENT_PAGE, currentPage);
+        outState.putInt(KEY_MODE, mode);
 
         long[] selectedTagIds = new long[selectedSearchTags.size()];
         int index = 0;
         for (Attribute a : selectedSearchTags) {
             selectedTagIds[index++] = a.getId();
         }
-        outState.putLongArray(SELECTED_TAGS, selectedTagIds);
-//        outState.putIntegerArrayList(SELECTED_TAGS, selectedTagIds);
+        outState.putLongArray(KEY_SELECTED_TAGS, selectedTagIds);
     }
 
     @Override
@@ -415,13 +440,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         super.onViewStateRestored(state);
 
         if (state != null) {
-            filterFavourites = state.getBoolean(FILTER_FAVOURITES, false);
-            query = state.getString(QUERY, "");
-            currentPage = state.getInt(CURRENT_PAGE);
-            mode = state.getInt(MODE);
+            filterFavourites = state.getBoolean(KEY_FILTER_FAVOURITES, false);
+            query = state.getString(KEY_QUERY, "");
+            currentPage = state.getInt(KEY_CURRENT_PAGE);
+            mode = state.getInt(KEY_MODE);
 
-            long[] selectedTagIds = state.getLongArray(SELECTED_TAGS);
-//            List<Integer> selectedTagIds = state.getIntegerArrayList(SELECTED_TAGS);
+            long[] selectedTagIds = state.getLongArray(KEY_SELECTED_TAGS);
             ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
             if (selectedTagIds != null) {
                 for (long i : selectedTagIds) {
@@ -442,7 +466,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         setHasOptionsMenu(true);
 
         mContext = getContext();
-        bookSortOrder = Preferences.getContentSortOrder();
         booksPerPage = Preferences.getContentPageQuantity();
     }
 
@@ -473,40 +496,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         emptyText = rootView.findViewById(R.id.empty);
         emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
 
+        int contentSortOrder = Preferences.getContentSortOrder();
 
         if (MODE_MIKAN == mode)
-            bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST;
-
-        Comparator<Content> comparator;
-
-        switch (bookSortOrder) {
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                comparator = Content.DLDATE_COMPARATOR;
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
-                comparator = Content.DLDATE_INV_COMPARATOR;
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
-                comparator = Content.TITLE_ALPHA_COMPARATOR;
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
-                comparator = Content.TITLE_ALPHA_INV_COMPARATOR;
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_UL_DATE_FIRST:
-                comparator = Content.ULDATE_COMPARATOR;
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
-                comparator = Content.READS_ORDER_COMPARATOR;
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
-                comparator = Content.READS_ORDER_INV_COMPARATOR;
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
-                comparator = Content.READ_DATE_INV_COMPARATOR;
-                break;
-            default:
-                comparator = Content.QUERY_ORDER_COMPARATOR;
-        }
+            contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST;
 
         llm = new LinearLayoutManager(mContext);
 
@@ -514,9 +507,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 .setContext(mContext)
                 .setCollectionAccessor(collectionAccessor)
                 .setDisplayMode(mode)
-                .setSortComparator(comparator)
+                .setSortComparator(Content.getComparator(contentSortOrder))
                 .setItemSelectListener(this)
-                .setOnContentsClearedListener(this::onContentsCleared)
                 .setOnContentRemovedListener(this::onContentRemoved)
                 .build();
 
@@ -593,7 +585,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             setQuery("");
             selectedSearchTags.clear();
             filterBar.setVisibility(View.GONE);
-            searchLibrary(true);
+            searchLibrary();
         });
 
         refreshLayout.setEnabled(false);
@@ -631,7 +623,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     protected void clearQuery() {
         setQuery(query = "");
-        searchLibrary(true);
+        searchLibrary();
     }
 
     /**
@@ -643,8 +635,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         refreshLayout.setRefreshing(false);
         refreshLayout.setEnabled(false);
         isNewContentAvailable = false;
-        cleanResults();
-        searchLibrary(true);
+        searchLibrary();
         resetCount();
     }
 
@@ -733,11 +724,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             public boolean onQueryTextChange(String s) {
                 if (invalidateNextQueryTextChange) { // Should not happen when search panel is closing or opening
                     invalidateNextQueryTextChange = false;
-                    return true;
-                }
-
-//                    if (!s.equals(query)) submitContentSearchQuery(s, 2000);  Auto-submit disabled
-                if (s.isEmpty()) {
+                } else if (s.isEmpty()) {
                     clearQuery();
                 }
 
@@ -745,48 +732,19 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             }
         });
 
-
-        // == BOOKS SORT
-
-        // Sets the right starting icon according to the starting sort order
-        switch (bookSortOrder) {
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                orderMenu.setIcon(R.drawable.ic_menu_sort_321);
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
-                orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
-                orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
-                orderMenu.setIcon(R.drawable.ic_menu_sort_za);
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
-                orderMenu.setIcon(R.drawable.ic_menu_sort_unread);
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
-                orderMenu.setIcon(R.drawable.ic_menu_sort_read);
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
-                orderMenu.setIcon(R.drawable.ic_menu_sort_last_read);
-                break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
-                orderMenu.setIcon(R.drawable.ic_menu_sort_random);
-                break;
-            default:
-                // Nothing
-        }
+        // Sets the starting book sort icon according to the current sort order
+        orderMenu.setIcon(getIconFromSortOrder(Preferences.getContentSortOrder()));
     }
 
     private void onAdvancedSearchClick() {
         Intent search = new Intent(this.getContext(), SearchActivity.class);
 
-        BundleManager manager = new BundleManager();
-        manager.setMode(mode);
+        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
+
+        builder.setMode(mode);
         if (!selectedSearchTags.isEmpty())
-            manager.setUri(Helper.buildSearchUri(selectedSearchTags));
-        search.putExtras(manager.getBundle());
+            builder.setUri(Helper.buildSearchUri(selectedSearchTags));
+        search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
         searchMenu.collapseActionView();
@@ -801,89 +759,44 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        boolean result;
+        int contentSortOrder;
 
         switch (item.getItemId()) {
             case R.id.action_order_AZ:
-                cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA;
-                mAdapter.setSortComparator(Content.TITLE_ALPHA_COMPARATOR);
-                orderMenu.setIcon(R.drawable.ic_menu_sort_alpha);
-                searchLibrary(true);
-
-                result = true;
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA;
                 break;
             case R.id.action_order_321:
-                cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST;
-                mAdapter.setSortComparator(Content.DLDATE_COMPARATOR);
-                orderMenu.setIcon(R.drawable.ic_menu_sort_321);
-                searchLibrary(true);
-
-                result = true;
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST;
                 break;
             case R.id.action_order_ZA:
-                cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED;
-                mAdapter.setSortComparator(Content.TITLE_ALPHA_INV_COMPARATOR);
-                orderMenu.setIcon(R.drawable.ic_menu_sort_za);
-                searchLibrary(true);
-
-                result = true;
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED;
                 break;
             case R.id.action_order_123:
-                cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST;
-                mAdapter.setSortComparator(Content.DLDATE_INV_COMPARATOR);
-                orderMenu.setIcon(R.drawable.ic_menu_sort_by_date);
-                searchLibrary(true);
-
-                result = true;
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST;
                 break;
             case R.id.action_order_least_read:
-                cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ;
-                mAdapter.setSortComparator(Content.READS_ORDER_COMPARATOR);
-                orderMenu.setIcon(R.drawable.ic_menu_sort_unread);
-                searchLibrary(true);
-
-                result = true;
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LEAST_READ;
                 break;
             case R.id.action_order_most_read:
-                cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ;
-                mAdapter.setSortComparator(Content.READS_ORDER_INV_COMPARATOR);
-                orderMenu.setIcon(R.drawable.ic_menu_sort_read);
-                searchLibrary(true);
-
-                result = true;
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_MOST_READ;
                 break;
             case R.id.action_order_last_read:
-                cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ;
-                mAdapter.setSortComparator(Content.READ_DATE_INV_COMPARATOR);
-                orderMenu.setIcon(R.drawable.ic_menu_sort_last_read);
-                searchLibrary(true);
-
-                result = true;
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_READ;
                 break;
             case R.id.action_order_random:
-                cleanResults();
-                bookSortOrder = Preferences.Constant.PREF_ORDER_CONTENT_RANDOM;
-                mAdapter.setSortComparator(Content.QUERY_ORDER_COMPARATOR);
+                contentSortOrder = Preferences.Constant.ORDER_CONTENT_RANDOM;
                 RandomSeedSingleton.getInstance().renewSeed();
-                orderMenu.setIcon(R.drawable.ic_menu_sort_random);
-                searchLibrary(true);
-
-                result = true;
                 break;
             default:
-                result = super.onOptionsItemSelected(item);
+                return super.onOptionsItemSelected(item);
         }
-        // Save current sort order
-        Preferences.setContentSortOrder(bookSortOrder);
 
-        return result;
+        mAdapter.setSortComparator(Content.getComparator(contentSortOrder));
+        orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
+        Preferences.setContentSortOrder(contentSortOrder);
+        searchLibrary();
+
+        return true;
     }
 
     /**
@@ -902,7 +815,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void toggleFavouriteFilter() {
         filterFavourites = !filterFavourites;
         updateFavouriteFilter();
-        searchLibrary(true);
+        searchLibrary();
     }
 
     /**
@@ -916,8 +829,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         query = s;
         selectedSearchTags.clear(); // If user searches in main toolbar, universal search takes over advanced search
         setQuery(s);
-        cleanResults();
-        searchLibrary(true);
+        searchLibrary();
     }
 
     private void showReloadToolTip() {
@@ -926,13 +838,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             refreshLayout.setEnabled(true);
             isNewContentAvailable = true;
         }
-    }
-
-    private void cleanResults() {
-        if (mAdapter != null) {
-            mAdapter.removeAll();
-        }
-        currentPage = 1;
     }
 
     private void setQuery(String query) {
@@ -1031,17 +936,22 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *
      * @return Search parameters thumbprint
      */
-    private String getCurrentSearchParams() {
+    private String getCurrentSearchParams(int contentSortOrder) {
         StringBuilder result = new StringBuilder(mode == MODE_LIBRARY ? "L" : "M");
         result.append(".").append(query);
         for (Attribute a : selectedSearchTags) result.append(".").append(a.getName());
         result.append(".").append(booksPerPage);
-        result.append(".").append(bookSortOrder);
+        result.append(".").append(contentSortOrder);
         result.append(".").append(filterFavourites);
 
         return result.toString();
     }
 
+    protected abstract boolean forceSearchFromPageOne();
+
+    protected void searchLibrary() {
+        searchLibrary(true);
+    }
     /**
      * Loads the library applying current search parameters
      *
@@ -1049,23 +959,24 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     protected void searchLibrary(boolean showLoadingPanel) {
         isLoading = true;
+        int contentSortOrder = Preferences.getContentSortOrder();
 
         if (showLoadingPanel) toggleUI(SHOW_LOADING);
 
-        // New searches always start from page 1
-        String currentSearchParams = getCurrentSearchParams();
-        if (!currentSearchParams.equals(lastSearchParams)) {
+        // Searches start from page 1 if they are new or if the fragment implementation forces it
+        String currentSearchParams = getCurrentSearchParams(contentSortOrder);
+        if (!currentSearchParams.equals(lastSearchParams) || forceSearchFromPageOne()) {
             currentPage = 1;
             mListView.scrollToPosition(0);
         }
         lastSearchParams = currentSearchParams;
 
         if (!getQuery().isEmpty())
-            collectionAccessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Universal search
+            collectionAccessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, this); // Universal search
         else if (!selectedSearchTags.isEmpty())
-            collectionAccessor.searchBooks("", selectedSearchTags, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Advanced search
+            collectionAccessor.searchBooks("", selectedSearchTags, currentPage, booksPerPage, contentSortOrder, filterFavourites, this); // Advanced search
         else
-            collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, bookSortOrder, filterFavourites, this); // Default search (display recent)
+            collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, this); // Default search (display recent)
     }
 
     protected abstract void showToolbar(boolean show);
@@ -1122,22 +1033,25 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 isNewContentAvailable = false;
             }
 
-            filterBookCount.setText(String.format(getText(R.string.downloads_filter_book_count).toString(), totalSelectedContent + "", (1 == totalSelectedContent) ? "" : "s"));
+            @StringRes int textRes = totalSelectedContent > 1 ?
+                    R.string.downloads_filter_book_count_plural :
+                    R.string.downloads_filter_book_count;
+
+            filterBookCount.setText(getString(textRes, totalSelectedContent));
             filterBar.setVisibility(View.VISIBLE);
             if (totalSelectedContent > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
             filterBar.setVisibility(View.GONE);
         }
 
-        if (Helper.isNumeric(query)) // User searches a book ID
-        {
-            // List sites of book ID
-            List<Integer> foundSideCodes = new ArrayList<>();
-            for (Content c : results)
-                if (!foundSideCodes.contains(c.getSite().getCode()))
-                    foundSideCodes.add(c.getSite().getCode());
+        // User searches a book ID
+        if (Helper.isNumeric(query)) {
+            ArrayList<Integer> siteCodes = Stream.of(results)
+                    .map(Content::getSite)
+                    .map(Site::getCode)
+                    .collect(toCollection(ArrayList::new));
 
-            SearchBookIdDialogFragment.invoke(requireActivity().getSupportFragmentManager(), query, foundSideCodes);
+            SearchBookIdDialogFragment.invoke(requireFragmentManager(), query, siteCodes);
         }
 
         if (0 == totalSelectedContent) {
@@ -1158,7 +1072,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         isLoading = false;
 
         Snackbar.make(mListView, message, Snackbar.LENGTH_LONG)
-                .setAction("RETRY", v -> searchLibrary(MODE_MIKAN == mode))
+                .setAction("RETRY", v -> searchLibrary())
                 .show();
         toggleUI(SHOW_BLANK);
     }
@@ -1229,33 +1143,56 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (requestCode == 999) {
             if (resultCode == Activity.RESULT_OK) {
-                BundleManager manager = new BundleManager(data.getExtras());
-                Uri searchUri = manager.getUri();
+                if (data != null && data.getExtras() != null) {
+                    Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
 
-                if (searchUri != null) {
-                    setQuery(searchUri.getPath());
-                    selectedSearchTags = Helper.parseSearchUri(searchUri);
+                    if (searchUri != null) {
+                        setQuery(searchUri.getPath());
+                        selectedSearchTags = Helper.parseSearchUri(searchUri);
 
-                    searchLibrary(true);
+                        searchLibrary();
+                    }
                 }
             }
         }
     }
 
-    private void onContentsCleared() {
-        Timber.d("All items cleared!");
-        mTotalSelectedCount = 0;
-        mTotalCount = 0;
-        currentPage = 1;
-
-        displayNoResults();
-        clearSelection();
-        updateTitle();
-    }
-
+    /**
+     * Triggers when one or more items have been removed from the list
+     *
+     * @param i Number of items removed from the list
+     */
     private void onContentRemoved(int i) {
         mTotalSelectedCount = mTotalSelectedCount - i;
         mTotalCount = mTotalCount - i;
+
+        if (0 == mTotalCount) currentPage = 1;
+
+        if (0 == mTotalSelectedCount) {
+            displayNoResults();
+            clearSelection();
+        }
+
         updateTitle();
+    }
+
+    private void showViewerChoiceDialog(int currentViewer) {
+        int resourcePosition = 0;
+        if (0 == currentViewer) resourcePosition = 1;
+        else if (1 == currentViewer) resourcePosition = 2;
+        String currentViewerStr = requireContext().getResources().getStringArray(R.array.pref_read_content_entries)[resourcePosition];
+
+        String message = requireContext().getString(R.string.downloads_suggest_image_viewer).replace("@currentOption", currentViewerStr);
+        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(requireContext());
+        builder.setTitle(R.string.downloads_suggest_image_viewer_title)
+                .setMessage(message)
+                .setPositiveButton(R.string.yes,
+                        (dialog, which) -> {
+                            Preferences.setViewerChoiceDisplayed(true);
+                            Preferences.setContentReadAction(Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER);
+                        })
+                .setNegativeButton(R.string.no,
+                        (dialog, which) -> Preferences.setViewerChoiceDisplayed(true))
+                .create().show();
     }
 }

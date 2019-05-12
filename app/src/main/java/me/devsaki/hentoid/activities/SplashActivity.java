@@ -68,11 +68,6 @@ public class SplashActivity extends AppCompatActivity {
         }
     }
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onImportEventComplete(ImportEvent event) {
-
-    }
-
     private void handleDatabaseMigration() {
         EventBus.getDefault().register(this);
         busRegistered = true;

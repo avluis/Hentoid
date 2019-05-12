@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/refresh_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_title"
+        android:textAlignment="center"
+        android:textSize="@dimen/text_header_6"
+        android:padding="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/refresh_caption"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_caption"
+        android:textAlignment="center"
+        android:textSize="@dimen/text_body_1"
+        android:singleLine="false"
+        android:paddingBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/refresh_title"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/refresh_options"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_options"
+        android:textAlignment="center"
+        android:textSize="@dimen/text_body_1"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/refresh_caption"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <CheckBox
+        android:id="@+id/refresh_options_rename"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_options_rename"
+        android:padding="8dp"
+        android:checked="true"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/refresh_options_remove"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_options_remove"
+        android:textAlignment="center"
+        android:textSize="@dimen/text_body_1"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_rename"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <CheckBox
+        android:id="@+id/refresh_options_remove_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_options_remove_1"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/refresh_options_remove_or_1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_options_remove_or"
+        android:textSize="@dimen/text_body_1"
+        android:layout_marginStart="14dp"
+        android:layout_marginLeft="14dp"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_1"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <CheckBox
+        android:id="@+id/refresh_options_remove_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_options_remove_2"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_or_1"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <TextView
+        android:id="@+id/refresh_options_remove_or_2"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_options_remove_or"
+        android:textSize="@dimen/text_body_1"
+        android:layout_marginStart="14dp"
+        android:layout_marginLeft="14dp"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_2"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <CheckBox
+        android:id="@+id/refresh_options_remove_3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/refresh_options_remove_3"
+        android:layout_marginStart="8dp"
+        android:layout_marginLeft="8dp"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_or_2"
+        app:layout_constraintStart_toStartOf="parent"
+        />
+
+    <Button
+        android:id="@+id/refresh_ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorAccent"
+        android:text="@android:string/ok"
+        android:textColor="@color/white"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:layout_marginTop="8dp"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_3"
+        app:layout_constraintEnd_toEndOf="parent"
+        />
+
+</android.support.constraint.ConstraintLayout>

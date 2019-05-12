@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.util;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +21,7 @@ import android.text.Html;
 import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.webkit.WebResourceResponse;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +36,8 @@ import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.UnlockActivity;
+import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -51,9 +55,16 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 public final class Helper {
 
     public static void viewContent(final Context context, Content content) {
+        viewContent(context, content, false);
+    }
+
+    public static void viewContent(final Context context, Content content, boolean wrapPin) {
         Intent intent = new Intent(context, content.getWebActivityClass());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra(Consts.INTENT_URL, content.getGalleryUrl());
+        BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
+        builder.setUrl(content.getGalleryUrl());
+        intent.putExtras(builder.getBundle());
+        if (wrapPin) intent = UnlockActivity.wrapIntent(context, intent);
         context.startActivity(intent);
     }
 
@@ -95,16 +106,6 @@ public final class Helper {
         } catch (Exception e) {
             Timber.e(e, "Was not able to restart application");
         }
-    }
-
-    public static String getActivityName(Context context, int attribute) {
-        String activityName = context.getString(attribute);
-        if (!activityName.isEmpty()) {
-            return activityName;
-        } else {
-            activityName = context.getString(R.string.app_name);
-        }
-        return activityName;
     }
 
     static Bitmap getBitmapFromVectorDrawable(Context context, int drawableId) {
@@ -310,16 +311,23 @@ public final class Helper {
         return ret;
     }
 
-    public static int[] getPrimitiveIntArrayFromList(List<Integer> integers) {
-        int[] ret = new int[integers.size()];
-        Iterator<Integer> iterator = integers.iterator();
-        for (int i = 0; i < ret.length; i++) {
-            ret[i] = iterator.next();
-        }
-        return ret;
-    }
-
     public static boolean isNumeric(String str) {
         return str.matches("-?\\d+(\\.\\d+)?");  //match a number with optional '-' and decimal.
+    }
+
+    /**
+     * Open the given url using the device's app(s) of choice
+     *
+     * @param context Context
+     * @param url     Url to be opened
+     */
+    public static void openUrl(Context context, String url) {
+        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        try {
+            context.startActivity(myIntent);
+        } catch (ActivityNotFoundException e) {
+            Timber.e(e, "Activity not found to open %s", url);
+            ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
+        }
     }
 }

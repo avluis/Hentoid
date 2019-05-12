@@ -42,7 +42,8 @@ public class TsuminoParser extends BaseParser {
         Document doc = getOnlineDocument(content.getReaderUrl());
         if (null != doc) {
             Elements captcha = doc.select(".g-recaptcha");
-            if (captcha != null && !captcha.isEmpty()) throw new UnsupportedOperationException("Captcha found");
+            if (captcha != null && !captcha.isEmpty())
+                throw new UnsupportedOperationException("Captcha found");
 
             Elements contents = doc.select("#image-container");
             if (null != contents) {
@@ -65,7 +66,6 @@ public class TsuminoParser extends BaseParser {
     private static String sendPostRequest(String dataUrl, String dataOpt) {
         final CookieManager cookieManager = CookieManager.getInstance();
         String url = TSUMINO.getUrl() + dataUrl;
-        HttpURLConnection http = null;
         Map<String, String> data = new HashMap<>();
 
         data.put("q", dataOpt);
@@ -73,6 +73,7 @@ public class TsuminoParser extends BaseParser {
 
         String cookie = cookieManager.getCookie(url);
 
+        HttpURLConnection http = null;
         try {
             http = (HttpURLConnection) ((new URL(url).openConnection()));
             http.setDoOutput(true);
@@ -82,33 +83,24 @@ public class TsuminoParser extends BaseParser {
             http.setRequestMethod("POST");
             http.connect();
 
-            OutputStream stream = http.getOutputStream();
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, "UTF-8"));
-
-            writer.write(dataJson);
-            writer.close();
-            stream.close();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(
-                    http.getInputStream(), "UTF-8"));
-
-            String line;
-            StringBuilder builder = new StringBuilder();
-
-            while ((line = br.readLine()) != null) {
-                builder.append(line);
+            try (OutputStream stream = http.getOutputStream(); BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, "UTF-8"))) {
+                writer.write(dataJson);
             }
-            br.close();
 
+            StringBuilder builder = new StringBuilder();
+            String line;
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(
+                    http.getInputStream(), "UTF-8"))) {
+                while ((line = br.readLine()) != null) builder.append(line);
+            }
             return builder.toString();
+
         } catch (UnsupportedEncodingException e) {
             Timber.e(e, "Encoding option is not supported for this URL");
         } catch (IOException e) {
             Timber.e(e, "IO Exception while attempting request");
         } finally {
-            if (http != null) {
-                http.disconnect();
-            }
+            if (http != null) http.disconnect();
         }
 
         return null;

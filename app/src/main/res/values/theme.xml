@@ -19,6 +19,13 @@
         <item name="android:textColorHint">@color/lightGray</item>
     </style>
 
+    <style name="AppTheme.NoActionBar.viewer">
+        <item name="colorPrimaryDark">@color/black_opacity_50</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
     <!-- Backgrounds -->
     <style name="AppTheme.TaupeBackground" parent="AppTheme">
         <item name="android:windowBackground">@color/windowBackground</item>
@@ -57,6 +64,11 @@
         <item name="android:textColorSecondary">@color/white</item>
         <item name="android:editTextColor">@color/white</item>
         <item name="textColorAlertDialogListItem">@color/white</item>
+        <item name="android:checkboxStyle">@style/PrefsThemeDialogCheckbox</item>
+    </style>
+
+    <style name="PrefsThemeDialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
+        <item name="android:textColor">@color/white</item>
     </style>
 
 
@@ -78,10 +90,13 @@
     </style>
 
     <!-- Browser Activity -->
-    <style name="BrowserTheme" parent="ImportTheme">
+    <style name="BrowserTheme" parent="AppTheme.NoActionBar">
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
-        <item name="android:windowIsFloating">false</item>
+        <item name="android:editTextColor">@android:color/black</item>
+        <item name="android:textColorHint">@android:color/black</item>
     </style>
 
     <!-- Downloads -->
@@ -91,7 +106,6 @@
     </style>
 
     <style name="DownloadsDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:windowBackground">@color/white</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -125,11 +139,20 @@
         <item name="android:colorBackground">@color/windowBackground</item>
     </style>
 
+    <!-- PIN screens -->
+
     <style name="PinEntryDialogTheme" parent="Theme.AppCompat.Dialog">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
+    </style>
+
+    <!-- Image viewer -->
+    <style name="ViewerBrowseModeDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorAccent">@color/accent</item>
     </style>
 
 </resources>

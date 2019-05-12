@@ -2,6 +2,8 @@
     <string name="app_name">Hentoid</string>
     <string name="app_id">me.devsaki.hentoid</string>
     <string name="app_intro">Welcome</string>
+    <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
+    <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
@@ -46,15 +48,22 @@
     <string name="work_series"><![CDATA[<b>Series:</b> @series@]]></string>
     <string name="work_artist"><![CDATA[<b>Artist:</b> @artist@]]></string>
     <string name="work_tags" translatable="false"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>
+    <!-- Refresh library -->
+    <string name="refresh_title">Refresh library</string>
+    <string name="refresh_caption">Automatically refresh the whole library by rescanning disk data.</string>
+    <string name="refresh_options">Cleanup options</string>
+    <string name="refresh_options_rename">Rename all folders according to the current naming and max length preference</string>
+    <string name="refresh_options_remove">Remove folders where…</string>
+    <string name="refresh_options_remove_1">JSON file is absent (recommended)</string>
+    <string name="refresh_options_remove_2">No image has been downloaded</string>
+    <string name="refresh_options_remove_3">JSON file is unreadable (not recommended)</string>
+    <string name="refresh_options_remove_or">or</string>
     <!-- Import Activity -->
     <string name="open_app_settings">Open App Settings</string>
     <string name="permission_granted">Permission set, restarting library import.</string>
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
     <string name="permissioncomplaint_snackbar_manual">You must manually grant permissions before you can continue</string>
     <string name="existing_library_error">Please select a custom location.</string>
-    <string name="cleanup_folders">Do you want to cleanup your library while refreshing ?\nCleanup removes all empty folders and renames the others according to the current naming and max length preference.</string>
-    <string name="action_refresh">Just refresh</string>
-    <string name="action_refresh_cleanup">Refresh and cleanup</string>
     <string name="cleanup_done">Task complete - see details in the log</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
     <string name="import_dialog">Importing Library</string>
@@ -70,11 +79,12 @@
     <string name="error_creating_nomedia_file">Error creating .nomedia file.</string>
     <string name="error_open_perfect_viewer">Error opening Perfect Viewer!\nYou can install it from Google Play.</string>
     <string name="error_open">Error opening image : no image viewer found.</string>
-
+    <!-- Error log -->
     <string name="redownload_dialog_title">Try downloading again?</string>
     <string name="redownload_dialog_message">Total images in download: @total\nImages without error: @clean\nImages with error: @error</string>
     <string name="redownload_view_log">View detailed error log</string>
     <string name="redownload_log_saved">Log saved</string>
+    <!-- Downloads fragment -->
     <string name="ask_delete">Are you sure you wish to delete this?</string>
     <string name="ask_delete_multiple">Are you sure you wish to delete the selected items?</string>
     <string name="deleted">\@content deleted.</string>
@@ -97,10 +107,13 @@
     <string name="packaging_content">Packaging files.\nPlease wait…</string>
     <string name="sd_access_error">SD Access Error!\nPlease check or replace SD Card!!</string>
     <string name="sd_access_fatal_error">Hentoid has detected an SD Card that is reporting errors.\nPlease perform a file check or replace the SD Card.</string>
-    <string name="downloads_filter_book_count">%s result%s</string>
+    <string name="downloads_filter_book_count">%d result</string>
+    <string name="downloads_filter_book_count_plural">%d results</string>
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="search_bookid_action_search">Search</string>
+    <string name="downloads_suggest_image_viewer_title">New internal image viewer</string>
+    <string name="downloads_suggest_image_viewer">Hentoid now has its own internal image viewer! Do you want to try it?\n\nYou can switch back to @currentOption at any time by using preferences.</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
@@ -135,12 +148,8 @@
     <string name="personalDataStatement2">Hentoid collects the following personal data and sends them to Google for processing through the firebase library :\n  - Session ID\n  - IP address</string>
     <string name="personalDataStatement3">The abovementioned data is removed from Firebase live and backup system within 180 days (see https://firebase.google.com/support/privacy/ for more details)\n\nNo other personal data is collected nor sent to any other party.</string>
     <string name="about_github" translatable="false"><u>GitHub</u></string>
-    <string name="about_github_url" translatable="false">https://github.com/AVnetWS/Hentoid</string>
-    <string name="about_github_wiki_url" translatable="false">https://github.com/AVnetWS/Hentoid/wiki</string>
     <string name="about_discord" translatable="false"><u>Discord</u></string>
-    <string name="about_discord_url" translatable="false">https://discord.gg/QEZ3qk9</string> <!-- to update on about_mikan.html too -->
     <string name="about_reddit" translatable="false"><u>Reddit</u></string>
-    <string name="about_reddit_url" translatable="false">https://www.reddit.com/r/Hentoid/</string>
     <string name="about_licenses">Display Licenses</string>
     <!-- Web viewer -->
     <string name="web_unparsable">This content cannot be downloaded. Sorry~</string>
@@ -158,4 +167,19 @@
 
     <!-- DB migration -->
     <string name="migrate_db">Migrating the database</string>
+
+    <!-- Image viewer -->
+    <string name="viewer_choose_direction">Choose your reading direction</string>
+    <string name="viewer_direction_ltr">Left to right</string>
+    <string name="viewer_direction_rtl">Right to left</string>
+    <string name="viewer_direction_ttb">Top to bottom</string>
+    <string name="viewer_prefs_title">Viewer preferences</string>
+    <string name="viewer_prefs_display_fit">Fit (image is entirely displayed on screen)</string>
+    <string name="viewer_prefs_display_fill">Fill (image takes up all screen)</string>
+    <string name="pref_viewer_resume_last_left">Resume reading at last left page</string>
+    <string name="pref_viewer_keep_screen_on">Keep screen on</string>
+    <string name="pref_viewer_image_display">Image display mode</string>
+    <string name="pref_viewer_browse_mode">Browse mode</string>
+    <string name="pref_viewer_fling_sensitivity">Fling sensitivity</string>
+    <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
 </resources>

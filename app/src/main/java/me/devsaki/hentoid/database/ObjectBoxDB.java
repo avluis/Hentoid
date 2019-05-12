@@ -61,10 +61,10 @@ public class ObjectBoxDB {
 
 
     private ObjectBoxDB(Context context) {
-        store = MyObjectBox.builder().androidContext(context).build();
+        store = MyObjectBox.builder().androidContext(context.getApplicationContext()).build();
 
         if (BuildConfig.DEBUG && BuildConfig.INCLUDE_OBJECTBOX_BROWSER) {
-            boolean started = new AndroidObjectBrowser(store).start(context);
+            boolean started = new AndroidObjectBrowser(store).start(context.getApplicationContext());
             Timber.i("ObjectBrowser started: %s", started);
         }
     }
@@ -284,28 +284,28 @@ public class ObjectBoxDB {
 
     private void applyOrderStyle(QueryBuilder<Content> query, int orderStyle) {
         switch (orderStyle) {
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_FIRST:
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
                 query.orderDesc(Content_.downloadDate);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_DL_DATE_LAST:
+            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
                 query.order(Content_.downloadDate);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA:
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
                 query.order(Content_.title);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_TITLE_ALPHA_INVERTED:
+            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                 query.orderDesc(Content_.title);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LEAST_READ:
+            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
                 query.order(Content_.reads).order(Content_.lastReadDate);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_MOST_READ:
+            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
                 query.orderDesc(Content_.reads).orderDesc(Content_.lastReadDate);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_LAST_READ:
+            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
                 query.orderDesc(Content_.lastReadDate);
                 break;
-            case Preferences.Constant.PREF_ORDER_CONTENT_RANDOM:
+            case Preferences.Constant.ORDER_CONTENT_RANDOM:
                 // That one's tricky - see https://github.com/objectbox/objectbox-java/issues/17 => Implemented post-query build
                 break;
             default:
@@ -368,7 +368,7 @@ public class ObjectBoxDB {
     }
 
     long countContentSearch(String title, List<Attribute> tags, boolean filterFavourites) {
-        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, Preferences.Constant.PREF_ORDER_CONTENT_NONE);
+        Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, Preferences.Constant.ORDER_CONTENT_NONE);
         return query.count();
     }
 
@@ -393,7 +393,7 @@ public class ObjectBoxDB {
         int start = (page - 1) * booksPerPage;
         Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, orderStyle);
 
-        if (orderStyle != Preferences.Constant.PREF_ORDER_CONTENT_RANDOM) {
+        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
             if (booksPerPage < 0) return query.find();
             else return query.find(start, booksPerPage);
         } else {
@@ -408,7 +408,7 @@ public class ObjectBoxDB {
         Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
         Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
 
-        if (orderStyle != Preferences.Constant.PREF_ORDER_CONTENT_RANDOM) {
+        if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
             if (booksPerPage < 0) return query.find();
             else return query.find(start, booksPerPage);
         } else {
@@ -420,7 +420,7 @@ public class ObjectBoxDB {
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
         // querying Content and attributes have to be done separately
         Query<Content> contentAttrSubQuery = queryContentUniversalAttributes(queryStr, filterFavourites);
-        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.PREF_ORDER_CONTENT_NONE);
+        Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), Preferences.Constant.ORDER_CONTENT_NONE);
         return query.count();
     }
 
@@ -525,6 +525,7 @@ public class ObjectBoxDB {
         return queryAvailableAttributes(type, filter, filteredContent).count();
     }
 
+    @SuppressWarnings("squid:S2184") // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
     List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);
@@ -543,7 +544,7 @@ public class ObjectBoxDB {
 
         // Apply sort order
         Stream<Attribute> s = Stream.of(result);
-        if (Preferences.Constant.PREF_ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
+        if (Preferences.Constant.ORDER_ATTRIBUTES_ALPHABETIC == sortOrder) {
             s = s.sortBy(a -> -a.getCount()).sortBy(Attribute::getName);
         } else {
             s = s.sortBy(Attribute::getName).sortBy(a -> -a.getCount());
@@ -552,7 +553,7 @@ public class ObjectBoxDB {
         // Apply paging
         if (itemsPerPage > 0) {
             int start = (page - 1) * itemsPerPage;
-            s = s.limit(page * itemsPerPage).skip(start);
+            s = s.limit(page * itemsPerPage).skip(start); // squid:S2184 here because int * int -> int (not long)
         }
         return s.collect(toList());
     }

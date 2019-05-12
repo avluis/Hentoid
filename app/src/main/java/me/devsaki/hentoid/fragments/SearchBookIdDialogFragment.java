@@ -6,7 +6,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,11 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.adapters.SiteAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.Helper;
 
 /**
  * Created by Robb on 11/2018
@@ -34,14 +32,13 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
     private String bookId;
 
-    public static void invoke(FragmentManager fragmentManager, String id, List<Integer> foundSiteCodes) {
-        SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
-
+    public static void invoke(FragmentManager fragmentManager, String id, ArrayList<Integer> siteCodes) {
         Bundle args = new Bundle();
         args.putString(ID, id);
-        args.putIntArray(FOUND_SITES, Helper.getPrimitiveIntArrayFromList(foundSiteCodes));
-        fragment.setArguments(args);
+        args.putIntegerArrayList(FOUND_SITES, siteCodes);
 
+        SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
+        fragment.setArguments(args);
         fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.DownloadsDialog);
         fragment.show(fragmentManager, null);
     }
@@ -58,13 +55,10 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
         if (getArguments() != null) {
             bookId = getArguments().getString(ID, "");
-            int[] foundSites = getArguments().getIntArray(FOUND_SITES);
-            List<Integer> foundSitesList = new ArrayList<>();
-            if (foundSites != null)
-                foundSitesList.addAll(Helper.getListFromPrimitiveArray(foundSites));
+            ArrayList<Integer> foundSitesList = getArguments().getIntegerArrayList(FOUND_SITES);
 
             TextView title = view.findViewById(R.id.search_bookid_title);
-            title.setText(String.format(getText(R.string.search_bookid_label).toString(), bookId));
+            title.setText(getString(R.string.search_bookid_label, bookId));
 
             // Not possible for Pururin, e-hentai
             List<Site> sites = new ArrayList<>();
@@ -76,12 +70,12 @@ public class SearchBookIdDialogFragment extends DialogFragment {
             if (!foundSitesList.contains(Site.HENTAICAFE.getCode())) sites.add(Site.HENTAICAFE);
             if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
 
-            RecyclerView sitesRecycler = view.findViewById(R.id.select_sites);
-            sitesRecycler.setLayoutManager(new LinearLayoutManager(this.getContext()));
             SiteAdapter siteAdapter = new SiteAdapter();
             siteAdapter.setOnClickListener(this::onItemSelected);
-            sitesRecycler.setAdapter(siteAdapter);
             siteAdapter.add(sites);
+
+            RecyclerView sitesRecycler = view.findViewById(R.id.select_sites);
+            sitesRecycler.setAdapter(siteAdapter);
         }
     }
 
@@ -110,7 +104,11 @@ public class SearchBookIdDialogFragment extends DialogFragment {
         if (s != null) {
             Intent intent = new Intent(requireContext(), Content.getWebActivityClass(s));
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.putExtra(Consts.INTENT_URL, getUrlFromId(s, bookId));
+
+            BaseWebActivityBundle.Builder builder = new BaseWebActivityBundle.Builder();
+            builder.setUrl(getUrlFromId(s, bookId));
+            intent.putExtras(builder.getBundle());
+
             requireContext().startActivity(intent);
             this.dismiss();
         }

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.pin;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -13,6 +13,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import java.security.InvalidParameterException;
 
 import me.devsaki.hentoid.R;
 
@@ -134,6 +136,8 @@ public abstract class PinDialogFragment extends DialogFragment {
                 placeholderImage4.setVisibility(View.VISIBLE);
                 onPinAccept(pinValue.toString());
                 break;
+            default:
+                throw new InvalidParameterException("Not implemented");
         }
     }
 
@@ -154,6 +158,8 @@ public abstract class PinDialogFragment extends DialogFragment {
             case 3:
                 placeholderImage4.setVisibility(View.INVISIBLE);
                 break;
+            default:
+                throw new InvalidParameterException("Not implemented");
         }
     }
 }

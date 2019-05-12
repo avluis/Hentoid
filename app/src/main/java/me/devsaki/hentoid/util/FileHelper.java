@@ -34,6 +34,8 @@ import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.ImageViewerActivity;
+import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
@@ -252,7 +254,7 @@ public class FileHelper {
      * @param target The folder.
      * @return true if cleaned successfully.
      */
-    static boolean cleanDirectory(@NonNull File target) {
+    private static boolean cleanDirectory(@NonNull File target) {
         try {
             return tryCleanDirectory(target);
         } catch (Exception e) {
@@ -466,13 +468,15 @@ public class FileHelper {
     public static List<File> findFilesRecursively(File workingDir, String extension) {
         return findFilesRecursively(workingDir, extension, 0);
     }
+
     private static List<File> findFilesRecursively(File workingDir, String extension, int depth) {
         List<File> files = new ArrayList<>();
         File[] baseDirs = workingDir.listFiles(pathname -> (pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension)));
 
         for (File entry : baseDirs) {
             if (entry.isDirectory()) {
-                if (depth < 6) files.addAll(findFilesRecursively(entry, extension, depth + 1)); // Hard recursive limit to avoid catastrophes
+                if (depth < 6)
+                    files.addAll(findFilesRecursively(entry, extension, depth + 1)); // Hard recursive limit to avoid catastrophes
             } else {
                 files.add(entry);
             }
@@ -520,18 +524,19 @@ public class FileHelper {
         ToastUtil.toast("Opening: " + content.getTitle());
 
         File imageFile = null;
-        File[] files = dir.listFiles();
+        File[] files = dir.listFiles(
+                file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
+                        (
+                                file.getName().toLowerCase().endsWith("jpg")
+                                        || file.getName().toLowerCase().endsWith("jpeg")
+                                        || file.getName().toLowerCase().endsWith("png")
+                                        || file.getName().toLowerCase().endsWith("gif")
+                        )
+                )
+        );
         if (files != null && files.length > 0) {
             Arrays.sort(files);
-            for (File file : files) {
-                String filename = file.getName();
-                if (filename.endsWith(".jpg") ||
-                        filename.endsWith(".png") ||
-                        filename.endsWith(".gif")) {
-                    imageFile = file;
-                    break;
-                }
-            }
+            imageFile = files[0];
         }
         if (imageFile == null) {
             String message = context.getString(R.string.image_file_not_found)
@@ -539,10 +544,12 @@ public class FileHelper {
             ToastUtil.toast(context, message);
         } else {
             int readContentPreference = Preferences.getContentReadAction();
-            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_DEFAULT) {
+            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER) {
                 openFile(context, imageFile);
             } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(context, imageFile);
+            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
+                openHentoidViewer(context, content, files);
             }
         }
 
@@ -610,6 +617,27 @@ public class FileHelper {
     }
 
     /**
+     * Open built-in image viewer telling it to display the images of the given Content
+     *
+     * @param context    Context
+     * @param content    Content to be displayed
+     * @param imageFiles Image files to be shown
+     */
+    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, @NonNull File[] imageFiles) {
+        List<String> imagesLocations = new ArrayList<>();
+        for (File f : imageFiles) imagesLocations.add(f.getAbsolutePath());
+
+        ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
+        builder.setContentId(content.getId());
+        builder.setUrisStr(imagesLocations);
+
+        Intent viewer = new Intent(context, ImageViewerActivity.class);
+        viewer.putExtras(builder.getBundle());
+
+        context.startActivity(viewer);
+    }
+
+    /**
      * Returns the extension of the given filename
      *
      * @param fileName Filename
@@ -669,7 +697,7 @@ public class FileHelper {
      * @throws IOException If any IOException occurs
      */
     public static void saveBinaryInFile(File file, byte[] binaryContent) throws IOException {
-        byte buffer[] = new byte[1024];
+        byte[] buffer = new byte[1024];
         int count;
 
         try (InputStream input = new ByteArrayInputStream(binaryContent)) {
@@ -751,7 +779,8 @@ public class FileHelper {
         }
     }
 
-    // Please keep that, I need some way to trace actions when working with SD card features - Robb
+    // Please don't delete that method !
+    // I need some way to trace actions when working with SD card features - Robb
     public static void createFileWithMsg(@Nonnull String file, String msg) {
         try {
             FileHelper.saveBinaryInFile(new File(getDefaultDir(HentoidApp.getAppContext(), ""), file + ".txt"), (null == msg) ? "NULL".getBytes() : msg.getBytes());

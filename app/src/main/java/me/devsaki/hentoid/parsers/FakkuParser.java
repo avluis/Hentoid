@@ -71,13 +71,13 @@ public class FakkuParser implements ContentParser {
         String[] cookieContent = downloadParams.get("cookie").split(";");
         for (String s : cookieContent) {
             String[] cookieParts = s.split("=");
-            if (cookieParts[0].toLowerCase().trim().equals("fakku_pid")) {
+            if (cookieParts[0].toLowerCase().trim().equals("fakku_zid")) {
                 pid = cookieParts[1];
                 break;
             }
         }
         if (null == pid) {
-            Timber.e("Could not extract pid");
+            Timber.e("Could not extract zid");
             return result;
         }
 

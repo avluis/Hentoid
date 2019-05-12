@@ -27,7 +27,7 @@
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "16:4321603102287256155",
+      "lastPropertyId": "18:9117635469382092615",
       "name": "Content",
       "properties": [
         {
@@ -93,6 +93,14 @@
         {
           "id": "16:4321603102287256155",
           "name": "downloadParams"
+        },
+        {
+          "id": "17:903347587815260256",
+          "name": "lastReadPageIndex"
+        },
+        {
+          "id": "18:9117635469382092615",
+          "name": "isBeingDeleted"
         }
       ],
       "relations": [

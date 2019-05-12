@@ -29,11 +29,11 @@ import java.util.List;
 import java.util.Objects;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.adapters.AvailableAttributeAdapter;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.ui.BlinkAnimation;
-import me.devsaki.hentoid.util.BundleManager;
 import me.devsaki.hentoid.util.Debouncer;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;
@@ -65,7 +65,6 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     // Search bar
     private SearchView tagSearchView;
     // Container where all proposed attributes are loaded
-//    private RecyclerView attributeMosaic;
     private AvailableAttributeAdapter attributeAdapter;
 
     private boolean clearOnSuccess; // Flag to clear the adapter on content reception
@@ -90,14 +89,13 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
 
     public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {
-        Bundle bundle = new Bundle();
-        BundleManager manager = new BundleManager(bundle);
+        SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
 
-        manager.setMode(mode);
-        manager.setAttributeTypes(types);
+        builder.setMode(mode);
+        builder.setAttributeTypes(types);
 
         SearchBottomSheetFragment searchBottomSheetFragment = new SearchBottomSheetFragment();
-        searchBottomSheetFragment.setArguments(bundle);
+        searchBottomSheetFragment.setArguments(builder.getBundle());
         searchBottomSheetFragment.setStyle(STYLE_NORMAL, R.style.BottomSheetDialogTheme);
         searchBottomSheetFragment.show(fragmentManager, null);
     }
@@ -108,9 +106,9 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            BundleManager manager = new BundleManager(bundle);
-            mode = manager.getMode();
-            selectedAttributeTypes = manager.getAttributeTypes();
+            SearchActivityBundle.Parser parser = new SearchActivityBundle.Parser(bundle);
+            mode = parser.getMode();
+            selectedAttributeTypes = parser.getAttributeTypes();
             currentPage = 1;
 
             if (-1 == mode || selectedAttributeTypes.isEmpty()) {

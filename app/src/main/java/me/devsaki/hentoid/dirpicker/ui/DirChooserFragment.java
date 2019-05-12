@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.dirpicker.ui;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
@@ -100,7 +99,7 @@ public class DirChooserFragment extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedState) {
-        View rootView = inflater.inflate(R.layout.fragment_dir_picker, container, false);
+        View rootView = inflater.inflate(R.layout.dialog_dir_picker, container, false);
 
         initUI(rootView);
 

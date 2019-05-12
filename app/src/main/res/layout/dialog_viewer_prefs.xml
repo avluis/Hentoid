@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="#AAFFFFFF"
+    android:padding="16dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <TextView
+        android:id="@+id/viewer_prefs_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingBottom="16dp"
+        android:text="@string/viewer_prefs_title"
+        android:textAlignment="center"
+        android:textSize="@dimen/text_header_6"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/viewer_prefs_resume_reading_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:singleLine="false"
+        android:gravity="start"
+        android:text="@string/pref_viewer_resume_last_left"
+        android:textAlignment="viewStart"
+        android:textSize="@dimen/text_body_1"
+        android:layout_marginRight="8dp"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_prefs_resume_reading_action"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_title" />
+
+    <Switch
+        android:id="@+id/viewer_prefs_resume_reading_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:gravity="start"
+        android:textAlignment="viewStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_title" />
+
+    <TextView
+        android:id="@+id/viewer_prefs_keep_screen_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="start"
+        android:text="@string/pref_viewer_keep_screen_on"
+        android:textAlignment="viewStart"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/viewer_prefs_keep_screen_action"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_resume_reading_title" />
+
+    <Switch
+        android:id="@+id/viewer_prefs_keep_screen_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="16dp"
+        android:gravity="start"
+        android:textAlignment="viewStart"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_resume_reading_title" />
+
+    <!-- To be reactivated once fill mode works properly -->
+
+    <TextView
+        android:id="@+id/viewer_prefs_display_mode_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="start"
+        android:text="@string/pref_viewer_image_display"
+        android:textAlignment="viewStart"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_keep_screen_title"
+        android:visibility="gone"/>
+
+    <RadioGroup
+        android:id="@+id/viewer_prefs_display_mode_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_display_mode_title"
+        android:visibility="gone">
+
+        <RadioButton
+            android:id="@+id/viewer_prefs_display_mode_action_fit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/viewer_prefs_display_fit" />
+
+        <RadioButton
+            android:id="@+id/viewer_prefs_display_mode_action_fill"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/viewer_prefs_display_fill" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/viewer_prefs_browse_mode_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="start"
+        android:text="@string/pref_viewer_browse_mode"
+        android:textAlignment="viewStart"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_display_mode_group" />
+
+    <RadioGroup
+        android:id="@+id/viewer_prefs_browse_mode_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_browse_mode_title">
+
+        <RadioButton
+            android:id="@+id/viewer_prefs_browse_mode_action_ltr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/viewer_direction_ltr" />
+
+        <RadioButton
+            android:id="@+id/viewer_prefs_browse_mode_action_rtl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/viewer_direction_rtl" />
+
+        <RadioButton
+            android:id="@+id/viewer_prefs_browse_mode_action_ttb"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/viewer_direction_ttb" />
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/viewer_prefs_fling_sensitivity_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="start"
+        android:text="@string/pref_viewer_fling_sensitivity"
+        android:textAlignment="viewStart"
+        android:textSize="@dimen/text_body_1"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_browse_mode_group" />
+
+    <SeekBar
+        android:id="@+id/viewer_prefs_fling_sensitivity"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        app:layout_constraintStart_toStartOf="@id/viewer_prefs_fling_sensitivity_title"
+        app:layout_constraintEnd_toEndOf="@id/viewer_prefs_keep_screen_action"
+        app:layout_constraintTop_toBottomOf="@id/viewer_prefs_fling_sensitivity_title"
+        />
+
+
+</android.support.constraint.ConstraintLayout>

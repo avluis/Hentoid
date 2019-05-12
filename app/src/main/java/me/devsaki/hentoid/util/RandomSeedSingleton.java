@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.util;
 
+@SuppressWarnings("squid:S3077") // https://stackoverflow.com/questions/11639746/what-is-the-point-of-making-the-singleton-instance-volatile-while-using-double-l
 public class RandomSeedSingleton {
     private static volatile RandomSeedSingleton instance = null;
 

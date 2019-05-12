@@ -13,7 +13,9 @@ import timber.log.Timber;
  * Created by avluis on 05/07/2016.
  * Item OnClick and OnLongClick Listener with support for item selection
  */
-public class ItemClickListener implements OnClickListener, OnLongClickListener {
+public class ContentClickListener implements OnClickListener, OnLongClickListener {
+
+    // TODO - rework this class : each time it is used, either onClick or onLongClick are overriden
 
     private final Context context;
     private final Content content;
@@ -22,7 +24,7 @@ public class ItemClickListener implements OnClickListener, OnLongClickListener {
     private int selectedItemCount;
     private boolean selected;
 
-    protected ItemClickListener(Context context, Content content, int pos, ItemSelectListener listener) {
+    protected ContentClickListener(Context context, Content content, int pos, ItemSelectListener listener) {
         this.context = context;
         this.content = content;
         this.position = pos;

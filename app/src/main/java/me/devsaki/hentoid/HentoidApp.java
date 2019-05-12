@@ -1,5 +1,6 @@
 package me.devsaki.hentoid;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.app.NotificationManager;
 import android.content.Context;
@@ -11,7 +12,6 @@ import android.os.StrictMode;
 import com.crashlytics.android.Crashlytics;
 import com.google.android.gms.security.ProviderInstaller;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.squareup.leakcanary.LeakCanary;
 
 import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
@@ -33,7 +33,8 @@ import timber.log.Timber;
 public class HentoidApp extends Application {
 
     private static boolean beginImport;
-    private static HentoidApp instance;
+    @SuppressLint("StaticFieldLeak") // A context leak happening at app level isn't _really_ a leak, right ? ;-)
+    private static Context instance;
 
     public static Context getAppContext() {
         return instance;
@@ -67,6 +68,7 @@ public class HentoidApp extends Application {
             Timber.e(e, "Google Play ProviderInstaller exception");
         }
 
+/*
         // LeakCanary
         if (LeakCanary.isInAnalyzerProcess(this)) {
             // This process is dedicated to LeakCanary for heap analysis.
@@ -74,13 +76,14 @@ public class HentoidApp extends Application {
             return;
         }
         LeakCanary.install(this);
+*/
 
         // Timber
         if (BuildConfig.DEBUG) Timber.plant(new Timber.DebugTree());
         Timber.plant(new CrashlyticsTree());
 
         // Prefs
-        instance = this;
+        instance = this.getApplicationContext();
         Preferences.init(this);
 
         // Firebase

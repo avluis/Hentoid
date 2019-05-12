@@ -2,7 +2,6 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
@@ -19,6 +18,7 @@ import com.annimon.stream.function.IntConsumer;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
+import com.crashlytics.android.Crashlytics;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,10 +45,11 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ContentListener;
-import me.devsaki.hentoid.listener.ItemClickListener;
-import me.devsaki.hentoid.listener.ItemClickListener.ItemSelectListener;
+import me.devsaki.hentoid.listener.ContentClickListener;
+import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
+import me.devsaki.hentoid.util.ContentNotRemovedException;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -59,6 +60,7 @@ import timber.log.Timber;
 
 /**
  * Created by avluis on 04/23/2016. RecyclerView based Content Adapter
+ * TODO - Consider replacing with https://github.com/davideas/FlexibleAdapter
  */
 public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements ContentListener {
 
@@ -68,7 +70,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final Context context;
     private final ItemSelectListener itemSelectListener;
     private final IntConsumer onContentRemovedListener;
-    private final Runnable onContentsClearedListener;
     private final CollectionAccessor collectionAccessor;
     private final int displayMode;
     private final RequestOptions glideRequestOptions;
@@ -82,7 +83,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         context = builder.context;
         itemSelectListener = builder.itemSelectListener;
         onContentRemovedListener = builder.onContentRemovedListener;
-        onContentsClearedListener = builder.onContentsClearedListener;
         collectionAccessor = builder.collectionAccessor;
         sortComparator = builder.sortComparator;
         displayMode = builder.displayMode;
@@ -153,11 +153,13 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         libraryView = recyclerView;
     }
 
+    /**
+     * Initializes the {@link ContentHolder} that contains the books
+     */
     @Override
     public void onBindViewHolder(@NonNull ContentHolder holder, final int pos) {
         Content content = mSortedList.get(pos);
 
-        // Initializes the ViewHolder that contains the books
         updateLayoutVisibility(holder, content, pos);
         attachTitle(holder, content);
         attachSeries(holder, content);
@@ -199,6 +201,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     .load(FileHelper.getThumb(content))
                     .apply(glideRequestOptions)
                     .into(holder.ivCover);
+        }
+
+        if (content.isBeingDeleted()) {
+            BlinkAnimation animation = new BlinkAnimation(500, 250);
+            holder.fullLayout.startAnimation(animation);
         }
     }
 
@@ -383,7 +390,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void tryDownloadPages(Content content) {
-        ContentHolder holder = holderByContent(content);
+        ContentHolder holder = getHolderByContent(content);
         if (holder != null) {
             holder.ivDownload.startAnimation(new BlinkAnimation(500, 100));
             holder.ivDownload.setOnClickListener(w -> Helper.viewQueue(context));
@@ -394,9 +401,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void attachOnClickListeners(final ContentHolder holder, Content content, int pos) {
 
         // Simple click = open book (library mode only)
-        // TODO : implement preview gallery for Mikan mode
         if (DownloadsFragment.MODE_LIBRARY == displayMode) {
-            holder.itemView.setOnClickListener(new ItemClickListener(context, content, pos, itemSelectListener) {
+            holder.itemView.setOnClickListener(new ContentClickListener(context, content, pos, itemSelectListener) {
 
                 @Override
                 public void onClick(View v) {
@@ -424,14 +430,17 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         // Long click = select item (library mode only)
         if (DownloadsFragment.MODE_LIBRARY == displayMode) {
-            holder.itemView.setOnLongClickListener(new ItemClickListener(context, content, pos, itemSelectListener) {
+            holder.itemView.setOnLongClickListener(new ContentClickListener(context, content, pos, itemSelectListener) {
 
                 @Override
                 public boolean onLongClick(View v) {
                     int itemPos = holder.getLayoutPosition();
                     if (itemPos > -1) {
-                        toggleSelection(itemPos);
-                        setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                        Content c = getItemAt(itemPos);
+                        if (c != null && !c.isBeingDeleted()) {
+                            toggleSelection(itemPos);
+                            setSelected(isSelectedAt(pos), getSelectedItemsCount());
+                        }
                     }
 
                     super.onLongClick(v);
@@ -522,7 +531,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
-        intent.setData(Uri.parse(url));
         intent.setType("text/plain");
         intent.putExtra(Intent.EXTRA_SUBJECT, item.getTitle());
         intent.putExtra(Intent.EXTRA_TEXT, url);
@@ -535,7 +543,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         FileHelper.archiveContent(context, item);
     }
 
-    private void deleteContent(final Content item) {
+    private void askDeleteItem(final Content item) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(R.string.ask_delete)
                 .setPositiveButton(android.R.string.yes,
@@ -548,7 +556,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .create().show();
     }
 
-    private void deleteContents(final List<Content> items) {
+    private void askDeleteItems(final List<Content> items) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setMessage(R.string.ask_delete_multiple)
                 .setPositiveButton(android.R.string.yes,
@@ -569,20 +577,21 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         Content content = db.selectContentById(contentId);
 
         if (content != null) {
-            content.setFavourite(!content.isFavourite());
+            if (!content.isBeingDeleted()) {
+                content.setFavourite(!content.isFavourite());
 
-            // Persist in it DB
-            db.insertContent(content);
+                // Persist in it DB
+                db.insertContent(content);
 
-            // Persist in it JSON
-            String rootFolderName = Preferences.getRootFolderName();
-            File dir = new File(rootFolderName, content.getStorageFolder());
-            try {
-                JsonHelper.saveJson(content.preJSONExport(), dir);
-            } catch (IOException e) {
-                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+                // Persist in it JSON
+                String rootFolderName = Preferences.getRootFolderName();
+                File dir = new File(rootFolderName, content.getStorageFolder());
+                try {
+                    JsonHelper.saveJson(content.preJSONExport(), dir);
+                } catch (IOException e) {
+                    Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+                }
             }
-
             return content;
         }
 
@@ -596,7 +605,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
      * @param content content that has been downloaded
      */
     public void switchStateToDownloaded(Content content) {
-        ContentHolder holder = holderByContent(content);
+        ContentHolder holder = getHolderByContent(content);
 
         if (holder != null) {
             holder.ivDownload.setImageResource(R.drawable.ic_action_play);
@@ -606,7 +615,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     @Nullable
-    private ContentHolder holderByContent(Content content) {
+    private ContentHolder getHolderByContent(Content content) {
         return (ContentHolder) libraryView.findViewHolderForItemId(content.getId());
     }
 
@@ -662,7 +671,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 items = getSelectedContents();
 
                 if (!items.isEmpty()) {
-                    deleteContent(items.get(0));
+                    askDeleteItem(items.get(0));
                 } else {
                     itemSelectListener.onItemClear(0);
                     Timber.d("Nothing to delete!!");
@@ -674,7 +683,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 items = getSelectedContents();
 
                 if (!items.isEmpty()) {
-                    deleteContents(items);
+                    askDeleteItems(items);
                 } else {
                     itemSelectListener.onItemClear(0);
                     Timber.d("No items to delete!!");
@@ -713,96 +722,94 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     }
 
     private void deleteItem(final Content item) {
-        clearSelections();
-        compositeDisposable.add(
-                Single.fromCallable(() -> deleteContent(item.getId()))
-                        .subscribeOn(Schedulers.io())
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                result -> {
-                                    remove(result);
-                                    ToastUtil.toast(context, context.getString(R.string.deleted).replace("@content", item.getTitle()));
-                                },
-                                Timber::e
-                        )
-        );
-    }
-
-    private Content deleteContent(long contentId) {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
-        Content content = db.selectContentById(contentId);
-
-        if (content != null) {
-            FileHelper.removeContent(content);
-            db.deleteContent(content);
-            Timber.d("Removed item: %s from db and file system.", content.getTitle());
-
-            return content;
-        }
-        throw new InvalidParameterException("ContentId " + contentId + " does not refer to a valid content");
+        List<Content> list = new ArrayList<>();
+        list.add(item);
+        deleteItems(list);
     }
 
     private void deleteItems(final List<Content> contents) {
+        // Logging -- TODO remove when "no content found" issue is resolved
+        StringBuilder sb = new StringBuilder();
+        for (Content c : contents) sb.append(c.getId()).append(",");
+        Crashlytics.log("deleteItems " + sb.toString());
 
-        mSortedList.beginBatchedUpdates();
+        for (Content c : contents) {
+            // Flag it to make it unselectable
+            c.setIsBeingDeleted(true);
+            ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+            db.insertContent(c);
+
+            ContentHolder holder = getHolderByContent(c);
+            if (holder != null) notifyItemChanged(holder.getAdapterPosition());
+        }
 
         compositeDisposable.add(
                 Observable.fromIterable(contents)
                         .subscribeOn(Schedulers.io())
-                        .flatMap(s -> Observable.fromCallable(() -> deleteContent(s.getId())))
+                        .flatMap(s -> Observable.fromCallable(() -> deleteContent(s)))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                mSortedList::remove,
-                                Timber::e,
-                                () -> {
-                                    onContentRemovedListener.accept(contents.size());
-                                    mSortedList.endBatchedUpdates();
-                                    itemSelectListener.onItemClear(0);
-                                    ToastUtil.toast(context, "Selected items have been deleted.");
-                                }
+                                this::remove,
+                                this::onContentRemoveFail,
+                                () -> ToastUtil.toast(context, "Selected items have been deleted.")
                         )
         );
     }
 
-    private void remove(Content content) {
-        mSortedList.remove(content);
-        if (0 == mSortedList.size()) {
-            if (onContentsClearedListener != null)
-                onContentsClearedListener.run();
-        } else {
-            if (onContentRemovedListener != null)
-                onContentRemovedListener.accept(1);
+    private Content deleteContent(final Content content) throws ContentNotRemovedException {
+        // Check if given content still exists in DB
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        Content theContent = db.selectContentById(content.getId());
+
+        if (theContent != null) {
+            FileHelper.removeContent(content);
+            db.deleteContent(content);
+            Timber.d("Removed item: %s from db and file system.", content.getTitle());
+            return content;
         }
-        if (itemSelectListener != null) itemSelectListener.onItemClear(0);
+        throw new ContentNotRemovedException(content, "ContentId " + content.getId() + " does not refer to a valid content");
     }
 
-    public void removeAll() {
-        replaceAll(new ArrayList<>());
-        onContentsClearedListener.run();
+    private void onContentRemoveFail(Throwable t) {
+        Timber.e(t);
+        if (t instanceof ContentNotRemovedException) {
+            ContentNotRemovedException e = (ContentNotRemovedException) t;
+            Snackbar snackbar = Snackbar.make(libraryView, "Content removal failed", Snackbar.LENGTH_LONG);
+            if (e.getContent() != null) {
+                // Unflag the item
+                e.getContent().setIsBeingDeleted(true);
+                ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+                db.insertContent(e.getContent());
+
+                ContentHolder holder = getHolderByContent(e.getContent());
+                if (holder != null) notifyItemChanged(holder.getAdapterPosition());
+                snackbar.setAction("RETRY", v -> deleteItem(e.getContent()));
+            }
+            snackbar.show();
+        }
+    }
+
+    private void remove(Content content) {
+        mSortedList.remove(content);
+
+        if (onContentRemovedListener != null) onContentRemovedListener.accept(1);
+        if (itemSelectListener != null) itemSelectListener.onItemClear(0);
     }
 
     public void replaceAll(List<Content> contents) {
         mSortedList.beginBatchedUpdates();
-        for (int i = mSortedList.size() - 1; i >= 0; i--) {
-            final Content content = mSortedList.get(i);
-            if (!contents.contains(content)) {
-                mSortedList.remove(content);
-            } else {
-                contents.remove(content);
-            }
-        }
-        mSortedList.addAll(contents);
+        mSortedList.replaceAll(contents);
         mSortedList.endBatchedUpdates();
     }
 
-    public void add(List<Content> contents) {
+    public void addAll(List<Content> contents) {
         mSortedList.beginBatchedUpdates();
         mSortedList.addAll(contents);
         mSortedList.endBatchedUpdates();
     }
 
     // ContentListener implementation -- Mikan mode only
-    // Listener for pages retrieval
+    // Listener for pages retrieval (Mikan mode only)
     @Override
     public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
         if (1 == results.size()) // 1 content with pages
@@ -811,14 +818,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
     }
 
-    // Listener for error visual feedback
+    // Listener for error visual feedback (Mikan mode only)
     @Override
     public void onContentFailed(Content content, String message) {
         Timber.w(message);
         Snackbar snackbar = Snackbar.make(libraryView, message, Snackbar.LENGTH_LONG);
 
         if (content != null) {
-            ContentHolder holder = holderByContent(content);
+            ContentHolder holder = getHolderByContent(content);
             if (holder != null) {
                 holder.ivDownload.clearAnimation();
                 holder.ivDownload.setOnClickListener(v -> tryDownloadPages(content));
@@ -854,7 +861,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         private Context context;
         private ItemSelectListener itemSelectListener;
         private IntConsumer onContentRemovedListener;
-        private Runnable onContentsClearedListener;
         private CollectionAccessor collectionAccessor;
         private Comparator<Content> sortComparator;
         private int displayMode;
@@ -886,11 +892,6 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         public Builder setOnContentRemovedListener(IntConsumer onContentRemovedListener) {
             this.onContentRemovedListener = onContentRemovedListener;
-            return this;
-        }
-
-        public Builder setOnContentsClearedListener(Runnable onContentsClearedListener) {
-            this.onContentsClearedListener = onContentsClearedListener;
             return this;
         }
 

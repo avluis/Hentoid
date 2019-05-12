@@ -27,10 +27,7 @@ class ZipUtil {
 
     private static void add(final File file, final ZipOutputStream stream, final byte[] data) {
         Timber.d("Adding: %s", file);
-        BufferedInputStream origin;
-        try {
-            FileInputStream fi = new FileInputStream(file);
-            origin = new BufferedInputStream(fi, BUFFER);
+        try (FileInputStream fi = new FileInputStream(file); BufferedInputStream origin = new BufferedInputStream(fi, BUFFER)) {
 
             ZipEntry zipEntry = new ZipEntry(file.getName());
             stream.putNextEntry(zipEntry);
@@ -42,7 +39,7 @@ class ZipUtil {
         } catch (FileNotFoundException e) {
             Timber.e(e, "File Not Found: %s", file);
         } catch (IOException e) {
-            Timber.d(e, "IO Exception");
+            Timber.e(e, "IO Exception: %s", file);
         }
     }
 
@@ -51,35 +48,14 @@ class ZipUtil {
         protected Boolean doInBackground(Object... params) {
             File[] files = (File[]) params[0];
             File dest = (File) params[1];
-            FileOutputStream out = null;
-            ZipOutputStream zipOutputStream = null;
-            try {
-                out = new FileOutputStream(dest);
-                zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out));
-                final byte data[] = new byte[BUFFER];
-                for (File file : files) {
-                    add(file, zipOutputStream, data);
-                }
+            try (FileOutputStream out = new FileOutputStream(dest); ZipOutputStream zipOutputStream = new ZipOutputStream(new BufferedOutputStream(out))) {
+                final byte[] data = new byte[BUFFER];
+                for (File file : files) add(file, zipOutputStream, data);
                 FileUtil.sync(out);
                 out.flush();
             } catch (Exception e) {
-                Timber.e(e, "Error");
+                Timber.e(e, "Error while zipping resources");
                 return false;
-            } finally {
-                if (zipOutputStream != null) {
-                    try {
-                        zipOutputStream.close();
-                    } catch (IOException e) {
-                        Timber.d(e, "IO Exception");
-                    }
-                }
-                if (out != null) {
-                    try {
-                        out.close();
-                    } catch (IOException e) {
-                        Timber.d(e, "IO Exception");
-                    }
-                }
             }
 
             return true;
@@ -94,13 +70,11 @@ class ZipUtil {
             String destinationPath = params[1];
 
             File archive = new File(filePath);
-            try {
-                ZipFile zipfile = new ZipFile(archive);
+            try (ZipFile zipfile = new ZipFile(archive)) {
                 for (Enumeration e = zipfile.entries(); e.hasMoreElements(); ) {
                     ZipEntry entry = (ZipEntry) e.nextElement();
                     unzipEntry(zipfile, entry, destinationPath);
                 }
-                zipfile.close();
             } catch (Exception e) {
                 Timber.e(e, "Error while extracting file: %s", archive);
                 return false;

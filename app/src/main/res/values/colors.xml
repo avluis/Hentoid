@@ -16,9 +16,11 @@
 
     <!-- Neutral Colors -->
     <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
     <color name="lightGray">#aaaaaa</color>
     <color name="mediumGray">#888888</color>
     <color name="darkGray">#FF444444</color>
+    <color name="black_opacity_50">#80000000</color>
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>

@@ -36,6 +36,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
+import me.devsaki.hentoid.activities.bundles.BaseWebActivityBundle;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.QueueRecord;
@@ -148,8 +149,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         initWebView();
         initSwipeLayout();
 
-        String intentVar = getIntent().getStringExtra(Consts.INTENT_URL);
-        webView.loadUrl(intentVar == null ? getStartSite().getUrl() : intentVar);
+        String intentUrl = "";
+        if (getIntent().getExtras() != null) {
+            BaseWebActivityBundle.Parser parser = new BaseWebActivityBundle.Parser(getIntent().getExtras());
+            intentUrl = parser.getUrl();
+        }
+        webView.loadUrl(0 == intentUrl.length() ? getStartSite().getUrl() : intentUrl);
     }
 
     @Override
@@ -350,7 +355,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         if (null == currentContent) return;
 
-        if (currentContent != null && StatusContent.DOWNLOADED == currentContent.getStatus()) {
+        if (StatusContent.DOWNLOADED == currentContent.getStatus()) {
             ToastUtil.toast(this, R.string.already_downloaded);
             changeFabActionMode(MODE_READ);
             return;
@@ -457,7 +462,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     abstract class CustomWebViewClient extends WebViewClient {
 
         protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
-        protected final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
         protected final ResultListener<Content> listener;
         private final Pattern filteredUrlPattern;
 

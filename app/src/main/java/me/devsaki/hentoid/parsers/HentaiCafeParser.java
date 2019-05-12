@@ -46,7 +46,7 @@ public class HentaiCafeParser extends BaseParser {
                 for (int i = 0; i < links.size(); i++) {
 
                     String url = links.get(i).attr("href");
-                    if (url.equals("#")) { // Some pages are like this (e.g. 2606) -> reconstitute the reader URL manually
+                    if (url.equals("#") && doc != null) { // Some pages are like this (e.g. 2606) -> reconstitute the reader URL manually
                         // Get the canonical link
                         Elements canonicalLink = doc.select("head [rel=canonical]");
                         if (canonicalLink != null) {
