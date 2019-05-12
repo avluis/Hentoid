@@ -288,7 +288,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         int currentViewer = Preferences.getContentReadAction();
         if (Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER != currentViewer) {
-            if (!Preferences.hasViewerChoiceBeenDisplayed()) showViewerChoiceDialog(currentViewer);
+            if (!Preferences.hasViewerChoiceBeenDisplayed()) showViewerChoiceDialog();
         } else {
             Preferences.setViewerChoiceDisplayed(true);
         }
@@ -1176,17 +1176,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         updateTitle();
     }
 
-    private void showViewerChoiceDialog(int currentViewer) {
-        int resourcePosition = 0;
-        if (0 == currentViewer) resourcePosition = 1;
-        else if (1 == currentViewer) resourcePosition = 2;
-        String currentViewerStr = requireContext().getResources().getStringArray(R.array.pref_read_content_entries)[resourcePosition];
-
-        String message = getString(R.string.downloads_suggest_image_viewer, currentViewerStr);
-        new AlertDialog.Builder(requireContext())
+    private void showViewerChoiceDialog() {
+        new AlertDialog.Builder(requireContext(), R.style.Theme_AppCompat_Dialog_Alert)
                 .setTitle(R.string.downloads_suggest_image_viewer_title)
-                .setMessage(message)
-                .setPositiveButton(R.string.yes,
+                .setMessage(R.string.downloads_suggest_image_viewer)
+                .setPositiveButton(R.string.try_it,
                         (dialog, which) -> {
                             Preferences.setViewerChoiceDisplayed(true);
                             Preferences.setContentReadAction(Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER);
