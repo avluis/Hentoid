@@ -21,7 +21,7 @@ android {
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 23
         versionCode 103
-        versionName '1.7.2'
+        versionName '1.7.3'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
