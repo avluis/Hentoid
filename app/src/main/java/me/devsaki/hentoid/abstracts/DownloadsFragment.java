@@ -3,7 +3,6 @@ package me.devsaki.hentoid.abstracts;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +17,7 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -1183,8 +1183,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         String currentViewerStr = requireContext().getResources().getStringArray(R.array.pref_read_content_entries)[resourcePosition];
 
         String message = getString(R.string.downloads_suggest_image_viewer, currentViewerStr);
-        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(requireContext());
-        builder.setTitle(R.string.downloads_suggest_image_viewer_title)
+        new AlertDialog.Builder(requireContext())
+                .setTitle(R.string.downloads_suggest_image_viewer_title)
                 .setMessage(message)
                 .setPositiveButton(R.string.yes,
                         (dialog, which) -> {
@@ -1193,6 +1193,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> Preferences.setViewerChoiceDisplayed(true))
-                .create().show();
+                .show();
     }
 }
