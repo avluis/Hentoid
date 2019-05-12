@@ -8,7 +8,7 @@ import java.util.Calendar;
 public class KeyInputDetector implements View.OnKeyListener {
 
     public interface OnKeyEventListener {
-        void onEvent(int keyCode);
+        boolean onEvent(int keyCode);
     }
 
     // PARAMETERS
@@ -37,7 +37,7 @@ public class KeyInputDetector implements View.OnKeyListener {
             if (timeNow - lastKeyDownEventTick > actionTimeFrame / (isTurbo ? 2 : 1)) {
                 if (-1 == lastKeyDownEventTick) isTurbo = true;
                 if (enableTurbo) lastKeyDownEventTick = timeNow;
-                listener.onEvent(keyCode);
+                return listener.onEvent(keyCode);
             }
             return true;
         } else if (event.getAction() == KeyEvent.ACTION_UP) {

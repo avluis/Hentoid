@@ -30,11 +30,14 @@ public final class VolumeKeyListener implements KeyInputDetector.OnKeyEventListe
     }
 
     @Override
-    public void onEvent(int keyCode) {
+    public boolean onEvent(int keyCode) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             onVolumeDownKeyListener.run();
+            return true;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             onVolumeUpKeyListener.run();
+            return true;
         }
+        return false;
     }
 }
