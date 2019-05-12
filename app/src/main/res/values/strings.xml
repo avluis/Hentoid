@@ -112,8 +112,8 @@
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="search_bookid_action_search">Search</string>
-    <string name="downloads_suggest_image_viewer_title">New internal image viewer</string>
-    <string name="downloads_suggest_image_viewer">Hentoid now has its own internal image viewer! Do you want to try it?\n\nYou can switch back to @currentOption at any time by using preferences.</string>
+    <string name="downloads_suggest_image_viewer_title">New image viewer</string>
+    <string name="downloads_suggest_image_viewer">Hentoid now has its own image viewer! Do you want to try it?\n\nYou can switch back to @currentOption at any time by using preferences.</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
