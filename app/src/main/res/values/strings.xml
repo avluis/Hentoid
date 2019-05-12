@@ -113,7 +113,7 @@
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="search_bookid_action_search">Search</string>
-    <string name="downloads_suggest_image_viewer_title">Try new image viewer?</string>
+    <string name="downloads_suggest_image_viewer_title">Try the new image viewer?</string>
     <string name="downloads_suggest_image_viewer">You can change this at any time in the app preferences</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
