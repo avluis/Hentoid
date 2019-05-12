@@ -45,6 +45,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ImageRecyclerAdapter adapter;
     private SeekBar seekBar;
     private TextView pageNumber;
+    private TextView pageMaxNumber;
     private RecyclerView recyclerView;
     private PageSnapWidget pageSnapWidget;
     private ImageViewerViewModel viewModel;
@@ -148,8 +149,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         View discordButton = requireViewById(rootView, R.id.viewer_discord_text);
         discordButton.setOnClickListener(v -> Helper.openUrl(requireContext(), Consts.URL_DISCORD));
         // Page number button
-        pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
+        pageNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
         pageNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
+        pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
         // Slider
         seekBar = requireViewById(rootView, R.id.viewer_seekbar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -203,7 +205,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void updatePageDisplay() {
         String pageDisplayText = format("%s / %s", viewModel.getCurrentPosition() + 1, maxPosition + 1);
-        pageNumber.setText(pageDisplayText);
+        pageNumber.setText(viewModel.getCurrentPosition() + 1 + "");
+        pageMaxNumber.setText(maxPosition + 1 + "");
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
