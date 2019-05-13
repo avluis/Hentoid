@@ -140,8 +140,12 @@ public class IntroActivity extends AppIntro2 {
                             .setAction(android.R.string.ok, v -> openAppSettings())
                             .show();
                     break;
+                case ConstsImport.RESULT_CANCELED:
+                case ConstsImport.EXISTING_LIBRARY_FOUND:
+                    Snackbar.make(pager, R.string.import_canceled, LENGTH_LONG).show();
+                    break;
                 default:
-                    throw new InvalidParameterException("Not implemented");
+                    // Other cases should fail silently
             }
             HentoidApp.setBeginImport(false);
         }
