@@ -18,7 +18,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.List;
-import java.util.Objects;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImageRecyclerAdapter;
@@ -356,7 +355,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN;
             }
-            Objects.requireNonNull(getView()).setSystemUiVisibility(uiOptions);
+
+            // Defensive programming here because crash reports show that getView() sometimes is null
+            // (just don't ask me why...)
+            View v = getView();
+            if (v != null) v.setSystemUiVisibility(uiOptions);
         }
     }
 }
