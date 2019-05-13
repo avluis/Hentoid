@@ -198,10 +198,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     // Scroll listener
     private void onCurrentPositionChange(int position) {
-        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
-            viewModel.setCurrentPosition(position);
-        else
-            viewModel.setCurrentPosition(maxPosition - position);
+        viewModel.setCurrentPosition(position);
         seekBar.setProgress(viewModel.getCurrentPosition());
         updatePageDisplay();
     }
