@@ -117,8 +117,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .setOnVolumeUpKeyListener(this::nextPage);
 
         recyclerView = requireViewById(rootView, R.id.image_viewer_recycler);
-        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
+        recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
         recyclerView.setOnKeyListener(volumeKeyListener.getListener());
 
@@ -219,6 +219,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
                 onBrowseModeChange();
+                onUpdateImageDisplay();
                 break;
             case Preferences.Key.PREF_VIEWER_KEEP_SCREEN_ON:
                 onUpdatePrefsScreenOn();

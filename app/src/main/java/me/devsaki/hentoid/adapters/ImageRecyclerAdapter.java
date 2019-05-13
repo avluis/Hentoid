@@ -48,6 +48,13 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder viewHolder, int pos) {
         viewHolder.setImageUri(imageUris.get(pos));
+
+        int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+
+        ViewGroup.LayoutParams layoutParams = viewHolder.imgView.getLayoutParams();
+        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        layoutParams.height = layoutStyle;
+        viewHolder.imgView.setLayoutParams(layoutParams);
     }
 
     final class ImageViewHolder extends RecyclerView.ViewHolder {
