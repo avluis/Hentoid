@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -81,7 +82,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .observe(this, this::onImagesChanged);
 
         if (Preferences.isViewerResumeLastLeft())
-            recyclerView.scrollToPosition(viewModel.getInitialPosition());
+            new Handler().postDelayed(() -> recyclerView.scrollToPosition(viewModel.getInitialPosition()), 200);
     }
 
     @Override
