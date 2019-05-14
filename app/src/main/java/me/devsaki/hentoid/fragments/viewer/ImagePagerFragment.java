@@ -87,17 +87,17 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_HUD_VISIBLE, controlsOverlay.getVisibility() == View.VISIBLE);
+        outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        boolean hudVisible = false; // Default state at startup
+        int hudVisibility = View.INVISIBLE; // Default state at startup
         if (savedInstanceState != null) {
-            hudVisible = savedInstanceState.getBoolean(KEY_HUD_VISIBLE, false);
+            hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE);
         }
-        controlsOverlay.setVisibility(hudVisible ? View.VISIBLE : View.INVISIBLE);
+        controlsOverlay.setVisibility(hudVisibility);
     }
 
     @Override
