@@ -123,8 +123,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         llm = new PrefetchLinearLayoutManager(getContext());
         llm.setItemPrefetchEnabled(true);
-        llm.setPreloadItemCount(2);
-        llm.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(llm);
 
         pageSnapWidget = new PageSnapWidget(recyclerView)
@@ -268,6 +266,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         llm.setReverseLayout(Preferences.getViewerDirection() != currentLayoutDirection);
 
         llm.setOrientation(getOrientation());
+        // Lighten the load of preloading images when using vertical mode
+        llm.setPreloadItemCount(Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation() ? 2 : 1);
         pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL != Preferences.getViewerOrientation());
     }
 

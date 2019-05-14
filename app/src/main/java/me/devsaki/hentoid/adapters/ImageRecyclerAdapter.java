@@ -11,8 +11,10 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.ImageLoaderThreadExecutor;
 import me.devsaki.hentoid.util.Preferences;
 
 
@@ -20,9 +22,13 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
 
     // TODO : SubsamplingScaleImageView does _not_ support animated GIFs -> use pl.droidsonroids.gif:android-gif-drawable when serving a GIF ?
 
+    private static final Executor executor = new ImageLoaderThreadExecutor();
+
+
     private View.OnTouchListener itemTouchListener;
 
     private List<String> imageUris;
+
 
     @Override
     public int getItemCount() {
@@ -64,6 +70,7 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
         private ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imgView = (SubsamplingScaleImageView) itemView;
+            imgView.setExecutor(executor);
             imgView.setOnTouchListener(itemTouchListener);
         }
 
