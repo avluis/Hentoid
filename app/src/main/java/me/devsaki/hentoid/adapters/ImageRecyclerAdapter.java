@@ -16,6 +16,7 @@ import java.util.concurrent.Executor;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.util.ImageLoaderThreadExecutor;
 import me.devsaki.hentoid.util.Preferences;
+import timber.log.Timber;
 
 
 public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdapter.ImageViewHolder> {
@@ -77,6 +78,7 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
         void setImageUri(String uri) {
             imgView.recycle();
             imgView.setMinimumScaleType(getScaleType());
+Timber.i(">>>>IMG %s", uri);
             imgView.setImage(ImageSource.uri(uri));
         }
 
