@@ -4,6 +4,7 @@
     <string name="app_intro">Welcome</string>
     <string name="yes">Yes</string> <!-- because Android default "OK" value for "yes" key is nonsense -->
     <string name="no">No</string>   <!-- because Android default "Cancel" value for "no" key is nonsense -->
+    <string name="try_it">Try it</string>
     <!-- Activities -->
     <string name="title_activity_downloads">Downloads</string>
     <string name="title_activity_queue">Queue</string>
@@ -63,6 +64,7 @@
     <string name="permission_granted">Permission set, restarting library import.</string>
     <string name="permissioncomplaint_snackbar">You must grant permissions before you can continue</string>
     <string name="permissioncomplaint_snackbar_manual">You must manually grant permissions before you can continue</string>
+    <string name="import_canceled">Import canceled</string>
     <string name="existing_library_error">Please select a custom location.</string>
     <string name="cleanup_done">Task complete - see details in the log</string>
     <string name="contents_detected">Hentoid has recognized an existing library in this location.\nDo you want to import this library?</string>
@@ -112,8 +114,8 @@
     <string name="downloads_filter_clear">CLEAR</string>
     <string name="search_bookid_label">Search \'%s\' in…</string>
     <string name="search_bookid_action_search">Search</string>
-    <string name="downloads_suggest_image_viewer_title">New internal image viewer</string>
-    <string name="downloads_suggest_image_viewer">Hentoid now has its own internal image viewer! Do you want to try it?\n\nYou can switch back to @currentOption at any time by using preferences.</string>
+    <string name="downloads_suggest_image_viewer_title">Try the new image viewer?</string>
+    <string name="downloads_suggest_image_viewer">You can change this at any time in the app preferences</string>
 
     <string name="reset">Permissions has been reset.\nResetting app.</string>
     <string name="restart_needed">"Changes will be applied after Hentoid is restarted"</string>
@@ -178,6 +180,7 @@
     <string name="viewer_prefs_display_fill">Fill (image takes up all screen)</string>
     <string name="pref_viewer_resume_last_left">Resume reading at last left page</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
+    <string name="pref_viewer_display_pagenum">Always display page number</string>
     <string name="pref_viewer_image_display">Image display mode</string>
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_fling_sensitivity">Fling sensitivity</string>

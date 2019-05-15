@@ -3,7 +3,6 @@ package me.devsaki.hentoid.abstracts;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +17,7 @@ import android.support.annotation.StringRes;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
@@ -59,7 +59,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.fragments.AboutMikanDialogFragment;
-import me.devsaki.hentoid.fragments.SearchBookIdDialogFragment;
+import me.devsaki.hentoid.fragments.downloads.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
@@ -288,7 +288,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         int currentViewer = Preferences.getContentReadAction();
         if (Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER != currentViewer) {
-            if (!Preferences.hasViewerChoiceBeenDisplayed()) showViewerChoiceDialog(currentViewer);
+            if (!Preferences.hasViewerChoiceBeenDisplayed()) showViewerChoiceDialog();
         } else {
             Preferences.setViewerChoiceDisplayed(true);
         }
@@ -1176,23 +1176,17 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         updateTitle();
     }
 
-    private void showViewerChoiceDialog(int currentViewer) {
-        int resourcePosition = 0;
-        if (0 == currentViewer) resourcePosition = 1;
-        else if (1 == currentViewer) resourcePosition = 2;
-        String currentViewerStr = requireContext().getResources().getStringArray(R.array.pref_read_content_entries)[resourcePosition];
-
-        String message = requireContext().getString(R.string.downloads_suggest_image_viewer).replace("@currentOption", currentViewerStr);
-        android.support.v7.app.AlertDialog.Builder builder = new android.support.v7.app.AlertDialog.Builder(requireContext());
-        builder.setTitle(R.string.downloads_suggest_image_viewer_title)
-                .setMessage(message)
-                .setPositiveButton(R.string.yes,
+    private void showViewerChoiceDialog() {
+        new AlertDialog.Builder(requireContext(), R.style.Theme_AppCompat_Dialog_Alert)
+                .setTitle(R.string.downloads_suggest_image_viewer_title)
+                .setMessage(R.string.downloads_suggest_image_viewer)
+                .setPositiveButton(R.string.try_it,
                         (dialog, which) -> {
                             Preferences.setViewerChoiceDisplayed(true);
                             Preferences.setContentReadAction(Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER);
                         })
                 .setNegativeButton(R.string.no,
                         (dialog, which) -> Preferences.setViewerChoiceDisplayed(true))
-                .create().show();
+                .show();
     }
 }

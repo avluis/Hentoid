@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.downloads;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.View;

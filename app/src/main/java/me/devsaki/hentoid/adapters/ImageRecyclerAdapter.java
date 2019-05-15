@@ -11,18 +11,25 @@ import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.util.ImageLoaderThreadExecutor;
 import me.devsaki.hentoid.util.Preferences;
+import timber.log.Timber;
 
 
 public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdapter.ImageViewHolder> {
 
     // TODO : SubsamplingScaleImageView does _not_ support animated GIFs -> use pl.droidsonroids.gif:android-gif-drawable when serving a GIF ?
 
+    private static final Executor executor = new ImageLoaderThreadExecutor();
+
+
     private View.OnTouchListener itemTouchListener;
 
     private List<String> imageUris;
+
 
     @Override
     public int getItemCount() {
@@ -48,6 +55,13 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder viewHolder, int pos) {
         viewHolder.setImageUri(imageUris.get(pos));
+
+        int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+
+        ViewGroup.LayoutParams layoutParams = viewHolder.imgView.getLayoutParams();
+        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
+        layoutParams.height = layoutStyle;
+        viewHolder.imgView.setLayoutParams(layoutParams);
     }
 
     final class ImageViewHolder extends RecyclerView.ViewHolder {
@@ -57,12 +71,14 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
         private ImageViewHolder(@NonNull View itemView) {
             super(itemView);
             imgView = (SubsamplingScaleImageView) itemView;
+            imgView.setExecutor(executor);
             imgView.setOnTouchListener(itemTouchListener);
         }
 
         void setImageUri(String uri) {
             imgView.recycle();
             imgView.setMinimumScaleType(getScaleType());
+Timber.i(">>>>IMG %s", uri);
             imgView.setImage(ImageSource.uri(uri));
         }
 

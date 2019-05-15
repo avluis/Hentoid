@@ -3,11 +3,16 @@ package me.devsaki.hentoid.widget;
 import android.view.KeyEvent;
 import android.view.View;
 
-public final class VolumeKeyListener implements View.OnKeyListener {
+public final class VolumeKeyListener implements KeyInputDetector.OnKeyEventListener {
+
+    private final KeyInputDetector detector;
 
     private Runnable onVolumeDownKeyListener;
-
     private Runnable onVolumeUpKeyListener;
+
+    public VolumeKeyListener() {
+        detector = new KeyInputDetector(this, 1000);
+    }
 
     public VolumeKeyListener setOnVolumeDownKeyListener(Runnable onVolumeDownKeyListener) {
         this.onVolumeDownKeyListener = onVolumeDownKeyListener;
@@ -19,8 +24,13 @@ public final class VolumeKeyListener implements View.OnKeyListener {
         return this;
     }
 
+    public View.OnKeyListener getListener()
+    {
+        return detector;
+    }
+
     @Override
-    public boolean onKey(View v, int keyCode, KeyEvent event) {
+    public boolean onEvent(int keyCode) {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
             onVolumeDownKeyListener.run();
             return true;

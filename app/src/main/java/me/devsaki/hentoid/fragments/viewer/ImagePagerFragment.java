@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,7 +19,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import java.util.List;
-import java.util.Objects;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImageRecyclerAdapter;
@@ -45,6 +45,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ImageRecyclerAdapter adapter;
     private SeekBar seekBar;
     private TextView pageNumber;
+    private TextView pageCurrentNumber;
+    private TextView pageMaxNumber;
     private RecyclerView recyclerView;
     private PageSnapWidget pageSnapWidget;
     private ImageViewerViewModel viewModel;
@@ -65,6 +67,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         onBrowseModeChange();
         onUpdateFlingFactor();
+        onUpdatePageNumDisplay();
 
         return view;
     }
@@ -85,17 +88,17 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_HUD_VISIBLE, controlsOverlay.getVisibility() == View.VISIBLE);
+        outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        boolean hudVisible = false; // Default state at startup
+        int hudVisibility = View.INVISIBLE; // Default state at startup
         if (savedInstanceState != null) {
-            hudVisible = savedInstanceState.getBoolean(KEY_HUD_VISIBLE, false);
+            hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE);
         }
-        controlsOverlay.setVisibility(hudVisible ? View.VISIBLE : View.INVISIBLE);
+        controlsOverlay.setVisibility(hudVisibility);
     }
 
     @Override
@@ -114,15 +117,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .setOnVolumeUpKeyListener(this::nextPage);
 
         recyclerView = requireViewById(rootView, R.id.image_viewer_recycler);
-        recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(adapter);
+        recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
-        recyclerView.setOnKeyListener(volumeKeyListener);
+        recyclerView.setOnKeyListener(volumeKeyListener.getListener());
 
         llm = new PrefetchLinearLayoutManager(getContext());
         llm.setItemPrefetchEnabled(true);
         llm.setPreloadItemCount(2);
-        llm.setOrientation(LinearLayoutManager.HORIZONTAL);
         recyclerView.setLayoutManager(llm);
 
         pageSnapWidget = new PageSnapWidget(recyclerView)
@@ -148,8 +150,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         View discordButton = requireViewById(rootView, R.id.viewer_discord_text);
         discordButton.setOnClickListener(v -> Helper.openUrl(requireContext(), Consts.URL_DISCORD));
         // Page number button
+        pageCurrentNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
+        pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
+        pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
         pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
-        pageNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
         // Slider
         seekBar = requireViewById(rootView, R.id.viewer_seekbar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -193,23 +197,25 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     // Scroll listener
     private void onCurrentPositionChange(int position) {
-        if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
-            viewModel.setCurrentPosition(position);
-        else
-            viewModel.setCurrentPosition(maxPosition - position);
+        viewModel.setCurrentPosition(position);
         seekBar.setProgress(viewModel.getCurrentPosition());
         updatePageDisplay();
     }
 
     private void updatePageDisplay() {
-        String pageDisplayText = format("%s / %s", viewModel.getCurrentPosition() + 1, maxPosition + 1);
-        pageNumber.setText(pageDisplayText);
+        String pageNum = viewModel.getCurrentPosition() + 1 + "";
+        String maxPage = maxPosition + 1 + "";
+
+        pageCurrentNumber.setText(pageNum);
+        pageMaxNumber.setText(maxPage);
+        pageNumber.setText(format("%s / %s", pageNum, maxPage));
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
                 onBrowseModeChange();
+                onUpdateImageDisplay();
                 break;
             case Preferences.Key.PREF_VIEWER_KEEP_SCREEN_ON:
                 onUpdatePrefsScreenOn();
@@ -219,6 +225,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 break;
             case Preferences.Key.PREF_VIEWER_FLING_FACTOR:
                 onUpdateFlingFactor();
+                break;
+            case Preferences.Key.PREF_VIEWER_DISPLAY_PAGENUM:
+                onUpdatePageNumDisplay();
                 break;
             default:
                 // Other changes aren't handled here
@@ -238,6 +247,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void onUpdateImageDisplay() {
         adapter.notifyDataSetChanged(); // NB : will re-run onBindViewHolder for all displayed pictures
+    }
+
+    private void onUpdatePageNumDisplay() {
+        pageNumber.setVisibility(Preferences.isViewerDisplayPageNum() ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -342,7 +355,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN;
             }
-            Objects.requireNonNull(getView()).setSystemUiVisibility(uiOptions);
+
+            // Defensive programming here because crash reports show that getView() sometimes is null
+            // (just don't ask me why...)
+            View v = getView();
+            if (v != null) v.setSystemUiVisibility(uiOptions);
         }
     }
 }
