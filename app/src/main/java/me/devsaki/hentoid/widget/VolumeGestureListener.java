@@ -3,21 +3,19 @@ package me.devsaki.hentoid.widget;
 import android.view.KeyEvent;
 import android.view.View;
 
-import timber.log.Timber;
-
 public final class VolumeGestureListener implements View.OnKeyListener {
 
     private Runnable onVolumeDownListener;
 
     private Runnable onVolumeUpListener;
 
-    private boolean enableTurbo = true;
+    private int cooldown = 1000;
 
-    private int actionTimeWindow = 1000;
+    private int turboCooldown = 500;
 
-    private long lastKeyDownEventTick = -1;
+    private boolean isTurboEnabled = true;
 
-    private boolean isTurbo = false;
+    private long nextNotifyTime;
 
     public VolumeGestureListener setOnVolumeDownListener(Runnable onVolumeDownListener) {
         this.onVolumeDownListener = onVolumeDownListener;
@@ -29,41 +27,41 @@ public final class VolumeGestureListener implements View.OnKeyListener {
         return this;
     }
 
-    public VolumeGestureListener setEnableTurbo(boolean enableTurbo) {
-        this.enableTurbo = enableTurbo;
+    public VolumeGestureListener setCooldown(int cooldown) {
+        this.cooldown = cooldown;
         return this;
     }
 
-    public VolumeGestureListener setActionTimeWindow(int actionTimeWindow) {
-        this.actionTimeWindow = actionTimeWindow;
+    public VolumeGestureListener setTurboCooldown(int turboCooldown) {
+        this.turboCooldown = turboCooldown;
+        return this;
+    }
+
+    public VolumeGestureListener setTurboEnabled(boolean isTurboEnabled) {
+        this.isTurboEnabled = isTurboEnabled;
         return this;
     }
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        if (keyCode != KeyEvent.KEYCODE_VOLUME_DOWN && keyCode != KeyEvent.KEYCODE_VOLUME_UP) {
+        if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+
+        Runnable listener;
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            listener = onVolumeDownListener;
+        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            listener = onVolumeUpListener;
+        } else {
             return false;
         }
 
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            long timeNow = System.currentTimeMillis();
-            if (timeNow - lastKeyDownEventTick > actionTimeWindow / (isTurbo ? 2 : 1)) {
-                if (-1 == lastKeyDownEventTick) isTurbo = true;
-                if (enableTurbo) lastKeyDownEventTick = timeNow;
-                notifyListener(keyCode);
-            }
-        } else if (event.getAction() == KeyEvent.ACTION_UP) {
-            lastKeyDownEventTick = -1;
-            isTurbo = false;
+        if (event.getRepeatCount() == 0) {
+            listener.run();
+            nextNotifyTime = event.getEventTime() + cooldown;
+        } else if (event.getEventTime() >= nextNotifyTime) {
+            listener.run();
+            nextNotifyTime = event.getEventTime() + (isTurboEnabled ? turboCooldown : cooldown);
         }
         return true;
-    }
-
-    private void notifyListener(int keyCode) {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            onVolumeDownListener.run();
-        } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
-            onVolumeUpListener.run();
-        }
     }
 }
