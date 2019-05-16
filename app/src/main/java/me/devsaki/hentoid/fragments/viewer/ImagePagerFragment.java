@@ -4,7 +4,6 @@ import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -30,7 +29,7 @@ import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.PageSnapWidget;
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
-import me.devsaki.hentoid.widget.VolumeKeyListener;
+import me.devsaki.hentoid.widget.VolumeGestureListener;
 
 import static android.support.v4.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
@@ -112,15 +111,15 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void initPager(View rootView) {
         adapter = new ImageRecyclerAdapter();
 
-        VolumeKeyListener volumeKeyListener = new VolumeKeyListener()
-                .setOnVolumeDownKeyListener(this::previousPage)
-                .setOnVolumeUpKeyListener(this::nextPage);
+        VolumeGestureListener volumeGestureListener = new VolumeGestureListener()
+                .setOnVolumeDownListener(this::previousPage)
+                .setOnVolumeUpListener(this::nextPage);
 
         recyclerView = requireViewById(rootView, R.id.image_viewer_recycler);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
-        recyclerView.setOnKeyListener(volumeKeyListener.getListener());
+        recyclerView.setOnKeyListener(volumeGestureListener);
 
         llm = new PrefetchLinearLayoutManager(getContext());
         llm.setItemPrefetchEnabled(true);
