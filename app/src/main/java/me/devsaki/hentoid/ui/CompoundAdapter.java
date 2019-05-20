@@ -10,6 +10,8 @@ import android.widget.TextView;
 import java.util.List;
 import java.util.Map;
 
+import me.devsaki.hentoid.enums.DrawerItem;
+
 /**
  * Created by avluis on 04/17/2016.
  * Custom implementation of Simple Adapter for our TextView compound drawable.
@@ -63,7 +65,7 @@ public class CompoundAdapter extends SimpleAdapter implements SimpleAdapter.View
             final View v = view.findViewById(to[i]);
             if (v != null) {
                 final Object data = dataSet.get(mFrom[i]);
-                String IMAGE_KEY = DrawerMenuContents.FIELD_ICON;
+                String IMAGE_KEY = DrawerItem.FIELD_ICON;
                 final Object imageData = dataSet.get(IMAGE_KEY);
                 String text = data == null ? "" : data.toString();
 

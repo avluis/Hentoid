@@ -17,8 +17,8 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.enums.DrawerItem;
 import me.devsaki.hentoid.ui.CompoundAdapter;
-import me.devsaki.hentoid.ui.DrawerMenuContents;
 import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
@@ -34,13 +34,14 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
 
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
-    private DrawerMenuContents mDrawerMenuContents;
     private ActionBarDrawerToggle mDrawerToggle;
     private int itemToOpen = -1;
     private int currentPos = -1;
     private boolean itemTapped;
 
-    protected abstract String getToolbarTitle();
+    protected final String getToolbarTitle() {
+        return getString(R.string.title_activity_downloads);
+    }
 
     protected void initializeNavigationDrawer(Toolbar toolbar) {
         mDrawerLayout = findViewById(R.id.drawer_layout);
@@ -83,10 +84,9 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
     public void onDrawerClosed(@NonNull View drawerView) {
         if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
 
-        int position = itemToOpen;
-        if (position >= 0 && itemTapped) {
+        if (itemToOpen >= 0 && itemTapped) {
             itemTapped = false;
-            Class activityClass = mDrawerMenuContents.getActivity(position);
+            Class activityClass = DrawerItem.getActivity(itemToOpen);
             Intent intent = new Intent(this, activityClass);
             Bundle bundle = ActivityOptionsCompat
                     .makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
@@ -102,16 +102,15 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
     }
 
     private void populateDrawerItems() {
-        mDrawerMenuContents = new DrawerMenuContents();
         updateDrawerPosition();
         final int selectedPosition = currentPos;
         final int unselectedColor = ContextCompat.getColor(getApplicationContext(),
                 R.color.drawer_item_unselected_background);
         final int selectedColor = ContextCompat.getColor(getApplicationContext(),
                 R.color.drawer_item_selected_background);
-        final CompoundAdapter adapter = new CompoundAdapter(this, mDrawerMenuContents.getItems(),
+        final CompoundAdapter adapter = new CompoundAdapter(this, DrawerItem.makeAdapterItems(),
                 R.layout.drawer_list_item,
-                new String[]{DrawerMenuContents.FIELD_TITLE}, new int[]{R.id.drawer_item_title}) {
+                new String[]{DrawerItem.FIELD_TITLE}, new int[]{R.id.drawer_item_title}) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
@@ -136,7 +135,7 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
     }
 
     protected void updateDrawerPosition() {
-        final int selectedPosition = mDrawerMenuContents.getPosition(this.getClass());
+        final int selectedPosition = DrawerItem.getPosition(this.getClass());
         updateSelected(selectedPosition);
     }
 
