@@ -16,7 +16,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:listitem="@layout/item_viewer_image" />
+        tools:listitem="@layout/item_viewer_image_subsampling" />
 
     <TextView
         android:id="@+id/viewer_pagenumber_text"
