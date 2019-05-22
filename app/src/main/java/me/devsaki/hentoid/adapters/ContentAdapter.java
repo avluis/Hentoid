@@ -44,9 +44,9 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
-import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ContentClickListener;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
+import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentNotRemovedException;
@@ -514,7 +514,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         errorLogInfo.noDataMessage = "No error detected.";
 
         if (errorLog != null) {
-            log.add("Error log for " + content.getTitle() + " : " + errorLog.size() + " errors");
+            log.add("Error log for " + content.getTitle() + " [" + content.getUniqueSiteId() + "@" + content.getSite().getDescription() + "] : " + errorLog.size() + " errors");
             for (ErrorRecord e : errorLog) log.add(e.toString());
         }
 
