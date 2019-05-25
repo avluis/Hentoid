@@ -1,8 +1,8 @@
-package me.devsaki.hentoid.retrofit;
+package me.devsaki.hentoid.retrofit.sources;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.parsers.content.HentaiCafeContent;
+import me.devsaki.hentoid.parsers.content.PururinContent;
 import me.devsaki.hentoid.util.OkHttpClientSingleton;
 import pl.droidsonroids.retrofit2.JspoonConverterFactory;
 import retrofit2.Retrofit;
@@ -10,10 +10,10 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 
-public class HentaiCafeServer {
+public class PururinServer {
 
     public static final Api API = new Retrofit.Builder()
-            .baseUrl(Site.HENTAICAFE.getUrl())
+            .baseUrl(Site.PURURIN.getUrl())
             .client(OkHttpClientSingleton.getInstance())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(JspoonConverterFactory.create())
@@ -22,7 +22,7 @@ public class HentaiCafeServer {
 
     public interface Api {
 
-        @GET("/{id}/")
-        Single<HentaiCafeContent> getGalleryMetadata(@Path("id") String contentId);
+        @GET("/gallery/{id1}/{id2}")
+        Single<PururinContent> getGalleryMetadata(@Path("id1") String contentId1, @Path("id2") String contentId2);
     }
 }

@@ -5,15 +5,15 @@ import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
-import me.devsaki.hentoid.activities.websites.ASMHentaiActivity;
-import me.devsaki.hentoid.activities.websites.EHentaiActivity;
-import me.devsaki.hentoid.activities.websites.FakkuActivity;
-import me.devsaki.hentoid.activities.websites.HentaiCafeActivity;
-import me.devsaki.hentoid.activities.websites.HitomiActivity;
-import me.devsaki.hentoid.activities.websites.NhentaiActivity;
-import me.devsaki.hentoid.activities.websites.PandaActivity;
-import me.devsaki.hentoid.activities.websites.PururinActivity;
-import me.devsaki.hentoid.activities.websites.TsuminoActivity;
+import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;
+import me.devsaki.hentoid.activities.sources.EHentaiActivity;
+import me.devsaki.hentoid.activities.sources.FakkuActivity;
+import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
+import me.devsaki.hentoid.activities.sources.HitomiActivity;
+import me.devsaki.hentoid.activities.sources.NhentaiActivity;
+import me.devsaki.hentoid.activities.sources.PandaActivity;
+import me.devsaki.hentoid.activities.sources.PururinActivity;
+import me.devsaki.hentoid.activities.sources.TsuminoActivity;
 
 public enum DrawerItem {
 

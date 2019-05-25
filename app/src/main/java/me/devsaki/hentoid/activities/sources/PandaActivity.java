@@ -1,45 +1,43 @@
-package me.devsaki.hentoid.activities.websites;
+package me.devsaki.hentoid.activities.sources;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.HitomiServer;
+import me.devsaki.hentoid.retrofit.sources.PandaServer;
 import timber.log.Timber;
 
 /**
- * Created by Shiro on 1/20/2016.
- * Implements Hitomi.la source
+ * Created by Robb_w on 2018/04
+ * Implements MangaPanda source
  */
-public class HitomiActivity extends BaseWebActivity {
+public class PandaActivity extends BaseWebActivity {
 
-    private static final String DOMAIN_FILTER = "hitomi.la";
-    private static final String GALLERY_FILTER = "//hitomi.la/galleries/";
-    private static final String[] blockedContent = {"hitomi-horizontal.js", "hitomi-vertical.js"};
+    private static final String DOMAIN_FILTER = "mangapanda.com";
+    private static final String GALLERY_FILTER = "mangapanda.com/[A-Za-z0-9\\-_]+/[0-9]+";
 
     Site getStartSite() {
-        return Site.HITOMI;
+        return Site.PANDA;
     }
+
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new HitomiWebViewClient(GALLERY_FILTER, this);
+        CustomWebViewClient client = new PandaWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
     }
 
+    private class PandaWebViewClient extends CustomWebViewClient {
 
-    private class HitomiWebViewClient extends CustomWebViewClient {
-
-        HitomiWebViewClient(String filteredUrl, ResultListener<Content> listener) {
+        PandaWebViewClient(String filteredUrl, ResultListener<Content> listener) {
             super(filteredUrl, listener);
-            addContentBlockFilter(blockedContent);
         }
 
         @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
-            compositeDisposable.add(HitomiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])
+            compositeDisposable.add(PandaServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 2], galleryUrlParts[galleryUrlParts.length - 1])
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
                             metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {

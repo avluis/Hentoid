@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.retrofit;
+package me.devsaki.hentoid.retrofit.sources;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.parsers.content.EHentaiGalleriesMetadata;

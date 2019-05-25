@@ -27,7 +27,7 @@ import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.MikanServer;
+import me.devsaki.hentoid.retrofit.sources.MikanServer;
 import me.devsaki.hentoid.util.AttributeCache;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.IllegalTags;

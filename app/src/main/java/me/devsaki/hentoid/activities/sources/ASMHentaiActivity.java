@@ -1,11 +1,11 @@
-package me.devsaki.hentoid.activities.websites;
+package me.devsaki.hentoid.activities.sources;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.ASMComicsServer;
-import me.devsaki.hentoid.retrofit.ASMHentaiServer;
+import me.devsaki.hentoid.retrofit.sources.ASMComicsServer;
+import me.devsaki.hentoid.retrofit.sources.ASMHentaiServer;
 import timber.log.Timber;
 
 /**

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.websites;
+package me.devsaki.hentoid.activities.sources;
 
 import android.graphics.Bitmap;
 import android.view.View;
@@ -8,7 +8,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.TsuminoServer;
+import me.devsaki.hentoid.retrofit.sources.TsuminoServer;
 import timber.log.Timber;
 
 /**

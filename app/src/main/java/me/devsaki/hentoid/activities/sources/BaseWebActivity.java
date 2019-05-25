@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.websites;
+package me.devsaki.hentoid.activities.sources;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;

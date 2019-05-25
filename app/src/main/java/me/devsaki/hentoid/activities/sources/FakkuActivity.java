@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.websites;
+package me.devsaki.hentoid.activities.sources;
 
 import android.webkit.CookieManager;
 
@@ -9,7 +9,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.FakkuServer;
+import me.devsaki.hentoid.retrofit.sources.FakkuServer;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 

@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.websites;
+package me.devsaki.hentoid.activities.sources;
 
 import android.net.Uri;
 
@@ -6,7 +6,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.HentaiCafeServer;
+import me.devsaki.hentoid.retrofit.sources.HentaiCafeServer;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.HENTAICAFE;

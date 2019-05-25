@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.retrofit;
+package me.devsaki.hentoid.retrofit.sources;
 
 import io.reactivex.Single;
 import me.devsaki.hentoid.enums.Site;
@@ -10,10 +10,10 @@ import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 
-public class ASMComicsServer {
+public class ASMHentaiServer {
 
     public static final Api API = new Retrofit.Builder()
-            .baseUrl(Site.ASMHENTAI_COMICS.getUrl())
+            .baseUrl(Site.ASMHENTAI.getUrl())
             .client(OkHttpClientSingleton.getInstance())
             .addCallAdapterFactory(RxJava2CallAdapterFactory.createAsync())
             .addConverterFactory(JspoonConverterFactory.create())

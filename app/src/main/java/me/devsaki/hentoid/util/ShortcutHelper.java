@@ -14,7 +14,6 @@ import java.util.Arrays;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.UnlockActivity;
-import me.devsaki.hentoid.activities.websites.NhentaiActivity;
 import me.devsaki.hentoid.enums.Site;
 
 /**

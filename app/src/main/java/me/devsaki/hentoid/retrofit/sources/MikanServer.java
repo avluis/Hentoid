@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.retrofit;
+package me.devsaki.hentoid.retrofit.sources;
 
 import java.util.Map;
 

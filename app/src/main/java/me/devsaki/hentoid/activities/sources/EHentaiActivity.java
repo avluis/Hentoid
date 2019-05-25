@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.activities.websites;
+package me.devsaki.hentoid.activities.sources;
 
 import android.webkit.CookieManager;
 
@@ -7,7 +7,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
 import me.devsaki.hentoid.parsers.content.EHentaiGalleryQuery;
-import me.devsaki.hentoid.retrofit.EHentaiServer;
+import me.devsaki.hentoid.retrofit.sources.EHentaiServer;
 import timber.log.Timber;
 
 /**

@@ -34,39 +34,39 @@
             android:label="@string/app_intro"
             android:theme="@style/AppTheme.TaupeBackground" />
         <activity
-            android:name=".activities.websites.HitomiActivity"
+            android:name=".activities.sources.HitomiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.NhentaiActivity"
+            android:name=".activities.sources.NhentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.TsuminoActivity"
+            android:name=".activities.sources.TsuminoActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.ASMHentaiActivity"
+            android:name=".activities.sources.ASMHentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.HentaiCafeActivity"
+            android:name=".activities.sources.HentaiCafeActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.PururinActivity"
+            android:name=".activities.sources.PururinActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.PandaActivity"
+            android:name=".activities.sources.PandaActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.EHentaiActivity"
+            android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.websites.FakkuActivity"
+            android:name=".activities.sources.FakkuActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
