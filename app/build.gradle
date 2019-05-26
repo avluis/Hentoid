@@ -165,6 +165,10 @@ dependencies {
 
     // https://github.com/davemorrissey/subsampling-scale-image-view
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
+
+    // https://github.com/davideas/FlexibleAdapter (warning : upgrading this switches the library to AndroidX)
+    implementation 'eu.davidea:flexible-adapter:5.0.6'
+    implementation 'eu.davidea:flexible-adapter-ui:1.0.0-b5'
 }
 
 sonarqube {

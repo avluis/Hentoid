@@ -19,7 +19,8 @@
             android:src="@drawable/ic_hentoid"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"
+             />
 
         <ImageView
             android:id="@+id/githubIcon"
@@ -91,6 +92,19 @@
             app:layout_constraintTop_toTopOf="@id/redditIcon" />
 
         <TextView
+            android:id="@+id/about_changelog_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="@dimen/about_textSize"
+            android:textColor="@color/accent"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@id/iv_app_logo"
+            app:layout_constraintTop_toBottomOf="@id/redditIcon"
+            android:text="@string/view_changelog"
+            />
+
+        <TextView
             android:id="@+id/tv_version_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -98,7 +112,7 @@
             android:textSize="@dimen/about_textSize"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_app_logo"
-            tools:text="Hentoid X.X.X" />
+            tools:text="Hentoid X.X.X (bbb)" />
 
         <TextView
             android:id="@+id/aboutText1"
@@ -155,18 +169,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement2" />
 
-        <Button
-            android:id="@+id/btn_about_licenses"
+        <TextView
+            android:id="@+id/about_licenses_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:layout_marginTop="16dp"
-            android:text="@string/about_licenses"
+            android:layout_marginBottom="16dp"
             android:textSize="@dimen/about_textSize"
+            android:textColor="@color/accent"
+            android:textStyle="bold"
+            android:clickable="true"
+            android:focusable="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/personalDataStatement3" />
+            app:layout_constraintTop_toBottomOf="@id/personalDataStatement3"
+            android:text="@string/about_licenses" />
 
     </android.support.constraint.ConstraintLayout>
 
