@@ -4,6 +4,9 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.gson.annotations.SerializedName;
+
+import java.util.Date;
 import java.util.List;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
@@ -11,7 +14,6 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import eu.davidea.viewholders.FlexibleViewHolder;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.model.GitHubReleases;
 import me.devsaki.hentoid.util.Helper;
 
 public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseViewHolder> {
@@ -20,10 +22,10 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
     private final String name;
     private final String description;
 
-    public GitHubRelease(GitHubReleases.GitHubRelease releaseStruct) {
-        version = releaseStruct.getTagName();
-        name = releaseStruct.getName();
-        description = releaseStruct.getBody();
+    public GitHubRelease(Struct releaseStruct) {
+        version = releaseStruct.tagName;
+        name = releaseStruct.name;
+        description = releaseStruct.body;
     }
 
     @Override
@@ -99,4 +101,37 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
             layout.addView(tv);
         }
     }
+
+    public class Struct {
+
+        @SerializedName("tag_name")
+        String tagName;
+
+        @SerializedName("name")
+        String name;
+
+        @SerializedName("body")
+        String body;
+
+        @SerializedName("assets")
+        List<GitHubAsset> assets;
+
+        class GitHubAsset {
+            @SerializedName("body")
+            String body;
+
+            @SerializedName("content-type")
+            String contentType;
+
+            @SerializedName("browser_download_url")
+            String downloadUrl;
+
+            @SerializedName("size")
+            long size;
+
+            @SerializedName("created_at")
+            Date creationDate;
+        }
+    }
+
 }

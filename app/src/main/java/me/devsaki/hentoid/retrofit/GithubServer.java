@@ -1,7 +1,9 @@
 package me.devsaki.hentoid.retrofit;
 
+import java.util.List;
+
 import io.reactivex.Single;
-import me.devsaki.hentoid.model.GitHubReleases;
+import me.devsaki.hentoid.viewholders.GitHubRelease;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -21,6 +23,6 @@ public class GithubServer {
     public interface Api {
 
         @GET("releases")
-        Single<GitHubReleases> getReleases();
+        Single<List<GitHubRelease.Struct>> getReleases();
     }
 }
