@@ -57,6 +57,7 @@
             android:tint="@color/accent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintRight_toRightOf="parent"
+            android:visibility="invisible"
             tools:ignore="ContentDescription"
             />
 

@@ -82,8 +82,13 @@ public class ChangelogFragment extends Fragment {
     private void onCheckSuccess(List<GitHubRelease.Struct> releasesInfo) {
         List<IFlexible> releases = new ArrayList<>();
 
-        for (GitHubRelease.Struct r : releasesInfo)
-            releases.add(new GitHubRelease(r));
+        boolean first = true;
+        for (GitHubRelease.Struct r : releasesInfo) {
+            GitHubRelease release = new GitHubRelease(r);
+            release.setLatest(first);
+            releases.add(release);
+            first = false;
+        }
 
         adapter.addItems(0, releases);
         // TODO show RecyclerView
