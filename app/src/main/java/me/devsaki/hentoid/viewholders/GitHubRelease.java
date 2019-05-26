@@ -59,8 +59,7 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         // Parse content and add lines to the description
         for (String s : description.split("\\r\\n")) {
             s = s.trim();
-            if (s.startsWith("_")) holder.addCategoryContent(s);
-            else if (s.startsWith("*")) holder.addListContent(s);
+            if (s.startsWith("-")) holder.addListContent(s);
             else holder.addDescContent(s);
         }
     }
@@ -88,10 +87,6 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
             tv.setText(text);
             tv.setPadding(DP_8, DP_8, 0, 0);
             layout.addView(tv);
-        }
-
-        void addCategoryContent(String text) {
-            addDescContent(text);
         }
 
         void addListContent(String text) {
