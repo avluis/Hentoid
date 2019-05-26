@@ -64,7 +64,7 @@ public class ChangelogFragment extends Fragment {
 
     private void initRecyclerView(View rootView) {
         // TODO - invisible init while loading
-        adapter = new FlexibleAdapter<>(null);
+        adapter = new FlexibleAdapter<>(null, null, true);
 
         RecyclerView recyclerView = requireViewById(rootView, R.id.changelogList);
         recyclerView.setAdapter(adapter);

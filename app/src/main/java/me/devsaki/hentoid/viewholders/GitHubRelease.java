@@ -74,6 +74,7 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         if (latest && !BuildConfig.DEBUG && !BuildConfig.VERSION_NAME.equals(tagName))
             holder.enableDownload();
 
+        holder.clearContent();
         // Parse content and add lines to the description
         for (String s : description.split("\\r\\n")) {
             s = s.trim();
@@ -87,12 +88,12 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         private final int DP_8;
         private final TextView title;
         private final ImageView downloadButton;
-        private final LinearLayout layout;
+        private final LinearLayout description;
 
         ReleaseViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
             title = view.findViewById(R.id.changelogReleaseTitle);
-            layout = view.findViewById(R.id.changelogReleaseLayout);
+            description = view.findViewById(R.id.changelogReleaseDescription);
             downloadButton = view.findViewById(R.id.changelogReleaseDownloadButton);
 
             downloadButton.setOnClickListener(this::onDownloadClick);
@@ -108,18 +109,22 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
             downloadButton.setVisibility(View.VISIBLE);
         }
 
+        void clearContent() {
+            description.removeAllViews();
+        }
+
         void addDescContent(String text) {
-            TextView tv = new TextView(layout.getContext());
+            TextView tv = new TextView(description.getContext());
             tv.setText(text);
-            tv.setPadding(DP_8, DP_8, 0, 0);
-            layout.addView(tv);
+            tv.setPadding(0, DP_8, 0, 0);
+            description.addView(tv);
         }
 
         void addListContent(String text) {
-            TextView tv = new TextView(layout.getContext());
+            TextView tv = new TextView(description.getContext());
             tv.setText(text);
             tv.setPadding(DP_8 * 2, DP_8, 0, 0);
-            layout.addView(tv);
+            description.addView(tv);
         }
 
         void onDownloadClick(View v) {
