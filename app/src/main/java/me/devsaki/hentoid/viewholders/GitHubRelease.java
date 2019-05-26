@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.viewholders;
 
+import android.content.Intent;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -12,32 +13,29 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-import javax.annotation.Nullable;
-
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import eu.davidea.viewholders.FlexibleViewHolder;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.services.UpdateCheckService;
+import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.Helper;
 
 public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseViewHolder> {
 
-    private final String version;
+    private final String tagName;
     private final String name;
     private final String description;
-    private final String apkUrl;
     private final Date creationDate;
     private boolean latest;
 
     public GitHubRelease(Struct releaseStruct) {
-        version = releaseStruct.tagName;
+        tagName = releaseStruct.tagName.replace("v", "");
         name = releaseStruct.name;
         description = releaseStruct.body;
         creationDate = releaseStruct.creationDate;
-        if (releaseStruct.getApk() != null)
-            apkUrl = releaseStruct.getApk().downloadUrl;
-        else apkUrl = "";
     }
 
     public void setLatest(boolean latest) {
@@ -55,7 +53,7 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
 
     @Override
     public int hashCode() {
-        return version.hashCode();
+        return tagName.hashCode();
     }
 
     @Override
@@ -73,7 +71,8 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
         holder.setTitle(name + " (" + dateFormat.format(creationDate) + ")");
-        if (latest && !apkUrl.isEmpty()) holder.enableDownload(apkUrl);
+        if (latest && !BuildConfig.DEBUG && !BuildConfig.VERSION_NAME.equals(tagName))
+            holder.enableDownload();
 
         // Parse content and add lines to the description
         for (String s : description.split("\\r\\n")) {
@@ -89,7 +88,6 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         private final TextView title;
         private final ImageView downloadButton;
         private final LinearLayout layout;
-        private String downloadUrl = "";
 
         ReleaseViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
@@ -99,16 +97,15 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
 
             downloadButton.setOnClickListener(this::onDownloadClick);
 
-            DP_8 = Helper.dpToPixel(layout.getContext(), 8);
+            DP_8 = Helper.dpToPixel(view.getContext(), 8);
         }
 
         public void setTitle(String title) {
             this.title.setText(title);
         }
 
-        void enableDownload(String url) {
+        void enableDownload() {
             downloadButton.setVisibility(View.VISIBLE);
-            downloadUrl = url;
         }
 
         void addDescContent(String text) {
@@ -126,7 +123,11 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         }
 
         void onDownloadClick(View v) {
-            Helper.openUrl(layout.getContext(), downloadUrl);
+            // Equivalent to "check for updates" preferences menu
+            if (!UpdateDownloadService.isRunning()) {
+                Intent intent = UpdateCheckService.makeIntent(v.getContext(), true);
+                v.getContext().startService(intent);
+            }
         }
     }
 
@@ -141,32 +142,8 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         @SerializedName("body")
         String body;
 
-        @SerializedName("assets")
-        List<GitHubAsset> assets;
-
         @SerializedName("created_at")
         Date creationDate;
-
-        @Nullable
-        GitHubAsset getApk() {
-            if (assets != null)
-                for (GitHubAsset asset : assets)
-                    if (asset.contentType.equals("application/vnd.android.package-archive"))
-                        return asset;
-
-            return null;
-        }
-
-        class GitHubAsset {
-            @SerializedName("content_type")
-            String contentType;
-
-            @SerializedName("browser_download_url")
-            String downloadUrl;
-
-            @SerializedName("size")
-            long size;
-        }
     }
 
 }
