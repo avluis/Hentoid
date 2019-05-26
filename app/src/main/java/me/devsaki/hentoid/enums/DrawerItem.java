@@ -27,7 +27,7 @@ public enum DrawerItem {
     EHENTAI("E-HENTAI", R.drawable.ic_menu_ehentai, EHentaiActivity.class),
     FAKKU("FAKKU", R.drawable.ic_menu_fakku, FakkuActivity.class),
     //    MIKAN("MIKAN SEARCH", R.drawable.ic_menu_mikan, MikanSearchActivity.class),
-    HOME("HOME", R.drawable.ic_menu_downloads, DownloadsActivity.class),
+    HOME("HOME", R.drawable.ic_menu_home, DownloadsActivity.class),
     QUEUE("QUEUE", R.drawable.ic_menu_queue, QueueActivity.class),
     PREFS("PREFERENCES", R.drawable.ic_menu_prefs, PrefsActivity.class),
     ABOUT("ABOUT", R.drawable.ic_menu_about, AboutActivity.class);
