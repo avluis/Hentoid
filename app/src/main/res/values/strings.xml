@@ -190,4 +190,5 @@
     <string name="view_changelog">View changelog</string>
     <string name="changelog">Changelog</string>
     <string name="get_latest">Get the latest version (@v)</string>
+    <string name="update_success">Update successful !</string>
 </resources>

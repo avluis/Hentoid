@@ -134,10 +134,10 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         String tagName;
 
         @SerializedName("name")
-        String name;
+        public String name;
 
         @SerializedName("body")
-        String body;
+        public String body;
 
         @SerializedName("created_at")
         Date creationDate;

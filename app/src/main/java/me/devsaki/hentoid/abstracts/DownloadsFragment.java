@@ -42,6 +42,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
@@ -59,9 +60,10 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.fragments.AboutMikanDialogFragment;
+import me.devsaki.hentoid.fragments.about.UpdateSuccessDialogFragment;
 import me.devsaki.hentoid.fragments.downloads.SearchBookIdDialogFragment;
-import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
+import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -286,11 +288,18 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onResume() {
         super.onResume();
 
+        // Display an alert for users of versions <1.7 that did not use the image viewer
         int currentViewer = Preferences.getContentReadAction();
         if (Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER != currentViewer) {
             if (!Preferences.hasViewerChoiceBeenDisplayed()) showViewerChoiceDialog();
         } else {
             Preferences.setViewerChoiceDisplayed(true);
+        }
+
+        if (Preferences.getLastKnownAppVersionCode() > 0 &&
+                Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
+            UpdateSuccessDialogFragment.invoke(requireFragmentManager());
+            Preferences.setLastKnownAppVersionCode(BuildConfig.VERSION_CODE);
         }
 
         defaultLoad();
@@ -952,6 +961,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void searchLibrary() {
         searchLibrary(true);
     }
+
     /**
      * Loads the library applying current search parameters
      *

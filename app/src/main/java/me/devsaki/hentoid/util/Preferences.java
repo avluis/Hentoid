@@ -244,6 +244,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getLastKnownAppVersionCode() {
+        return Integer.parseInt(sharedPreferences.getString(Key.LAST_KNOWN_APP_VERSION_CODE, "0"));
+    }
+
+    public static void setLastKnownAppVersionCode(int versionCode) {
+        sharedPreferences.edit()
+                .putString(Key.LAST_KNOWN_APP_VERSION_CODE, Integer.toString(versionCode))
+                .apply();
+    }
+
     public static final class Key {
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
@@ -275,6 +285,7 @@ public final class Preferences {
         public static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         static final String VIEWER_CHOICE_DISPLAYED = "pref_viewer_choice_displayed";
+        static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml

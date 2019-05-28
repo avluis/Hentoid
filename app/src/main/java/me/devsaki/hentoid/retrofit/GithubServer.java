@@ -26,5 +26,8 @@ public class GithubServer {
 
         @GET("releases")
         Single<List<GitHubRelease.Struct>> getReleases();
+
+        @GET("releases/latest")
+        Single<GitHubRelease.Struct> getLatestRelease();
     }
 }
