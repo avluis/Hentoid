@@ -48,21 +48,5 @@
                 android:orientation="vertical" />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/changelogReleaseDownloadButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:adjustViewBounds="true"
-            android:background="@color/transparent"
-            android:clickable="true"
-            android:focusable="true"
-            android:padding="8dp"
-            android:src="@drawable/ic_action_download"
-            android:tint="@color/accent"
-            android:visibility="invisible"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="ContentDescription" />
-
     </android.support.constraint.ConstraintLayout>
 </android.support.v7.widget.CardView>

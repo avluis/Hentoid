@@ -1,8 +1,6 @@
 package me.devsaki.hentoid.viewholders;
 
-import android.content.Intent;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -13,14 +11,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nonnull;
+
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import eu.davidea.viewholders.FlexibleViewHolder;
-import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.services.UpdateCheckService;
-import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.Helper;
 
 public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseViewHolder> {
@@ -29,7 +26,6 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
     private final String name;
     private final String description;
     private final Date creationDate;
-    private boolean latest;
 
     public GitHubRelease(Struct releaseStruct) {
         tagName = releaseStruct.tagName.replace("v", "");
@@ -38,8 +34,22 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         creationDate = releaseStruct.creationDate;
     }
 
-    public void setLatest(boolean latest) {
-        this.latest = latest;
+    public String getTagName() {
+        return tagName;
+    }
+
+    public boolean isTagPrior(@Nonnull String tagName) {
+        return getIntFromTagName(this.tagName) <= getIntFromTagName(tagName);
+    }
+
+    private static int getIntFromTagName(@Nonnull String tagName) {
+        int result = 0;
+        String[] parts = tagName.split("\\.");
+        if (parts.length > 0) result = 10000 * Integer.parseInt(parts[0].replaceAll("[^\\d]", ""));
+        if (parts.length > 1) result += 100 * Integer.parseInt(parts[1].replaceAll("[^\\d]", ""));
+        if (parts.length > 2) result += Integer.parseInt(parts[2].replaceAll("[^\\d]", ""));
+
+        return result;
     }
 
     @Override
@@ -71,8 +81,6 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
 
         holder.setTitle(name + " (" + dateFormat.format(creationDate) + ")");
-        if (latest && !BuildConfig.DEBUG && !BuildConfig.VERSION_NAME.equals(tagName))
-            holder.enableDownload();
 
         holder.clearContent();
         // Parse content and add lines to the description
@@ -87,26 +95,18 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
 
         private final int DP_8;
         private final TextView title;
-        private final ImageView downloadButton;
         private final LinearLayout description;
 
         ReleaseViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
             title = view.findViewById(R.id.changelogReleaseTitle);
             description = view.findViewById(R.id.changelogReleaseDescription);
-            downloadButton = view.findViewById(R.id.changelogReleaseDownloadButton);
-
-            downloadButton.setOnClickListener(this::onDownloadClick);
 
             DP_8 = Helper.dpToPixel(view.getContext(), 8);
         }
 
         public void setTitle(String title) {
             this.title.setText(title);
-        }
-
-        void enableDownload() {
-            downloadButton.setVisibility(View.VISIBLE);
         }
 
         void clearContent() {
@@ -125,14 +125,6 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
             tv.setText(text);
             tv.setPadding(DP_8 * 2, DP_8, 0, 0);
             description.addView(tv);
-        }
-
-        void onDownloadClick(View v) {
-            // Equivalent to "check for updates" preferences menu
-            if (!UpdateDownloadService.isRunning()) {
-                Intent intent = UpdateCheckService.makeIntent(v.getContext(), true);
-                v.getContext().startService(intent);
-            }
         }
     }
 

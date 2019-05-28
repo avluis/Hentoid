@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.fragments.about;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,8 +20,11 @@ import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.retrofit.GithubServer;
+import me.devsaki.hentoid.services.UpdateCheckService;
+import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.viewholders.GitHubRelease;
 import timber.log.Timber;
 
@@ -30,6 +35,9 @@ public class ChangelogFragment extends Fragment {
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
     private FlexibleAdapter<IFlexible> adapter;
 
+    // Download bar
+    private TextView downloadLatestText;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,6 +47,11 @@ public class ChangelogFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_changelog, container, false);
+
+        downloadLatestText = requireViewById(rootView, R.id.changelogDownloadLatestText);
+        View downloadLatestButton = requireViewById(rootView, R.id.changelogDownloadLatestButton);
+        downloadLatestText.setOnClickListener(this::onDownloadClick);
+        downloadLatestButton.setOnClickListener(this::onDownloadClick);
 
         initRecyclerView(rootView);
         getReleases();
@@ -82,15 +95,15 @@ public class ChangelogFragment extends Fragment {
     private void onCheckSuccess(List<GitHubRelease.Struct> releasesInfo) {
         List<IFlexible> releases = new ArrayList<>();
 
-        boolean first = true;
+        String latestTagName = "";
         for (GitHubRelease.Struct r : releasesInfo) {
             GitHubRelease release = new GitHubRelease(r);
-            release.setLatest(first);
-            releases.add(release);
-            first = false;
+            if (release.isTagPrior(BuildConfig.VERSION_NAME)) releases.add(release);
+            if (latestTagName.isEmpty()) latestTagName = release.getTagName();
         }
 
         adapter.addItems(0, releases);
+        if (releasesInfo.size() > releases.size()) enableDownloadBar(latestTagName);
         // TODO show RecyclerView
     }
 
@@ -98,4 +111,18 @@ public class ChangelogFragment extends Fragment {
         Timber.w(t, "Error fetching GitHub releases data");
         // TODO - don't show recyclerView; show an error message on the entire screen
     }
+
+    private void enableDownloadBar(String latestTagName) {
+        downloadLatestText.setText(downloadLatestText.getContext().getString(R.string.get_latest).replace("@v", latestTagName));
+        downloadLatestText.setVisibility(View.VISIBLE);
+    }
+
+    void onDownloadClick(View v) {
+        // Equivalent to "check for updates" preferences menu
+        if (!UpdateDownloadService.isRunning()) {
+            Intent intent = UpdateCheckService.makeIntent(v.getContext(), true);
+            v.getContext().startService(intent);
+        }
+    }
+
 }
