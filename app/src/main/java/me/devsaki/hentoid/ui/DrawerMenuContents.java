@@ -11,8 +11,10 @@ import me.devsaki.hentoid.util.Preferences;
 public class DrawerMenuContents {
 
     public static final String FIELD_TITLE = "title";
-    public static final String FIELD_ICON = "icon";
+    static final String FIELD_ICON = "icon";
 
+    // TODO end the nightmare : this whole class is convoluted to satisfy the needs of CompoundAdapter's parent
+    // TODO Refactoring should start with mDrawerList being changed from a ListView to a RecyclerView
     private final List<Class> activities = new ArrayList<>();
     private final ArrayList<Map<String, ?>> items = new ArrayList<>();
 
