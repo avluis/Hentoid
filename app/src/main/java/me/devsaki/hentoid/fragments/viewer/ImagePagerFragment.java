@@ -126,8 +126,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         llm.setPreloadItemCount(2);
         recyclerView.setLayoutManager(llm);
 
-        pageSnapWidget = new PageSnapWidget(recyclerView)
-                .setPageSnapEnabled(true);
+        pageSnapWidget = new PageSnapWidget(recyclerView);
 
         OnZoneTapListener onZoneTapListener = new OnZoneTapListener(recyclerView)
                 .setOnLeftZoneTapListener(this::onLeftTap)
