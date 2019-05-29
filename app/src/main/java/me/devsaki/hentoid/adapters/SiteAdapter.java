@@ -26,7 +26,7 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterVie
     @NonNull
     @Override
     public SiteAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_picker, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_text, parent, false);
         return new SiteAdapterViewHolder(view);
     }
 
@@ -56,7 +56,7 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterVie
 
         private SiteAdapterViewHolder(View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.picker_item_name);
+            textView = itemView.findViewById(R.id.item_text_txt);
         }
 
         void bindTo(Site site) {
