@@ -127,6 +127,10 @@ public class ZoomableRecyclerView extends RecyclerView {
         return Helper.coerceIn(positionY, -maxPositionY, maxPositionY);
     }
 
+    public float getCurrentScale() {
+        return currentScale;
+    }
+
     private void zoom(
             float fromRate,
             float toRate,

@@ -124,9 +124,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setOnKeyListener(volumeGestureListener);
         recyclerView.setOnScaleListener(scale -> {
             if (pageSnapWidget != null && Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()) {
-                if (1.00f == scale && !pageSnapWidget.isPageSnapEnabled())
+                if (1.0 == scale && !pageSnapWidget.isPageSnapEnabled())
                     pageSnapWidget.setPageSnapEnabled(true);
-                else if (1.00f != scale && pageSnapWidget.isPageSnapEnabled())
+                else if (1.0 != scale && pageSnapWidget.isPageSnapEnabled())
                     pageSnapWidget.setPageSnapEnabled(false);
             }
         });
@@ -317,6 +317,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onLeftTap() {
+        // Side-tapping disabled when view is zoomed
+        if (recyclerView.getCurrentScale() != 1.0) return;
+
         if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
             previousPage();
         else
@@ -324,6 +327,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onRightTap() {
+        // Side-tapping disabled when view is zoomed
+        if (recyclerView.getCurrentScale() != 1.0) return;
+
         if (Preferences.Constant.PREF_VIEWER_DIRECTION_LTR == Preferences.getViewerDirection())
             nextPage();
         else
