@@ -195,10 +195,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="8dp"
+        android:max="100"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/viewer_prefs_fling_sensitivity_title"
         />
-
 
 </android.support.constraint.ConstraintLayout>

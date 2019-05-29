@@ -80,10 +80,6 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
         theRadio.setOnCheckedChangeListener(this::onChangeBrowseMode);
 
         SeekBar flingSensitivity = requireViewById(view, R.id.viewer_prefs_fling_sensitivity);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            flingSensitivity.setMin(25);
-        }
-        flingSensitivity.setMax(100);
         flingSensitivity.setProgress(Preferences.getViewerFlingFactor());
         flingSensitivity.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override

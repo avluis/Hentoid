@@ -240,7 +240,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onUpdateFlingFactor() {
-        pageSnapWidget.setFlingFactor(Preferences.getViewerFlingFactor());
+        pageSnapWidget.setFlingSensitivity(Preferences.getViewerFlingFactor()/100f);
     }
 
     private void onUpdateImageDisplay() {

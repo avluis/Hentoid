@@ -30,11 +30,6 @@ public final class PageSnapWidget {
         }
     }
 
-    @Deprecated
-    public void setFlingFactor(int flingFactor) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Sets the sensitivity of a fling.
      *
