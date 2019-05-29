@@ -4,8 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:maxHeight="500dp"
-    android:gravity="center">
+    android:gravity="center"
+    android:maxHeight="500dp">
 
     <TextView
         android:id="@+id/updateSuccessText"
@@ -29,14 +29,14 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars="vertical"
         android:scrollbarAlwaysDrawVerticalTrack="true"
-        app:layout_constraintTop_toBottomOf="@id/updateSuccessText"
-        >
+        android:scrollbars="vertical"
+        app:layout_constraintTop_toBottomOf="@id/updateSuccessText">
+
         <include
+            layout="@layout/item_changelog"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            layout="@layout/item_changelog" />
+            android:layout_height="wrap_content" />
     </ScrollView>
 
 </android.support.constraint.ConstraintLayout>
