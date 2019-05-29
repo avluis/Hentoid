@@ -5,18 +5,21 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import eu.davidea.flexibleadapter.FlexibleAdapter;
+import eu.davidea.flexibleadapter.items.IFlexible;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.retrofit.GithubServer;
-import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.viewholders.GitHubRelease;
+import me.devsaki.hentoid.viewholders.GitHubReleaseDescription;
 import timber.log.Timber;
 
 import static android.support.v4.view.ViewCompat.requireViewById;
@@ -27,11 +30,10 @@ import static android.support.v4.view.ViewCompat.requireViewById;
  */
 public class UpdateSuccessDialogFragment extends DialogFragment {
 
-    private static int DP_8;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     private TextView releaseName;
-    private LinearLayout releaseDescription;
+    private FlexibleAdapter<IFlexible> releaseDescriptionAdapter;
 
     public static void invoke(FragmentManager fragmentManager) {
         UpdateSuccessDialogFragment fragment = new UpdateSuccessDialogFragment();
@@ -45,8 +47,11 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
         View rootView = inflater.inflate(R.layout.dialog_update_success, container, false);
 
         releaseName = requireViewById(rootView, R.id.changelogReleaseTitle);
-        releaseDescription = requireViewById(rootView, R.id.changelogReleaseDescription);
-        DP_8 = Helper.dpToPixel(requireContext(), 8);
+
+        releaseDescriptionAdapter = new FlexibleAdapter<>(null);
+        RecyclerView releaseDescription = requireViewById(rootView, R.id.changelogReleaseDescription);
+        releaseDescription.setAdapter(releaseDescriptionAdapter);
+        releaseDescription.setLayoutManager(new LinearLayoutManager(rootView.getContext()));
 
         getReleases();
 
@@ -81,16 +86,10 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
     }
 
     void addDescContent(String text) {
-        TextView tv = new TextView(releaseDescription.getContext());
-        tv.setText(text);
-        tv.setPadding(0, DP_8, 0, 0);
-        releaseDescription.addView(tv);
+        releaseDescriptionAdapter.addItem(new GitHubReleaseDescription(text, GitHubReleaseDescription.Type.DESCRIPTION));
     }
 
     void addListContent(String text) {
-        TextView tv = new TextView(releaseDescription.getContext());
-        tv.setText(text);
-        tv.setPadding(DP_8 * 2, DP_8, 0, 0);
-        releaseDescription.addView(tv);
+        releaseDescriptionAdapter.addItem(new GitHubReleaseDescription(text, GitHubReleaseDescription.Type.LIST_ITEM));
     }
 }

@@ -33,7 +33,7 @@ import static android.support.v4.view.ViewCompat.requireViewById;
 public class ChangelogFragment extends Fragment {
 
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
-    private FlexibleAdapter<IFlexible> adapter;
+    private FlexibleAdapter<IFlexible> changelogAdapter;
 
     // Download bar
     private TextView downloadLatestText;
@@ -77,10 +77,10 @@ public class ChangelogFragment extends Fragment {
 
     private void initRecyclerView(View rootView) {
         // TODO - invisible init while loading
-        adapter = new FlexibleAdapter<>(null, null, true);
+        changelogAdapter = new FlexibleAdapter<>(null, null, true);
 
         RecyclerView recyclerView = requireViewById(rootView, R.id.changelogList);
-        recyclerView.setAdapter(adapter);
+        recyclerView.setAdapter(changelogAdapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
     }
@@ -102,7 +102,7 @@ public class ChangelogFragment extends Fragment {
             if (latestTagName.isEmpty()) latestTagName = release.getTagName();
         }
 
-        adapter.addItems(0, releases);
+        changelogAdapter.addItems(0, releases);
         if (releasesInfo.size() > releases.size()) enableDownloadBar(latestTagName);
         // TODO show RecyclerView
     }

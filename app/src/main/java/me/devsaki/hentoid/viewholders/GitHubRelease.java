@@ -1,7 +1,8 @@
 package me.devsaki.hentoid.viewholders;
 
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.gson.annotations.SerializedName;
@@ -18,7 +19,6 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import eu.davidea.viewholders.FlexibleViewHolder;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.util.Helper;
 
 public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseViewHolder> {
 
@@ -93,16 +93,17 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
 
     public class ReleaseViewHolder extends FlexibleViewHolder {
 
-        private final int DP_8;
         private final TextView title;
-        private final LinearLayout description;
+        private FlexibleAdapter<IFlexible> releaseDescriptionAdapter;
 
         ReleaseViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
             title = view.findViewById(R.id.changelogReleaseTitle);
-            description = view.findViewById(R.id.changelogReleaseDescription);
 
-            DP_8 = Helper.dpToPixel(view.getContext(), 8);
+            releaseDescriptionAdapter = new FlexibleAdapter<>(null);
+            RecyclerView description = view.findViewById(R.id.changelogReleaseDescription);
+            description.setAdapter(releaseDescriptionAdapter);
+            description.setLayoutManager(new LinearLayoutManager(view.getContext()));
         }
 
         public void setTitle(String title) {
@@ -110,21 +111,15 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
         }
 
         void clearContent() {
-            description.removeAllViews();
+            releaseDescriptionAdapter.clear();
         }
 
         void addDescContent(String text) {
-            TextView tv = new TextView(description.getContext());
-            tv.setText(text);
-            tv.setPadding(0, DP_8, 0, 0);
-            description.addView(tv);
+            releaseDescriptionAdapter.addItem(new GitHubReleaseDescription(text, GitHubReleaseDescription.Type.DESCRIPTION));
         }
 
         void addListContent(String text) {
-            TextView tv = new TextView(description.getContext());
-            tv.setText(text);
-            tv.setPadding(DP_8 * 2, DP_8, 0, 0);
-            description.addView(tv);
+            releaseDescriptionAdapter.addItem(new GitHubReleaseDescription(text, GitHubReleaseDescription.Type.LIST_ITEM));
         }
     }
 
