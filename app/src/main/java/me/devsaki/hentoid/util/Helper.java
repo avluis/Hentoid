@@ -330,4 +330,12 @@ public final class Helper {
             ToastUtil.toast(context, R.string.error_open, Toast.LENGTH_LONG);
         }
     }
+
+    public static float coerceIn(float value, float min, float max)
+    {
+        if (value < min) return min;
+        else if (value > max) return max;
+        else return value;
+    }
+
 }

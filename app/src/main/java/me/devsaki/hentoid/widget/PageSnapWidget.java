@@ -17,18 +17,26 @@ public final class PageSnapWidget {
 
     private int flingFactor;
 
+    private boolean isEnabled;
+
+
     public PageSnapWidget(@NonNull RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
+        setPageSnapEnabled(true);
     }
 
     public PageSnapWidget setPageSnapEnabled(boolean pageSnapEnabled) {
         if (pageSnapEnabled) {
             snapHelper.attachToRecyclerView(recyclerView);
+            isEnabled = true;
         } else {
             snapHelper.attachToRecyclerView(null);
+            isEnabled = false;
         }
         return this;
     }
+
+    public boolean isPageSnapEnabled()  { return isEnabled; }
 
     public PageSnapWidget setFlingFactor(int flingFactor) {
         this.flingFactor = flingFactor;

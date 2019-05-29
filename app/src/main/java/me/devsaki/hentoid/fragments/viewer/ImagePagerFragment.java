@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.fragments.viewer;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -8,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +26,7 @@ import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.views.ZoomableRecyclerView;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.PageSnapWidget;
 import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
@@ -46,7 +48,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private TextView pageNumber;
     private TextView pageCurrentNumber;
     private TextView pageMaxNumber;
-    private RecyclerView recyclerView;
+    private ZoomableRecyclerView recyclerView;
     private PageSnapWidget pageSnapWidget;
     private ImageViewerViewModel viewModel;
 
@@ -120,6 +122,23 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
         recyclerView.setOnKeyListener(volumeGestureListener);
+        recyclerView.setOnScaleListener(scale -> {
+            if (pageSnapWidget != null && Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()) {
+                if (1.00f == scale && !pageSnapWidget.isPageSnapEnabled())
+                    pageSnapWidget.setPageSnapEnabled(true);
+                else if (1.00f != scale && pageSnapWidget.isPageSnapEnabled())
+                    pageSnapWidget.setPageSnapEnabled(false);
+            }
+        });
+        recyclerView.setLongTapListener(
+                ev -> false
+        );
+
+        OnZoneTapListener onZoneTapListener = new OnZoneTapListener(recyclerView)
+                .setOnLeftZoneTapListener(this::onLeftTap)
+                .setOnRightZoneTapListener(this::onRightTap)
+                .setOnMiddleZoneTapListener(this::onMiddleTap);
+        recyclerView.setTapListener(onZoneTapListener);
 
         llm = new PrefetchLinearLayoutManager(getContext());
         llm.setItemPrefetchEnabled(true);
@@ -128,13 +147,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         pageSnapWidget = new PageSnapWidget(recyclerView)
                 .setPageSnapEnabled(true);
-
-        OnZoneTapListener onZoneTapListener = new OnZoneTapListener(recyclerView)
-                .setOnLeftZoneTapListener(this::onLeftTap)
-                .setOnRightZoneTapListener(this::onRightTap)
-                .setOnMiddleZoneTapListener(this::onMiddleTap);
-
-        adapter.setItemTouchListener(onZoneTapListener);
     }
 
     private void initControlsOverlay(View rootView) {
@@ -319,13 +331,30 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onMiddleTap() {
-        // TODO AlphaAnimation to make it appear progressively
         if (View.VISIBLE == controlsOverlay.getVisibility()) {
-            controlsOverlay.setVisibility(View.INVISIBLE);
+            controlsOverlay.animate()
+                    .alpha(0.0f)
+                    .setDuration(100)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            controlsOverlay.setVisibility(View.INVISIBLE);
+                        }
+                    });
             setSystemBarsVisible(false);
         } else {
-            controlsOverlay.setVisibility(View.VISIBLE);
-            setSystemBarsVisible(true);
+            controlsOverlay.animate()
+                    .alpha(1.0f)
+                    .setDuration(100)
+                    .setListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            super.onAnimationEnd(animation);
+                            controlsOverlay.setVisibility(View.VISIBLE);
+                            setSystemBarsVisible(true);
+                        }
+                    });
         }
     }
 
