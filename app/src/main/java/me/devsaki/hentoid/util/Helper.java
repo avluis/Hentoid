@@ -184,9 +184,9 @@ public final class Helper {
     }
 
     /**
-     * Transforms the given string to format with a given length
+     * Transforms the given int to format with a given length
      * - If the given length is shorter than the actual length of the string, it will be truncated
-     * - If the given length is longer than the actual length of the string, it will be right/left-padded with a given character
+     * - If the given length is longer than the actual length of the string, it will be left-padded with the character 0
      *
      * @param value  String to transform
      * @param length Target length of the final string
