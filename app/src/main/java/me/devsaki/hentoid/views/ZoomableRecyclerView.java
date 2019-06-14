@@ -22,6 +22,7 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener.Listener;
+import timber.log.Timber;
 
 /**
  * Zoomable RecyclerView that supports gestures
@@ -180,6 +181,14 @@ public class ZoomableRecyclerView extends RecyclerView {
         });
     }
 
+    private boolean canMoveHorizontally() {
+        return (getLayoutManager().canScrollVertically() || (getLayoutManager().canScrollHorizontally() && (atFirstPosition || atLastPosition)));
+    }
+
+    private boolean canMoveVertically() {
+        return (getLayoutManager().canScrollHorizontally() || (getLayoutManager().canScrollVertically() && (atFirstPosition || atLastPosition)));
+    }
+
     boolean zoomFling(int velocityX, int velocityY) {
         if (currentScale <= 1f) return false;
 
@@ -187,11 +196,11 @@ public class ZoomableRecyclerView extends RecyclerView {
         Float newX = null;
         Float newY = null;
 
-        if (velocityX != 0) {
+        if (velocityX != 0 && canMoveHorizontally()) {
             float dx = (distanceTimeFactor * velocityX / 2);
             newX = getPositionX(getX() + dx);
         }
-        if (velocityY != 0 && (atFirstPosition || atLastPosition)) {
+        if (velocityY != 0 && canMoveVertically()) {
             float dy = (distanceTimeFactor * velocityY / 2);
             newY = getPositionY(getY() + dy);
         }
@@ -207,6 +216,7 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     private void zoomScrollBy(int dx, int dy) {
+        Timber.i("zoomScrollBy %s %s", dx, dy);
         if (dx != 0) {
             setX(getPositionX(getX() + dx));
         }
@@ -328,8 +338,8 @@ public class ZoomableRecyclerView extends RecyclerView {
 
                     int x = Math.round(ev.getX(index) + 0.5f);
                     int y = Math.round(ev.getY(index) + 0.5f);
-                    int dx = x - downX;
-                    int dy = (atFirstPosition || atLastPosition) ? y - downY : 0;
+                    int dx = (canMoveHorizontally()) ? x - downX : 0;
+                    int dy = (canMoveVertically()) ? y - downY : 0;
 
                     if (!isZoomDragging && currentScale > 1f) {
                         boolean startScroll = false;
