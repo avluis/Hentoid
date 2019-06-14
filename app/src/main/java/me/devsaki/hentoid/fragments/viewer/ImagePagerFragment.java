@@ -130,9 +130,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                     pageSnapWidget.setPageSnapEnabled(false);
             }
         });
-        recyclerView.setLongTapListener(
-                ev -> false
-        );
+        recyclerView.setLongTapListener(ev -> false);
 
         OnZoneTapListener onZoneTapListener = new OnZoneTapListener(recyclerView)
                 .setOnLeftZoneTapListener(this::onLeftTap)
