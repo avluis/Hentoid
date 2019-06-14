@@ -165,6 +165,7 @@ public class ZoomableRecyclerView extends RecyclerView {
             public void onAnimationEnd(Animator animation) {
                 isZooming = false;
                 currentScale = toRate;
+                if (scaleListener != null) scaleListener.accept(currentScale);
             }
 
             @Override
