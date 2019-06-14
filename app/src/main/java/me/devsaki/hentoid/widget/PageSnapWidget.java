@@ -17,6 +17,9 @@ public final class PageSnapWidget {
 
     private float flingSensitivity;
 
+    private boolean isEnabled;
+
+
     public PageSnapWidget(@NonNull RecyclerView recyclerView) {
         this.recyclerView = recyclerView;
         setPageSnapEnabled(true);
@@ -25,10 +28,14 @@ public final class PageSnapWidget {
     public void setPageSnapEnabled(boolean pageSnapEnabled) {
         if (pageSnapEnabled) {
             snapHelper.attachToRecyclerView(recyclerView);
+            isEnabled = true;
         } else {
             snapHelper.attachToRecyclerView(null);
+            isEnabled = false;
         }
     }
+
+    public boolean isPageSnapEnabled()  { return isEnabled; }
 
     /**
      * Sets the sensitivity of a fling.

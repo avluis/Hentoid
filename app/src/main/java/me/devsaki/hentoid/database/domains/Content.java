@@ -22,6 +22,7 @@ import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
+import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
 import me.devsaki.hentoid.activities.sources.PandaActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
@@ -164,6 +165,7 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
             case TSUMINO:
+            case NEXUS:
                 return url.replace("/", "");
             case HENTAICAFE:
                 return url.replace("/?p=", "");
@@ -228,8 +230,10 @@ public class Content implements Serializable {
                 return PandaActivity.class;
             case FAKKU2:
                 return FakkuActivity.class;
+            case NEXUS:
+                return NexusActivity.class;
             default:
-                return BaseWebActivity.class; // Fallback for FAKKU
+                return BaseWebActivity.class;
         }
     }
 
@@ -279,6 +283,9 @@ public class Content implements Serializable {
             case FAKKU2:
                 galleryConst = "/hentai/";
                 break;
+            case NEXUS:
+                galleryConst = "/view";
+                break;
             case FAKKU:
             case HENTAICAFE:
             case PANDA:
@@ -303,6 +310,8 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
                 return getGalleryUrl();
+            case NEXUS:
+                return site.getUrl() + "/read" + url + "/001";
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
             case PURURIN:

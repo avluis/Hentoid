@@ -45,22 +45,27 @@ public class OnZoneTapListener implements View.OnTouchListener {
         return this;
     }
 
+    public boolean onSingleTapConfirmedAction(MotionEvent e)
+    {
+        if (e.getX() < pagerTapZoneWidth) {
+            onLeftZoneTapListener.run();
+        } else if (e.getX() > view.getWidth() - pagerTapZoneWidth) {
+            onRightZoneTapListener.run();
+        } else {
+            onMiddleZoneTapListener.run();
+        }
+        return true;
+    }
+
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         return gestureDetector.onTouchEvent(event);
     }
 
-    private final class OnGestureListener extends GestureDetector.SimpleOnGestureListener {
+    private final class OnGestureListener extends GestureDetector.SimpleOnGestureListener { // TODO remove if it proves useless
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
-            if (e.getX() < pagerTapZoneWidth) {
-                onLeftZoneTapListener.run();
-            } else if (e.getX() > view.getWidth() - pagerTapZoneWidth) {
-                onRightZoneTapListener.run();
-            } else {
-                onMiddleZoneTapListener.run();
-            }
-            return true;
+            return onSingleTapConfirmedAction(e);
         }
 
 //        @Override

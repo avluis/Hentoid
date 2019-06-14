@@ -25,15 +25,11 @@ import timber.log.Timber;
 
 public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdapter.ImageViewHolder> {
 
-    // TODO : SubsamplingScaleImageView does _not_ support animated GIFs -> use pl.droidsonroids.gif:android-gif-drawable when serving a GIF ?
-
     private static final int TYPE_OTHER = 0;
     private static final int TYPE_GIF = 1;
 
     private static final Executor executor = new ImageLoaderThreadExecutor();
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
-
-    private View.OnTouchListener itemTouchListener;
 
     private List<String> imageUris;
 
@@ -45,10 +41,6 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
 
     public void setImageUris(List<String> imageUris) {
         this.imageUris = Collections.unmodifiableList(imageUris);
-    }
-
-    public void setItemTouchListener(View.OnTouchListener itemTouchListener) {
-        this.itemTouchListener = itemTouchListener;
     }
 
     @Override
@@ -94,13 +86,12 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
             super(itemView);
             imgType = imageType;
             imgView = itemView;
-            imgView.setOnTouchListener(itemTouchListener);
 
             if (TYPE_OTHER == imgType) ((SubsamplingScaleImageView) imgView).setExecutor(executor);
         }
 
         void setImageUri(String uri) {
-Timber.i(">>>>IMG %s %s", imgType, uri);
+            Timber.i(">>>>IMG %s %s", imgType, uri);
             if (TYPE_GIF == imgType) {
                 ImageView view = (ImageView) imgView;
                 Glide.with(imgView.getContext())
