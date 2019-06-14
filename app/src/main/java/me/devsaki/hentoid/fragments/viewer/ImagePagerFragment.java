@@ -146,13 +146,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setLayoutManager(llm);
 
         pageSnapWidget = new PageSnapWidget(recyclerView);
-
-        OnZoneTapListener onZoneTapListener = new OnZoneTapListener(recyclerView)
-                .setOnLeftZoneTapListener(this::onLeftTap)
-                .setOnRightZoneTapListener(this::onRightTap)
-                .setOnMiddleZoneTapListener(this::onMiddleTap);
-
-        adapter.setItemTouchListener(onZoneTapListener);
     }
 
     private void initControlsOverlay(View rootView) {
