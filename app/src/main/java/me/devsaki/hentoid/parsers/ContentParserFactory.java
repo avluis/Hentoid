@@ -37,6 +37,8 @@ public class ContentParserFactory {
                 return new PandaParser();
             case FAKKU2:
                 return new FakkuParser();
+            case NEXUS:
+                return new NexusParser();
             default:
                 return new DummyParser();
         }

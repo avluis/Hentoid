@@ -15,7 +15,7 @@ public final class PageSnapWidget {
 
     private final RecyclerView recyclerView;
 
-    private int flingFactor;
+    private float flingSensitivity;
 
     private boolean isEnabled;
 
@@ -25,7 +25,7 @@ public final class PageSnapWidget {
         setPageSnapEnabled(true);
     }
 
-    public PageSnapWidget setPageSnapEnabled(boolean pageSnapEnabled) {
+    public void setPageSnapEnabled(boolean pageSnapEnabled) {
         if (pageSnapEnabled) {
             snapHelper.attachToRecyclerView(recyclerView);
             isEnabled = true;
@@ -33,21 +33,28 @@ public final class PageSnapWidget {
             snapHelper.attachToRecyclerView(null);
             isEnabled = false;
         }
-        return this;
     }
 
     public boolean isPageSnapEnabled()  { return isEnabled; }
 
-    public PageSnapWidget setFlingFactor(int flingFactor) {
-        this.flingFactor = flingFactor;
-        return this;
+    /**
+     * Sets the sensitivity of a fling.
+     *
+     * @param sensitivity floating point sensitivity where 0 means never fling and 1 means always
+     *                    fling. Values beyond this range will have undefined behavior.
+     */
+    public void setFlingSensitivity(float sensitivity) {
+        flingSensitivity = sensitivity;
     }
 
     private final class SnapHelper extends PagerSnapHelper {
         @Override
         public boolean onFling(int velocityX, int velocityY) {
-            int thresholdVelocity = recyclerView.getMinFlingVelocity() * flingFactor;
-            if (abs(velocityX) >= thresholdVelocity) {
+            int min = recyclerView.getMinFlingVelocity();
+            int max = recyclerView.getMaxFlingVelocity();
+            int threshold = (int) ((max * (1.0 - flingSensitivity)) + (min * flingSensitivity));
+
+            if (abs(velocityX) > threshold) {
                 return false;
             }
             return super.onFling(velocityX, velocityY);

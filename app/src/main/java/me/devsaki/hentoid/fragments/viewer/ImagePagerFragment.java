@@ -145,8 +145,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         llm.setPreloadItemCount(2);
         recyclerView.setLayoutManager(llm);
 
-        pageSnapWidget = new PageSnapWidget(recyclerView)
-                .setPageSnapEnabled(true);
+        pageSnapWidget = new PageSnapWidget(recyclerView);
+
+        OnZoneTapListener onZoneTapListener = new OnZoneTapListener(recyclerView)
+                .setOnLeftZoneTapListener(this::onLeftTap)
+                .setOnRightZoneTapListener(this::onRightTap)
+                .setOnMiddleZoneTapListener(this::onMiddleTap);
+
+        adapter.setItemTouchListener(onZoneTapListener);
     }
 
     private void initControlsOverlay(View rootView) {
@@ -253,7 +259,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onUpdateFlingFactor() {
-        pageSnapWidget.setFlingFactor(Preferences.getViewerFlingFactor());
+        pageSnapWidget.setFlingSensitivity(Preferences.getViewerFlingFactor()/100f);
     }
 
     private void onUpdateImageDisplay() {

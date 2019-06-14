@@ -22,6 +22,7 @@ public enum Site {
     ASMHENTAI_COMICS(7, "asmhentai comics", "https://comics.asmhentai.com", "comics.asmhentai", R.drawable.ic_menu_asmcomics, true, true, false),
     EHENTAI(8, "e-hentai", "https://e-hentai.org", "e-hentai", R.drawable.ic_menu_ehentai, true, true, false),
     FAKKU2(9, "Fakku", "https://www.fakku.net", "fakku2", R.drawable.ic_menu_fakku, true, false, true),
+    NEXUS(10, "Hentai Nexus", "https://hentainexus.com", "nexus", R.drawable.ic_menu_nexus, true, false, false),
     NONE(98, "none", "", "none", R.drawable.ic_menu_about, true, true, false), // Fallback site
     PANDA(99, "panda", "https://www.mangapanda.com", "mangapanda", R.drawable.ic_menu_panda, true, true, false); // Safe-for-work/wife/gf option
 
