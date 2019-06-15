@@ -10,16 +10,18 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
 
+import eu.davidea.flexibleadapter.FlexibleAdapter;
+import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.DrawerItem;
-import me.devsaki.hentoid.ui.CompoundAdapter;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.viewholders.DrawerItemFlex;
 import timber.log.Timber;
 
 /**
@@ -33,7 +35,7 @@ import timber.log.Timber;
 public abstract class DrawerActivity extends BaseActivity implements DrawerLayout.DrawerListener {
 
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+    private FlexibleAdapter<IFlexible> drawerAdapter;
     private ActionBarDrawerToggle mDrawerToggle;
     private int itemToOpen = -1;
     private int currentPos = -1;
@@ -45,7 +47,11 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
 
     protected void initializeNavigationDrawer(Toolbar toolbar) {
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        mDrawerList = findViewById(R.id.drawer_list);
+        RecyclerView recyclerView = findViewById(R.id.drawer_list);
+
+        drawerAdapter = new FlexibleAdapter<>(null);
+        recyclerView.setAdapter(drawerAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -101,37 +107,22 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         if (mDrawerToggle != null) mDrawerToggle.onDrawerStateChanged(newState);
     }
 
+    private boolean onDrawerItemClick(View view, int position) {
+        if (position != currentPos) {
+            itemToOpen = position;
+            itemTapped = true;
+            mDrawerLayout.closeDrawers();
+        }
+        return false;
+    }
+
     private void populateDrawerItems() {
         updateDrawerPosition();
-        final int selectedPosition = currentPos;
-        final int unselectedColor = ContextCompat.getColor(getApplicationContext(),
-                R.color.drawer_item_unselected_background);
-        final int selectedColor = ContextCompat.getColor(getApplicationContext(),
-                R.color.drawer_item_selected_background);
-        final CompoundAdapter adapter = new CompoundAdapter(this, DrawerItem.makeAdapterItems(),
-                R.layout.drawer_list_item,
-                new String[]{DrawerItem.FIELD_TITLE}, new int[]{R.id.drawer_item_title}) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                int color = unselectedColor;
-                if (position == selectedPosition) {
-                    color = selectedColor;
-                }
-                view.setBackgroundColor(color);
-                return view;
-            }
-        };
 
-        mDrawerList.setOnItemClickListener((parent, view, position, id) -> {
-            if (position != selectedPosition) {
-                mDrawerList.setItemChecked(position, true);
-                itemToOpen = position;
-                itemTapped = true;
-            }
-            mDrawerLayout.closeDrawers();
-        });
-        mDrawerList.setAdapter(adapter);
+        for (DrawerItem item : DrawerItem.values()) drawerAdapter.addItem(new DrawerItemFlex(item));
+
+        FlexibleAdapter.OnItemClickListener clickListenerAdapter = this::onDrawerItemClick;
+        drawerAdapter.addListener(clickListenerAdapter);
     }
 
     protected void updateDrawerPosition() {

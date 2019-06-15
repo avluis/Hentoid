@@ -33,8 +33,6 @@ public class ContentParserFactory {
                 return new PururinParser();
             case EHENTAI:
                 return new EHentaiParser();
-            case PANDA:
-                return new PandaParser();
             case FAKKU2:
                 return new FakkuParser();
             case NEXUS:

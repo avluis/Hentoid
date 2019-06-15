@@ -58,10 +58,6 @@
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
         <activity
-            android:name=".activities.sources.PandaActivity"
-            android:configChanges="orientation|screenSize"
-            android:theme="@style/BrowserTheme" />
-        <activity
             android:name=".activities.sources.EHentaiActivity"
             android:configChanges="orientation|screenSize"
             android:theme="@style/BrowserTheme" />
@@ -233,17 +229,6 @@
                 <data
                     android:host="pururin.io"
                     android:pathPrefix="/gallery"
-                    android:scheme="https" />
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <!-- Accepts URIs that begin with "https://mangapanda.com/" -->
-                <data
-                    android:host="www.mangapanda.com"
-                    android:pathPrefix="/"
                     android:scheme="https" />
             </intent-filter>
             <intent-filter>

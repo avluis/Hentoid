@@ -65,7 +65,7 @@ public class GitHubReleaseDescription extends AbstractFlexibleItem<GitHubRelease
 
         ReleaseDescriptionViewHolder(View view, FlexibleAdapter adapter) {
             super(view, adapter);
-            title = view.findViewById(R.id.item_text_txt);
+            title = view.findViewById(R.id.drawer_item_txt);
             DP_8 = Helper.dpToPixel(view.getContext(), 8);
         }
 
