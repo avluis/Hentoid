@@ -19,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
+import eu.davidea.flexibleadapter.SelectableAdapter;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.enums.DrawerItem;
@@ -52,6 +53,7 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         RecyclerView recyclerView = findViewById(R.id.drawer_list);
 
         drawerAdapter = new FlexibleAdapter<>(null);
+        drawerAdapter.setMode(SelectableAdapter.Mode.SINGLE);
         recyclerView.setAdapter(drawerAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
 
@@ -101,6 +103,7 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
 
         if (itemToOpen >= 0 && itemTapped) {
             itemTapped = false;
+            currentPos = itemToOpen;
             Class activityClass = DrawerItem.getActivity(itemToOpen);
             Intent intent = new Intent(this, activityClass);
             Bundle bundle = ActivityOptionsCompat
@@ -120,18 +123,21 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         if (position != currentPos) {
             itemToOpen = position;
             itemTapped = true;
+            drawerAdapter.addSelection(position);
             mDrawerLayout.closeDrawers();
+            return true;
         }
         return false;
     }
 
     private void populateDrawerItems() {
-        updateDrawerPosition();
-
         for (DrawerItem item : DrawerItem.values()) drawerAdapter.addItem(new DrawerItemFlex(item));
 
         FlexibleAdapter.OnItemClickListener clickListenerAdapter = this::onDrawerItemClick;
         drawerAdapter.addListener(clickListenerAdapter);
+
+        updateDrawerPosition();
+//        drawerAdapter.toggleSelection(DrawerItem.getPosition(this.getClass())); // Init-time
     }
 
     protected void updateDrawerPosition() {
@@ -140,7 +146,12 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
     }
 
     private void updateSelected(int position) {
-        currentPos = position;
+        if (currentPos != position) {
+            drawerAdapter.toggleSelection(position);
+            drawerAdapter.notifyItemChanged(currentPos);
+            drawerAdapter.notifyItemChanged(position);
+            currentPos = position;
+        }
     }
 
     @Override
