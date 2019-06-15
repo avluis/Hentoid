@@ -2,7 +2,8 @@ package me.devsaki.hentoid.enums;
 
 import android.support.v7.app.AppCompatActivity;
 
-import java.util.List;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
@@ -36,8 +37,6 @@ public enum DrawerItem {
     PREFS("PREFERENCES", R.drawable.ic_menu_prefs, PrefsActivity.class),
     ABOUT("ABOUT", R.drawable.ic_menu_about, AboutActivity.class);
 
-    public static List<Class<? extends AppCompatActivity>> activityClasses;
-
     public final String label;
     public final int icon;
     public final Class<? extends AppCompatActivity> activityClass;
@@ -48,11 +47,22 @@ public enum DrawerItem {
         this.activityClass = activityClass;
     }
 
+    @Nullable
     public static Class<? extends AppCompatActivity> getActivity(int position) {
-        return activityClasses.get(position);
+        int result = 0;
+        for (DrawerItem item : DrawerItem.values()) {
+            if (position == result) return item.activityClass;
+            result++;
+        }
+        return null;
     }
 
-    public static int getPosition(Class<? extends AppCompatActivity> activityClass) {
-        return activityClasses.indexOf(activityClass);
+    public static int getPosition(@Nonnull Class<? extends AppCompatActivity> activityClass) {
+        int result = 0;
+        for (DrawerItem item : DrawerItem.values()) {
+            if (item.activityClass.equals(activityClass)) return result;
+            result++;
+        }
+        return -1;
     }
 }
