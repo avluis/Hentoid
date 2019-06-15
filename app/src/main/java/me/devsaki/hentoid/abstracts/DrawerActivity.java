@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
@@ -18,12 +19,20 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.SelectableAdapter;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.enums.DrawerItem;
+import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewholders.DrawerItemFlex;
 import timber.log.Timber;
 
@@ -38,7 +47,7 @@ import timber.log.Timber;
 public abstract class DrawerActivity extends BaseActivity implements DrawerLayout.DrawerListener {
 
     private DrawerLayout mDrawerLayout;
-    private FlexibleAdapter<IFlexible> drawerAdapter;
+    private FlexibleAdapter<DrawerItemFlex> drawerAdapter;
     private ActionBarDrawerToggle mDrawerToggle;
     private int itemToOpen = -1;
     private int currentPos = -1;
@@ -232,5 +241,32 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         if (isRoot) {
             mDrawerToggle.syncState();
         }
+    }
+
+    private void showFlagAboutItem()
+    {
+        int aboutItemPos = DrawerItem.getPosition(AboutActivity.class);
+        DrawerItemFlex item = drawerAdapter.getItem(aboutItemPos);
+        if (item != null) {
+            item.setFlag(true);
+            drawerAdapter.notifyItemChanged(aboutItemPos);
+        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onUpdateEvent(UpdateEvent event) {
+        if (event.hasNewVersion) showFlagAboutItem();
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
     }
 }

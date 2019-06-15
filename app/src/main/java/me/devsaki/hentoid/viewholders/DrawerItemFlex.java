@@ -20,9 +20,14 @@ import me.devsaki.hentoid.enums.DrawerItem;
 public class DrawerItemFlex extends AbstractFlexibleItem<DrawerItemFlex.DrawerItemViewHolder> {
 
     private final DrawerItem item;
+    private boolean flag = false;
 
     public DrawerItemFlex(DrawerItem item) {
         this.item = item;
+    }
+
+    public void setFlag(boolean flag) {
+        this.flag = flag;
     }
 
     @Override
@@ -48,7 +53,7 @@ public class DrawerItemFlex extends AbstractFlexibleItem<DrawerItemFlex.DrawerIt
     public void bindViewHolder(FlexibleAdapter<IFlexible> adapter, DrawerItemViewHolder holder, int position, List<Object> payloads) {
         Context context = holder.itemView.getContext();
 
-        holder.setContent(item);
+        holder.setContent(item, flag);
         Drawable drawable = DrawableUtils.getSelectableBackgroundCompat(
                 ContextCompat.getColor(context, R.color.drawer_item_unselected_background),
                 ContextCompat.getColor(context, R.color.drawer_item_selected_background),
@@ -67,8 +72,8 @@ public class DrawerItemFlex extends AbstractFlexibleItem<DrawerItemFlex.DrawerIt
             icon = view.findViewById(R.id.drawer_item_icon);
         }
 
-        void setContent(DrawerItem item) {
-            title.setText(item.label);
+        void setContent(DrawerItem item, boolean flag) {
+            title.setText(String.format("%s%s", item.label, flag ? " *" : ""));
             icon.setImageResource(item.icon);
         }
     }
