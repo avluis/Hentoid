@@ -2,6 +2,7 @@ package me.devsaki.hentoid.abstracts;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityOptionsCompat;
@@ -10,6 +11,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -52,6 +54,13 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         drawerAdapter = new FlexibleAdapter<>(null);
         recyclerView.setAdapter(drawerAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+
+        DividerItemDecoration divider = new
+                DividerItemDecoration(recyclerView.getContext(),
+                DividerItemDecoration.VERTICAL);
+        Drawable d = ContextCompat.getDrawable(getBaseContext(), R.drawable.line_divider);
+        if (d != null) divider.setDrawable(d);
+        recyclerView.addItemDecoration(divider);
 
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
