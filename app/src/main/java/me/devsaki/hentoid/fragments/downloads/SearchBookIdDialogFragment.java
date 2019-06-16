@@ -62,14 +62,16 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
             // Not possible for Pururin, e-hentai
             List<Site> sites = new ArrayList<>();
-            if (!foundSitesList.contains(Site.HITOMI.getCode())) sites.add(Site.HITOMI);
-            if (!foundSitesList.contains(Site.NHENTAI.getCode())) sites.add(Site.NHENTAI);
-            if (!foundSitesList.contains(Site.ASMHENTAI.getCode())) sites.add(Site.ASMHENTAI);
-            if (!foundSitesList.contains(Site.ASMHENTAI_COMICS.getCode()))
-                sites.add(Site.ASMHENTAI_COMICS);
-            if (!foundSitesList.contains(Site.HENTAICAFE.getCode())) sites.add(Site.HENTAICAFE);
-            if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
-            if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
+            if (foundSitesList != null) {
+                if (!foundSitesList.contains(Site.HITOMI.getCode())) sites.add(Site.HITOMI);
+                if (!foundSitesList.contains(Site.NHENTAI.getCode())) sites.add(Site.NHENTAI);
+                if (!foundSitesList.contains(Site.ASMHENTAI.getCode())) sites.add(Site.ASMHENTAI);
+                if (!foundSitesList.contains(Site.ASMHENTAI_COMICS.getCode()))
+                    sites.add(Site.ASMHENTAI_COMICS);
+                if (!foundSitesList.contains(Site.HENTAICAFE.getCode())) sites.add(Site.HENTAICAFE);
+                if (!foundSitesList.contains(Site.TSUMINO.getCode())) sites.add(Site.TSUMINO);
+                if (!foundSitesList.contains(Site.NEXUS.getCode())) sites.add(Site.NEXUS);
+            }
 
             SiteAdapter siteAdapter = new SiteAdapter();
             siteAdapter.setOnClickListener(this::onItemSelected);

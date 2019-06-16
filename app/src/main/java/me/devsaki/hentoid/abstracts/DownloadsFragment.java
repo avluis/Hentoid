@@ -1055,8 +1055,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         // User searches a book ID
+        // => Suggests searching through all sources except those where the selected book ID is already in the collection
         if (Helper.isNumeric(query)) {
             ArrayList<Integer> siteCodes = Stream.of(results)
+                    .filter(content -> query.equals(content.getUniqueSiteId()))
                     .map(Content::getSite)
                     .map(Site::getCode)
                     .collect(toCollection(ArrayList::new));
