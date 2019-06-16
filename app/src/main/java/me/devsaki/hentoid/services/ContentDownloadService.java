@@ -181,9 +181,25 @@ public class ContentDownloadService extends IntentService {
         if (!dir.exists()) {
             String title = content.getTitle();
             String absolutePath = dir.getAbsolutePath();
-            Timber.w("Directory could not be created: %s.", absolutePath);
+
+            // Log everywhere
+            String message = String.format("Directory could not be created: %s.", absolutePath);
+            Timber.w(message);
+            logErrorRecord(content.getId(),ErrorType.IO, content.getUrl(), "Destination folder", message);
             warningNotificationManager.notify(new DownloadWarningNotification(title, absolutePath));
-            // Download _will_ continue and images _will_ fail, so that user can retry downloading later
+
+            // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
+            // => Create all images, flag them as failed as well as the book
+            for (ImageFile img : images) {
+                if (img.getStatus().equals(StatusContent.SAVED)) {
+                    img.setStatus(StatusContent.ERROR);
+                    db.updateImageFileStatusAndParams(img);
+                }
+            }
+            downloadCanceled = false;
+            downloadSkipped = false;
+            completeDownload(content, 0, images.size());
+            return null;
         }
 
         String fileRoot = Preferences.getRootFolderName();
@@ -272,7 +288,6 @@ public class ContentDownloadService extends IntentService {
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 
         if (!downloadCanceled && !downloadSkipped) {
-            File dir = FileHelper.createContentDownloadDir(this, content);
             List<ImageFile> images = content.getImageFiles();
             int nbImages = (null == images) ? 0 : images.size();
 
@@ -287,12 +302,13 @@ public class ContentDownloadService extends IntentService {
             // Mark content as downloaded
             content.setDownloadDate(new Date().getTime());
             content.setStatus((0 == pagesKO && !hasError) ? StatusContent.DOWNLOADED : StatusContent.ERROR);
-            // Clear download params from content and images
-            content.setDownloadParams("");
+            // Clear download params from content
+            if (0 == pagesKO && !hasError) content.setDownloadParams("");
 
             db.insertContent(content);
 
             // Save JSON file
+            File dir = FileHelper.createContentDownloadDir(this, content);
             if (dir.exists()) {
                 try {
                     JsonHelper.saveJson(content.preJSONExport(), dir);
