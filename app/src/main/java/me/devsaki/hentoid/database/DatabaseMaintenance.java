@@ -37,9 +37,20 @@ public class DatabaseMaintenance {
         db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
         Timber.i("Updating queue status : done");
 
+        // Add back in the queue isolated DOWNLOADING or PAUSED books that aren't in the queue (since version code 106 / v1.8.0)
+        Timber.i("Moving back isolated items to queue : start");
+        List<Content> contents = db.selectContentByStatus(StatusContent.PAUSED);
+        List<Content> queueContents = db.selectQueueContents();
+        contents.removeAll(queueContents);
+        if (contents.size() > 0) {
+            int queueMaxPos = (int)db.selectMaxQueueOrder();
+            for (Content c : contents) db.insertQueue(c.getId(), ++queueMaxPos);
+        }
+        Timber.i("Moving back isolated items to queue : done");
+
         // Clear temporary books created from browsing a book page without downloading it (since versionCode 60 / v1.3.7)
         Timber.i("Clearing temporary books : start");
-        List<Content> contents = db.selectContentByStatus(StatusContent.SAVED);
+        contents = db.selectContentByStatus(StatusContent.SAVED);
         Timber.i("Clearing temporary books : %s books detected", contents.size());
         for (Content c : contents) db.deleteContent(c);
         Timber.i("Clearing temporary books : done");

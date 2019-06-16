@@ -219,6 +219,11 @@ public class ObjectBoxDB {
         return result;
     }
 
+    long selectMaxQueueOrder()
+    {
+        return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
+    }
+
     public void insertQueue(long id, int order) {
         store.boxFor(QueueRecord.class).put(new QueueRecord(id, order));
     }
