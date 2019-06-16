@@ -22,7 +22,6 @@ import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener;
 import me.devsaki.hentoid.widget.ViewZoomGestureListener.Listener;
-import timber.log.Timber;
 
 /**
  * Zoomable RecyclerView that supports gestures
@@ -216,7 +215,6 @@ public class ZoomableRecyclerView extends RecyclerView {
     }
 
     private void zoomScrollBy(int dx, int dy) {
-        Timber.i("zoomScrollBy %s %s", dx, dy);
         if (dx != 0) {
             setX(getPositionX(getX() + dx));
         }
