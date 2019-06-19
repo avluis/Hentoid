@@ -491,6 +491,9 @@ public class ImportActivity extends BaseActivity {
 
     /*
         Return from SAF system dialog
+
+        NB : Right now, this method _assumes_ the selected folder is on the first SD card
+        => Even if SAF actually selects internal phone memory or another SD card / an external USB storage device, it won't be processed properly
      */
     @RequiresApi(api = KITKAT)
     @Override
