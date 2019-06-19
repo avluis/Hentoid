@@ -177,8 +177,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     boolean invalidateNextQueryTextChange = false;
     // Used to detect if the library has been refreshed
     boolean libraryHasBeenRefreshed = false;
-    // If library has been refreshed, indicated new content count
-    int refreshedContentCount = 0;
 
 
     // === SEARCH
@@ -335,7 +333,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (ImportEvent.EV_COMPLETE == event.eventType) {
             EventBus.getDefault().removeStickyEvent(event);
             libraryHasBeenRefreshed = true;
-            refreshedContentCount = event.booksOK;
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onDownloadEvent(DownloadEvent event) {
+        if (event.eventType == DownloadEvent.EV_COMPLETE && !isLoading) {
+            if (MODE_LIBRARY == mode) showReloadToolTip();
+            else mAdapter.switchStateToDownloaded(event.content);
         }
     }
 
@@ -356,15 +361,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         if (libraryHasBeenRefreshed && mTotalCount > -1) {
-            Timber.d("Library has been refreshed !  %s -> %s books", mTotalCount, refreshedContentCount);
-
-            if (refreshedContentCount > mTotalCount) { // More books added
-                showReloadToolTip();
-            } else { // Library cleaned up
-                shouldUpdate = true;
-            }
+            Timber.d("Library has been refreshed !");
+            shouldUpdate = true;
             libraryHasBeenRefreshed = false;
-            refreshedContentCount = 0;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -657,14 +656,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         NotificationManager manager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
         if (manager != null) manager.cancel(0);
-    }
-
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onDownloadEvent(DownloadEvent event) {
-        if (event.eventType == DownloadEvent.EV_COMPLETE && !isLoading) {
-            if (MODE_LIBRARY == mode) showReloadToolTip();
-            else mAdapter.switchStateToDownloaded(event.content);
-        }
     }
 
     @Override
