@@ -40,6 +40,9 @@ public class EHentaiParser extends BaseParser {
             int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
             int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
+            maxSteps = nbGalleryPages + content.getQtyPages();
+            progressPlus();
+
             // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
             List<String> pageUrls = new ArrayList<>();
 
@@ -49,6 +52,7 @@ public class EHentaiParser extends BaseParser {
                 for (int i = 1; i < nbGalleryPages; i++) {
                     doc = getOnlineDocument(content.getGalleryUrl() + "/?p=" + i, headers, true);
                     if (doc != null) fetchPageUrls(doc, pageUrls);
+                    progressPlus();
                 }
             }
 
@@ -62,8 +66,10 @@ public class EHentaiParser extends BaseParser {
                         result.add(e.attr("src"));
                     }
                 }
+                progressPlus();
             }
         }
+        progressComplete();
 
         return result;
     }
@@ -76,4 +82,5 @@ public class EHentaiParser extends BaseParser {
             pageUrls.add(e.attr("href"));
         }
     }
+
 }

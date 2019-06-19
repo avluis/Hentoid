@@ -25,10 +25,12 @@ import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.events.DownloadEvent;
+import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.fragments.downloads.ErrorStatsDialogFragment;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.views.CircularProgressView;
 import timber.log.Timber;
 
 /**
@@ -47,6 +49,10 @@ public class QueueFragment extends BaseFragment {
     private ImageButton btnStats;   // Error statistics button
     private TextView queueStatus;   // 1st line of text displayed on the right of the queue pause / play button
     private TextView queueInfo;     // 2nd line of text displayed on the right of the queue pause / play button
+    private CircularProgressView dlPreparationProgressBar; // Circular progress bar for downloads preparation
+
+    // State
+    private boolean isPreparingDownload = false;
 
 
     public static QueueFragment newInstance() {
@@ -90,10 +96,7 @@ public class QueueFragment extends BaseFragment {
         btnStats = rootView.findViewById(R.id.btnStats);
         queueStatus = rootView.findViewById(R.id.queueStatus);
         queueInfo = rootView.findViewById(R.id.queueInfo);
-
-        // Remplace placeholder text used in UI designer by empty strings
-        queueStatus.setText(R.string.queue_empty2);
-        queueInfo.setText(R.string.queue_empty2);
+        dlPreparationProgressBar = rootView.findViewById(R.id.queueDownloadPreparationProgressBar);
 
         // Both queue control buttons actually just need to send a signal that will be processed accordingly by whom it may concern
         btnStart.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_UNPAUSE)));
@@ -137,15 +140,36 @@ public class QueueFragment extends BaseFragment {
                     updateBookTitle(content.getTitle());
                     queueInfo.setText("");
                 }
+                dlPreparationProgressBar.setVisibility(View.INVISIBLE);
                 break;
             case DownloadEvent.EV_COMPLETE:
                 mAdapter.removeFromQueue(event.content);
                 if (0 == mAdapter.getCount()) btnStats.setVisibility(View.GONE);
                 update(event.eventType);
                 break;
-            default: // EV_PAUSE, EV_CANCEL events + EV_COMPLETE that doesn't have a break
+            default: // EV_PAUSE, EV_CANCEL events
+                dlPreparationProgressBar.setVisibility(View.INVISIBLE);
                 update(event.eventType);
         }
+    }
+
+    /**
+     * Download preparation event handler
+     *
+     * @param event Broadcasted event
+     */
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onPrepDownloadEvent(DownloadPreparationEvent event) {
+        if (!dlPreparationProgressBar.isShown() && !event.IsCompleted()) {
+            dlPreparationProgressBar.setTotal(event.total);
+            dlPreparationProgressBar.setVisibility(View.VISIBLE);
+            queueInfo.setText(R.string.queue_preparing);
+            isPreparingDownload = true;
+        } else if (dlPreparationProgressBar.isShown() && event.IsCompleted()) {
+            dlPreparationProgressBar.setVisibility(View.INVISIBLE);
+        }
+
+        dlPreparationProgressBar.setProgress(event.total - event.done);
     }
 
     /**
@@ -159,23 +183,19 @@ public class QueueFragment extends BaseFragment {
         if (!ContentQueueManager.getInstance().isQueuePaused() && mAdapter != null && mAdapter.getCount() > 0) {
             Content content = mAdapter.getItem(0);
 
-            if (content != null) {
-                // Pages download has started
-                if (pagesKO + pagesOK > 0) {
+            // Pages download has started
+            if (content != null && pagesKO + pagesOK > 0) {
+                // Update book progress bar
+                content.setPercent((pagesOK + pagesKO) * 100.0 / totalPages);
+                mAdapter.updateProgress(0, content);
 
-                    // Update book progress bar
-                    content.setPercent((pagesOK + pagesKO) * 100.0 / totalPages);
-                    mAdapter.updateProgress(0, content);
+                // Update information bar
+                StringBuilder message = new StringBuilder();
+                String processedPagesFmt = Helper.compensateStringLength(pagesOK, String.valueOf(totalPages).length());
+                message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
 
-                    // Update information bar
-                    StringBuilder message = new StringBuilder();
-                    String processedPagesFmt = Helper.compensateStringLength(pagesOK, String.valueOf(totalPages).length());
-                    message.append(processedPagesFmt).append("/").append(totalPages).append(" processed (").append(pagesKO).append(" errors)");
-
-                    queueInfo.setText(message.toString());
-                } else { // Pages download is under preparation
-                    queueInfo.setText(R.string.queue_preparing);
-                }
+                queueInfo.setText(message.toString());
+                isPreparingDownload = false;
             }
         }
     }
@@ -210,7 +230,7 @@ public class QueueFragment extends BaseFragment {
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update control bar status
-        queueInfo.setText(R.string.queue_empty2);
+        queueInfo.setText(isPreparingDownload ? R.string.queue_preparing : R.string.queue_empty2);
 
         Content firstContent = isEmpty ? null : mAdapter.getItem(0);
 
@@ -236,8 +256,7 @@ public class QueueFragment extends BaseFragment {
             } else { // Empty
                 btnStart.setVisibility(View.GONE);
                 btnStats.setVisibility(View.GONE);
-                queueStatus.setText(R.string.queue_empty2);
-                queueInfo.setText(R.string.queue_empty2);
+                queueStatus.setText("");
             }
         }
     }

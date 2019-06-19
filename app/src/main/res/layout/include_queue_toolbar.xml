@@ -18,6 +18,17 @@
         android:orientation="horizontal">
 
         <ImageButton
+            android:id="@+id/btnStart"
+            android:layout_width="?android:attr/actionBarSize"
+            android:layout_height="?android:attr/actionBarSize"
+            android:background="@drawable/btn_content_selector"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_action_play"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:ignore="ContentDescription" />
+
+        <ImageButton
             android:id="@+id/btnPause"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
@@ -28,16 +39,17 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="ContentDescription" />
 
-        <ImageButton
-            android:id="@+id/btnStart"
+        <me.devsaki.hentoid.views.CircularProgressView
+            android:id="@+id/queueDownloadPreparationProgressBar"
+            style="?android:attr/progressBarStyle"
             android:layout_width="?android:attr/actionBarSize"
             android:layout_height="?android:attr/actionBarSize"
-            android:background="@drawable/btn_content_selector"
-            android:scaleType="fitXY"
-            android:src="@drawable/ic_action_play"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="ContentDescription" />
+            android:clickable="false"
+            android:focusable="false"
+            android:visibility="invisible"
+            />
 
         <TextView
             android:id="@+id/queueStatus"
@@ -49,7 +61,7 @@
             android:ellipsize="middle"
             android:scrollHorizontally="false"
             android:singleLine="true"
-            android:text="@string/app_intro"
+            tools:text="@string/app_intro"
             android:textColor="@android:color/white"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintStart_toStartOf="parent"
@@ -62,7 +74,7 @@
             android:layout_marginStart="?android:attr/actionBarSize"
             android:layout_marginLeft="?android:attr/actionBarSize"
             android:layout_marginBottom="6dp"
-            android:text="@string/app_intro"
+            tools:text="@string/app_intro"
             android:textColor="@android:color/white"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintBottom_toBottomOf="parent"
