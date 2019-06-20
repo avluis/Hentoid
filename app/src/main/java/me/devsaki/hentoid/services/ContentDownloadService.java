@@ -74,6 +74,8 @@ public class ContentDownloadService extends IntentService {
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
 
+    private RequestQueueManager<Object> requestQueueManager = null;
+
     public ContentDownloadService() {
         super(ContentDownloadService.class.getName());
     }
@@ -227,10 +229,11 @@ public class ContentDownloadService extends IntentService {
         // Queue image download requests
         ImageFile cover = new ImageFile().setName("thumb").setUrl(content.getCoverImageUrl());
         Site site = content.getSite();
-        RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads()).queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+        requestQueueManager = RequestQueueManager.getInstance(this, site.isAllowParallelDownloads());
+        requestQueueManager.queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
-                RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads()).queueRequest(buildDownloadRequest(img, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+                requestQueueManager.queueRequest(buildDownloadRequest(img, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         }
 
         return content;
@@ -553,19 +556,19 @@ public class ContentDownloadService extends IntentService {
         switch (event.eventType) {
             case DownloadEvent.EV_PAUSE:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                RequestQueueManager.getInstance(this, event.content.getSite().isAllowParallelDownloads()).cancelQueue();
+                requestQueueManager.cancelQueue();
                 ContentQueueManager.getInstance().pauseQueue();
                 notificationManager.cancel();
                 break;
             case DownloadEvent.EV_CANCEL:
-                RequestQueueManager.getInstance(this, event.content.getSite().isAllowParallelDownloads()).cancelQueue();
+                requestQueueManager.cancelQueue();
                 downloadCanceled = true;
                 // Tracking Event (Download Canceled)
                 HentoidApp.trackDownloadEvent("Cancelled");
                 break;
             case DownloadEvent.EV_SKIP:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                RequestQueueManager.getInstance(this, event.content.getSite().isAllowParallelDownloads()).cancelQueue();
+                requestQueueManager.cancelQueue();
                 downloadSkipped = true;
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");
