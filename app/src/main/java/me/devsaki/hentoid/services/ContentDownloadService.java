@@ -147,6 +147,8 @@ public class ContentDownloadService extends IntentService {
             return null;
         }
 
+        downloadCanceled = false;
+        downloadSkipped = false;
         db.deleteErrorRecords(content.getId());
 
         boolean hasError = false;
@@ -177,6 +179,9 @@ public class ContentDownloadService extends IntentService {
             return null;
         }
 
+        // Could have been canceled while preparing the download
+        if (downloadCanceled || downloadSkipped) return null;
+
         File dir = FileHelper.createContentDownloadDir(this, content);
         if (!dir.exists()) {
             String title = content.getTitle();
@@ -196,8 +201,6 @@ public class ContentDownloadService extends IntentService {
                     db.updateImageFileStatusAndParams(img);
                 }
             }
-            downloadCanceled = false;
-            downloadSkipped = false;
             completeDownload(content, 0, images.size());
             return null;
         }
@@ -212,8 +215,6 @@ public class ContentDownloadService extends IntentService {
         HentoidApp.trackDownloadEvent("Added");
 
         Timber.i("Downloading '%s' [%s]", content.getTitle(), content.getId());
-        downloadCanceled = false;
-        downloadSkipped = false;
 
         // Reset ERROR status of images to count them as "to be downloaded" (in DB and in memory)
         for (ImageFile img : images) {
@@ -229,7 +230,7 @@ public class ContentDownloadService extends IntentService {
         RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads()).queueRequest(buildDownloadRequest(cover, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         for (ImageFile img : images) {
             if (img.getStatus().equals(StatusContent.SAVED))
-                RequestQueueManager.getInstance().queueRequest(buildDownloadRequest(img, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
+                RequestQueueManager.getInstance(this, content.getSite().isAllowParallelDownloads()).queueRequest(buildDownloadRequest(img, dir, site.canKnowHentoidAgent(), site.hasImageProcessing()));
         }
 
         return content;
@@ -552,19 +553,19 @@ public class ContentDownloadService extends IntentService {
         switch (event.eventType) {
             case DownloadEvent.EV_PAUSE:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                RequestQueueManager.getInstance().cancelQueue();
+                RequestQueueManager.getInstance(this, event.content.getSite().isAllowParallelDownloads()).cancelQueue();
                 ContentQueueManager.getInstance().pauseQueue();
                 notificationManager.cancel();
                 break;
             case DownloadEvent.EV_CANCEL:
-                RequestQueueManager.getInstance().cancelQueue();
+                RequestQueueManager.getInstance(this, event.content.getSite().isAllowParallelDownloads()).cancelQueue();
                 downloadCanceled = true;
                 // Tracking Event (Download Canceled)
                 HentoidApp.trackDownloadEvent("Cancelled");
                 break;
             case DownloadEvent.EV_SKIP:
                 db.updateContentStatus(StatusContent.DOWNLOADING, StatusContent.PAUSED);
-                RequestQueueManager.getInstance().cancelQueue();
+                RequestQueueManager.getInstance(this, event.content.getSite().isAllowParallelDownloads()).cancelQueue();
                 downloadSkipped = true;
                 // Tracking Event (Download Skipped)
                 HentoidApp.trackDownloadEvent("Skipped");
