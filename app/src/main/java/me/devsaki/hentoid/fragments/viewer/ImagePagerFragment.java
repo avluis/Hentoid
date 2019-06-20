@@ -289,12 +289,18 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     public void nextPage() {
         if (viewModel.getCurrentPosition() == maxPosition) return;
-        recyclerView.smoothScrollToPosition(viewModel.getCurrentPosition() + 1);
+        if (Preferences.isViewerTapTransitions())
+            recyclerView.smoothScrollToPosition(viewModel.getCurrentPosition() + 1);
+        else
+            recyclerView.scrollToPosition(viewModel.getCurrentPosition() + 1);
     }
 
     public void previousPage() {
         if (viewModel.getCurrentPosition() == 0) return;
-        recyclerView.smoothScrollToPosition(viewModel.getCurrentPosition() - 1);
+        if (Preferences.isViewerTapTransitions())
+            recyclerView.smoothScrollToPosition(viewModel.getCurrentPosition() - 1);
+        else
+            recyclerView.scrollToPosition(viewModel.getCurrentPosition() - 1);
     }
 
     private void seekToPosition(int position) {

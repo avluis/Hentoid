@@ -234,6 +234,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static boolean isViewerTapTransitions() {
+        return sharedPreferences.getBoolean(Key.PREF_VIEWER_TAP_TRANSITIONS, Default.PREF_VIEWER_TAP_TRANSITIONS);
+    }
+
+    public static void setViewerTapTransitions(boolean tapTransitions) {
+        sharedPreferences.edit()
+                .putBoolean(Key.PREF_VIEWER_TAP_TRANSITIONS, tapTransitions)
+                .apply();
+    }
+
     public static boolean hasViewerChoiceBeenDisplayed() {
         return sharedPreferences.getBoolean(Key.VIEWER_CHOICE_DISPLAYED, false);
     }
@@ -284,6 +294,7 @@ public final class Preferences {
         public static final String PREF_VIEWER_BROWSE_MODE = "pref_viewer_browse_mode";
         public static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
+        public static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
         static final String VIEWER_CHOICE_DISPLAYED = "pref_viewer_choice_displayed";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
     }
@@ -309,6 +320,7 @@ public final class Preferences {
         static final int PREF_VIEWER_IMAGE_DISPLAY = Constant.PREF_VIEWER_DISPLAY_FIT;
         static final int PREF_VIEWER_BROWSE_MODE = Constant.PREF_VIEWER_BROWSE_NONE;
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
+        static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final int PREF_VIEWER_FLING_FACTOR = 50;
     }
 

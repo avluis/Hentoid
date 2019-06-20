@@ -50,6 +50,10 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
         theSwitch.setChecked(Preferences.isViewerDisplayPageNum());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerDisplayPageNum(isChecked));
 
+        theSwitch = requireViewById(view, R.id.viewer_prefs_tap_transitions_action);
+        theSwitch.setChecked(Preferences.isViewerTapTransitions());
+        theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerTapTransitions(isChecked));
+
         RadioGroup theRadio = requireViewById(view, R.id.viewer_prefs_display_mode_group);
         switch (Preferences.getViewerResizeMode()) {
             case (Preferences.Constant.PREF_VIEWER_DISPLAY_FIT):

@@ -181,6 +181,7 @@
     <string name="pref_viewer_resume_last_left">Resume reading at last left page</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
     <string name="pref_viewer_display_pagenum">Always display page number</string>
+    <string name="pref_viewer_tap_transitions">Transition effects for left/right tap</string>
     <string name="pref_viewer_image_display">Image display mode</string>
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_fling_sensitivity">Fling sensitivity</string>
