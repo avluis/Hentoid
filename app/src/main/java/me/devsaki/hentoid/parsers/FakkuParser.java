@@ -29,6 +29,9 @@ import timber.log.Timber;
  */
 public class FakkuParser implements ContentParser {
 
+    private int currentStep;
+    private int maxSteps;
+
     public List<ImageFile> parseImageList(Content content) {
 
         List<ImageFile> result = Collections.emptyList();
@@ -63,6 +66,8 @@ public class FakkuParser implements ContentParser {
             return result;
         }
 
+        progressStart(info.pages.keySet().size() + 1);
+
         // Add referer information to downloadParams for future image download
         downloadParams.put("referer", content.getReaderUrl());
 
@@ -82,6 +87,7 @@ public class FakkuParser implements ContentParser {
         }
 
         List<PageInfo> pageInfo = FakkuDecode.getBookPageData(info.key_hash, Helper.decode64(info.key_data), pid, BuildConfig.FK_TOKEN);
+        progressPlus();
 
         result = new ArrayList<>();
         for (String p : info.pages.keySet()) {
@@ -94,9 +100,26 @@ public class FakkuParser implements ContentParser {
 
             img.setDownloadParams(downloadParamsStr);
             result.add(img);
+            progressPlus();
         }
         Timber.d("%s", result);
 
+        progressComplete();
+
         return result;
+    }
+
+    private void progressStart(int maxSteps) {
+        currentStep = 0;
+        this.maxSteps = maxSteps;
+        ParseHelper.signalProgress(currentStep, maxSteps);
+    }
+
+    private void progressPlus() {
+        ParseHelper.signalProgress(++currentStep, maxSteps);
+    }
+
+    private void progressComplete() {
+        ParseHelper.signalProgress(maxSteps, maxSteps);
     }
 }

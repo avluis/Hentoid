@@ -43,6 +43,8 @@ public class HentaiCafeParser extends BaseParser {
                     Timber.d("Multiple chapters found!");
                 }
 
+                progressStart(links.size());
+
                 for (int i = 0; i < links.size(); i++) {
 
                     String url = links.get(i).attr("href");
@@ -92,9 +94,12 @@ public class HentaiCafeParser extends BaseParser {
                             Timber.e(e, "JSOUP Error");
                         }
                     }
+                    progressPlus();
                 }
                 Timber.d("Total Pages: %s", pages);
                 content.setQtyPages(pages);
+
+                progressComplete();
             }
         }
 

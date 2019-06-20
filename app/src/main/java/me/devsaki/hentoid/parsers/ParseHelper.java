@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers;
 
+import org.greenrobot.eventbus.EventBus;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import me.devsaki.hentoid.util.AttributeMap;
 
 public class ParseHelper {
@@ -59,5 +61,9 @@ public class ParseHelper {
         for (String s : imgUrls) result.add(urlToImageFile(s, order++));
 
         return result;
+    }
+
+    public static void signalProgress(int current, int max) {
+        EventBus.getDefault().post(new DownloadPreparationEvent(current, max));
     }
 }

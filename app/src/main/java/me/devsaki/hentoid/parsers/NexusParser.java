@@ -19,6 +19,7 @@ public class NexusParser extends BaseParser {
     protected List<String> parseImages(Content content) throws IOException {
         List<String> result = new ArrayList<>();
 
+        progressStart(content.getQtyPages());
         /*
          * Open all pages and grab the URL of the displayed image
          */
@@ -32,7 +33,10 @@ public class NexusParser extends BaseParser {
                     result.add(e.attr("src"));
                 }
             }
+            progressPlus();
         }
+
+        progressComplete();
 
         return result;
     }

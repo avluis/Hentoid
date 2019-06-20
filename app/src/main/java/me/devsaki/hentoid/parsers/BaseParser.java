@@ -2,13 +2,10 @@ package me.devsaki.hentoid.parsers;
 
 import android.webkit.URLUtil;
 
-import org.greenrobot.eventbus.EventBus;
-
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.events.DownloadPreparationEvent;
 import timber.log.Timber;
 
 public abstract class BaseParser implements ContentParser {
@@ -34,25 +31,17 @@ public abstract class BaseParser implements ContentParser {
         return images;
     }
 
-    void progressStart(int maxSteps)
-    {
+    void progressStart(int maxSteps) {
         currentStep = 0;
         this.maxSteps = maxSteps;
-        signalProgress(currentStep, maxSteps);
+        ParseHelper.signalProgress(currentStep, maxSteps);
     }
 
-    void progressPlus()
-    {
-        signalProgress(++currentStep, maxSteps);
+    void progressPlus() {
+        ParseHelper.signalProgress(++currentStep, maxSteps);
     }
 
-    void progressComplete()
-    {
-        signalProgress(maxSteps, maxSteps);
-    }
-
-    private void signalProgress(int current, int max)
-    {
-        EventBus.getDefault().post(new DownloadPreparationEvent(current, max));
+    void progressComplete() {
+        ParseHelper.signalProgress(maxSteps, maxSteps);
     }
 }
