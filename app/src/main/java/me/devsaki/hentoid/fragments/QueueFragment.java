@@ -53,6 +53,7 @@ public class QueueFragment extends BaseFragment {
 
     // State
     private boolean isPreparingDownload = false;
+    private boolean isPaused = false;
 
 
     public static QueueFragment newInstance() {
@@ -140,7 +141,7 @@ public class QueueFragment extends BaseFragment {
                     updateBookTitle(content.getTitle());
                     queueInfo.setText("");
                 }
-                dlPreparationProgressBar.setVisibility(View.INVISIBLE);
+                dlPreparationProgressBar.setVisibility(View.GONE);
                 break;
             case DownloadEvent.EV_COMPLETE:
                 mAdapter.removeFromQueue(event.content);
@@ -148,7 +149,7 @@ public class QueueFragment extends BaseFragment {
                 update(event.eventType);
                 break;
             default: // EV_PAUSE, EV_CANCEL events
-                dlPreparationProgressBar.setVisibility(View.INVISIBLE);
+                dlPreparationProgressBar.setVisibility(View.GONE);
                 update(event.eventType);
         }
     }
@@ -160,13 +161,13 @@ public class QueueFragment extends BaseFragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPrepDownloadEvent(DownloadPreparationEvent event) {
-        if (!dlPreparationProgressBar.isShown() && !event.IsCompleted()) {
+        if (!dlPreparationProgressBar.isShown() && !event.IsCompleted() && !isPaused) {
             dlPreparationProgressBar.setTotal(event.total);
             dlPreparationProgressBar.setVisibility(View.VISIBLE);
             queueInfo.setText(R.string.queue_preparing);
             isPreparingDownload = true;
         } else if (dlPreparationProgressBar.isShown() && event.IsCompleted()) {
-            dlPreparationProgressBar.setVisibility(View.INVISIBLE);
+            dlPreparationProgressBar.setVisibility(View.GONE);
         }
 
         dlPreparationProgressBar.setProgress(event.total - event.done);
@@ -221,7 +222,7 @@ public class QueueFragment extends BaseFragment {
     public void update(int eventType) {
         int bookDiff = (eventType == DownloadEvent.EV_CANCEL) ? 1 : 0; // Cancel event means a book will be removed very soon from the queue
         boolean isEmpty = (0 == mAdapter.getCount() - bookDiff);
-        boolean isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
+        isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
         boolean isActive = (!isEmpty && !isPaused);
 
         Timber.d("Queue state : E/P/A > %s/%s/%s -- %s elements", isEmpty, isPaused, isActive, mAdapter.getCount());

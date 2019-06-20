@@ -48,7 +48,7 @@
             app:layout_constraintTop_toTopOf="parent"
             android:clickable="false"
             android:focusable="false"
-            android:visibility="invisible"
+            android:visibility="gone"
             />
 
         <TextView
