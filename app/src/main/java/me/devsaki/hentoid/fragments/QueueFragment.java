@@ -54,6 +54,7 @@ public class QueueFragment extends BaseFragment {
     // State
     private boolean isPreparingDownload = false;
     private boolean isPaused = false;
+    private boolean isEmpty = false;
 
 
     public static QueueFragment newInstance() {
@@ -161,7 +162,7 @@ public class QueueFragment extends BaseFragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPrepDownloadEvent(DownloadPreparationEvent event) {
-        if (!dlPreparationProgressBar.isShown() && !event.IsCompleted() && !isPaused) {
+        if (!dlPreparationProgressBar.isShown() && !event.IsCompleted() && !isPaused && !isEmpty) {
             dlPreparationProgressBar.setTotal(event.total);
             dlPreparationProgressBar.setVisibility(View.VISIBLE);
             queueInfo.setText(R.string.queue_preparing);
@@ -221,7 +222,7 @@ public class QueueFragment extends BaseFragment {
      */
     public void update(int eventType) {
         int bookDiff = (eventType == DownloadEvent.EV_CANCEL) ? 1 : 0; // Cancel event means a book will be removed very soon from the queue
-        boolean isEmpty = (0 == mAdapter.getCount() - bookDiff);
+        isEmpty = (0 == mAdapter.getCount() - bookDiff);
         isPaused = (!isEmpty && (eventType == DownloadEvent.EV_PAUSE || ContentQueueManager.getInstance().isQueuePaused() || !ContentQueueManager.getInstance().isQueueActive()));
         boolean isActive = (!isEmpty && !isPaused);
 
@@ -231,7 +232,7 @@ public class QueueFragment extends BaseFragment {
         mEmptyText.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
 
         // Update control bar status
-        queueInfo.setText(isPreparingDownload ? R.string.queue_preparing : R.string.queue_empty2);
+        queueInfo.setText(isPreparingDownload && !isEmpty ? R.string.queue_preparing : R.string.queue_empty2);
 
         Content firstContent = isEmpty ? null : mAdapter.getItem(0);
 
