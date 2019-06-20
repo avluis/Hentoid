@@ -40,8 +40,7 @@ public class EHentaiParser extends BaseParser {
             int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
             int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());
 
-            maxSteps = nbGalleryPages + content.getQtyPages();
-            progressPlus();
+            progressStart(nbGalleryPages + content.getQtyPages());
 
             // 2- Browse the gallery and fetch the URL for every page (since all of them have a different temporary key...)
             List<String> pageUrls = new ArrayList<>();

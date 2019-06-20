@@ -14,7 +14,7 @@ import timber.log.Timber;
 public abstract class BaseParser implements ContentParser {
 
     private int currentStep;
-    int maxSteps;
+    private int maxSteps;
 
     protected abstract List<String> parseImages(Content content) throws Exception;
 
@@ -26,13 +26,19 @@ public abstract class BaseParser implements ContentParser {
         }
         Timber.d("Gallery URL: %s", readerUrl);
 
-        currentStep = -1;
         List<String> imgUrls = parseImages(content);
         List<ImageFile> images = ParseHelper.urlsToImageFiles(imgUrls);
 
         Timber.d("%s", images);
 
         return images;
+    }
+
+    void progressStart(int maxSteps)
+    {
+        currentStep = 0;
+        this.maxSteps = maxSteps;
+        signalProgress(currentStep, maxSteps);
     }
 
     void progressPlus()
