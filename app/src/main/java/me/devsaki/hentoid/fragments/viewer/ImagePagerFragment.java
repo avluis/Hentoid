@@ -3,6 +3,8 @@ package me.devsaki.hentoid.fragments.viewer;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,9 +24,9 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImageRecyclerAdapter;
-import me.devsaki.hentoid.util.Consts;
-import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
@@ -33,6 +35,7 @@ import me.devsaki.hentoid.widget.PrefetchLinearLayoutManager;
 import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.devsaki.hentoid.widget.VolumeGestureListener;
 
+import static android.content.Context.CLIPBOARD_SERVICE;
 import static android.support.v4.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
 
@@ -62,6 +65,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         View view = inflater.inflate(R.layout.activity_viewer, container, false);
 
         Preferences.registerPrefsChangedListener(listener);
+        viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
 
         initPager(view);
         initControlsOverlay(view);
@@ -77,7 +81,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
         viewModel
                 .getImages()
                 .observe(this, this::onImagesChanged);
@@ -154,9 +157,18 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // Tap settings button
         View settingsButton = requireViewById(rootView, R.id.viewer_settings_btn);
         settingsButton.setOnClickListener(v -> onSettingsClick());
-        // Tap discord button
-        View discordButton = requireViewById(rootView, R.id.viewer_discord_text);
-        discordButton.setOnClickListener(v -> Helper.openUrl(requireContext(), Consts.URL_DISCORD));
+
+        // Book info text
+        TextView bookInfo = requireViewById(rootView, R.id.viewer_book_info_text);
+        Content content = viewModel.getCurrentContent();
+        if (content != null) {
+            String title = content.getTitle();
+            if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
+            bookInfo.setText(title);
+
+            bookInfo.setOnLongClickListener(v -> onBookTitleLongClick(content));
+        }
+
         // Page number button
         pageCurrentNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
         pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
@@ -180,6 +192,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 if (fromUser) seekToPosition(progress);
             }
         });
+    }
+
+    public boolean onBookTitleLongClick(Content content) {
+        ClipboardManager clipboard = (ClipboardManager) requireActivity().getSystemService(CLIPBOARD_SERVICE);
+        if (clipboard != null) {
+            ClipData clip = ClipData.newPlainText("book URL", content.getGalleryUrl());
+            clipboard.setPrimaryClip(clip);
+            ToastUtil.toast("Book URL copied to clipboard");
+            return true;
+        } else return false;
     }
 
     @Override
@@ -250,7 +272,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onUpdateFlingFactor() {
-        pageSnapWidget.setFlingSensitivity(Preferences.getViewerFlingFactor()/100f);
+        pageSnapWidget.setFlingSensitivity(Preferences.getViewerFlingFactor() / 100f);
     }
 
     private void onUpdateImageDisplay() {

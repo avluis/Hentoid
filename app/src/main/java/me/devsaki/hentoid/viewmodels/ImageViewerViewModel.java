@@ -5,6 +5,7 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.Collections;
 import java.util.List;
@@ -65,5 +66,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
                 db.insertContent(content);
             }
         }
+    }
+
+    @Nullable
+    public Content getCurrentContent() {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
+        if (contentId > 0) {
+            return db.selectContentById(contentId);
+        } else return null;
     }
 }
