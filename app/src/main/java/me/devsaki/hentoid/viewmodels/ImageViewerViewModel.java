@@ -38,6 +38,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return images;
     }
 
+    public String getImage(int position) {
+        List<String> imgs = images.getValue();
+        if (imgs != null && position < imgs.size() && position > -1) return imgs.get(position);
+        else return "";
+    }
+
     public void setImages(List<String> imgs) {
         initialImagesList = new ArrayList<>(imgs);
         if (shuffleImages) Collections.shuffle(imgs);

@@ -146,5 +146,34 @@
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:ignore="ContentDescription" />
 
+    <ImageView
+        android:id="@+id/viewer_image_preview1"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/viewer_image_preview2"
+        app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
+        android:visibility="invisible"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/viewer_image_preview2"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        app:layout_constraintLeft_toRightOf="@id/viewer_image_preview1"
+        app:layout_constraintRight_toLeftOf="@id/viewer_image_preview3"
+        app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
+        android:visibility="invisible"
+        tools:ignore="ContentDescription" />
+
+    <ImageView
+        android:id="@+id/viewer_image_preview3"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        app:layout_constraintLeft_toRightOf="@id/viewer_image_preview2"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/viewer_seekbar"
+        android:visibility="invisible"
+        tools:ignore="ContentDescription" />
 
 </android.support.constraint.ConstraintLayout>

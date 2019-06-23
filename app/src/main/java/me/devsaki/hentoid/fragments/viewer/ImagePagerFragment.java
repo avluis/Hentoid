@@ -18,8 +18,12 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.util.List;
 
@@ -46,7 +50,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private final static String KEY_HUD_VISIBLE = "hud_visible";
 
     private View controlsOverlay;
-    private View pageShuffleButton;
+    private ImageView previewImage1, previewImage2, previewImage3;
     private PrefetchLinearLayoutManager llm;
     private ImageRecyclerAdapter adapter;
     private SeekBar seekBar;
@@ -58,6 +62,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ImageViewerViewModel viewModel;
 
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
+    private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private int maxPosition;
 
@@ -172,7 +177,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
 
         // Page shuffler button
-        pageShuffleButton = requireViewById(rootView, R.id.viewer_shuffle_btn);
+        View pageShuffleButton = requireViewById(rootView, R.id.viewer_shuffle_btn);
         pageShuffleButton.setOnClickListener(this::onShuffleClick);
 
         // Page number button
@@ -181,17 +186,26 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
         pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
 
-        // Slider
+        // Slider and preview
+        previewImage1 = requireViewById(rootView, R.id.viewer_image_preview1);
+        previewImage2 = requireViewById(rootView, R.id.viewer_image_preview2);
+        previewImage3 = requireViewById(rootView, R.id.viewer_image_preview3);
         seekBar = requireViewById(rootView, R.id.viewer_seekbar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                // No need to do anything
+            public void onStartTrackingTouch(SeekBar seekBar) {
+                previewImage1.setVisibility(View.VISIBLE);
+                previewImage2.setVisibility(View.VISIBLE);
+                previewImage3.setVisibility(View.VISIBLE);
+                recyclerView.setVisibility(View.INVISIBLE);
             }
 
             @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-                // No need to do anything
+            public void onStopTrackingTouch(SeekBar seekBar) {
+                previewImage1.setVisibility(View.INVISIBLE);
+                previewImage2.setVisibility(View.INVISIBLE);
+                previewImage3.setVisibility(View.INVISIBLE);
+                recyclerView.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -228,8 +242,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onShuffleClick(View v) {
         v.setActivated(!v.isActivated());
 
-        if (v.isActivated()) ((ImageButton)v).setImageResource(R.drawable.ic_menu_sort_random);
-        else ((ImageButton)v).setImageResource(R.drawable.ic_menu_sort_123);
+        if (v.isActivated()) ((ImageButton) v).setImageResource(R.drawable.ic_menu_sort_random);
+        else ((ImageButton) v).setImageResource(R.drawable.ic_menu_sort_123);
 
         viewModel.setShuffleImages(v.isActivated());
         goToPage(1);
@@ -343,6 +357,24 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void seekToPosition(int position) {
+
+        if (View.VISIBLE == previewImage2.getVisibility()) {
+            Glide.with(previewImage1.getContext())
+                    .load(viewModel.getImage(position - 1))
+                    .apply(glideRequestOptions)
+                    .into(previewImage1);
+
+            Glide.with(previewImage1.getContext())
+                    .load(viewModel.getImage(position))
+                    .apply(glideRequestOptions)
+                    .into(previewImage2);
+
+            Glide.with(previewImage1.getContext())
+                    .load(viewModel.getImage(position + 1))
+                    .apply(glideRequestOptions)
+                    .into(previewImage3);
+        }
+
         if (position == viewModel.getCurrentPosition() + 1 || position == viewModel.getCurrentPosition() - 1) {
             recyclerView.smoothScrollToPosition(position);
         } else {
