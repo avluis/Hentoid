@@ -7,6 +7,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,10 +17,15 @@ import me.devsaki.hentoid.database.domains.Content;
 
 public class ImageViewerViewModel extends AndroidViewModel {
 
+    // Settings
+    private boolean shuffleImages = false;
+
+    // Per book data
     private final MutableLiveData<List<String>> images = new MutableLiveData<>();
 
+    private List<String> initialImagesList;   // Initial URL list in the right order, to fallback when shuffling is disabled
     private long contentId;
-    private int currentPosition; // 0-based position, as in "programmatic index"
+    private int currentPosition;            // 0-based position, as in "programmatic index"
 
 
     public ImageViewerViewModel(@NonNull Application application) {
@@ -33,6 +39,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
     }
 
     public void setImages(List<String> imgs) {
+        initialImagesList = new ArrayList<>(imgs);
+        if (shuffleImages) Collections.shuffle(imgs);
         images.setValue(imgs);
     }
 
@@ -46,6 +54,15 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     public int getCurrentPosition() {
         return currentPosition;
+    }
+
+    public void setShuffleImages(boolean shuffleImages) {
+        this.shuffleImages = shuffleImages;
+        if (shuffleImages) {
+            List<String> imgs = new ArrayList<>(initialImagesList);
+            Collections.shuffle(imgs);
+            images.setValue(imgs);
+        } else images.setValue(initialImagesList);
     }
 
     public int getInitialPosition() {

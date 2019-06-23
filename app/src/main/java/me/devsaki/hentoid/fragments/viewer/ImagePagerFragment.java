@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -45,6 +46,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private final static String KEY_HUD_VISIBLE = "hud_visible";
 
     private View controlsOverlay;
+    private View pageShuffleButton;
     private PrefetchLinearLayoutManager llm;
     private ImageRecyclerAdapter adapter;
     private SeekBar seekBar;
@@ -169,11 +171,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             bookInfo.setOnLongClickListener(v -> onBookTitleLongClick(content));
         }
 
+        // Page shuffler button
+        pageShuffleButton = requireViewById(rootView, R.id.viewer_shuffle_btn);
+        pageShuffleButton.setOnClickListener(this::onShuffleClick);
+
         // Page number button
         pageCurrentNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
         pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
         pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
         pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
+
         // Slider
         seekBar = requireViewById(rootView, R.id.viewer_seekbar);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -216,6 +223,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void onSettingsClick() {
         ViewerPrefsDialogFragment.invoke(this);
+    }
+
+    private void onShuffleClick(View v) {
+        v.setActivated(!v.isActivated());
+
+        if (v.isActivated()) ((ImageButton)v).setImageResource(R.drawable.ic_menu_sort_random);
+        else ((ImageButton)v).setImageResource(R.drawable.ic_menu_sort_by_date);
+
+        viewModel.setShuffleImages(v.isActivated());
+        goToPage(1);
     }
 
     private void onImagesChanged(List<String> images) {

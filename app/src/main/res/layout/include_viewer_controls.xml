@@ -40,12 +40,12 @@
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:background="#AAFFFFFF"
+        android:clickable="true"
+        android:focusable="true"
         android:gravity="center"
         android:padding="8dp"
         android:textAlignment="center"
         android:textSize="@dimen/text_subtitle_2"
-        android:clickable="true"
-        android:focusable="true"
         app:layout_constraintLeft_toRightOf="@id/viewer_back_btn"
         app:layout_constraintRight_toLeftOf="@id/viewer_settings_btn"
         app:layout_constraintTop_toTopOf="parent"
@@ -60,23 +60,6 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="@id/viewer_currentpage_text" />
 
-    <!-- Not implemented because not in the MVP -->
-    <ImageButton
-        android:id="@+id/viewer_prev_book_btn"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:background="#00000000"
-        android:clickable="true"
-        android:focusable="true"
-        android:padding="8dp"
-        android:scaleType="fitCenter"
-        android:src="@drawable/ic_action_previous_item"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
-        tools:ignore="ContentDescription" />
-
     <TextView
         android:id="@+id/viewer_currentpage_text"
         android:layout_width="wrap_content"
@@ -87,7 +70,7 @@
         android:textAlignment="center"
         android:textSize="@dimen/text_body_1"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toRightOf="@id/viewer_prev_book_btn"
+        app:layout_constraintLeft_toRightOf="@id/viewer_shuffle_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:text="28" />
 
@@ -114,7 +97,38 @@
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:text="255" />
 
-    <!-- Not implemented because not in the MVP -->
+    <ImageButton
+        android:id="@+id/viewer_prev_book_btn"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="#AAFFFFFF"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_action_previous_item"
+        android:tint="@color/darkGray"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        tools:ignore="ContentDescription" />
+
+    <ImageButton
+        android:id="@+id/viewer_shuffle_btn"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@color/transparent"
+        android:clickable="true"
+        android:focusable="true"
+        android:scaleType="fitCenter"
+        android:src="@drawable/ic_menu_sort_by_date"
+        android:tint="@color/darkGray"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toRightOf="@id/viewer_prev_book_btn"
+        app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
+        tools:ignore="ContentDescription" />
+
     <ImageButton
         android:id="@+id/viewer_next_book_btn"
         android:layout_width="48dp"
@@ -125,6 +139,7 @@
         android:padding="8dp"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_action_next_item"
+        android:tint="@color/darkGray"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toRightOf="parent"
