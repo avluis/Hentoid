@@ -7,7 +7,7 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:editTextColor">@android:color/white</item>
-        <item name="android:textColorHint">@color/lightGray</item>
+        <item name="android:textColorHint">@color/light_gray</item>
     </style>
 
     <!-- Activities with Toolbar as ActionBar -->
@@ -16,7 +16,7 @@
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
         <item name="android:editTextColor">@android:color/white</item>
-        <item name="android:textColorHint">@color/lightGray</item>
+        <item name="android:textColorHint">@color/light_gray</item>
     </style>
 
     <style name="AppTheme.NoActionBar.viewer">
@@ -29,11 +29,11 @@
 
     <!-- Backgrounds -->
     <style name="AppTheme.TaupeBackground" parent="AppTheme">
-        <item name="android:windowBackground">@color/windowBackground</item>
+        <item name="android:windowBackground">@color/window_background</item>
     </style>
 
     <style name="AppTheme.TaupeBackgroundNoActionBar" parent="AppTheme.NoActionBar">
-        <item name="android:windowBackground">@color/windowBackground</item>
+        <item name="android:windowBackground">@color/window_background</item>
         <item name="windowActionModeOverlay">true</item>
     </style>
 
@@ -46,17 +46,17 @@
 
     <!-- Prefs Activity -->
     <style name="PrefsThemeDark" parent="AppTheme">
-        <item name="android:windowBackground">@color/windowBackground</item>
+        <item name="android:windowBackground">@color/window_background</item>
         <item name="android:divider">@color/accent</item>
         <item name="android:textColor">@color/primary_text_color_selector</item>
         <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
         <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
-        <item name="android:textColorHint">@color/lightGray</item>
+        <item name="android:textColorHint">@color/light_gray</item>
         <item name="alertDialogTheme">@style/PrefsThemeDialog</item>
     </style>
 
     <style name="PrefsThemeDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:windowBackground">@color/windowBackground</item>
+        <item name="android:windowBackground">@color/window_background</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -102,8 +102,8 @@
 
     <!-- Downloads -->
     <style name="AppTheme.Downloads" parent="AppTheme.TaupeBackgroundNoActionBar">
-        <item name="android:textColorHint">@color/lightGray</item>
-        <item name="android:textColorSecondary">@color/lightGray</item>
+        <item name="android:textColorHint">@color/light_gray</item>
+        <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
     <style name="DownloadsDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
@@ -114,15 +114,15 @@
 
     <!-- Mikan -->
     <style name="AppTheme.Mikan" parent="AppTheme.TaupeBackground">
-        <item name="android:textColorHint">@color/lightGray</item>
-        <item name="android:textColorSecondary">@color/lightGray</item>
+        <item name="android:textColorHint">@color/light_gray</item>
+        <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
     <!-- Toolbar -->
     <style name="AppTheme.Toolbar" parent="AppTheme.TaupeBackground">
-        <item name="android:textColorHint">@color/lightGray</item>
-        <item name="android:textColorPrimary">@color/lightGray</item>
-        <item name="android:textColorSecondary">@color/lightGray</item>
+        <item name="android:textColorHint">@color/light_gray</item>
+        <item name="android:textColorPrimary">@color/light_gray</item>
+        <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
     <!-- Search Activity -->
@@ -130,14 +130,14 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
-        <item name="android:windowBackground">@color/windowBackground</item>
+        <item name="android:windowBackground">@color/window_background</item>
     </style>
 
     <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
-        <item name="android:colorBackground">@color/windowBackground</item>
+        <item name="android:colorBackground">@color/window_background</item>
     </style>
 
     <!-- PIN screens -->
