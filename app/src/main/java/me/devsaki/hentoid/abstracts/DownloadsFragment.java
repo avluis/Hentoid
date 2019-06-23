@@ -200,9 +200,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
                 return R.drawable.ic_menu_sort_321;
             case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
-                return R.drawable.ic_menu_sort_by_date;
+                return R.drawable.ic_menu_sort_123;
             case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
-                return R.drawable.ic_menu_sort_alpha;
+                return R.drawable.ic_menu_sort_az;
             case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
                 return R.drawable.ic_menu_sort_za;
             case Preferences.Constant.ORDER_CONTENT_LEAST_READ:

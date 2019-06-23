@@ -122,7 +122,7 @@
         android:clickable="true"
         android:focusable="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_menu_sort_by_date"
+        android:src="@drawable/ic_menu_sort_123"
         android:tint="@color/darkGray"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toRightOf="@id/viewer_prev_book_btn"

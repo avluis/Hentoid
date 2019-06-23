@@ -229,7 +229,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         v.setActivated(!v.isActivated());
 
         if (v.isActivated()) ((ImageButton)v).setImageResource(R.drawable.ic_menu_sort_random);
-        else ((ImageButton)v).setImageResource(R.drawable.ic_menu_sort_by_date);
+        else ((ImageButton)v).setImageResource(R.drawable.ic_menu_sort_123);
 
         viewModel.setShuffleImages(v.isActivated());
         goToPage(1);
