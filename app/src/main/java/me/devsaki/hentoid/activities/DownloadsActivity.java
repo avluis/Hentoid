@@ -167,11 +167,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
     }
 
     @Override
-    protected String getToolbarTitle() {
-        return getString(R.string.title_activity_downloads);
-    }
-
-    @Override
     public void addBackInterface(BaseFragment fragment) {
         this.baseFragment = fragment;
     }

@@ -24,7 +24,6 @@ import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
-import me.devsaki.hentoid.activities.sources.PandaActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
 import me.devsaki.hentoid.activities.sources.TsuminoActivity;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -226,8 +225,6 @@ public class Content implements Serializable {
                 return PururinActivity.class;
             case EHENTAI:
                 return EHentaiActivity.class;
-            case PANDA:
-                return PandaActivity.class;
             case FAKKU2:
                 return FakkuActivity.class;
             case NEXUS:

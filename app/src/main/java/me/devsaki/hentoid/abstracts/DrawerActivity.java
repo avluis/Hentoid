@@ -2,24 +2,38 @@ package me.devsaki.hentoid.abstracts;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ListView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import eu.davidea.flexibleadapter.FlexibleAdapter;
+import eu.davidea.flexibleadapter.SelectableAdapter;
+import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.ui.CompoundAdapter;
-import me.devsaki.hentoid.ui.DrawerMenuContents;
+import me.devsaki.hentoid.activities.AboutActivity;
+import me.devsaki.hentoid.enums.DrawerItem;
+import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.events.UpdateEvent;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.viewholders.DrawerItemFlex;
 import timber.log.Timber;
 
 /**
@@ -33,18 +47,31 @@ import timber.log.Timber;
 public abstract class DrawerActivity extends BaseActivity implements DrawerLayout.DrawerListener {
 
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
-    private DrawerMenuContents mDrawerMenuContents;
+    private FlexibleAdapter<DrawerItemFlex> drawerAdapter;
     private ActionBarDrawerToggle mDrawerToggle;
     private int itemToOpen = -1;
     private int currentPos = -1;
     private boolean itemTapped;
 
-    protected abstract String getToolbarTitle();
+    protected final String getToolbarTitle() {
+        return getString(R.string.title_activity_downloads);
+    }
 
     protected void initializeNavigationDrawer(Toolbar toolbar) {
         mDrawerLayout = findViewById(R.id.drawer_layout);
-        mDrawerList = findViewById(R.id.drawer_list);
+        RecyclerView recyclerView = findViewById(R.id.drawer_list);
+
+        drawerAdapter = new FlexibleAdapter<>(null);
+        drawerAdapter.setMode(SelectableAdapter.Mode.SINGLE);
+        recyclerView.setAdapter(drawerAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+
+        DividerItemDecoration divider = new
+                DividerItemDecoration(recyclerView.getContext(),
+                DividerItemDecoration.VERTICAL);
+        Drawable d = ContextCompat.getDrawable(getBaseContext(), R.drawable.line_divider);
+        if (d != null) divider.setDrawable(d);
+        recyclerView.addItemDecoration(divider);
 
         mDrawerToggle = new ActionBarDrawerToggle(
                 this,
@@ -83,10 +110,10 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
     public void onDrawerClosed(@NonNull View drawerView) {
         if (mDrawerToggle != null) mDrawerToggle.onDrawerClosed(drawerView);
 
-        int position = itemToOpen;
-        if (position >= 0 && itemTapped) {
+        if (itemToOpen >= 0 && itemTapped) {
             itemTapped = false;
-            Class activityClass = mDrawerMenuContents.getActivity(position);
+            currentPos = itemToOpen;
+            Class activityClass = DrawerItem.getActivity(itemToOpen);
             Intent intent = new Intent(this, activityClass);
             Bundle bundle = ActivityOptionsCompat
                     .makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
@@ -101,47 +128,39 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         if (mDrawerToggle != null) mDrawerToggle.onDrawerStateChanged(newState);
     }
 
-    private void populateDrawerItems() {
-        mDrawerMenuContents = new DrawerMenuContents();
-        updateDrawerPosition();
-        final int selectedPosition = currentPos;
-        final int unselectedColor = ContextCompat.getColor(getApplicationContext(),
-                R.color.drawer_item_unselected_background);
-        final int selectedColor = ContextCompat.getColor(getApplicationContext(),
-                R.color.drawer_item_selected_background);
-        final CompoundAdapter adapter = new CompoundAdapter(this, mDrawerMenuContents.getItems(),
-                R.layout.drawer_list_item,
-                new String[]{DrawerMenuContents.FIELD_TITLE}, new int[]{R.id.drawer_item_title}) {
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
-                int color = unselectedColor;
-                if (position == selectedPosition) {
-                    color = selectedColor;
-                }
-                view.setBackgroundColor(color);
-                return view;
-            }
-        };
-
-        mDrawerList.setOnItemClickListener((parent, view, position, id) -> {
-            if (position != selectedPosition) {
-                mDrawerList.setItemChecked(position, true);
-                itemToOpen = position;
-                itemTapped = true;
-            }
+    private boolean onDrawerItemClick(View view, int position) {
+        if (position != currentPos) {
+            itemToOpen = position;
+            itemTapped = true;
+            drawerAdapter.addSelection(position);
             mDrawerLayout.closeDrawers();
-        });
-        mDrawerList.setAdapter(adapter);
+            return true;
+        }
+        return false;
+    }
+
+    private void populateDrawerItems() {
+        for (DrawerItem item : DrawerItem.values()) drawerAdapter.addItem(new DrawerItemFlex(item));
+
+        FlexibleAdapter.OnItemClickListener clickListenerAdapter = this::onDrawerItemClick;
+        drawerAdapter.addListener(clickListenerAdapter);
+
+        updateDrawerPosition();
+//        drawerAdapter.toggleSelection(DrawerItem.getPosition(this.getClass())); // Init-time
     }
 
     protected void updateDrawerPosition() {
-        final int selectedPosition = mDrawerMenuContents.getPosition(this.getClass());
+        final int selectedPosition = DrawerItem.getPosition(this.getClass());
         updateSelected(selectedPosition);
     }
 
     private void updateSelected(int position) {
-        currentPos = position;
+        if (currentPos != position) {
+            drawerAdapter.toggleSelection(position);
+            drawerAdapter.notifyItemChanged(currentPos);
+            drawerAdapter.notifyItemChanged(position);
+            currentPos = position;
+        }
     }
 
     @Override
@@ -222,5 +241,32 @@ public abstract class DrawerActivity extends BaseActivity implements DrawerLayou
         if (isRoot) {
             mDrawerToggle.syncState();
         }
+    }
+
+    private void showFlagAboutItem()
+    {
+        int aboutItemPos = DrawerItem.getPosition(AboutActivity.class);
+        DrawerItemFlex item = drawerAdapter.getItem(aboutItemPos);
+        if (item != null) {
+            item.setFlag(true);
+            drawerAdapter.notifyItemChanged(aboutItemPos);
+        }
+    }
+
+    @Subscribe(sticky = true, threadMode = ThreadMode.MAIN)
+    public void onUpdateEvent(UpdateEvent event) {
+        if (event.hasNewVersion) showFlagAboutItem();
+    }
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (!EventBus.getDefault().isRegistered(this)) EventBus.getDefault().register(this);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (EventBus.getDefault().isRegistered(this)) EventBus.getDefault().unregister(this);
     }
 }

@@ -56,7 +56,7 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterVie
 
         private SiteAdapterViewHolder(View itemView) {
             super(itemView);
-            textView = itemView.findViewById(R.id.item_text_txt);
+            textView = itemView.findViewById(R.id.drawer_item_txt);
         }
 
         void bindTo(Site site) {
