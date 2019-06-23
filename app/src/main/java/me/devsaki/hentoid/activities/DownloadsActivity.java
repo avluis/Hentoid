@@ -125,7 +125,6 @@ public class DownloadsActivity extends DrawerActivity implements BackInterface {
         super.onResume();
 
         updateSelectedFragment();
-        updateDrawerPosition();
     }
 
     private void updateSelectedFragment() {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.design.widget.NavigationView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/navigation_view"
     android:layout_width="@dimen/drawer_layout_width"
@@ -23,8 +24,8 @@
             android:fastScrollEnabled="false"
             android:scrollbars="none"
             android:textIsSelectable="false"
-            tools:listitem="@layout/item_drawer"
-        />
+            app:layoutManager="android.support.v7.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_drawer" />
 
     </LinearLayout>
 </android.support.design.widget.NavigationView>

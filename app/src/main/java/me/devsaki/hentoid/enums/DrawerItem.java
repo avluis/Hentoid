@@ -2,9 +2,6 @@ package me.devsaki.hentoid.enums;
 
 import android.support.v7.app.AppCompatActivity;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
 import me.devsaki.hentoid.activities.DownloadsActivity;
@@ -32,7 +29,7 @@ public enum DrawerItem {
     FAKKU("FAKKU", R.drawable.ic_menu_fakku, FakkuActivity.class),
     NEXUS("HENTAI NEXUS", R.drawable.ic_menu_nexus, NexusActivity.class),
     //    MIKAN("MIKAN SEARCH", R.drawable.ic_menu_mikan, MikanSearchActivity.class),
-    HOME("HOME", R.drawable.ic_menu_home, DownloadsActivity.class),
+    //    HOME("HOME", R.drawable.ic_menu_home, DownloadsActivity.class),
     QUEUE("QUEUE", R.drawable.ic_menu_queue, QueueActivity.class),
     PREFS("PREFERENCES", R.drawable.ic_menu_prefs, PrefsActivity.class),
     ABOUT("ABOUT", R.drawable.ic_menu_about, AboutActivity.class);
@@ -45,24 +42,5 @@ public enum DrawerItem {
         this.label = label;
         this.icon = icon;
         this.activityClass = activityClass;
-    }
-
-    @Nullable
-    public static Class<? extends AppCompatActivity> getActivity(int position) {
-        int result = 0;
-        for (DrawerItem item : DrawerItem.values()) {
-            if (position == result) return item.activityClass;
-            result++;
-        }
-        return null;
-    }
-
-    public static int getPosition(@Nonnull Class<? extends AppCompatActivity> activityClass) {
-        int result = 0;
-        for (DrawerItem item : DrawerItem.values()) {
-            if (item.activityClass.equals(activityClass)) return result;
-            result++;
-        }
-        return -1;
     }
 }
