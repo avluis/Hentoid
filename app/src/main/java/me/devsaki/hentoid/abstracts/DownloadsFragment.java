@@ -187,6 +187,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Current search tags
     private List<Attribute> selectedSearchTags = new ArrayList<>();
     // Last search parameters; used to determine whether or not page number should be reset to 1
+    // NB : populated by getCurrentSearchParams
     private String lastSearchParams = "";
 
 
@@ -743,7 +744,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         builder.setMode(mode);
         if (!selectedSearchTags.isEmpty())
-            builder.setUri(Helper.buildSearchUri(selectedSearchTags));
+            builder.setUri(SearchActivityBundle.Builder.buildSearchUri(selectedSearchTags));
         search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
@@ -1151,7 +1152,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                     if (searchUri != null) {
                         setQuery(searchUri.getPath());
-                        selectedSearchTags = Helper.parseSearchUri(searchUri);
+                        selectedSearchTags = SearchActivityBundle.Parser.parseSearchUri(searchUri);
 
                         searchLibrary();
                     }

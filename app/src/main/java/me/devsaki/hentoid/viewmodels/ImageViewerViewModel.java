@@ -18,14 +18,14 @@ import me.devsaki.hentoid.database.domains.Content;
 public class ImageViewerViewModel extends AndroidViewModel {
 
     // Settings
-    private boolean shuffleImages = false;
+    private boolean shuffleImages = false;      // True if images have to be shuffled; false if presented in the book order
 
     // Per book data
-    private final MutableLiveData<List<String>> images = new MutableLiveData<>();
+    private final MutableLiveData<List<String>> images = new MutableLiveData<>();   // Currently displayed set of images
 
-    private List<String> initialImagesList;   // Initial URL list in the right order, to fallback when shuffling is disabled
-    private long contentId;
-    private int currentPosition;            // 0-based position, as in "programmatic index"
+    private List<String> initialImagesList;     // Initial URL list in the right order, to fallback when shuffling is disabled
+    private long contentId;                     // Database ID of currently displayed book
+    private int currentPosition;                // 0-based position, as in "programmatic index"
 
 
     public ImageViewerViewModel(@NonNull Application application) {
