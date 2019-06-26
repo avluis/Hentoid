@@ -938,14 +938,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @return Search parameters thumbprint
      */
     private String getCurrentSearchParams(int contentSortOrder) {
-        StringBuilder result = new StringBuilder(mode == MODE_LIBRARY ? "L" : "M");
-        result.append(".").append(query);
-        for (Attribute a : selectedSearchTags) result.append(".").append(a.getName());
-        result.append(".").append(booksPerPage);
-        result.append(".").append(contentSortOrder);
-        result.append(".").append(filterFavourites);
-
-        return result.toString();
+        return (mode == MODE_LIBRARY ? "L" : "M") +
+                "|" + query +
+                "|" + SearchActivityBundle.Builder.buildSearchUri(selectedSearchTags) +
+                "|" + booksPerPage +
+                "|" + contentSortOrder +
+                "|" + filterFavourites;
     }
 
     protected abstract boolean forceSearchFromPageOne();
