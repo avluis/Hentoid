@@ -11,6 +11,7 @@ import javax.annotation.Nullable;
 public class ImageViewerActivityBundle {
     private static final String KEY_URIS_STR = "urisStr";
     private static final String KEY_CONTENT_ID = "contentId";
+    private static final String KEY_SEARCH_PARAMS = "searchParams";
 
     private ImageViewerActivityBundle() {
         throw new UnsupportedOperationException();
@@ -27,6 +28,10 @@ public class ImageViewerActivityBundle {
         public void setUrisStr(List<String> uris) {
             ArrayList<String> uriList = new ArrayList<>(uris);
             bundle.putStringArrayList(KEY_URIS_STR, uriList);
+        }
+
+        public void setSearchParams(Bundle params) {
+            bundle.putBundle(KEY_SEARCH_PARAMS, params);
         }
 
         public Bundle getBundle() {
@@ -49,6 +54,10 @@ public class ImageViewerActivityBundle {
 
         public long getContentId() {
             return bundle.getLong(KEY_CONTENT_ID, 0);
+        }
+
+        public Bundle getSearchParams() {
+            return bundle.getBundle(KEY_SEARCH_PARAMS);
         }
     }
 }

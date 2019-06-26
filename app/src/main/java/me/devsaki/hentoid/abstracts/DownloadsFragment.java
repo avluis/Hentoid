@@ -42,6 +42,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -52,10 +54,7 @@ import me.devsaki.hentoid.adapters.ContentAdapter;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.mikan.MikanCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
-import me.devsaki.hentoid.database.ObjectBoxDB;
-import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
@@ -72,6 +71,7 @@ import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.RandomSeedSingleton;
 import me.devsaki.hentoid.util.ToastUtil;
+import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
 import static com.annimon.stream.Collectors.toCollection;
@@ -97,11 +97,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
 
     // Save state constants
-
-    private static final String KEY_SELECTED_TAGS = "selected_tags";
-    private static final String KEY_FILTER_FAVOURITES = "filter_favs";
     private static final String KEY_CURRENT_PAGE = "current_page";
-    private static final String KEY_QUERY = "query";
     private static final String KEY_MODE = "mode";
 
 
@@ -167,8 +163,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private boolean storagePermissionChecked = false;
     // Mode : show library or show Mikan search
     private int mode = MODE_LIBRARY;
-    // Collection accessor (DB or external, depending on mode)
-    private CollectionAccessor collectionAccessor;
     // Total count of book in entire selected/queried collection (Adapter is in charge of updating it)
     private long mTotalSelectedCount = -1; // -1 = uninitialized (no query done yet)
     // Total count of book in entire collection (Adapter is in charge of updating it)
@@ -180,16 +174,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
 
     // === SEARCH
-    // Favourite filter active
-    private boolean filterFavourites = false;
-    // Expression typed in the search bar
-    protected String query = "";
-    // Current search tags
-    private List<Attribute> selectedSearchTags = new ArrayList<>();
+    private ContentSearchManager searchManager;
     // Last search parameters; used to determine whether or not page number should be reset to 1
     // NB : populated by getCurrentSearchParams
     private String lastSearchParams = "";
-
 
     // To be documented
     private ActionMode mActionMode;
@@ -345,6 +333,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
+    private void openBook(Content content)
+    {
+        Bundle bundle = new Bundle();
+        saveInstanceState(bundle);
+        FileHelper.openContent(requireContext(), content, bundle);
+    }
+
     /**
      * Updates class variables with Hentoid user preferences
      */
@@ -430,18 +425,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
+        saveInstanceState(outState);
+    }
 
-        outState.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
-        outState.putString(KEY_QUERY, query);
+    private void saveInstanceState(@Nonnull Bundle outState) {
         outState.putInt(KEY_CURRENT_PAGE, currentPage);
         outState.putInt(KEY_MODE, mode);
-
-        long[] selectedTagIds = new long[selectedSearchTags.size()];
-        int index = 0;
-        for (Attribute a : selectedSearchTags) {
-            selectedTagIds[index++] = a.getId();
-        }
-        outState.putLongArray(KEY_SELECTED_TAGS, selectedTagIds);
+        searchManager.saveToBundle(outState);
     }
 
     @Override
@@ -449,21 +439,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         super.onViewStateRestored(state);
 
         if (state != null) {
-            filterFavourites = state.getBoolean(KEY_FILTER_FAVOURITES, false);
-            query = state.getString(KEY_QUERY, "");
             currentPage = state.getInt(KEY_CURRENT_PAGE);
             mode = state.getInt(KEY_MODE);
-
-            long[] selectedTagIds = state.getLongArray(KEY_SELECTED_TAGS);
-            ObjectBoxDB db = ObjectBoxDB.getInstance(requireContext());
-            if (selectedTagIds != null) {
-                for (long i : selectedTagIds) {
-                    Attribute a = db.selectAttributeById(i);
-                    if (a != null) {
-                        selectedSearchTags.add(a);
-                    }
-                }
-            }
+            searchManager.loadFromBundle(state, requireContext());
         }
     }
 
@@ -480,7 +458,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Override
     public void onDestroy() {
-        collectionAccessor.dispose();
+        searchManager.dispose();
         mAdapter.dispose();
         super.onDestroy();
     }
@@ -489,18 +467,19 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public View onCreateView(@NonNull LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         if (this.getArguments() != null) mode = this.getArguments().getInt("mode");
-        collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
+        CollectionAccessor collectionAccessor = (MODE_LIBRARY == mode) ? new ObjectBoxCollectionAccessor(mContext) : new MikanCollectionAccessor(mContext);
+        searchManager = new ContentSearchManager(collectionAccessor);
 
         View rootView = inflater.inflate(R.layout.fragment_downloads, container, false);
 
-        initUI(rootView);
+        initUI(rootView, collectionAccessor);
         attachScrollListener();
         attachOnClickListeners(rootView);
 
         return rootView;
     }
 
-    protected void initUI(View rootView) {
+    protected void initUI(View rootView, CollectionAccessor accessor) {
         loadingText = rootView.findViewById(R.id.loading);
         emptyText = rootView.findViewById(R.id.empty);
         emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
@@ -514,11 +493,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         mAdapter = new ContentAdapter.Builder()
                 .setContext(mContext)
-                .setCollectionAccessor(collectionAccessor)
+                .setCollectionAccessor(accessor)
                 .setDisplayMode(mode)
                 .setSortComparator(Content.getComparator(contentSortOrder))
                 .setItemSelectListener(this)
                 .setOnContentRemovedListener(this::onContentRemoved)
+                .setOpenBookAction(this::openBook)
                 .build();
 
         // Main view
@@ -592,7 +572,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         filterClearButton.setOnClickListener(v -> {
             setQuery("");
-            selectedSearchTags.clear();
+            searchManager.clearSelectedSearchTags();
             filterBar.setVisibility(View.GONE);
             searchLibrary();
         });
@@ -631,7 +611,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * Clear search query and hide the search view if asked so
      */
     protected void clearQuery() {
-        setQuery(query = "");
+        setQuery("");
         searchLibrary();
     }
 
@@ -682,12 +662,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 setSearchPaneVisibility(true);
 
                 // Re-sets the query on screen, since default behaviour removes it right after collapse _and_ expand
-                if (query != null && !query.isEmpty())
+                if (!searchManager.getQuery().isEmpty())
                     // Use of handler allows to set the value _after_ the UI has auto-cleared it
                     // Without that handler the view displays with an empty value
                     new Handler().postDelayed(() -> {
                         invalidateNextQueryTextChange = true;
-                        mainSearchView.setQuery(query, false);
+                        mainSearchView.setQuery(searchManager.getQuery(), false);
                     }, 100);
 
                 return true;
@@ -743,8 +723,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         SearchActivityBundle.Builder builder = new SearchActivityBundle.Builder();
 
         builder.setMode(mode);
-        if (!selectedSearchTags.isEmpty())
-            builder.setUri(SearchActivityBundle.Builder.buildSearchUri(selectedSearchTags));
+        if (!searchManager.getTags().isEmpty())
+            builder.setUri(SearchActivityBundle.Builder.buildSearchUri(searchManager.getTags()));
         search.putExtras(builder.getBundle());
 
         startActivityForResult(search, 999);
@@ -814,7 +794,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * Toggles favourite filter on a book and updates the UI accordingly
      */
     private void toggleFavouriteFilter() {
-        filterFavourites = !filterFavourites;
+        searchManager.setFilterFavourites(!searchManager.isFilterFavourites());
         updateFavouriteFilter();
         searchLibrary();
     }
@@ -823,12 +803,11 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * Update favourite filter button appearance (icon and color) on a book
      */
     private void updateFavouriteFilter() {
-        favsMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
+        favsMenu.setIcon(searchManager.isFilterFavourites() ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
     }
 
     private void submitContentSearchQuery(final String s) {
-        query = s;
-        selectedSearchTags.clear(); // If user searches in main toolbar, universal search takes over advanced search
+        searchManager.clearSelectedSearchTags(); // If user searches in main toolbar, universal search takes over advanced search
         setQuery(s);
         searchLibrary();
     }
@@ -842,19 +821,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void setQuery(String query) {
-        this.query = query;
+        searchManager.setQuery(query);
         currentPage = 1;
-    }
-
-    /**
-     * Returns the current value of the query typed in the search toolbar; empty string if no query
-     * typed
-     *
-     * @return Current value of the query typed in the search toolbar; empty string if no query
-     * typed
-     */
-    private String getQuery() {
-        return query == null ? "" : query;
     }
 
     private void clearSelection() {
@@ -922,14 +890,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-
     /**
      * Indicates whether a search query is active (using universal search or advanced search) or not
      *
      * @return True if a search query is is active (using universal search or advanced search); false if not (=whole unfiltered library selected)
      */
     private boolean isSearchQueryActive() {
-        return (getQuery().length() > 0 || selectedSearchTags.size() > 0);
+        return (!searchManager.getQuery().isEmpty() || !searchManager.getTags().isEmpty());
     }
 
     /**
@@ -937,13 +904,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      *
      * @return Search parameters thumbprint
      */
-    private String getCurrentSearchParams(int contentSortOrder) {
+    private String getCurrentSearchParams() {
         return (mode == MODE_LIBRARY ? "L" : "M") +
-                "|" + query +
-                "|" + SearchActivityBundle.Builder.buildSearchUri(selectedSearchTags) +
+                "|" + searchManager.getQuery() +
+                "|" + SearchActivityBundle.Builder.buildSearchUri(searchManager.getTags()) +
                 "|" + booksPerPage +
-                "|" + contentSortOrder +
-                "|" + filterFavourites;
+                "|" + searchManager.getContentSortOrder() +
+                "|" + searchManager.isFilterFavourites();
     }
 
     protected abstract boolean forceSearchFromPageOne();
@@ -959,24 +926,19 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      */
     protected void searchLibrary(boolean showLoadingPanel) {
         isLoading = true;
-        int contentSortOrder = Preferences.getContentSortOrder();
+        searchManager.setContentSortOrder(Preferences.getContentSortOrder());
 
         if (showLoadingPanel) toggleUI(SHOW_LOADING);
 
         // Searches start from page 1 if they are new or if the fragment implementation forces it
-        String currentSearchParams = getCurrentSearchParams(contentSortOrder);
+        String currentSearchParams = getCurrentSearchParams();
         if (!currentSearchParams.equals(lastSearchParams) || forceSearchFromPageOne()) {
             currentPage = 1;
             mListView.scrollToPosition(0);
         }
         lastSearchParams = currentSearchParams;
 
-        if (!getQuery().isEmpty())
-            collectionAccessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, this); // Universal search
-        else if (!selectedSearchTags.isEmpty())
-            collectionAccessor.searchBooks("", selectedSearchTags, currentPage, booksPerPage, contentSortOrder, filterFavourites, this); // Advanced search
-        else
-            collectionAccessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, this); // Default search (display recent)
+        searchManager.searchLibrary(currentPage, booksPerPage, this);
     }
 
     protected abstract void showToolbar(boolean show);
@@ -993,7 +955,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void displayNoResults() {
-        if (!query.isEmpty()) {
+        if (!searchManager.getQuery().isEmpty()) {
             emptyText.setText(R.string.search_entry_not_found);
         } else {
             emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
@@ -1046,14 +1008,14 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         // User searches a book ID
         // => Suggests searching through all sources except those where the selected book ID is already in the collection
-        if (Helper.isNumeric(query)) {
+        if (Helper.isNumeric(searchManager.getQuery())) {
             ArrayList<Integer> siteCodes = Stream.of(results)
-                    .filter(content -> query.equals(content.getUniqueSiteId()))
+                    .filter(content -> searchManager.getQuery().equals(content.getUniqueSiteId()))
                     .map(Content::getSite)
                     .map(Site::getCode)
                     .collect(toCollection(ArrayList::new));
 
-            SearchBookIdDialogFragment.invoke(requireFragmentManager(), query, siteCodes);
+            SearchBookIdDialogFragment.invoke(requireFragmentManager(), searchManager.getQuery(), siteCodes);
         }
 
         if (0 == totalSelectedContent) {
@@ -1150,8 +1112,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
                     if (searchUri != null) {
                         setQuery(searchUri.getPath());
-                        selectedSearchTags = SearchActivityBundle.Parser.parseSearchUri(searchUri);
-
+                        searchManager.setTags(SearchActivityBundle.Parser.parseSearchUri(searchUri));
                         searchLibrary();
                     }
                 }

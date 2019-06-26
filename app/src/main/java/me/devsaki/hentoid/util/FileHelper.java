@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
@@ -509,6 +510,10 @@ public class FileHelper {
      * @param content Content to be opened
      */
     public static void openContent(final Context context, Content content) {
+        openContent(context, content, null);
+    }
+
+    public static void openContent(final Context context, Content content, Bundle searchParams) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
 
         String rootFolderName = Preferences.getRootFolderName();
@@ -549,7 +554,7 @@ public class FileHelper {
             } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
                 openPerfectViewer(context, imageFile);
             } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
-                openHentoidViewer(context, content, files);
+                openHentoidViewer(context, content, files, searchParams);
             }
         }
 
@@ -623,13 +628,14 @@ public class FileHelper {
      * @param content    Content to be displayed
      * @param imageFiles Image files to be shown
      */
-    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, @NonNull File[] imageFiles) {
+    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, @NonNull File[] imageFiles, Bundle searchParams) {
         List<String> imagesLocations = new ArrayList<>();
         for (File f : imageFiles) imagesLocations.add(f.getAbsolutePath());
 
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
         builder.setUrisStr(imagesLocations);
+        if (searchParams != null) builder.setSearchParams(searchParams);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
         viewer.putExtras(builder.getBundle());

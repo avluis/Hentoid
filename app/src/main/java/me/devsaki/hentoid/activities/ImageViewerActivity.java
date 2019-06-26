@@ -40,6 +40,8 @@ public class ImageViewerActivity extends AppCompatActivity {
             viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
             viewModel.setImages(uris);
             viewModel.setContentId(parser.getContentId());
+            Bundle searchParams = parser.getSearchParams();
+            if (searchParams != null) viewModel.setSearchParams(searchParams);
         }
 
         PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION);

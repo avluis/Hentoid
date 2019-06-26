@@ -8,6 +8,7 @@ import java.util.List;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.DownloadsFragment;
+import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.ui.CarouselDecorator;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -24,8 +25,8 @@ public class PagerFragment extends DownloadsFragment {
 
 
     @Override
-    protected void initUI(View rootView) {
-        super.initUI(rootView);
+    protected void initUI(View rootView, CollectionAccessor accessor) {
+        super.initUI(rootView, accessor);
 
         RecyclerView pageCarousel = rootView.findViewById(R.id.pager);
         pageCarousel.setHasFixedSize(true);

@@ -4,6 +4,8 @@ import android.app.Application;
 import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.content.Context;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -11,8 +13,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
+import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.widget.ContentSearchManager;
 
 
 public class ImageViewerViewModel extends AndroidViewModel {
@@ -22,6 +28,8 @@ public class ImageViewerViewModel extends AndroidViewModel {
 
     // Per book data
     private final MutableLiveData<List<String>> images = new MutableLiveData<>();   // Currently displayed set of images
+
+    private ContentSearchManager searchManager = null;
 
     private List<String> initialImagesList;     // Initial URL list in the right order, to fallback when shuffling is disabled
     private long contentId;                     // Database ID of currently displayed book
@@ -54,6 +62,13 @@ public class ImageViewerViewModel extends AndroidViewModel {
         this.contentId = contentId;
     }
 
+    public void setSearchParams(@Nonnull Bundle bundle) {
+        Context ctx = getApplication().getApplicationContext();
+        searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
+        searchManager.loadFromBundle(bundle, ctx);
+    }
+
+
     public void setCurrentPosition(int position) {
         this.currentPosition = position;
     }
@@ -80,6 +95,12 @@ public class ImageViewerViewModel extends AndroidViewModel {
         return 0;
     }
 
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        searchManager.dispose();
+    }
+
     public void saveCurrentPosition() {
         ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
         if (contentId > 0) {
@@ -97,5 +118,20 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (contentId > 0) {
             return db.selectContentById(contentId);
         } else return null;
+    }
+
+    public void loadNextContent()
+    {
+        loadContent(+1);
+    }
+
+    public void loadPreviousContent()
+    {
+        loadContent(-1);
+    }
+
+    private void loadContent(int delta)
+    {
+
     }
 }

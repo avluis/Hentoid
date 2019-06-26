@@ -1,12 +1,10 @@
 package me.devsaki.hentoid.listener;
 
-import android.content.Context;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 
 import me.devsaki.hentoid.database.domains.Content;
-import me.devsaki.hentoid.util.FileHelper;
 import timber.log.Timber;
 
 /**
@@ -17,15 +15,13 @@ public class ContentClickListener implements OnClickListener, OnLongClickListene
 
     // TODO - rework this class : each time it is used, either onClick or onLongClick are overriden
 
-    private final Context context;
     private final Content content;
     private final ItemSelectListener listener;
     private final int position;
     private int selectedItemCount;
     private boolean selected;
 
-    protected ContentClickListener(Context context, Content content, int pos, ItemSelectListener listener) {
-        this.context = context;
+    protected ContentClickListener(Content content, int pos, ItemSelectListener listener) {
         this.content = content;
         this.position = pos;
         this.selectedItemCount = 0;
@@ -45,14 +41,6 @@ public class ContentClickListener implements OnClickListener, OnLongClickListene
         }
     }
 
-    @Override
-    public void onClick(View v) {
-        if (!selected) {
-            FileHelper.openContent(context, content);
-        }
-    }
-
-    @Override
     public boolean onLongClick(View v) {
         updateSelector();
 
@@ -60,6 +48,10 @@ public class ContentClickListener implements OnClickListener, OnLongClickListene
                 position, content.getTitle(), (selected ? "selected." : "unselected."));
 
         return true;
+    }
+
+    public void onClick(View v) {
+        // Empty; ready to be overriden
     }
 
     public interface ItemSelectListener {
