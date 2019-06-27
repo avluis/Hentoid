@@ -42,8 +42,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nonnull;
-
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -97,7 +95,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
 
     // Save state constants
-    private static final String KEY_CURRENT_PAGE = "current_page";
     private static final String KEY_MODE = "mode";
 
 
@@ -145,8 +142,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // === MISC. USAGE
     protected Context mContext;
-    // Current page of collection view (NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list)
-    protected int currentPage = 1;
     // Adapter in charge of book list display
     protected ContentAdapter mAdapter;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
@@ -174,7 +169,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
 
     // === SEARCH
-    private ContentSearchManager searchManager;
+    protected ContentSearchManager searchManager;
     // Last search parameters; used to determine whether or not page number should be reset to 1
     // NB : populated by getCurrentSearchParams
     private String lastSearchParams = "";
@@ -333,10 +328,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
     }
 
-    private void openBook(Content content)
-    {
+    private void openBook(Content content) {
         Bundle bundle = new Bundle();
-        saveInstanceState(bundle);
+        searchManager.saveToBundle(bundle);
         FileHelper.openContent(requireContext(), content, bundle);
     }
 
@@ -425,11 +419,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        saveInstanceState(outState);
-    }
-
-    private void saveInstanceState(@Nonnull Bundle outState) {
-        outState.putInt(KEY_CURRENT_PAGE, currentPage);
         outState.putInt(KEY_MODE, mode);
         searchManager.saveToBundle(outState);
     }
@@ -439,7 +428,6 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         super.onViewStateRestored(state);
 
         if (state != null) {
-            currentPage = state.getInt(KEY_CURRENT_PAGE);
             mode = state.getInt(KEY_MODE);
             searchManager.loadFromBundle(state, requireContext());
         }
@@ -822,7 +810,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     private void setQuery(String query) {
         searchManager.setQuery(query);
-        currentPage = 1;
+        searchManager.setCurrentPage(1);
     }
 
     private void clearSelection() {
@@ -933,12 +921,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         // Searches start from page 1 if they are new or if the fragment implementation forces it
         String currentSearchParams = getCurrentSearchParams();
         if (!currentSearchParams.equals(lastSearchParams) || forceSearchFromPageOne()) {
-            currentPage = 1;
+            searchManager.setCurrentPage(1);
             mListView.scrollToPosition(0);
         }
         lastSearchParams = currentSearchParams;
 
-        searchManager.searchLibrary(currentPage, booksPerPage, this);
+        searchManager.searchLibrary(booksPerPage, this);
     }
 
     protected abstract void showToolbar(boolean show);
@@ -951,7 +939,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * @return true if last page has been reached
      */
     protected boolean isLastPage() {
-        return (currentPage * booksPerPage >= mTotalSelectedCount);
+        return (searchManager.getCurrentPage() * booksPerPage >= mTotalSelectedCount);
     }
 
     private void displayNoResults() {
@@ -1129,7 +1117,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         mTotalSelectedCount = mTotalSelectedCount - i;
         mTotalCount = mTotalCount - i;
 
-        if (0 == mTotalCount) currentPage = 1;
+        if (0 == mTotalCount) searchManager.setCurrentPage(1);
 
         if (0 == mTotalSelectedCount) {
             displayNoResults();

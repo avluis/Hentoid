@@ -51,9 +51,9 @@ public class PagerFragment extends DownloadsFragment {
     private void attachPrevious(View rootView) {
         ImageButton btnPrevious = rootView.findViewById(R.id.btnPrevious);
         btnPrevious.setOnClickListener(v -> {
-            if (currentPage > 1 && !isLoading) {
-                currentPage--;
-                pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
+            if (searchManager.getCurrentPage() > 1 && !isLoading) {
+                searchManager.decreaseCurrentPage();
+                pager.setCurrentPage(searchManager.getCurrentPage()); // Cleaner when displayed on bottom bar _before_ the update starts
                 searchLibrary();
             } else if (booksPerPage > 0 && !isLoading) {
                 ToastUtil.toast(mContext, R.string.not_previous_page);
@@ -70,8 +70,8 @@ public class PagerFragment extends DownloadsFragment {
                 Timber.d("No limit per page.");
             } else {
                 if (!isLastPage() && !isLoading) {
-                    currentPage++;
-                    pager.setCurrentPage(currentPage); // Cleaner when displayed on bottom bar _before_ the update starts
+                    searchManager.increaseCurrentPage();
+                    pager.setCurrentPage(searchManager.getCurrentPage()); // Cleaner when displayed on bottom bar _before_ the update starts
                     searchLibrary();
                 } else if (isLastPage()) {
                     ToastUtil.toast(mContext, R.string.not_next_page);
@@ -85,8 +85,8 @@ public class PagerFragment extends DownloadsFragment {
     }
 
     private void onPageChange(int page) {
-        if (page != currentPage) {
-            currentPage = page;
+        if (page != searchManager.getCurrentPage()) {
+            searchManager.setCurrentPage(page);
             searchLibrary();
         }
     }
@@ -102,7 +102,7 @@ public class PagerFragment extends DownloadsFragment {
         toggleUI(SHOW_RESULT);
 
         pager.setPageCount((int) Math.ceil(totalSelectedContent * 1.0 / booksPerPage));
-        pager.setCurrentPage(currentPage);
+        pager.setCurrentPage(searchManager.getCurrentPage());
         mListView.scrollToPosition(0);
     }
 }

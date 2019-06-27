@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -503,6 +504,40 @@ public class FileHelper {
         return f.exists() ? f.getAbsolutePath() : coverUrl;
     }
 
+    @Nullable
+    public static File[] getPictureFilesFromContent(final Context context, Content content) {
+        String rootFolderName = Preferences.getRootFolderName();
+        File dir = new File(rootFolderName, content.getStorageFolder());
+
+        Timber.d("Opening: %s from: %s", content.getTitle(), dir);
+        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
+            Timber.d("File not found!! Exiting method.");
+            ToastUtil.toast(R.string.sd_access_error);
+            return null;
+        }
+
+        ToastUtil.toast("Opening: " + content.getTitle());
+
+        File[] files = dir.listFiles(
+                file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
+                        (
+                                file.getName().toLowerCase().endsWith("jpg")
+                                        || file.getName().toLowerCase().endsWith("jpeg")
+                                        || file.getName().toLowerCase().endsWith("png")
+                                        || file.getName().toLowerCase().endsWith("gif")
+                        )
+                )
+        );
+        if (files != null && files.length > 0) Arrays.sort(files);
+        else {
+            String message = context.getString(R.string.image_file_not_found)
+                    .replace("@dir", dir.getAbsolutePath());
+            ToastUtil.toast(context, message);
+        }
+
+        return files;
+    }
+
     /**
      * Open the given content using the viewer defined in user preferences
      *
@@ -516,38 +551,10 @@ public class FileHelper {
     public static void openContent(final Context context, Content content, Bundle searchParams) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
 
-        String rootFolderName = Preferences.getRootFolderName();
-        File dir = new File(rootFolderName, content.getStorageFolder());
+        File[] files = getPictureFilesFromContent(context, content);
+        File imageFile = (files != null && files.length > 0) ? files[0] : null;
 
-        Timber.d("Opening: %s from: %s", content.getTitle(), dir);
-        if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
-            Timber.d("File not found!! Exiting method.");
-            ToastUtil.toast(R.string.sd_access_error);
-            return;
-        }
-
-        ToastUtil.toast("Opening: " + content.getTitle());
-
-        File imageFile = null;
-        File[] files = dir.listFiles(
-                file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
-                        (
-                                file.getName().toLowerCase().endsWith("jpg")
-                                        || file.getName().toLowerCase().endsWith("jpeg")
-                                        || file.getName().toLowerCase().endsWith("png")
-                                        || file.getName().toLowerCase().endsWith("gif")
-                        )
-                )
-        );
-        if (files != null && files.length > 0) {
-            Arrays.sort(files);
-            imageFile = files[0];
-        }
-        if (imageFile == null) {
-            String message = context.getString(R.string.image_file_not_found)
-                    .replace("@dir", dir.getAbsolutePath());
-            ToastUtil.toast(context, message);
-        } else {
+        if (imageFile != null) {
             int readContentPreference = Preferences.getContentReadAction();
             if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER) {
                 openFile(context, imageFile);
@@ -556,13 +563,13 @@ public class FileHelper {
             } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
                 openHentoidViewer(context, content, files, searchParams);
             }
-        }
 
-        // TODO - properly dispose this Completable (for best practices' sake, even though it hasn't triggered any leak so far)
-        Completable.fromRunnable(() -> updateContentReads(context, content.getId(), dir))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
+            // TODO - properly dispose this Completable (for best practices' sake, even though it hasn't triggered any leak so far)
+            Completable.fromRunnable(() -> updateContentReads(context, content.getId(), imageFile.getParentFile()))
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe();
+        }
     }
 
     private static void updateContentReads(Context context, long contentId, File dir) {

@@ -91,9 +91,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         viewModel
                 .getImages()
                 .observe(this, this::onImagesChanged);
-
+/*
         if (Preferences.isViewerResumeLastLeft())
             recyclerView.scrollToPosition(viewModel.getInitialPosition());
+*/
     }
 
     @Override
@@ -186,6 +187,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
         pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
 
+        // Next/previous book
+        View prevBookButton = requireViewById(rootView, R.id.viewer_prev_book_btn);
+        prevBookButton.setOnClickListener(v -> viewModel.loadPreviousContent());
+        View nextBookButton = requireViewById(rootView, R.id.viewer_next_book_btn);
+        nextBookButton.setOnClickListener(v -> viewModel.loadNextContent());
+
         // Slider and preview
         previewImage1 = requireViewById(rootView, R.id.viewer_image_preview1);
         previewImage2 = requireViewById(rootView, R.id.viewer_image_preview2);
@@ -250,21 +257,24 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onImagesChanged(List<String> images) {
+        // TODO : hide prev/next book when 1st and last of the whole collection
         maxPosition = images.size() - 1;
         adapter.setImageUris(images);
         seekBar.setMax(maxPosition);
         updatePageDisplay();
+        if (Preferences.isViewerResumeLastLeft())
+            recyclerView.scrollToPosition(viewModel.getInitialPosition());
     }
 
     // Scroll listener
     private void onCurrentPositionChange(int position) {
-        viewModel.setCurrentPosition(position);
-        seekBar.setProgress(viewModel.getCurrentPosition());
+        viewModel.setImageIndex(position);
+        seekBar.setProgress(viewModel.getImageIndex());
         updatePageDisplay();
     }
 
     private void updatePageDisplay() {
-        String pageNum = viewModel.getCurrentPosition() + 1 + "";
+        String pageNum = viewModel.getImageIndex() + 1 + "";
         String maxPage = maxPosition + 1 + "";
 
         pageCurrentNumber.setText(pageNum);
@@ -341,19 +351,19 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     public void nextPage() {
-        if (viewModel.getCurrentPosition() == maxPosition) return;
+        if (viewModel.getImageIndex() == maxPosition) return;
         if (Preferences.isViewerTapTransitions())
-            recyclerView.smoothScrollToPosition(viewModel.getCurrentPosition() + 1);
+            recyclerView.smoothScrollToPosition(viewModel.getImageIndex() + 1);
         else
-            recyclerView.scrollToPosition(viewModel.getCurrentPosition() + 1);
+            recyclerView.scrollToPosition(viewModel.getImageIndex() + 1);
     }
 
     public void previousPage() {
-        if (viewModel.getCurrentPosition() == 0) return;
+        if (viewModel.getImageIndex() == 0) return;
         if (Preferences.isViewerTapTransitions())
-            recyclerView.smoothScrollToPosition(viewModel.getCurrentPosition() - 1);
+            recyclerView.smoothScrollToPosition(viewModel.getImageIndex() - 1);
         else
-            recyclerView.scrollToPosition(viewModel.getCurrentPosition() - 1);
+            recyclerView.scrollToPosition(viewModel.getImageIndex() - 1);
     }
 
     private void seekToPosition(int position) {
@@ -375,7 +385,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                     .into(previewImage3);
         }
 
-        if (position == viewModel.getCurrentPosition() + 1 || position == viewModel.getCurrentPosition() - 1) {
+        if (position == viewModel.getImageIndex() + 1 || position == viewModel.getImageIndex() - 1) {
             recyclerView.smoothScrollToPosition(position);
         } else {
             recyclerView.scrollToPosition(position);
@@ -385,7 +395,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     @Override
     public void goToPage(int pageNum) {
         int position = pageNum - 1;
-        if (position == viewModel.getCurrentPosition() || position < 0 || position > maxPosition)
+        if (position == viewModel.getImageIndex() || position < 0 || position > maxPosition)
             return;
         seekToPosition(position);
     }

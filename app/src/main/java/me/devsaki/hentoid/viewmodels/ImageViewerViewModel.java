@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -18,22 +19,33 @@ import javax.annotation.Nonnull;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 
 
-public class ImageViewerViewModel extends AndroidViewModel {
+public class ImageViewerViewModel extends AndroidViewModel implements ContentListener {
+
+    private static final int FIRST_OF_PAGE = -1;
+    private static final int LAST_OF_PAGE = -2;
 
     // Settings
     private boolean shuffleImages = false;      // True if images have to be shuffled; false if presented in the book order
 
-    // Per book data
-    private final MutableLiveData<List<String>> images = new MutableLiveData<>();   // Currently displayed set of images
-
     private ContentSearchManager searchManager = null;
 
-    private List<String> initialImagesList;     // Initial URL list in the right order, to fallback when shuffling is disabled
+    // Pictures data
+    private final MutableLiveData<List<String>> images = new MutableLiveData<>();   // Currently displayed set of images
+    private List<String> initialImagesList;         // Initial URL list in the right order, to fallback when shuffling is disabled
+    private int imageIndex;                         // 0-based position, as in "programmatic index"
+
+    // Collection data
+    private List<Content> contentPage = new ArrayList<>(); // Loaded page of books
+    private int contentIndex;                   // Index of currently displayed book within current page
+    private int maxPages;                       // Maximum available pages
     private long contentId;                     // Database ID of currently displayed book
-    private int currentPosition;                // 0-based position, as in "programmatic index"
 
 
     public ImageViewerViewModel(@NonNull Application application) {
@@ -55,7 +67,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
     public void setImages(List<String> imgs) {
         initialImagesList = new ArrayList<>(imgs);
         if (shuffleImages) Collections.shuffle(imgs);
-        images.setValue(imgs);
+        images.postValue(imgs);
     }
 
     public void setContentId(long contentId) {
@@ -66,15 +78,16 @@ public class ImageViewerViewModel extends AndroidViewModel {
         Context ctx = getApplication().getApplicationContext();
         searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
         searchManager.loadFromBundle(bundle, ctx);
+        searchManager.searchLibrary(Preferences.getContentPageQuantity(), this);
     }
 
 
-    public void setCurrentPosition(int position) {
-        this.currentPosition = position;
+    public void setImageIndex(int position) {
+        this.imageIndex = position;
     }
 
-    public int getCurrentPosition() {
-        return currentPosition;
+    public int getImageIndex() {
+        return imageIndex;
     }
 
     public void setShuffleImages(boolean shuffleImages) {
@@ -106,7 +119,7 @@ public class ImageViewerViewModel extends AndroidViewModel {
         if (contentId > 0) {
             Content content = db.selectContentById(contentId);
             if (content != null) {
-                content.setLastReadPageIndex(currentPosition);
+                content.setLastReadPageIndex(imageIndex);
                 db.insertContent(content);
             }
         }
@@ -120,18 +133,67 @@ public class ImageViewerViewModel extends AndroidViewModel {
         } else return null;
     }
 
-    public void loadNextContent()
-    {
-        loadContent(+1);
+    public void loadNextContent() {
+        if (contentIndex == contentPage.size() - 1 && searchManager.getCurrentPage() < maxPages) // Need to load next content page
+        {
+            contentIndex = FIRST_OF_PAGE;
+            searchManager.increaseCurrentPage();
+            searchManager.searchLibrary(Preferences.getContentPageQuantity(), this);
+        } else if (contentIndex < contentPage.size() - 1) {
+            contentIndex++;
+            loadContent();
+        }
     }
 
-    public void loadPreviousContent()
-    {
-        loadContent(-1);
+    public void loadPreviousContent() {
+        if (0 == contentIndex && searchManager.getCurrentPage() > 1) // Need to load previous content page
+        {
+            contentIndex = LAST_OF_PAGE;
+            searchManager.decreaseCurrentPage();
+            searchManager.searchLibrary(Preferences.getContentPageQuantity(), this);
+        } else if (contentIndex > 0) {
+            contentIndex--;
+            loadContent();
+        }
     }
 
-    private void loadContent(int delta)
-    {
+    private void loadContent() {
+        // Record last read position before leaving current content
+        // TODO
 
+        // Load new content
+        Content content = contentPage.get(contentIndex);
+        contentId = content.getId();
+        File[] pictures = FileHelper.getPictureFilesFromContent(getApplication().getApplicationContext(), content);
+        if (pictures != null) {
+            List<String> imagesLocations = new ArrayList<>();
+            for (File f : pictures) imagesLocations.add(f.getAbsolutePath());
+            setImages(imagesLocations);
+        }
+
+        // Record 1 more view for new content
+        // TODO
+    }
+
+    @Override
+    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
+        contentPage = results;
+        maxPages = (int) Math.ceil(totalContent * 1.0 / Preferences.getContentPageQuantity());
+
+        if (FIRST_OF_PAGE == contentId) contentIndex = 0;
+        else if (LAST_OF_PAGE == contentId) contentIndex = contentPage.size() - 1;
+        else for (int i = 0; i < contentPage.size(); i++) {
+                if (contentPage.get(i).getId() == contentId) {
+                    contentIndex = i;
+                    break;
+                }
+            }
+
+        loadContent();
+    }
+
+    @Override
+    public void onContentFailed(Content content, String message) {
+        ToastUtil.toast("Book list loading failed");
     }
 }
