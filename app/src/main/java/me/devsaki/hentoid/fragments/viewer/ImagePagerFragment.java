@@ -60,6 +60,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ZoomableRecyclerView recyclerView;
     private PageSnapWidget pageSnapWidget;
     private ImageViewerViewModel viewModel;
+    private TextView bookInfoText;
 
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
@@ -80,6 +81,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         onBrowseModeChange();
         onUpdateFlingFactor();
         onUpdatePageNumDisplay();
+        updateBookInfo();
 
         return view;
     }
@@ -167,15 +169,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         settingsButton.setOnClickListener(v -> onSettingsClick());
 
         // Book info text
-        TextView bookInfo = requireViewById(rootView, R.id.viewer_book_info_text);
-        Content content = viewModel.getCurrentContent();
-        if (content != null) {
-            String title = content.getTitle();
-            if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
-            bookInfo.setText(title);
-
-            bookInfo.setOnLongClickListener(v -> onBookTitleLongClick(content));
-        }
+        bookInfoText = requireViewById(rootView, R.id.viewer_book_info_text);
 
         // Page shuffler button
         View pageShuffleButton = requireViewById(rootView, R.id.viewer_shuffle_btn);
@@ -262,6 +256,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         adapter.setImageUris(images);
         seekBar.setMax(maxPosition);
         updatePageDisplay();
+        updateBookInfo();
+        onUpdateImageDisplay();
         if (Preferences.isViewerResumeLastLeft())
             recyclerView.scrollToPosition(viewModel.getInitialPosition());
     }
@@ -280,6 +276,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
         pageNumber.setText(format("%s / %s", pageNum, maxPage));
+    }
+
+    private void updateBookInfo() {
+        Content content = viewModel.getCurrentContent();
+        if (content != null) {
+            String title = content.getTitle();
+            if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
+            bookInfoText.setText(title);
+            bookInfoText.setOnLongClickListener(v -> onBookTitleLongClick(content));
+        }
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
