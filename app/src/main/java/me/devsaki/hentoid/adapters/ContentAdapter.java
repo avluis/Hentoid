@@ -623,6 +623,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         return (ContentHolder) libraryView.findViewHolderForItemId(content.getId());
     }
 
+    public int getContentPosition(Content content) {
+        ContentHolder holder = getHolderByContent(content);
+        if (holder != null) return holder.getLayoutPosition(); else return -1;
+    }
+
     @Override
     public long getItemId(int position) {
         return mSortedList.get(position).getId();

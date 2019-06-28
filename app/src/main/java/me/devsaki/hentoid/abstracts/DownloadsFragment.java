@@ -57,6 +57,7 @@ import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.DownloadEvent;
 import me.devsaki.hentoid.events.ImportEvent;
 import me.devsaki.hentoid.fragments.AboutMikanDialogFragment;
+import me.devsaki.hentoid.fragments.downloads.PagerFragment;
 import me.devsaki.hentoid.fragments.downloads.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.fragments.downloads.UpdateSuccessDialogFragment;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
@@ -331,6 +332,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void openBook(Content content) {
         Bundle bundle = new Bundle();
         searchManager.saveToBundle(bundle);
+        int pageOffset = 0;
+        if (this instanceof PagerFragment)
+            pageOffset = (searchManager.getCurrentPage() - 1) * Preferences.getContentPageQuantity();
+        bundle.putInt("contentIndex", pageOffset + mAdapter.getContentPosition(content) + 1);
         FileHelper.openContent(requireContext(), content, bundle);
     }
 
