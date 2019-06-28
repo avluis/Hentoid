@@ -16,6 +16,10 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import io.reactivex.Completable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -31,6 +35,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     private boolean shuffleImages = false;      // True if images have to be shuffled; false if presented in the book order
 
     private ContentSearchManager searchManager = null;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Pictures data
     private final MutableLiveData<List<String>> images = new MutableLiveData<>();   // Currently displayed set of images
@@ -108,6 +113,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     protected void onCleared() {
         super.onCleared();
         searchManager.dispose();
+        compositeDisposable.clear();
     }
 
     public void saveCurrentPosition() {
@@ -147,23 +153,28 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     @Override
     public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
+        // Record last read position before leaving current content
+        saveCurrentPosition();
+
         maxPages = totalContent;
         Content content = results.get(0);
         contentId = content.getId();
 
-        // Record last read position before leaving current content
-        // TODO
-
         // Load new content
         File[] pictures = FileHelper.getPictureFilesFromContent(getApplication().getApplicationContext(), content);
-        if (pictures != null) {
+        if (pictures != null && pictures.length > 0) {
             List<String> imagesLocations = new ArrayList<>();
             for (File f : pictures) imagesLocations.add(f.getAbsolutePath());
             setImages(imagesLocations);
-        }
 
-        // Record 1 more view for new content
-        // TODO
+            // Record 1 more view for the new content
+            compositeDisposable.add(
+                    Completable.fromRunnable(() -> FileHelper.updateContentReads(getApplication().getApplicationContext(), content.getId(), pictures[0].getParentFile()))
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe()
+            );
+        }
     }
 
 

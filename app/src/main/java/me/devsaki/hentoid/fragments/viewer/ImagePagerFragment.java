@@ -252,14 +252,23 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void onImagesChanged(List<String> images) {
         // TODO : hide prev/next book when 1st and last of the whole collection
-        maxPosition = images.size() - 1;
-        adapter.setImageUris(images);
-        seekBar.setMax(maxPosition);
-        updatePageDisplay();
         updateBookInfo();
-        onUpdateImageDisplay();
-        if (Preferences.isViewerResumeLastLeft())
-            recyclerView.scrollToPosition(viewModel.getInitialPosition());
+
+        adapter.setImageUris(images);
+        onUpdateImageDisplay(); // Remove cached images
+
+        maxPosition = images.size() - 1;
+        seekBar.setMax(maxPosition);
+
+        if (Preferences.isViewerResumeLastLeft()) {
+            viewModel.setImageIndex(viewModel.getInitialPosition());
+        } else {
+            viewModel.setImageIndex(0);
+        }
+        seekBar.setProgress(viewModel.getImageIndex());
+        recyclerView.scrollToPosition(viewModel.getImageIndex());
+
+        updatePageDisplay();
     }
 
     // Scroll listener

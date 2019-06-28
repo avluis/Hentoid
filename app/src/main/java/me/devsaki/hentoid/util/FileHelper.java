@@ -572,7 +572,7 @@ public class FileHelper {
         }
     }
 
-    private static void updateContentReads(Context context, long contentId, File dir) {
+    public static void updateContentReads(Context context, long contentId, File dir) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
         if (content != null) {
