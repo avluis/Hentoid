@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 
-import java.util.List;
-
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -31,14 +29,8 @@ public class ImageViewerActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.getExtras() != null) {
             ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
-            List<String> uris = parser.getUrisStr();
-
-            if (null == uris) {
-                throw new RuntimeException("Initialization failed");
-            }
 
             viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
-            viewModel.setImages(uris);
             viewModel.setContentId(parser.getContentId());
             Bundle searchParams = parser.getSearchParams();
             if (searchParams != null) viewModel.setSearchParams(searchParams);

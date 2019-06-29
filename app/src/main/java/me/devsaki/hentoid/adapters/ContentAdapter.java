@@ -420,13 +420,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     } else {
                         clearSelections();
                         setSelected(false, 0);
-
                         openBookAction.accept(content);
-
-                        if (sortComparator.equals(Content.READ_DATE_INV_COMPARATOR)
-                                || sortComparator.equals(Content.READS_ORDER_COMPARATOR)
-                                || sortComparator.equals(Content.READS_ORDER_INV_COMPARATOR))
-                            mSortedList.recalculatePositionOfItemAt(pos); // Reading the book has an effect on its position
                     }
                 }
             });
@@ -625,7 +619,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     public int getContentPosition(Content content) {
         ContentHolder holder = getHolderByContent(content);
-        if (holder != null) return holder.getLayoutPosition(); else return -1;
+        if (holder != null) return holder.getLayoutPosition();
+        else return -1;
     }
 
     @Override

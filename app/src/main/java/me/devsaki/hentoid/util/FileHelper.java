@@ -30,9 +30,6 @@ import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
-import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -505,7 +502,7 @@ public class FileHelper {
     }
 
     @Nullable
-    public static File[] getPictureFilesFromContent(final Context context, Content content) {
+    public static File[] getPictureFilesFromContent(Content content) {
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
 
@@ -529,11 +526,6 @@ public class FileHelper {
                 )
         );
         if (files != null && files.length > 0) Arrays.sort(files);
-        else {
-            String message = context.getString(R.string.image_file_not_found)
-                    .replace("@dir", dir.getAbsolutePath());
-            ToastUtil.toast(context, message);
-        }
 
         return files;
     }
@@ -551,25 +543,7 @@ public class FileHelper {
     public static void openContent(final Context context, Content content, Bundle searchParams) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
 
-        File[] files = getPictureFilesFromContent(context, content);
-        File imageFile = (files != null && files.length > 0) ? files[0] : null;
-
-        if (imageFile != null) {
-            int readContentPreference = Preferences.getContentReadAction();
-            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER) {
-                openFile(context, imageFile);
-            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
-                openPerfectViewer(context, imageFile);
-            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
-                openHentoidViewer(context, content, files, searchParams);
-            }
-
-            // TODO - properly dispose this Completable (for best practices' sake, even though it hasn't triggered any leak so far)
-            Completable.fromRunnable(() -> updateContentReads(context, content.getId(), imageFile.getParentFile()))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe();
-        }
+        openHentoidViewer(context, content, searchParams);
     }
 
     public static void updateContentReads(Context context, long contentId, File dir) {
@@ -608,40 +582,14 @@ public class FileHelper {
     }
 
     /**
-     * Open PerfectViewer telling it to display the given image
-     *
-     * @param context    Context
-     * @param firstImage Image to be displayed
-     */
-    private static void openPerfectViewer(Context context, File firstImage) {
-        try {
-            Intent intent = context
-                    .getPackageManager()
-                    .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
-            if (intent != null) {
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
-                context.startActivity(intent);
-            }
-        } catch (Exception e) {
-            ToastUtil.toast(context, R.string.error_open_perfect_viewer);
-        }
-    }
-
-    /**
      * Open built-in image viewer telling it to display the images of the given Content
      *
-     * @param context    Context
-     * @param content    Content to be displayed
-     * @param imageFiles Image files to be shown
+     * @param context Context
+     * @param content Content to be displayed
      */
-    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, @NonNull File[] imageFiles, Bundle searchParams) {
-        List<String> imagesLocations = new ArrayList<>();
-        for (File f : imageFiles) imagesLocations.add(f.getAbsolutePath());
-
+    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
-        builder.setUrisStr(imagesLocations);
         if (searchParams != null) builder.setSearchParams(searchParams);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);

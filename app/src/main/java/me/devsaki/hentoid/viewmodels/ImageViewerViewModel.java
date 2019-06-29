@@ -20,6 +20,7 @@ import io.reactivex.Completable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
@@ -161,7 +162,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         contentId = content.getId();
 
         // Load new content
-        File[] pictures = FileHelper.getPictureFilesFromContent(getApplication().getApplicationContext(), content);
+        File[] pictures = FileHelper.getPictureFilesFromContent(content);
         if (pictures != null && pictures.length > 0) {
             List<String> imagesLocations = new ArrayList<>();
             for (File f : pictures) imagesLocations.add(f.getAbsolutePath());
@@ -174,6 +175,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe()
             );
+        } else {
+            ToastUtil.toast(R.string.no_images);
         }
     }
 

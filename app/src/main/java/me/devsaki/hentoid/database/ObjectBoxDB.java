@@ -219,8 +219,7 @@ public class ObjectBoxDB {
         return result;
     }
 
-    long selectMaxQueueOrder()
-    {
+    long selectMaxQueueOrder() {
         return store.boxFor(QueueRecord.class).query().build().property(QueueRecord_.rank).max();
     }
 
@@ -395,18 +394,21 @@ public class ObjectBoxDB {
     }
 
     List<Content> selectContentSearch(String title, int page, int booksPerPage, List<Attribute> tags, boolean filterFavourites, int orderStyle) {
+        List<Content> result;
         int start = (page - 1) * booksPerPage;
         Query<Content> query = queryContentSearchContent(title, tags, filterFavourites, orderStyle);
 
         if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
-            if (booksPerPage < 0) return query.find();
-            else return query.find(start, booksPerPage);
+            if (booksPerPage < 0) result = query.find();
+            else result = query.find(start, booksPerPage);
         } else {
-            return shuffleRandomSort(query, start, booksPerPage);
+            result = shuffleRandomSort(query, start, booksPerPage);
         }
+        return setQueryIndexes(result, page, booksPerPage);
     }
 
     List<Content> selectContentUniversal(String queryStr, int page, int booksPerPage, boolean filterFavourites, int orderStyle) {
+        List<Content> result;
         int start = (page - 1) * booksPerPage;
         // Due to objectBox limitations (see https://github.com/objectbox/objectbox-java/issues/497 and https://github.com/objectbox/objectbox-java/issues/533)
         // querying Content and attributes have to be done separately
@@ -414,11 +416,18 @@ public class ObjectBoxDB {
         Query<Content> query = queryContentUniversalContent(queryStr, filterFavourites, contentAttrSubQuery.findIds(), orderStyle);
 
         if (orderStyle != Preferences.Constant.ORDER_CONTENT_RANDOM) {
-            if (booksPerPage < 0) return query.find();
-            else return query.find(start, booksPerPage);
+            if (booksPerPage < 0) result = query.find();
+            else result = query.find(start, booksPerPage);
         } else {
-            return shuffleRandomSort(query, start, booksPerPage);
+            result = shuffleRandomSort(query, start, booksPerPage);
         }
+        return setQueryIndexes(result, page, booksPerPage);
+    }
+
+    private List<Content> setQueryIndexes(List<Content> content, int page, int booksPerPage) {
+        for (int i = 0; i < content.size(); i++)
+            content.get(i).setQueryOrder((page - 1) * booksPerPage + i);
+        return content;
     }
 
     long countContentUniversal(String queryStr, boolean filterFavourites) {
@@ -530,7 +539,8 @@ public class ObjectBoxDB {
         return queryAvailableAttributes(type, filter, filteredContent).count();
     }
 
-    @SuppressWarnings("squid:S2184") // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
+    @SuppressWarnings("squid:S2184")
+        // In our case, limit() argument has to be human-readable -> no issue concerning its type staying in the int range
     List<Attribute> selectAvailableAttributes(AttributeType type, List<Attribute> attributeFilter, String filter, boolean filterFavourites, int sortOrder, int page, int itemsPerPage) {
         long[] filteredContent = getFilteredContent(attributeFilter, filterFavourites);
         List<Long> filteredContentAsList = Helper.getListFromPrimitiveArray(filteredContent);

@@ -97,6 +97,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     // Save state constants
     private static final String KEY_MODE = "mode";
+    private static final String KEY_PLANNED_REFRESH = "planned_refresh";
 
 
     // ======== UI ELEMENTS
@@ -165,8 +166,8 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private long mTotalCount = -1; // -1 = uninitialized (no query done yet)
     // Used to ignore native calls to onQueryTextChange
     boolean invalidateNextQueryTextChange = false;
-    // Used to detect if the library has been refreshed
-    boolean libraryHasBeenRefreshed = false;
+    // A library display refresh has been planned
+    boolean plannedRefresh = false;
 
 
     // === SEARCH
@@ -271,14 +272,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onResume() {
         super.onResume();
 
-        // Display an alert for users of versions <1.7 that did not use the image viewer
-        int currentViewer = Preferences.getContentReadAction();
-        if (Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER != currentViewer) {
-            if (!Preferences.hasViewerChoiceBeenDisplayed()) showViewerChoiceDialog();
-        } else {
-            Preferences.setViewerChoiceDisplayed(true);
-        }
-
+        // Display the "update success" dialog when an update is detected
         if (Preferences.getLastKnownAppVersionCode() > 0 &&
                 Preferences.getLastKnownAppVersionCode() < BuildConfig.VERSION_CODE) {
             UpdateSuccessDialogFragment.invoke(requireFragmentManager());
@@ -317,7 +311,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onImportEvent(ImportEvent event) {
         if (ImportEvent.EV_COMPLETE == event.eventType) {
             EventBus.getDefault().removeStickyEvent(event);
-            libraryHasBeenRefreshed = true;
+            plannedRefresh = true;
         }
     }
 
@@ -330,6 +324,12 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     private void openBook(Content content) {
+        // The list order might change when viewing books when certain sort orders are activated
+        int contentSortOrder = Preferences.getContentSortOrder();
+        plannedRefresh = (Preferences.Constant.ORDER_CONTENT_LAST_READ == contentSortOrder
+                || Preferences.Constant.ORDER_CONTENT_LEAST_READ == contentSortOrder
+                || Preferences.Constant.ORDER_CONTENT_MOST_READ == contentSortOrder);
+
         Bundle bundle = new Bundle();
         searchManager.saveToBundle(bundle);
         int pageOffset = 0;
@@ -355,10 +355,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
             activity.finish();
         }
 
-        if (libraryHasBeenRefreshed && mTotalCount > -1) {
-            Timber.d("Library has been refreshed !");
+        if (plannedRefresh && mTotalCount > -1) {
+            Timber.d("A library display refresh has been planned");
             shouldUpdate = true;
-            libraryHasBeenRefreshed = false;
+            plannedRefresh = false;
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -425,6 +425,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_MODE, mode);
+        outState.putBoolean(KEY_PLANNED_REFRESH, plannedRefresh);
         searchManager.saveToBundle(outState);
     }
 
@@ -434,6 +435,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
         if (state != null) {
             mode = state.getInt(KEY_MODE);
+            plannedRefresh = state.getBoolean(KEY_PLANNED_REFRESH, false);
             searchManager.loadFromBundle(state, requireContext());
         }
     }
@@ -477,18 +479,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         emptyText = rootView.findViewById(R.id.empty);
         emptyText.setText((MODE_LIBRARY == mode) ? R.string.downloads_empty_library : R.string.downloads_empty_mikan);
 
-        int contentSortOrder = Preferences.getContentSortOrder();
-
-        if (MODE_MIKAN == mode)
-            contentSortOrder = Preferences.Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST;
-
         llm = new LinearLayoutManager(mContext);
 
         mAdapter = new ContentAdapter.Builder()
                 .setContext(mContext)
                 .setCollectionAccessor(accessor)
                 .setDisplayMode(mode)
-                .setSortComparator(Content.getComparator(contentSortOrder))
+                .setSortComparator(Content.getComparator())
                 .setItemSelectListener(this)
                 .setOnContentRemovedListener(this::onContentRemoved)
                 .setOpenBookAction(this::openBook)
@@ -765,7 +762,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
                 return super.onOptionsItemSelected(item);
         }
 
-        mAdapter.setSortComparator(Content.getComparator(contentSortOrder));
+        mAdapter.setSortComparator(Content.getComparator());
         orderMenu.setIcon(getIconFromSortOrder(contentSortOrder));
         Preferences.setContentSortOrder(contentSortOrder);
         searchLibrary();
@@ -1130,19 +1127,5 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
 
         updateTitle();
-    }
-
-    private void showViewerChoiceDialog() {
-        new AlertDialog.Builder(requireContext(), R.style.Theme_AppCompat_Dialog_Alert)
-                .setTitle(R.string.downloads_suggest_image_viewer_title)
-                .setMessage(R.string.downloads_suggest_image_viewer)
-                .setPositiveButton(R.string.try_it,
-                        (dialog, which) -> {
-                            Preferences.setViewerChoiceDisplayed(true);
-                            Preferences.setContentReadAction(Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER);
-                        })
-                .setNegativeButton(R.string.no,
-                        (dialog, which) -> Preferences.setViewerChoiceDisplayed(true))
-                .show();
     }
 }

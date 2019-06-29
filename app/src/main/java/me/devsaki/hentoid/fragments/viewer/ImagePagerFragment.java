@@ -93,10 +93,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         viewModel
                 .getImages()
                 .observe(this, this::onImagesChanged);
-/*
-        if (Preferences.isViewerResumeLastLeft())
-            recyclerView.scrollToPosition(viewModel.getInitialPosition());
-*/
     }
 
     @Override

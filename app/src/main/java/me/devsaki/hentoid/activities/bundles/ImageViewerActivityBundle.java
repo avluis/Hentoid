@@ -2,14 +2,9 @@ package me.devsaki.hentoid.activities.bundles;
 
 import android.os.Bundle;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class ImageViewerActivityBundle {
-    private static final String KEY_URIS_STR = "urisStr";
     private static final String KEY_CONTENT_ID = "contentId";
     private static final String KEY_SEARCH_PARAMS = "searchParams";
 
@@ -23,11 +18,6 @@ public class ImageViewerActivityBundle {
 
         public void setContentId(long contentId) {
             bundle.putLong(KEY_CONTENT_ID, contentId);
-        }
-
-        public void setUrisStr(List<String> uris) {
-            ArrayList<String> uriList = new ArrayList<>(uris);
-            bundle.putStringArrayList(KEY_URIS_STR, uriList);
         }
 
         public void setSearchParams(Bundle params) {
@@ -45,11 +35,6 @@ public class ImageViewerActivityBundle {
 
         public Parser(@Nonnull Bundle bundle) {
             this.bundle = bundle;
-        }
-
-        @Nullable
-        public List<String> getUrisStr() {
-            return bundle.getStringArrayList(KEY_URIS_STR);
         }
 
         public long getContentId() {

@@ -567,52 +567,9 @@ public class Content implements Serializable {
         return result;
     }
 
-    public static Comparator<Content> getComparator(int compareMethod) {
-        switch (compareMethod) {
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA:
-                return TITLE_ALPHA_COMPARATOR;
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_FIRST:
-                return DLDATE_COMPARATOR;
-            case Preferences.Constant.ORDER_CONTENT_TITLE_ALPHA_INVERTED:
-                return TITLE_ALPHA_INV_COMPARATOR;
-            case Preferences.Constant.ORDER_CONTENT_LAST_DL_DATE_LAST:
-                return DLDATE_INV_COMPARATOR;
-            case Preferences.Constant.ORDER_CONTENT_RANDOM:
-                return QUERY_ORDER_COMPARATOR;
-            case Preferences.Constant.ORDER_CONTENT_LAST_UL_DATE_FIRST:
-                return ULDATE_COMPARATOR;
-            case Preferences.Constant.ORDER_CONTENT_LEAST_READ:
-                return READS_ORDER_COMPARATOR;
-            case Preferences.Constant.ORDER_CONTENT_MOST_READ:
-                return READS_ORDER_INV_COMPARATOR;
-            case Preferences.Constant.ORDER_CONTENT_LAST_READ:
-                return READ_DATE_INV_COMPARATOR;
-            default:
-                return QUERY_ORDER_COMPARATOR;
-        }
+    public static Comparator<Content> getComparator() {
+        return QUERY_ORDER_COMPARATOR;
     }
-
-    private static final Comparator<Content> TITLE_ALPHA_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle());
-
-    private static final Comparator<Content> DLDATE_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate()) * -1; // Inverted - last download date first
-
-    private static final Comparator<Content> ULDATE_COMPARATOR = (a, b) -> Long.compare(a.getUploadDate(), b.getUploadDate()) * -1; // Inverted - last upload date first
-
-    private static final Comparator<Content> TITLE_ALPHA_INV_COMPARATOR = (a, b) -> a.getTitle().compareTo(b.getTitle()) * -1;
-
-    private static final Comparator<Content> DLDATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getDownloadDate(), b.getDownloadDate());
-
-    public static final Comparator<Content> READS_ORDER_COMPARATOR = (a, b) -> {
-        int comp = Long.compare(a.getReads(), b.getReads());
-        return (0 == comp) ? Long.compare(a.getLastReadDate(), b.getLastReadDate()) : comp;
-    };
-
-    public static final Comparator<Content> READS_ORDER_INV_COMPARATOR = (a, b) -> {
-        int comp = Long.compare(a.getReads(), b.getReads()) * -1;
-        return (0 == comp) ? Long.compare(a.getLastReadDate(), b.getLastReadDate()) * -1 : comp;
-    };
-
-    public static final Comparator<Content> READ_DATE_INV_COMPARATOR = (a, b) -> Long.compare(a.getLastReadDate(), b.getLastReadDate()) * -1;
 
     private static final Comparator<Content> QUERY_ORDER_COMPARATOR = (a, b) -> Integer.compare(a.getQueryOrder(), b.getQueryOrder());
 }

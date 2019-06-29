@@ -127,18 +127,6 @@ public final class Preferences {
                 .commit();
     }
 
-    public static int getContentReadAction() {
-        return Integer.parseInt(
-                sharedPreferences.getString(Key.PREF_READ_CONTENT_LISTS,
-                        Default.PREF_READ_CONTENT_ACTION + ""));
-    }
-
-    public static void setContentReadAction(int contentReadAction) {
-        sharedPreferences.edit()
-                .putString(Key.PREF_READ_CONTENT_LISTS, Integer.toString(contentReadAction))
-                .apply();
-    }
-
     public static int getWebViewInitialZoom() {
         return Integer.parseInt(
                 sharedPreferences.getString(
@@ -244,16 +232,6 @@ public final class Preferences {
                 .apply();
     }
 
-    public static boolean hasViewerChoiceBeenDisplayed() {
-        return sharedPreferences.getBoolean(Key.VIEWER_CHOICE_DISPLAYED, false);
-    }
-
-    public static void setViewerChoiceDisplayed(boolean viewerChoice) {
-        sharedPreferences.edit()
-                .putBoolean(Key.VIEWER_CHOICE_DISPLAYED, viewerChoice)
-                .apply();
-    }
-
     public static int getLastKnownAppVersionCode() {
         return Integer.parseInt(sharedPreferences.getString(Key.LAST_KNOWN_APP_VERSION_CODE, "0"));
     }
@@ -281,8 +259,6 @@ public final class Preferences {
         static final String PREF_SD_STORAGE_URI = "pref_sd_storage_uri";
         static final String PREF_FOLDER_NAMING_CONTENT_LISTS = "pref_folder_naming_content_lists";
         static final String PREF_SETTINGS_FOLDER = "folder";
-        static final String PREF_READ_CONTENT_LISTS = "pref_read_content_lists";
-        static final String PREF_CHECK_UPDATES_LISTS = "pref_check_updates_lists";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
         public static final String PREF_USE_SFW = "pref_use_sfw";
@@ -295,7 +271,6 @@ public final class Preferences {
         public static final String PREF_VIEWER_FLING_FACTOR = "pref_viewer_fling_factor";
         public static final String PREF_VIEWER_DISPLAY_PAGENUM = "pref_viewer_display_pagenum";
         public static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
-        static final String VIEWER_CHOICE_DISPLAYED = "pref_viewer_choice_displayed";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
     }
 
@@ -309,8 +284,6 @@ public final class Preferences {
         static final boolean PREF_ENDLESS_SCROLL_DEFAULT = true;
         static final boolean PREF_HIDE_RECENT_DEFAULT = (!BuildConfig.DEBUG); // Debug apps always visible to facilitate video capture
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
-        static final int PREF_READ_CONTENT_ACTION = Constant.PREF_READ_CONTENT_HENTOID_VIEWER;
-        static final boolean PREF_CHECK_UPDATES_DEFAULT = true;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
         static final boolean PREF_USE_SFW_DEFAULT = false;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
@@ -342,9 +315,6 @@ public final class Preferences {
         static final int PREF_FOLDER_NAMING_CONTENT_ID = 0;
         static final int PREF_FOLDER_NAMING_CONTENT_TITLE_ID = 1;
         static final int PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID = 2;
-        static final int PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER = 0;
-        static final int PREF_READ_CONTENT_PERFECT_VIEWER = 1;
-        public static final int PREF_READ_CONTENT_HENTOID_VIEWER = 2;
         static final int TRUNCATE_FOLDER_NONE = 0;
         public static final int PREF_VIEWER_DISPLAY_FIT = 0;
         public static final int PREF_VIEWER_DISPLAY_FILL = 1;
