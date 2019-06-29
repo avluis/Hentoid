@@ -101,7 +101,7 @@
         android:id="@+id/viewer_prev_book_btn"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:background="#AAFFFFFF"
+        android:background="#00000000"
         android:clickable="true"
         android:focusable="true"
         android:padding="8dp"
