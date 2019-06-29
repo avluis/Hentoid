@@ -92,6 +92,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         return imageIndex;
     }
 
+    public boolean isShuffleImages() { return shuffleImages; }
+
     public void setShuffleImages(boolean shuffleImages) {
         this.shuffleImages = shuffleImages;
         if (shuffleImages) {

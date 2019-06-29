@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -49,24 +48,36 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private final static String KEY_HUD_VISIBLE = "hud_visible";
 
-    private View controlsOverlay;
-    private ImageView previewImage1, previewImage2, previewImage3;
-    private PrefetchLinearLayoutManager llm;
     private ImageRecyclerAdapter adapter;
-    private SeekBar seekBar;
-    private TextView pageNumber;
-    private TextView pageCurrentNumber;
-    private TextView pageMaxNumber;
-    private ZoomableRecyclerView recyclerView;
+    private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
-    private ImageViewerViewModel viewModel;
-    private TextView bookInfoText;
-    private View prevBookButton, nextBookButton;
 
+    private ImageViewerViewModel viewModel;
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private int maxPosition;
+
+
+    // Controls
+    private TextView pageNumberOverlay;
+    private ZoomableRecyclerView recyclerView;
+
+    // == CONTROLS OVERLAY ==
+    private View controlsOverlay;
+
+    // Top bar controls
+    private TextView bookInfoText;
+    private View moreMenu;
+    private ImageView pageShuffleButton;
+    private TextView pageShuffleText;
+
+    // Bottom bar controls
+    private ImageView previewImage1, previewImage2, previewImage3;
+    private SeekBar seekBar;
+    private TextView pageCurrentNumber;
+    private TextView pageMaxNumber;
+    private View prevBookButton, nextBookButton;
 
 
     @Override
@@ -158,25 +169,35 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     private void initControlsOverlay(View rootView) {
         controlsOverlay = requireViewById(rootView, R.id.image_viewer_controls_overlay);
-        // Tap back button
+        // Back button
         View backButton = requireViewById(rootView, R.id.viewer_back_btn);
         backButton.setOnClickListener(v -> onBackClick());
-        // Tap settings button
+
+        // Settings button
         View settingsButton = requireViewById(rootView, R.id.viewer_settings_btn);
         settingsButton.setOnClickListener(v -> onSettingsClick());
 
+        // More button & menu
+        View moreButton = requireViewById(rootView, R.id.viewer_more_btn);
+        moreButton.setOnClickListener(v -> onMoreClick());
+        moreMenu = requireViewById(rootView, R.id.viewer_more_menu);
+        moreMenu.setVisibility(View.INVISIBLE);
+
+        // More menu / Page shuffle option
+        pageShuffleButton = requireViewById(rootView, R.id.viewer_shuffle_btn);
+        pageShuffleText = requireViewById(rootView, R.id.viewer_shuffle_text);
+        pageShuffleButton.setOnClickListener(v -> onShuffleClick());
+        pageShuffleText.setOnClickListener(v -> onShuffleClick());
+
+
         // Book info text
         bookInfoText = requireViewById(rootView, R.id.viewer_book_info_text);
-
-        // Page shuffler button
-        View pageShuffleButton = requireViewById(rootView, R.id.viewer_shuffle_btn);
-        pageShuffleButton.setOnClickListener(this::onShuffleClick);
 
         // Page number button
         pageCurrentNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
         pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
         pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
-        pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
+        pageNumberOverlay = requireViewById(rootView, R.id.viewer_pagenumber_text);
 
         // Next/previous book
         prevBookButton = requireViewById(rootView, R.id.viewer_prev_book_btn);
@@ -234,20 +255,38 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onSettingsClick() {
+        hideMoreMenu();
         ViewerPrefsDialogFragment.invoke(this);
     }
 
-    private void onShuffleClick(View v) {
-        v.setActivated(!v.isActivated());
+    private void onMoreClick() {
+        if (View.VISIBLE == moreMenu.getVisibility()) moreMenu.setVisibility(View.INVISIBLE);
+        else moreMenu.setVisibility(View.VISIBLE);
+    }
 
-        if (v.isActivated()) ((ImageButton) v).setImageResource(R.drawable.ic_menu_sort_random);
-        else ((ImageButton) v).setImageResource(R.drawable.ic_menu_sort_123);
+    // TODO : Use a toolbar instead of all this custom stuff
+    private void hideMoreMenu() {
+        moreMenu.setVisibility(View.INVISIBLE);
+    }
 
-        viewModel.setShuffleImages(v.isActivated());
+    private void onShuffleClick() {
+        viewModel.setShuffleImages(!viewModel.isShuffleImages());
+
+        if (viewModel.isShuffleImages())
+        {
+            pageShuffleButton.setImageResource(R.drawable.ic_menu_sort_123);
+            pageShuffleText.setText(R.string.viewer_order_123);
+        } else {
+            pageShuffleButton.setImageResource(R.drawable.ic_menu_sort_random);
+            pageShuffleText.setText(R.string.viewer_order_shuffle);
+        }
+
+        hideMoreMenu();
         goToPage(1);
     }
 
     private void onImagesChanged(List<String> images) {
+        hideMoreMenu();
         updateBookNavigation();
         updateBookInfo();
 
@@ -281,7 +320,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
-        pageNumber.setText(format("%s / %s", pageNum, maxPage));
+        pageNumberOverlay.setText(format("%s / %s", pageNum, maxPage));
     }
 
     private void updateBookNavigation() {
@@ -340,7 +379,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onUpdatePageNumDisplay() {
-        pageNumber.setVisibility(Preferences.isViewerDisplayPageNum() ? View.VISIBLE : View.GONE);
+        pageNumberOverlay.setVisibility(Preferences.isViewerDisplayPageNum() ? View.VISIBLE : View.GONE);
     }
 
     @Override
@@ -370,6 +409,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     public void nextPage() {
+        hideMoreMenu();
         if (viewModel.getImageIndex() == maxPosition) return;
         if (Preferences.isViewerTapTransitions())
             recyclerView.smoothScrollToPosition(viewModel.getImageIndex() + 1);
@@ -378,6 +418,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     public void previousPage() {
+        hideMoreMenu();
         if (viewModel.getImageIndex() == 0) return;
         if (Preferences.isViewerTapTransitions())
             recyclerView.smoothScrollToPosition(viewModel.getImageIndex() - 1);
@@ -409,10 +450,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         } else {
             recyclerView.scrollToPosition(position);
         }
+        hideMoreMenu();
     }
 
     @Override
     public void goToPage(int pageNum) {
+        hideMoreMenu();
         int position = pageNum - 1;
         if (position == viewModel.getImageIndex() || position < 0 || position > maxPosition)
             return;
@@ -465,6 +508,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                         }
                     });
         }
+        hideMoreMenu();
     }
 
     private void setSystemBarsVisible(boolean visible) {
