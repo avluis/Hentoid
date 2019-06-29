@@ -44,8 +44,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     private int imageIndex;                         // 0-based position, as in "programmatic index"
 
     // Collection data
-    private long maxPages;                       // Maximum available pages
-    private long contentId;                     // Database ID of currently displayed book
+    private long maxPages;                          // Maximum available pages
+    private long contentId;                         // Database ID of currently displayed book
 
 
     public ImageViewerViewModel(@NonNull Application application) {
@@ -150,6 +150,14 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
             searchManager.decreaseCurrentPage();
             searchManager.searchLibrary(1, this);
         }
+    }
+
+    public boolean isFirstContent() {
+        return (1 == searchManager.getCurrentPage());
+    }
+
+    public boolean isLastContent() {
+        return (maxPages == searchManager.getCurrentPage());
     }
 
     @Override

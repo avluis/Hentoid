@@ -61,6 +61,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private PageSnapWidget pageSnapWidget;
     private ImageViewerViewModel viewModel;
     private TextView bookInfoText;
+    private View prevBookButton, nextBookButton;
 
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
@@ -178,9 +179,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageNumber = requireViewById(rootView, R.id.viewer_pagenumber_text);
 
         // Next/previous book
-        View prevBookButton = requireViewById(rootView, R.id.viewer_prev_book_btn);
+        prevBookButton = requireViewById(rootView, R.id.viewer_prev_book_btn);
         prevBookButton.setOnClickListener(v -> viewModel.loadPreviousContent());
-        View nextBookButton = requireViewById(rootView, R.id.viewer_next_book_btn);
+        nextBookButton = requireViewById(rootView, R.id.viewer_next_book_btn);
         nextBookButton.setOnClickListener(v -> viewModel.loadNextContent());
 
         // Slider and preview
@@ -247,7 +248,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onImagesChanged(List<String> images) {
-        // TODO : hide prev/next book when 1st and last of the whole collection
+        updateBookNavigation();
         updateBookInfo();
 
         adapter.setImageUris(images);
@@ -281,6 +282,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
         pageNumber.setText(format("%s / %s", pageNum, maxPage));
+    }
+
+    private void updateBookNavigation() {
+        if (viewModel.isFirstContent()) prevBookButton.setVisibility(View.INVISIBLE);
+        else prevBookButton.setVisibility(View.VISIBLE);
+        if (viewModel.isLastContent()) nextBookButton.setVisibility(View.INVISIBLE);
+        else nextBookButton.setVisibility(View.VISIBLE);
     }
 
     private void updateBookInfo() {
