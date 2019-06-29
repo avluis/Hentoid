@@ -140,10 +140,6 @@ public final class Preferences {
                 Default.PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT);
     }
 
-    public static boolean isUseSfw() {
-        return sharedPreferences.getBoolean(Key.PREF_USE_SFW, Default.PREF_USE_SFW_DEFAULT);
-    }
-
     public static int getDownloadThreadCount() {
         return Integer.parseInt(sharedPreferences.getString(Key.PREF_DL_THREADS_QUANTITY_LISTS,
                 Default.PREF_DL_THREADS_QUANTITY_DEFAULT + ""));
@@ -261,7 +257,6 @@ public final class Preferences {
         static final String PREF_SETTINGS_FOLDER = "folder";
         static final String PREF_WEBVIEW_OVERRIDE_OVERVIEW_LISTS = "pref_webview_override_overview_lists";
         static final String PREF_WEBVIEW_INITIAL_ZOOM_LISTS = "pref_webview_initial_zoom_lists";
-        public static final String PREF_USE_SFW = "pref_use_sfw";
         public static final String PREF_DL_THREADS_QUANTITY_LISTS = "pref_dl_threads_quantity_lists";
         static final String PREF_FOLDER_TRUNCATION_LISTS = "pref_folder_trunc_lists";
         static final String PREF_VIEWER_RESUME_LAST_LEFT = "pref_viewer_resume_last_left";
@@ -285,7 +280,6 @@ public final class Preferences {
         static final boolean PREF_HIDE_RECENT_DEFAULT = (!BuildConfig.DEBUG); // Debug apps always visible to facilitate video capture
         static final int PREF_FOLDER_NAMING_CONTENT_DEFAULT = Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID;
         static final boolean PREF_WEBVIEW_OVERRIDE_OVERVIEW_DEFAULT = false;
-        static final boolean PREF_USE_SFW_DEFAULT = false;
         static final int PREF_DL_THREADS_QUANTITY_DEFAULT = Constant.DOWNLOAD_THREAD_COUNT_AUTO;
         static final int PREF_FOLDER_TRUNCATION_DEFAULT = Constant.TRUNCATE_FOLDER_NONE;
         static final boolean PREF_VIEWER_RESUME_LAST_LEFT = true;

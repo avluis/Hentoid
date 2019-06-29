@@ -51,7 +51,7 @@ public class DirAdapter extends RecyclerView.Adapter<DirAdapter.DirAdapterViewHo
         DirAdapterViewHolder(View root) {
             super(root);
 
-            textView = root.findViewById(R.id.item_text_txt);
+            textView = root.findViewById(R.id.drawer_item_txt);
             textView.setOnClickListener(this::onClick);
         }
 
