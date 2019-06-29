@@ -165,9 +165,9 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Total count of book in entire collection (Adapter is in charge of updating it)
     private long mTotalCount = -1; // -1 = uninitialized (no query done yet)
     // Used to ignore native calls to onQueryTextChange
-    boolean invalidateNextQueryTextChange = false;
+    private boolean invalidateNextQueryTextChange = false;
     // A library display refresh has been planned
-    boolean plannedRefresh = false;
+    private boolean plannedRefresh = false;
 
 
     // === SEARCH
