@@ -214,7 +214,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         public boolean onCreateActionMode(ActionMode mode, Menu menu) {
             // Inflate a menu resource providing context menu items
             MenuInflater inflater = mode.getMenuInflater();
-            inflater.inflate(R.menu.menu_context_menu, menu);
+            inflater.inflate(R.menu.downloads_context_menu, menu);
 
             return true;
         }
@@ -631,7 +631,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
 
     @Override
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu_content_list, menu);
+        inflater.inflate(R.menu.downloads_menu, menu);
 
         MenuItem aboutMikanMenu = menu.findItem(R.id.action_about_mikan);
         aboutMikanMenu.setVisible(MODE_MIKAN == mode);

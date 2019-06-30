@@ -5,8 +5,12 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,12 +30,15 @@ public class ImageGalleryFragment extends Fragment {
 
     private ImageGalleryAdapter galleryImagesAdapter;
     private ImageViewerViewModel viewModel;
+    private MenuItem bookmarkFilterMenu;
 
+    private Boolean filterBookmarks = false;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
 
+        setHasOptionsMenu(true);
         viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
 
         initUI(view);
@@ -53,12 +60,27 @@ public class ImageGalleryFragment extends Fragment {
         if (item.getItemId() == android.R.id.home) {
             requireActivity().onBackPressed();
             return true;
+        } else if (item.getItemId() == R.id.gallery_menu_action_bookmarks) {
+            toggleBookmarkDisplay();
+            return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
     }
 
+    @Override
+    public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.gallery_menu, menu);
+        bookmarkFilterMenu = menu.findItem(R.id.gallery_menu_action_bookmarks);
+    }
+
     private void initUI(View rootView) {
+        Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
+        ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
+        toolbar.setTitle("Gallery");
+        toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+        toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
+
         galleryImagesAdapter = new ImageGalleryAdapter(null, this::onBookmarkClick);
         galleryImagesAdapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
         RecyclerView releaseDescription = requireViewById(rootView, R.id.viewer_gallery_recycler);
@@ -81,5 +103,13 @@ public class ImageGalleryFragment extends Fragment {
 
     private void onBookmarkSuccess(ImageFile img) {
         galleryImagesAdapter.notifyItemChanged(img.getOrder() - 1);
+    }
+
+    private void toggleBookmarkDisplay()
+    {
+        filterBookmarks = !filterBookmarks;
+        bookmarkFilterMenu.setIcon(filterBookmarks?R.drawable.ic_action_bookmark_on:R.drawable.ic_action_bookmark_off);
+        galleryImagesAdapter.setFilter(filterBookmarks);
+        galleryImagesAdapter.filterItems();
     }
 }

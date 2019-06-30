@@ -12,13 +12,14 @@ import java.util.List;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.AbstractFlexibleItem;
+import eu.davidea.flexibleadapter.items.IFilterable;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import eu.davidea.viewholders.FlexibleViewHolder;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImageGalleryAdapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 
-public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileViewHolder> {
+public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileViewHolder> implements IFilterable<Boolean> {
 
     private final ImageFile item;
     private static final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
@@ -49,6 +50,11 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
     @Override
     public void bindViewHolder(FlexibleAdapter<IFlexible> adapter, ImageFileViewHolder holder, int position, List<Object> payloads) {
         holder.setContent(item);
+    }
+
+    @Override
+    public boolean filter(Boolean constraint) {
+        return (!constraint || item.isBookmarked());
     }
 
     class ImageFileViewHolder extends FlexibleViewHolder {
