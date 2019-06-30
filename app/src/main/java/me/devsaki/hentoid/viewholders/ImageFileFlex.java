@@ -28,6 +28,11 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
         this.item = item;
     }
 
+    public ImageFile getItem() {
+        return item;
+    }
+
+
     @Override
     public boolean equals(Object o) {
         if (o instanceof ImageFileFlex) {
@@ -69,7 +74,7 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
             pageNumberTxt = view.findViewById(R.id.viewer_gallery_pagenumber_text);
             image = view.findViewById(R.id.viewer_gallery_image);
             bookmarkBtn = view.findViewById(R.id.viewer_gallery_bookmark_btn);
-            bookmarkBtn.setOnClickListener(this::onBookmarkClicked);
+            bookmarkBtn.setOnClickListener(v -> onBookmarkClicked());
         }
 
         void setContent(ImageFile item) {
@@ -82,7 +87,7 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
                     .into(image);
         }
 
-        void onBookmarkClicked(View v) {
+        void onBookmarkClicked() {
             ((ImageGalleryAdapter) mAdapter).getOnBookmarkClickListener().accept(imageFile);
         }
 

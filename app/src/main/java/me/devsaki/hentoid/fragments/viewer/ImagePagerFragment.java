@@ -244,7 +244,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Gallery
         View galleryBtn = requireViewById(rootView, R.id.viewer_gallery_btn);
-        galleryBtn.setOnClickListener(v -> displayGallery());
+        galleryBtn.setOnClickListener(v -> displayGallery(false));
+        View galleryBookmarksBtn = requireViewById(rootView, R.id.viewer_bookmarks_btn);
+        galleryBookmarksBtn.setOnClickListener(v -> displayGallery(true));
     }
 
     public boolean onBookTitleLongClick(Content content) {
@@ -551,7 +553,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         hideMoreMenu();
     }
 
-    private void displayGallery() {
+    private void displayGallery(boolean showBookmarks) { // TODO : use the argument
         requireFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, new ImageGalleryFragment())

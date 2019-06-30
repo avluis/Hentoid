@@ -92,7 +92,8 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private boolean onItemClick(View view, int position) {
-        viewModel.setImageIndex(position);
+        ImageFileFlex imgFileFlex = (ImageFileFlex)galleryImagesAdapter.getItem(position);
+        if (imgFileFlex != null) viewModel.setImageIndex(imgFileFlex.getItem().getDisplayOrder());
         requireActivity().onBackPressed();
         return true;
     }
@@ -102,7 +103,7 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void onBookmarkSuccess(ImageFile img) {
-        galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder());
+        galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder()); // TODO : does not work when gallery view is filtered
     }
 
     private void toggleBookmarkDisplay()
