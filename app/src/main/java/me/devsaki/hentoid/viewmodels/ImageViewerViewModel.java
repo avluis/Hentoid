@@ -141,8 +141,12 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     }
 
     public void toggleCurrentPageBookmark(Consumer<ImageFile> callback) {
+        togglePageBookmark(getImage(imageIndex), callback);
+    }
+
+    public void togglePageBookmark(ImageFile file, Consumer<ImageFile> callback) {
         compositeDisposable.add(
-                Single.fromCallable(() -> toggleCurrentPageBookmark(getApplication().getApplicationContext(), contentId, imageIndex))
+                Single.fromCallable(() -> togglePageBookmark(getApplication().getApplicationContext(), file.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
@@ -157,38 +161,33 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     /**
      * Toggles bookmark flag in DB and in the content JSON
+     *
      * @param context Context to be used for this operation
-     * @param contentId ID of the content to work with
-     * @param imageIndex Index of the image whose flag to toggle
+     * @param imageId ID of the image whose flag to toggle
      * @return ImageFile with the new state
      */
-    private static ImageFile toggleCurrentPageBookmark(Context context, long contentId, int imageIndex) {
+    private static ImageFile togglePageBookmark(Context context, long imageId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
-        if (contentId > 0) {
-            Content content = db.selectContentById(contentId);
-            if (content != null && content.getImageFiles() != null && imageIndex < content.getImageFiles().size() - 1) {
-                ImageFile img = content.getImageFiles().get(imageIndex);
-                if (img != null) {
-                    img.setBookmarked(!img.isBookmarked());
+        ImageFile img = db.selectImageFile(imageId);
 
-                    // Persist it in DB
-                    db.insertImageFile(img);
+        if (img != null) {
+            img.setBookmarked(!img.isBookmarked());
 
-                    // Persist in it JSON
-                    File dir = FileHelper.getContentDownloadDir(content);
-                    try {
-                        JsonHelper.saveJson(content.preJSONExport(), dir);
-                    } catch (IOException e) {
-                        Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
-                    }
-                    return img;
-                } else
-                    throw new InvalidParameterException(String.format("Invalid image index %s for content ID %s", imageIndex, contentId));
-            } else
-                throw new InvalidParameterException(String.format("Invalid Content ID %s and image index %s", contentId, imageIndex));
+            // Persist it in DB
+            db.insertImageFile(img);
+
+            // Persist in it JSON
+            Content content = img.content.getTarget();
+            File dir = FileHelper.getContentDownloadDir(content);
+            try {
+                JsonHelper.saveJson(content.preJSONExport(), dir);
+            } catch (IOException e) {
+                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+            }
+            return img;
         } else
-            throw new InvalidParameterException(String.format("Invalid Content ID %s", contentId));
+            throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));
     }
 
     @Nullable
@@ -270,11 +269,10 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         }
     }
 
-    public List<String> getUrisFromImageList(List<ImageFile> images)
-    {
+    public List<String> getUrisFromImageList(List<ImageFile> images) {
         List<String> result = new ArrayList<>();
 
-        for(ImageFile image : images) result.add(image.getAbsolutePath());
+        for (ImageFile image : images) result.add(image.getAbsolutePath());
 
         return result;
     }

@@ -1,0 +1,24 @@
+package me.devsaki.hentoid.adapters;
+
+import android.support.annotation.Nullable;
+
+import com.annimon.stream.function.Consumer;
+
+import java.util.List;
+
+import eu.davidea.flexibleadapter.FlexibleAdapter;
+import eu.davidea.flexibleadapter.items.IFlexible;
+import me.devsaki.hentoid.database.domains.ImageFile;
+
+public class ImageGalleryAdapter extends FlexibleAdapter<IFlexible> {
+    private final Consumer<ImageFile> onBookmarkClickListener;
+
+    public ImageGalleryAdapter(@Nullable List<IFlexible> items, Consumer<ImageFile> onBookmarkClickListener) {
+        super(items);
+        this.onBookmarkClickListener = onBookmarkClickListener;
+    }
+
+    public Consumer<ImageFile> getOnBookmarkClickListener() {
+        return onBookmarkClickListener;
+    }
+}

@@ -15,6 +15,7 @@ import eu.davidea.flexibleadapter.items.AbstractFlexibleItem;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import eu.davidea.viewholders.FlexibleViewHolder;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.adapters.ImageGalleryAdapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
 
 public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileViewHolder> {
@@ -42,7 +43,7 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
 
     @Override
     public ImageFileViewHolder createViewHolder(View view, FlexibleAdapter<IFlexible> adapter) {
-        return new ImageFileViewHolder(view, adapter);
+        return new ImageFileViewHolder(view, (ImageGalleryAdapter) adapter);
     }
 
     @Override
@@ -55,25 +56,36 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
         private final TextView pageNumberTxt;
         private final ImageView image;
         private final ImageButton bookmarkBtn;
+        private ImageFile imageFile;
 
-        ImageFileViewHolder(View view, FlexibleAdapter adapter) {
+        ImageFileViewHolder(View view, ImageGalleryAdapter adapter) {
             super(view, adapter);
             pageNumberTxt = view.findViewById(R.id.viewer_gallery_pagenumber_text);
             image = view.findViewById(R.id.viewer_gallery_image);
             bookmarkBtn = view.findViewById(R.id.viewer_gallery_bookmark_btn);
+            bookmarkBtn.setOnClickListener(this::onBookmarkClicked);
         }
 
         void setContent(ImageFile item) {
+            imageFile = item;
             pageNumberTxt.setText(String.format("Page %s", item.getOrder()));
-            if (item.isBookmarked()) {
-                bookmarkBtn.setImageResource(R.drawable.ic_action_bookmark_on);
-            } else {
-                bookmarkBtn.setImageResource(R.drawable.ic_action_bookmark_off);
-            }
+            updateBookmark(item.isBookmarked());
             Glide.with(image.getContext())
                     .load(item.getAbsolutePath())
                     .apply(glideRequestOptions)
                     .into(image);
+        }
+
+        void onBookmarkClicked(View v) {
+            ((ImageGalleryAdapter) mAdapter).getOnBookmarkClickListener().accept(imageFile);
+        }
+
+        void updateBookmark(boolean isBookmarked) {
+            if (isBookmarked) {
+                bookmarkBtn.setImageResource(R.drawable.ic_action_bookmark_on);
+            } else {
+                bookmarkBtn.setImageResource(R.drawable.ic_action_bookmark_off);
+            }
         }
     }
 }

@@ -668,4 +668,10 @@ public class ObjectBoxDB {
     public void insertImageFile(ImageFile img) {
         if (img.getId() > 0) store.boxFor(ImageFile.class).put(img);
     }
+
+    @Nullable
+    public ImageFile selectImageFile(long id) {
+        if (id > 0) return store.boxFor(ImageFile.class).get(id);
+        else return null;
+    }
 }

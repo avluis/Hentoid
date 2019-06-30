@@ -14,10 +14,9 @@ import android.view.ViewGroup;
 import java.util.List;
 
 import eu.davidea.flexibleadapter.FlexibleAdapter;
-import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.adapters.ImageGalleryAdapter;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.enums.DrawerItem;
 import me.devsaki.hentoid.viewholders.ImageFileFlex;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
@@ -25,7 +24,7 @@ import static android.support.v4.view.ViewCompat.requireViewById;
 
 public class ImageGalleryFragment extends Fragment {
 
-    private FlexibleAdapter<IFlexible> galleryImagesAdapter;
+    private ImageGalleryAdapter galleryImagesAdapter;
     private ImageViewerViewModel viewModel;
 
 
@@ -60,7 +59,7 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void initUI(View rootView) {
-        galleryImagesAdapter = new FlexibleAdapter<>(null);
+        galleryImagesAdapter = new ImageGalleryAdapter(null, this::onBookmarkClick);
         galleryImagesAdapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
         RecyclerView releaseDescription = requireViewById(rootView, R.id.viewer_gallery_recycler);
         releaseDescription.setAdapter(galleryImagesAdapter);
@@ -76,30 +75,11 @@ public class ImageGalleryFragment extends Fragment {
         return true;
     }
 
-    private void onBookmarkClick() {
-        viewModel.toggleCurrentPageBookmark(this::onBookmarkSuccess);
+    private void onBookmarkClick(ImageFile img) {
+        viewModel.togglePageBookmark(img, this::onBookmarkSuccess);
     }
 
     private void onBookmarkSuccess(ImageFile img) {
-        // Check if the updated image is still the one displayed on screen
-        ImageFile currentImage = viewModel.getImage(viewModel.getImageIndex());
-        if (currentImage != null && img.getId() == currentImage.getId()) {
-            updateBookmarkDisplay();
-        }
-    }
-
-    private void updateBookmarkDisplay() {
-        ImageFile currentImage = viewModel.getImage(viewModel.getImageIndex());
-        if (currentImage != null) {
-            /*
-            if (currentImage.isBookmarked()) {
-                pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_on);
-                pageBookmarkText.setText(R.string.viewer_bookmark_on);
-            } else {
-                pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_off);
-                pageBookmarkText.setText(R.string.viewer_bookmark_off);
-            }
-            */
-        }
+        galleryImagesAdapter.notifyItemChanged(img.getOrder() - 1);
     }
 }
