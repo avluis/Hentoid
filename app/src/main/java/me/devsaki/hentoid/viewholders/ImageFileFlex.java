@@ -64,7 +64,7 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
         }
 
         void setContent(ImageFile item) {
-            pageNumberTxt.setText(String.format("Page %s",item.getOrder()));
+            pageNumberTxt.setText(String.format("Page %s", item.getOrder()));
             if (item.isBookmarked()) {
                 bookmarkBtn.setImageResource(R.drawable.ic_action_bookmark_on);
             } else {

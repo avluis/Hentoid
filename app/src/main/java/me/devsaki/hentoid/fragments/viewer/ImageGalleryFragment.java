@@ -1,7 +1,6 @@
 package me.devsaki.hentoid.fragments.viewer;
 
 import android.arch.lifecycle.ViewModelProviders;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -11,8 +10,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
 
 import java.util.List;
 
@@ -20,6 +17,7 @@ import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.enums.DrawerItem;
 import me.devsaki.hentoid.viewholders.ImageFileFlex;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
@@ -63,12 +61,19 @@ public class ImageGalleryFragment extends Fragment {
 
     private void initUI(View rootView) {
         galleryImagesAdapter = new FlexibleAdapter<>(null);
+        galleryImagesAdapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
         RecyclerView releaseDescription = requireViewById(rootView, R.id.viewer_gallery_recycler);
         releaseDescription.setAdapter(galleryImagesAdapter);
     }
 
     private void onImagesChanged(List<ImageFile> images) {
         for (ImageFile img : images) galleryImagesAdapter.addItem(new ImageFileFlex(img));
+    }
+
+    private boolean onItemClick(View view, int position) {
+        viewModel.setImageIndex(position);
+        requireActivity().onBackPressed();
+        return true;
     }
 
     private void onBookmarkClick() {
