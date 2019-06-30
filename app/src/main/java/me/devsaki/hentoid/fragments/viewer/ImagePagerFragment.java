@@ -29,6 +29,7 @@ import java.util.List;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.adapters.ImageRecyclerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
@@ -71,6 +72,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private View moreMenu;
     private ImageView pageShuffleButton;
     private TextView pageShuffleText;
+    private ImageView pageBookmarkButton;
+    private TextView pageBookmarkText;
 
     // Bottom bar controls
     private ImageView previewImage1, previewImage2, previewImage3;
@@ -189,6 +192,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageShuffleButton.setOnClickListener(v -> onShuffleClick());
         pageShuffleText.setOnClickListener(v -> onShuffleClick());
 
+        // More menu / Page bookmark option
+        pageBookmarkButton = requireViewById(rootView, R.id.viewer_bookmark_btn);
+        pageBookmarkText = requireViewById(rootView, R.id.viewer_bookmark_text);
+        pageBookmarkButton.setOnClickListener(v -> onBookmarkClick());
+        pageBookmarkText.setOnClickListener(v -> onBookmarkClick());
+
 
         // Book info text
         bookInfoText = requireViewById(rootView, R.id.viewer_book_info_text);
@@ -272,8 +281,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onShuffleClick() {
         viewModel.setShuffleImages(!viewModel.isShuffleImages());
 
-        if (viewModel.isShuffleImages())
-        {
+        if (viewModel.isShuffleImages()) {
             pageShuffleButton.setImageResource(R.drawable.ic_menu_sort_123);
             pageShuffleText.setText(R.string.viewer_order_123);
         } else {
@@ -285,12 +293,25 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         goToPage(1);
     }
 
-    private void onImagesChanged(List<String> images) {
+    private void onBookmarkClick() {
+        viewModel.toggleCurrentPageBookmark(this::onBookmarkSuccess);
+        hideMoreMenu();
+    }
+
+    private void onBookmarkSuccess(ImageFile img) {
+        // Check if the updated image is still the one displayed on screen
+        ImageFile currentImage = viewModel.getImage(viewModel.getImageIndex());
+        if (currentImage != null && img.getId() == currentImage.getId()) {
+            updateBookmarkDisplay();
+        }
+    }
+
+    private void onImagesChanged(List<ImageFile> images) {
         hideMoreMenu();
         updateBookNavigation();
         updateBookInfo();
 
-        adapter.setImageUris(images);
+        adapter.setImageUris(viewModel.getUrisFromImageList(images));
         onUpdateImageDisplay(); // Remove cached images
 
         maxPosition = images.size() - 1;
@@ -311,6 +332,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onCurrentPositionChange(int position) {
         viewModel.setImageIndex(position);
         seekBar.setProgress(viewModel.getImageIndex());
+        hideMoreMenu();
         updatePageDisplay();
     }
 
@@ -321,6 +343,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
         pageNumberOverlay.setText(format("%s / %s", pageNum, maxPage));
+        updateBookmarkDisplay();
     }
 
     private void updateBookNavigation() {
@@ -328,6 +351,19 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         else prevBookButton.setVisibility(View.VISIBLE);
         if (viewModel.isLastContent()) nextBookButton.setVisibility(View.INVISIBLE);
         else nextBookButton.setVisibility(View.VISIBLE);
+    }
+
+    private void updateBookmarkDisplay() {
+        ImageFile currentImage = viewModel.getImage(viewModel.getImageIndex());
+        if (currentImage != null) {
+            if (currentImage.isBookmarked()) {
+                pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_on);
+                pageBookmarkText.setText(R.string.viewer_bookmark_on);
+            } else {
+                pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_off);
+                pageBookmarkText.setText(R.string.viewer_bookmark_off);
+            }
+        }
     }
 
     private void updateBookInfo() {
@@ -430,17 +466,17 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         if (View.VISIBLE == previewImage2.getVisibility()) {
             Glide.with(previewImage1.getContext())
-                    .load(viewModel.getImage(position - 1))
+                    .load(viewModel.getImage(position - 1).getAbsolutePath())
                     .apply(glideRequestOptions)
                     .into(previewImage1);
 
             Glide.with(previewImage1.getContext())
-                    .load(viewModel.getImage(position))
+                    .load(viewModel.getImage(position).getAbsolutePath())
                     .apply(glideRequestOptions)
                     .into(previewImage2);
 
             Glide.with(previewImage1.getContext())
-                    .load(viewModel.getImage(position + 1))
+                    .load(viewModel.getImage(position + 1).getAbsolutePath())
                     .apply(glideRequestOptions)
                     .into(previewImage3);
         }

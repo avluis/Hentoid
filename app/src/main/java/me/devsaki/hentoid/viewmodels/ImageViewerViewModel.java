@@ -9,7 +9,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.annimon.stream.function.Consumer;
+
 import java.io.File;
+import java.io.IOException;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,6 +21,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 
 import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.schedulers.Schedulers;
@@ -24,10 +29,13 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
+import timber.log.Timber;
 
 
 public class ImageViewerViewModel extends AndroidViewModel implements ContentListener {
@@ -39,8 +47,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Pictures data
-    private final MutableLiveData<List<String>> images = new MutableLiveData<>();   // Currently displayed set of images
-    private List<String> initialImagesList;         // Initial URL list in the right order, to fallback when shuffling is disabled
+    private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();   // Currently displayed set of images
+    private List<ImageFile> initialImagesList;      // Initial image list in the right order, to fallback when shuffling is disabled
     private int imageIndex;                         // 0-based position, as in "programmatic index"
 
     // Collection data
@@ -54,17 +62,17 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     }
 
     @NonNull
-    public LiveData<List<String>> getImages() {
+    public LiveData<List<ImageFile>> getImages() {
         return images;
     }
 
-    public String getImage(int position) {
-        List<String> imgs = images.getValue();
-        if (imgs != null && position < imgs.size() && position > -1) return imgs.get(position);
-        else return "";
+    public ImageFile getImage(int index) {
+        List<ImageFile> imgs = images.getValue();
+        if (imgs != null && index < imgs.size() && index > -1) return imgs.get(index);
+        else return new ImageFile();
     }
 
-    public void setImages(List<String> imgs) {
+    public void setImages(List<ImageFile> imgs) {
         initialImagesList = new ArrayList<>(imgs);
         if (shuffleImages) Collections.shuffle(imgs);
         images.postValue(imgs);
@@ -92,12 +100,14 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         return imageIndex;
     }
 
-    public boolean isShuffleImages() { return shuffleImages; }
+    public boolean isShuffleImages() {
+        return shuffleImages;
+    }
 
     public void setShuffleImages(boolean shuffleImages) {
         this.shuffleImages = shuffleImages;
         if (shuffleImages) {
-            List<String> imgs = new ArrayList<>(initialImagesList);
+            List<ImageFile> imgs = new ArrayList<>(initialImagesList);
             Collections.shuffle(imgs);
             images.setValue(imgs);
         } else images.setValue(initialImagesList);
@@ -128,6 +138,57 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
                 db.insertContent(content);
             }
         }
+    }
+
+    public void toggleCurrentPageBookmark(Consumer<ImageFile> callback) {
+        compositeDisposable.add(
+                Single.fromCallable(() -> toggleCurrentPageBookmark(getApplication().getApplicationContext(), contentId, imageIndex))
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                result -> {
+                                    getImage(imageIndex).setBookmarked(result.isBookmarked()); // Update new state in memory
+                                    callback.accept(result); // Inform the view
+                                },
+                                Timber::e
+                        )
+        );
+    }
+
+    /**
+     * Toggles bookmark flag in DB and in the content JSON
+     * @param context Context to be used for this operation
+     * @param contentId ID of the content to work with
+     * @param imageIndex Index of the image whose flag to toggle
+     * @return ImageFile with the new state
+     */
+    private static ImageFile toggleCurrentPageBookmark(Context context, long contentId, int imageIndex) {
+        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+
+        if (contentId > 0) {
+            Content content = db.selectContentById(contentId);
+            if (content != null && content.getImageFiles() != null && imageIndex < content.getImageFiles().size() - 1) {
+                ImageFile img = content.getImageFiles().get(imageIndex);
+                if (img != null) {
+                    img.setBookmarked(!img.isBookmarked());
+
+                    // Persist it in DB
+                    db.insertImageFile(img);
+
+                    // Persist in it JSON
+                    File dir = FileHelper.getContentDownloadDir(content);
+                    try {
+                        JsonHelper.saveJson(content.preJSONExport(), dir);
+                    } catch (IOException e) {
+                        Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+                    }
+                    return img;
+                } else
+                    throw new InvalidParameterException(String.format("Invalid image index %s for content ID %s", imageIndex, contentId));
+            } else
+                throw new InvalidParameterException(String.format("Invalid Content ID %s and image index %s", contentId, imageIndex));
+        } else
+            throw new InvalidParameterException(String.format("Invalid Content ID %s", contentId));
     }
 
     @Nullable
@@ -173,10 +234,10 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
         // Load new content
         File[] pictures = FileHelper.getPictureFilesFromContent(content);
-        if (pictures != null && pictures.length > 0) {
-            List<String> imagesLocations = new ArrayList<>();
-            for (File f : pictures) imagesLocations.add(f.getAbsolutePath());
-            setImages(imagesLocations);
+        if (pictures != null && pictures.length > 0 && content.getImageFiles() != null) {
+            List<ImageFile> imageFiles = new ArrayList<>(content.getImageFiles());
+            matchFilesToImageList(pictures, imageFiles);
+            setImages(imageFiles);
 
             // Record 1 more view for the new content
             compositeDisposable.add(
@@ -190,6 +251,33 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         }
     }
 
+    private static void matchFilesToImageList(File[] files, List<ImageFile> images) {
+        int i = 0;
+        while (i < images.size()) {
+            boolean matchFound = false;
+            for (File f : files) {
+                // Image and file name match => store absolute path
+                if (images.get(i).getName().equals(FileHelper.getFileNameWithoutExtension(f.getName()))) {
+                    matchFound = true;
+                    images.get(i).setAbsolutePath(f.getAbsolutePath());
+                    break;
+                }
+            }
+            // Image is not among detected files => remove it
+            if (!matchFound) {
+                images.remove(i);
+            } else i++;
+        }
+    }
+
+    public List<String> getUrisFromImageList(List<ImageFile> images)
+    {
+        List<String> result = new ArrayList<>();
+
+        for(ImageFile image : images) result.add(image.getAbsolutePath());
+
+        return result;
+    }
 
     @Override
     public void onContentFailed(Content content, String message) {

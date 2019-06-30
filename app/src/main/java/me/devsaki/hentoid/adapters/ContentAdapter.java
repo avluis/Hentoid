@@ -55,7 +55,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
@@ -337,7 +336,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     }
 
                     compositeDisposable.add(
-                            Single.fromCallable(() -> toggleFavourite(content.getId()))
+                            Single.fromCallable(() -> toggleFavourite(context, content.getId()))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
@@ -570,7 +569,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .create().show();
     }
 
-    private Content toggleFavourite(long contentId) {
+    private static Content toggleFavourite(Context context, long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
 
@@ -582,8 +581,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 db.insertContent(content);
 
                 // Persist in it JSON
-                String rootFolderName = Preferences.getRootFolderName();
-                File dir = new File(rootFolderName, content.getStorageFolder());
+                File dir = FileHelper.getContentDownloadDir(content);
                 try {
                     JsonHelper.saveJson(content.preJSONExport(), dir);
                 } catch (IOException e) {

@@ -7,6 +7,7 @@ import java.util.Locale;
 import io.objectbox.annotation.Convert;
 import io.objectbox.annotation.Entity;
 import io.objectbox.annotation.Id;
+import io.objectbox.annotation.Transient;
 import io.objectbox.relation.ToOne;
 import me.devsaki.hentoid.enums.StatusContent;
 
@@ -26,11 +27,21 @@ public class ImageFile {
     @Expose
     private String name;
     @Expose
+    private boolean bookmarked = false;
+    @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
-    // Temporary during SAVED state only; no need to expose them for JSON persistence
-    private String downloadParams;
     public ToOne<Content> content;
+
+    // Temporary during SAVED state only; no need to expose them for JSON persistence
+    @Expose(serialize = false, deserialize = false)
+    private String downloadParams;
+
+    // Runtime attributes; no need to expose them nor to persist them
+    @Transient
+    private String absolutePath;
+
+
 
     public ImageFile() {
     }
@@ -40,6 +51,7 @@ public class ImageFile {
         this.name = String.format(Locale.US, "%03d", order);
         this.url = url;
         this.status = status;
+        this.bookmarked = false;
     }
 
 /*
@@ -99,5 +111,21 @@ public class ImageFile {
     public ImageFile setDownloadParams(String params) {
         downloadParams = params;
         return this;
+    }
+
+    public boolean isBookmarked() {
+        return bookmarked;
+    }
+
+    public void setBookmarked(boolean bookmarked) {
+        this.bookmarked = bookmarked;
+    }
+
+    public String getAbsolutePath() {
+        return absolutePath;
+    }
+
+    public void setAbsolutePath(String absolutePath) {
+        this.absolutePath = absolutePath;
     }
 }

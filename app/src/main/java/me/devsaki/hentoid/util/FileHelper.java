@@ -350,9 +350,7 @@ public class FileHelper {
     public static void removeContent(Content content) {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (content.getStorageFolder().length() > 0) {
-            String settingDir = Preferences.getRootFolderName();
-            File dir = new File(settingDir, content.getStorageFolder());
-
+            File dir = getContentDownloadDir(content);
             if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.i("Directory %s removed.", dir);
             } else {
@@ -387,6 +385,11 @@ public class FileHelper {
         }
 
         return file;
+    }
+
+    public static File getContentDownloadDir(Content content) {
+        String rootFolderName = Preferences.getRootFolderName();
+        return new File(rootFolderName, content.getStorageFolder());
     }
 
     /**
@@ -513,9 +516,7 @@ public class FileHelper {
             return null;
         }
 
-        ToastUtil.toast("Opening: " + content.getTitle());
-
-        File[] files = dir.listFiles(
+        return dir.listFiles(
                 file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
                         (
                                 file.getName().toLowerCase().endsWith("jpg")
@@ -525,9 +526,6 @@ public class FileHelper {
                         )
                 )
         );
-        if (files != null && files.length > 0) Arrays.sort(files);
-
-        return files;
     }
 
     /**
@@ -542,6 +540,7 @@ public class FileHelper {
 
     public static void openContent(final Context context, Content content, Bundle searchParams) {
         Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
+        ToastUtil.toast("Opening: " + content.getTitle());
 
         openHentoidViewer(context, content, searchParams);
     }
@@ -608,12 +607,15 @@ public class FileHelper {
         return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
     }
 
+    public static String getFileNameWithoutExtension(String fileName) {
+        return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf(".")) : fileName;
+    }
+
     public static void archiveContent(final Context context, Content content) {
         Timber.d("Building file list for: %s", content.getTitle());
         // Build list of files
 
-        String settingDir = Preferences.getRootFolderName();
-        File dir = new File(settingDir, content.getStorageFolder());
+        File dir = getContentDownloadDir(content);
 
         File[] files = dir.listFiles();
         if (files != null && files.length > 0) {

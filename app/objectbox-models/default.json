@@ -112,7 +112,7 @@
     },
     {
       "id": "3:2849837771881495731",
-      "lastPropertyId": "7:8627441942081468691",
+      "lastPropertyId": "8:6300283326491520978",
       "name": "ImageFile",
       "properties": [
         {
@@ -143,6 +143,10 @@
         {
           "id": "7:8627441942081468691",
           "name": "downloadParams"
+        },
+        {
+          "id": "8:6300283326491520978",
+          "name": "bookmarked"
         }
       ],
       "relations": []

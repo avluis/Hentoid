@@ -664,4 +664,8 @@ public class ObjectBoxDB {
         List<ErrorRecord> records = selectErrorRecordByContentId(contentId);
         store.boxFor(ErrorRecord.class).remove(records);
     }
+
+    public void insertImageFile(ImageFile img) {
+        if (img.getId() > 0) store.boxFor(ImageFile.class).put(img);
+    }
 }
