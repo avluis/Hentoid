@@ -39,8 +39,9 @@ public class ImageFile {
 
     // Runtime attributes; no need to expose them nor to persist them
     @Transient
+    private int displayOrder;
+    @Transient
     private String absolutePath;
-
 
 
     public ImageFile() {
@@ -127,5 +128,13 @@ public class ImageFile {
 
     public void setAbsolutePath(String absolutePath) {
         this.absolutePath = absolutePath;
+    }
+
+    public int getDisplayOrder() {
+        return displayOrder;
+    }
+
+    public void setDisplayOrder(int displayOrder) {
+        this.displayOrder = displayOrder;
     }
 }

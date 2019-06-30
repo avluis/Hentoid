@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
 
 import java.io.File;
@@ -37,6 +38,8 @@ import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
+import static com.annimon.stream.Collectors.toList;
+
 
 public class ImageViewerViewModel extends AndroidViewModel implements ContentListener {
 
@@ -48,7 +51,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     // Pictures data
     private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();   // Currently displayed set of images
-    private List<ImageFile> initialImagesList;      // Initial image list in the right order, to fallback when shuffling is disabled
     private int imageIndex;                         // 0-based position, as in "programmatic index"
 
     // Collection data
@@ -73,9 +75,11 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     }
 
     public void setImages(List<ImageFile> imgs) {
-        initialImagesList = new ArrayList<>(imgs);
-        if (shuffleImages) Collections.shuffle(imgs);
-        images.postValue(imgs);
+        List<ImageFile> list = new ArrayList<>(imgs);
+        if (shuffleImages) Collections.shuffle(list);
+        for (int i = 0; i < list.size(); i++)
+            list.get(i).setDisplayOrder(i);
+        images.postValue(list);
     }
 
     public void setContentId(long contentId) {
@@ -106,11 +110,19 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     public void setShuffleImages(boolean shuffleImages) {
         this.shuffleImages = shuffleImages;
-        if (shuffleImages) {
-            List<ImageFile> imgs = new ArrayList<>(initialImagesList);
-            Collections.shuffle(imgs);
-            images.setValue(imgs);
-        } else images.setValue(initialImagesList);
+
+        List<ImageFile> imgs = getImages().getValue();
+        if (imgs != null) {
+            if (shuffleImages) {
+                Collections.shuffle(imgs);
+            } else {
+                // Sort images according to their Order
+                imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).collect(toList());
+            }
+            for (int i = 0; i < imgs.size(); i++)
+                imgs.get(i).setDisplayOrder(i);
+            images.postValue(imgs);
+        }
     }
 
     public int getInitialPosition() {
@@ -150,13 +162,22 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                result -> {
-                                    getImage(imageIndex).setBookmarked(result.isBookmarked()); // Update new state in memory
-                                    callback.accept(result); // Inform the view
-                                },
+                                result -> onToggleBookmarkSuccess(result, callback),
                                 Timber::e
                         )
         );
+    }
+
+    private void onToggleBookmarkSuccess(ImageFile result, Consumer<ImageFile> callback) {
+        List<ImageFile> imgs = getImages().getValue();
+        if (imgs != null) {
+            for (ImageFile img : imgs)
+                if (img.getId() == result.getId()) {
+                    img.setBookmarked(result.isBookmarked()); // Update new state in memory
+                    result.setDisplayOrder(img.getDisplayOrder()); // Set the display order of the item to
+                    callback.accept(result); // Inform the view
+                }
+        }
     }
 
     /**

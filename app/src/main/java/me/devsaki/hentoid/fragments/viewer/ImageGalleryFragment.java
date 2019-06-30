@@ -102,7 +102,7 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void onBookmarkSuccess(ImageFile img) {
-        galleryImagesAdapter.notifyItemChanged(img.getOrder() - 1);
+        galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder());
     }
 
     private void toggleBookmarkDisplay()
