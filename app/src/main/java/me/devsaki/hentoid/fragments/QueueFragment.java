@@ -57,10 +57,6 @@ public class QueueFragment extends BaseFragment {
     private boolean isEmpty = false;
 
 
-    public static QueueFragment newInstance() {
-        return new QueueFragment();
-    }
-
     @Override
     public void onResume() {
         super.onResume();

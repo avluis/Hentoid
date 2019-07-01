@@ -19,10 +19,6 @@ public class QueueActivity extends BaseActivity implements BackInterface {
     private BaseFragment baseFragment;
     private Fragment fragment;
 
-    private QueueFragment buildFragment() {
-        return QueueFragment.newInstance();
-    }
-
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -37,7 +33,7 @@ public class QueueActivity extends BaseActivity implements BackInterface {
         fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment == null) {
-            fragment = buildFragment();
+            fragment = new QueueFragment();
 
             manager.beginTransaction()
                     .add(R.id.content_frame, fragment, getFragmentTag())
