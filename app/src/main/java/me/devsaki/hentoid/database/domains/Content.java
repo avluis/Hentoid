@@ -74,6 +74,8 @@ public class Content implements Serializable {
     private long reads = 0;
     @Expose
     private long lastReadDate;
+    @Expose
+    private int lastReadPageIndex = 0;
     // Temporary during SAVED state only; no need to expose them for JSON persistence
     @Expose(serialize = false, deserialize = false)
     private String downloadParams;
@@ -81,12 +83,12 @@ public class Content implements Serializable {
     @Expose(serialize = false, deserialize = false)
     @Backlink(to = "content")
     private ToMany<ErrorRecord> errorLog;
-    @Expose(serialize = false, deserialize = false)
-    private int lastReadPageIndex = 0;
+    // Needs to be in the DB to keep the information when deletion takes a long time and user navigates
+    // No need to save that into JSON
     @Expose(serialize = false, deserialize = false)
     private boolean isBeingDeleted = false;
 
-    // Runtime attributes; no need to expose them nor to persist them
+    // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
     private double percent;
     @Transient
