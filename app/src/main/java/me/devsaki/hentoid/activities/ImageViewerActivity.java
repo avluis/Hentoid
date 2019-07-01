@@ -12,6 +12,7 @@ import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
+import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 
@@ -34,9 +35,14 @@ public class ImageViewerActivity extends AppCompatActivity {
             viewModel.setContentId(parser.getContentId());
             Bundle searchParams = parser.getSearchParams();
             if (searchParams != null) viewModel.setSearchParams(searchParams);
+        } else {
+            throw new RuntimeException("Required init arguments not found");
         }
 
-        PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION);
+        if (!PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
+            ToastUtil.toast("Storage permission denied - cannot open the viewer");
+            throw new RuntimeException("Storage permission denied - cannot open the viewer");
+        }
 
         // Allows an full recolor of the status bar with the custom color defined in the activity's theme
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
