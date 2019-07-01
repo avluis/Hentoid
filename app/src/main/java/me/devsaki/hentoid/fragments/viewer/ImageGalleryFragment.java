@@ -119,7 +119,8 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void onBookmarkSuccess(ImageFile img) {
-        galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder()); // TODO : does not work when gallery view is filtered
+        if (filterBookmarks) galleryImagesAdapter.notifyDataSetChanged(); // Because no easy way to spot which item has changed when the view is filtered
+        else galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder());
     }
 
     private void toggleBookmarkDisplay() {
