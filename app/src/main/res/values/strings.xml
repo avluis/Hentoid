@@ -184,6 +184,7 @@
     <string name="viewer_bookmark_off">Bookmark page</string>
     <string name="viewer_bookmark_on">Remove page bookmark</string>
     <string name="pref_viewer_resume_last_left">Resume reading at last left page</string>
+    <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
     <string name="pref_viewer_display_pagenum">Always display page number</string>
     <string name="pref_viewer_tap_transitions">Transition effects for left/right tap</string>

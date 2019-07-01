@@ -38,13 +38,17 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        Switch theSwitch = requireViewById(view, R.id.viewer_prefs_resume_reading_action);
+        Switch theSwitch = requireViewById(view, R.id.viewer_prefs_keep_screen_action);
+        theSwitch.setChecked(Preferences.isViewerKeepScreenOn());
+        theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerKeepScreenOn(isChecked));
+
+        theSwitch = requireViewById(view, R.id.viewer_prefs_resume_reading_action);
         theSwitch.setChecked(Preferences.isViewerResumeLastLeft());
         theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerResumeLastLeft(isChecked));
 
-        theSwitch = requireViewById(view, R.id.viewer_prefs_keep_screen_action);
-        theSwitch.setChecked(Preferences.isViewerKeepScreenOn());
-        theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setViewerKeepScreenOn(isChecked));
+        theSwitch = requireViewById(view, R.id.viewer_prefs_open_gallery_action);
+        theSwitch.setChecked(Preferences.isOpenBookInGalleryMode());
+        theSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> Preferences.setOpenBookInGalleryMode(isChecked));
 
         theSwitch = requireViewById(view, R.id.viewer_prefs_display_pagenum_action);
         theSwitch.setChecked(Preferences.isViewerDisplayPageNum());

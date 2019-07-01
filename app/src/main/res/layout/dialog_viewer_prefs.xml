@@ -79,6 +79,32 @@
             app:layout_constraintTop_toTopOf="@id/viewer_prefs_resume_reading_title" />
 
         <TextView
+            android:id="@+id/viewer_prefs_open_gallery_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginRight="8dp"
+            android:gravity="start"
+            android:singleLine="false"
+            android:text="@string/pref_viewer_open_gallery"
+            android:textAlignment="viewStart"
+            android:textSize="@dimen/text_body_1"
+            app:layout_constraintEnd_toStartOf="@id/viewer_prefs_open_gallery_action"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_resume_reading_title" />
+
+        <Switch
+            android:id="@+id/viewer_prefs_open_gallery_action"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"
+            android:textAlignment="viewStart"
+            app:layout_constraintBottom_toBottomOf="@id/viewer_prefs_open_gallery_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/viewer_prefs_open_gallery_title" />
+
+        <TextView
             android:id="@+id/viewer_prefs_display_pagenum_title"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -91,7 +117,7 @@
             android:textSize="@dimen/text_body_1"
             app:layout_constraintEnd_toStartOf="@id/viewer_prefs_display_pagenum_action"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_resume_reading_title" />
+            app:layout_constraintTop_toBottomOf="@id/viewer_prefs_open_gallery_title" />
 
         <Switch
             android:id="@+id/viewer_prefs_display_pagenum_action"

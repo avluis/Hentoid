@@ -48,6 +48,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         BrowseModeDialogFragment.Parent {
 
     private final static String KEY_HUD_VISIBLE = "hud_visible";
+    private final static String KEY_GALLERY_SHOWN = "gallery_shown";
 
     private ImageRecyclerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
@@ -58,6 +59,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private int maxPosition;
+    private boolean hasGalleryBeenShown = false;
 
 
     // Controls
@@ -108,12 +110,15 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         viewModel
                 .getImages()
                 .observe(this, this::onImagesChanged);
+
+        if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
     }
 
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
+        outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
     }
 
     @Override
@@ -122,6 +127,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         int hudVisibility = View.INVISIBLE; // Default state at startup
         if (savedInstanceState != null) {
             hudVisibility = savedInstanceState.getInt(KEY_HUD_VISIBLE, View.INVISIBLE);
+            hasGalleryBeenShown = savedInstanceState.getBoolean(KEY_GALLERY_SHOWN, false);
         }
         controlsOverlay.setVisibility(hudVisibility);
     }
@@ -554,6 +560,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void displayGallery(boolean filterBookmarks) {
+        hasGalleryBeenShown = true;
         requireFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterBookmarks))
