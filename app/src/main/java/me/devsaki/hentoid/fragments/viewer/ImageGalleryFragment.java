@@ -87,7 +87,7 @@ public class ImageGalleryFragment extends Fragment {
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.gallery_menu, menu);
         bookmarkFilterMenu = menu.findItem(R.id.gallery_menu_action_bookmarks);
-        updateBookmarkButton();
+        updateBookmarkFilter();
     }
 
     private void initUI(View rootView) {
@@ -124,13 +124,14 @@ public class ImageGalleryFragment extends Fragment {
 
     private void toggleBookmarkDisplay() {
         filterBookmarks = !filterBookmarks;
-        updateBookmarkButton();
+        updateBookmarkFilter();
     }
 
-    private void updateBookmarkButton() {
+    private void updateBookmarkFilter() {
         bookmarkFilterMenu.setIcon(filterBookmarks?R.drawable.ic_action_bookmark_on:R.drawable.ic_action_bookmark_off);
         galleryImagesAdapter.setFilter(filterBookmarks);
         galleryImagesAdapter.filterItems();
+        galleryImagesAdapter.smoothScrollToPosition(0);
     }
 
     @Override
