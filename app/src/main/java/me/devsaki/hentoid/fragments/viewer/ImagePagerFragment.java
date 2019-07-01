@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
@@ -58,6 +59,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
+    private Content content;
+    private int imageIndex = -1;
     private int maxPosition;
     private boolean hasGalleryBeenShown = false;
 
@@ -98,7 +101,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         onBrowseModeChange();
         onUpdateFlingFactor();
         onUpdatePageNumDisplay();
-        updateBookInfo();
 
         return view;
     }
@@ -110,6 +112,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         viewModel
                 .getImages()
                 .observe(this, this::onImagesChanged);
+
+        viewModel
+                .getImageIndex()
+                .observe(this, this::onImageIndexChanged);
+
+        viewModel
+                .getContent()
+                .observe(this, this::onContentChanged);
 
         if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
     }
@@ -306,50 +316,57 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onBookmarkClick() {
-        viewModel.toggleCurrentPageBookmark(this::onBookmarkSuccess);
+        ImageFile currentImage = adapter.getImageAt(imageIndex);
+        if (currentImage != null)
+            viewModel.togglePageBookmark(currentImage, this::onBookmarkSuccess);
         hideMoreMenu();
     }
 
     private void onBookmarkSuccess(ImageFile img) {
         // Check if the updated image is still the one displayed on screen
-        ImageFile currentImage = viewModel.getImage(viewModel.getImageIndex());
+        ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null && img.getId() == currentImage.getId()) {
-            updateBookmarkDisplay();
+            currentImage.setBookmarked(img.isBookmarked());
+            updateBookmarkDisplay(img.isBookmarked());
         }
     }
 
     private void onImagesChanged(List<ImageFile> images) {
         hideMoreMenu();
-        updateBookNavigation();
-        updateBookInfo();
 
-        adapter.setImageUris(viewModel.getUrisFromImageList(images));
+        adapter.setImages(images);
         onUpdateImageDisplay(); // Remove cached images
 
         maxPosition = images.size() - 1;
         seekBar.setMax(maxPosition);
 
         if (Preferences.isViewerResumeLastLeft()) {
-            viewModel.setImageIndex(viewModel.getInitialPosition());
+            recyclerView.scrollToPosition(content.getLastReadPageIndex());
         } else {
-            viewModel.setImageIndex(0);
+            recyclerView.scrollToPosition(0);
         }
-        seekBar.setProgress(viewModel.getImageIndex());
-        recyclerView.scrollToPosition(viewModel.getImageIndex());
+    }
 
+    private void onImageIndexChanged(Integer imageIndex) {
+        this.imageIndex = imageIndex;
+        seekBar.setProgress(imageIndex);
         updatePageDisplay();
+    }
+
+    private void onContentChanged(Content content) {
+        this.content = content;
+        updateBookInfo(content);
+        updateBookNavigation(content);
     }
 
     // Scroll listener
     private void onCurrentPositionChange(int position) {
         viewModel.setImageIndex(position);
-        seekBar.setProgress(viewModel.getImageIndex());
         hideMoreMenu();
-        updatePageDisplay();
     }
 
     private void updatePageDisplay() {
-        String pageNum = viewModel.getImageIndex() + 1 + "";
+        String pageNum = imageIndex + 1 + "";
         String maxPage = maxPosition + 1 + "";
 
         pageCurrentNumber.setText(pageNum);
@@ -358,34 +375,34 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         updateBookmarkDisplay();
     }
 
-    private void updateBookNavigation() {
-        if (viewModel.isFirstContent()) prevBookButton.setVisibility(View.INVISIBLE);
+    private void updateBookNavigation(Content content) {
+        if (content.isFirst()) prevBookButton.setVisibility(View.INVISIBLE);
         else prevBookButton.setVisibility(View.VISIBLE);
-        if (viewModel.isLastContent()) nextBookButton.setVisibility(View.INVISIBLE);
+        if (content.isLast()) nextBookButton.setVisibility(View.INVISIBLE);
         else nextBookButton.setVisibility(View.VISIBLE);
     }
 
     private void updateBookmarkDisplay() {
-        ImageFile currentImage = viewModel.getImage(viewModel.getImageIndex());
-        if (currentImage != null) {
-            if (currentImage.isBookmarked()) {
-                pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_on);
-                pageBookmarkText.setText(R.string.viewer_bookmark_on);
-            } else {
-                pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_off);
-                pageBookmarkText.setText(R.string.viewer_bookmark_off);
-            }
+        ImageFile currentImage = adapter.getImageAt(imageIndex);
+        if (currentImage != null)
+            updateBookmarkDisplay(currentImage.isBookmarked());
+    }
+
+    private void updateBookmarkDisplay(boolean isBookmarked) {
+        if (isBookmarked) {
+            pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_on);
+            pageBookmarkText.setText(R.string.viewer_bookmark_on);
+        } else {
+            pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_off);
+            pageBookmarkText.setText(R.string.viewer_bookmark_off);
         }
     }
 
-    private void updateBookInfo() {
-        Content content = viewModel.getCurrentContent();
-        if (content != null) {
-            String title = content.getTitle();
-            if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
-            bookInfoText.setText(title);
-            bookInfoText.setOnLongClickListener(v -> onBookTitleLongClick(content));
-        }
+    private void updateBookInfo(Content content) {
+        String title = content.getTitle();
+        if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
+        bookInfoText.setText(title);
+        bookInfoText.setOnLongClickListener(v -> onBookTitleLongClick(content));
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
@@ -458,42 +475,53 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     public void nextPage() {
         hideMoreMenu();
-        if (viewModel.getImageIndex() == maxPosition) return;
+        if (imageIndex == maxPosition) return;
         if (Preferences.isViewerTapTransitions())
-            recyclerView.smoothScrollToPosition(viewModel.getImageIndex() + 1);
+            recyclerView.smoothScrollToPosition(imageIndex + 1);
         else
-            recyclerView.scrollToPosition(viewModel.getImageIndex() + 1);
+            recyclerView.scrollToPosition(imageIndex + 1);
     }
 
     public void previousPage() {
         hideMoreMenu();
-        if (viewModel.getImageIndex() == 0) return;
+        if (imageIndex == 0) return;
         if (Preferences.isViewerTapTransitions())
-            recyclerView.smoothScrollToPosition(viewModel.getImageIndex() - 1);
+            recyclerView.smoothScrollToPosition(imageIndex - 1);
         else
-            recyclerView.scrollToPosition(viewModel.getImageIndex() - 1);
+            recyclerView.scrollToPosition(imageIndex - 1);
     }
 
     private void seekToPosition(int position) {
 
         if (View.VISIBLE == previewImage2.getVisibility()) {
-            Glide.with(previewImage1.getContext())
-                    .load(viewModel.getImage(position - 1).getAbsolutePath())
-                    .apply(glideRequestOptions)
-                    .into(previewImage1);
+            Context ctx = previewImage2.getContext();
+            ImageFile img = adapter.getImageAt(position - 1);
+            if (img != null) {
+                Glide.with(ctx)
+                        .load(img.getAbsolutePath())
+                        .apply(glideRequestOptions)
+                        .into(previewImage1);
+                previewImage1.setVisibility(View.VISIBLE);
+            } else previewImage1.setVisibility(View.INVISIBLE);
 
-            Glide.with(previewImage1.getContext())
-                    .load(viewModel.getImage(position).getAbsolutePath())
-                    .apply(glideRequestOptions)
-                    .into(previewImage2);
+            img = adapter.getImageAt(position);
+            if (img != null)
+                Glide.with(ctx)
+                        .load(img.getAbsolutePath())
+                        .apply(glideRequestOptions)
+                        .into(previewImage2);
 
-            Glide.with(previewImage1.getContext())
-                    .load(viewModel.getImage(position + 1).getAbsolutePath())
-                    .apply(glideRequestOptions)
-                    .into(previewImage3);
+            img = adapter.getImageAt(position + 1);
+            if (img != null) {
+                Glide.with(ctx)
+                        .load(img.getAbsolutePath())
+                        .apply(glideRequestOptions)
+                        .into(previewImage3);
+                previewImage3.setVisibility(View.VISIBLE);
+            } else previewImage3.setVisibility(View.INVISIBLE);
         }
 
-        if (position == viewModel.getImageIndex() + 1 || position == viewModel.getImageIndex() - 1) {
+        if (position == imageIndex + 1 || position == imageIndex - 1) {
             recyclerView.smoothScrollToPosition(position);
         } else {
             recyclerView.scrollToPosition(position);
@@ -505,7 +533,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void goToPage(int pageNum) {
         hideMoreMenu();
         int position = pageNum - 1;
-        if (position == viewModel.getImageIndex() || position < 0 || position > maxPosition)
+        if (position == imageIndex || position < 0 || position > maxPosition)
             return;
         seekToPosition(position);
     }

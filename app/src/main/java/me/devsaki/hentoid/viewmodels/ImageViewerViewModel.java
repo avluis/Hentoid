@@ -7,7 +7,6 @@ import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.Consumer;
@@ -50,17 +49,16 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // Pictures data
-    private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();   // Currently displayed set of images
-    private int imageIndex;                         // 0-based position, as in "programmatic index"
+    private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();    // Currently displayed set of images
+    private final MutableLiveData<Integer> imageIndex = new MutableLiveData<>();        // 0-based index of the current image
 
     // Collection data
-    private long maxPages;                          // Maximum available pages
-    private long contentId;                         // Database ID of currently displayed book
+    private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
+    private long maxPages;                                                           // Maximum available pages
 
 
     public ImageViewerViewModel(@NonNull Application application) {
         super(application);
-        images.setValue(Collections.emptyList());
     }
 
     @NonNull
@@ -68,10 +66,31 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         return images;
     }
 
-    public ImageFile getImage(int index) {
-        List<ImageFile> imgs = images.getValue();
-        if (imgs != null && index < imgs.size() && index > -1) return imgs.get(index);
-        else return new ImageFile();
+    @NonNull
+    public LiveData<Integer> getImageIndex() {
+        return imageIndex;
+    }
+
+    @NonNull
+    public LiveData<Content> getContent() {
+        return content;
+    }
+
+    public void loadFromContent(long contentId) {
+        if (contentId > 0) {
+            ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
+            Content content = db.selectContentById(contentId);
+            if (content != null) processContent(content);
+        }
+    }
+
+    public void loadFromSearchParams(@Nonnull Bundle bundle) {
+        Context ctx = getApplication().getApplicationContext();
+        searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
+        searchManager.loadFromBundle(bundle, ctx);
+        int contentIndex = bundle.getInt("contentIndex", -1);
+        if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
+        searchManager.searchLibrary(1, this);
     }
 
     public void setImages(List<ImageFile> imgs) {
@@ -82,26 +101,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         images.postValue(list);
     }
 
-    public void setContentId(long contentId) {
-        this.contentId = contentId;
-    }
-
-    public void setSearchParams(@Nonnull Bundle bundle) {
-        Context ctx = getApplication().getApplicationContext();
-        searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
-        searchManager.loadFromBundle(bundle, ctx);
-        int contentIndex = bundle.getInt("contentIndex", -1);
-        if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
-        searchManager.searchLibrary(1, this);
-    }
-
-
     public void setImageIndex(int position) {
-        this.imageIndex = position;
-    }
-
-    public int getImageIndex() {
-        return imageIndex;
+        imageIndex.postValue(position);
     }
 
     public boolean isShuffleImages() {
@@ -125,13 +126,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         }
     }
 
-    public int getInitialPosition() {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
-        if (contentId > 0) {
-            Content content = db.selectContentById(contentId);
-            if (content != null) return content.getLastReadPageIndex();
-        }
-        return 0;
+    private int getImageIndexInternal() {
+        return (imageIndex.getValue() != null) ? imageIndex.getValue() : 0;
     }
 
     @Override
@@ -143,17 +139,11 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     public void saveCurrentPosition() {
         ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
-        if (contentId > 0) {
-            Content content = db.selectContentById(contentId);
-            if (content != null) {
-                content.setLastReadPageIndex(imageIndex);
-                db.insertContent(content);
-            }
+        Content theContent = content.getValue();
+        if (theContent != null) {
+            theContent.setLastReadPageIndex(getImageIndexInternal());
+            db.insertContent(theContent);
         }
-    }
-
-    public void toggleCurrentPageBookmark(Consumer<ImageFile> callback) {
-        togglePageBookmark(getImage(imageIndex), callback);
     }
 
     public void togglePageBookmark(ImageFile file, Consumer<ImageFile> callback) {
@@ -211,14 +201,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
             throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));
     }
 
-    @Nullable
-    public Content getCurrentContent() {
-        ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
-        if (contentId > 0) {
-            return db.selectContentById(contentId);
-        } else return null;
-    }
-
     public void loadNextContent() {
         if (searchManager.getCurrentPage() < maxPages) // Need to load next content page
         {
@@ -235,33 +217,30 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         }
     }
 
-    public boolean isFirstContent() {
-        return (1 == searchManager.getCurrentPage());
-    }
-
-    public boolean isLastContent() {
-        return (maxPages == searchManager.getCurrentPage());
-    }
-
     @Override
     public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
         // Record last read position before leaving current content
         saveCurrentPosition();
 
         maxPages = totalContent;
-        Content content = results.get(0);
-        contentId = content.getId();
+        processContent(results.get(0));
+    }
+
+    private void processContent(Content theContent) {
+        theContent.setFirst(0 == theContent.getQueryOrder());
+        theContent.setLast(maxPages - 1 == theContent.getQueryOrder());
+        content.postValue(theContent);
 
         // Load new content
-        File[] pictures = FileHelper.getPictureFilesFromContent(content);
-        if (pictures != null && pictures.length > 0 && content.getImageFiles() != null) {
-            List<ImageFile> imageFiles = new ArrayList<>(content.getImageFiles());
+        File[] pictures = FileHelper.getPictureFilesFromContent(theContent);
+        if (pictures != null && pictures.length > 0 && theContent.getImageFiles() != null) {
+            List<ImageFile> imageFiles = new ArrayList<>(theContent.getImageFiles());
             matchFilesToImageList(pictures, imageFiles);
             setImages(imageFiles);
 
             // Record 1 more view for the new content
             compositeDisposable.add(
-                    Completable.fromRunnable(() -> FileHelper.updateContentReads(getApplication().getApplicationContext(), content.getId(), pictures[0].getParentFile()))
+                    Completable.fromRunnable(() -> FileHelper.updateContentReads(getApplication().getApplicationContext(), theContent.getId(), pictures[0].getParentFile()))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe()
@@ -288,14 +267,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
                 images.remove(i);
             } else i++;
         }
-    }
-
-    public List<String> getUrisFromImageList(List<ImageFile> images) {
-        List<String> result = new ArrayList<>();
-
-        for (ImageFile image : images) result.add(image.getAbsolutePath());
-
-        return result;
     }
 
     @Override

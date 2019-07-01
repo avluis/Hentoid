@@ -94,9 +94,13 @@ public class Content implements Serializable {
     @Transient
     private int queryOrder;
     @Transient
+    private boolean isFirst;
+    @Transient
+    private boolean isLast;
+    @Transient
     private boolean selected = false;
 
-    // Kept for retro-compatibility with contentV2.json Hentoid files
+    // Attributes kept for retro-compatibility with contentV2.json Hentoid files
     @Transient
     @Expose
     @SerializedName("attributes")
@@ -481,13 +485,29 @@ public class Content implements Serializable {
         return this;
     }
 
-    private int getQueryOrder() {
+    public int getQueryOrder() {
         return queryOrder;
     }
 
     public Content setQueryOrder(int order) {
         queryOrder = order;
         return this;
+    }
+
+    public boolean isLast() {
+        return isLast;
+    }
+
+    public void setLast(boolean last) {
+        this.isLast = last;
+    }
+
+    public boolean isFirst() {
+        return isFirst;
+    }
+
+    public void setFirst(boolean first) {
+        this.isFirst = first;
     }
 
     public boolean isSelected() {
@@ -497,7 +517,6 @@ public class Content implements Serializable {
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
-
 
     public long getReads() {
         return reads;

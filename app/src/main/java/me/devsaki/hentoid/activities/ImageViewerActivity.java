@@ -32,9 +32,9 @@ public class ImageViewerActivity extends AppCompatActivity {
             ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
 
             viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
-            viewModel.setContentId(parser.getContentId());
             Bundle searchParams = parser.getSearchParams();
-            if (searchParams != null) viewModel.setSearchParams(searchParams);
+            if (searchParams != null) viewModel.loadFromSearchParams(searchParams);
+            else viewModel.loadFromContent(parser.getContentId());
         } else {
             throw new RuntimeException("Required init arguments not found");
         }
