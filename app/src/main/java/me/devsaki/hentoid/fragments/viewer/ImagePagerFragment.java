@@ -553,10 +553,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         hideMoreMenu();
     }
 
-    private void displayGallery(boolean showBookmarks) { // TODO : use the argument
+    private void displayGallery(boolean filterBookmarks) {
         requireFragmentManager()
                 .beginTransaction()
-                .replace(android.R.id.content, new ImageGalleryFragment())
+                .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterBookmarks))
                 .addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
                 .commit();
     }

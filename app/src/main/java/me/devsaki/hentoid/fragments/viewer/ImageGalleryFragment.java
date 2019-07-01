@@ -28,15 +28,30 @@ import static android.support.v4.view.ViewCompat.requireViewById;
 
 public class ImageGalleryFragment extends Fragment {
 
+    private static final String KEY_FILTER_BOOKMARKS = "filter_bookmarks";
+
     private ImageGalleryAdapter galleryImagesAdapter;
     private ImageViewerViewModel viewModel;
     private MenuItem bookmarkFilterMenu;
 
     private Boolean filterBookmarks = false;
 
+
+    public static ImageGalleryFragment newInstance (boolean filterBookmarks) {
+        ImageGalleryFragment fragment = new ImageGalleryFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(KEY_FILTER_BOOKMARKS, filterBookmarks);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
+
+        Bundle arguments = getArguments();
+        if (arguments != null) filterBookmarks = arguments.getBoolean(KEY_FILTER_BOOKMARKS, false);
 
         setHasOptionsMenu(true);
         viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
@@ -72,6 +87,7 @@ public class ImageGalleryFragment extends Fragment {
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.gallery_menu, menu);
         bookmarkFilterMenu = menu.findItem(R.id.gallery_menu_action_bookmarks);
+        updateBookmarkButton();
     }
 
     private void initUI(View rootView) {
@@ -106,11 +122,26 @@ public class ImageGalleryFragment extends Fragment {
         galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder()); // TODO : does not work when gallery view is filtered
     }
 
-    private void toggleBookmarkDisplay()
-    {
+    private void toggleBookmarkDisplay() {
         filterBookmarks = !filterBookmarks;
+        updateBookmarkButton();
+    }
+
+    private void updateBookmarkButton() {
         bookmarkFilterMenu.setIcon(filterBookmarks?R.drawable.ic_action_bookmark_on:R.drawable.ic_action_bookmark_off);
         galleryImagesAdapter.setFilter(filterBookmarks);
         galleryImagesAdapter.filterItems();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_FILTER_BOOKMARKS, filterBookmarks);
+    }
+
+    @Override
+    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
+        super.onViewStateRestored(savedInstanceState);
+        if (savedInstanceState != null) filterBookmarks = savedInstanceState.getBoolean(KEY_FILTER_BOOKMARKS, false);
     }
 }
