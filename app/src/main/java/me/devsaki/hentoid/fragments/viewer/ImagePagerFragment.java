@@ -85,7 +85,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private TextView pageCurrentNumber;
     private TextView pageMaxNumber;
     private View prevBookButton, nextBookButton;
-    private View galleryBookmarksBtn;
+    private View bookmarksGalleryBtn;
 
 
     @Override
@@ -261,8 +261,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // Gallery
         View galleryBtn = requireViewById(rootView, R.id.viewer_gallery_btn);
         galleryBtn.setOnClickListener(v -> displayGallery(false));
-        galleryBookmarksBtn = requireViewById(rootView, R.id.viewer_bookmarks_btn);
-        galleryBookmarksBtn.setOnClickListener(v -> displayGallery(true));
+        bookmarksGalleryBtn = requireViewById(rootView, R.id.viewer_bookmarks_btn);
+        bookmarksGalleryBtn.setOnClickListener(v -> displayGallery(true));
     }
 
     public boolean onBookTitleLongClick(Content content) {
@@ -281,26 +281,42 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         super.onDestroy();
     }
 
+    /**
+     * Back button handler
+     */
     private void onBackClick() {
         viewModel.savePosition(imageIndex);
         requireActivity().onBackPressed();
     }
 
+    /**
+     * Show the viewer settings dialog
+     */
     private void onSettingsClick() {
         hideMoreMenu();
         ViewerPrefsDialogFragment.invoke(this);
     }
 
+    /**
+     * Show/hide the "more" submenu when the "more" button is clicked
+     * TODO : Use a toolbar instead of all this custom stuff
+     */
     private void onMoreClick() {
         if (View.VISIBLE == moreMenu.getVisibility()) moreMenu.setVisibility(View.INVISIBLE);
         else moreMenu.setVisibility(View.VISIBLE);
     }
 
-    // TODO : Use a toolbar instead of all this custom stuff
+    /**
+     * Hide the "more" submenu of the top bar
+     * TODO : Use a toolbar instead of all this custom stuff
+     */
     private void hideMoreMenu() {
         moreMenu.setVisibility(View.INVISIBLE);
     }
 
+    /**
+     * Handle click on "Shuffle" action button
+     */
     private void onShuffleClick() {
         viewModel.setShuffleImages(!viewModel.isShuffleImages());
 
@@ -316,6 +332,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         goToPage(1);
     }
 
+    /**
+     * Handle click on "Bookmark" action button
+     */
     private void onBookmarkClick() {
         ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null)
@@ -323,6 +342,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         hideMoreMenu();
     }
 
+    /**
+     * Success callback when the new bookmarked state has been successfully persisted
+     * @param img The bookmarked / unbookmarked ImageFile in its new state
+     */
     private void onBookmarkSuccess(ImageFile img) {
         // Check if the updated image is still the one displayed on screen
         ImageFile currentImage = adapter.getImageAt(imageIndex);
@@ -330,9 +353,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             currentImage.setBookmarked(img.isBookmarked());
             updateBookmarkDisplay(img.isBookmarked());
         }
-        updateBookmarksButtonDisplay();
+        updateBookmarksGalleryButtonDisplay();
     }
 
+    /**
+     * Observer for changes in the book's list of images
+     * @param images Book's list of images
+     */
     private void onImagesChanged(List<ImageFile> images) {
         hideMoreMenu();
 
@@ -343,25 +370,40 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         seekBar.setMax(maxPosition);
     }
 
+    /**
+     * Observer for changes on the book's starting image index
+     * @param startingIndex Book's starting image index
+     */
     private void onStartingIndexChanged(Integer startingIndex) {
         recyclerView.scrollToPosition(startingIndex);
     }
 
+    /**
+     * Observer for changes on the current book
+     * @param content Loaded book
+     */
     private void onContentChanged(Content content) {
         updateBookInfo(content);
         updateBookNavigation(content);
     }
 
-    // Scroll listener
+    /**
+     * Scroll listener
+     * @param position New position
+     */
     private void onCurrentPositionChange(int position) {
         if (this.imageIndex != position) {
             this.imageIndex = position;
             seekBar.setProgress(position);
             updatePageDisplay();
+            updateBookmarkDisplay();
             hideMoreMenu();
         }
     }
 
+    /**
+     * Update the display of page position controls (text and bar)
+     */
     private void updatePageDisplay() {
         String pageNum = imageIndex + 1 + "";
         String maxPage = maxPosition + 1 + "";
@@ -369,9 +411,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageCurrentNumber.setText(pageNum);
         pageMaxNumber.setText(maxPage);
         pageNumberOverlay.setText(format("%s / %s", pageNum, maxPage));
-        updateBookmarkDisplay();
     }
 
+    /**
+     * Update the visibility of "next/previous book" buttons
+     * @param content Current book
+     */
     private void updateBookNavigation(Content content) {
         if (content.isFirst()) prevBookButton.setVisibility(View.INVISIBLE);
         else prevBookButton.setVisibility(View.VISIBLE);
@@ -379,21 +424,31 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         else nextBookButton.setVisibility(View.VISIBLE);
     }
 
+    /**
+     * Update the display of all bookmark controls (bookmark page action _and_ bookmarks gallery launcher)
+     */
     private void updateBookmarkDisplay() {
-        updateBookmarksButtonDisplay();
+        updateBookmarksGalleryButtonDisplay();
 
         ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null)
             updateBookmarkDisplay(currentImage.isBookmarked());
     }
 
-    private void updateBookmarksButtonDisplay()
+    /**
+     * Update the display of the bookmark gallery launcher
+     */
+    private void updateBookmarksGalleryButtonDisplay()
     {
         if (adapter.isBookmarkPresent())
-            galleryBookmarksBtn.setVisibility(View.VISIBLE);
-        else galleryBookmarksBtn.setVisibility(View.INVISIBLE);
+            bookmarksGalleryBtn.setVisibility(View.VISIBLE);
+        else bookmarksGalleryBtn.setVisibility(View.INVISIBLE);
     }
 
+    /**
+     * Update the display of the "bookmark page" action button
+     * @param isBookmarked True if the button has to represent a bookmarked page; false instead
+     */
     private void updateBookmarkDisplay(boolean isBookmarked) {
         if (isBookmarked) {
             pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_on);
@@ -404,6 +459,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
     }
 
+    /**
+     * Update the book title and author on the top bar
+     * @param content Current content whose information to display
+     */
     private void updateBookInfo(Content content) {
         String title = content.getTitle();
         if (!content.getAuthor().isEmpty()) title += "\nby " + content.getAuthor();
@@ -411,6 +470,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         bookInfoText.setOnLongClickListener(v -> onBookTitleLongClick(content));
     }
 
+    /**
+     * Listener for preference changes (from the settings dialog)
+     * @param prefs Shared preferences object
+     * @param key Key that has been changed
+     */
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
@@ -471,6 +535,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL != Preferences.getViewerOrientation());
     }
 
+    /**
+     * Transforms current Preferences orientation into LinearLayoutManager orientation code
+     * @return Preferred orientation, as LinearLayoutManager orientation code
+     */
     private int getOrientation() {
         if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()) {
             return LinearLayoutManager.HORIZONTAL;
@@ -479,6 +547,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         }
     }
 
+    /**
+     * Load next page
+     */
     public void nextPage() {
         hideMoreMenu();
         if (imageIndex == maxPosition) return;
@@ -488,6 +559,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             recyclerView.scrollToPosition(imageIndex + 1);
     }
 
+    /**
+     * Load previous page
+     */
     public void previousPage() {
         hideMoreMenu();
         if (imageIndex == 0) return;
@@ -497,18 +571,28 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             recyclerView.scrollToPosition(imageIndex - 1);
     }
 
+    /**
+     * Load next book
+     */
     public void nextBook() {
         viewModel.savePosition(imageIndex);
         viewModel.loadNextContent();
     }
 
+    /**
+     * Load previous book
+     */
     public void previousBook() {
         viewModel.savePosition(imageIndex);
         viewModel.loadPreviousContent();
     }
 
+    /**
+     * Seek to the given position; update preview images if they are visible
+     * @param position Position to go to (0-indexed)
+     */
     private void seekToPosition(int position) {
-
+        hideMoreMenu();
         if (View.VISIBLE == previewImage2.getVisibility()) {
             Context ctx = previewImage2.getContext();
             ImageFile img = adapter.getImageAt(position - 1);
@@ -542,9 +626,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         } else {
             recyclerView.scrollToPosition(position);
         }
-        hideMoreMenu();
     }
 
+    /**
+     * Go to the given page number
+     * @param pageNum Page number to go to (1-indexed)
+     */
     @Override
     public void goToPage(int pageNum) {
         hideMoreMenu();
@@ -554,6 +641,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         seekToPosition(position);
     }
 
+    /**
+     * Handler for tapping on the left zone of the screen
+     */
     private void onLeftTap() {
         // Side-tapping disabled when view is zoomed
         if (recyclerView.getCurrentScale() != 1.0) return;
@@ -564,6 +654,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             nextPage();
     }
 
+    /**
+     * Handler for tapping on the right zone of the screen
+     */
     private void onRightTap() {
         // Side-tapping disabled when view is zoomed
         if (recyclerView.getCurrentScale() != 1.0) return;
@@ -574,6 +667,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             previousPage();
     }
 
+    /**
+     * Handler for tapping on the middle zone of the screen
+     */
     private void onMiddleTap() {
         if (View.VISIBLE == controlsOverlay.getVisibility()) {
             controlsOverlay.animate()
@@ -603,6 +699,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         hideMoreMenu();
     }
 
+    /**
+     * Display the viewer gallery
+     * @param filterBookmarks True if only bookmarked pages have to be shown; false for all pages
+     */
     private void displayGallery(boolean filterBookmarks) {
         hasGalleryBeenShown = true;
         requireFragmentManager()
@@ -612,6 +712,10 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .commit();
     }
 
+    /**
+     * Show / hide bottom and top Android system bars
+     * @param visible True if bars have to be shown; false instead
+     */
     private void setSystemBarsVisible(boolean visible) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
             Window window = requireActivity().getWindow();
