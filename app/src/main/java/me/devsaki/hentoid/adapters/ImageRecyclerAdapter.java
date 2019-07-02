@@ -46,6 +46,13 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
         this.images = Collections.unmodifiableList(images);
     }
 
+    public boolean isBookmarkPresent() {
+        for (ImageFile img : images)
+            if (img.isBookmarked()) return true;
+
+        return false;
+    }
+
     @Override
     public int getItemViewType(int position) {
         if ("gif".equals(FileHelper.getExtension(images.get(position).getAbsolutePath()).toLowerCase())) {

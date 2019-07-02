@@ -85,6 +85,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private TextView pageCurrentNumber;
     private TextView pageMaxNumber;
     private View prevBookButton, nextBookButton;
+    private View galleryBookmarksBtn;
 
 
     @Override
@@ -260,7 +261,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // Gallery
         View galleryBtn = requireViewById(rootView, R.id.viewer_gallery_btn);
         galleryBtn.setOnClickListener(v -> displayGallery(false));
-        View galleryBookmarksBtn = requireViewById(rootView, R.id.viewer_bookmarks_btn);
+        galleryBookmarksBtn = requireViewById(rootView, R.id.viewer_bookmarks_btn);
         galleryBookmarksBtn.setOnClickListener(v -> displayGallery(true));
     }
 
@@ -329,6 +330,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             currentImage.setBookmarked(img.isBookmarked());
             updateBookmarkDisplay(img.isBookmarked());
         }
+        updateBookmarksButtonDisplay();
     }
 
     private void onImagesChanged(List<ImageFile> images) {
@@ -378,9 +380,18 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void updateBookmarkDisplay() {
+        updateBookmarksButtonDisplay();
+
         ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null)
             updateBookmarkDisplay(currentImage.isBookmarked());
+    }
+
+    private void updateBookmarksButtonDisplay()
+    {
+        if (adapter.isBookmarkPresent())
+            galleryBookmarksBtn.setVisibility(View.VISIBLE);
+        else galleryBookmarksBtn.setVisibility(View.INVISIBLE);
     }
 
     private void updateBookmarkDisplay(boolean isBookmarked) {
