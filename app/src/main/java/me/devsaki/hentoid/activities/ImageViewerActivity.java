@@ -18,8 +18,6 @@ import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
 
 public class ImageViewerActivity extends AppCompatActivity {
 
-    private ImageViewerViewModel viewModel;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,7 +29,7 @@ public class ImageViewerActivity extends AppCompatActivity {
         if (intent != null && intent.getExtras() != null) {
             ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
 
-            viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
+            ImageViewerViewModel viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
             Bundle searchParams = parser.getSearchParams();
             if (searchParams != null) viewModel.loadFromSearchParams(searchParams);
             else viewModel.loadFromContent(parser.getContentId());
@@ -60,11 +58,4 @@ public class ImageViewerActivity extends AppCompatActivity {
                     .commit();
         }
     }
-
-    @Override
-    public void onBackPressed() {
-        viewModel.saveCurrentPosition();
-        super.onBackPressed();
-    }
-
 }

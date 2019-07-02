@@ -33,6 +33,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
+import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
@@ -50,7 +51,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     // Pictures data
     private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();    // Currently displayed set of images
-    private final MutableLiveData<Integer> imageIndex = new MutableLiveData<>();        // 0-based index of the current image
+    private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();        // 0-based index of the current image
 
     // Collection data
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
@@ -67,8 +68,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     }
 
     @NonNull
-    public LiveData<Integer> getImageIndex() {
-        return imageIndex;
+    public LiveData<Integer> getStartingIndex() {
+        return startingIndex;
     }
 
     @NonNull
@@ -101,10 +102,9 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         images.postValue(list);
     }
 
-    public void setImageIndex(int position) {
-        imageIndex.postValue(position);
+    public void setStartingIndex(int index) {
+        startingIndex.postValue(index);
     }
-
     public boolean isShuffleImages() {
         return shuffleImages;
     }
@@ -126,10 +126,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         }
     }
 
-    private int getImageIndexInternal() {
-        return (imageIndex.getValue() != null) ? imageIndex.getValue() : 0;
-    }
-
     @Override
     protected void onCleared() {
         super.onCleared();
@@ -137,11 +133,11 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         compositeDisposable.clear();
     }
 
-    public void saveCurrentPosition() {
+    public void savePosition(int index) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
         Content theContent = content.getValue();
         if (theContent != null) {
-            theContent.setLastReadPageIndex(getImageIndexInternal());
+            theContent.setLastReadPageIndex(index);
             db.insertContent(theContent);
         }
     }
@@ -219,9 +215,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     @Override
     public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
-        // Record last read position before leaving current content
-        saveCurrentPosition();
-
         maxPages = totalContent;
         processContent(results.get(0));
     }
@@ -237,6 +230,12 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
             List<ImageFile> imageFiles = new ArrayList<>(theContent.getImageFiles());
             matchFilesToImageList(pictures, imageFiles);
             setImages(imageFiles);
+
+            if (Preferences.isViewerResumeLastLeft()) {
+                setStartingIndex(theContent.getLastReadPageIndex());
+            } else {
+                setStartingIndex(0);
+            }
 
             // Record 1 more view for the new content
             compositeDisposable.add(

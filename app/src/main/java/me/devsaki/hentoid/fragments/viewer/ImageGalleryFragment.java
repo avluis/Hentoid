@@ -109,7 +109,7 @@ public class ImageGalleryFragment extends Fragment {
 
     private boolean onItemClick(View view, int position) {
         ImageFileFlex imgFileFlex = (ImageFileFlex)galleryImagesAdapter.getItem(position);
-        if (imgFileFlex != null) viewModel.setImageIndex(imgFileFlex.getItem().getDisplayOrder());
+        if (imgFileFlex != null) viewModel.setStartingIndex(imgFileFlex.getItem().getDisplayOrder());
         requireActivity().onBackPressed();
         return true;
     }

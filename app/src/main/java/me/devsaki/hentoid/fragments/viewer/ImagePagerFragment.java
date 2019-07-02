@@ -59,7 +59,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
-    private Content content;
     private int imageIndex = -1;
     private int maxPosition;
     private boolean hasGalleryBeenShown = false;
@@ -114,8 +113,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .observe(this, this::onImagesChanged);
 
         viewModel
-                .getImageIndex()
-                .observe(this, this::onImageIndexChanged);
+                .getStartingIndex()
+                .observe(this, this::onStartingIndexChanged);
 
         viewModel
                 .getContent()
@@ -226,9 +225,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Next/previous book
         prevBookButton = requireViewById(rootView, R.id.viewer_prev_book_btn);
-        prevBookButton.setOnClickListener(v -> viewModel.loadPreviousContent());
+        prevBookButton.setOnClickListener(v -> previousBook());
         nextBookButton = requireViewById(rootView, R.id.viewer_next_book_btn);
-        nextBookButton.setOnClickListener(v -> viewModel.loadNextContent());
+        nextBookButton.setOnClickListener(v -> nextBook());
 
         // Slider and preview
         previewImage1 = requireViewById(rootView, R.id.viewer_image_preview1);
@@ -282,6 +281,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void onBackClick() {
+        viewModel.savePosition(imageIndex);
         requireActivity().onBackPressed();
     }
 
@@ -339,30 +339,25 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         maxPosition = images.size() - 1;
         seekBar.setMax(maxPosition);
-
-        if (Preferences.isViewerResumeLastLeft()) {
-            recyclerView.scrollToPosition(content.getLastReadPageIndex());
-        } else {
-            recyclerView.scrollToPosition(0);
-        }
     }
 
-    private void onImageIndexChanged(Integer imageIndex) {
-        this.imageIndex = imageIndex;
-        seekBar.setProgress(imageIndex);
-        updatePageDisplay();
+    private void onStartingIndexChanged(Integer startingIndex) {
+        recyclerView.scrollToPosition(startingIndex);
     }
 
     private void onContentChanged(Content content) {
-        this.content = content;
         updateBookInfo(content);
         updateBookNavigation(content);
     }
 
     // Scroll listener
     private void onCurrentPositionChange(int position) {
-        viewModel.setImageIndex(position);
-        hideMoreMenu();
+        if (this.imageIndex != position) {
+            this.imageIndex = position;
+            seekBar.setProgress(position);
+            updatePageDisplay();
+            hideMoreMenu();
+        }
     }
 
     private void updatePageDisplay() {
@@ -489,6 +484,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             recyclerView.smoothScrollToPosition(imageIndex - 1);
         else
             recyclerView.scrollToPosition(imageIndex - 1);
+    }
+
+    public void nextBook() {
+        viewModel.savePosition(imageIndex);
+        viewModel.loadNextContent();
+    }
+
+    public void previousBook() {
+        viewModel.savePosition(imageIndex);
+        viewModel.loadPreviousContent();
     }
 
     private void seekToPosition(int position) {
