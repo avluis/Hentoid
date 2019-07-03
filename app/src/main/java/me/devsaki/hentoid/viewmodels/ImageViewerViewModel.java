@@ -44,18 +44,19 @@ import static com.annimon.stream.Collectors.toList;
 public class ImageViewerViewModel extends AndroidViewModel implements ContentListener {
 
     // Settings
-    private boolean shuffleImages = false;      // True if images have to be shuffled; false if presented in the book order
-
-    private ContentSearchManager searchManager = null;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final MutableLiveData<Boolean> isShuffled = new MutableLiveData<>();        // True if images have to be shuffled; false if presented in the book order
 
     // Pictures data
     private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();    // Currently displayed set of images
-    private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();        // 0-based index of the current image
+    private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
 
     // Collection data
     private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
     private long maxPages;                                                           // Maximum available pages
+
+    // Technical
+    private ContentSearchManager searchManager = null;
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
     public ImageViewerViewModel(@NonNull Application application) {
@@ -77,6 +78,12 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         return content;
     }
 
+    @NonNull
+    public LiveData<Boolean> isShuffled() {
+        return isShuffled;
+    }
+
+
     public void loadFromContent(long contentId) {
         if (contentId > 0) {
             ObjectBoxDB db = ObjectBoxDB.getInstance(getApplication().getApplicationContext());
@@ -96,7 +103,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     public void setImages(List<ImageFile> imgs) {
         List<ImageFile> list = new ArrayList<>(imgs);
-        if (shuffleImages) Collections.shuffle(list);
+        if (isShuffled.getValue() != null && isShuffled.getValue()) Collections.shuffle(list);
         for (int i = 0; i < list.size(); i++)
             list.get(i).setDisplayOrder(i);
         images.postValue(list);
@@ -105,13 +112,9 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     public void setStartingIndex(int index) {
         startingIndex.postValue(index);
     }
-    public boolean isShuffleImages() {
-        return shuffleImages;
-    }
 
     public void setShuffleImages(boolean shuffleImages) {
-        this.shuffleImages = shuffleImages;
-
+        isShuffled.setValue(shuffleImages);
         List<ImageFile> imgs = getImages().getValue();
         if (imgs != null) {
             if (shuffleImages) {
