@@ -109,16 +109,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel
-                .getImages()
+        viewModel.getImages()
                 .observe(this, this::onImagesChanged);
 
-        viewModel
-                .getStartingIndex()
+        viewModel.getStartingIndex()
                 .observe(this, this::onStartingIndexChanged);
 
-        viewModel
-                .getContent()
+        viewModel.getContent()
                 .observe(this, this::onContentChanged);
 
         if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
