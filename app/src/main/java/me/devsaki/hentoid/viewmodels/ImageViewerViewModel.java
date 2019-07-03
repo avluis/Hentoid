@@ -106,11 +106,11 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         if (isShuffled.getValue() != null && isShuffled.getValue()) Collections.shuffle(list);
         for (int i = 0; i < list.size(); i++)
             list.get(i).setDisplayOrder(i);
-        images.postValue(list);
+        images.setValue(list);
     }
 
     public void setStartingIndex(int index) {
-        startingIndex.postValue(index);
+        startingIndex.setValue(index);
     }
 
     public void setShuffleImages(boolean shuffleImages) {
@@ -125,7 +125,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
             }
             for (int i = 0; i < imgs.size(); i++)
                 imgs.get(i).setDisplayOrder(i);
-            images.postValue(imgs);
+            images.setValue(imgs);
         }
     }
 
@@ -225,7 +225,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     private void processContent(Content theContent) {
         theContent.setFirst(0 == theContent.getQueryOrder());
         theContent.setLast(maxPages - 1 == theContent.getQueryOrder());
-        content.postValue(theContent);
+        content.setValue(theContent);
 
         // Load new content
         File[] pictures = FileHelper.getPictureFilesFromContent(theContent);
