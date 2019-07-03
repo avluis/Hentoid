@@ -28,19 +28,20 @@ import static android.support.v4.view.ViewCompat.requireViewById;
 
 public class ImageGalleryFragment extends Fragment {
 
-    private static final String KEY_FILTER_BOOKMARKS = "filter_bookmarks";
+    private static final String KEY_FILTER_FAVOURITES = "filter_favourites" +
+            "";
 
     private ImageGalleryAdapter galleryImagesAdapter;
     private ImageViewerViewModel viewModel;
-    private MenuItem bookmarkFilterMenu;
+    private MenuItem favouritesFilterMenu;
 
-    private Boolean filterBookmarks = false;
+    private Boolean filterFavourites = false;
 
 
-    public static ImageGalleryFragment newInstance (boolean filterBookmarks) {
+    public static ImageGalleryFragment newInstance (boolean filterFavourites) {
         ImageGalleryFragment fragment = new ImageGalleryFragment();
         Bundle args = new Bundle();
-        args.putBoolean(KEY_FILTER_BOOKMARKS, filterBookmarks);
+        args.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
         fragment.setArguments(args);
         return fragment;
     }
@@ -51,7 +52,7 @@ public class ImageGalleryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
 
         Bundle arguments = getArguments();
-        if (arguments != null) filterBookmarks = arguments.getBoolean(KEY_FILTER_BOOKMARKS, false);
+        if (arguments != null) filterFavourites = arguments.getBoolean(KEY_FILTER_FAVOURITES, false);
 
         setHasOptionsMenu(true);
         viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
@@ -75,8 +76,8 @@ public class ImageGalleryFragment extends Fragment {
         if (item.getItemId() == android.R.id.home) {
             requireActivity().onBackPressed();
             return true;
-        } else if (item.getItemId() == R.id.gallery_menu_action_bookmarks) {
-            toggleBookmarkDisplay();
+        } else if (item.getItemId() == R.id.gallery_menu_action_favourites) {
+            toggleFavouritesDisplay();
             return true;
         } else {
             return super.onOptionsItemSelected(item);
@@ -86,8 +87,8 @@ public class ImageGalleryFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.gallery_menu, menu);
-        bookmarkFilterMenu = menu.findItem(R.id.gallery_menu_action_bookmarks);
-        updateBookmarkDisplay();
+        favouritesFilterMenu = menu.findItem(R.id.gallery_menu_action_favourites);
+        updateFavouriteDisplay();
     }
 
     private void initUI(View rootView) {
@@ -97,7 +98,7 @@ public class ImageGalleryFragment extends Fragment {
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
 
-        galleryImagesAdapter = new ImageGalleryAdapter(null, this::onBookmarkClick);
+        galleryImagesAdapter = new ImageGalleryAdapter(null, this::onFavouriteClick);
         galleryImagesAdapter.addListener((FlexibleAdapter.OnItemClickListener) this::onItemClick);
         RecyclerView releaseDescription = requireViewById(rootView, R.id.viewer_gallery_recycler);
         releaseDescription.setAdapter(galleryImagesAdapter);
@@ -114,23 +115,23 @@ public class ImageGalleryFragment extends Fragment {
         return true;
     }
 
-    private void onBookmarkClick(ImageFile img) {
-        viewModel.togglePageBookmark(img, this::onBookmarkSuccess);
+    private void onFavouriteClick(ImageFile img) {
+        viewModel.togglePageFavourite(img, this::onFavouriteSuccess);
     }
 
-    private void onBookmarkSuccess(ImageFile img) {
-        if (filterBookmarks) galleryImagesAdapter.notifyDataSetChanged(); // Because no easy way to spot which item has changed when the view is filtered
+    private void onFavouriteSuccess(ImageFile img) {
+        if (filterFavourites) galleryImagesAdapter.notifyDataSetChanged(); // Because no easy way to spot which item has changed when the view is filtered
         else galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder());
     }
 
-    private void toggleBookmarkDisplay() {
-        filterBookmarks = !filterBookmarks;
-        updateBookmarkDisplay();
+    private void toggleFavouritesDisplay() {
+        filterFavourites = !filterFavourites;
+        updateFavouriteDisplay();
     }
 
-    private void updateBookmarkDisplay() {
-        bookmarkFilterMenu.setIcon(filterBookmarks?R.drawable.ic_action_bookmark_on:R.drawable.ic_action_bookmark_off);
-        galleryImagesAdapter.setFilter(filterBookmarks);
+    private void updateFavouriteDisplay() {
+        favouritesFilterMenu.setIcon(filterFavourites ?R.drawable.ic_fav_full:R.drawable.ic_fav_empty);
+        galleryImagesAdapter.setFilter(filterFavourites);
         galleryImagesAdapter.filterItems();
         galleryImagesAdapter.smoothScrollToPosition(0);
     }
@@ -138,12 +139,12 @@ public class ImageGalleryFragment extends Fragment {
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putBoolean(KEY_FILTER_BOOKMARKS, filterBookmarks);
+        outState.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
     }
 
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null) filterBookmarks = savedInstanceState.getBoolean(KEY_FILTER_BOOKMARKS, false);
+        if (savedInstanceState != null) filterFavourites = savedInstanceState.getBoolean(KEY_FILTER_FAVOURITES, false);
     }
 }

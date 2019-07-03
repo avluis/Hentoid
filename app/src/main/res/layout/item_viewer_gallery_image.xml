@@ -15,7 +15,7 @@
         tools:ignore="ContentDescription" />
 
     <ImageButton
-        android:id="@+id/viewer_gallery_bookmark_btn"
+        android:id="@+id/viewer_gallery_favourite_btn"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginTop="8dp"
@@ -23,7 +23,7 @@
         android:clickable="true"
         android:focusable="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_action_bookmark_off"
+        android:src="@drawable/ic_fav_empty"
         android:tint="@color/dark_gray"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"

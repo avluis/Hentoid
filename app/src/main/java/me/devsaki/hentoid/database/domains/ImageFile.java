@@ -27,7 +27,7 @@ public class ImageFile {
     @Expose
     private String name;
     @Expose
-    private boolean bookmarked = false;
+    private boolean favourite = false;
     @Expose
     @Convert(converter = StatusContent.StatusContentConverter.class, dbType = Integer.class)
     private StatusContent status;
@@ -52,7 +52,7 @@ public class ImageFile {
         this.name = String.format(Locale.US, "%03d", order);
         this.url = url;
         this.status = status;
-        this.bookmarked = false;
+        this.favourite = false;
     }
 
 /*
@@ -114,12 +114,12 @@ public class ImageFile {
         return this;
     }
 
-    public boolean isBookmarked() {
-        return bookmarked;
+    public boolean isFavourite() {
+        return favourite;
     }
 
-    public void setBookmarked(boolean bookmarked) {
-        this.bookmarked = bookmarked;
+    public void setFavourite(boolean favourite) {
+        this.favourite = favourite;
     }
 
     public String getAbsolutePath() {

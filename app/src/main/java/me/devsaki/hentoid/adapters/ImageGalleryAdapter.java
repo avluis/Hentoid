@@ -11,14 +11,14 @@ import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.database.domains.ImageFile;
 
 public class ImageGalleryAdapter extends FlexibleAdapter<IFlexible> {
-    private final Consumer<ImageFile> onBookmarkClickListener;
+    private final Consumer<ImageFile> onFavouriteClickListener;
 
-    public ImageGalleryAdapter(@Nullable List<IFlexible> items, Consumer<ImageFile> onBookmarkClickListener) {
+    public ImageGalleryAdapter(@Nullable List<IFlexible> items, Consumer<ImageFile> onFavouriteClickListener) {
         super(items);
-        this.onBookmarkClickListener = onBookmarkClickListener;
+        this.onFavouriteClickListener = onFavouriteClickListener;
     }
 
-    public Consumer<ImageFile> getOnBookmarkClickListener() {
-        return onBookmarkClickListener;
+    public Consumer<ImageFile> getOnFavouriteClickListener() {
+        return onFavouriteClickListener;
     }
 }

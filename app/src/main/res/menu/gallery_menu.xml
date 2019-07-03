@@ -5,8 +5,8 @@
     tools:context=".activities.ImageViewerActivity"
     tools:ignore="AlwaysShowAction">
     <item
-        android:id="@+id/gallery_menu_action_bookmarks"
-        android:icon="@drawable/ic_action_bookmark_off"
+        android:id="@+id/gallery_menu_action_favourites"
+        android:icon="@drawable/ic_fav_empty"
         android:title="@string/menu_fav"
         app:showAsAction="always" />
 </menu>

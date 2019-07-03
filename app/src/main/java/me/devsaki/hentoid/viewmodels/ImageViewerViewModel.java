@@ -145,24 +145,24 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         }
     }
 
-    public void togglePageBookmark(ImageFile file, Consumer<ImageFile> callback) {
+    public void togglePageFavourite(ImageFile file, Consumer<ImageFile> callback) {
         compositeDisposable.add(
-                Single.fromCallable(() -> togglePageBookmark(getApplication().getApplicationContext(), file.getId()))
+                Single.fromCallable(() -> togglePageFavourite(getApplication().getApplicationContext(), file.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(
-                                result -> onToggleBookmarkSuccess(result, callback),
+                                result -> onToggleFavouriteSuccess(result, callback),
                                 Timber::e
                         )
         );
     }
 
-    private void onToggleBookmarkSuccess(ImageFile result, Consumer<ImageFile> callback) {
+    private void onToggleFavouriteSuccess(ImageFile result, Consumer<ImageFile> callback) {
         List<ImageFile> imgs = getImages().getValue();
         if (imgs != null) {
             for (ImageFile img : imgs)
                 if (img.getId() == result.getId()) {
-                    img.setBookmarked(result.isBookmarked()); // Update new state in memory
+                    img.setFavourite(result.isFavourite()); // Update new state in memory
                     result.setDisplayOrder(img.getDisplayOrder()); // Set the display order of the item to
                     callback.accept(result); // Inform the view
                 }
@@ -170,19 +170,19 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     }
 
     /**
-     * Toggles bookmark flag in DB and in the content JSON
+     * Toggles favourite flag in DB and in the content JSON
      *
      * @param context Context to be used for this operation
      * @param imageId ID of the image whose flag to toggle
      * @return ImageFile with the new state
      */
-    private static ImageFile togglePageBookmark(Context context, long imageId) {
+    private static ImageFile togglePageFavourite(Context context, long imageId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
         ImageFile img = db.selectImageFile(imageId);
 
         if (img != null) {
-            img.setBookmarked(!img.isBookmarked());
+            img.setFavourite(!img.isFavourite());
 
             // Persist it in DB
             db.insertImageFile(img);

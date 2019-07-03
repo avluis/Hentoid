@@ -59,43 +59,43 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
 
     @Override
     public boolean filter(Boolean constraint) {
-        return (!constraint || item.isBookmarked());
+        return (!constraint || item.isFavourite());
     }
 
     class ImageFileViewHolder extends FlexibleViewHolder {
 
         private final TextView pageNumberTxt;
         private final ImageView image;
-        private final ImageButton bookmarkBtn;
+        private final ImageButton favouriteBtn;
         private ImageFile imageFile;
 
         ImageFileViewHolder(View view, ImageGalleryAdapter adapter) {
             super(view, adapter);
             pageNumberTxt = view.findViewById(R.id.viewer_gallery_pagenumber_text);
             image = view.findViewById(R.id.viewer_gallery_image);
-            bookmarkBtn = view.findViewById(R.id.viewer_gallery_bookmark_btn);
-            bookmarkBtn.setOnClickListener(v -> onBookmarkClicked());
+            favouriteBtn = view.findViewById(R.id.viewer_gallery_favourite_btn);
+            favouriteBtn.setOnClickListener(v -> onFavouriteClicked());
         }
 
         void setContent(ImageFile item) {
             imageFile = item;
             pageNumberTxt.setText(String.format("Page %s", item.getOrder()));
-            updateBookmark(item.isBookmarked());
+            updateFavourite(item.isFavourite());
             Glide.with(image.getContext())
                     .load(item.getAbsolutePath())
                     .apply(glideRequestOptions)
                     .into(image);
         }
 
-        void onBookmarkClicked() {
-            ((ImageGalleryAdapter) mAdapter).getOnBookmarkClickListener().accept(imageFile);
+        void onFavouriteClicked() {
+            ((ImageGalleryAdapter) mAdapter).getOnFavouriteClickListener().accept(imageFile);
         }
 
-        void updateBookmark(boolean isBookmarked) {
-            if (isBookmarked) {
-                bookmarkBtn.setImageResource(R.drawable.ic_action_bookmark_on);
+        void updateFavourite(boolean isFavourite) {
+            if (isFavourite) {
+                favouriteBtn.setImageResource(R.drawable.ic_fav_full);
             } else {
-                bookmarkBtn.setImageResource(R.drawable.ic_action_bookmark_off);
+                favouriteBtn.setImageResource(R.drawable.ic_fav_empty);
             }
         }
     }

@@ -46,9 +46,9 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
         this.images = Collections.unmodifiableList(images);
     }
 
-    public boolean isBookmarkPresent() {
+    public boolean isFavouritePresent() {
         for (ImageFile img : images)
-            if (img.isBookmarked()) return true;
+            if (img.isFavourite()) return true;
 
         return false;
     }

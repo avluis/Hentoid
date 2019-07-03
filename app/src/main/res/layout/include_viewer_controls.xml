@@ -113,7 +113,7 @@
             app:layout_constraintTop_toTopOf="@id/viewer_shuffle_btn" />
 
         <ImageButton
-            android:id="@+id/viewer_bookmark_btn"
+            android:id="@+id/viewer_favourite_btn"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_marginTop="8dp"
@@ -121,26 +121,26 @@
             android:clickable="true"
             android:focusable="true"
             android:scaleType="fitCenter"
-            android:src="@drawable/ic_action_bookmark_off"
+            android:src="@drawable/ic_fav_empty"
             android:tint="@color/dark_gray"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintTop_toBottomOf="@id/viewer_shuffle_btn"
             tools:ignore="ContentDescription" />
 
         <TextView
-            android:id="@+id/viewer_bookmark_text"
+            android:id="@+id/viewer_favourite_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
             android:padding="8dp"
-            android:text="@string/viewer_bookmark_off"
+            android:text="@string/viewer_favourite_off"
             android:textAlignment="center"
             android:textSize="@dimen/text_subtitle_2"
-            app:layout_constraintBottom_toBottomOf="@id/viewer_bookmark_btn"
-            app:layout_constraintLeft_toRightOf="@id/viewer_bookmark_btn"
-            app:layout_constraintTop_toTopOf="@id/viewer_bookmark_btn" />
+            app:layout_constraintBottom_toBottomOf="@id/viewer_favourite_btn"
+            app:layout_constraintLeft_toRightOf="@id/viewer_favourite_btn"
+            app:layout_constraintTop_toTopOf="@id/viewer_favourite_btn" />
 
     </android.support.constraint.ConstraintLayout>
 
@@ -218,20 +218,20 @@
         android:src="@drawable/ic_action_gallery"
         android:tint="@color/dark_gray"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintRight_toLeftOf="@id/viewer_bookmarks_btn"
+        app:layout_constraintRight_toLeftOf="@id/viewer_favourites_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"
         tools:ignore="ContentDescription" />
 
     <ImageButton
-        android:id="@+id/viewer_bookmarks_btn"
+        android:id="@+id/viewer_favourites_btn"
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:background="#00000000"
         android:clickable="true"
         android:focusable="true"
         android:scaleType="fitCenter"
-        android:src="@drawable/ic_action_bookmarks"
-        android:tint="@color/dark_gray"
+        android:src="@drawable/ic_fav_full"
+        android:tint="@color/accent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintRight_toLeftOf="@id/viewer_next_book_btn"
         app:layout_constraintTop_toTopOf="@id/viewer_seekbar"

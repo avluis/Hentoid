@@ -77,8 +77,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private View moreMenu;
     private ImageView pageShuffleButton;
     private TextView pageShuffleText;
-    private ImageView pageBookmarkButton;
-    private TextView pageBookmarkText;
+    private ImageView pageFavouriteButton;
+    private TextView pageFavouriteText;
 
     // Bottom bar controls
     private ImageView previewImage1, previewImage2, previewImage3;
@@ -86,7 +86,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private TextView pageCurrentNumber;
     private TextView pageMaxNumber;
     private View prevBookButton, nextBookButton;
-    private View bookmarksGalleryBtn;
+    private View favouritesGalleryBtn;
 
 
     @Override
@@ -209,11 +209,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         pageShuffleButton.setOnClickListener(v -> onShuffleClick());
         pageShuffleText.setOnClickListener(v -> onShuffleClick());
 
-        // More menu / Page bookmark option
-        pageBookmarkButton = requireViewById(rootView, R.id.viewer_bookmark_btn);
-        pageBookmarkText = requireViewById(rootView, R.id.viewer_bookmark_text);
-        pageBookmarkButton.setOnClickListener(v -> onBookmarkClick());
-        pageBookmarkText.setOnClickListener(v -> onBookmarkClick());
+        // More menu / Favourite page option
+        pageFavouriteButton = requireViewById(rootView, R.id.viewer_favourite_btn);
+        pageFavouriteText = requireViewById(rootView, R.id.viewer_favourite_text);
+        pageFavouriteButton.setOnClickListener(v -> onFavouriteClick());
+        pageFavouriteText.setOnClickListener(v -> onFavouriteClick());
 
 
         // Book info text
@@ -262,8 +262,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         // Gallery
         View galleryBtn = requireViewById(rootView, R.id.viewer_gallery_btn);
         galleryBtn.setOnClickListener(v -> displayGallery(false));
-        bookmarksGalleryBtn = requireViewById(rootView, R.id.viewer_bookmarks_btn);
-        bookmarksGalleryBtn.setOnClickListener(v -> displayGallery(true));
+        favouritesGalleryBtn = requireViewById(rootView, R.id.viewer_favourites_btn);
+        favouritesGalleryBtn.setOnClickListener(v -> displayGallery(true));
     }
 
     public boolean onBookTitleLongClick(Content content) {
@@ -323,27 +323,27 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
-     * Handle click on "Bookmark" action button
+     * Handle click on "Favourite" action button
      */
-    private void onBookmarkClick() {
+    private void onFavouriteClick() {
         ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null)
-            viewModel.togglePageBookmark(currentImage, this::onBookmarkSuccess);
+            viewModel.togglePageFavourite(currentImage, this::onFavouriteSuccess);
         hideMoreMenu();
     }
 
     /**
-     * Success callback when the new bookmarked state has been successfully persisted
-     * @param img The bookmarked / unbookmarked ImageFile in its new state
+     * Success callback when the new favourite'd state has been successfully persisted
+     * @param img The favourite'd / unfavourite'd ImageFile in its new state
      */
-    private void onBookmarkSuccess(ImageFile img) {
+    private void onFavouriteSuccess(ImageFile img) {
         // Check if the updated image is still the one displayed on screen
         ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null && img.getId() == currentImage.getId()) {
-            currentImage.setBookmarked(img.isBookmarked());
-            updateBookmarkDisplay(img.isBookmarked());
+            currentImage.setFavourite(img.isFavourite());
+            updateFavouriteDisplay(img.isFavourite());
         }
-        updateBookmarksGalleryButtonDisplay();
+        updateFavouritesGalleryButtonDisplay();
     }
 
     /**
@@ -405,7 +405,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             this.imageIndex = position;
             seekBar.setProgress(position);
             updatePageDisplay();
-            updateBookmarkDisplay();
+            updateFavouriteDisplay();
             hideMoreMenu();
         }
     }
@@ -434,37 +434,37 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     /**
-     * Update the display of all bookmark controls (bookmark page action _and_ bookmarks gallery launcher)
+     * Update the display of all favourite controls (favourite page action _and_ favourites gallery launcher)
      */
-    private void updateBookmarkDisplay() {
-        updateBookmarksGalleryButtonDisplay();
+    private void updateFavouriteDisplay() {
+        updateFavouritesGalleryButtonDisplay();
 
         ImageFile currentImage = adapter.getImageAt(imageIndex);
         if (currentImage != null)
-            updateBookmarkDisplay(currentImage.isBookmarked());
+            updateFavouriteDisplay(currentImage.isFavourite());
     }
 
     /**
-     * Update the display of the bookmark gallery launcher
+     * Update the display of the favourites gallery launcher
      */
-    private void updateBookmarksGalleryButtonDisplay()
+    private void updateFavouritesGalleryButtonDisplay()
     {
-        if (adapter.isBookmarkPresent())
-            bookmarksGalleryBtn.setVisibility(View.VISIBLE);
-        else bookmarksGalleryBtn.setVisibility(View.INVISIBLE);
+        if (adapter.isFavouritePresent())
+            favouritesGalleryBtn.setVisibility(View.VISIBLE);
+        else favouritesGalleryBtn.setVisibility(View.INVISIBLE);
     }
 
     /**
-     * Update the display of the "bookmark page" action button
-     * @param isBookmarked True if the button has to represent a bookmarked page; false instead
+     * Update the display of the "favourite page" action button
+     * @param isFavourited True if the button has to represent a favourite page; false instead
      */
-    private void updateBookmarkDisplay(boolean isBookmarked) {
-        if (isBookmarked) {
-            pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_on);
-            pageBookmarkText.setText(R.string.viewer_bookmark_on);
+    private void updateFavouriteDisplay(boolean isFavourited) {
+        if (isFavourited) {
+            pageFavouriteButton.setImageResource(R.drawable.ic_fav_full);
+            pageFavouriteText.setText(R.string.viewer_favourite_on);
         } else {
-            pageBookmarkButton.setImageResource(R.drawable.ic_action_bookmark_off);
-            pageBookmarkText.setText(R.string.viewer_bookmark_off);
+            pageFavouriteButton.setImageResource(R.drawable.ic_fav_empty);
+            pageFavouriteText.setText(R.string.viewer_favourite_off);
         }
     }
 
@@ -710,13 +710,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Display the viewer gallery
-     * @param filterBookmarks True if only bookmarked pages have to be shown; false for all pages
+     * @param filterFavourites True if only favourite pages have to be shown; false for all pages
      */
-    private void displayGallery(boolean filterBookmarks) {
+    private void displayGallery(boolean filterFavourites) {
         hasGalleryBeenShown = true;
         requireFragmentManager()
                 .beginTransaction()
-                .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterBookmarks))
+                .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
                 .addToBackStack(null) // This triggers a memory leak in LeakCanary but is _not_ a leak : see https://stackoverflow.com/questions/27913009/memory-leak-in-fragmentmanager
                 .commit();
     }

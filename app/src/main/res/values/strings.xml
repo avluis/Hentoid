@@ -181,8 +181,8 @@
     <string name="viewer_prefs_display_fill">Fill (image takes up all screen)</string>
     <string name="viewer_order_shuffle">Shuffle pages</string>
     <string name="viewer_order_123">Reorder pages</string>
-    <string name="viewer_bookmark_off">Bookmark page</string>
-    <string name="viewer_bookmark_on">Remove page bookmark</string>
+    <string name="viewer_favourite_off">Mark page as favourite</string>
+    <string name="viewer_favourite_on">Unmark page as favourite</string>
     <string name="pref_viewer_resume_last_left">Resume reading at last left page</string>
     <string name="pref_viewer_open_gallery">Always open in gallery mode</string>
     <string name="pref_viewer_keep_screen_on">Keep screen on</string>
@@ -192,7 +192,7 @@
     <string name="pref_viewer_browse_mode">Browse mode</string>
     <string name="pref_viewer_fling_sensitivity">Fling sensitivity</string>
     <string name="viewer_discord">Any feedback ?\nDiscuss it with us on Discord !</string>
-    <string name="gallery_menu_bookmark">Toggle bookmark filter</string>
+    <string name="gallery_menu_favourite">Toggle favourite filter</string>
 
     <!-- Changelog -->
     <string name="view_changelog">View changelog</string>
