@@ -109,6 +109,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        viewModel.onRestoreState(savedInstanceState);
+
         viewModel.getImages()
                 .observe(this, this::onImagesChanged);
 
@@ -128,6 +130,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         super.onSaveInstanceState(outState);
         outState.putInt(KEY_HUD_VISIBLE, controlsOverlay.getVisibility());
         outState.putBoolean(KEY_GALLERY_SHOWN, hasGalleryBeenShown);
+        viewModel.onSaveState(outState);
     }
 
     @Override
