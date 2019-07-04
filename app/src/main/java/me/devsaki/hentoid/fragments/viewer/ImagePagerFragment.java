@@ -62,7 +62,6 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private int imageIndex = -1;
     private int maxPosition;
     private boolean hasGalleryBeenShown = false;
-    private boolean areImageShuffled = false;
 
 
     // Controls
@@ -119,8 +118,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         viewModel.getContent()
                 .observe(this, this::onContentChanged);
 
-        viewModel.isShuffled()
-                .observe(this, this::onShuffleChange);
+        viewModel.setOnShuffledChangeListener(this::onShuffleChanged);
 
         if (Preferences.isOpenBookInGalleryMode() && !hasGalleryBeenShown) displayGallery(false);
     }
@@ -319,7 +317,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      * Handle click on "Shuffle" action button
      */
     private void onShuffleClick() {
-        viewModel.setShuffleImages(!areImageShuffled);
+        hideMoreMenu();
+        goToPage(1);
+        viewModel.onShuffleClick();
     }
 
     /**
@@ -379,20 +379,16 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Observer for changes on the shuffled state
-     * @param shuffle New shuffled state
+     * @param isShuffled New shuffled state
      */
-    private void onShuffleChange(Boolean shuffle) {
-        areImageShuffled = shuffle;
-        if (areImageShuffled) {
+    private void onShuffleChanged(boolean isShuffled) {
+        if (isShuffled) {
             pageShuffleButton.setImageResource(R.drawable.ic_menu_sort_123);
             pageShuffleText.setText(R.string.viewer_order_123);
         } else {
             pageShuffleButton.setImageResource(R.drawable.ic_menu_sort_random);
             pageShuffleText.setText(R.string.viewer_order_shuffle);
         }
-
-        hideMoreMenu();
-        goToPage(1);
     }
 
 
