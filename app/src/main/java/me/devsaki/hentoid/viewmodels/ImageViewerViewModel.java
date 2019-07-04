@@ -7,8 +7,10 @@ import android.arch.lifecycle.MutableLiveData;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.annimon.stream.Stream;
+import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
 import java.io.File;
@@ -43,8 +45,12 @@ import static com.annimon.stream.Collectors.toList;
 
 public class ImageViewerViewModel extends AndroidViewModel implements ContentListener {
 
+    private static final String KEY_IS_SHUFFLED = "is_shuffled";
+
     // Settings
-    private final MutableLiveData<Boolean> isShuffled = new MutableLiveData<>();        // True if images have to be shuffled; false if presented in the book order
+    /** True if images have to be shuffled; false if presented in the book order */
+    private boolean isShuffled;
+    private BooleanConsumer onShuffledChangeListener;
 
     // Pictures data
     private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();    // Currently displayed set of images
@@ -78,11 +84,18 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         return content;
     }
 
-    @NonNull
-    public LiveData<Boolean> isShuffled() {
-        return isShuffled;
+    public void setOnShuffledChangeListener(BooleanConsumer listener) {
+        this.onShuffledChangeListener = listener;
     }
 
+    public void onSaveState(Bundle outState) {
+        outState.putBoolean(KEY_IS_SHUFFLED, isShuffled);
+    }
+
+    public void onRestoreState(@Nullable Bundle savedState) {
+        if (savedState == null) return;
+        isShuffled = savedState.getBoolean(KEY_IS_SHUFFLED);
+    }
 
     public void loadFromContent(long contentId) {
         if (contentId > 0) {
@@ -103,7 +116,8 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
     public void setImages(List<ImageFile> imgs) {
         List<ImageFile> list = new ArrayList<>(imgs);
-        if (isShuffled.getValue() != null && isShuffled.getValue()) Collections.shuffle(list);
+        if (isShuffled)
+            Collections.shuffle(list);
         for (int i = 0; i < list.size(); i++)
             list.get(i).setDisplayOrder(i);
         images.setValue(list);
@@ -113,11 +127,13 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         startingIndex.setValue(index);
     }
 
-    public void setShuffleImages(boolean shuffleImages) {
-        isShuffled.setValue(shuffleImages);
+    public void onShuffleClick() {
+        isShuffled = !isShuffled;
+        onShuffledChangeListener.accept(isShuffled);
+
         List<ImageFile> imgs = getImages().getValue();
         if (imgs != null) {
-            if (shuffleImages) {
+            if (isShuffled) {
                 Collections.shuffle(imgs);
             } else {
                 // Sort images according to their Order
