@@ -18,7 +18,7 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
 public class NhentaiContent implements ContentParser {
 
-    @Selector(value = "#download", attr = "href", defValue = "")
+    @Selector(value = "#bigcontainer #cover a", attr = "href", defValue = "")
     private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content", defValue = "")
     private String coverUrl;
@@ -50,7 +50,7 @@ public class NhentaiContent implements ContentParser {
         result.setSite(Site.NHENTAI);
         if (galleryUrl.isEmpty()) return result;
 
-        result.setUrl(galleryUrl.replace("download", "").replace("/g", ""));
+        result.setUrl(galleryUrl.replace("/g", "").replace("1/", ""));
         result.setCoverImageUrl(coverUrl);
         result.setTitle(title);
 

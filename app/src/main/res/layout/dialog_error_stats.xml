@@ -32,7 +32,7 @@
         android:clickable="true"
         android:focusable="true"
         android:text="@string/redownload_view_log"
-        android:textColor="@color/darkGray"
+        android:textColor="@color/dark_gray"
         android:textSize="@dimen/text_button" />
 
     <TextView

@@ -56,7 +56,7 @@ public class EndlessFragment extends DownloadsFragment {
 
     private void onLoadMore() {
         if (!isLastPage()) { // NB : In EndlessFragment, a "page" is a group of loaded books. Last page is reached when scrolling reaches the very end of the book list
-            currentPage++;
+            searchManager.increaseCurrentPage();
             isPageLoading = true;
             searchLibrary(false);
             Timber.d("Load more data now~");

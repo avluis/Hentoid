@@ -32,7 +32,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"
             android:text="@string/changelog"
-            android:textColor="@color/mediumGray"
+            android:textColor="@color/medium_gray"
             android:textSize="@dimen/text_subtitle_1"
             android:textStyle="bold" />
 

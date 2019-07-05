@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.annimon.stream.function.Consumer;
 import com.annimon.stream.function.IntConsumer;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
@@ -54,7 +55,6 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
-import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
 
@@ -74,6 +74,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private final int displayMode;
     private final RequestOptions glideRequestOptions;
     private final CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final Consumer<Content> openBookAction;
 
     private RecyclerView libraryView; // Kept as reference for querying by Content through ID
     private Runnable onScrollToEndListener;
@@ -86,6 +87,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         collectionAccessor = builder.collectionAccessor;
         sortComparator = builder.sortComparator;
         displayMode = builder.displayMode;
+        openBookAction = builder.openBookAction;
         glideRequestOptions = new RequestOptions()
                 .centerInside()
                 .error(R.drawable.ic_placeholder);
@@ -334,7 +336,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     }
 
                     compositeDisposable.add(
-                            Single.fromCallable(() -> toggleFavourite(content.getId()))
+                            Single.fromCallable(() -> toggleFavourite(context, content.getId()))
                                     .subscribeOn(Schedulers.io())
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe(
@@ -380,7 +382,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 // "In library" icon
                 else if (status == StatusContent.DOWNLOADED || status == StatusContent.MIGRATED || status == StatusContent.ERROR) {
                     holder.ivDownload.setImageResource(R.drawable.ic_action_play);
-                    holder.ivDownload.setOnClickListener(v -> FileHelper.openContent(context, content));
+                    holder.ivDownload.setOnClickListener(v -> openBookAction.accept(content));
                 }
             }
 
@@ -389,6 +391,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         }
     }
 
+    // Mikan mode only
     private void tryDownloadPages(Content content) {
         ContentHolder holder = getHolderByContent(content);
         if (holder != null) {
@@ -402,7 +405,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         // Simple click = open book (library mode only)
         if (DownloadsFragment.MODE_LIBRARY == displayMode) {
-            holder.itemView.setOnClickListener(new ContentClickListener(context, content, pos, itemSelectListener) {
+            holder.itemView.setOnClickListener(new ContentClickListener(content, pos, itemSelectListener) {
 
                 @Override
                 public void onClick(View v) {
@@ -416,13 +419,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     } else {
                         clearSelections();
                         setSelected(false, 0);
-
-                        super.onClick(v);
-
-                        if (sortComparator.equals(Content.READ_DATE_INV_COMPARATOR)
-                                || sortComparator.equals(Content.READS_ORDER_COMPARATOR)
-                                || sortComparator.equals(Content.READS_ORDER_INV_COMPARATOR))
-                            mSortedList.recalculatePositionOfItemAt(pos); // Reading the book has an effect on its position
+                        openBookAction.accept(content);
                     }
                 }
             });
@@ -430,7 +427,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         // Long click = select item (library mode only)
         if (DownloadsFragment.MODE_LIBRARY == displayMode) {
-            holder.itemView.setOnLongClickListener(new ContentClickListener(context, content, pos, itemSelectListener) {
+            holder.itemView.setOnLongClickListener(new ContentClickListener(content, pos, itemSelectListener) {
 
                 @Override
                 public boolean onLongClick(View v) {
@@ -572,7 +569,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 .create().show();
     }
 
-    private Content toggleFavourite(long contentId) {
+    private static Content toggleFavourite(Context context, long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
 
@@ -584,8 +581,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 db.insertContent(content);
 
                 // Persist in it JSON
-                String rootFolderName = Preferences.getRootFolderName();
-                File dir = new File(rootFolderName, content.getStorageFolder());
+                File dir = FileHelper.getContentDownloadDir(content);
                 try {
                     JsonHelper.saveJson(content.preJSONExport(), dir);
                 } catch (IOException e) {
@@ -610,13 +606,19 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         if (holder != null) {
             holder.ivDownload.setImageResource(R.drawable.ic_action_play);
             holder.ivDownload.clearAnimation();
-            holder.ivDownload.setOnClickListener(v -> FileHelper.openContent(context, content));
+            holder.ivDownload.setOnClickListener(v -> openBookAction.accept(content));
         }
     }
 
     @Nullable
     private ContentHolder getHolderByContent(Content content) {
         return (ContentHolder) libraryView.findViewHolderForItemId(content.getId());
+    }
+
+    public int getContentPosition(Content content) {
+        ContentHolder holder = getHolderByContent(content);
+        if (holder != null) return holder.getLayoutPosition();
+        else return -1;
     }
 
     @Override
@@ -864,6 +866,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         private CollectionAccessor collectionAccessor;
         private Comparator<Content> sortComparator;
         private int displayMode;
+        private Consumer<Content> openBookAction;
 
         public Builder setContext(Context context) {
             this.context = context;
@@ -892,6 +895,11 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
         public Builder setOnContentRemovedListener(IntConsumer onContentRemovedListener) {
             this.onContentRemovedListener = onContentRemovedListener;
+            return this;
+        }
+
+        public Builder setOpenBookAction(Consumer<Content> action) {
+            this.openBookAction = action;
             return this;
         }
 

@@ -4,7 +4,9 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
@@ -28,9 +30,6 @@ import java.util.Locale;
 
 import javax.annotation.Nonnull;
 
-import io.reactivex.Completable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -351,9 +350,7 @@ public class FileHelper {
     public static void removeContent(Content content) {
         // If the book has just starting being downloaded and there are no complete pictures on memory yet, it has no storage folder => nothing to delete
         if (content.getStorageFolder().length() > 0) {
-            String settingDir = Preferences.getRootFolderName();
-            File dir = new File(settingDir, content.getStorageFolder());
-
+            File dir = getContentDownloadDir(content);
             if (deleteQuietly(dir) || FileUtil.deleteWithSAF(dir)) {
                 Timber.i("Directory %s removed.", dir);
             } else {
@@ -388,6 +385,11 @@ public class FileHelper {
         }
 
         return file;
+    }
+
+    public static File getContentDownloadDir(Content content) {
+        String rootFolderName = Preferences.getRootFolderName();
+        return new File(rootFolderName, content.getStorageFolder());
     }
 
     /**
@@ -502,15 +504,8 @@ public class FileHelper {
         return f.exists() ? f.getAbsolutePath() : coverUrl;
     }
 
-    /**
-     * Open the given content using the viewer defined in user preferences
-     *
-     * @param context Context
-     * @param content Content to be opened
-     */
-    public static void openContent(final Context context, Content content) {
-        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
-
+    @Nullable
+    public static File[] getPictureFilesFromContent(Content content) {
         String rootFolderName = Preferences.getRootFolderName();
         File dir = new File(rootFolderName, content.getStorageFolder());
 
@@ -518,13 +513,10 @@ public class FileHelper {
         if (isSAF() && getExtSdCardFolder(new File(rootFolderName)) == null) {
             Timber.d("File not found!! Exiting method.");
             ToastUtil.toast(R.string.sd_access_error);
-            return;
+            return null;
         }
 
-        ToastUtil.toast("Opening: " + content.getTitle());
-
-        File imageFile = null;
-        File[] files = dir.listFiles(
+        return dir.listFiles(
                 file -> (file.isFile() && !file.getName().toLowerCase().startsWith("thumb") &&
                         (
                                 file.getName().toLowerCase().endsWith("jpg")
@@ -534,33 +526,26 @@ public class FileHelper {
                         )
                 )
         );
-        if (files != null && files.length > 0) {
-            Arrays.sort(files);
-            imageFile = files[0];
-        }
-        if (imageFile == null) {
-            String message = context.getString(R.string.image_file_not_found)
-                    .replace("@dir", dir.getAbsolutePath());
-            ToastUtil.toast(context, message);
-        } else {
-            int readContentPreference = Preferences.getContentReadAction();
-            if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PHONE_DEFAULT_VIEWER) {
-                openFile(context, imageFile);
-            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_PERFECT_VIEWER) {
-                openPerfectViewer(context, imageFile);
-            } else if (readContentPreference == Preferences.Constant.PREF_READ_CONTENT_HENTOID_VIEWER) {
-                openHentoidViewer(context, content, files);
-            }
-        }
-
-        // TODO - properly dispose this Completable (for best practices' sake, even though it hasn't triggered any leak so far)
-        Completable.fromRunnable(() -> updateContentReads(context, content.getId(), dir))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe();
     }
 
-    private static void updateContentReads(Context context, long contentId, File dir) {
+    /**
+     * Open the given content using the viewer defined in user preferences
+     *
+     * @param context Context
+     * @param content Content to be opened
+     */
+    public static void openContent(final Context context, Content content) {
+        openContent(context, content, null);
+    }
+
+    public static void openContent(final Context context, Content content, Bundle searchParams) {
+        Timber.d("Opening: %s from: %s", content.getTitle(), content.getStorageFolder());
+        ToastUtil.toast("Opening: " + content.getTitle());
+
+        openHentoidViewer(context, content, searchParams);
+    }
+
+    public static void updateContentReads(Context context, long contentId, File dir) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
         if (content != null) {
@@ -596,40 +581,15 @@ public class FileHelper {
     }
 
     /**
-     * Open PerfectViewer telling it to display the given image
-     *
-     * @param context    Context
-     * @param firstImage Image to be displayed
-     */
-    private static void openPerfectViewer(Context context, File firstImage) {
-        try {
-            Intent intent = context
-                    .getPackageManager()
-                    .getLaunchIntentForPackage("com.rookiestudio.perfectviewer");
-            if (intent != null) {
-                intent.setAction(Intent.ACTION_VIEW);
-                intent.setDataAndType(Uri.fromFile(firstImage), "image/*");
-                context.startActivity(intent);
-            }
-        } catch (Exception e) {
-            ToastUtil.toast(context, R.string.error_open_perfect_viewer);
-        }
-    }
-
-    /**
      * Open built-in image viewer telling it to display the images of the given Content
      *
-     * @param context    Context
-     * @param content    Content to be displayed
-     * @param imageFiles Image files to be shown
+     * @param context Context
+     * @param content Content to be displayed
      */
-    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, @NonNull File[] imageFiles) {
-        List<String> imagesLocations = new ArrayList<>();
-        for (File f : imageFiles) imagesLocations.add(f.getAbsolutePath());
-
+    private static void openHentoidViewer(@NonNull Context context, @NonNull Content content, Bundle searchParams) {
         ImageViewerActivityBundle.Builder builder = new ImageViewerActivityBundle.Builder();
         builder.setContentId(content.getId());
-        builder.setUrisStr(imagesLocations);
+        if (searchParams != null) builder.setSearchParams(searchParams);
 
         Intent viewer = new Intent(context, ImageViewerActivity.class);
         viewer.putExtras(builder.getBundle());
@@ -647,12 +607,15 @@ public class FileHelper {
         return fileName.contains(".") ? fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase(Locale.getDefault()) : "";
     }
 
+    public static String getFileNameWithoutExtension(String fileName) {
+        return fileName.contains(".") ? fileName.substring(0, fileName.lastIndexOf(".")) : fileName;
+    }
+
     public static void archiveContent(final Context context, Content content) {
         Timber.d("Building file list for: %s", content.getTitle());
         // Build list of files
 
-        String settingDir = Preferences.getRootFolderName();
-        File dir = new File(settingDir, content.getStorageFolder());
+        File dir = getContentDownloadDir(content);
 
         File[] files = dir.listFiles();
         if (files != null && files.length > 0) {

@@ -2,7 +2,7 @@
 <resources>
     <color name="primary">@color/dark_red</color>
     <color name="primary_dark">@color/very_dark_red</color>
-    <color name="windowBackground">@color/taupe</color>
+    <color name="window_background">@color/taupe</color>
     <color name="ripple">@color/light_red</color>
     <color name="accent">@color/accent_red</color>
 
@@ -17,9 +17,9 @@
     <!-- Neutral Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
-    <color name="lightGray">#aaaaaa</color>
-    <color name="mediumGray">#888888</color>
-    <color name="darkGray">#FF444444</color>
+    <color name="light_gray">#aaaaaa</color>
+    <color name="medium_gray">#888888</color>
+    <color name="dark_gray">#FF444444</color>
     <color name="black_opacity_50">#80000000</color>
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->

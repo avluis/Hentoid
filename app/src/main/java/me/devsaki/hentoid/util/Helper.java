@@ -53,8 +53,6 @@ import static android.graphics.Bitmap.Config.ARGB_8888;
 /**
  * Created by avluis on 06/05/2016.
  * Utility class
- * <p/>
- * TODO: Add additional image viewers.
  */
 public final class Helper {
 
@@ -239,40 +237,6 @@ public final class Helper {
                 if (a.getType().equals(type)) result.add(a.getId());
             }
         }
-
-        return result;
-    }
-
-    public static Uri buildSearchUri(List<Attribute> attributes) {
-        AttributeMap metadataMap = new AttributeMap();
-        metadataMap.addAll(attributes);
-
-        Uri.Builder searchUri = new Uri.Builder()
-                .scheme("search")
-                .authority("hentoid");
-
-        for (AttributeType attrType : metadataMap.keySet()) {
-            List<Attribute> attrs = metadataMap.get(attrType);
-            for (Attribute attr : attrs)
-                searchUri.appendQueryParameter(attrType.name(), attr.getId() + ";" + attr.getName());
-        }
-        return searchUri.build();
-    }
-
-    public static List<Attribute> parseSearchUri(Uri uri) {
-        List<Attribute> result = new ArrayList<>();
-
-        if (uri != null)
-            for (String typeStr : uri.getQueryParameterNames()) {
-                AttributeType type = AttributeType.searchByName(typeStr);
-                if (type != null)
-                    for (String attrStr : uri.getQueryParameters(typeStr)) {
-                        String[] attrParams = attrStr.split(";");
-                        if (2 == attrParams.length) {
-                            result.add(new Attribute(type, attrParams[1]).setId(Long.parseLong(attrParams[0])));
-                        }
-                    }
-            }
 
         return result;
     }

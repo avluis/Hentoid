@@ -9,7 +9,9 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.enums.AttributeType;
+import me.devsaki.hentoid.util.AttributeMap;
 
 public class SearchActivityBundle {
     private static final String KEY_ATTRIBUTE_TYPES = "attributeTypes";
@@ -38,6 +40,22 @@ public class SearchActivityBundle {
         public Builder setUri(Uri uri) {
             bundle.putString(KEY_URI, uri.toString());
             return this;
+        }
+
+        public static Uri buildSearchUri(List<Attribute> attributes) {
+            AttributeMap metadataMap = new AttributeMap();
+            metadataMap.addAll(attributes);
+
+            Uri.Builder searchUri = new Uri.Builder()
+                    .scheme("search")
+                    .authority("hentoid");
+
+            for (AttributeType attrType : metadataMap.keySet()) {
+                List<Attribute> attrs = metadataMap.get(attrType);
+                for (Attribute attr : attrs)
+                    searchUri.appendQueryParameter(attrType.name(), attr.getId() + ";" + attr.getName());
+            }
+            return searchUri.build();
         }
 
         public Bundle getBundle() {
@@ -76,5 +94,25 @@ public class SearchActivityBundle {
 
             return result;
         }
+
+        public static List<Attribute> parseSearchUri(Uri uri) {
+            List<Attribute> result = new ArrayList<>();
+
+            if (uri != null)
+                for (String typeStr : uri.getQueryParameterNames()) {
+                    AttributeType type = AttributeType.searchByName(typeStr);
+                    if (type != null)
+                        for (String attrStr : uri.getQueryParameters(typeStr)) {
+                            String[] attrParams = attrStr.split(";");
+                            if (2 == attrParams.length) {
+                                result.add(new Attribute(type, attrParams[1]).setId(Long.parseLong(attrParams[0])));
+                            }
+                        }
+                }
+
+            return result;
+        }
     }
+
+
 }

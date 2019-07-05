@@ -506,6 +506,8 @@ public class ImportActivity extends BaseActivity {
             Uri treeUri = data.getData();
             if (treeUri != null && treeUri.getPath() != null) {
                 // Persist selected folder URI in shared preferences
+                // NB : calling saveUri populates the preference used by FileHelper.isSAF, which indicates the library storage is on an SD card / an external USB storage device
+                // => this should be managed if SAF dialog is used to select folders on the internal phone memory
                 FileHelper.saveUri(treeUri);
 
                 // Persist access permissions

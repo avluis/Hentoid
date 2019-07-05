@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.adapters;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,11 +13,13 @@ import com.bumptech.glide.request.RequestOptions;
 import com.davemorrissey.labs.subscaleview.ImageSource;
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
 import me.devsaki.hentoid.R;
+import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.ImageLoaderThreadExecutor;
 import me.devsaki.hentoid.util.Preferences;
@@ -31,21 +34,28 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
     private static final Executor executor = new ImageLoaderThreadExecutor();
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
-    private List<String> imageUris;
+    private List<ImageFile> images = new ArrayList<>();
 
 
     @Override
     public int getItemCount() {
-        return imageUris.size();
+        return images.size();
     }
 
-    public void setImageUris(List<String> imageUris) {
-        this.imageUris = Collections.unmodifiableList(imageUris);
+    public void setImages(List<ImageFile> images) {
+        this.images = Collections.unmodifiableList(images);
+    }
+
+    public boolean isFavouritePresent() {
+        for (ImageFile img : images)
+            if (img.isFavourite()) return true;
+
+        return false;
     }
 
     @Override
     public int getItemViewType(int position) {
-        if ("gif".equals(FileHelper.getExtension(imageUris.get(position)).toLowerCase())) {
+        if ("gif".equals(FileHelper.getExtension(images.get(position).getAbsolutePath()).toLowerCase())) {
             return TYPE_GIF;
         }
         return TYPE_OTHER;
@@ -67,7 +77,7 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
 
     @Override
     public void onBindViewHolder(@NonNull ImageViewHolder viewHolder, int pos) {
-        viewHolder.setImageUri(imageUris.get(pos));
+        viewHolder.setImageUri(images.get(pos).getAbsolutePath());
 
         int layoutStyle = (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
 
@@ -75,6 +85,11 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
         layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
         layoutParams.height = layoutStyle;
         viewHolder.imgView.setLayoutParams(layoutParams);
+    }
+
+    @Nullable
+    public ImageFile getImageAt(int position) {
+        return (position > 0 && position < images.size()) ? images.get(position) : null;
     }
 
     final class ImageViewHolder extends RecyclerView.ViewHolder {
