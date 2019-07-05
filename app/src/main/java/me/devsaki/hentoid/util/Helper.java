@@ -23,6 +23,8 @@ import android.util.DisplayMetrics;
 import android.webkit.WebResourceResponse;
 import android.widget.Toast;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+
+import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -331,12 +335,25 @@ public final class Helper {
         }
     }
 
-    public static float coerceIn(float value, float min, float max)
-    {
+    public static float coerceIn(float value, float min, float max) {
         if (value < min) return min;
         else if (value > max) return max;
         else return value;
     }
 
+    public static List<InputStream> duplicateInputStream(@Nonnull InputStream stream, int numberDuplicates) throws IOException {
+        List<InputStream> result = new ArrayList<>();
 
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+        byte[] buffer = new byte[1024];
+        int len;
+        while ((len = stream.read(buffer)) > -1) baos.write(buffer, 0, len);
+        baos.flush();
+
+        for (int i = 0; i < numberDuplicates; i++)
+            result.add(new ByteArrayInputStream(baos.toByteArray()));
+
+        return result;
+    }
 }

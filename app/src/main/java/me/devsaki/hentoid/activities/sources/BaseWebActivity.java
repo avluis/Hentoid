@@ -16,6 +16,7 @@ import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.CookieManager;
 import android.webkit.WebBackForwardList;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -25,7 +26,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -39,9 +39,12 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nonnull;
+
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.schedulers.Schedulers;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
@@ -61,6 +64,7 @@ import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
 import me.devsaki.hentoid.util.HttpHelper;
+import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
@@ -571,8 +575,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             } else {
                 // Don't parse anything else than the main page
                 // NB : works because onPageStarted is called _after_ shouldInterceptRequest
-                if (isPageFiltered(url) && !isMainPageLoading()) return parseResponse(url, null);
-                else return super.shouldInterceptRequest(view, url);
+                if (isPageFiltered(url) && !isMainPageLoading()) {
+                    return parseResponse(url, null);
+                } else return super.shouldInterceptRequest(view, url);
             }
         }
 
@@ -595,49 +600,53 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         private WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
             List<Pair<String, String>> headersList = new ArrayList<>();
 
-            if (headers != null)
+            if (headers != null) // TODO - does that work with cookies as well ? -> check Fakku
                 for (String key : headers.keySet())
                     headersList.add(new Pair<>(key, headers.get(key)));
+
+            String cookie = CookieManager.getInstance().getCookie(urlStr);
+            headersList.add(new Pair<>("cookie", cookie));
 
             try {
                 Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
                 if (null == response.body()) throw new IOException("Empty body");
 
-                URL url = new URL(urlStr);
-
-                // Response body bytestream need to be duplicated
+                // Response body bytestream needs to be duplicated
                 // because Jsoup closes it, which makes it unavailable for the WebView to use
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-                // TODO : encapsulate and optimize that
-                byte[] buffer = new byte[1024];
-                int len;
-                while ((len = response.body().byteStream().read(buffer)) > -1) {
-                    baos.write(buffer, 0, len);
-                }
-                baos.flush();
-
-                InputStream is1 = new ByteArrayInputStream(baos.toByteArray());
-                InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
+                List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
 
                 compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is1, url))
+                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is.get(0), new URL(urlStr)))
+                                .subscribeOn(Schedulers.computation())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
-                                        metadata -> listener.onResultReady(metadata.toContent(), 1),
+                                        result -> processContentParser(result, headersList),
                                         throwable -> {
                                             Timber.e(throwable, "Error parsing content.");
                                             listener.onResultFailed("");
                                         })
                 );
 
-                return HttpHelper.okHttpResponseToWebResourceResponse(response, is2);
+                return HttpHelper.okHttpResponseToWebResourceResponse(response, is.get(1));
             } catch (MalformedURLException e) {
                 Timber.e(e, "Malformed URL : %s", urlStr);
             } catch (IOException e) {
                 Timber.e(e);
             }
             return null;
+        }
+
+        private void processContentParser(@Nonnull ContentParser in, @Nonnull List<Pair<String, String>> headersList) {
+            Content content = in.toContent();
+            if (content != null) {
+                // Save cookies for future calls during download
+                Map<String, String> params = new HashMap<>();
+                for (Pair<String, String> p : headersList)
+                    if (p.first.equals("cookie")) params.put("cookie", p.second);
+
+                content.setDownloadParams(JsonHelper.serializeToJson(params));
+            }
+            listener.onResultReady(content, 1);
         }
 
         /**
