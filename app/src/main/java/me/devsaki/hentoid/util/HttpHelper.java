@@ -50,7 +50,7 @@ public class HttpHelper {
     }
 
     @Nullable
-    private static ResponseBody getOnlineResource(String url, List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
+    public static ResponseBody getOnlineResource(String url, List<Pair<String, String>> headers, boolean useHentoidAgent) throws IOException {
         OkHttpClient okHttp = OkHttpClientSingleton.getInstance(TIMEOUT);
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (headers != null)

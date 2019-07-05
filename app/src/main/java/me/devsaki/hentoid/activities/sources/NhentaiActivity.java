@@ -36,6 +36,7 @@ public class NhentaiActivity extends BaseWebActivity {
 
         @Override
         protected void onGalleryFound(String url) {
+            /*
             String[] galleryUrlParts = url.split("/");
 
             boolean gFound = false;
@@ -57,6 +58,7 @@ public class NhentaiActivity extends BaseWebActivity {
                                 listener.onResultFailed("");
                             })
             );
+            */
         }
     }
 }

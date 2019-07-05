@@ -23,13 +23,20 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
 import me.devsaki.hentoid.HentoidApp;
 import me.devsaki.hentoid.R;
@@ -43,14 +50,19 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.parsers.content.NhentaiContent;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
+import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.views.ObservableWebView;
+import okhttp3.ResponseBody;
+import pl.droidsonroids.jspoon.HtmlAdapter;
+import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
 
 /**
@@ -78,8 +90,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private Content currentContent;
     // Database
     private ObjectBoxDB db;
-    // Indicates if webView is loading
-    private boolean webViewIsLoading;
     // Indicated which mode the download FAB is in
     protected int fabActionMode;
     private boolean fabActionEnabled;
@@ -212,7 +222,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             }
         });
         webView.setOnScrollChangedCallback((l, t) -> {
-            if (!webViewIsLoading) {
+            if (!webClient.isWebViewLoading()) {
                 if (webView.canScrollVertically(1) || t == 0) {
                     fabRefreshOrStop.show();
                     fabHome.show();
@@ -255,7 +265,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private void initSwipeLayout() {
         swipeLayout = findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(() -> {
-            if (!swipeLayout.isRefreshing() || !webViewIsLoading) {
+            if (!swipeLayout.isRefreshing() || !webClient.isWebViewLoading()) {
                 webView.reload();
             }
         });
@@ -267,7 +277,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     public void onRefreshStopFabClick(View view) {
-        if (webViewIsLoading) {
+        if (webClient.isWebViewLoading()) {
             webView.stopLoading();
         } else {
             webView.reload();
@@ -308,15 +318,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     public void onActionFabClick(View view) {
         if (MODE_DL == fabActionMode) processDownload();
         else if (MODE_QUEUE == fabActionMode) goToQueue();
-        else if (MODE_READ == fabActionMode)
-        {
+        else if (MODE_READ == fabActionMode) {
             if (currentContent != null) {
                 currentContent = db.selectContentByUrl(currentContent.getUrl());
                 if (currentContent != null) {
                     if (StatusContent.DOWNLOADED == currentContent.getStatus()
                             || StatusContent.ERROR == currentContent.getStatus()
-                            || StatusContent.MIGRATED == currentContent.getStatus())
-                    {
+                            || StatusContent.MIGRATED == currentContent.getStatus()) {
                         FileHelper.openContent(this, currentContent);
                     } else {
                         fabAction.hide();
@@ -326,17 +334,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
     }
 
-    private void changeFabActionMode(int mode)
-    {
+    private void changeFabActionMode(int mode) {
         @DrawableRes int resId = R.drawable.ic_menu_about;
         if (MODE_DL == mode) {
             resId = R.drawable.ic_action_download;
-        }
-        else if (MODE_QUEUE == mode) {
+        } else if (MODE_QUEUE == mode) {
             resId = R.drawable.ic_queued;
-        }
-        else if (MODE_READ == mode)
-        {
+        } else if (MODE_READ == mode) {
             resId = R.drawable.ic_action_play;
         }
         fabActionMode = mode;
@@ -351,7 +355,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     void processDownload() {
         if (null == currentContent) return;
 
-        if (currentContent.getId() > 0) currentContent = db.selectContentById(currentContent.getId());
+        if (currentContent.getId() > 0)
+            currentContent = db.selectContentById(currentContent.getId());
 
         if (null == currentContent) return;
 
@@ -458,96 +463,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         runOnUiThread(() -> ToastUtil.toast(HentoidApp.getAppContext(), R.string.web_unparsable));
     }
 
-
-    abstract class CustomWebViewClient extends WebViewClient {
-
-        protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
-        final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
-        protected final ResultListener<Content> listener;
-        private final Pattern filteredUrlPattern;
-
-        private String domainName = "";
-
-        protected abstract void onGalleryFound(String url);
-
-
-        CustomWebViewClient(String filteredUrl, ResultListener<Content> listener) {
-            this.listener = listener;
-            if (filteredUrl.length() > 0) filteredUrlPattern = Pattern.compile(filteredUrl);
-            else filteredUrlPattern = null;
-        }
-
-        void destroy() {
-            Timber.d("WebClient destroyed");
-            compositeDisposable.clear();
-        }
-
-        void restrictTo(String s) {
-            domainName = s;
-        }
-
-        private boolean isPageFiltered(String url) {
-            if (null == filteredUrlPattern) return false;
-
-            Matcher matcher = filteredUrlPattern.matcher(url);
-            return matcher.find();
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            String hostStr = Uri.parse(url).getHost();
-            return hostStr != null && !hostStr.contains(domainName);
-        }
-
-        @TargetApi(Build.VERSION_CODES.N)
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-            String hostStr = Uri.parse(request.getUrl().toString()).getHost();
-            return hostStr != null && !hostStr.contains(domainName);
-        }
-
-        @Override
-        public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            webViewIsLoading = true;
-            fabRefreshOrStop.setImageResource(R.drawable.ic_action_clear);
-            fabRefreshOrStop.show();
-            fabHome.show();
-
-            fabAction.hide();
-            fabActionEnabled = false;
-
-            if (isPageFiltered(url)) onGalleryFound(url);
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            webViewIsLoading = false;
-            fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
-        }
-
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull String url) {
-            if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                return super.shouldInterceptRequest(view, url);
-            }
-        }
-
-        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
-                                                          @NonNull WebResourceRequest request) {
-            String url = request.getUrl().toString();
-            if (isUrlForbidden(url)) {
-                return new WebResourceResponse("text/plain", "utf-8", nothing);
-            } else {
-                return super.shouldInterceptRequest(view, request);
-            }
-        }
-    }
-
     /**
      * Indicates if the given URL is forbidden by the current content filters
      *
@@ -564,5 +479,150 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             }
 
         return false;
+    }
+
+
+    abstract class CustomWebViewClient extends WebViewClient {
+
+        protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
+        private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
+        protected final ResultListener<Content> listener;
+        private final Pattern filteredUrlPattern;
+
+        private String restrictedDomainName = "";
+
+        // Resource loading tracking
+        private Map<String, Integer> loadedUrls = new HashMap<>();
+        private int loadIndex = 0;
+
+
+        protected abstract void onGalleryFound(String url);
+
+        CustomWebViewClient(String filteredUrl, ResultListener<Content> listener) {
+            this.listener = listener;
+            if (filteredUrl.length() > 0) filteredUrlPattern = Pattern.compile(filteredUrl);
+            else filteredUrlPattern = null;
+        }
+
+        void destroy() {
+            Timber.d("WebClient destroyed");
+            compositeDisposable.clear();
+        }
+
+        void restrictTo(String s) {
+            restrictedDomainName = s;
+        }
+
+        private boolean isPageFiltered(String url) {
+            if (null == filteredUrlPattern) return false;
+
+            Matcher matcher = filteredUrlPattern.matcher(url);
+            return matcher.find();
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            String hostStr = Uri.parse(url).getHost();
+            return hostStr != null && !hostStr.contains(restrictedDomainName);
+        }
+
+        @TargetApi(Build.VERSION_CODES.N)
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+            String hostStr = Uri.parse(request.getUrl().toString()).getHost();
+            return hostStr != null && !hostStr.contains(restrictedDomainName);
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, Bitmap favicon) {
+            loadedUrls.put(url, loadIndex++);
+            fabRefreshOrStop.setImageResource(R.drawable.ic_action_clear);
+            fabRefreshOrStop.show();
+            fabHome.show();
+
+            fabAction.hide();
+            fabActionEnabled = false;
+
+//            if (isPageFiltered(url)) onGalleryFound(url);
+        }
+
+        @Override
+        public void onPageFinished(WebView view, String url) {
+            loadedUrls.remove(url);
+            loadIndex--;
+            fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
+        }
+
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull String url) {
+            if (isUrlForbidden(url)) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
+            } else {
+                if (isPageFiltered(url)) parseResponse(url);
+                return super.shouldInterceptRequest(view, url);
+            }
+        }
+
+        @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+        @Override
+        public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
+                                                          @NonNull WebResourceRequest request) {
+            String url = request.getUrl().toString();
+            if (isUrlForbidden(url)) {
+                return new WebResourceResponse("text/plain", "utf-8", nothing);
+            } else {
+                if (isPageFiltered(url)) parseResponse(url);
+                return super.shouldInterceptRequest(view, request);
+            }
+        }
+
+        private void parseResponse(@NonNull String urlStr) {
+            // Don't parse anything else than the main page
+            // NB : works because onPageStarted is called _after_ shouldInterceptRequest
+            if (isMainPageLoading()) return;
+
+            // TODO : cache these initializations and make them depend on the actual loaded Site
+            Jspoon jspoon = Jspoon.create();
+            HtmlAdapter<NhentaiContent> htmlAdapter = jspoon.adapter(NhentaiContent.class);
+
+            try {
+                ResponseBody body = HttpHelper.getOnlineResource(urlStr, null, Site.NHENTAI.canKnowHentoidAgent());
+                if (null == body) return;
+
+                URL url = new URL(urlStr);
+
+                compositeDisposable.add(
+                        Single.fromCallable(() -> htmlAdapter.fromInputStream(body.byteStream(), url))
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(
+                                        metadata -> listener.onResultReady(metadata.toContent(), 1),
+                                        throwable -> {
+                                            Timber.e(throwable, "Error parsing content.");
+                                            listener.onResultFailed("");
+                                        })
+                );
+            } catch (MalformedURLException e) {
+                Timber.e(e, "Malformed URL : %s", urlStr);
+            } catch (IOException e) {
+                Timber.e(e);
+            }
+        }
+
+        /**
+         * Indicated whether the current main webpage is still loading or not
+         * <p>
+         * NB : "main webpage" refers to the 1st page ever loaded when querying the currently opened URL
+         * The difference with onPageFinished/started is that it doesn't take iframes/framesets into account
+         *
+         * @return True if current main webpage is being loaded; false if not
+         */
+        private boolean isMainPageLoading() {
+            return loadedUrls.containsValue(0); // Index 0 is the main webpage
+        }
+
+        boolean isWebViewLoading() {
+            return 0 == loadIndex;
+        }
     }
 }
