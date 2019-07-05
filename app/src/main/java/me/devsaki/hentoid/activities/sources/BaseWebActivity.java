@@ -9,8 +9,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,8 +24,12 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -60,6 +66,7 @@ import me.devsaki.hentoid.util.PermissionUtil;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.views.ObservableWebView;
+import okhttp3.Response;
 import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
@@ -559,8 +566,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (isPageFiltered(url)) parseResponse(url);
-                return super.shouldInterceptRequest(view, url);
+                // Don't parse anything else than the main page
+                // NB : works because onPageStarted is called _after_ shouldInterceptRequest
+                if (isPageFiltered(url) && !isMainPageLoading()) return parseResponse(url, null);
+                else return super.shouldInterceptRequest(view, url);
             }
         }
 
@@ -572,28 +581,45 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                if (isPageFiltered(url)) parseResponse(url);
-                return super.shouldInterceptRequest(view, request);
+                // Don't parse anything else than the main page
+                // NB : works because onPageStarted is called _after_ shouldInterceptRequest
+                if (isPageFiltered(url) && !isMainPageLoading()) return parseResponse(url, request.getRequestHeaders());
+                else return super.shouldInterceptRequest(view, request);
             }
         }
 
-        private void parseResponse(@NonNull String urlStr) {
-            // Don't parse anything else than the main page
-            // NB : works because onPageStarted is called _after_ shouldInterceptRequest
-            if (isMainPageLoading()) return;
-
+        private WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
             // TODO : cache these initializations and make them depend on the actual loaded Site
             Jspoon jspoon = Jspoon.create();
             HtmlAdapter<NhentaiContent> htmlAdapter = jspoon.adapter(NhentaiContent.class);
 
+            List<Pair<String, String>> headersList = new ArrayList<>();
+
+            if (headers != null)
+                for (String key : headers.keySet()) headersList.add(new Pair<>(key, headers.get(key)));
+
             try {
-                ResponseBody body = HttpHelper.getOnlineResource(urlStr, null, Site.NHENTAI.canKnowHentoidAgent());
-                if (null == body) return;
+                Response response = HttpHelper.getOnlineResource(urlStr, headersList, Site.NHENTAI.canKnowHentoidAgent());
+                if (null == response.body()) throw new IOException("Empty body");
 
                 URL url = new URL(urlStr);
 
+                // Duplicate response body bytestream because Jsoup closes it, which makes it unavailable for the WebView
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+
+                // TODO : encapsulate and optimize that
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = response.body().byteStream().read(buffer)) > -1 ) {
+                    baos.write(buffer, 0, len);
+                }
+                baos.flush();
+
+                InputStream is1 = new ByteArrayInputStream(baos.toByteArray());
+                InputStream is2 = new ByteArrayInputStream(baos.toByteArray());
+
                 compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(body.byteStream(), url))
+                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is1, url))
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
                                         metadata -> listener.onResultReady(metadata.toContent(), 1),
@@ -602,11 +628,14 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                                             listener.onResultFailed("");
                                         })
                 );
+
+                return HttpHelper.okHttpResponseToWebResourceResponse(response, is2);
             } catch (MalformedURLException e) {
                 Timber.e(e, "Malformed URL : %s", urlStr);
             } catch (IOException e) {
                 Timber.e(e);
             }
+            return null;
         }
 
         /**
