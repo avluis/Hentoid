@@ -1,11 +1,8 @@
 package me.devsaki.hentoid.activities.sources;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.sources.NhentaiServer;
-import timber.log.Timber;
 
 /**
  * Created by Shiro on 1/20/2016.
