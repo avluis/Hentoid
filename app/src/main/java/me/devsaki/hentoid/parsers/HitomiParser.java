@@ -20,7 +20,7 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
  * Created by neko on 08/07/2015.
  * Handles parsing of content from hitomi.la
  */
-public class HitomiParser implements ContentParser {
+public class HitomiParser implements ImageListParser {
 
     // Reproduction of the Hitomi.la Javascript to find the hostname of the image server (see subdomain_from_url@reader.js)
     private final static int NUMBER_OF_FRONTENDS = 2;

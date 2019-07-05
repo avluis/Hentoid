@@ -13,7 +13,7 @@ import pl.droidsonroids.jspoon.annotation.Selector;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
 
-public class TsuminoContent {
+public class TsuminoContent implements ContentParser {
     @Selector(value = "div.book-page-cover a", attr = "href", defValue = "")
     private String galleryUrl;
     @Selector(value = "img.book-page-image", attr = "src", defValue = "")

@@ -29,7 +29,6 @@ public class NexusActivity extends BaseWebActivity {
             super(filteredUrl, listener);
         }
 
-        @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(NexusServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])

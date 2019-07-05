@@ -16,7 +16,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 // NHentai API reference : https://github.com/NHMoeDev/NHentai-android/issues/27
-public class NhentaiContent {
+public class NhentaiContent implements ContentParser {
 
     @Selector(value = "#download", attr = "href", defValue = "")
     private String galleryUrl;

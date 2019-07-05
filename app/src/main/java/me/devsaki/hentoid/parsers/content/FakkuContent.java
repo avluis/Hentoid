@@ -13,7 +13,7 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class FakkuContent {
+public class FakkuContent implements ContentParser {
     @Selector(value = "head [property=og:url]", attr = "content", defValue = "")
     private String galleryUrl;
     @Selector(value = "head [property=og:image]", attr = "content")

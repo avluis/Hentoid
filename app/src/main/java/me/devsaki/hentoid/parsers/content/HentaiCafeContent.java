@@ -11,7 +11,7 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class HentaiCafeContent {
+public class HentaiCafeContent implements ContentParser {
     @Selector(value = "div.x-main.full article", attr = "id", defValue = "")
     private String galleryUrl;
     @Selector(value = "div.entry-content img", attr = "src")

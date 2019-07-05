@@ -35,7 +35,6 @@ public class FakkuActivity extends BaseWebActivity {
             super(filteredUrl, listener);
         }
 
-        @Override
         protected void onGalleryFound(String url) {
             String cookie = CookieManager.getInstance().getCookie(url);
             String[] galleryUrlParts = url.split("/");

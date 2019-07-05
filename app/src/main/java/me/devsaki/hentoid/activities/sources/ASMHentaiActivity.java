@@ -37,7 +37,6 @@ public class ASMHentaiActivity extends BaseWebActivity {
             addContentBlockFilter(blockedContent);
         }
 
-        @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             if (url.contains("comics.asm")) {

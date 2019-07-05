@@ -11,7 +11,7 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class HitomiContent {
+public class HitomiContent implements ContentParser {
     @Selector(value = "h1 a[href*='/reader/']", attr="href", defValue = "")
     private String galleryUrl;
     @Selector(value = ".cover img", attr="src")

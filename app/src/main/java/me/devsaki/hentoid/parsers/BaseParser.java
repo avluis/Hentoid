@@ -8,7 +8,7 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import timber.log.Timber;
 
-public abstract class BaseParser implements ContentParser {
+public abstract class BaseParser implements ImageListParser {
 
     private int currentStep;
     private int maxSteps;

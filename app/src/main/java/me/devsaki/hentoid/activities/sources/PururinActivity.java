@@ -29,7 +29,6 @@ public class PururinActivity extends BaseWebActivity {
             super(filteredUrl, listener);
         }
 
-        @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(PururinServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 2], galleryUrlParts[galleryUrlParts.length - 1])

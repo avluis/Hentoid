@@ -11,7 +11,7 @@ import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
-public class ASMHentaiContent {
+public class ASMHentaiContent implements ContentParser {
     @Selector(value = "head [rel=canonical]", attr="href", defValue = "")
     private String pageUrl;
     @Selector(value = "div.cover a", attr="href", defValue = "")

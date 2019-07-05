@@ -27,7 +27,7 @@ import timber.log.Timber;
  * Created by robb_w on 2019/02
  * Handles parsing of content from Fakku
  */
-public class FakkuParser implements ContentParser {
+public class FakkuParser implements ImageListParser {
 
     private int currentStep;
     private int maxSteps;

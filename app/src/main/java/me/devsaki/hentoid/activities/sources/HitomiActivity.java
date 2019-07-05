@@ -36,7 +36,6 @@ public class HitomiActivity extends BaseWebActivity {
             addContentBlockFilter(blockedContent);
         }
 
-        @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             compositeDisposable.add(HitomiServer.API.getGalleryMetadata(galleryUrlParts[galleryUrlParts.length - 1])

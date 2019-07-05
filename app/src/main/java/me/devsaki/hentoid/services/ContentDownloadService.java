@@ -51,7 +51,7 @@ import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
-import me.devsaki.hentoid.parsers.ContentParser;
+import me.devsaki.hentoid.parsers.ImageListParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
@@ -369,8 +369,8 @@ public class ContentDownloadService extends IntentService {
      */
     private List<ImageFile> fetchImageURLs(Content content) throws Exception {
         List<ImageFile> imgs;
-        // Use ContentParser to query the source
-        ContentParser parser = ContentParserFactory.getInstance().getParser(content);
+        // Use ImageListParser to query the source
+        ImageListParser parser = ContentParserFactory.getInstance().getImageListParser(content);
         imgs = parser.parseImageList(content);
 
         if (imgs.isEmpty())

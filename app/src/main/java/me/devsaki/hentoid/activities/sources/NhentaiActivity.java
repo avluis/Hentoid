@@ -33,32 +33,5 @@ public class NhentaiActivity extends BaseWebActivity {
         NhentaiWebViewClient(String galleryUrl, ResultListener<Content> listener) {
             super(galleryUrl, listener);
         }
-
-        @Override
-        protected void onGalleryFound(String url) {
-            /*
-            String[] galleryUrlParts = url.split("/");
-
-            boolean gFound = false;
-            String bookId = "";
-            for (String s : galleryUrlParts) {
-                if (gFound) {
-                    bookId = s;
-                    break;
-                }
-                if (s.equals("g")) gFound = true;
-            }
-
-            compositeDisposable.add(NhentaiServer.API.getGalleryMetadata(bookId)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                            metadata -> listener.onResultReady(metadata.toContent(), 1),
-                            throwable -> {
-                                Timber.e(throwable, "Error parsing content.");
-                                listener.onResultFailed("");
-                            })
-            );
-            */
-        }
     }
 }

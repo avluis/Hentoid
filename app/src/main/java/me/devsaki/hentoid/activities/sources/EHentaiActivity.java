@@ -37,7 +37,6 @@ public class EHentaiActivity extends BaseWebActivity {
             super(filter, listener);
         }
 
-        @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);

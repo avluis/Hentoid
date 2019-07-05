@@ -70,7 +70,6 @@ public class TsuminoActivity extends BaseWebActivity {
             super(galleryFilter, listener);
         }
 
-        @Override
         protected void onGalleryFound(String url) {
             String[] galleryUrlParts = url.split("/");
             // Tsumino books can be called through two different URLs : "book ID" and "book ID/book-name"

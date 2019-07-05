@@ -24,8 +24,6 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -56,7 +54,8 @@ import me.devsaki.hentoid.database.domains.QueueRecord;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.parsers.content.NhentaiContent;
+import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.parsers.content.ContentParser;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
@@ -67,7 +66,6 @@ import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.views.ObservableWebView;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import pl.droidsonroids.jspoon.HtmlAdapter;
 import pl.droidsonroids.jspoon.Jspoon;
 import timber.log.Timber;
@@ -491,10 +489,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
     abstract class CustomWebViewClient extends WebViewClient {
 
+        private final Jspoon jspoon = Jspoon.create();
         protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
         private final ByteArrayInputStream nothing = new ByteArrayInputStream("".getBytes());
         protected final ResultListener<Content> listener;
         private final Pattern filteredUrlPattern;
+        private final HtmlAdapter<ContentParser> htmlAdapter;
 
         private String restrictedDomainName = "";
 
@@ -503,10 +503,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         private int loadIndex = 0;
 
 
-        protected abstract void onGalleryFound(String url);
-
+        @SuppressWarnings("unchecked")
         CustomWebViewClient(String filteredUrl, ResultListener<Content> listener) {
             this.listener = listener;
+
+            Class c = ContentParserFactory.getInstance().getContentClass(getStartSite());
+            htmlAdapter = jspoon.adapter(c); // Unchecked but alright
+
             if (filteredUrl.length() > 0) filteredUrlPattern = Pattern.compile(filteredUrl);
             else filteredUrlPattern = null;
         }
@@ -583,34 +586,33 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             } else {
                 // Don't parse anything else than the main page
                 // NB : works because onPageStarted is called _after_ shouldInterceptRequest
-                if (isPageFiltered(url) && !isMainPageLoading()) return parseResponse(url, request.getRequestHeaders());
+                if (isPageFiltered(url) && !isMainPageLoading())
+                    return parseResponse(url, request.getRequestHeaders());
                 else return super.shouldInterceptRequest(view, request);
             }
         }
 
         private WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
-            // TODO : cache these initializations and make them depend on the actual loaded Site
-            Jspoon jspoon = Jspoon.create();
-            HtmlAdapter<NhentaiContent> htmlAdapter = jspoon.adapter(NhentaiContent.class);
-
             List<Pair<String, String>> headersList = new ArrayList<>();
 
             if (headers != null)
-                for (String key : headers.keySet()) headersList.add(new Pair<>(key, headers.get(key)));
+                for (String key : headers.keySet())
+                    headersList.add(new Pair<>(key, headers.get(key)));
 
             try {
-                Response response = HttpHelper.getOnlineResource(urlStr, headersList, Site.NHENTAI.canKnowHentoidAgent());
+                Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
                 if (null == response.body()) throw new IOException("Empty body");
 
                 URL url = new URL(urlStr);
 
-                // Duplicate response body bytestream because Jsoup closes it, which makes it unavailable for the WebView
+                // Response body bytestream need to be duplicated
+                // because Jsoup closes it, which makes it unavailable for the WebView to use
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
                 // TODO : encapsulate and optimize that
                 byte[] buffer = new byte[1024];
                 int len;
-                while ((len = response.body().byteStream().read(buffer)) > -1 ) {
+                while ((len = response.body().byteStream().read(buffer)) > -1) {
                     baos.write(buffer, 0, len);
                 }
                 baos.flush();
