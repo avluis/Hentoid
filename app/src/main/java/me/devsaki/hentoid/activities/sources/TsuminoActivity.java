@@ -4,12 +4,9 @@ import android.graphics.Bitmap;
 import android.view.View;
 import android.webkit.WebView;
 
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.listener.ResultListener;
-import me.devsaki.hentoid.retrofit.sources.TsuminoServer;
-import timber.log.Timber;
 
 /**
  * Created by Shiro on 1/22/2016.
@@ -68,20 +65,6 @@ public class TsuminoActivity extends BaseWebActivity {
 
         TsuminoWebViewClient(String galleryFilter, ResultListener<Content> listener) {
             super(galleryFilter, listener);
-        }
-
-        protected void onGalleryFound(String url) {
-            String[] galleryUrlParts = url.split("/");
-            // Tsumino books can be called through two different URLs : "book ID" and "book ID/book-name"
-            // -> need to get the book ID only
-            compositeDisposable.add(TsuminoServer.API.getGalleryMetadata(galleryUrlParts[5])
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe(
-                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
-                                Timber.e(throwable, "Error parsing content.");
-                                listener.onResultFailed("");
-                            })
-            );
         }
 
         @Override
