@@ -597,10 +597,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             }
         }
 
-        private WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
             List<Pair<String, String>> headersList = new ArrayList<>();
 
-            if (headers != null) // TODO - does that work with cookies as well ? -> check Fakku
+            if (headers != null)
                 for (String key : headers.keySet())
                     headersList.add(new Pair<>(key, headers.get(key)));
 
