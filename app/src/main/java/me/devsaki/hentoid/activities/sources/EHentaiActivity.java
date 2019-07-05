@@ -1,6 +1,11 @@
 package me.devsaki.hentoid.activities.sources;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.webkit.CookieManager;
+import android.webkit.WebResourceResponse;
+
+import java.util.Map;
 
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import me.devsaki.hentoid.database.domains.Content;
@@ -37,17 +42,21 @@ public class EHentaiActivity extends BaseWebActivity {
             super(filter, listener);
         }
 
-        protected void onGalleryFound(String url) {
-            String[] galleryUrlParts = url.split("/");
+        // We keep calling the API without using BaseWebActivity.parseResponse
+        @Override
+        protected WebResourceResponse parseResponse(@NonNull String urlStr, @Nullable Map<String, String> headers) {
+            String[] galleryUrlParts = urlStr.split("/");
             EHentaiGalleryQuery query = new EHentaiGalleryQuery(galleryUrlParts[4], galleryUrlParts[5]);
             compositeDisposable.add(EHentaiServer.API.getGalleryMetadata(query)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe(
-                            metadata -> listener.onResultReady(metadata.toContent(), 1), throwable -> {
+                            metadata -> listener.onResultReady(metadata.toContent(), 1),
+                            throwable -> {
                                 Timber.e(throwable, "Error parsing content.");
                                 listener.onResultFailed("");
                             })
             );
+            return null;
         }
     }
 }
