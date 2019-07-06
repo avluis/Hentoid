@@ -59,7 +59,8 @@ public class HttpHelper {
         Request.Builder requestBuilder = new Request.Builder().url(url);
         if (headers != null)
             for (Pair<String, String> header : headers)
-                requestBuilder.addHeader(header.first, header.second);
+                if (header.second != null)
+                    requestBuilder.addHeader(header.first, header.second);
         requestBuilder.header("User-Agent", useHentoidAgent ? Consts.USER_AGENT : Consts.USER_AGENT_NEUTRAL);
         Request request = requestBuilder.get().build();
         return okHttp.newCall(request).execute();

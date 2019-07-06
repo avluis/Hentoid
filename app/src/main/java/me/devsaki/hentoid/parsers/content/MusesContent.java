@@ -19,9 +19,17 @@ public class MusesContent implements ContentParser {
     private String title;
     @Selector(value = ".gallery img", attr = "data-src", defValue = "")
     private List<String> thumbs;
+    @Selector(value = ".gallery a", attr = "href", defValue = "")
+    private List<String> thumbLinks;
 
     @Nullable
     public Content toContent() {
+        // Gallery pages are the only ones whose gallery links end with numbers
+        // The others are album lists
+        for (int i = 0; i < thumbLinks.size(); i++) {
+            if (!thumbLinks.get(i).endsWith("/" + (i + 1))) return null;
+        }
+
         Content result = new Content();
 
         result.setSite(Site.MUSES);

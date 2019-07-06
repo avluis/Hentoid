@@ -558,8 +558,6 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
             fabAction.hide();
             fabActionEnabled = false;
-
-//            if (isPageFiltered(url)) onGalleryFound(url);
         }
 
         @Override
@@ -581,7 +579,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             } else {
                 // Don't parse anything else than the main page
                 // NB : works because onPageStarted is called _after_ shouldInterceptRequest
-                if (isPageFiltered(url) && !isMainPageLoading()) {
+                if (isPageFiltered(url) && isMainPageNotLoaded()) {
                     return parseResponse(url, null);
                 } else return super.shouldInterceptRequest(view, url);
             }
@@ -597,7 +595,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             } else {
                 // Don't parse anything else than the main page
                 // NB : works because onPageStarted is called _after_ shouldInterceptRequest
-                if (isPageFiltered(url) && !isMainPageLoading())
+                if (isPageFiltered(url) && isMainPageNotLoaded())
                     return parseResponse(url, request.getRequestHeaders());
                 else return super.shouldInterceptRequest(view, request);
             }
@@ -611,7 +609,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                     headersList.add(new Pair<>(key, headers.get(key)));
 
             String cookie = CookieManager.getInstance().getCookie(urlStr);
-            headersList.add(new Pair<>("cookie", cookie));
+            if (cookie != null) headersList.add(new Pair<>("cookie", cookie));
 
             try {
                 Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
@@ -651,8 +649,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                     if (p.first.equals("cookie")) params.put("cookie", p.second);
 
                 content.setDownloadParams(JsonHelper.serializeToJson(params));
+                listener.onResultReady(content, 1);
             }
-            listener.onResultReady(content, 1);
         }
 
         /**
@@ -663,8 +661,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
          *
          * @return True if current main webpage is being loaded; false if not
          */
-        private boolean isMainPageLoading() {
-            return loadedUrls.containsValue(0); // Index 0 is the main webpage
+        private boolean isMainPageNotLoaded() {
+            return !loadedUrls.containsValue(0); // Index 0 is the main webpage
         }
 
         boolean isWebViewLoading() {
