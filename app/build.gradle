@@ -15,7 +15,7 @@ android {
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
-        minSdkVersion 15
+        minSdkVersion 16
         // Hold updating targetSdkVersion until implementing an image viewer
         // or Perfect Viewer implements Content URI
         //noinspection ExpiringTargetSdkVersion
@@ -70,7 +70,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     // Firebase
-    implementation 'com.google.firebase:firebase-core:16.0.6' // NB : Version 17 has MinSDK 16
+    implementation 'com.google.firebase:firebase-core:17.0.0'
 
     // Crashlytics
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
@@ -162,7 +162,8 @@ dependencies {
     }
 
     // https://github.com/davemorrissey/subsampling-scale-image-view
-    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
+    //implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
+    implementation 'com.github.hereisderek:subsampling-scale-image-view:v3.10.2' // Compatible with AndroidX
 
     // https://github.com/davideas/FlexibleAdapter
     implementation 'eu.davidea:flexible-adapter:5.1.0'
