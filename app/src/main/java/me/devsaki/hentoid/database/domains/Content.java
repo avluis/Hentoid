@@ -178,7 +178,7 @@ public class Content implements Serializable {
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case MUSES:
-                return url;
+                return url.replace("/comics/album/","").replace("/",".");
             default:
                 return "";
         }

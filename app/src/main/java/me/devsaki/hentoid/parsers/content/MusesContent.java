@@ -36,7 +36,7 @@ public class MusesContent implements ContentParser {
         if (galleryUrl.isEmpty()) return result;
         if (0 == thumbs.size()) return result;
 
-        result.setUrl(galleryUrl);
+        result.setUrl(galleryUrl.replace(Site.MUSES.getUrl(),""));
         result.setCoverImageUrl(Site.MUSES.getUrl() + thumbs.get(0));
         if (title.contains("|"))
             result.setTitle(title.substring(0, title.lastIndexOf("|") - 1));
