@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,6 +13,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -123,7 +124,7 @@ public class DirChooserFragment extends DialogFragment {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSDPresent) {
             fabRequestSD.setOnClickListener(this::onClick);
-            fabRequestSD.setVisibility(View.VISIBLE);
+            fabRequestSD.show();
         }
     }
 
