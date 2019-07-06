@@ -148,7 +148,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     @Override
     protected void onCleared() {
         super.onCleared();
-        searchManager.dispose();
+        if (searchManager != null) searchManager.dispose();
         compositeDisposable.clear();
     }
 
