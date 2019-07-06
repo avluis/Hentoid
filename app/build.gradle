@@ -132,9 +132,7 @@ dependencies {
 */
 
     // Specific UI layout for tag mosaic : github.com/google/flexbox-layout
-    implementation 'com.google.android:flexbox:1.0.0'
-
-    // <- dont upgrade that until the entire app switches to AndroidX
+    implementation 'com.google.android:flexbox:1.1.0'
 
     // https://mvnrepository.com/artifact/commons-io/commons-io
     implementation 'commons-io:commons-io:2.6'

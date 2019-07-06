@@ -3,16 +3,23 @@ package me.devsaki.hentoid.fragments;
 import android.app.Activity;
 import android.app.SearchManager;
 import android.app.SearchableInfo;
+
 import androidx.lifecycle.ViewModelProviders;
+
 import android.content.Context;
 import android.os.Bundle;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+import com.google.android.material.snackbar.BaseTransientBottomBar;
 import com.google.android.material.snackbar.Snackbar;
+
 import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.SearchView;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +57,7 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
     /**
-     * Strings submitted to this will be debounced to {@link #searchMasterData(String)} after the given
+     * Strings submitted to this will be debounced to {@link #searchMasterData} after the given
      * delay.
      *
      * @see Debouncer
@@ -260,7 +267,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         // Set retry button if Mikan mode on
         if (MODE_MIKAN == mode) {
             bar.setAction("RETRY", v -> viewModel.onCategoryFilterChanged(tagSearchView.getQuery().toString(), currentPage, ATTRS_PER_PAGE));
-            bar.setDuration(Snackbar.LENGTH_LONG);
+            bar.setDuration(BaseTransientBottomBar.LENGTH_LONG);
         }
         bar.show();
 
@@ -293,7 +300,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
         return searchManager.getSearchableInfo(activity.getComponentName());
     }
 
-    protected boolean isLastPage() {
+    private boolean isLastPage() {
         return (currentPage * ATTRS_PER_PAGE >= mTotalSelectedCount);
     }
 
