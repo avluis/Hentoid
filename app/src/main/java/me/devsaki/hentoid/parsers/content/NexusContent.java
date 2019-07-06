@@ -41,7 +41,7 @@ public class NexusContent implements ContentParser {
         Content result = new Content();
 
         result.setSite(Site.NEXUS);
-        if (galleryUrl.isEmpty()) return result;
+        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
         result.setUrl(galleryUrl.replace(Site.NEXUS.getUrl() + "/view", ""));
         result.setCoverImageUrl(coverUrl);

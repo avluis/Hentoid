@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
@@ -37,14 +38,14 @@ public class FakkuContent implements ContentParser {
             // Check if book is available
             for (Element e : greenButton) {
                 if (e.text().toLowerCase().contains("subscribe") || e.text().toLowerCase().contains("purchase"))
-                    return null;
+                    return new Content().setStatus(StatusContent.IGNORED);
             }
         }
 
         Content result = new Content();
 
         result.setSite(Site.FAKKU2);
-        if (galleryUrl.isEmpty()) return result;
+        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
         result.setUrl(galleryUrl.replace(Site.FAKKU2.getUrl() + "/hentai/", ""));
         result.setCoverImageUrl(coverUrl);

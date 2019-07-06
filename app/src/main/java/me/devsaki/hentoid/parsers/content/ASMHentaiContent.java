@@ -7,6 +7,7 @@ import java.util.List;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.parsers.ParseHelper;
 import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
@@ -42,10 +43,10 @@ public class ASMHentaiContent implements ContentParser {
     public Content toContent()
     {
         Content result = new Content();
-        if (pageUrl.isEmpty()) return result.setSite(Site.ASMHENTAI);
+        if (pageUrl.isEmpty()) return result.setSite(Site.ASMHENTAI).setStatus(StatusContent.IGNORED);
 
         result.setSite(pageUrl.toLowerCase().contains("comics") ? Site.ASMHENTAI_COMICS : Site.ASMHENTAI);
-        if (galleryUrl.isEmpty()) return result;
+        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
         result.setUrl(galleryUrl.substring(0, galleryUrl.length() - 2).replace("/gallery", ""));
         result.setCoverImageUrl(getProtocol() + "://"+ coverUrl);

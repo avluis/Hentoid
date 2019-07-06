@@ -620,11 +620,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
 
                 compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is.get(0), new URL(urlStr)))
+                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is.get(0), new URL(urlStr)).toContent())
                                 .subscribeOn(Schedulers.computation())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(
-                                        result -> processContentParser(result, headersList),
+                                        result -> processContent(result, headersList),
                                         throwable -> {
                                             Timber.e(throwable, "Error parsing content.");
                                             listener.onResultFailed("");
@@ -640,17 +640,16 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             return null;
         }
 
-        private void processContentParser(@Nonnull ContentParser in, @Nonnull List<Pair<String, String>> headersList) {
-            Content content = in.toContent();
-            if (content != null) {
-                // Save cookies for future calls during download
-                Map<String, String> params = new HashMap<>();
-                for (Pair<String, String> p : headersList)
-                    if (p.first.equals("cookie")) params.put("cookie", p.second);
+        private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList) {
+            if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED)) return;
 
-                content.setDownloadParams(JsonHelper.serializeToJson(params));
-                listener.onResultReady(content, 1);
-            }
+            // Save cookies for future calls during download
+            Map<String, String> params = new HashMap<>();
+            for (Pair<String, String> p : headersList)
+                if (p.first.equals("cookie")) params.put("cookie", p.second);
+
+            content.setDownloadParams(JsonHelper.serializeToJson(params));
+            listener.onResultReady(content, 1);
         }
 
         /**

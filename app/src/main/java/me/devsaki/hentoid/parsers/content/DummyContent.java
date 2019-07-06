@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
+import me.devsaki.hentoid.enums.StatusContent;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class DummyContent implements ContentParser {
@@ -15,7 +16,7 @@ public class DummyContent implements ContentParser {
     public Content toContent() {
         Content result = new Content();
 
-        result.setSite(Site.NONE);
+        result.setSite(Site.NONE).setStatus(StatusContent.IGNORED);
 
         return result;
     }
