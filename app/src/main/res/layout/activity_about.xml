@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context=".activities.AboutActivity">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp">
@@ -186,6 +186,6 @@
             app:layout_constraintTop_toBottomOf="@id/personalDataStatement3"
             android:text="@string/about_licenses" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

@@ -1,10 +1,10 @@
 package me.devsaki.hentoid.activities;
 
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.WindowManager;
 
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;

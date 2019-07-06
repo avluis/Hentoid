@@ -1,8 +1,8 @@
 package me.devsaki.hentoid.widget;
 
-import android.support.annotation.NonNull;
-import android.support.v7.widget.PagerSnapHelper;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.PagerSnapHelper;
+import androidx.recyclerview.widget.RecyclerView;
 
 import static java.lang.Math.abs;
 

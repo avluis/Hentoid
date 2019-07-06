@@ -1,12 +1,12 @@
 package me.devsaki.hentoid.fragments.downloads;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +22,7 @@ import me.devsaki.hentoid.viewholders.GitHubRelease;
 import me.devsaki.hentoid.viewholders.GitHubReleaseDescription;
 import timber.log.Timber;
 
-import static android.support.v4.view.ViewCompat.requireViewById;
+import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 11/2018

@@ -1,10 +1,9 @@
 package me.devsaki.hentoid.enums;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.AboutActivity;
-import me.devsaki.hentoid.activities.DownloadsActivity;
 import me.devsaki.hentoid.activities.PrefsActivity;
 import me.devsaki.hentoid.activities.QueueActivity;
 import me.devsaki.hentoid.activities.sources.ASMHentaiActivity;

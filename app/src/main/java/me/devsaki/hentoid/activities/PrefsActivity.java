@@ -2,10 +2,10 @@ package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.Snackbar;
-import android.support.v7.preference.Preference;
-import android.support.v7.preference.PreferenceFragmentCompat;
-import android.support.v7.preference.PreferenceScreen;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceScreen;
 import android.view.MenuItem;
 
 import org.greenrobot.eventbus.EventBus;

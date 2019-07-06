@@ -2,17 +2,17 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.arch.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProviders;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,7 +42,7 @@ import me.devsaki.hentoid.widget.ScrollPositionListener;
 import me.devsaki.hentoid.widget.VolumeGestureListener;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
-import static android.support.v4.view.ViewCompat.requireViewById;
+import static androidx.core.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
 
 public class ImagePagerFragment extends Fragment implements GoToPageDialogFragment.Parent,

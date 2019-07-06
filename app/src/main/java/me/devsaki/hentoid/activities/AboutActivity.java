@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.activities;
 
 import android.os.Bundle;
-import android.support.annotation.IdRes;
+import androidx.annotation.IdRes;
 import android.view.View;
 import android.widget.TextView;
 

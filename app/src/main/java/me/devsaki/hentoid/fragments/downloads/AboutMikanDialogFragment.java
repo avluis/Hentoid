@@ -2,9 +2,9 @@ package me.devsaki.hentoid.fragments.downloads;
 
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 import android.webkit.WebView;
 
 public final class AboutMikanDialogFragment extends DialogFragment {
@@ -21,7 +21,7 @@ public final class AboutMikanDialogFragment extends DialogFragment {
         webView.loadUrl("file:///android_asset/about_mikan.html");
         webView.setInitialScale(95);
 
-        return new android.support.v7.app.AlertDialog.Builder(requireContext())
+        return new androidx.appcompat.app.AlertDialog.Builder(requireContext())
                 .setTitle("About Mikan Search")
                 .setPositiveButton(android.R.string.ok, null)
                 .create();

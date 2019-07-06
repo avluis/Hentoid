@@ -4,8 +4,8 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import android.support.annotation.CheckResult;
-import android.support.annotation.Nullable;
+import androidx.annotation.CheckResult;
+import androidx.annotation.Nullable;
 import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;

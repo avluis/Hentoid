@@ -1,7 +1,7 @@
 package me.devsaki.hentoid.activities.sources;
 
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import android.webkit.CookieManager;
 import android.webkit.WebResourceResponse;
 

@@ -1,6 +1,6 @@
 package me.devsaki.hentoid.adapters;
 
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.annimon.stream.function.Consumer;
 

@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:padding="6dp">
 
-    <android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
         android:id="@+id/dir_selection"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -48,9 +48,9 @@
                 android:textSize="16sp" />
 
         </RelativeLayout>
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
-    <android.support.v7.widget.RecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/dir_list"
         android:background="@color/white"
         android:layout_width="match_parent"
@@ -58,7 +58,7 @@
         android:layout_below="@id/dir_selection"
         android:scrollbars="vertical" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/create_dir"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -71,7 +71,7 @@
         android:src="@drawable/ic_create_new_folder"
         app:useCompatPadding="true" />
 
-    <android.support.design.widget.FloatingActionButton
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/request_sd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

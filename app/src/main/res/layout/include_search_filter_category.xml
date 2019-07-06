@@ -58,7 +58,7 @@
         app:maxHeight="200dp"
         />
 
-    <android.support.v7.widget.SearchView
+    <androidx.appcompat.widget.SearchView
         android:id="@+id/tag_filter"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

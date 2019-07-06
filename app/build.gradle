@@ -19,7 +19,7 @@ android {
         // Hold updating targetSdkVersion until implementing an image viewer
         // or Perfect Viewer implements Content URI
         //noinspection ExpiringTargetSdkVersion
-        targetSdkVersion 23
+        targetSdkVersion 28
         versionCode 110
         versionName '1.8.0'
 
@@ -66,28 +66,28 @@ dependencies {
     implementation project(':fakkuLib')
 
     testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
     // Firebase
-    implementation 'com.google.firebase:firebase-core:16.0.6'
+    implementation 'com.google.firebase:firebase-core:16.0.6' // NB : Version 17 has MinSDK 16
 
     // Crashlytics
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.10.1'
 
     // Stetho core
 //    implementation 'com.facebook.stetho:stetho:1.5.0'
     // Support libraries
-    implementation 'com.android.support:recyclerview-v7:28.0.0'
-    implementation 'com.android.support:exifinterface:28.0.0'
-    implementation 'com.android.support:appcompat-v7:28.0.0'
-    implementation 'com.android.support:cardview-v7:28.0.0'
-    implementation 'com.android.support:design:28.0.0'
-    implementation 'com.android.support:preference-v7:28.0.0'
-    implementation 'com.android.support:support-media-compat:28.0.0'
-    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
-    implementation 'com.android.support:support-v13:28.0.0'
-    implementation 'com.google.android.gms:play-services-safetynet:16.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.exifinterface:exifinterface:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.0.2'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.preference:preference:1.0.0'
+    implementation 'androidx.media:media:1.0.1'
+    implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
+    implementation 'androidx.legacy:legacy-support-v13:1.0.0'
+    implementation 'com.google.android.gms:play-services-safetynet:17.0.0'
 
     // <-- this one to fix the SSLHandshake error with okhttp on Android 4.1-4.4 when server only supports TLS1.2
 
@@ -112,9 +112,7 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
 
     // For downloading images : github.com/google/volley
-    implementation 'com.android.volley:volley:1.1.1'
-
-    // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
+    implementation 'com.android.volley:volley:1.1.1' // <-- if this evolves, please examine RequestQueueManager.getRequestQueue for evolutions
 
     // EventBus: github.com/greenrobot/EventBus
     implementation 'org.greenrobot:eventbus:3.1.1'
@@ -155,8 +153,8 @@ dependencies {
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
 
     // For ViewModel to work
-    implementation "android.arch.lifecycle:extensions:1.1.1"
-    implementation "android.arch.lifecycle:viewmodel:1.1.1"
+    implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.0.0'
 
     // ObjectBox browser dependencies must be set before applying ObjectBox plugin so it does not add objectbox-android
     // (would result in two conflicting versions, e.g. "Duplicate files copied in APK lib/armeabi-v7a/libobjectbox.so").

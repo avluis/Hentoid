@@ -4,7 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
-import android.support.v4.app.ActivityCompat;
+import androidx.core.app.ActivityCompat;
 
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 

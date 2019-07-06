@@ -2,10 +2,10 @@ package me.devsaki.hentoid.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.FragmentManager;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,7 +16,7 @@ import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
 import me.devsaki.hentoid.activities.bundles.ImportActivityBundle;
 
-import static android.support.v4.view.ViewCompat.requireViewById;
+import static androidx.core.view.ViewCompat.requireViewById;
 
 /**
  * Created by Robb on 11/2018
