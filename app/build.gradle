@@ -97,7 +97,7 @@ dependencies {
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.8.0'
 
     // Intro screens or slides: github.com/apl-devs/AppIntro
-    implementation 'com.github.apl-devs:appintro:v4.2.3'
+    implementation 'com.github.paolorotolo:appintro:v5.1.0'
 
     // Java serialization/deserialization (Java Objects into JSON and back): github.com/google/gson
     implementation 'com.google.code.gson:gson:2.8.5'
@@ -166,9 +166,9 @@ dependencies {
     // https://github.com/davemorrissey/subsampling-scale-image-view
     implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
 
-    // https://github.com/davideas/FlexibleAdapter (warning : upgrading this switches the library to AndroidX)
-    implementation 'eu.davidea:flexible-adapter:5.0.6'
-    implementation 'eu.davidea:flexible-adapter-ui:1.0.0-b5'
+    // https://github.com/davideas/FlexibleAdapter
+    implementation 'eu.davidea:flexible-adapter:5.1.0'
+    implementation 'eu.davidea:flexible-adapter-ui:1.0.0'
 }
 
 sonarqube {
