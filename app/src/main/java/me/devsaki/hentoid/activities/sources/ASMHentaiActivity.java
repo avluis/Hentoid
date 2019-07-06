@@ -1,8 +1,6 @@
 package me.devsaki.hentoid.activities.sources;
 
-import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.listener.ResultListener;
 
 /**
  * Created by avluis on 07/21/2016.
@@ -21,16 +19,9 @@ public class ASMHentaiActivity extends BaseWebActivity {
 
     @Override
     protected CustomWebViewClient getWebClient() {
-        CustomWebViewClient client = new ASMViewClient(GALLERY_FILTER, this);
+        addContentBlockFilter(blockedContent);
+        CustomWebViewClient client = new CustomWebViewClient(GALLERY_FILTER, this);
         client.restrictTo(DOMAIN_FILTER);
         return client;
-    }
-
-    private class ASMViewClient extends CustomWebViewClient {
-
-        ASMViewClient(String filteredUrl, ResultListener<Content> listener) {
-            super(filteredUrl, listener);
-            addContentBlockFilter(blockedContent);
-        }
     }
 }

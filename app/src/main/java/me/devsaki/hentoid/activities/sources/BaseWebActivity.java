@@ -129,6 +129,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         universalBlockedContent.add("adsco.re");
         universalBlockedContent.add("s24hc8xzag.com");
         universalBlockedContent.add("/nutaku/");
+        universalBlockedContent.add("trafficjunky");
+        universalBlockedContent.add("traffichaus");
     }
 
     protected abstract CustomWebViewClient getWebClient();
@@ -491,7 +493,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
 
-    abstract class CustomWebViewClient extends WebViewClient {
+    class CustomWebViewClient extends WebViewClient {
 
         private final Jspoon jspoon = Jspoon.create();
         protected final CompositeDisposable compositeDisposable = new CompositeDisposable();
@@ -511,7 +513,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         CustomWebViewClient(String filteredUrl, ResultListener<Content> listener) {
             this.listener = listener;
 
-            Class c = ContentParserFactory.getInstance().getContentClass(getStartSite());
+            Class c = ContentParserFactory.getInstance().getContentParserClass(getStartSite());
             htmlAdapter = jspoon.adapter(c); // Unchecked but alright
 
             if (filteredUrl.length() > 0) filteredUrlPattern = Pattern.compile(filteredUrl);
@@ -562,8 +564,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         @Override
         public void onPageFinished(WebView view, String url) {
+            // Below line is not really accurate because of redirects
+            // e.g. you can call onPageStarted with URL "x", that is redirected to URL "x/home"
+            // => onPageFinished is called with "x/home"
             loadedUrls.remove(url);
             loadIndex--;
+            if (0 == loadIndex) loadedUrls.clear(); // Failsafe
             fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
         }
 

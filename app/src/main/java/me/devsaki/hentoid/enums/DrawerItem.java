@@ -12,6 +12,7 @@ import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
+import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
@@ -28,6 +29,7 @@ public enum DrawerItem {
     EHENTAI("E-HENTAI", R.drawable.ic_menu_ehentai, EHentaiActivity.class),
     FAKKU("FAKKU", R.drawable.ic_menu_fakku, FakkuActivity.class),
     NEXUS("HENTAI NEXUS", R.drawable.ic_menu_nexus, NexusActivity.class),
+    MUSES("8MUSES", R.drawable.ic_menu_8muses, MusesActivity.class),
     //    MIKAN("MIKAN SEARCH", R.drawable.ic_menu_mikan, MikanSearchActivity.class),
     //    HOME("HOME", R.drawable.ic_menu_home, DownloadsActivity.class),
     QUEUE("QUEUE", R.drawable.ic_menu_queue, QueueActivity.class),

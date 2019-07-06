@@ -22,6 +22,7 @@ import me.devsaki.hentoid.activities.sources.EHentaiActivity;
 import me.devsaki.hentoid.activities.sources.FakkuActivity;
 import me.devsaki.hentoid.activities.sources.HentaiCafeActivity;
 import me.devsaki.hentoid.activities.sources.HitomiActivity;
+import me.devsaki.hentoid.activities.sources.MusesActivity;
 import me.devsaki.hentoid.activities.sources.NexusActivity;
 import me.devsaki.hentoid.activities.sources.NhentaiActivity;
 import me.devsaki.hentoid.activities.sources.PururinActivity;
@@ -176,6 +177,8 @@ public class Content implements Serializable {
             case FAKKU2:
                 paths = url.split("/");
                 return paths[paths.length - 1];
+            case MUSES:
+                return url;
             default:
                 return "";
         }
@@ -234,6 +237,8 @@ public class Content implements Serializable {
                 return FakkuActivity.class;
             case NEXUS:
                 return NexusActivity.class;
+            case MUSES:
+                return MusesActivity.class;
             default:
                 return BaseWebActivity.class;
         }
@@ -288,6 +293,7 @@ public class Content implements Serializable {
             case NEXUS:
                 galleryConst = "/view";
                 break;
+            case MUSES:
             case FAKKU:
             case HENTAICAFE:
             case PANDA:
@@ -312,14 +318,16 @@ public class Content implements Serializable {
             case NHENTAI:
             case PANDA:
                 return getGalleryUrl();
-            case NEXUS:
-                return site.getUrl() + "/read" + url + "/001";
             case HENTAICAFE:
                 return site.getUrl() + "/manga/read/$1/en/0/1/"; // $1 has to be replaced by the textual unique site ID without the author name
             case PURURIN:
                 return site.getUrl() + "/read/" + url.substring(1).replace("/", "/01/");
             case FAKKU2:
                 return getGalleryUrl() + "/read/page/1";
+            case NEXUS:
+                return site.getUrl() + "/read" + url + "/001";
+            case MUSES:
+                return site.getUrl().replace("album","picture") + "/1";
             default:
                 return null;
         }
