@@ -5,13 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.webkit.MimeTypeMap;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
-import android.webkit.MimeTypeMap;
-import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
 
@@ -270,9 +271,8 @@ public class FileHelper {
      * @param directory directory to clean
      * @return true if directory has been successfully cleaned
      * @throws IOException              in case cleaning is unsuccessful
-     * @throws IllegalArgumentException if {@code directory} does not exist or is not a directory
      */
-    private static boolean tryCleanDirectory(@NonNull File directory) throws IOException, SecurityException {
+    private static boolean tryCleanDirectory(@NonNull File directory) throws IOException {
         File[] files = directory.listFiles();
         if (files == null) throw new IOException("Failed to list content of " + directory);
 
@@ -404,20 +404,28 @@ public class FileHelper {
         int folderNamingPreference = Preferences.getFolderNameFormat();
 
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID) {
-            result = result + content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
+            result += content.getAuthor().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
         if (folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_AUTH_TITLE_ID || folderNamingPreference == Preferences.Constant.PREF_FOLDER_NAMING_CONTENT_TITLE_ID) {
-            result = result + content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
+            result += content.getTitle().replaceAll(AUTHORIZED_CHARS, "_") + " - ";
         }
-        result = result + "[" + content.getUniqueSiteId() + "]";
+
+        // Unique content ID
+        String id = content.getUniqueSiteId();
+        // For certain sources (8muses, fakku), unique IDs are strings that may be very long
+        // => shorten them by using their hashCode
+        if (id.length() > 10) id = Integer.toString(Math.abs(id.hashCode())).substring(0, 10);
+        String suffix = "[" + id + "]";
 
         // Truncate folder dir to something manageable for Windows
         // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
         int truncLength = Preferences.getFolderTruncationNbChars();
+        int titleLength = result.length() - siteFolder.length();
         if (truncLength > 0) {
-            if (result.length() - siteFolder.length() > truncLength)
-                result = result.substring(0, siteFolder.length() + truncLength - 1);
+            if (titleLength + suffix.length() > truncLength)
+                result = result.substring(0, siteFolder.length() + truncLength - suffix.length() - 1);
         }
+        result += suffix;
 
         return result;
     }
