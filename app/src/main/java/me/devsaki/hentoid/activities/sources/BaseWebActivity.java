@@ -666,7 +666,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         boolean isWebViewLoading() {
-            return 0 == loadIndex;
+            return loadIndex > 0;
         }
     }
 
