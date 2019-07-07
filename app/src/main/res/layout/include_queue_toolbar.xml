@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     android:background="?colorPrimary"
     android:minHeight="?android:attr/actionBarSize"
-    android:theme="@style/Base.Theme.AppCompat.CompactMenu"
+    android:theme="@style/Theme.MaterialComponents.CompactMenu"
     app:contentInsetEnd="0dp"
     app:contentInsetStart="0dp">
 
