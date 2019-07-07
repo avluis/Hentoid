@@ -78,7 +78,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Downloads">
+            android:theme="@style/AppTheme.TaupeBackgroundNoActionBar">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -88,7 +88,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_mikan"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/AppTheme.Mikan"
+            android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.app.searchable"
@@ -113,7 +113,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_preferences"
             android:parentActivityName=".activities.DownloadsActivity"
-            android:theme="@style/PrefsThemeDark"
+            android:theme="@style/PrefsTheme"
             tools:ignore="UnusedAttribute">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -132,7 +132,7 @@
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            android:theme="@style/AppTheme.Search"
+            android:theme="@style/AppTheme"
             tools:ignore="UnusedAttribute">
         </activity>
         <activity

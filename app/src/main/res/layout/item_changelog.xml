@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/accent"
+            android:textColor="@color/secondary"
             android:textSize="@dimen/text_subtitle_1"
             android:textStyle="bold"
             tools:text="Hentoid v99.99" />

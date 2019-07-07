@@ -25,7 +25,7 @@ public final class ShortcutHelper {
     @RequiresApi(api = Build.VERSION_CODES.N_MR1)
     public static void buildShortcuts(Context context) {
         // TODO: Loop across all activities
-        int tint_color = ContextCompat.getColor(context, R.color.accent);
+        int tint_color = ContextCompat.getColor(context, R.color.secondary);
 
         Bitmap nhentaiBitmap = Helper.getBitmapFromVectorDrawable(context, R.drawable.ic_menu_nhentai);
         nhentaiBitmap = Helper.tintBitmap(nhentaiBitmap, tint_color);

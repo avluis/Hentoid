@@ -6,4 +6,4 @@
     android:layout_height="wrap_content"
     android:elevation="@dimen/toolbar_layout_elevation"
     android:minHeight="?android:attr/actionBarSize"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar" />
+    android:theme="@style/AppTheme.Toolbar" />

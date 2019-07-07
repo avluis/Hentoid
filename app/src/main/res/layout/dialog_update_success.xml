@@ -11,7 +11,7 @@
         android:id="@+id/updateSuccessText"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/accent"
+        android:background="@color/secondary"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center"

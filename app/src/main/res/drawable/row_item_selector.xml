@@ -4,5 +4,5 @@
     <item android:drawable="@color/light_red" android:state_pressed="false" android:state_selected="true" />
     <item android:drawable="@color/light_gray" android:state_pressed="true" />
     <!-- Standard background color -->
-    <item android:drawable="@color/white" android:state_selected="false" />
+    <item android:drawable="@color/surface" android:state_selected="false" />
 </selector>

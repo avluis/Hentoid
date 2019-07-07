@@ -1,30 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
-        <item name="android:editTextColor">@android:color/white</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorOnSecondary">@color/light_gray</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/black</item>
+        <item name="android:colorBackground">@color/window_background</item>
+        <item name="colorOnBackground">@color/white</item>
+<!--
+        <item name="android:editTextColor">@color/white</item>
         <item name="android:textColorHint">@color/light_gray</item>
+-->
     </style>
 
     <!-- Activities with Toolbar as ActionBar -->
-    <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorOnSecondary">@color/light_gray</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/black</item>
+        <item name="android:colorBackground">@color/window_background</item>
+        <item name="colorOnBackground">@color/white</item>
+<!--
         <item name="android:editTextColor">@android:color/white</item>
         <item name="android:textColorHint">@color/light_gray</item>
+        <item name="android:windowBackground">@color/window_background</item>
+        <item name="actionMenuTextColor">@color/white</item>
+        <item name="titleTextColor">@color/white</item>
+        -->
     </style>
 
     <style name="AppTheme.NoActionBar.viewer">
-        <item name="colorPrimaryDark">@color/black_opacity_50</item>
+        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
         <item name="android:windowBackground">@color/black</item>
         <item name="android:editTextColor">@android:color/black</item>
+        <!--
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        -->
     </style>
 
     <!-- Backgrounds -->
@@ -45,9 +69,9 @@
     </style>
 
     <!-- Prefs Activity -->
-    <style name="PrefsThemeDark" parent="AppTheme">
+    <style name="PrefsTheme" parent="AppTheme">
         <item name="android:windowBackground">@color/window_background</item>
-        <item name="android:divider">@color/accent</item>
+        <item name="android:divider">@color/secondary</item>
         <item name="android:textColor">@color/primary_text_color_selector</item>
         <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
         <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
@@ -58,8 +82,8 @@
     <style name="PrefsThemeDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
         <item name="android:windowBackground">@color/window_background</item>
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorSecondary">@color/white</item>
@@ -108,52 +132,56 @@
 
     <style name="DownloadsDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
     </style>
 
     <!-- Mikan -->
     <style name="AppTheme.Mikan" parent="AppTheme.TaupeBackground">
-        <item name="android:textColorHint">@color/light_gray</item>
         <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
     <!-- Toolbar -->
-    <style name="AppTheme.Toolbar" parent="AppTheme.TaupeBackground">
-        <item name="android:textColorHint">@color/light_gray</item>
+    <style name="AppTheme.Toolbar" parent="AppTheme">
+        <item name="titleTextColor">@color/white</item>
+        <item name="actionMenuTextColor">@color/white</item>
         <item name="android:textColorPrimary">@color/light_gray</item>
         <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
     <!-- Search Activity -->
+    <!--
     <style name="AppTheme.Search" parent="Theme.MaterialComponents.Light.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
         <item name="android:windowBackground">@color/window_background</item>
+        <item name="actionMenuTextColor">@color/white</item>
+        <item name="titleTextColor">@color/white</item>
     </style>
+    -->
 
     <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
         <item name="android:colorBackground">@color/window_background</item>
     </style>
 
     <!-- PIN screens -->
-
     <style name="PinEntryDialogTheme" parent="Theme.MaterialComponents.Light.Dialog">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
         <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
+        <item name="actionMenuTextColor">@color/white</item>
     </style>
 
     <!-- Image viewer -->
     <style name="ViewerBrowseModeDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
     </style>
 
 </resources>

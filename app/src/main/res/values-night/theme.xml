@@ -4,8 +4,8 @@
     <style name="AppTheme" parent="Theme.MaterialComponents">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_variant</item>
+        <item name="colorAccent">@color/secondary</item>
         <item name="android:editTextColor">@android:color/white</item>
         <item name="android:textColorHint">@color/light_gray</item>
     </style>
@@ -13,8 +13,8 @@
     <!-- Activities with Toolbar as ActionBar -->
     <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_variant</item>
+        <item name="colorAccent">@color/secondary</item>
         <item name="android:editTextColor">@android:color/white</item>
         <item name="android:textColorHint">@color/light_gray</item>
     </style>
@@ -45,9 +45,9 @@
     </style>
 
     <!-- Prefs Activity -->
-    <style name="PrefsThemeDark" parent="AppTheme">
+    <style name="PrefsTheme" parent="AppTheme">
         <item name="android:windowBackground">@color/window_background</item>
-        <item name="android:divider">@color/accent</item>
+        <item name="android:divider">@color/secondary</item>
         <item name="android:textColor">@color/primary_text_color_selector</item>
         <item name="android:textColorPrimary">@color/primary_text_color_selector</item>
         <item name="android:textColorSecondary">@color/secondary_text_color_selector</item>
@@ -58,8 +58,8 @@
     <style name="PrefsThemeDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="android:windowBackground">@color/window_background</item>
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_variant</item>
+        <item name="colorAccent">@color/secondary</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:textColorPrimary">@color/white</item>
         <item name="android:textColorSecondary">@color/white</item>
@@ -108,8 +108,8 @@
 
     <style name="DownloadsDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_variant</item>
+        <item name="colorAccent">@color/secondary</item>
     </style>
 
     <!-- Mikan -->
@@ -128,15 +128,15 @@
     <!-- Search Activity -->
     <style name="AppTheme.Search" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_variant</item>
+        <item name="colorAccent">@color/secondary</item>
         <item name="android:windowBackground">@color/window_background</item>
     </style>
 
     <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_variant</item>
+        <item name="colorAccent">@color/secondary</item>
         <item name="android:colorBackground">@color/window_background</item>
     </style>
 
@@ -144,16 +144,16 @@
 
     <style name="PinEntryDialogTheme" parent="Theme.MaterialComponents.Dialog">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_variant</item>
+        <item name="colorAccent">@color/secondary</item>
         <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
     </style>
 
     <!-- Image viewer -->
     <style name="ViewerBrowseModeDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryDark">@color/primary_dark</item>
-        <item name="colorAccent">@color/accent</item>
+        <item name="colorPrimaryDark">@color/primary_variant</item>
+        <item name="colorAccent">@color/secondary</item>
     </style>
 
 </resources>

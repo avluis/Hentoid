@@ -1,14 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primary">@color/dark_red</color>
-    <color name="primary_dark">@color/very_dark_red</color>
+    <color name="primary_variant">@color/very_dark_red</color>
+    <color name="secondary">@color/accent_red</color>
+    <color name="secondary_variant">@color/light_red</color>
+    <color name="surface">@color/white</color>
     <color name="window_background">@color/taupe</color>
     <color name="ripple">@color/light_red</color>
-    <color name="accent">@color/accent_red</color>
 
     <!-- App palette -->
-    <color name="very_dark_red">#3f0000</color>
     <color name="dark_red">#470000</color>
+    <color name="very_dark_red">#3f0000</color>
     <color name="taupe">#592828</color>
     <color name="accent_red">#b25959</color>
     <color name="light_red">#ffebee</color>

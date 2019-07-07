@@ -17,6 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/ic_close"
+        app:theme="@style/AppTheme.Toolbar"
         app:title="Advanced search" />
 
     <TextView

@@ -36,7 +36,7 @@ public class DownloadProgressNotification implements Notification {
                 .setContentText(title)
                 .setContentInfo(getProgressString())
                 .setProgress(max, progress, false)
-                .setColor(ContextCompat.getColor(context, R.color.accent))
+                .setColor(ContextCompat.getColor(context, R.color.secondary))
                 .setContentIntent(getDefaultIntent(context))
                 .setLocalOnly(true)
                 .setOngoing(true)

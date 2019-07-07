@@ -31,7 +31,7 @@
                 android:id="@+id/ivSource"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:background="@color/accent"
+                android:background="@color/secondary"
                 android:scaleType="fitXY"
                 android:padding="1dp"
                 tools:ignore="ContentDescription"
@@ -45,7 +45,7 @@
                     android:layout_marginLeft="10dp"
                     android:layout_marginRight="10dp"
                     android:textSize="@dimen/text_subtitle_1"
-                    android:textColor="@color/accent"
+                    android:textColor="@color/secondary"
                     android:textStyle="bold"
                     tools:text="The Best Thing Ever Made" />
 
