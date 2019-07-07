@@ -9,6 +9,7 @@ import java.util.List;
 import eu.davidea.flexibleadapter.FlexibleAdapter;
 import eu.davidea.flexibleadapter.items.IFlexible;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.viewholders.ImageFileFlex;
 
 public class ImageGalleryAdapter extends FlexibleAdapter<IFlexible> {
     private final Consumer<ImageFile> onFavouriteClickListener;
@@ -20,5 +21,12 @@ public class ImageGalleryAdapter extends FlexibleAdapter<IFlexible> {
 
     public Consumer<ImageFile> getOnFavouriteClickListener() {
         return onFavouriteClickListener;
+    }
+
+    public boolean isFavouritePresent() {
+        for (IFlexible img : getCurrentItems())
+            if (((ImageFileFlex)img).isFavourite()) return true;
+
+        return false;
     }
 }

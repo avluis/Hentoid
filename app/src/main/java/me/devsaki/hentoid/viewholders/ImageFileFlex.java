@@ -62,6 +62,10 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
         return (!constraint || item.isFavourite());
     }
 
+    public boolean isFavourite() {
+        return item.isFavourite();
+    }
+
     class ImageFileViewHolder extends FlexibleViewHolder {
 
         private final TextView pageNumberTxt;

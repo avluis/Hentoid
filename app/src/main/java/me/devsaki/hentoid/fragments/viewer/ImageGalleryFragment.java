@@ -1,19 +1,20 @@
 package me.devsaki.hentoid.fragments.viewer;
 
-import androidx.lifecycle.ViewModelProviders;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
@@ -28,8 +29,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 
 public class ImageGalleryFragment extends Fragment {
 
-    private static final String KEY_FILTER_FAVOURITES = "filter_favourites" +
-            "";
+    private static final String KEY_FILTER_FAVOURITES = "filter_favourites";
 
     private ImageGalleryAdapter galleryImagesAdapter;
     private ImageViewerViewModel viewModel;
@@ -38,7 +38,7 @@ public class ImageGalleryFragment extends Fragment {
     private Boolean filterFavourites = false;
 
 
-    public static ImageGalleryFragment newInstance (boolean filterFavourites) {
+    static ImageGalleryFragment newInstance(boolean filterFavourites) {
         ImageGalleryFragment fragment = new ImageGalleryFragment();
         Bundle args = new Bundle();
         args.putBoolean(KEY_FILTER_FAVOURITES, filterFavourites);
@@ -52,7 +52,8 @@ public class ImageGalleryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_viewer_gallery, container, false);
 
         Bundle arguments = getArguments();
-        if (arguments != null) filterFavourites = arguments.getBoolean(KEY_FILTER_FAVOURITES, false);
+        if (arguments != null)
+            filterFavourites = arguments.getBoolean(KEY_FILTER_FAVOURITES, false);
 
         setHasOptionsMenu(true);
         viewModel = ViewModelProviders.of(requireActivity()).get(ImageViewerViewModel.class);
@@ -66,8 +67,7 @@ public class ImageGalleryFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel
-                .getImages()
+        viewModel.getImages()
                 .observe(this, this::onImagesChanged);
     }
 
@@ -93,7 +93,7 @@ public class ImageGalleryFragment extends Fragment {
 
     private void initUI(View rootView) {
         Toolbar toolbar = requireViewById(rootView, R.id.viewer_gallery_toolbar);
-        ((AppCompatActivity)requireActivity()).setSupportActionBar(toolbar);
+        ((AppCompatActivity) requireActivity()).setSupportActionBar(toolbar);
         toolbar.setTitle("Gallery");
         toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
         toolbar.setNavigationOnClickListener(v -> requireActivity().onBackPressed());
@@ -109,8 +109,9 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private boolean onItemClick(View view, int position) {
-        ImageFileFlex imgFileFlex = (ImageFileFlex)galleryImagesAdapter.getItem(position);
-        if (imgFileFlex != null) viewModel.setStartingIndex(imgFileFlex.getItem().getDisplayOrder());
+        ImageFileFlex imgFileFlex = (ImageFileFlex) galleryImagesAdapter.getItem(position);
+        if (imgFileFlex != null)
+            viewModel.setStartingIndex(imgFileFlex.getItem().getDisplayOrder());
         requireActivity().onBackPressed();
         return true;
     }
@@ -120,8 +121,19 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void onFavouriteSuccess(ImageFile img) {
-        if (filterFavourites) galleryImagesAdapter.notifyDataSetChanged(); // Because no easy way to spot which item has changed when the view is filtered
-        else galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder());
+        if (filterFavourites) {
+            // Reset favs filter if no favourite page remains
+            if (!galleryImagesAdapter.isFavouritePresent()) {
+                filterFavourites = false;
+                galleryImagesAdapter.setFilter(filterFavourites);
+                galleryImagesAdapter.filterItems();
+                galleryImagesAdapter.smoothScrollToPosition(0);
+            } else {
+                galleryImagesAdapter.notifyDataSetChanged(); // Because no easy way to spot which item has changed when the view is filtered
+            }
+        } else galleryImagesAdapter.notifyItemChanged(img.getDisplayOrder());
+
+        favouritesFilterMenu.setVisible(galleryImagesAdapter.isFavouritePresent());
     }
 
     private void toggleFavouritesDisplay() {
@@ -130,7 +142,8 @@ public class ImageGalleryFragment extends Fragment {
     }
 
     private void updateFavouriteDisplay() {
-        favouritesFilterMenu.setIcon(filterFavourites ?R.drawable.ic_fav_full:R.drawable.ic_fav_empty);
+        favouritesFilterMenu.setVisible(galleryImagesAdapter.isFavouritePresent());
+        favouritesFilterMenu.setIcon(filterFavourites ? R.drawable.ic_fav_full : R.drawable.ic_fav_empty);
         galleryImagesAdapter.setFilter(filterFavourites);
         galleryImagesAdapter.filterItems();
         galleryImagesAdapter.smoothScrollToPosition(0);
@@ -145,6 +158,7 @@ public class ImageGalleryFragment extends Fragment {
     @Override
     public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
         super.onViewStateRestored(savedInstanceState);
-        if (savedInstanceState != null) filterFavourites = savedInstanceState.getBoolean(KEY_FILTER_FAVOURITES, false);
+        if (savedInstanceState != null)
+            filterFavourites = savedInstanceState.getBoolean(KEY_FILTER_FAVOURITES, false);
     }
 }
