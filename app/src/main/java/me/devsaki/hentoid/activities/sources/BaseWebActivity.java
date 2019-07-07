@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -355,7 +356,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             resId = R.drawable.ic_action_play;
         }
         fabActionMode = mode;
-        fabAction.setImageResource(resId);
+        setFabIcon(fabAction, resId);
         fabActionEnabled = true;
         fabAction.show();
     }
@@ -552,7 +553,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
             loadedUrls.put(url, loadIndex++);
-            fabRefreshOrStop.setImageResource(R.drawable.ic_action_clear);
+            setFabIcon(fabRefreshOrStop, R.drawable.ic_action_clear);
             fabRefreshOrStop.show();
             fabHome.show();
 
@@ -568,7 +569,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             loadedUrls.remove(url);
             loadIndex--;
             if (0 == loadIndex) loadedUrls.clear(); // Failsafe
-            fabRefreshOrStop.setImageResource(R.drawable.ic_action_refresh);
+            setFabIcon(fabRefreshOrStop, R.drawable.ic_action_refresh);
         }
 
         @Override
@@ -667,5 +668,12 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         boolean isWebViewLoading() {
             return 0 == loadIndex;
         }
+    }
+
+    // Workaround for https://issuetracker.google.com/issues/111316656
+    private void setFabIcon(@Nonnull FloatingActionButton btn, @DrawableRes int resId)
+    {
+        btn.setImageResource(resId);
+        btn.setImageMatrix(new Matrix());
     }
 }
