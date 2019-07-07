@@ -11,16 +11,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.fragment.app.FragmentActivity;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.widget.SearchView;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -32,7 +22,18 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.SearchView;
+import androidx.fragment.app.FragmentActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
 import com.annimon.stream.Stream;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -41,6 +42,8 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.BuildConfig;
 import me.devsaki.hentoid.HentoidApp;
@@ -79,7 +82,7 @@ import static com.annimon.stream.Collectors.toCollection;
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
  * <p>
  * todo issue: After requesting for permission, the app is reset using {@link #resetApp()} instead
- * of implementing {@link #onRequestPermissionsResult(int, String[], int[])} to receive permission
+ * of implementing {@link #onRequestPermissionsResult} to receive permission
  * request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
@@ -103,7 +106,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // ======== UI ELEMENTS
 
     // Top tooltip appearing when a download has been completed
-    protected LinearLayout newContentToolTip;
+    private LinearLayout newContentToolTip;
     // "Search" button on top menu
     private MenuItem searchMenu;
     // "Toggle favourites" button on top menu
@@ -113,13 +116,13 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Action view associated with search menu button
     private SearchView mainSearchView;
     // Search pane that shows up on top when using search function
-    protected View advancedSearchPane;
+    private View advancedSearchPane;
     // Layout containing the list of books
     private SwipeRefreshLayout refreshLayout;
     // List containing all books
     protected RecyclerView mListView;
     // Layout manager associated with the above list view
-    protected LinearLayoutManager llm;
+    private LinearLayoutManager llm;
     // Pane saying "Loading up~"
     private TextView loadingText;
     // Pane saying "Why am I empty ?"
@@ -147,7 +150,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Adapter in charge of book list display
     protected ContentAdapter mAdapter;
     // True if a new download is ready; used to display / hide "New Content" tooltip when scrolling
-    protected boolean isNewContentAvailable;
+    private boolean isNewContentAvailable;
     // True if book list is being loaded; used for synchronization between threads
     protected boolean isLoading;
     // Indicates whether or not one of the books has been selected
@@ -155,7 +158,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     // Records the system time (ms) when back button has been last pressed (to detect "double back button" event)
     private long backButtonPressed;
     // True if bottom toolbar visibility is fixed and should not change regardless of scrolling; false if bottom toolbar visibility changes according to scrolling
-    protected boolean overrideBottomToolbarVisibility;
+    private boolean overrideBottomToolbarVisibility;
     // True if storage permissions have been checked at least once
     private boolean storagePermissionChecked = false;
     // Mode : show library or show Mikan search
@@ -516,7 +519,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     protected void attachScrollListener() {
         mListView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            public void onScrolled(@Nonnull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
 
                 // Show toolbar:
@@ -600,7 +603,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     /**
      * Clear search query and hide the search view if asked so
      */
-    protected void clearQuery() {
+    private void clearQuery() {
         setQuery("");
         searchLibrary();
     }
@@ -609,7 +612,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
      * Refresh the whole screen - Called by pressing the "New Content" button that appear on new
      * downloads - Called by scrolling up when being on top of the list ("force reload" command)
      */
-    protected void commitRefresh() {
+    private void commitRefresh() {
         newContentToolTip.setVisibility(View.GONE);
         refreshLayout.setRefreshing(false);
         refreshLayout.setEnabled(false);
