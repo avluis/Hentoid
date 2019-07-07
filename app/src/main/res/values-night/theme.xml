@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
@@ -11,7 +11,7 @@
     </style>
 
     <!-- Activities with Toolbar as ActionBar -->
-    <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="AppTheme.NoActionBar" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -55,7 +55,7 @@
         <item name="alertDialogTheme">@style/PrefsThemeDialog</item>
     </style>
 
-    <style name="PrefsThemeDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+    <style name="PrefsThemeDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="android:windowBackground">@color/window_background</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
@@ -106,7 +106,7 @@
         <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
-    <style name="DownloadsDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+    <style name="DownloadsDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -126,7 +126,7 @@
     </style>
 
     <!-- Search Activity -->
-    <style name="AppTheme.Search" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="AppTheme.Search" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -142,7 +142,7 @@
 
     <!-- PIN screens -->
 
-    <style name="PinEntryDialogTheme" parent="Theme.MaterialComponents.Light.Dialog">
+    <style name="PinEntryDialogTheme" parent="Theme.MaterialComponents.Dialog">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
@@ -150,7 +150,7 @@
     </style>
 
     <!-- Image viewer -->
-    <style name="ViewerBrowseModeDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+    <style name="ViewerBrowseModeDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorAccent">@color/accent</item>
