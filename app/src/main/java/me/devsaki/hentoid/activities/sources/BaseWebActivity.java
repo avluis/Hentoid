@@ -350,7 +350,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         if (MODE_DL == mode) {
             resId = R.drawable.ic_action_download;
         } else if (MODE_QUEUE == mode) {
-            resId = R.drawable.ic_queued;
+            resId = R.drawable.ic_action_queue;
         } else if (MODE_READ == mode) {
             resId = R.drawable.ic_action_play;
         }
