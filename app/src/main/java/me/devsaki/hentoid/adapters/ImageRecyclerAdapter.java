@@ -89,7 +89,7 @@ public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecycl
 
     @Nullable
     public ImageFile getImageAt(int position) {
-        return (position > 0 && position < images.size()) ? images.get(position) : null;
+        return (position >= 0 && position < images.size()) ? images.get(position) : null;
     }
 
     final class ImageViewHolder extends RecyclerView.ViewHolder {
