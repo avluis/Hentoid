@@ -33,7 +33,4 @@
     <color name="drawer_item_selected_background">@color/taupe</color>
     <color name="drawer_item_unselected_background">@color/dark_red</color>
     <color name="drawer_item_tint_color">@color/white</color>
-
-    <!-- App Intro -->
-    <color name="app_intro_text">@color/light_red</color>
 </resources>

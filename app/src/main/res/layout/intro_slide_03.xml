@@ -6,7 +6,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_weight="10"
-    android:background="?android:windowBackground"
     android:orientation="vertical"
     tools:context=".activities.IntroActivity">
 
@@ -19,7 +18,6 @@
         android:paddingLeft="32dp"
         android:paddingRight="32dp"
         android:text="@string/slide_03_header"
-        android:textColor="@color/app_intro_text"
         android:textSize="28sp"
         app:fontFamily="sans-serif-thin" />
 
@@ -32,7 +30,6 @@
         android:paddingLeft="64dp"
         android:paddingRight="64dp"
         android:text="@string/slide_03_text"
-        android:textColor="@color/app_intro_text"
         android:textSize="16sp" />
 
     <LinearLayout
