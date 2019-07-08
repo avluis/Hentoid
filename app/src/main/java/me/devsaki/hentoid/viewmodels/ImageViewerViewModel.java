@@ -205,12 +205,15 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
             // Persist in it JSON
             Content content = img.content.getTarget();
+Timber.i(">>>01");
             File dir = FileHelper.getContentDownloadDir(content);
+Timber.i(">>>02");
             try {
                 JsonHelper.saveJson(content.preJSONExport(), dir);
             } catch (IOException e) {
                 Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
             }
+Timber.i(">>>99");
             return img;
         } else
             throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));

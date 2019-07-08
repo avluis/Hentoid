@@ -38,17 +38,21 @@ public class JsonHelper {
 
     public static <K> void saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
+Timber.i(">>>03");
         String json = serializeToJson(object);
-
+Timber.i(">>>04");
         try (OutputStream output = FileHelper.getOutputStream(file)) {
-
             if (output != null) {
                 // build
                 byte[] bytes = json.getBytes();
                 // write
+Timber.i(">>>05");
                 output.write(bytes);
+Timber.i(">>>06");
                 FileHelper.sync(output);
+Timber.i(">>>07");
                 output.flush();
+Timber.i(">>>08");
             } else {
                 Timber.w("JSON file creation failed for %s", file.getPath());
             }

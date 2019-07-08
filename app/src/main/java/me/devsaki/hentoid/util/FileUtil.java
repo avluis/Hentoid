@@ -151,21 +151,24 @@ class FileUtil {
      * @return FileOutputStream.
      */
     static OutputStream getOutputStream(@NonNull final File target) throws IOException {
+Timber.i("=====01");
         try {
             return FileUtils.openOutputStream(target);
         } catch (IOException e) {
             Timber.d("Could not open file (expected)");
         }
-
+Timber.i("=====02");
         try {
             if (Build.VERSION.SDK_INT >= LOLLIPOP) {
                 // Storage Access Framework
                 DocumentFile targetDocument = getDocumentFile(target, false);
+Timber.i("=====03");
                 if (targetDocument != null) {
                     Context context = HentoidApp.getAppContext();
                     return context.getContentResolver().openOutputStream(
                             targetDocument.getUri());
                 }
+Timber.i("=====04");
             }
         } catch (Exception e) {
             Timber.e(e, "Error [%s] while attempting to get file: %s ", e.getMessage(), target.getAbsolutePath());
