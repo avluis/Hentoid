@@ -4,10 +4,11 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
-import androidx.annotation.Nullable;
 import android.util.Log;
 import android.util.SparseArray;
 import android.util.SparseIntArray;
+
+import androidx.annotation.Nullable;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -26,13 +27,11 @@ import me.devsaki.hentoid.util.LogUtil;
 import timber.log.Timber;
 
 /**
- * Service responsible for migrating the oldHentoidDB to the ObjectBoxDB
+ * Service responsible for migrating the old HentoidDB to ObjectBoxDB
  *
  * @see UpdateCheckService
  */
 public class DatabaseMigrationService extends IntentService {
-
-    private static boolean running;
 
     public DatabaseMigrationService() {
         super(DatabaseMigrationService.class.getName());
@@ -42,21 +41,15 @@ public class DatabaseMigrationService extends IntentService {
         return new Intent(context, DatabaseMigrationService.class);
     }
 
-    public static boolean isRunning() {
-        return running;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
 
-        running = true;
         Timber.w("Service created");
     }
 
     @Override
     public void onDestroy() {
-        running = false;
         Timber.w("Service destroyed");
 
         super.onDestroy();
