@@ -55,7 +55,7 @@ class FileUtil {
      * @return The DocumentFile.
      */
     @Nullable
-    private static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+    private static DocumentFile getOrCreateDocumentFile(@Nonnull final File file, final boolean isDirectory) {
         String baseFolder = FileHelper.getExtSdCardFolder(file);
         boolean returnSDRoot = false;
         if (baseFolder == null) return null;
@@ -92,7 +92,7 @@ class FileUtil {
             }
         }
 
-        return documentFileHelper(sdStorageUri, returnSDRoot, relativePath, isDirectory);
+        return getOrCreateFromComponents(sdStorageUri, returnSDRoot, relativePath, isDirectory);
     }
 
     /**
@@ -105,8 +105,8 @@ class FileUtil {
      * @param isDirectory  True if the given elements are supposed to be a directory; false if they are supposed to be a file
      * @return DocumentFile corresponding to the given file.
      */
-    private static DocumentFile documentFileHelper(@Nonnull Uri rootURI, boolean returnRoot,
-                                                   String relativePath, boolean isDirectory) {
+    private static DocumentFile getOrCreateFromComponents(@Nonnull Uri rootURI, boolean returnRoot,
+                                                          String relativePath, boolean isDirectory) {
         // start with root and then parse through document tree.
         Context context = HentoidApp.getAppContext();
         DocumentFile document = DocumentFile.fromTreeUri(context, rootURI);
@@ -161,7 +161,7 @@ Timber.i("=====02");
         try {
             if (Build.VERSION.SDK_INT >= LOLLIPOP) {
                 // Storage Access Framework
-                DocumentFile targetDocument = getDocumentFile(target, false);
+                DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
 Timber.i("=====03");
                 if (targetDocument != null) {
                     Context context = HentoidApp.getAppContext();
@@ -188,7 +188,7 @@ Timber.i("=====04");
         try {
             if (Build.VERSION.SDK_INT >= LOLLIPOP) {
                 // Storage Access Framework
-                DocumentFile targetDocument = getDocumentFile(target, false);
+                DocumentFile targetDocument = getOrCreateDocumentFile(target, false);
                 if (targetDocument != null) {
                     Context context = HentoidApp.getAppContext();
                     return context.getContentResolver().openInputStream(
@@ -224,8 +224,8 @@ Timber.i("=====04");
 
         // Try with Storage Access Framework.
         if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getDocumentFile(file.getParentFile(), true);
-            // getDocumentFile implicitly creates the directory.
+            DocumentFile document = getOrCreateDocumentFile(file.getParentFile(), true);
+            // getOrCreateDocumentFile implicitly creates the directory.
             try {
                 if (document != null) {
                     return document.createFile(
@@ -258,8 +258,8 @@ Timber.i("=====04");
 
         // Try with Storage Access Framework.
         if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getDocumentFile(file, true);
-            // getDocumentFile implicitly creates the directory.
+            DocumentFile document = getOrCreateDocumentFile(file, true);
+            // getOrCreateDocumentFile implicitly creates the directory.
             if (document != null) {
                 return document.exists();
             }
@@ -280,7 +280,7 @@ Timber.i("=====04");
 
     static boolean deleteWithSAF(File file) {
         if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile document = getDocumentFile(file, true);
+            DocumentFile document = getOrCreateDocumentFile(file, true);
             if (document != null) {
                 return document.delete();
             }
@@ -291,7 +291,7 @@ Timber.i("=====04");
 
     static boolean renameWithSAF(File srcDir, String newName) {
         if (Build.VERSION.SDK_INT >= LOLLIPOP) {
-            DocumentFile srcDocument = getDocumentFile(srcDir, true);
+            DocumentFile srcDocument = getOrCreateDocumentFile(srcDir, true);
             if (srcDocument != null) return srcDocument.renameTo(newName);
         }
         return false;
