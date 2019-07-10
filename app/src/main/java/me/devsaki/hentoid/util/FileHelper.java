@@ -749,7 +749,8 @@ public class FileHelper {
             // Hentoid is FileProvider ready!!
             sendIntent.putExtra(Intent.EXTRA_STREAM,
                     FileProvider.getUriForFile(context, AUTHORITY, dest));
-            sendIntent.setType(MimeTypes.getMimeType(dest));
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(dest.getName()));
+            sendIntent.setType(mimeType);
 
             context.startActivity(sendIntent);
         }
