@@ -317,7 +317,7 @@ public class ContentDownloadService extends IntentService {
             File dir = FileHelper.createContentDownloadDir(this, content);
             if (dir.exists()) {
                 try {
-                    File jsonFile = JsonHelper.saveJson(content.preJSONExport(), dir);
+                    File jsonFile = JsonHelper.createJson(content.preJSONExport(), dir);
                     // Cache its URI to the newly created content
                     DocumentFile jsonDocFile = FileHelper.getDocumentFile(jsonFile, false);
                     if (jsonDocFile != null) {

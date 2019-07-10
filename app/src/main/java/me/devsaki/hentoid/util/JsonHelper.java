@@ -28,7 +28,15 @@ public class JsonHelper {
         return gson.toJson(o);
     }
 
-    public static <K> File saveJson(K object, File dir) throws IOException {
+    /**
+     * Serialize and save the object contents to a json file in the given directory.
+     * The JSON file is created if it doesn't exist
+     * @param object Object to be serialized and saved
+     * @param dir Existing folder to save the JSON file to
+     * @param <K> Type of the object to save
+     * @throws IOException If anything happens during file I/O
+     */
+    public static <K> File createJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
         String json = serializeToJson(object);
         try (OutputStream output = FileHelper.getOutputStream(file)) {
@@ -46,7 +54,14 @@ public class JsonHelper {
         return file;
     }
 
-    public static <K> void saveJson(K object, @Nonnull DocumentFile file) throws IOException {
+    /**
+     * Serialize and save the object contents to an existing file using the JSON format
+     * @param object Object to be serialized and saved
+     * @param file Existing file to save to
+     * @param <K> Type of the object to save
+     * @throws IOException If anything happens during file I/O
+     */
+    public static <K> void updateJson(K object, @Nonnull DocumentFile file) throws IOException {
         try (OutputStream output = FileHelper.getOutputStream(file)) {
             if (output != null) {
                 String json = serializeToJson(object);

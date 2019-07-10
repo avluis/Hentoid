@@ -566,7 +566,7 @@ public class FileHelper {
             db.updateContentReads(content);
 
             try {
-                JsonHelper.saveJson(content.preJSONExport(), dir);
+                JsonHelper.createJson(content.preJSONExport(), dir);
             } catch (IOException e) {
                 Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
             }

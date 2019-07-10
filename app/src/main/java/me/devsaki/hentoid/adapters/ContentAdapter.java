@@ -589,7 +589,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                     throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
 
                 try {
-                    JsonHelper.saveJson(content.preJSONExport(), file);
+                    JsonHelper.updateJson(content.preJSONExport(), file);
                 } catch (IOException e) {
                     Timber.e(e, "Error while writing to %s", content.getJsonUri());
                 }
