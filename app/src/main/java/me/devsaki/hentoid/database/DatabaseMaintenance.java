@@ -1,14 +1,22 @@
 package me.devsaki.hentoid.database;
 
 import android.content.Context;
+import android.os.Build;
 import android.util.Pair;
 
+import androidx.documentfile.provider.DocumentFile;
+
+import java.io.File;
 import java.util.List;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.StatusContent;
+import me.devsaki.hentoid.util.Consts;
+import me.devsaki.hentoid.util.FileHelper;
 import timber.log.Timber;
+
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 
 public class DatabaseMaintenance {
 
@@ -68,6 +76,31 @@ public class DatabaseMaintenance {
             db.insertContent(c);
         }
         Timber.i("Upgrading Pururin image hosts : done");
+
+        // Replace filepaths with content URIs in storage folder (since versionCode 115 / v1.8.2)
+        // NB : Lollipop only because it must have _full_ support for SAF
+        if (Build.VERSION.SDK_INT >= LOLLIPOP) {
+            Timber.i("Caching JSON URIs : start");
+            contents = db.selectContentWithNoJson();
+            Timber.i("Caching JSON URIs : %s books detected", contents.size());
+            for (Content c : contents) {
+                File bookFolder = FileHelper.getContentDownloadDir(c);
+
+                DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
+                if (null == file)
+                    file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME), false);
+                if (null == file)
+                    file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_OLD), false);
+
+                if (file != null) {
+                    c.setJsonUri(file.getUri().toString());
+                    db.insertContent(c);
+                } else {
+                    Timber.e("File not detected : %s", c.getStorageFolder());
+                }
+            }
+            Timber.i("Caching JSON URIs : done");
+        }
     }
 
     /**

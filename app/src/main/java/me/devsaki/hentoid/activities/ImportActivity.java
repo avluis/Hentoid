@@ -569,7 +569,7 @@ public class ImportActivity extends BaseActivity {
     private boolean hasBooks() {
         List<File> downloadDirs = new ArrayList<>();
         for (Site s : Site.values()) {
-            downloadDirs.add(FileHelper.getSiteDownloadDir(this, s));
+            downloadDirs.add(FileHelper.getOrCreateSiteDownloadDir(this, s));
         }
 
         for (File downloadDir : downloadDirs) {

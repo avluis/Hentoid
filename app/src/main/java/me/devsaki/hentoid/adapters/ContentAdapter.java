@@ -2,17 +2,19 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.SortedList;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SortedListAdapterCallback;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SortedList;
+import androidx.recyclerview.widget.SortedListAdapterCallback;
 
 import com.annimon.stream.function.Consumer;
 import com.annimon.stream.function.IntConsumer;
@@ -20,6 +22,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
 import java.io.IOException;
@@ -581,11 +584,14 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 db.insertContent(content);
 
                 // Persist in it JSON
-                File dir = FileHelper.getContentDownloadDir(content);
+                DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
+                if (null == file)
+                    throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
+
                 try {
-                    JsonHelper.saveJson(content.preJSONExport(), dir);
+                    JsonHelper.saveJson(content.preJSONExport(), file);
                 } catch (IOException e) {
-                    Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+                    Timber.e(e, "Error while writing to %s", content.getJsonUri());
                 }
             }
             return content;

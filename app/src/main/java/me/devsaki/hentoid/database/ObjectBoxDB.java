@@ -652,6 +652,15 @@ public class ObjectBoxDB {
         return store.boxFor(Content.class).query().contains(Content_.coverImageUrl, "://api.pururin.io/images/").build().find();
     }
 
+    List<Content> selectContentWithNoJson() {
+        QueryBuilder<Content> query = store.boxFor(Content.class).query();
+
+        query.isNull(Content_.jsonUri);
+        query.or().equal(Content_.jsonUri, "");
+
+        return query.build().find();
+    }
+
     public void insertErrorRecord(ErrorRecord record) {
         store.boxFor(ErrorRecord.class).put(record);
     }

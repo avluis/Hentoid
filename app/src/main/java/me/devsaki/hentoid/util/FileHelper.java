@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.documentfile.provider.DocumentFile;
 
 import org.apache.commons.io.FileUtils;
 
@@ -224,6 +225,10 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
+    static OutputStream getOutputStream(@NonNull final DocumentFile target) throws IOException {
+        return FileUtil.getOutputStream(target);
+    }
+
     static InputStream getInputStream(@NonNull final File target) throws IOException {
         return FileUtil.getInputStream(target);
     }
@@ -270,7 +275,7 @@ public class FileHelper {
      *
      * @param directory directory to clean
      * @return true if directory has been successfully cleaned
-     * @throws IOException              in case cleaning is unsuccessful
+     * @throws IOException in case cleaning is unsuccessful
      */
     private static boolean tryCleanDirectory(@NonNull File directory) throws IOException {
         File[] files = directory.listFiles();
@@ -433,16 +438,16 @@ public class FileHelper {
     public static File getDefaultDir(Context context, String dir) {
         File file;
         try {
-            file = new File(getExternalStorageDirectory() + "/"
-                    + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+            file = new File(getExternalStorageDirectory() + File.separator
+                    + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
         } catch (Exception e) {
             file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
+            file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY);
         }
 
         if (!file.exists() && !FileUtil.makeDir(file)) {
             file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+            file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
             if (!file.exists()) {
                 FileUtil.makeDir(file);
             }
@@ -451,7 +456,7 @@ public class FileHelper {
         return file;
     }
 
-    public static File getSiteDownloadDir(Context context, Site site) {
+    public static File getOrCreateSiteDownloadDir(Context context, Site site) {
         File file;
         String settingDir = Preferences.getRootFolderName();
         String folderDir = site.getFolder();
@@ -760,4 +765,8 @@ public class FileHelper {
         }
     }
 
+    @Nullable
+    public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+        return FileUtil.getDocumentFile(file, isDirectory);
+    }
 }

@@ -1,13 +1,16 @@
 package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
+import android.content.Context;
+import android.net.Uri;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import android.content.Context;
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BooleanConsumer;
@@ -48,7 +51,9 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
 
     // Settings
-    /** True if images have to be shuffled; false if presented in the book order */
+    /**
+     * True if images have to be shuffled; false if presented in the book order
+     */
     private boolean isShuffled;
     private BooleanConsumer onShuffledChangeListener;
 
@@ -205,15 +210,15 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
             // Persist in it JSON
             Content content = img.content.getTarget();
-Timber.i(">>>01");
-            File dir = FileHelper.getContentDownloadDir(content);
-Timber.i(">>>02");
+            DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
+            if (null == file)
+                throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
+            
             try {
-                JsonHelper.saveJson(content.preJSONExport(), dir);
+                JsonHelper.saveJson(content.preJSONExport(), file);
             } catch (IOException e) {
-                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+                Timber.e(e, "Error while writing to %s", content.getJsonUri());
             }
-Timber.i(">>>99");
             return img;
         } else
             throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));

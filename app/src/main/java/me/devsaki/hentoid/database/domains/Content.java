@@ -88,6 +88,10 @@ public class Content implements Serializable {
     // No need to save that into JSON
     @Expose(serialize = false, deserialize = false)
     private boolean isBeingDeleted = false;
+    // Needs to be in the DB to optimize I/O
+    // No need to save that into the JSON file itself, obviously
+    @Expose(serialize = false, deserialize = false)
+    private String jsonUri;
 
     // Runtime attributes; no need to expose them for JSON persistence nor to persist them to DB
     @Transient
@@ -178,7 +182,7 @@ public class Content implements Serializable {
                 paths = url.split("/");
                 return paths[paths.length - 1];
             case MUSES:
-                return url.replace("/comics/album/","").replace("/",".");
+                return url.replace("/comics/album/", "").replace("/", ".");
             default:
                 return "";
         }
@@ -327,7 +331,7 @@ public class Content implements Serializable {
             case NEXUS:
                 return site.getUrl() + "/read" + url + "/001";
             case MUSES:
-                return site.getUrl().replace("album","picture") + "/1";
+                return site.getUrl().replace("album", "picture") + "/1";
             default:
                 return null;
         }
@@ -572,6 +576,14 @@ public class Content implements Serializable {
 
     public void setIsBeingDeleted(boolean isBeingDeleted) {
         this.isBeingDeleted = isBeingDeleted;
+    }
+
+    public String getJsonUri() {
+        return (null == jsonUri) ? "" : jsonUri;
+    }
+
+    public void setJsonUri(String jsonUri) {
+        this.jsonUri = jsonUri;
     }
 
 
