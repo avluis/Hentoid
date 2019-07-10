@@ -39,7 +39,7 @@ public class JsonHelper {
         return gson.toJson(o);
     }
 
-    public static <K> void saveJson(K object, File dir) throws IOException {
+    public static <K> File saveJson(K object, File dir) throws IOException {
         File file = new File(dir, Consts.JSON_FILE_NAME_V2);
         String json = serializeToJson(object);
         try (OutputStream output = FileHelper.getOutputStream(file)) {
@@ -54,8 +54,7 @@ public class JsonHelper {
                 Timber.w("JSON file creation failed for %s", file.getPath());
             }
         }
-        // finished
-        // Ignore
+        return file;
     }
 
     public static <K> void saveJson(K object, @Nonnull DocumentFile file) throws IOException {

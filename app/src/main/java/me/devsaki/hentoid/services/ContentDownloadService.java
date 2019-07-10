@@ -9,6 +9,8 @@ import android.graphics.Rect;
 import android.util.SparseIntArray;
 import android.webkit.MimeTypeMap;
 
+import androidx.documentfile.provider.DocumentFile;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
 import com.android.volley.NoConnectionError;
@@ -315,7 +317,15 @@ public class ContentDownloadService extends IntentService {
             File dir = FileHelper.createContentDownloadDir(this, content);
             if (dir.exists()) {
                 try {
-                    JsonHelper.saveJson(content.preJSONExport(), dir);
+                    File jsonFile = JsonHelper.saveJson(content.preJSONExport(), dir);
+                    // Cache its URI to the newly created content
+                    DocumentFile jsonDocFile = FileHelper.getDocumentFile(jsonFile, false);
+                    if (jsonDocFile != null) {
+                        content.setJsonUri(jsonDocFile.getUri().toString());
+                        db.insertContent(content);
+                    } else {
+                        Timber.w("JSON file could not be cached for %s", content.getTitle());
+                    }
                 } catch (IOException e) {
                     Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
                 }
