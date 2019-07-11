@@ -158,7 +158,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         VolumeGestureListener volumeGestureListener = new VolumeGestureListener()
                 .setOnVolumeDownListener(this::previousPage)
-                .setOnVolumeUpListener(this::nextPage);
+                .setOnVolumeUpListener(this::nextPage)
+                .setOnBackListener(this::onBackClick);
 
         recyclerView = requireViewById(rootView, R.id.image_viewer_recycler);
         recyclerView.setAdapter(adapter);
