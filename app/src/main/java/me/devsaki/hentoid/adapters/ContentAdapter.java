@@ -584,15 +584,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 db.insertContent(content);
 
                 // Persist in it JSON
-                DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
-                if (null == file)
-                    throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
-
-                try {
-                    JsonHelper.updateJson(content.preJSONExport(), file);
-                } catch (IOException e) {
-                    Timber.e(e, "Error while writing to %s", content.getJsonUri());
-                }
+                if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
+                else FileHelper.createJson(context, content);
             }
             return content;
         }

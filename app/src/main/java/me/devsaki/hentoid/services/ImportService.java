@@ -4,11 +4,10 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
+
 import androidx.annotation.CheckResult;
 import androidx.annotation.Nullable;
-import androidx.documentfile.provider.DocumentFile;
-
-import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -263,29 +262,16 @@ public class ImportService extends IntentService {
 
     @Nullable
     private static Content importJson(File folder) throws JSONParseException {
-        Content result = null;
         File json = new File(folder, Consts.JSON_FILE_NAME_V2); // (v2) JSON file format
-        if (json.exists()) result = importJsonV2(json);
+        if (json.exists()) return importJsonV2(json);
 
-        if (null == result) {
-            json = new File(folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
-            if (json.exists()) result = importJsonV1(json);
-        }
+        json = new File(folder, Consts.JSON_FILE_NAME); // (v1) JSON file format
+        if (json.exists()) return importJsonV1(json);
 
-        if (null == result) {
-            json = new File(folder, Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
-            if (json.exists()) result = importJsonLegacy(json);
-        }
+        json = new File(folder, Consts.JSON_FILE_NAME_OLD); // (old) JSON file format (legacy and/or FAKKUDroid App)
+        if (json.exists()) return importJsonLegacy(json);
 
-        if (result != null) {
-            DocumentFile jsonDocFile = FileHelper.getDocumentFile(json, false);
-            if (jsonDocFile != null)
-                result.setJsonUri(jsonDocFile.getUri().toString());
-            else
-                Timber.w("JSON file could not be cached for %s", result.getTitle());
-        }
-
-        return result;
+        return null;
     }
 
     @SuppressWarnings("deprecation")

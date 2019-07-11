@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -558,18 +559,15 @@ public class FileHelper {
         openHentoidViewer(context, content, searchParams);
     }
 
-    public static void updateContentReads(Context context, long contentId, File dir) {
+    public static void updateContentReads(@Nonnull Context context, long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
         if (content != null) {
             content.increaseReads().setLastReadDate(new Date().getTime());
             db.updateContentReads(content);
 
-            try {
-                JsonHelper.createJson(content.preJSONExport(), dir);
-            } catch (IOException e) {
-                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
-            }
+            if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
+            else FileHelper.createJson(context, content);
         }
     }
 
@@ -731,6 +729,27 @@ public class FileHelper {
             Timber.e(e);
         }
         return false;
+    }
+
+    public static void updateJson(@Nonnull Context context, @Nonnull Content content) {
+        DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
+        if (null == file)
+            throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
+
+        try {
+            JsonHelper.updateJson(content.preJSONExport(), file);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to %s", content.getJsonUri());
+        }
+    }
+
+    public static void createJson(@Nonnull Context context, @Nonnull Content content) {
+        File dir = FileHelper.getContentDownloadDir(content);
+        try {
+            JsonHelper.createJson(content.preJSONExport(), dir);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+        }
     }
 
     private static class AsyncUnzip extends ZipUtil.ZipTask {
