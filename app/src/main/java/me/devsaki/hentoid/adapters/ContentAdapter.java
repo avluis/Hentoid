@@ -2,17 +2,17 @@ package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AlertDialog;
-import androidx.recyclerview.widget.SortedList;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.SortedListAdapterCallback;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.SortedList;
+import androidx.recyclerview.widget.SortedListAdapterCallback;
 
 import com.annimon.stream.function.Consumer;
 import com.annimon.stream.function.IntConsumer;
@@ -20,9 +20,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.RequestManager;
 import com.bumptech.glide.request.RequestOptions;
 import com.crashlytics.android.Crashlytics;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -53,7 +53,6 @@ import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentNotRemovedException;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Helper;
-import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.LogUtil;
 import me.devsaki.hentoid.util.ToastUtil;
 import timber.log.Timber;
@@ -581,12 +580,8 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
                 db.insertContent(content);
 
                 // Persist in it JSON
-                File dir = FileHelper.getContentDownloadDir(content);
-                try {
-                    JsonHelper.saveJson(content.preJSONExport(), dir);
-                } catch (IOException e) {
-                    Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
-                }
+                if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
+                else FileHelper.createJson(content);
             }
             return content;
         }

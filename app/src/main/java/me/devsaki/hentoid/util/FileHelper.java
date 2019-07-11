@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.WorkerThread;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
+import androidx.documentfile.provider.DocumentFile;
 
 import org.apache.commons.io.FileUtils;
 
@@ -23,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -224,6 +226,10 @@ public class FileHelper {
         return FileUtil.getOutputStream(target);
     }
 
+    static OutputStream getOutputStream(@NonNull final DocumentFile target) throws IOException {
+        return FileUtil.getOutputStream(target);
+    }
+
     static InputStream getInputStream(@NonNull final File target) throws IOException {
         return FileUtil.getInputStream(target);
     }
@@ -270,7 +276,7 @@ public class FileHelper {
      *
      * @param directory directory to clean
      * @return true if directory has been successfully cleaned
-     * @throws IOException              in case cleaning is unsuccessful
+     * @throws IOException in case cleaning is unsuccessful
      */
     private static boolean tryCleanDirectory(@NonNull File directory) throws IOException {
         File[] files = directory.listFiles();
@@ -433,16 +439,16 @@ public class FileHelper {
     public static File getDefaultDir(Context context, String dir) {
         File file;
         try {
-            file = new File(getExternalStorageDirectory() + "/"
-                    + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+            file = new File(getExternalStorageDirectory() + File.separator
+                    + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
         } catch (Exception e) {
             file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY);
+            file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY);
         }
 
         if (!file.exists() && !FileUtil.makeDir(file)) {
             file = context.getDir("", Context.MODE_PRIVATE);
-            file = new File(file, "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/" + dir);
+            file = new File(file, File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator + dir);
             if (!file.exists()) {
                 FileUtil.makeDir(file);
             }
@@ -451,7 +457,7 @@ public class FileHelper {
         return file;
     }
 
-    public static File getSiteDownloadDir(Context context, Site site) {
+    public static File getOrCreateSiteDownloadDir(Context context, Site site) {
         File file;
         String settingDir = Preferences.getRootFolderName();
         String folderDir = site.getFolder();
@@ -553,18 +559,15 @@ public class FileHelper {
         openHentoidViewer(context, content, searchParams);
     }
 
-    public static void updateContentReads(Context context, long contentId, File dir) {
+    public static void updateContentReads(@Nonnull Context context, long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
         if (content != null) {
             content.increaseReads().setLastReadDate(new Date().getTime());
             db.updateContentReads(content);
 
-            try {
-                JsonHelper.saveJson(content.preJSONExport(), dir);
-            } catch (IOException e) {
-                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
-            }
+            if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
+            else FileHelper.createJson(content);
         }
     }
 
@@ -575,11 +578,9 @@ public class FileHelper {
      * @param aFile   File to be opened
      */
     public static void openFile(Context context, File aFile) {
-        Intent myIntent = new Intent(Intent.ACTION_VIEW);
         File file = new File(aFile.getAbsolutePath());
-        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
-        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
-        myIntent.setDataAndType(Uri.fromFile(file), mimeType);
+        Intent myIntent = new Intent(Intent.ACTION_VIEW, FileProvider.getUriForFile(context, AUTHORITY, file));
+        myIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         try {
             context.startActivity(myIntent);
         } catch (ActivityNotFoundException e) {
@@ -728,6 +729,27 @@ public class FileHelper {
         return false;
     }
 
+    public static void updateJson(@Nonnull Context context, @Nonnull Content content) {
+        DocumentFile file = DocumentFile.fromSingleUri(context, Uri.parse(content.getJsonUri()));
+        if (null == file)
+            throw new InvalidParameterException("'" + content.getJsonUri() + "' does not refer to a valid file");
+
+        try {
+            JsonHelper.updateJson(content.preJSONExport(), file);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to %s", content.getJsonUri());
+        }
+    }
+
+    public static void createJson(@Nonnull Content content) {
+        File dir = FileHelper.getContentDownloadDir(content);
+        try {
+            JsonHelper.createJson(content.preJSONExport(), dir);
+        } catch (IOException e) {
+            Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
+        }
+    }
+
     private static class AsyncUnzip extends ZipUtil.ZipTask {
         final Context context; // TODO - omg leak !
         final File dest;
@@ -744,7 +766,8 @@ public class FileHelper {
             // Hentoid is FileProvider ready!!
             sendIntent.putExtra(Intent.EXTRA_STREAM,
                     FileProvider.getUriForFile(context, AUTHORITY, dest));
-            sendIntent.setType(MimeTypes.getMimeType(dest));
+            String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(FileHelper.getExtension(dest.getName()));
+            sendIntent.setType(mimeType);
 
             context.startActivity(sendIntent);
         }
@@ -760,4 +783,8 @@ public class FileHelper {
         }
     }
 
+    @Nullable
+    public static DocumentFile getDocumentFile(@Nonnull final File file, final boolean isDirectory) {
+        return FileUtil.getDocumentFile(file, isDirectory);
+    }
 }

@@ -27,7 +27,7 @@
     },
     {
       "id": "2:5880334030341287801",
-      "lastPropertyId": "18:9117635469382092615",
+      "lastPropertyId": "19:326862264253525250",
       "name": "Content",
       "properties": [
         {
@@ -101,6 +101,10 @@
         {
           "id": "18:9117635469382092615",
           "name": "isBeingDeleted"
+        },
+        {
+          "id": "19:326862264253525250",
+          "name": "jsonUri"
         }
       ],
       "relations": [

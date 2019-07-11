@@ -43,7 +43,7 @@ public class DatabaseMaintenance {
         List<Content> queueContents = db.selectQueueContents();
         contents.removeAll(queueContents);
         if (contents.size() > 0) {
-            int queueMaxPos = (int)db.selectMaxQueueOrder();
+            int queueMaxPos = (int) db.selectMaxQueueOrder();
             for (Content c : contents) db.insertQueue(c.getId(), ++queueMaxPos);
         }
         Timber.i("Moving back isolated items to queue : done");
@@ -59,13 +59,12 @@ public class DatabaseMaintenance {
         Timber.i("Upgrading Pururin image hosts : start");
         contents = db.selectContentWithOldPururinHost();
         Timber.i("Upgrading Pururin image hosts : %s books detected", contents.size());
-        for (Content c : contents)
-        {
-            c.setCoverImageUrl(c.getCoverImageUrl().replace("api.pururin.io/images/","cdn.pururin.io/assets/images/data/"));
-            for (ImageFile i : c.getImageFiles())
-            {
-                db.updateImageFileUrl( i.setUrl(i.getUrl().replace("api.pururin.io/images/","cdn.pururin.io/assets/images/data/")) );
-            }
+        for (Content c : contents) {
+            c.setCoverImageUrl(c.getCoverImageUrl().replace("api.pururin.io/images/", "cdn.pururin.io/assets/images/data/"));
+            if (c.getImageFiles() != null)
+                for (ImageFile i : c.getImageFiles()) {
+                    db.updateImageFileUrl(i.setUrl(i.getUrl().replace("api.pururin.io/images/", "cdn.pururin.io/assets/images/data/")));
+                }
             db.insertContent(c);
         }
         Timber.i("Upgrading Pururin image hosts : done");
