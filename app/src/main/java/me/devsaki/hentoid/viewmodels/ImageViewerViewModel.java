@@ -18,7 +18,6 @@ import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,7 +38,6 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.listener.ContentListener;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
@@ -200,6 +198,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
      * @param imageId ID of the image whose flag to toggle
      * @return ImageFile with the new state
      */
+    @WorkerThread
     private static ImageFile togglePageFavourite(Context context, long imageId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
@@ -311,24 +310,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
             File bookFolder = FileHelper.getContentDownloadDir(content);
 
             DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
-            if (null == file)
-                file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME), false);
-            if (null == file)
-                file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_OLD), false);
-
             if (file != null) {
-                String fileName = file.getName();
-                // Upgrade content and name of the JSON file to the latest
-                if (fileName != null && !fileName.equals(Consts.JSON_FILE_NAME_V2)) {
-                    try {
-                        if (!file.renameTo(Consts.JSON_FILE_NAME_V2))
-                            Timber.w("File %s could not be upgraded", fileName);
-                        else JsonHelper.updateJson(content, file);
-                    } catch (IOException e) {
-                        Timber.e(e, "An I/O error has occured while upgrading %s", fileName);
-                    }
-                }
-
                 // Cache the URI of the JSON to the database
                 ObjectBoxDB db = ObjectBoxDB.getInstance(context);
                 content.setJsonUri(file.getUri().toString());
