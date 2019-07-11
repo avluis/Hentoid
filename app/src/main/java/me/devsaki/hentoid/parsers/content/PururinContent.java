@@ -4,6 +4,8 @@ import org.jsoup.nodes.Element;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -41,13 +43,14 @@ public class PururinContent implements ContentParser {
         return galleryUrl.startsWith("https") ? "https" : "http";
     }
 
-    public Content toContent() {
+    public Content toContent(@Nonnull String url) {
         Content result = new Content();
 
         result.setSite(Site.PURURIN);
-        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
+        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(galleryUrl.replace(getProtocol() + "://pururin.io/gallery", ""));
+        result.setUrl(theUrl.replace(getProtocol() + "://pururin.io/gallery", ""));
         result.setCoverImageUrl(getProtocol() + ":" + coverUrl);
         result.setTitle(title.size() > 0 ? title.get(0) : "");
         int qtyPages = 0;

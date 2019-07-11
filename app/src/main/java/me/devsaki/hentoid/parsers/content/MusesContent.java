@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -31,7 +32,7 @@ public class MusesContent implements ContentParser {
     private List<String> thumbLinks;
 
     @Nullable
-    public Content toContent() {
+    public Content toContent(@Nonnull String url) {
         // Gallery pages are the only ones whose gallery links end with numbers
         // The others are album lists
         for (int i = 0; i < thumbLinks.size(); i++) {
@@ -41,9 +42,10 @@ public class MusesContent implements ContentParser {
         Content result = new Content();
 
         result.setSite(Site.MUSES);
-        if (galleryUrl.isEmpty() || 0 == thumbs.size()) return result.setStatus(StatusContent.IGNORED);
+        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
+        if (theUrl.isEmpty() || 0 == thumbs.size()) return result.setStatus(StatusContent.IGNORED);
         
-        result.setUrl(galleryUrl.replace(Site.MUSES.getUrl(), ""));
+        result.setUrl(theUrl.replace(Site.MUSES.getUrl(), ""));
         result.setCoverImageUrl(Site.MUSES.getUrl() + thumbs.get(0));
         if (title.contains("|"))
             result.setTitle(title.substring(0, title.lastIndexOf("|") - 1));

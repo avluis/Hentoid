@@ -1,5 +1,6 @@
 package me.devsaki.hentoid.parsers.content;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -13,7 +14,7 @@ public class DummyContent implements ContentParser {
     private String title;
 
     @Nullable
-    public Content toContent() {
+    public Content toContent(@Nonnull String url) {
         Content result = new Content();
 
         result.setSite(Site.NONE).setStatus(StatusContent.IGNORED);

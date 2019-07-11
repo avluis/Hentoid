@@ -4,6 +4,8 @@ import org.jsoup.nodes.Element;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -25,13 +27,14 @@ public class HentaiCafeContent implements ContentParser {
     private List<Element> tags;
 
 
-    public Content toContent() {
+    public Content toContent(@Nonnull String url) {
         Content result = new Content();
 
         result.setSite(Site.HENTAICAFE);
-        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
+        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(galleryUrl.replace("post-", "/?p="));
+        result.setUrl(theUrl.replace("post-", "/?p="));
 
         String coverUrl = coverImg.attr("src");
         if (coverUrl.isEmpty()) coverUrl = coverImg.attr("data-cfsrc"); // Cloudflare-served image

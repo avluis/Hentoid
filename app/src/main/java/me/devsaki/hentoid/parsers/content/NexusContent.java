@@ -5,6 +5,7 @@ import org.jsoup.nodes.Element;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -37,13 +38,14 @@ public class NexusContent implements ContentParser {
     private List<Element> thumbs;
 
     @Nullable
-    public Content toContent() {
+    public Content toContent(@Nonnull String url) {
         Content result = new Content();
 
         result.setSite(Site.NEXUS);
-        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
+        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(galleryUrl.replace(Site.NEXUS.getUrl() + "/view", ""));
+        result.setUrl(theUrl.replace(Site.NEXUS.getUrl() + "/view", ""));
         result.setCoverImageUrl(coverUrl);
         result.setTitle(title);
 

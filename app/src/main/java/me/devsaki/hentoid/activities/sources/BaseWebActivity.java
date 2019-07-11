@@ -621,7 +621,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 List<InputStream> is = Helper.duplicateInputStream(response.body().byteStream(), 2);
 
                 compositeDisposable.add(
-                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is.get(0), new URL(urlStr)).toContent())
+                        Single.fromCallable(() -> htmlAdapter.fromInputStream(is.get(0), new URL(urlStr)).toContent(urlStr))
                                 .subscribeOn(Schedulers.computation())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(

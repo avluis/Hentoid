@@ -4,6 +4,8 @@ import org.jsoup.nodes.Element;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -13,11 +15,11 @@ import me.devsaki.hentoid.util.AttributeMap;
 import pl.droidsonroids.jspoon.annotation.Selector;
 
 public class ASMHentaiContent implements ContentParser {
-    @Selector(value = "head [rel=canonical]", attr="href", defValue = "")
+    @Selector(value = "head [rel=canonical]", attr = "href", defValue = "")
     private String pageUrl;
-    @Selector(value = "div.cover a", attr="href", defValue = "")
+    @Selector(value = "div.cover a", attr = "href", defValue = "")
     private String galleryUrl;
-    @Selector(value = "div.cover a img", attr="src")
+    @Selector(value = "div.cover a img", attr = "src")
     private String coverUrl;
     @Selector("div.info h1:first-child")
     private String title;
@@ -35,21 +37,21 @@ public class ASMHentaiContent implements ContentParser {
     private List<Element> languages;
 
 
-    private String getProtocol()
-    {
+    private String getProtocol() {
         return pageUrl.startsWith("https") ? "https" : "http";
     }
 
-    public Content toContent()
-    {
+    public Content toContent(@Nonnull String url) {
         Content result = new Content();
-        if (pageUrl.isEmpty()) return result.setSite(Site.ASMHENTAI).setStatus(StatusContent.IGNORED);
+        String theUrl = pageUrl.isEmpty() ? url : pageUrl;
+        if (theUrl.isEmpty())
+            return result.setSite(Site.ASMHENTAI).setStatus(StatusContent.IGNORED);
 
-        result.setSite(pageUrl.toLowerCase().contains("comics") ? Site.ASMHENTAI_COMICS : Site.ASMHENTAI);
+        result.setSite(theUrl.toLowerCase().contains("comics") ? Site.ASMHENTAI_COMICS : Site.ASMHENTAI);
         if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
         result.setUrl(galleryUrl.substring(0, galleryUrl.length() - 2).replace("/gallery", ""));
-        result.setCoverImageUrl(getProtocol() + "://"+ coverUrl);
+        result.setCoverImageUrl(getProtocol() + "://" + coverUrl);
         result.setTitle(title);
         result.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
 

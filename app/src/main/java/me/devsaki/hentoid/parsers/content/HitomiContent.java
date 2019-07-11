@@ -4,6 +4,8 @@ import org.jsoup.nodes.Element;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
@@ -37,13 +39,14 @@ public class HitomiContent implements ContentParser {
     private List<Element> categories;
 
 
-    public Content toContent()
-    {
+    public Content toContent(@Nonnull String url) {
         Content result = new Content();
-        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+
+        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
+        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
         result.setSite(Site.HITOMI);
-        result.setUrl(galleryUrl.replace("/reader", ""));
+        result.setUrl(theUrl.replace("/reader", ""));
         result.setCoverImageUrl("https:"+ coverUrl);
         result.setTitle(title);
         result.setQtyPages(pages.size());
