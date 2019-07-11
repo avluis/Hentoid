@@ -722,6 +722,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
      */
     private void displayGallery(boolean filterFavourites) {
         hasGalleryBeenShown = true;
+        viewModel.setStartingIndex(imageIndex); // Memorize the current page
         requireFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
