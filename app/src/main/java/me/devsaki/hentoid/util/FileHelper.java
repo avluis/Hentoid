@@ -567,7 +567,7 @@ public class FileHelper {
             db.updateContentReads(content);
 
             if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
-            else FileHelper.createJson(context, content);
+            else FileHelper.createJson(content);
         }
     }
 
@@ -741,7 +741,7 @@ public class FileHelper {
         }
     }
 
-    public static void createJson(@Nonnull Context context, @Nonnull Content content) {
+    public static void createJson(@Nonnull Content content) {
         File dir = FileHelper.getContentDownloadDir(content);
         try {
             JsonHelper.createJson(content.preJSONExport(), dir);

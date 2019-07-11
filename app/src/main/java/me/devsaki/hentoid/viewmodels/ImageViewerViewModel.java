@@ -213,7 +213,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
             // Persist in it JSON
             Content content = img.content.getTarget();
             if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
-            else FileHelper.createJson(context, content);
+            else FileHelper.createJson(content);
 
             return img;
         } else

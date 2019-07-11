@@ -585,7 +585,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
                 // Persist in it JSON
                 if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
-                else FileHelper.createJson(context, content);
+                else FileHelper.createJson(content);
             }
             return content;
         }
