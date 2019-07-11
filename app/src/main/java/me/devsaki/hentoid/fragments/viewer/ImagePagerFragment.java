@@ -150,6 +150,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             BrowseModeDialogFragment.invoke(this);
         updatePageDisplay();
+        updateFavouriteDisplay();
     }
 
     private void initPager(View rootView) {
