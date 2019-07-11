@@ -61,7 +61,7 @@ public class JsonHelper {
      * @param <K> Type of the object to save
      * @throws IOException If anything happens during file I/O
      */
-    public static <K> void updateJson(K object, @Nonnull DocumentFile file) throws IOException {
+    static <K> void updateJson(K object, @Nonnull DocumentFile file) throws IOException {
         try (OutputStream output = FileHelper.getOutputStream(file)) {
             if (output != null) {
                 String json = serializeToJson(object);
