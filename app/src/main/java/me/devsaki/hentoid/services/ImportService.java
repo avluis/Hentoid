@@ -199,6 +199,7 @@ public class ImportService extends IntentService {
                             }
                         }
                     }
+                    // TODO : Populate images when data is loaded from old JSONs (DoujinBuilder object)
                     ObjectBoxDB.getInstance(this).insertContent(content);
                     trace(Log.INFO, log, "Import book OK : %s", folder.getAbsolutePath());
                 } else { // JSON not found
