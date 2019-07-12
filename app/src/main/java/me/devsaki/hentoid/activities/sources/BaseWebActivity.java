@@ -235,9 +235,9 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 }
             }
         });
-        webView.setOnScrollChangedCallback((l, t) -> {
+        webView.setOnScrollChangedCallback((deltaX, deltaY) -> {
             if (!webClient.isLoading()) {
-                if (webView.canScrollVertically(1) || t == 0) {
+                if (deltaY <= 0) {
                     fabRefreshOrStop.show();
                     fabHome.show();
                     if (fabActionEnabled) fabAction.show();

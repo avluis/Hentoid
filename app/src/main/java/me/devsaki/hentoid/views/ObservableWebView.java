@@ -26,7 +26,9 @@ public class ObservableWebView extends WebView {
     @Override
     protected void onScrollChanged(final int l, final int t, final int oldl, final int oldt) {
         super.onScrollChanged(l, t, oldl, oldt);
-        if (mOnScrollChangedCallback != null) mOnScrollChangedCallback.onScroll(l, t);
+        int deltaX = l-oldl;
+        int deltaY = t-oldt;
+        if (mOnScrollChangedCallback != null) mOnScrollChangedCallback.onScroll(deltaX, deltaY);
     }
 
     public OnScrollChangedCallback getOnScrollChangedCallback() {
@@ -41,6 +43,6 @@ public class ObservableWebView extends WebView {
      * Implement in the activity/fragment/view that you want to listen to the WebView
      */
     public interface OnScrollChangedCallback {
-        void onScroll(int l, int t);
+        void onScroll(int deltaX, int deltaY);
     }
 }
