@@ -8,11 +8,6 @@ import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.DrawableRes;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.View;
@@ -25,6 +20,13 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -234,7 +236,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             }
         });
         webView.setOnScrollChangedCallback((l, t) -> {
-            if (!webClient.isWebViewLoading()) {
+            if (!webClient.isLoading()) {
                 if (webView.canScrollVertically(1) || t == 0) {
                     fabRefreshOrStop.show();
                     fabHome.show();
@@ -277,7 +279,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     private void initSwipeLayout() {
         swipeLayout = findViewById(R.id.swipe_container);
         swipeLayout.setOnRefreshListener(() -> {
-            if (!swipeLayout.isRefreshing() || !webClient.isWebViewLoading()) {
+            if (!swipeLayout.isRefreshing() || !webClient.isLoading()) {
                 webView.reload();
             }
         });
@@ -289,7 +291,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
     public void onRefreshStopFabClick(View view) {
-        if (webClient.isWebViewLoading()) {
+        if (webClient.isLoading()) {
             webView.stopLoading();
         } else {
             webView.reload();
@@ -467,6 +469,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         currentContent = content;
     }
 
+    private void hideActionFab() {
+        fabAction.hide();
+        fabActionEnabled = false;
+    }
+
     public void onResultReady(Content results, long totalContent) {
         processContent(results);
     }
@@ -494,6 +501,10 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     }
 
 
+    /**
+     * Analyze loaded HTML to display download button
+     * Override blocked content with empty content
+     */
     class CustomWebViewClient extends WebViewClient {
 
         private final Jspoon jspoon = Jspoon.create();
@@ -504,10 +515,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         private final HtmlAdapter<ContentParser> htmlAdapter;
 
         private String restrictedDomainName = "";
-
-        // Resource loading tracking
-        private Map<String, Integer> loadedUrls = new HashMap<>();
-        private int loadIndex = 0;
+        private boolean isPageLoading = false;
+        private boolean isHtmlLoaded = false;
 
 
         @SuppressWarnings("unchecked")
@@ -552,23 +561,16 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         @Override
         public void onPageStarted(WebView view, String url, Bitmap favicon) {
-            loadedUrls.put(url, loadIndex++);
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_clear);
             fabRefreshOrStop.show();
             fabHome.show();
-
-            fabAction.hide();
-            fabActionEnabled = false;
+            isPageLoading = true;
+            if (!isHtmlLoaded) hideActionFab();
         }
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            // Below line is not really accurate because of redirects
-            // e.g. you can call onPageStarted with URL "x", that is redirected to URL "x/home"
-            // => onPageFinished is called with "x/home"
-            loadedUrls.remove(url);
-            loadIndex--;
-            if (0 == loadIndex) loadedUrls.clear(); // Failsafe
+            isPageLoading = false;
             setFabIcon(fabRefreshOrStop, R.drawable.ic_action_refresh);
         }
 
@@ -578,11 +580,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                // Don't parse anything else than the main page
-                // NB : works because onPageStarted is called _after_ shouldInterceptRequest
-                if (isPageFiltered(url) && isMainPageNotLoaded()) {
-                    return parseResponse(url, null);
-                } else return super.shouldInterceptRequest(view, url);
+                if (!isPageLoading) {
+                    isHtmlLoaded = false;
+                    if (isPageFiltered(url)) return parseResponse(url, null);
+                }
+                return super.shouldInterceptRequest(view, url);
             }
         }
 
@@ -594,11 +596,11 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             if (isUrlForbidden(url)) {
                 return new WebResourceResponse("text/plain", "utf-8", nothing);
             } else {
-                // Don't parse anything else than the main page
-                // NB : works because onPageStarted is called _after_ shouldInterceptRequest
-                if (isPageFiltered(url) && isMainPageNotLoaded())
-                    return parseResponse(url, request.getRequestHeaders());
-                else return super.shouldInterceptRequest(view, request);
+                if (!isPageLoading) {
+                    isHtmlLoaded = false;
+                    if (isPageFiltered(url)) return parseResponse(url, request.getRequestHeaders());
+                }
+                return super.shouldInterceptRequest(view, request);
             }
         }
 
@@ -628,6 +630,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                                         result -> processContent(result, headersList),
                                         throwable -> {
                                             Timber.e(throwable, "Error parsing content.");
+                                            isHtmlLoaded = true;
                                             listener.onResultFailed("");
                                         })
                 );
@@ -642,7 +645,8 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         private void processContent(@Nonnull Content content, @Nonnull List<Pair<String, String>> headersList) {
-            if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED)) return;
+            if (content.getStatus() != null && content.getStatus().equals(StatusContent.IGNORED))
+                return;
 
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
@@ -650,29 +654,22 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                 if (p.first.equals("cookie")) params.put("cookie", p.second);
 
             content.setDownloadParams(JsonHelper.serializeToJson(params));
+            isHtmlLoaded = true;
             listener.onResultReady(content, 1);
         }
 
         /**
-         * Indicated whether the current main webpage is still loading or not
-         * <p>
-         * NB : "main webpage" refers to the 1st page ever loaded when querying the currently opened URL
-         * The difference with onPageFinished/started is that it doesn't take iframes/framesets into account
+         * Indicated whether the current webpage is still loading or not
          *
-         * @return True if current main webpage is being loaded; false if not
+         * @return True if current webpage is being loaded; false if not
          */
-        private boolean isMainPageNotLoaded() {
-            return !loadedUrls.containsValue(0); // Index 0 is the main webpage
-        }
-
-        boolean isWebViewLoading() {
-            return loadIndex > 0;
+        public boolean isLoading() {
+            return isPageLoading;
         }
     }
 
     // Workaround for https://issuetracker.google.com/issues/111316656
-    private void setFabIcon(@Nonnull FloatingActionButton btn, @DrawableRes int resId)
-    {
+    private void setFabIcon(@Nonnull FloatingActionButton btn, @DrawableRes int resId) {
         btn.setImageResource(resId);
         btn.setImageMatrix(new Matrix());
     }
