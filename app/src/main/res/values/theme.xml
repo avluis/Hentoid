@@ -9,8 +9,8 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/light_gray</item>
-        <item name="colorSurface">@color/surface</item>
-        <item name="colorOnSurface">@color/black</item>
+        <item name="colorSurface">@color/primary</item>
+        <item name="colorOnSurface">@color/white</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
 <!--
@@ -79,7 +79,7 @@
         <item name="alertDialogTheme">@style/PrefsThemeDialog</item>
     </style>
 
-    <style name="PrefsThemeDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+    <style name="PrefsThemeDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="android:windowBackground">@color/window_background</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
@@ -130,7 +130,7 @@
         <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
-    <style name="DownloadsDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+    <style name="DownloadsDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
@@ -141,17 +141,9 @@
         <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
-    <!-- Toolbar -->
-    <style name="AppTheme.Toolbar" parent="AppTheme">
-        <item name="titleTextColor">@color/white</item>
-        <item name="actionMenuTextColor">@color/white</item>
-        <item name="android:textColorPrimary">@color/light_gray</item>
-        <item name="android:textColorSecondary">@color/light_gray</item>
-    </style>
-
     <!-- Search Activity -->
     <!--
-    <style name="AppTheme.Search" parent="Theme.MaterialComponents.Light.NoActionBar">
+    <style name="AppTheme.Search" parent="Theme.MaterialComponents.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
@@ -169,7 +161,7 @@
     </style>
 
     <!-- PIN screens -->
-    <style name="PinEntryDialogTheme" parent="Theme.MaterialComponents.Light.Dialog">
+    <style name="PinEntryDialogTheme" parent="Theme.MaterialComponents.Dialog">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
@@ -178,7 +170,7 @@
     </style>
 
     <!-- Image viewer -->
-    <style name="ViewerBrowseModeDialog" parent="Theme.MaterialComponents.Light.Dialog.Alert">
+    <style name="ViewerBrowseModeDialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>

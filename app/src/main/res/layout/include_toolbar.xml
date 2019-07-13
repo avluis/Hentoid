@@ -5,5 +5,4 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:elevation="@dimen/toolbar_layout_elevation"
-    android:minHeight="?android:attr/actionBarSize"
-    android:theme="@style/AppTheme.Toolbar" />
+    android:minHeight="?android:attr/actionBarSize" />
