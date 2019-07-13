@@ -37,10 +37,6 @@ public class ASMHentaiContent implements ContentParser {
     private List<Element> languages;
 
 
-    private String getProtocol() {
-        return pageUrl.startsWith("https") ? "https" : "http";
-    }
-
     public Content toContent(@Nonnull String url) {
         Content result = new Content();
         String theUrl = pageUrl.isEmpty() ? url : pageUrl;
@@ -51,7 +47,7 @@ public class ASMHentaiContent implements ContentParser {
         if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
         result.setUrl(galleryUrl.substring(0, galleryUrl.length() - 2).replace("/gallery", ""));
-        result.setCoverImageUrl(getProtocol() + ":" + coverUrl);
+        result.setCoverImageUrl("https:" + coverUrl);
 
         result.setTitle(title);
         result.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
