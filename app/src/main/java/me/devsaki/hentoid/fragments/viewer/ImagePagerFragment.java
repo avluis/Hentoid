@@ -27,7 +27,7 @@ import com.bumptech.glide.request.RequestOptions;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.adapters.ImageRecyclerAdapter;
+import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Preferences;
@@ -50,7 +50,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private final static String KEY_HUD_VISIBLE = "hud_visible";
     private final static String KEY_GALLERY_SHOWN = "gallery_shown";
 
-    private ImageRecyclerAdapter adapter;
+    private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
 
@@ -154,7 +154,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     }
 
     private void initPager(View rootView) {
-        adapter = new ImageRecyclerAdapter();
+        adapter = new ImagePagerAdapter();
 
         VolumeGestureListener volumeGestureListener = new VolumeGestureListener()
                 .setOnVolumeDownListener(this::previousPage)
