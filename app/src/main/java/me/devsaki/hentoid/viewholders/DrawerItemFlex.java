@@ -36,6 +36,11 @@ public class DrawerItemFlex extends AbstractFlexibleItem<DrawerItemFlex.DrawerIt
     }
 
     @Override
+    public int hashCode() {
+        return item.hashCode();
+    }
+
+    @Override
     public int getLayoutRes() {
         return R.layout.item_drawer;
     }

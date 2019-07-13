@@ -1,20 +1,23 @@
 package me.devsaki.hentoid.viewmodels;
 
 import android.app.Application;
+import android.content.Context;
+import android.os.Build;
+import android.os.Bundle;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.WorkerThread;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import android.content.Context;
-import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
 import com.annimon.stream.Stream;
 import com.annimon.stream.function.BooleanConsumer;
 import com.annimon.stream.function.Consumer;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,13 +36,14 @@ import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
-import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.widget.ContentSearchManager;
 import timber.log.Timber;
 
+import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.annimon.stream.Collectors.toList;
 
 
@@ -48,7 +52,9 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
 
     // Settings
-    /** True if images have to be shuffled; false if presented in the book order */
+    /**
+     * True if images have to be shuffled; false if presented in the book order
+     */
     private boolean isShuffled;
     private BooleanConsumer onShuffledChangeListener;
 
@@ -192,6 +198,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
      * @param imageId ID of the image whose flag to toggle
      * @return ImageFile with the new state
      */
+    @WorkerThread
     private static ImageFile togglePageFavourite(Context context, long imageId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
@@ -205,12 +212,9 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
 
             // Persist in it JSON
             Content content = img.content.getTarget();
-            File dir = FileHelper.getContentDownloadDir(content);
-            try {
-                JsonHelper.saveJson(content.preJSONExport(), dir);
-            } catch (IOException e) {
-                Timber.e(e, "Error while writing to %s", dir.getAbsolutePath());
-            }
+            if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
+            else FileHelper.createJson(content);
+
             return img;
         } else
             throw new InvalidParameterException(String.format("Invalid image ID %s", imageId));
@@ -256,9 +260,9 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
                 setStartingIndex(0);
             }
 
-            // Record 1 more view for the new content
+            // Cache JSON and record 1 more view for the new content
             compositeDisposable.add(
-                    Completable.fromRunnable(() -> FileHelper.updateContentReads(getApplication().getApplicationContext(), theContent.getId(), pictures[0].getParentFile()))
+                    Completable.fromRunnable(() -> postLoadProcessing(getApplication().getApplicationContext(), theContent))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe()
@@ -290,5 +294,30 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     @Override
     public void onContentFailed(Content content, String message) {
         ToastUtil.toast("Book list loading failed");
+    }
+
+    @WorkerThread
+    private static void postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
+        cacheAndUpgradeJson(context, content);
+        FileHelper.updateContentReads(context, content.getId());
+    }
+
+    // Cache JSON URI in the database to speed up favouriting
+    // NB : Lollipop only because it must have _full_ support for SAF
+    @WorkerThread
+    private static void cacheAndUpgradeJson(@Nonnull Context context, @Nonnull Content content) {
+        if (content.getJsonUri().isEmpty() && Build.VERSION.SDK_INT >= LOLLIPOP) {
+            File bookFolder = FileHelper.getContentDownloadDir(content);
+
+            DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
+            if (file != null) {
+                // Cache the URI of the JSON to the database
+                ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+                content.setJsonUri(file.getUri().toString());
+                db.insertContent(content);
+            } else {
+                Timber.e("File not detected : %s", content.getStorageFolder());
+            }
+        }
     }
 }

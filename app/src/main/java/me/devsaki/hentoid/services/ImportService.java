@@ -4,9 +4,10 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.util.Log;
+
 import androidx.annotation.CheckResult;
 import androidx.annotation.Nullable;
-import android.util.Log;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -198,6 +199,7 @@ public class ImportService extends IntentService {
                             }
                         }
                     }
+                    // TODO : Populate images when data is loaded from old JSONs (DoujinBuilder object)
                     ObjectBoxDB.getInstance(this).insertContent(content);
                     trace(Log.INFO, log, "Import book OK : %s", folder.getAbsolutePath());
                 } else { // JSON not found
@@ -351,7 +353,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
 
-            JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
+            JsonHelper.createJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
 
             return contentV2;
         } catch (Exception e) {
@@ -374,7 +376,7 @@ public class ImportService extends IntentService {
             String fileRoot = Preferences.getRootFolderName();
             contentV2.setStorageFolder(json.getAbsoluteFile().getParent().substring(fileRoot.length()));
 
-            JsonHelper.saveJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
+            JsonHelper.createJson(contentV2.preJSONExport(), json.getAbsoluteFile().getParentFile());
 
             return contentV2;
         } catch (Exception e) {

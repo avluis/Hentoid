@@ -26,7 +26,7 @@ import me.devsaki.hentoid.util.Preferences;
 import timber.log.Timber;
 
 
-public final class ImageRecyclerAdapter extends RecyclerView.Adapter<ImageRecyclerAdapter.ImageViewHolder> {
+public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdapter.ImageViewHolder> {
 
     private static final int TYPE_OTHER = 0;
     private static final int TYPE_GIF = 1;

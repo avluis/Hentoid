@@ -43,6 +43,11 @@ public class GitHubReleaseDescription extends AbstractFlexibleItem<GitHubRelease
     }
 
     @Override
+    public int hashCode() {
+        return text.hashCode();
+    }
+
+    @Override
     public int getLayoutRes() {
         return R.layout.item_text;
     }

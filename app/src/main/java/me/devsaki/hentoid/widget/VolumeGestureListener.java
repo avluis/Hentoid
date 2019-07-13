@@ -9,6 +9,8 @@ public final class VolumeGestureListener implements View.OnKeyListener {
 
     private Runnable onVolumeUpListener;
 
+    private Runnable onBackListener;
+
     private int cooldown = 1000;
 
     private int turboCooldown = 500;
@@ -24,6 +26,11 @@ public final class VolumeGestureListener implements View.OnKeyListener {
 
     public VolumeGestureListener setOnVolumeUpListener(Runnable onVolumeUpListener) {
         this.onVolumeUpListener = onVolumeUpListener;
+        return this;
+    }
+
+    public VolumeGestureListener setOnBackListener(Runnable onBackListener) {
+        this.onBackListener = onBackListener;
         return this;
     }
 
@@ -51,6 +58,8 @@ public final class VolumeGestureListener implements View.OnKeyListener {
             listener = onVolumeDownListener;
         } else if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
             listener = onVolumeUpListener;
+        } else if (keyCode == KeyEvent.KEYCODE_BACK) {
+            listener = onBackListener;
         } else {
             return false;
         }

@@ -7,6 +7,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.util.SparseIntArray;
+import android.webkit.MimeTypeMap;
+
+import androidx.documentfile.provider.DocumentFile;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkError;
@@ -51,11 +54,10 @@ import me.devsaki.hentoid.notification.download.DownloadErrorNotification;
 import me.devsaki.hentoid.notification.download.DownloadProgressNotification;
 import me.devsaki.hentoid.notification.download.DownloadSuccessNotification;
 import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
-import me.devsaki.hentoid.parsers.ImageListParser;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
+import me.devsaki.hentoid.parsers.ImageListParser;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
-import me.devsaki.hentoid.util.MimeTypes;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.NotificationManager;
 import timber.log.Timber;
@@ -192,7 +194,7 @@ public class ContentDownloadService extends IntentService {
             // Log everywhere
             String message = String.format("Directory could not be created: %s.", absolutePath);
             Timber.w(message);
-            logErrorRecord(content.getId(),ErrorType.IO, content.getUrl(), "Destination folder", message);
+            logErrorRecord(content.getId(), ErrorType.IO, content.getUrl(), "Destination folder", message);
             warningNotificationManager.notify(new DownloadWarningNotification(title, absolutePath));
 
             // No sense in waiting for every image to be downloaded in error state (terrible waste of network resources)
@@ -315,7 +317,15 @@ public class ContentDownloadService extends IntentService {
             File dir = FileHelper.createContentDownloadDir(this, content);
             if (dir.exists()) {
                 try {
-                    JsonHelper.saveJson(content.preJSONExport(), dir);
+                    File jsonFile = JsonHelper.createJson(content.preJSONExport(), dir);
+                    // Cache its URI to the newly created content
+                    DocumentFile jsonDocFile = FileHelper.getDocumentFile(jsonFile, false);
+                    if (jsonDocFile != null) {
+                        content.setJsonUri(jsonDocFile.getUri().toString());
+                        db.insertContent(content);
+                    } else {
+                        Timber.w("JSON file could not be cached for %s", content.getTitle());
+                    }
                 } catch (IOException e) {
                     Timber.e(e, "I/O Error saving JSON: %s", content.getTitle());
                 }
@@ -463,16 +473,19 @@ public class ContentDownloadService extends IntentService {
     private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException {
         Type type = new TypeToken<Map<String, String>>() {
         }.getType();
-        Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
 
-        if (!downloadParams.containsKey("pageInfo")) {
-            throw new InvalidParameterException("No pageInfo");
-        }
+        Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
+        if (!downloadParams.containsKey("pageInfo")) throw new InvalidParameterException("No pageInfo");
+
+        String pageInfoValue = downloadParams.get("pageInfo");
+        if (null == pageInfoValue) throw new InvalidParameterException("PageInfo is null");
+
+        if (pageInfoValue.equals("unprotected")) return binaryContent; // Free content, picture is not protected
 
 //        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
         Bitmap sourcePicture = BitmapFactory.decodeByteArray(binaryContent, 0, binaryContent.length);
 
-        PageInfo page = new Gson().fromJson(downloadParams.get("pageInfo"), PageInfo.class);
+        PageInfo page = new Gson().fromJson(pageInfoValue, PageInfo.class);
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         Bitmap destPicture = Bitmap.createBitmap(page.width, page.height, conf);
         Canvas destCanvas = new Canvas(destPicture);
@@ -529,7 +542,8 @@ public class ContentDownloadService extends IntentService {
      * @throws IOException IOException if image cannot be saved at given location
      */
     private static void saveImage(String fileName, File dir, String contentType, byte[] binaryContent) throws IOException {
-        File file = new File(dir, fileName + "." + MimeTypes.getExtensionFromMimeType(contentType));
+        String ext = MimeTypeMap.getSingleton().getExtensionFromMimeType(contentType);
+        File file = new File(dir, fileName + "." + ext);
         FileHelper.saveBinaryInFile(file, binaryContent);
     }
 

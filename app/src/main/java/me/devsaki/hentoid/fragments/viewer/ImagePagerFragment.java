@@ -2,25 +2,24 @@ package me.devsaki.hentoid.fragments.viewer;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import androidx.lifecycle.ViewModelProviders;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -28,7 +27,7 @@ import com.bumptech.glide.request.RequestOptions;
 import java.util.List;
 
 import me.devsaki.hentoid.R;
-import me.devsaki.hentoid.adapters.ImageRecyclerAdapter;
+import me.devsaki.hentoid.adapters.ImagePagerAdapter;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Preferences;
@@ -51,7 +50,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private final static String KEY_HUD_VISIBLE = "hud_visible";
     private final static String KEY_GALLERY_SHOWN = "gallery_shown";
 
-    private ImageRecyclerAdapter adapter;
+    private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
 
@@ -150,14 +149,17 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         setSystemBarsVisible(controlsOverlay.getVisibility() == View.VISIBLE); // System bars are visible only if HUD is visible
         if (Preferences.Constant.PREF_VIEWER_BROWSE_NONE == Preferences.getViewerBrowseMode())
             BrowseModeDialogFragment.invoke(this);
+        updatePageDisplay();
+        updateFavouriteDisplay();
     }
 
     private void initPager(View rootView) {
-        adapter = new ImageRecyclerAdapter();
+        adapter = new ImagePagerAdapter();
 
         VolumeGestureListener volumeGestureListener = new VolumeGestureListener()
                 .setOnVolumeDownListener(this::previousPage)
-                .setOnVolumeUpListener(this::nextPage);
+                .setOnVolumeUpListener(this::nextPage)
+                .setOnBackListener(this::onBackClick);
 
         recyclerView = requireViewById(rootView, R.id.image_viewer_recycler);
         recyclerView.setAdapter(adapter);
@@ -267,7 +269,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         favouritesGalleryBtn.setOnClickListener(v -> displayGallery(true));
     }
 
-    public boolean onBookTitleLongClick(Content content) {
+    private boolean onBookTitleLongClick(Content content) {
         ClipboardManager clipboard = (ClipboardManager) requireActivity().getSystemService(CLIPBOARD_SERVICE);
         if (clipboard != null) {
             ClipData clip = ClipData.newPlainText("book URL", content.getGalleryUrl());
@@ -337,6 +339,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Success callback when the new favourite'd state has been successfully persisted
+     *
      * @param img The favourite'd / unfavourite'd ImageFile in its new state
      */
     private void onFavouriteSuccess(ImageFile img) {
@@ -351,6 +354,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Observer for changes in the book's list of images
+     *
      * @param images Book's list of images
      */
     private void onImagesChanged(List<ImageFile> images) {
@@ -365,6 +369,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Observer for changes on the book's starting image index
+     *
      * @param startingIndex Book's starting image index
      */
     private void onStartingIndexChanged(Integer startingIndex) {
@@ -373,6 +378,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Observer for changes on the current book
+     *
      * @param content Loaded book
      */
     private void onContentChanged(Content content) {
@@ -382,6 +388,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Observer for changes on the shuffled state
+     *
      * @param isShuffled New shuffled state
      */
     private void onShuffleChanged(boolean isShuffled) {
@@ -397,6 +404,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Scroll listener
+     *
      * @param position New position
      */
     private void onCurrentPositionChange(int position) {
@@ -423,6 +431,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Update the visibility of "next/previous book" buttons
+     *
      * @param content Current book
      */
     private void updateBookNavigation(Content content) {
@@ -446,8 +455,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     /**
      * Update the display of the favourites gallery launcher
      */
-    private void updateFavouritesGalleryButtonDisplay()
-    {
+    private void updateFavouritesGalleryButtonDisplay() {
         if (adapter.isFavouritePresent())
             favouritesGalleryBtn.setVisibility(View.VISIBLE);
         else favouritesGalleryBtn.setVisibility(View.INVISIBLE);
@@ -455,6 +463,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Update the display of the "favourite page" action button
+     *
      * @param isFavourited True if the button has to represent a favourite page; false instead
      */
     private void updateFavouriteDisplay(boolean isFavourited) {
@@ -469,6 +478,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Update the book title and author on the top bar
+     *
      * @param content Current content whose information to display
      */
     private void updateBookInfo(Content content) {
@@ -480,10 +490,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Listener for preference changes (from the settings dialog)
+     *
      * @param prefs Shared preferences object
-     * @param key Key that has been changed
+     * @param key   Key that has been changed
      */
-    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+    private void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
         switch (key) {
             case Preferences.Key.PREF_VIEWER_BROWSE_MODE:
                 onBrowseModeChange();
@@ -530,13 +541,9 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         int currentLayoutDirection;
         // LinearLayoutManager.setReverseLayout behaves _relatively_ to current Layout Direction
         // => need to know that direction before deciding how to set setReverseLayout
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            if (View.LAYOUT_DIRECTION_LTR == controlsOverlay.getLayoutDirection())
-                currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_LTR;
-            else currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_RTL;
-        } else {
-            currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_LTR; // Only possibility before JELLY_BEAN_MR1
-        }
+        if (View.LAYOUT_DIRECTION_LTR == controlsOverlay.getLayoutDirection())
+            currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_LTR;
+        else currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_RTL;
         llm.setReverseLayout(Preferences.getViewerDirection() != currentLayoutDirection);
 
         llm.setOrientation(getOrientation());
@@ -545,6 +552,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Transforms current Preferences orientation into LinearLayoutManager orientation code
+     *
      * @return Preferred orientation, as LinearLayoutManager orientation code
      */
     private int getOrientation() {
@@ -558,7 +566,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     /**
      * Load next page
      */
-    public void nextPage() {
+    private void nextPage() {
         hideMoreMenu();
         if (imageIndex == maxPosition) return;
         if (Preferences.isViewerTapTransitions())
@@ -570,7 +578,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     /**
      * Load previous page
      */
-    public void previousPage() {
+    private void previousPage() {
         hideMoreMenu();
         if (imageIndex == 0) return;
         if (Preferences.isViewerTapTransitions())
@@ -582,7 +590,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     /**
      * Load next book
      */
-    public void nextBook() {
+    private void nextBook() {
         viewModel.savePosition(imageIndex);
         viewModel.loadNextContent();
     }
@@ -590,13 +598,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     /**
      * Load previous book
      */
-    public void previousBook() {
+    private void previousBook() {
         viewModel.savePosition(imageIndex);
         viewModel.loadPreviousContent();
     }
 
     /**
      * Seek to the given position; update preview images if they are visible
+     *
      * @param position Position to go to (0-indexed)
      */
     private void seekToPosition(int position) {
@@ -638,6 +647,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Go to the given page number
+     *
      * @param pageNum Page number to go to (1-indexed)
      */
     @Override
@@ -709,10 +719,12 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Display the viewer gallery
+     *
      * @param filterFavourites True if only favourite pages have to be shown; false for all pages
      */
     private void displayGallery(boolean filterFavourites) {
         hasGalleryBeenShown = true;
+        viewModel.setStartingIndex(imageIndex); // Memorize the current page
         requireFragmentManager()
                 .beginTransaction()
                 .replace(android.R.id.content, ImageGalleryFragment.newInstance(filterFavourites))
@@ -722,38 +734,30 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
     /**
      * Show / hide bottom and top Android system bars
+     *
      * @param visible True if bars have to be shown; false instead
      */
     private void setSystemBarsVisible(boolean visible) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-            Window window = requireActivity().getWindow();
-            if (!visible) {
-                window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            } else {
-                window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-            }
+        int uiOptions;
+        if (visible) {
+            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
         } else {
-            int uiOptions;
-            if (visible) {
-                uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
-            } else {
-                uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE
-                        // Set the content to appear under the system bars so that the
-                        // content doesn't resize when the system bars hide and show.
-                        | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                        // Hide the nav bar and status bar
-                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                        | View.SYSTEM_UI_FLAG_FULLSCREEN;
-            }
-
-            // Defensive programming here because crash reports show that getView() sometimes is null
-            // (just don't ask me why...)
-            View v = getView();
-            if (v != null) v.setSystemUiVisibility(uiOptions);
+            uiOptions = View.SYSTEM_UI_FLAG_IMMERSIVE
+                    // Set the content to appear under the system bars so that the
+                    // content doesn't resize when the system bars hide and show.
+                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    // Hide the nav bar and status bar
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN;
         }
+
+        // Defensive programming here because crash reports show that getView() sometimes is null
+        // (just don't ask me why...)
+        View v = getView();
+        if (v != null) v.setSystemUiVisibility(uiOptions);
     }
 }

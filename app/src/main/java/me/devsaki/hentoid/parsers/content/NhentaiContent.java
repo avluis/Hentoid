@@ -5,6 +5,8 @@ import org.jsoup.nodes.Element;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -44,13 +46,14 @@ public class NhentaiContent implements ContentParser {
     private List<String> thumbs;
 
 
-    public Content toContent() {
+    public Content toContent(@Nonnull String url) {
         Content result = new Content();
 
         result.setSite(Site.NHENTAI);
-        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
+        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(galleryUrl.replace("/g", "").replace("1/", ""));
+        result.setUrl(theUrl.replace("/g", "").replace("1/", ""));
         result.setCoverImageUrl(coverUrl);
         result.setTitle(title);
 

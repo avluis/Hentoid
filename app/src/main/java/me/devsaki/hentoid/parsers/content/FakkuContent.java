@@ -4,6 +4,7 @@ import org.jsoup.nodes.Element;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 import me.devsaki.hentoid.database.domains.Content;
@@ -33,7 +34,7 @@ public class FakkuContent implements ContentParser {
     private List<Element> greenButton;
 
     @Nullable
-    public Content toContent() {
+    public Content toContent(@Nonnull String url) {
         if (greenButton != null) {
             // Check if book is available
             for (Element e : greenButton) {
@@ -45,9 +46,10 @@ public class FakkuContent implements ContentParser {
         Content result = new Content();
 
         result.setSite(Site.FAKKU2);
-        if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
+        String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
+        if (theUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
-        result.setUrl(galleryUrl.replace(Site.FAKKU2.getUrl() + "/hentai/", ""));
+        result.setUrl(theUrl.replace(Site.FAKKU2.getUrl() + "/hentai/", ""));
         result.setCoverImageUrl(coverUrl);
         result.setTitle(title);
 

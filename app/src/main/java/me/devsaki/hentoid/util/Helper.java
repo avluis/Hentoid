@@ -194,7 +194,7 @@ public final class Helper {
      * @param length Target length of the final string
      * @return Reprocessed string of given length, according to rules documented in the method description
      */
-    public static String compensateStringLength(int value, int length) {
+    public static String formatIntAsStr(int value, int length) {
         String result = String.valueOf(value);
 
         if (result.length() > length) {

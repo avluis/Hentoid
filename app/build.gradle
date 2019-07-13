@@ -15,9 +15,7 @@ android {
     }
     defaultConfig {
         applicationId "me.devsaki.hentoid"
-        minSdkVersion 16
-        // Hold updating targetSdkVersion until implementing an image viewer
-        // or Perfect Viewer implements Content URI
+        minSdkVersion 19
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 28
         versionCode 110

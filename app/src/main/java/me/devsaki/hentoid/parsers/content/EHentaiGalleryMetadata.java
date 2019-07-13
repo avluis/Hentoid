@@ -4,6 +4,8 @@ import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
@@ -45,7 +47,7 @@ public class EHentaiGalleryMetadata {
     public List<String> tags;
 
 
-    public Content toContent() {
+    public Content toContent(@Nonnull String url) {
         Content result = new Content();
 
         result.setSite(Site.EHENTAI);
