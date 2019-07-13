@@ -51,7 +51,8 @@ public class ASMHentaiContent implements ContentParser {
         if (galleryUrl.isEmpty()) return result.setStatus(StatusContent.IGNORED);
 
         result.setUrl(galleryUrl.substring(0, galleryUrl.length() - 2).replace("/gallery", ""));
-        result.setCoverImageUrl(getProtocol() + "://" + coverUrl);
+        result.setCoverImageUrl(getProtocol() + ":" + coverUrl);
+
         result.setTitle(title);
         result.setQtyPages(Integer.parseInt(pages.get(0).replace("Pages: ", "")));
 
