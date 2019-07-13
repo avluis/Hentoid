@@ -24,7 +24,7 @@ public class NexusParser extends BaseParser {
          * Open all pages and grab the URL of the displayed image
          */
         for (int i = 0; i < content.getQtyPages(); i++) {
-            String readerUrl = content.getReaderUrl().replace("001", Helper.compensateStringLength(i + 1, 3));
+            String readerUrl = content.getReaderUrl().replace("001", Helper.formatIntAsStr(i + 1, 3));
             Document doc = getOnlineDocument(readerUrl);
             if (doc != null) {
                 Elements elements = doc.select("a img");

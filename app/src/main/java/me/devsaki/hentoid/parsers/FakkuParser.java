@@ -53,7 +53,7 @@ public class FakkuParser implements ImageListParser {
         List<Pair<String, String>> headers = new ArrayList<>();
         headers.add(new Pair<>("cookie", downloadParams.get("cookie")));
         String readUrl = content.getGalleryUrl().replace("www", "books") + "/read";
-        FakkuGalleryMetadata info = null;
+        FakkuGalleryMetadata info;
         try {
             info = HttpHelper.getOnlineJson(readUrl, headers, false, FakkuGalleryMetadata.class);
         } catch (IOException e) {
@@ -73,12 +73,15 @@ public class FakkuParser implements ImageListParser {
 
         // Process book info to get page detailed info
         String pid = null;
-        String[] cookieContent = downloadParams.get("cookie").split(";");
-        for (String s : cookieContent) {
-            String[] cookieParts = s.split("=");
-            if (cookieParts[0].toLowerCase().trim().equals("fakku_zid")) {
-                pid = cookieParts[1];
-                break;
+        String cookie = downloadParams.get("cookie");
+        if (cookie != null) {
+            String[] cookieContent = cookie.split(";");
+            for (String s : cookieContent) {
+                String[] cookieParts = s.split("=");
+                if (cookieParts[0].toLowerCase().trim().equals("fakku_zid")) {
+                    pid = cookieParts[1];
+                    break;
+                }
             }
         }
         if (null == pid) {
@@ -86,7 +89,9 @@ public class FakkuParser implements ImageListParser {
             return result;
         }
 
-        List<PageInfo> pageInfo = FakkuDecode.getBookPageData(info.key_hash, Helper.decode64(info.key_data), pid, BuildConfig.FK_TOKEN);
+        List<PageInfo> pageInfo = null;
+        if (info.key_data != null)
+            pageInfo = FakkuDecode.getBookPageData(info.key_hash, Helper.decode64(info.key_data), pid, BuildConfig.FK_TOKEN);
         progressPlus();
 
         result = new ArrayList<>();
@@ -95,7 +100,11 @@ public class FakkuParser implements ImageListParser {
             FakkuGalleryMetadata.FakkuPage page = info.pages.get(p);
             ImageFile img = ParseHelper.urlToImageFile(page.image, order);
 
-            downloadParams.put("pageInfo", JsonHelper.serializeToJson(pageInfo.get(order - 1))); // String contains JSON data within a JSON...
+            String pageInfoValue;
+            if (pageInfo != null) pageInfoValue = JsonHelper.serializeToJson(pageInfo.get(order - 1)); // String contains JSON data within a JSON...
+            else pageInfoValue = "unprotected";
+
+            downloadParams.put("pageInfo", pageInfoValue);
             downloadParamsStr = JsonHelper.serializeToJson(downloadParams);
 
             img.setDownloadParams(downloadParamsStr);

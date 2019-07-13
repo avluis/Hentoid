@@ -473,16 +473,19 @@ public class ContentDownloadService extends IntentService {
     private static byte[] processImage(String downloadParamsStr, byte[] binaryContent) throws InvalidParameterException {
         Type type = new TypeToken<Map<String, String>>() {
         }.getType();
-        Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
 
-        if (!downloadParams.containsKey("pageInfo")) {
-            throw new InvalidParameterException("No pageInfo");
-        }
+        Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
+        if (!downloadParams.containsKey("pageInfo")) throw new InvalidParameterException("No pageInfo");
+
+        String pageInfoValue = downloadParams.get("pageInfo");
+        if (null == pageInfoValue) throw new InvalidParameterException("PageInfo is null");
+
+        if (pageInfoValue.equals("unprotected")) return binaryContent; // Free content, picture is not protected
 
 //        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
         Bitmap sourcePicture = BitmapFactory.decodeByteArray(binaryContent, 0, binaryContent.length);
 
-        PageInfo page = new Gson().fromJson(downloadParams.get("pageInfo"), PageInfo.class);
+        PageInfo page = new Gson().fromJson(pageInfoValue, PageInfo.class);
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         Bitmap destPicture = Bitmap.createBitmap(page.width, page.height, conf);
         Canvas destCanvas = new Canvas(destPicture);

@@ -420,7 +420,7 @@ public class FileHelper {
         String id = content.getUniqueSiteId();
         // For certain sources (8muses, fakku), unique IDs are strings that may be very long
         // => shorten them by using their hashCode
-        if (id.length() > 10) id = Integer.toString(Math.abs(id.hashCode())).substring(0, 10);
+        if (id.length() > 10) id = Helper.formatIntAsStr(Math.abs(id.hashCode()), 10);
         String suffix = "[" + id + "]";
 
         // Truncate folder dir to something manageable for Windows
