@@ -9,6 +9,7 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/light_gray</item>
+        <!-- Surface is used for toolbars, so it has been aligned with primary/white -->
         <item name="colorSurface">@color/primary</item>
         <item name="colorOnSurface">@color/white</item>
         <item name="android:colorBackground">@color/window_background</item>
@@ -28,8 +29,9 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/light_gray</item>
-        <item name="colorSurface">@color/surface</item>
-        <item name="colorOnSurface">@color/black</item>
+        <!-- Surface is used for toolbars, so it has been aligned with primary/white -->
+        <item name="colorSurface">@color/primary</item>
+        <item name="colorOnSurface">@color/white</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
 <!--
@@ -51,13 +53,10 @@
         -->
     </style>
 
-    <!-- Backgrounds -->
-    <style name="AppTheme.TaupeBackground" parent="AppTheme">
-        <item name="android:windowBackground">@color/window_background</item>
-    </style>
-
     <style name="AppTheme.TaupeBackgroundNoActionBar" parent="AppTheme.NoActionBar">
+        <!--
         <item name="android:windowBackground">@color/window_background</item>
+        -->
         <item name="windowActionModeOverlay">true</item>
     </style>
 
@@ -134,11 +133,6 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
-    </style>
-
-    <!-- Mikan -->
-    <style name="AppTheme.Mikan" parent="AppTheme.TaupeBackground">
-        <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
     <!-- Search Activity -->

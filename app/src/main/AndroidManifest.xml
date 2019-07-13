@@ -144,12 +144,12 @@
             android:noHistory="true"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.TaupeBackgroundNoActionBar" />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.PinPreferenceActivity"
             android:resizeableActivity="false"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme.Search" />
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".activities.IntentActivity"
             android:theme="@style/BrowserTheme">
