@@ -42,6 +42,11 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
         return false;
     }
 
+
+    public int hashCode() {
+        return item.hashCode();
+    }
+
     @Override
     public int getLayoutRes() {
         return R.layout.item_viewer_gallery_image;

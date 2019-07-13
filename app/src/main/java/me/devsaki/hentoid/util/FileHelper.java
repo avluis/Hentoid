@@ -417,11 +417,7 @@ public class FileHelper {
         }
 
         // Unique content ID
-        String id = content.getUniqueSiteId();
-        // For certain sources (8muses, fakku), unique IDs are strings that may be very long
-        // => shorten them by using their hashCode
-        if (id.length() > 10) id = Helper.formatIntAsStr(Math.abs(id.hashCode()), 10);
-        String suffix = "[" + id + "]";
+        String suffix = "[" + formatBookId(content) + "]";
 
         // Truncate folder dir to something manageable for Windows
         // If we are to assume NTFS and Windows, then the fully qualified file, with it's drivename, path, filename, and extension, altogether is limited to 260 characters.
@@ -434,6 +430,16 @@ public class FileHelper {
         result += suffix;
 
         return result;
+    }
+
+    @SuppressWarnings("squid:S2676") // Math.abs is used for formatting purposes only
+    private static String formatBookId(Content content)
+    {
+        String id = content.getUniqueSiteId();
+        // For certain sources (8muses, fakku), unique IDs are strings that may be very long
+        // => shorten them by using their hashCode
+        if (id.length() > 10) id = Helper.formatIntAsStr(Math.abs(id.hashCode()), 10);
+        return id;
     }
 
     public static File getDefaultDir(Context context, String dir) {

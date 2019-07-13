@@ -18,7 +18,7 @@ public class CircularProgressView extends View {
     private Paint totalPaint, progressPaint;
     private float progress = 360;
     private float total = 360;
-    public TextView textView;
+    private TextView textView;
 
     public CircularProgressView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
