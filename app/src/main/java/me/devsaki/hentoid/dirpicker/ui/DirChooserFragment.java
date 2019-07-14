@@ -4,15 +4,15 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -54,7 +54,7 @@ public class DirChooserFragment extends DialogFragment {
     private TextView textView;
     private FloatingActionButton fabCreateDir,
             fabRequestSD;
-    private Button selectDirBtn;
+    private View selectDirBtn;
     private File currentRootDir;
     private DirListBuilder dirListBuilder;
 
@@ -92,7 +92,7 @@ public class DirChooserFragment extends DialogFragment {
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(@NonNull Bundle outState) {
         outState.putSerializable(CURRENT_ROOT_DIR, currentRootDir);
         super.onSaveInstanceState(outState);
     }
@@ -191,7 +191,7 @@ public class DirChooserFragment extends DialogFragment {
         super.onCancel(dialog);
     }
 
-    public void onClick(View v) {
+    private void onClick(View v) {
         if (v.equals(textView)) {
             onTextViewClicked(false);
         } else if (v.equals(fabCreateDir)) {
@@ -203,7 +203,7 @@ public class DirChooserFragment extends DialogFragment {
         }
     }
 
-    public boolean onLongClick(View v) {
+    private boolean onLongClick(View v) {
         if (v.equals(textView)) {
             onTextViewClicked(true);
             return true;
