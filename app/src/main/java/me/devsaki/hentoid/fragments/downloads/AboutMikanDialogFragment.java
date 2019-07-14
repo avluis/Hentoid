@@ -5,10 +5,9 @@ import android.os.Bundle;
 import android.webkit.WebView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
-
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 public final class AboutMikanDialogFragment extends DialogFragment {
 
@@ -24,7 +23,7 @@ public final class AboutMikanDialogFragment extends DialogFragment {
         webView.loadUrl("file:///android_asset/about_mikan.html");
         webView.setInitialScale(95);
 
-        return new MaterialAlertDialogBuilder(requireContext())
+        return new AlertDialog.Builder(requireContext())
                 .setTitle("About Mikan Search")
                 .setPositiveButton(android.R.string.ok, null)
                 .create();

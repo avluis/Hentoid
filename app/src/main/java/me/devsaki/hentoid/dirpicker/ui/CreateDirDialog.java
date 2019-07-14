@@ -5,8 +5,7 @@ import android.text.Editable;
 import android.widget.EditText;
 
 import androidx.annotation.Nullable;
-
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import androidx.appcompat.app.AlertDialog;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -37,7 +36,7 @@ class CreateDirDialog {
     }
 
     void dialog(final File currentDir) {
-        new MaterialAlertDialogBuilder(ctx)
+        new AlertDialog.Builder(ctx)
                 .setTitle(R.string.dir_name)
                 .setMessage(R.string.dir_name_inst)
                 .setView(text)

@@ -26,8 +26,6 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
@@ -314,7 +312,7 @@ public class ImportActivity extends BaseActivity {
             text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
             text.setText(currentRootDir.toString());
 
-            new MaterialAlertDialogBuilder(this)
+            new AlertDialog.Builder(this)
                     .setTitle(R.string.dir_path)
                     .setMessage(R.string.dir_path_inst)
                     .setView(text)
@@ -425,7 +423,7 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void showKitkatRationale() {
-        new MaterialAlertDialogBuilder(this)
+        new AlertDialog.Builder(this)
                 .setMessage(R.string.kitkat_rationale)
                 .setTitle("Error!")
                 .setPositiveButton(android.R.string.ok, null)
@@ -449,8 +447,8 @@ public class ImportActivity extends BaseActivity {
             ImageView instructionsImage = new ImageView(this);
             attachInstructionsImage(instructionsImage);
 
-            MaterialAlertDialogBuilder builder =
-                    new MaterialAlertDialogBuilder(this)
+            AlertDialog.Builder builder =
+                    new AlertDialog.Builder(this)
                             .setTitle("Requesting Write Permissions")
                             .setView(instructionsImage)
                             .setPositiveButton(android.R.string.ok,
@@ -593,7 +591,7 @@ public class ImportActivity extends BaseActivity {
 
             if (isRefresh)
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
-            else new MaterialAlertDialogBuilder(this)
+            else new AlertDialog.Builder(this)
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setCancelable(false)
                     .setTitle(R.string.app_name)

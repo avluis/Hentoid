@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.MaterialComponents">
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
@@ -14,6 +14,7 @@
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>
+        <item name="dialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
     </style>
 
@@ -31,13 +32,8 @@
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>
+        <item name="dialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
-        <!--
-                <item name="android:editTextColor">@android:color/white</item>
-                <item name="android:textColorHint">@color/light_gray</item>
-                <item name="actionMenuTextColor">@color/white</item>
-                <item name="titleTextColor">@color/white</item>
-                -->
     </style>
 
     <style name="ActionBar">
@@ -55,7 +51,6 @@
         <item name="colorPrimaryVariant">@color/white_opacity_66</item>
         <item name="colorOnPrimary">@color/dark_gray</item>
         <item name="android:windowBackground">@color/black</item>
-        <item name="android:editTextColor">@android:color/black</item>
     </style>
 
     <style name="AppTheme.NoActionBar.Overlay">
@@ -83,6 +78,8 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSurface">@color/primary</item>
+        <item name="colorOnSurface">@color/white</item>
         <item name="android:windowBackground">@color/window_background</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:textColorPrimary">@color/white</item>
@@ -90,14 +87,6 @@
         <item name="android:editTextColor">@color/white</item>
         <item name="textColorAlertDialogListItem">@color/white</item>
         <item name="android:checkboxStyle">@style/DialogCheckbox</item>
-        <item name="colorSurface">@color/primary</item>
-        <item name="colorOnSurface">@color/white</item>
-        <item name="android:colorBackground">@color/window_background</item>
-        <item name="colorOnBackground">@color/white</item>
-        <item name="android:background">@color/window_background</item>
-        <item name="background">@color/window_background</item>
-        <item name="android:panelBackground">@color/window_background</item>
-        <item name="panelBackground">@color/window_background</item>
     </style>
 
     <style name="DialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
