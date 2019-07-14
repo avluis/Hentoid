@@ -56,7 +56,7 @@
         <item name="colorOnSurface">@color/white</item>
     </style>
 
-    <style name="AppTheme.NoActionBar.viewer">
+    <style name="AppTheme.NoActionBar.viewer" parent="AppTheme.NoActionBar">
         <!--
         <item name="colorPrimary">@color/white_opacity_66</item>
         <item name="colorPrimaryVariant">@color/white_opacity_86</item>

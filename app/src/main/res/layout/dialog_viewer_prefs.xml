@@ -3,19 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:minWidth="300dp"
     android:layout_gravity="center"
     android:layout_marginStart="16dp"
     android:layout_marginLeft="16dp"
     android:layout_marginEnd="16dp"
     android:layout_marginRight="16dp"
-    android:background="?attr/colorSurface"
+    android:background="?colorSurface"
+    android:minWidth="300dp"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:theme="@style/AppTheme">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="?colorSurface">
 
         <TextView
             android:id="@+id/viewer_prefs_title"
@@ -23,6 +25,7 @@
             android:layout_height="wrap_content"
             android:text="@string/viewer_prefs_title"
             android:textAlignment="center"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_header_6"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -34,10 +37,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
             android:gravity="start"
             android:text="@string/pref_viewer_keep_screen_on"
             android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintEnd_toStartOf="@id/viewer_prefs_keep_screen_action"
             app:layout_constraintStart_toStartOf="parent"
@@ -59,11 +62,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
             android:gravity="start"
             android:singleLine="false"
             android:text="@string/pref_viewer_resume_last_left"
             android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintEnd_toStartOf="@id/viewer_prefs_resume_reading_action"
             app:layout_constraintStart_toStartOf="parent"
@@ -85,11 +88,11 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
             android:gravity="start"
             android:singleLine="false"
             android:text="@string/pref_viewer_open_gallery"
             android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintEnd_toStartOf="@id/viewer_prefs_open_gallery_action"
             app:layout_constraintStart_toStartOf="parent"
@@ -111,10 +114,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
             android:gravity="start"
             android:text="@string/pref_viewer_display_pagenum"
             android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintEnd_toStartOf="@id/viewer_prefs_display_pagenum_action"
             app:layout_constraintStart_toStartOf="parent"
@@ -136,10 +139,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
             android:gravity="start"
             android:text="@string/pref_viewer_tap_transitions"
             android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintEnd_toStartOf="@id/viewer_prefs_tap_transitions_action"
             app:layout_constraintStart_toStartOf="parent"
@@ -165,6 +168,7 @@
             android:gravity="start"
             android:text="@string/pref_viewer_image_display"
             android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_body_1"
             android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
@@ -183,13 +187,15 @@
                 android:id="@+id/viewer_prefs_display_mode_action_fit"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/viewer_prefs_display_fit" />
+                android:text="@string/viewer_prefs_display_fit"
+                android:textColor="?colorOnSurface" />
 
             <RadioButton
                 android:id="@+id/viewer_prefs_display_mode_action_fill"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/viewer_prefs_display_fill" />
+                android:text="@string/viewer_prefs_display_fill"
+                android:textColor="?colorOnSurface" />
         </RadioGroup>
 
         <TextView
@@ -200,6 +206,7 @@
             android:gravity="start"
             android:text="@string/pref_viewer_browse_mode"
             android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/viewer_prefs_display_mode_group" />
@@ -217,19 +224,22 @@
                 android:id="@+id/viewer_prefs_browse_mode_action_ltr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/viewer_direction_ltr" />
+                android:text="@string/viewer_direction_ltr"
+                android:textColor="?colorOnSurface" />
 
             <RadioButton
                 android:id="@+id/viewer_prefs_browse_mode_action_rtl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/viewer_direction_rtl" />
+                android:text="@string/viewer_direction_rtl"
+                android:textColor="?colorOnSurface" />
 
             <RadioButton
                 android:id="@+id/viewer_prefs_browse_mode_action_ttb"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/viewer_direction_ttb" />
+                android:text="@string/viewer_direction_ttb"
+                android:textColor="?colorOnSurface" />
         </RadioGroup>
 
         <TextView
@@ -240,6 +250,7 @@
             android:gravity="start"
             android:text="@string/pref_viewer_fling_sensitivity"
             android:textAlignment="viewStart"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_body_1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/viewer_prefs_browse_mode_group" />
@@ -250,6 +261,9 @@
             android:layout_height="wrap_content"
             android:max="100"
             android:padding="8dp"
+            android:progressBackgroundTint="?colorOnSurface"
+            android:progressTint="?colorSecondary"
+            android:colorControlActivated="?colorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/viewer_prefs_fling_sensitivity_title" />
