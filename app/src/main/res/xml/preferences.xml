@@ -108,7 +108,14 @@
             android:title="@string/pref_check_updates_title" />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/pref_misc_category">
-
+        <ListPreference
+            android:defaultValue="@string/pref_dark_mode_default"
+            android:entries="@array/pref_dark_mode_entries"
+            android:entryValues="@array/pref_dark_mode_values"
+            android:icon="@null"
+            android:key="pref_dark_mode"
+            android:summary="@string/pref_dark_mode_summary"
+            android:title="@string/pref_dark_mode_title" />
         <CheckBoxPreference
             android:defaultValue="@string/pref_hide_recent_default"
             android:icon="@null"

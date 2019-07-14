@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import androidx.appcompat.app.AppCompatDelegate;
+
 import me.devsaki.hentoid.BuildConfig;
 import timber.log.Timber;
 
@@ -248,6 +250,16 @@ public final class Preferences {
                 .apply();
     }
 
+    public static int getDarkMode() {
+        return Integer.parseInt(sharedPreferences.getString(Key.DARK_MODE, Integer.toString(Default.PREF_VIEWER_DARK_MODE)));
+    }
+
+    public static void setDarkMode(int darkMode) {
+        sharedPreferences.edit()
+                .putString(Key.DARK_MODE, Integer.toString(darkMode))
+                .apply();
+    }
+
     public static final class Key {
         public static final String PREF_APP_LOCK = "pref_app_lock";
         public static final String PREF_HIDE_RECENT = "pref_hide_recent";
@@ -278,6 +290,7 @@ public final class Preferences {
         static final String PREF_VIEWER_TAP_TRANSITIONS = "pref_viewer_tap_transitions";
         static final String PREF_VIEWER_OPEN_GALLERY = "pref_viewer_open_gallery";
         static final String LAST_KNOWN_APP_VERSION_CODE = "last_known_app_version_code";
+        public static final String DARK_MODE = "pref_dark_mode";
     }
 
     // IMPORTANT : Any default value change must be mirrored in res/values/strings_settings.xml
@@ -301,6 +314,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
         static final int PREF_VIEWER_FLING_FACTOR = 50;
+        static final int PREF_VIEWER_DARK_MODE = Constant.DARK_MODE_DEVICE;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
@@ -332,5 +346,9 @@ public final class Preferences {
         public static final int PREF_VIEWER_DIRECTION_RTL = 1;
         public static final int PREF_VIEWER_ORIENTATION_HORIZONTAL = 0;
         public static final int PREF_VIEWER_ORIENTATION_VERTICAL = 1;
+        public static final int DARK_MODE_DEVICE = 0;
+        public static final int DARK_MODE_ON = 1;
+        public static final int DARK_MODE_OFF = 2;
+        public static final int DARK_MODE_BATTERY = 3;
     }
 }

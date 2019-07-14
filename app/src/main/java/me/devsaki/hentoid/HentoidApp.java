@@ -119,8 +119,7 @@ public class HentoidApp extends Application {
         }
 
         // Set Night mode
-        // TODO - make this a pref
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(Preferences.getDarkMode()));
     }
 
     /**
@@ -135,5 +134,16 @@ public class HentoidApp extends Application {
         // Launch a service that will perform non-structural DB housekeeping tasks
         Intent intent = DatabaseMaintenanceService.makeIntent(this);
         startService(intent);
+    }
+
+    public static int darkModeFromPrefs(int prefsMode)
+    {
+        switch(prefsMode)
+        {
+            case Preferences.Constant.DARK_MODE_ON : return AppCompatDelegate.MODE_NIGHT_YES;
+            case Preferences.Constant.DARK_MODE_OFF : return AppCompatDelegate.MODE_NIGHT_NO;
+            case Preferences.Constant.DARK_MODE_BATTERY : return AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY;
+            default : return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+        }
     }
 }

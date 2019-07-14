@@ -9,16 +9,13 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="colorSurface">@color/white</item>
-        <item name="colorOnSurface">@color/medium_gray</item>
+        <item name="colorSurface">@color/dark_gray</item>
+        <item name="colorOnSurface">@color/light_gray</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>
+        <item name="dialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
-        <!--
-                <item name="android:editTextColor">@color/white</item>
-                <item name="android:textColorHint">@color/light_gray</item>
-        -->
     </style>
 
     <!-- Activities with Toolbar as ActionBar -->
@@ -30,18 +27,13 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="colorSurface">@color/white</item>
-        <item name="colorOnSurface">@color/medium_gray</item>
+        <item name="colorSurface">@color/dark_gray</item>
+        <item name="colorOnSurface">@color/light_gray</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>
+        <item name="dialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
-        <!--
-                <item name="android:editTextColor">@android:color/white</item>
-                <item name="android:textColorHint">@color/light_gray</item>
-                <item name="actionMenuTextColor">@color/white</item>
-                <item name="titleTextColor">@color/white</item>
-                -->
     </style>
 
     <style name="ActionBar">
@@ -49,12 +41,16 @@
         <item name="colorOnSurface">@color/white</item>
     </style>
 
+    <style name="ActionBarPopup">
+        <item name="android:background">@color/dark_gray</item>
+        <item name="colorSurface">@color/dark_gray</item>
+    </style>
+
     <style name="AppTheme.NoActionBar.Monochrome">
         <item name="colorPrimary">@color/white</item>
-        <item name="colorPrimaryVariant">@color/white_opacity_66</item>
-        <item name="colorOnPrimary">@color/dark_gray</item>
+        <item name="colorPrimaryVariant">@color/black_opacity_50</item>
+        <item name="colorOnPrimary">@color/light_gray</item>
         <item name="android:windowBackground">@color/black</item>
-        <item name="android:editTextColor">@android:color/black</item>
     </style>
 
     <style name="AppTheme.NoActionBar.Overlay">
@@ -82,6 +78,8 @@
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSurface">@color/primary</item>
+        <item name="colorOnSurface">@color/white</item>
         <item name="android:windowBackground">@color/window_background</item>
         <item name="android:textColor">@color/white</item>
         <item name="android:textColorPrimary">@color/white</item>
@@ -89,10 +87,6 @@
         <item name="android:editTextColor">@color/white</item>
         <item name="textColorAlertDialogListItem">@color/white</item>
         <item name="android:checkboxStyle">@style/DialogCheckbox</item>
-        <item name="colorSurface">@color/white</item>
-        <item name="colorOnSurface">@color/medium_gray</item>
-        <item name="android:colorBackground">@color/window_background</item>
-        <item name="colorOnBackground">@color/white</item>
     </style>
 
     <style name="DialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">

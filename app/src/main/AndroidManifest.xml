@@ -132,7 +132,7 @@
         <activity
             android:name=".activities.SearchActivity"
             android:label="@string/title_activity_search"
-            android:theme="@style/AppTheme"
+            android:theme="@style/AppTheme.NoActionBar"
             tools:ignore="UnusedAttribute">
         </activity>
         <activity

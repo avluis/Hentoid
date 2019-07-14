@@ -79,4 +79,17 @@
         <item>0</item>
         <item>1</item>
     </string-array>
+
+    <string-array name="pref_dark_mode_entries">
+        <item>Device settings (default)</item>
+        <item>On</item>
+        <item>Off</item>
+        <item>On when battery low</item>
+    </string-array>
+    <string-array name="pref_dark_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
 </resources>

@@ -2,15 +2,20 @@ package me.devsaki.hentoid.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import com.google.android.material.snackbar.Snackbar;
+import android.view.MenuItem;
+
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
-import android.view.MenuItem;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.abstracts.BaseActivity;
@@ -22,6 +27,8 @@ import me.devsaki.hentoid.services.UpdateDownloadService;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
+
+import static me.devsaki.hentoid.HentoidApp.darkModeFromPrefs;
 
 /**
  * Created by DevSaki on 20/05/2015.
@@ -84,6 +91,9 @@ public class PrefsActivity extends BaseActivity {
 
                 findPreference(Preferences.Key.PREF_APP_LOCK)
                         .setOnPreferenceClickListener(preference -> onAppLockPreferenceClick());
+
+                findPreference(Preferences.Key.DARK_MODE)
+                        .setOnPreferenceChangeListener((preference, newValue) -> onPrefDarkModeChanged(newValue));
             }
         }
 
@@ -135,6 +145,11 @@ public class PrefsActivity extends BaseActivity {
 
         private boolean onPrefRequiringRestartChanged() {
             ToastUtil.toast(R.string.restart_needed);
+            return true;
+        }
+
+        private boolean onPrefDarkModeChanged(@Nonnull Object value) {
+            AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(Integer.parseInt(value.toString())));
             return true;
         }
 

@@ -24,7 +24,6 @@
     <color name="dark_gray">#FF444444</color>
     <color name="black_opacity_50">#80000000</color>
     <color name="white_opacity_66">#AAFFFFFF</color>
-    <color name="white_opacity_86">#DDFFFFFF</color>
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>
