@@ -18,7 +18,6 @@ public class BrowseModeDialogFragment extends DialogFragment {
 
     public static void invoke(Fragment parent) {
         BrowseModeDialogFragment fragment = new BrowseModeDialogFragment();
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.ViewerBrowseModeDialog);
         fragment.setCancelable(false);
         fragment.show(parent.getChildFragmentManager(), null);
     }

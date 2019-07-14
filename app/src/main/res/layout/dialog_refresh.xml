@@ -109,7 +109,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/refresh_options_remove_or_2" />
 
-    <Button
+    <TextView
         android:id="@+id/refresh_ok"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

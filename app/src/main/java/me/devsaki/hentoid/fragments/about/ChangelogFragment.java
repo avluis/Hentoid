@@ -117,7 +117,7 @@ public class ChangelogFragment extends Fragment {
         downloadLatestText.setVisibility(View.VISIBLE);
     }
 
-    void onDownloadClick(View v) {
+    private void onDownloadClick(View v) {
         // Equivalent to "check for updates" preferences menu
         if (!UpdateDownloadService.isRunning()) {
             Intent intent = UpdateCheckService.makeIntent(v.getContext(), true);

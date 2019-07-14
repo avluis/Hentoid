@@ -15,10 +15,6 @@
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
-        <!--
-                <item name="android:editTextColor">@color/white</item>
-                <item name="android:textColorHint">@color/light_gray</item>
-        -->
     </style>
 
     <!-- Activities with Toolbar as ActionBar -->
@@ -43,24 +39,18 @@
                 <item name="titleTextColor">@color/white</item>
                 -->
     </style>
-<!--
-    <style name="Dialog" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="android:windowBackground">@color/window_background</item>
-    </style>
--->
+
     <style name="ActionBar">
         <item name="colorSurface">@color/primary</item>
         <item name="colorOnSurface">@color/white</item>
     </style>
 
-    <style name="AppTheme.NoActionBar.viewer" parent="AppTheme.NoActionBar">
-        <!--
-        <item name="colorPrimary">@color/white_opacity_66</item>
-        <item name="colorPrimaryVariant">@color/white_opacity_86</item>
-        -->
+    <style name="ActionBarPopup">
+        <item name="android:background">@color/dark_gray</item>
+        <item name="colorSurface">@color/dark_gray</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar.Monochrome">
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">@color/white_opacity_66</item>
         <item name="colorOnPrimary">@color/dark_gray</item>
@@ -68,12 +58,12 @@
         <item name="android:editTextColor">@android:color/black</item>
     </style>
 
-    <style name="AppTheme.TaupeBackgroundNoActionBar" parent="AppTheme.NoActionBar">
+    <style name="AppTheme.NoActionBar.Overlay">
         <item name="windowActionModeOverlay">true</item>
     </style>
 
     <!-- Splash Activity -->
-    <style name="SplashTheme" parent="AppTheme.NoActionBar">
+    <style name="AppTheme.NoActionBar.Splash">
         <item name="android:windowBackground">@drawable/bg_splash</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -100,6 +90,14 @@
         <item name="android:editTextColor">@color/white</item>
         <item name="textColorAlertDialogListItem">@color/white</item>
         <item name="android:checkboxStyle">@style/DialogCheckbox</item>
+        <item name="colorSurface">@color/primary</item>
+        <item name="colorOnSurface">@color/white</item>
+        <item name="android:colorBackground">@color/window_background</item>
+        <item name="colorOnBackground">@color/white</item>
+        <item name="android:background">@color/window_background</item>
+        <item name="background">@color/window_background</item>
+        <item name="android:panelBackground">@color/window_background</item>
+        <item name="panelBackground">@color/window_background</item>
     </style>
 
     <style name="DialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
@@ -135,17 +133,6 @@
     </style>
 
     <!-- Search Activity -->
-    <!--
-    <style name="AppTheme.Search" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorSecondary">@color/secondary</item>
-        <item name="android:windowBackground">@color/window_background</item>
-        <item name="actionMenuTextColor">@color/white</item>
-        <item name="titleTextColor">@color/white</item>
-    </style>
-    -->
-
     <style name="BottomSheetDialogTheme" parent="Theme.Design.BottomSheetDialog">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
@@ -161,12 +148,4 @@
         <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
         <item name="actionMenuTextColor">@color/white</item>
     </style>
-
-    <!-- Image viewer -->
-    <style name="ViewerBrowseModeDialog" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorSecondary">@color/secondary</item>
-    </style>
-
 </resources>

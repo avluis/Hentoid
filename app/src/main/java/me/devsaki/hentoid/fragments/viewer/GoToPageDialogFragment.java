@@ -10,18 +10,21 @@ import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AlertDialog;
 import android.text.InputType;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.EditText;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
+import me.devsaki.hentoid.R;
+
 public final class GoToPageDialogFragment extends DialogFragment {
 
     private Parent parent;
 
-    public static void show(Fragment parentFragment) {
+    public static void invoke(Fragment parent) {
         GoToPageDialogFragment fragment = new GoToPageDialogFragment();
-        fragment.show(parentFragment.getChildFragmentManager(), null);
+        fragment.show(parent.getChildFragmentManager(), null);
     }
 
     @Override

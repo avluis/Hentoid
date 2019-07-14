@@ -2,15 +2,15 @@ package me.devsaki.hentoid.fragments;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CheckBox;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.FragmentManager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.ImportActivity;
@@ -31,7 +31,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
 
     public static void invoke(FragmentManager fragmentManager) {
         LibRefreshDialogFragment fragment = new LibRefreshDialogFragment();
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.PrefsThemeDialog);
+        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(fragmentManager, null);
     }
 
@@ -50,7 +50,7 @@ public class LibRefreshDialogFragment extends DialogFragment {
         cleanNoImagesChk = requireViewById(view, R.id.refresh_options_remove_2);
         cleanUnreadableChk = requireViewById(view, R.id.refresh_options_remove_3);
 
-        Button okBtn = requireViewById(view, R.id.refresh_ok);
+        View okBtn = requireViewById(view, R.id.refresh_ok);
         okBtn.setOnClickListener(v -> launchRefreshImport(renameChk.isChecked(), cleanAbsentChk.isChecked(), cleanNoImagesChk.isChecked(), cleanUnreadableChk.isChecked()));
     }
 

@@ -23,7 +23,6 @@ public class ViewerPrefsDialogFragment extends DialogFragment {
 
     public static void invoke(Fragment parent) {
         ViewerPrefsDialogFragment fragment = new ViewerPrefsDialogFragment();
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.ViewerBrowseModeDialog);
         fragment.show(parent.getChildFragmentManager(), null);
     }
 

@@ -22,7 +22,7 @@
         <activity
             android:name=".activities.SplashActivity"
             android:noHistory="true"
-            android:theme="@style/SplashTheme">
+            android:theme="@style/AppTheme.NoActionBar.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -78,7 +78,7 @@
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_downloads"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.TaupeBackgroundNoActionBar">
+            android:theme="@style/AppTheme.NoActionBar.Overlay">
             <meta-data
                 android:name="android.app.searchable"
                 android:resource="@xml/searchable" />
@@ -281,7 +281,7 @@
         <activity
             android:name=".activities.ImageViewerActivity"
             android:label="Image Viewer"
-            android:theme="@style/AppTheme.NoActionBar.viewer">
+            android:theme="@style/AppTheme.NoActionBar.Monochrome">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".activities.DownloadsActivity" />

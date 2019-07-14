@@ -26,7 +26,7 @@ public class SiteAdapter extends RecyclerView.Adapter<SiteAdapter.SiteAdapterVie
     @NonNull
     @Override
     public SiteAdapterViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_text, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_text_sites, parent, false);
         return new SiteAdapterViewHolder(view);
     }
 

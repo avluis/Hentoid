@@ -224,7 +224,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
 
         // Page number button
         pageCurrentNumber = requireViewById(rootView, R.id.viewer_currentpage_text);
-        pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.show(this));
+        pageCurrentNumber.setOnClickListener(v -> GoToPageDialogFragment.invoke(this));
         pageMaxNumber = requireViewById(rootView, R.id.viewer_maxpage_text);
         pageNumberOverlay = requireViewById(rootView, R.id.viewer_pagenumber_text);
 
