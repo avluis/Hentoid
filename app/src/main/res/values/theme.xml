@@ -10,11 +10,12 @@
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/light_gray</item>
         <!-- Surface is used for toolbars, so it has been aligned with primary/white -->
-        <item name="colorSurface">@color/primary</item>
-        <item name="colorOnSurface">@color/white</item>
+        <item name="colorSurface">@color/white</item>
+        <item name="colorOnSurface">@color/black</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/DownloadsDialog</item>
+        <item name="actionBarTheme">@style/ActionBar</item>
 <!--
         <item name="android:editTextColor">@color/white</item>
         <item name="android:textColorHint">@color/light_gray</item>
@@ -50,6 +51,11 @@
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="android:windowBackground">@color/window_background</item>
+    </style>
+
+    <style name="ActionBar">
+        <item name="colorSurface">@color/primary</item>
+        <item name="colorOnSurface">@color/white</item>
     </style>
 
     <style name="AppTheme.NoActionBar.viewer">

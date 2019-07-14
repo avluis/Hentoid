@@ -21,29 +21,24 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
-                android:layout_alignParentRight="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="5dp"
-                android:layout_marginRight="5dp"
-                android:background="?attr/colorAccent"
+                android:background="?attr/colorSecondary"
                 android:text="@string/select"
-                android:textColor="@color/white" />
+                android:textColor="?attr/colorOnSecondary" />
 
             <TextView
                 android:id="@+id/current_dir"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toLeftOf="@id/select_dir"
                 android:layout_toStartOf="@id/select_dir"
                 android:ellipsize="start"
                 android:gravity="center_vertical"
                 android:minHeight="75dp"
-                android:paddingBottom="5dp"
-                android:paddingEnd="2dp"
-                android:paddingLeft="5dp"
-                android:paddingRight="2dp"
                 android:paddingStart="5dp"
                 android:paddingTop="5dp"
+                android:paddingEnd="2dp"
+                android:paddingBottom="5dp"
                 android:singleLine="true"
                 android:textSize="16sp" />
 
@@ -52,38 +47,38 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/dir_list"
-        android:background="@color/white"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/dir_selection"
+        android:background="@color/white"
         android:scrollbars="vertical" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/create_dir"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentRight="true"
-        app:backgroundTint="@color/primary"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/ic_create_new_folder"
+        android:tint="?attr/colorOnPrimary"
+        app:backgroundTint="?attr/colorPrimary"
         app:elevation="@dimen/fab_default_elevation"
         app:rippleColor="@color/ripple"
-        android:src="@drawable/ic_create_new_folder"
         app:useCompatPadding="true" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/request_sd"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:src="@drawable/ic_action_sd_storage"
+        android:tint="?attr/colorOnPrimary"
         android:visibility="gone"
-        app:backgroundTint="@color/primary"
+        app:backgroundTint="?attr/colorPrimary"
         app:elevation="@dimen/fab_default_elevation"
         app:fabSize="mini"
         app:rippleColor="@color/ripple"
-        android:src="@drawable/ic_action_sd_storage"
         app:useCompatPadding="true" />
 
 </RelativeLayout>
