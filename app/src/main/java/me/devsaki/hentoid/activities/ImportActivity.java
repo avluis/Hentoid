@@ -13,17 +13,20 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.DocumentsContract;
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
-import androidx.core.app.ActivityCompat;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AlertDialog;
 import android.text.Editable;
 import android.text.InputType;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -311,7 +314,7 @@ public class ImportActivity extends BaseActivity {
             text.setPadding(paddingPx, paddingPx, paddingPx, paddingPx);
             text.setText(currentRootDir.toString());
 
-            new AlertDialog.Builder(this)
+            new MaterialAlertDialogBuilder(this)
                     .setTitle(R.string.dir_path)
                     .setMessage(R.string.dir_path_inst)
                     .setView(text)
@@ -422,7 +425,7 @@ public class ImportActivity extends BaseActivity {
     }
 
     private void showKitkatRationale() {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this)
                 .setMessage(R.string.kitkat_rationale)
                 .setTitle("Error!")
                 .setPositiveButton(android.R.string.ok, null)
@@ -446,8 +449,8 @@ public class ImportActivity extends BaseActivity {
             ImageView instructionsImage = new ImageView(this);
             attachInstructionsImage(instructionsImage);
 
-            AlertDialog.Builder builder =
-                    new AlertDialog.Builder(this)
+            MaterialAlertDialogBuilder builder =
+                    new MaterialAlertDialogBuilder(this)
                             .setTitle("Requesting Write Permissions")
                             .setView(instructionsImage)
                             .setPositiveButton(android.R.string.ok,
@@ -590,7 +593,7 @@ public class ImportActivity extends BaseActivity {
 
             if (isRefresh)
                 runImport(); // Do not ask if the user wants to import if he has asked for a refresh
-            else new AlertDialog.Builder(this)
+            else new MaterialAlertDialogBuilder(this)
                     .setIcon(R.drawable.ic_dialog_warning)
                     .setCancelable(false)
                     .setTitle(R.string.app_name)

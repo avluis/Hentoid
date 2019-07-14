@@ -13,6 +13,8 @@ import android.text.InputType;
 import android.view.WindowManager;
 import android.widget.EditText;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 public final class GoToPageDialogFragment extends DialogFragment {
 
     private Parent parent;
@@ -40,7 +42,7 @@ public final class GoToPageDialogFragment extends DialogFragment {
                 parent.goToPage(Integer.parseInt(input.getText().toString()));
         };
 
-        AlertDialog dialog = new AlertDialog.Builder(requireContext())
+        AlertDialog dialog = new MaterialAlertDialogBuilder(requireContext())
                 .setView(input)
                 .setPositiveButton(android.R.string.ok, positive)
                 .setNegativeButton(android.R.string.cancel, null)

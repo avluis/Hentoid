@@ -25,7 +25,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.StringRes;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.FragmentActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -33,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.annimon.stream.Stream;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 
 import org.greenrobot.eventbus.EventBus;
@@ -402,7 +402,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     private void checkSDHealth() {
         if (!FileHelper.isWritable(new File(Preferences.getRootFolderName()))) {
             ToastUtil.toast(R.string.sd_access_error);
-            new AlertDialog.Builder(requireActivity())
+            new MaterialAlertDialogBuilder(requireActivity())
                     .setMessage(R.string.sd_access_fatal_error)
                     .setTitle("Error!")
                     .setPositiveButton(android.R.string.ok, null)

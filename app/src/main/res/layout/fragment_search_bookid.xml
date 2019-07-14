@@ -4,14 +4,14 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:gravity="center"
-    android:padding="16dp">
+    android:padding="16dp"
+    >
 
     <TextView
         android:id="@+id/search_bookid_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/search_bookid_label"
-        android:textColor="@color/secondary"
         android:textSize="@dimen/text_header_6"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"

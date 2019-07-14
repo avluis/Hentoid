@@ -14,6 +14,7 @@
         <item name="colorOnSurface">@color/white</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
+        <item name="alertDialogTheme">@style/DownloadsDialog</item>
 <!--
         <item name="android:editTextColor">@color/white</item>
         <item name="android:textColorHint">@color/light_gray</item>
@@ -34,6 +35,7 @@
         <item name="colorOnSurface">@color/white</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
+        <item name="alertDialogTheme">@style/DownloadsDialog</item>
 <!--
         <item name="android:editTextColor">@android:color/white</item>
         <item name="android:textColorHint">@color/light_gray</item>
@@ -41,6 +43,13 @@
         <item name="actionMenuTextColor">@color/white</item>
         <item name="titleTextColor">@color/white</item>
         -->
+    </style>
+
+    <style name="DownloadsDialog" parent="Theme.MaterialComponents.Dialog.Alert">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="android:windowBackground">@color/window_background</item>
     </style>
 
     <style name="AppTheme.NoActionBar.viewer">
@@ -54,9 +63,6 @@
     </style>
 
     <style name="AppTheme.TaupeBackgroundNoActionBar" parent="AppTheme.NoActionBar">
-        <!--
-        <item name="android:windowBackground">@color/window_background</item>
-        -->
         <item name="windowActionModeOverlay">true</item>
     </style>
 
@@ -121,18 +127,6 @@
         <item name="android:windowAnimationStyle">@android:style/Animation</item>
         <item name="android:editTextColor">@android:color/black</item>
         <item name="android:textColorHint">@android:color/black</item>
-    </style>
-
-    <!-- Downloads -->
-    <style name="AppTheme.Downloads" parent="AppTheme.TaupeBackgroundNoActionBar">
-        <item name="android:textColorHint">@color/light_gray</item>
-        <item name="android:textColorSecondary">@color/light_gray</item>
-    </style>
-
-    <style name="DownloadsDialog" parent="Theme.MaterialComponents.Dialog.Alert">
-        <item name="colorPrimary">@color/primary</item>
-        <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorSecondary">@color/secondary</item>
     </style>
 
     <!-- Search Activity -->
