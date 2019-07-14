@@ -39,7 +39,7 @@ public class SearchBookIdDialogFragment extends DialogFragment {
 
         SearchBookIdDialogFragment fragment = new SearchBookIdDialogFragment();
         fragment.setArguments(args);
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.DownloadsDialog);
+        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(fragmentManager, null);
     }
 

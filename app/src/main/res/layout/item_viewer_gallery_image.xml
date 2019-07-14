@@ -24,7 +24,7 @@
         android:focusable="true"
         android:scaleType="fitCenter"
         android:src="@drawable/ic_fav_empty"
-        android:tint="@color/secondary"
+        android:tint="?colorSecondary"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />

@@ -106,7 +106,7 @@
         <item name="android:textColorSecondary">@color/light_gray</item>
     </style>
 
-    <style name="DownloadsDialog" parent="Theme.MaterialComponents.Dialog.Alert">
+    <style name="Dialog" parent="Theme.MaterialComponents.Dialog.Alert">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_variant</item>
         <item name="colorAccent">@color/secondary</item>

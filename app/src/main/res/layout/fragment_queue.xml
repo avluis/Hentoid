@@ -14,7 +14,7 @@
         android:divider="@color/transparent"
         android:dividerHeight="10dp"
         android:scrollbars="none"
-        tools:background="@color/white" />
+        tools:background="?colorSurface" />
 
     <TextView
         android:id="@android:id/empty"
@@ -24,9 +24,7 @@
         android:gravity="center"
         android:text="@string/queue_empty"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@color/white"
         android:visibility="gone" />
-
     <include
         android:id="@+id/queue_toolbar"
         layout="@layout/include_queue_toolbar"

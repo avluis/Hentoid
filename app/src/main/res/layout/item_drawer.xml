@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="8dp"
-    android:paddingLeft="8dp"
     android:paddingTop="4dp"
     android:paddingBottom="4dp">
 
@@ -27,11 +25,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="48dp"
-        android:layout_marginLeft="48dp"
         android:background="?attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:minHeight="@dimen/drawer_item_height"
-        android:textColor="@color/white"
         android:textSize="@dimen/text_body_1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"

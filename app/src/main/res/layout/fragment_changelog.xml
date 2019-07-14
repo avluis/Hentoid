@@ -3,20 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?attr/colorSurface"
     tools:context=".activities.AboutActivity">
 
     <TextView
         android:id="@+id/changelogDownloadLatestText"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/secondary"
+        android:background="?attr/colorSecondary"
         android:clickable="true"
         android:focusable="true"
         android:gravity="center_vertical"
         android:padding="16dp"
         android:textAllCaps="true"
-        android:textColor="@color/white"
         android:textSize="@dimen/text_subtitle_1"
         android:textStyle="bold"
         android:visibility="gone"

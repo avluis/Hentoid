@@ -7,7 +7,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white"
+        android:background="?colorSurface"
         android:orientation="vertical"
         android:padding="10dp">
 
@@ -31,36 +31,34 @@
                 android:id="@+id/ivSource"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:background="@color/secondary"
-                android:scaleType="fitXY"
+                android:background="?colorSecondary"
                 android:padding="1dp"
+                android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_menu_fakku" />
 
             <TextView
-                    android:id="@+id/tvTitle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginLeft="10dp"
-                    android:layout_marginRight="10dp"
-                    android:textSize="@dimen/text_subtitle_1"
-                    android:textColor="@color/secondary"
-                    android:textStyle="bold"
-                    tools:text="The Best Thing Ever Made" />
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="10dp"
+                android:layout_marginRight="10dp"
+                android:textColor="?colorSecondary"
+                android:textSize="@dimen/text_subtitle_1"
+                android:textStyle="bold"
+                tools:text="The Best Thing Ever Made" />
 
         </LinearLayout>
 
         <View
             android:layout_width="fill_parent"
             android:layout_height="1dp"
-            android:layout_marginBottom="5dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginLeft="1dp"
-            android:layout_marginRight="10dp"
             android:layout_marginStart="1dp"
             android:layout_marginTop="5dp"
-            android:background="@android:color/holo_red_light" />
+            android:layout_marginEnd="10dp"
+            android:layout_marginBottom="5dp"
+            android:background="?colorSecondary" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -72,8 +70,8 @@
                 android:id="@+id/ivCover"
                 android:layout_width="100dp"
                 android:layout_height="match_parent"
-                android:scaleType="centerInside"
                 android:padding="1dp"
+                android:scaleType="centerInside"
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_placeholder" />
 
@@ -89,7 +87,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black"
+                    android:textColor="?colorOnSurface"
                     tools:text="Best Series Ever" />
 
                 <TextView
@@ -98,32 +96,28 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black"
+                    android:textColor="?colorOnSurface"
                     tools:text="Best Author Ever" />
 
                 <View
                     android:layout_width="fill_parent"
                     android:layout_height="1dp"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginLeft="1dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginStart="1dp"
                     android:layout_marginTop="5dp"
-                    android:background="@android:color/holo_red_light" />
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="?colorSecondary" />
 
                 <TextView
                     android:id="@+id/tvTags"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal|start"
-                    android:layout_marginBottom="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_marginLeft="1dp"
-                    android:layout_marginRight="10dp"
                     android:layout_marginStart="1dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="5dp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="@android:color/black"
+                    android:textColor="?colorOnSurface"
                     tools:text="Best Set of TAGs Ever\nToo Awesome to pass up" />
             </LinearLayout>
         </LinearLayout>
@@ -132,7 +126,7 @@
             android:layout_width="fill_parent"
             android:layout_height="1dp"
             android:layout_margin="10dp"
-            android:background="@android:color/holo_red_light" />
+            android:background="?colorSecondary" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -164,16 +158,26 @@
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_arrow_down" />
 
-            <Button
+            <TextView
                 android:id="@+id/btnCancel"
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="80dp"
                 android:layout_height="40dp"
                 android:text="@string/cancel"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+            <!--
+            <Button
+                android:id="@+id/btnCancel"
+                style="?android:attr/borderlessButtonStyle"
+                android:backgroundTint="?colorSurface"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
+                android:text="@string/cancel"
                 android:textColor="@android:color/black"
                 android:textStyle="bold"
-                tools:ignore="ButtonOrder"
-                />
+                tools:ignore="ButtonOrder" />
+                -->
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

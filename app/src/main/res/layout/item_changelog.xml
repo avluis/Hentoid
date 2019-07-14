@@ -9,7 +9,7 @@
         android:id="@+id/changelogReleaseLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="?colorSurface"
         android:orientation="vertical"
         android:padding="16dp"
         app:layout_constraintTop_toTopOf="parent">
@@ -20,7 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"
-            android:textColor="@color/secondary"
+            android:textColor="?colorSecondary"
             android:textSize="@dimen/text_subtitle_1"
             android:textStyle="bold"
             tools:text="Hentoid v99.99" />
@@ -32,7 +32,7 @@
             android:layout_gravity="center_horizontal"
             android:layout_marginBottom="16dp"
             android:text="@string/changelog"
-            android:textColor="@color/medium_gray"
+            android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_subtitle_1"
             android:textStyle="bold" />
 
@@ -40,7 +40,7 @@
             android:id="@+id/changelogReleaseDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
+            android:background="?colorSurface"
             android:orientation="vertical"
             android:scrollbars="none"
             tools:listitem="@layout/item_text" />

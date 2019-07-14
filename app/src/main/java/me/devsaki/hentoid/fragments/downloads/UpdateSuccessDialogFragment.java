@@ -37,7 +37,7 @@ public class UpdateSuccessDialogFragment extends DialogFragment {
 
     public static void invoke(FragmentManager fragmentManager) {
         UpdateSuccessDialogFragment fragment = new UpdateSuccessDialogFragment();
-        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.DownloadsDialog);
+        fragment.setStyle(DialogFragment.STYLE_NO_FRAME, R.style.Dialog);
         fragment.show(fragmentManager, null);
     }
 

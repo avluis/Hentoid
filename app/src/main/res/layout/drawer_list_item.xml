@@ -6,7 +6,7 @@
     android:foreground="?android:attr/selectableItemBackground"
     android:minHeight="@dimen/drawer_item_height"
     android:orientation="horizontal"
-    tools:background="@color/drawer_list_background">
+    tools:background="?attr/colorPrimary">
 
     <TextView
         android:id="@+id/drawer_item_title"
@@ -15,9 +15,7 @@
         android:layout_gravity="center_vertical|start"
         android:drawablePadding="@dimen/drawer_item_drawable_padding_start"
         android:gravity="center_vertical"
-        android:paddingLeft="@dimen/drawer_item_padding_start"
         android:paddingStart="@dimen/drawer_item_padding_start"
-        android:textColor="@color/drawer_item_tint_color"
         tools:drawableLeft="@drawable/ic_menu_about"
         tools:ignore="RtlSymmetry"
         tools:text="About" />
