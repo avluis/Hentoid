@@ -9,21 +9,20 @@
     android:layout_marginEnd="16dp"
     android:layout_marginRight="16dp"
     android:background="?colorSurface"
-    android:minWidth="300dp"
     android:orientation="vertical"
     android:padding="16dp"
     android:theme="@style/AppTheme">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?colorSurface">
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/viewer_prefs_title"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:text="@string/viewer_prefs_title"
+            android:gravity="center"
             android:textAlignment="center"
             android:textColor="?colorOnSurface"
             android:textSize="@dimen/text_header_6"
@@ -259,11 +258,11 @@
             android:id="@+id/viewer_prefs_fling_sensitivity"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:colorControlActivated="?colorSecondary"
             android:max="100"
             android:padding="8dp"
             android:progressBackgroundTint="?colorOnSurface"
             android:progressTint="?colorSecondary"
-            android:colorControlActivated="?colorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/viewer_prefs_fling_sensitivity_title" />
