@@ -12,6 +12,7 @@
     <!-- App palette -->
     <color name="dark_red">#470000</color>
     <color name="very_dark_red">#3f0000</color>
+    <color name="super_dark_red">#2b0000</color>
     <color name="taupe">#592828</color>
     <color name="accent_red">#b25959</color>
     <color name="light_red">#ffebee</color>

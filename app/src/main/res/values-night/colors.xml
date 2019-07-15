@@ -1,32 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="primary">@color/very_dark_red</color>
-    <color name="primary_variant">@color/dark_gray</color>
+    <color name="primary_variant">@color/super_dark_red</color>
     <color name="secondary">@color/accent_red</color>
     <color name="secondary_variant">@color/light_red</color>
     <color name="surface">@color/dark_gray</color>
     <color name="on_surface">@color/light_gray</color>
     <color name="window_background">@color/taupe</color>
     <color name="ripple">@color/light_red</color>
-
-    <!-- App palette -->
-    <color name="dark_red">#470000</color>
-    <color name="very_dark_red">#3f0000</color>
-    <color name="taupe">#592828</color>
-    <color name="accent_red">#b25959</color>
-    <color name="light_red">#ffebee</color>
-    <color name="very_dark_pink">#6d0721</color>
-
-    <!-- Neutral Colors -->
-    <color name="white">#FFFFFF</color>
-    <color name="black">#000000</color>
-    <color name="light_gray">#aaaaaa</color>
-    <color name="medium_gray">#888888</color>
-    <color name="dark_gray">#FF444444</color>
-    <color name="black_opacity_50">#80000000</color>
-    <color name="white_opacity_66">#AAFFFFFF</color>
-
-    <!-- Derived Colors (e.g.; with alpha, etc.) -->
-    <color name="transparent">#00000000</color>
-    <color name="item_highlight">#28FFFFFF</color>
 </resources>
