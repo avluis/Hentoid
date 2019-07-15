@@ -22,8 +22,10 @@ import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.events.ImportEvent;
+import me.devsaki.hentoid.notification.maintenance.MaintenanceNotification;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.LogUtil;
+import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
 /**
@@ -32,6 +34,9 @@ import timber.log.Timber;
  * @see UpdateCheckService
  */
 public class DatabaseMigrationService extends IntentService {
+
+    private ServiceNotificationManager notificationManager;
+
 
     public DatabaseMigrationService() {
         super(DatabaseMigrationService.class.getName());
@@ -45,11 +50,13 @@ public class DatabaseMigrationService extends IntentService {
     public void onCreate() {
         super.onCreate();
 
+        notificationManager = new ServiceNotificationManager(this, 0);
         Timber.w("Service created");
     }
 
     @Override
     public void onDestroy() {
+        notificationManager.cancel();
         Timber.w("Service destroyed");
 
         super.onDestroy();
@@ -63,6 +70,7 @@ public class DatabaseMigrationService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        notificationManager.startForeground(new MaintenanceNotification("Performing database migration"));
         cleanUpDB();
         migrate();
     }
