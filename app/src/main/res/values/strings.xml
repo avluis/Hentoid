@@ -48,7 +48,7 @@
     <string name="work_untitled" translatable="false">[No data]</string>
     <string name="work_series"><![CDATA[<b>Series:</b> @series@]]></string>
     <string name="work_artist"><![CDATA[<b>Artist:</b> @artist@]]></string>
-    <string name="work_tags" translatable="false"><![CDATA[<font color="#B40404"><b>@tag@</b></font>]]></string>
+    <string name="work_tags" translatable="false"><![CDATA[<b>@tag@</b>]]></string>
     <!-- Refresh library -->
     <string name="refresh_title">Refresh library</string>
     <string name="refresh_caption">Automatically refresh the whole library by rescanning disk data.</string>
