@@ -9,8 +9,8 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="colorSurface">@color/dark_gray</item>
-        <item name="colorOnSurface">@color/light_gray</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>
@@ -27,8 +27,8 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="colorSurface">@color/dark_gray</item>
-        <item name="colorOnSurface">@color/light_gray</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>

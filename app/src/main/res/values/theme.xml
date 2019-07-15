@@ -9,8 +9,8 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="colorSurface">@color/white</item>
-        <item name="colorOnSurface">@color/medium_gray</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>
@@ -27,8 +27,8 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
         <item name="colorOnSecondary">@color/white</item>
-        <item name="colorSurface">@color/white</item>
-        <item name="colorOnSurface">@color/medium_gray</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/window_background</item>
         <item name="colorOnBackground">@color/white</item>
         <item name="alertDialogTheme">@style/Dialog</item>
@@ -53,7 +53,7 @@
         <item name="android:windowBackground">@color/black</item>
     </style>
 
-    <style name="AppTheme.NoActionBar.Overlay">
+    <style name="AppTheme.NoActionBar.Overlay" parent="AppTheme.NoActionBar">
         <item name="windowActionModeOverlay">true</item>
     </style>
 
