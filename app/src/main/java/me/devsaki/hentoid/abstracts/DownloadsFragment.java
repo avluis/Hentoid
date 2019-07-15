@@ -293,19 +293,20 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         if (MODE_LIBRARY == mode) {
             if (PermissionUtil.requestExternalStoragePermission(requireActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
                 boolean shouldUpdate = queryPrefs();
-                if (shouldUpdate || -1 == mTotalSelectedCount)
-                    searchLibrary(); // If prefs changes detected or first run (-1 = uninitialized)
+
+                // Run a search if prefs changes detected or first run (-1 = uninitialized)
+                if (shouldUpdate || -1 == mTotalSelectedCount || 0 == mAdapter.getItemCount()) searchLibrary();
+
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
                 showToolbar(true);
             } else {
                 Timber.d("Storage permission denied!");
-                if (storagePermissionChecked) {
-                    resetApp();
-                }
+                if (storagePermissionChecked) resetApp();
                 storagePermissionChecked = true;
             }
         } else if (MODE_MIKAN == mode) {
-            if (-1 == mTotalSelectedCount) searchLibrary();
+            if (-1 == mTotalSelectedCount  || 0 == mAdapter.getItemCount()) searchLibrary();
+
             showToolbar(true);
         }
     }
