@@ -35,6 +35,7 @@
         android:focusable="true"
         android:padding="8dp"
         android:src="@drawable/ic_action_download"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/changelogDownloadLatestText"
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"

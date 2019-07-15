@@ -37,6 +37,7 @@ public class ChangelogFragment extends Fragment {
 
     // Download bar
     private TextView downloadLatestText;
+    private View downloadLatestButton;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,7 +50,7 @@ public class ChangelogFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_changelog, container, false);
 
         downloadLatestText = requireViewById(rootView, R.id.changelogDownloadLatestText);
-        View downloadLatestButton = requireViewById(rootView, R.id.changelogDownloadLatestButton);
+        downloadLatestButton = requireViewById(rootView, R.id.changelogDownloadLatestButton);
         downloadLatestText.setOnClickListener(this::onDownloadClick);
         downloadLatestButton.setOnClickListener(this::onDownloadClick);
 
@@ -115,6 +116,7 @@ public class ChangelogFragment extends Fragment {
     private void enableDownloadBar(String latestTagName) {
         downloadLatestText.setText(downloadLatestText.getContext().getString(R.string.get_latest).replace("@v", latestTagName));
         downloadLatestText.setVisibility(View.VISIBLE);
+        downloadLatestButton.setVisibility(View.VISIBLE);
     }
 
     private void onDownloadClick(View v) {
