@@ -300,7 +300,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
-        static final int PREF_VIEWER_FLING_FACTOR = 50;
+        static final int PREF_VIEWER_FLING_FACTOR = 0;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
