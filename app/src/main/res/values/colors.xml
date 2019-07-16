@@ -21,6 +21,7 @@
     <!-- Neutral Colors -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="cod_gray">#121212</color>
     <color name="light_gray">#aaaaaa</color>
     <color name="medium_gray">#888888</color>
     <color name="dark_gray">#FF444444</color>

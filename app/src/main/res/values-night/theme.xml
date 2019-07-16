@@ -50,7 +50,7 @@
         <item name="colorPrimary">@color/white</item>
         <item name="colorPrimaryVariant">@color/black_opacity_50</item>
         <item name="colorOnPrimary">@color/light_gray</item>
-        <item name="android:windowBackground">@color/black</item>
+        <item name="android:windowBackground">@color/cod_gray</item>
     </style>
 
     <style name="AppTheme.NoActionBar.Overlay">
