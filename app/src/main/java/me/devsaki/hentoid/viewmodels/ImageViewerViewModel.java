@@ -35,7 +35,7 @@ import me.devsaki.hentoid.database.ObjectBoxCollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Consts;
 import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.Preferences;
@@ -47,28 +47,28 @@ import static android.os.Build.VERSION_CODES.LOLLIPOP;
 import static com.annimon.stream.Collectors.toList;
 
 
-public class ImageViewerViewModel extends AndroidViewModel implements ContentListener {
+public class ImageViewerViewModel extends AndroidViewModel implements PagedResultListener<Long> {
 
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
 
     // Settings
-    /**
-     * True if images have to be shuffled; false if presented in the book order
-     */
-    private boolean isShuffled;
+    private boolean isShuffled;                                                      // True if images have to be shuffled; false if presented in the book order
     private BooleanConsumer onShuffledChangeListener;
+
+    // Collection data
+    private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
+    private List<Long> contentIds = Collections.emptyList();                         // Content Ids of the whole collection ordered according to current filter
+    private int currentContentIndex = -1;                                            // Index of current content within the above list
+    private long loadedContentId = -1;                                               // Content ID that has been initially loaded
 
     // Pictures data
     private final MutableLiveData<List<ImageFile>> images = new MutableLiveData<>();    // Currently displayed set of images
     private final MutableLiveData<Integer> startingIndex = new MutableLiveData<>();     // 0-based index of the current image
 
-    // Collection data
-    private final MutableLiveData<Content> content = new MutableLiveData<>();        // Current content
-    private long maxPages;                                                           // Maximum available pages
-
     // Technical
     private ContentSearchManager searchManager = null;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
+
 
 
     public ImageViewerViewModel(@NonNull Application application) {
@@ -111,13 +111,25 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
         }
     }
 
-    public void loadFromSearchParams(@Nonnull Bundle bundle) {
+    public void loadFromSearchParams(long contentId, @Nonnull Bundle bundle) {
+        loadedContentId = contentId;
         Context ctx = getApplication().getApplicationContext();
         searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
         searchManager.loadFromBundle(bundle, ctx);
         int contentIndex = bundle.getInt("contentIndex", -1);
         if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
-        searchManager.searchLibrary(1, this);
+        searchManager.searchLibraryForId(-1, this);
+    }
+
+    @Override
+    public void onPagedResultReady(List<Long> results, long totalSelectedContent, long totalContent) {
+        contentIds = results;
+        loadFromContent(loadedContentId);
+    }
+
+    @Override
+    public void onPagedResultFailed(Long contentId, String message) {
+        ToastUtil.toast("Book list loading failed");
     }
 
     public void setImages(List<ImageFile> imgs) {
@@ -221,30 +233,19 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
     }
 
     public void loadNextContent() {
-        if (searchManager.getCurrentPage() < maxPages) // Need to load next content page
-        {
-            searchManager.increaseCurrentPage();
-            searchManager.searchLibrary(1, this);
-        }
+        if (currentContentIndex < contentIds.size() - 1) currentContentIndex++;
+        loadFromContent(contentIds.get(currentContentIndex));
     }
 
     public void loadPreviousContent() {
-        if (searchManager.getCurrentPage() > 1) // Need to load previous content page
-        {
-            searchManager.decreaseCurrentPage();
-            searchManager.searchLibrary(1, this);
-        }
-    }
-
-    @Override
-    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
-        maxPages = totalContent;
-        processContent(results.get(0));
+        if (currentContentIndex > 0) currentContentIndex--;
+        loadFromContent(contentIds.get(currentContentIndex));
     }
 
     private void processContent(Content theContent) {
-        theContent.setFirst(0 == theContent.getQueryOrder());
-        theContent.setLast(maxPages - 1 == theContent.getQueryOrder());
+        currentContentIndex = contentIds.indexOf(theContent.getId());
+        theContent.setFirst(0 == currentContentIndex);
+        theContent.setLast(currentContentIndex == contentIds.size() - 1);
         content.setValue(theContent);
 
         // Load new content
@@ -289,11 +290,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements ContentLis
                 images.remove(i);
             } else i++;
         }
-    }
-
-    @Override
-    public void onContentFailed(Content content, String message) {
-        ToastUtil.toast("Book list loading failed");
     }
 
     @WorkerThread

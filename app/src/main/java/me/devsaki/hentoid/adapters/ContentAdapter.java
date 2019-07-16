@@ -47,7 +47,7 @@ import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.listener.ContentClickListener;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.ui.BlinkAnimation;
 import me.devsaki.hentoid.util.ContentNotRemovedException;
@@ -61,7 +61,7 @@ import timber.log.Timber;
  * Created by avluis on 04/23/2016. RecyclerView based Content Adapter
  * TODO - Consider replacing with https://github.com/davideas/FlexibleAdapter
  */
-public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements ContentListener {
+public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implements PagedResultListener<Content> {
 
     private static final int VISIBLE_THRESHOLD = 10;
 
@@ -805,10 +805,10 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
         mSortedList.endBatchedUpdates();
     }
 
-    // ContentListener implementation -- Mikan mode only
+    // PagedResultListener implementation -- Mikan mode only
     // Listener for pages retrieval (Mikan mode only)
     @Override
-    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
+    public void onPagedResultReady(List<Content> results, long totalSelectedContent, long totalContent) {
         if (1 == results.size()) // 1 content with pages
         {
             downloadContent(results.get(0));
@@ -817,7 +817,7 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
 
     // Listener for error visual feedback (Mikan mode only)
     @Override
-    public void onContentFailed(Content content, String message) {
+    public void onPagedResultFailed(Content content, String message) {
         Timber.w(message);
         Snackbar snackbar = Snackbar.make(libraryView, message, Snackbar.LENGTH_LONG);
 

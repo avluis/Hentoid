@@ -11,9 +11,10 @@ import javax.annotation.Nonnull;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
+import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.util.Preferences;
 
 public class ContentSearchManager {
@@ -127,13 +128,23 @@ public class ContentSearchManager {
         }
     }
 
-    public void searchLibrary(int booksPerPage, ContentListener listener) {
+    public void searchLibraryForContent(int booksPerPage, PagedResultListener<Content> listener) {
         if (!getQuery().isEmpty())
-            accessor.searchBooksUniversal(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
+            accessor.searchBooksUniversalPaged(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
         else if (!tags.isEmpty())
-            accessor.searchBooks("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
+            accessor.searchBooksPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
         else
-            accessor.getRecentBooks(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
+            accessor.getRecentBooksPaged(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
+        // TODO : do something about these ridiculous default 1st arguments
+    }
+
+    public void searchLibraryForId(int booksPerPage, PagedResultListener<Long> listener) {
+        if (!getQuery().isEmpty())
+            accessor.searchBookIdsUniversalPaged(getQuery(), currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Universal search
+        else if (!tags.isEmpty())
+            accessor.searchBookIdsPaged("", tags, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Advanced search
+        else
+            accessor.getRecentBookIdsPaged(Site.HITOMI, Language.ANY, currentPage, booksPerPage, contentSortOrder, filterFavourites, listener); // Default search (display recent)
         // TODO : do something about these ridiculous default 1st arguments
     }
 

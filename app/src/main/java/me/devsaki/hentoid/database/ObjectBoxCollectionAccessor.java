@@ -17,8 +17,9 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
+import me.devsaki.hentoid.util.Helper;
 
 public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
@@ -33,6 +34,12 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     private final int MODE_SEARCH_ATTRIBUTE_TEXT = 0;
     private final int MODE_SEARCH_ATTRIBUTE_AVAILABLE = 1;
     private final int MODE_SEARCH_ATTRIBUTE_COMBINED = 2;
+
+    static class ContentIdQueryResult {
+        long[] pagedContentIds;
+        long totalContent;
+        long totalSelectedContent;
+    }
 
     static class ContentQueryResult {
         List<Content> pagedContents;
@@ -56,67 +63,106 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
 
     @Override
-    public void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+    public void getRecentBooksPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> contentSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                        () -> pagedContentSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
+                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
         );
     }
 
     @Override
-    public void getPages(Content content, ContentListener listener) {
+    public void getRecentBookIdsPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
+        compositeDisposable.add(
+                Single.fromCallable(
+                        () -> pagedContentIdSearch(MODE_SEARCH_CONTENT_MODULAR, "", Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(contentIdQueryResult -> listener.onPagedResultReady(
+                                Helper.getListFromPrimitiveArray(contentIdQueryResult.pagedContentIds), contentIdQueryResult.totalSelectedContent, contentIdQueryResult.totalContent))
+        );
+    }
+
+    @Override
+    public void getPages(Content content, PagedResultListener<Content> listener) {
         throw new UnsupportedOperationException("Not implemented");
     }
 
     @Override
-    public void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+    public void searchBooksPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
+                        () -> pagedContentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
+                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
         );
     }
 
     @Override
-    public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener) {
+    public void searchBookIdsPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> contentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
+                        () -> pagedContentIdSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
+                        .subscribe(contentIdQueryResult -> listener.onPagedResultReady(
+                                Helper.getListFromPrimitiveArray(contentIdQueryResult.pagedContentIds), contentIdQueryResult.totalSelectedContent, contentIdQueryResult.totalContent))
         );
     }
 
     @Override
-    public void searchBooksUniversal(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener) {
+    public void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> contentSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                        () -> pagedContentSearch(MODE_SEARCH_CONTENT_MODULAR, query, metadata, 1, 1, 1, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
+                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
         );
     }
 
     @Override
-    public void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener) {
+    public void searchBooksUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
-                        () -> contentSearch(MODE_COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly)
+                        () -> pagedContentSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
                 )
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(contentQueryResult -> listener.onContentReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
+                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
+        );
+    }
+
+    @Override
+    public void searchBookIdsUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
+        compositeDisposable.add(
+                Single.fromCallable(
+                        () -> pagedContentIdSearch(MODE_SEARCH_CONTENT_UNIVERSAL, query, Collections.emptyList(), page, booksPerPage, orderStyle, favouritesOnly)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(contentIdQueryResult -> listener.onPagedResultReady(
+                                Helper.getListFromPrimitiveArray(contentIdQueryResult.pagedContentIds), contentIdQueryResult.totalSelectedContent, contentIdQueryResult.totalContent))
+        );
+    }
+
+    @Override
+    public void countBooksUniversal(String query, boolean favouritesOnly, PagedResultListener<Content> listener) {
+        compositeDisposable.add(
+                Single.fromCallable(
+                        () -> pagedContentSearch(MODE_COUNT_CONTENT_UNIVERSAL, query, Collections.emptyList(), 1, 1, 1, favouritesOnly)
+                )
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(contentQueryResult -> listener.onPagedResultReady(contentQueryResult.pagedContents, contentQueryResult.totalSelectedContent, contentQueryResult.totalContent))
         );
     }
 
@@ -133,7 +179,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     }
 
     @Override
-    public void getPagedAttributeMasterData(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
+    public void getAttributeMasterDataPaged(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
                         () -> pagedAttributeSearch(MODE_SEARCH_ATTRIBUTE_TEXT, types, filter, Collections.emptyList(), false, orderStyle, page, booksPerPage)
@@ -167,7 +213,7 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     }
 
     @Override
-    public void getPagedAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
+    public void getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
         compositeDisposable.add(
                 Single.fromCallable(
                         () -> pagedAttributeSearch(MODE_SEARCH_ATTRIBUTE_COMBINED, types, filter, attrs, filterFavourites, orderStyle, page, booksPerPage)
@@ -207,11 +253,11 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
         compositeDisposable.clear();
     }
 
-    private ContentQueryResult contentSearch(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
+    private ContentQueryResult pagedContentSearch(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
 
 // StringBuilder sb = new StringBuilder();
 // for (Attribute a : metadata) sb.append(a.getName()).append(";");
-// timber.log.Timber.i("contentSearch mode=" + mode +",filter=" + filter +",meta=" + sb.toString() + ",p=" + page +",bpp=" +  booksPerPage +",os=" +  orderStyle +",fav=" + favouritesOnly);
+// timber.log.Timber.i("pagedContentSearch mode=" + mode +",filter=" + filter +",meta=" + sb.toString() + ",p=" + page +",bpp=" +  booksPerPage +",os=" +  orderStyle +",fav=" + favouritesOnly);
 
         ContentQueryResult result = new ContentQueryResult();
 
@@ -235,7 +281,32 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
 
 // sb = new StringBuilder();
 //  for (Content c : result.pagedContents) sb.append(c.getId()).append(";");
-//  timber.log.Timber.i("contentSearch result [%s] : %s", result.totalSelectedContent, sb.toString());
+//  timber.log.Timber.i("pagedContentSearch result [%s] : %s", result.totalSelectedContent, sb.toString());
+
+        return result;
+    }
+
+    private ContentIdQueryResult pagedContentIdSearch(int mode, String filter, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly) {
+
+        ContentIdQueryResult result = new ContentIdQueryResult();
+
+        if (MODE_SEARCH_CONTENT_MODULAR == mode) {
+            result.pagedContentIds = db.selectContentSearchId(filter, page, booksPerPage, metadata, favouritesOnly, orderStyle);
+        } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode) {
+            result.pagedContentIds = db.selectContentUniversalId(filter, page, booksPerPage, favouritesOnly, orderStyle);
+        } else {
+            result.pagedContentIds = new long[0];
+        }
+        // Fetch total query count (i.e. total number of books corresponding to the given filter, in all pages)
+        if (MODE_SEARCH_CONTENT_MODULAR == mode || MODE_COUNT_CONTENT_MODULAR == mode) {
+            result.totalSelectedContent = db.countContentSearch(filter, metadata, favouritesOnly);
+        } else if (MODE_SEARCH_CONTENT_UNIVERSAL == mode || MODE_COUNT_CONTENT_UNIVERSAL == mode) {
+            result.totalSelectedContent = db.countContentUniversal(filter, favouritesOnly);
+        } else {
+            result.totalSelectedContent = 0;
+        }
+        // Fetch total book count (i.e. total number of books in all the collection, regardless of filter)
+        result.totalContent = db.countAllContent();
 
         return result;
     }

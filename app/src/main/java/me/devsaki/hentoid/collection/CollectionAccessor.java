@@ -9,26 +9,36 @@ import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Language;
 import me.devsaki.hentoid.enums.Site;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.listener.ResultListener;
 
 public interface CollectionAccessor {
 
-    void getRecentBooks(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
+    // BOOKS
 
-    void getPages(Content content, ContentListener listener);
+    void getRecentBooksPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener);
 
-    void searchBooks(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
+    void getRecentBookIdsPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
 
-    void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, ContentListener listener);
+    void getPages(Content content, PagedResultListener<Content> listener);
 
-    void searchBooksUniversal(String query,  int page, int booksPerPage, int orderStyle, boolean favouritesOnly, ContentListener listener);
+    void searchBooksPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener);
 
-    void countBooksUniversal(String query, boolean favouritesOnly, ContentListener listener);
+    void searchBookIdsPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
+
+    void countBooks(String query, List<Attribute> metadata, boolean favouritesOnly, PagedResultListener<Content> listener);
+
+    void searchBooksUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Content> listener);
+
+    void searchBookIdsUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener);
+
+    void countBooksUniversal(String query, boolean favouritesOnly, PagedResultListener<Content> listener);
+
+    // ATTRIBUTES
 
     void getAttributeMasterData(List<AttributeType> types, String filter, int sortOrder, ResultListener<List<Attribute>> listener);
 
-    void getPagedAttributeMasterData(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener);
+    void getAttributeMasterDataPaged(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener);
 
     boolean supportsAvailabilityFilter();
 
@@ -36,7 +46,7 @@ public interface CollectionAccessor {
 
     void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, ResultListener<List<Attribute>> listener);
 
-    void getPagedAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener);
+    void getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener);
 
     void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener);
 
