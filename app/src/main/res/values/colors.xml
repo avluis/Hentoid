@@ -9,11 +9,19 @@
     <color name="window_background">@color/taupe</color>
     <color name="ripple">@color/light_red</color>
 
+    <!-- Content cards -->
+    <color name="card_surface">@color/white</color>
+    <color name="card_selected">@color/light_red</color>
+    <color name="card_pressed">@color/light_gray</color>
+    <color name="card_tags">@color/light_gray</color>
+
     <!-- App palette -->
     <color name="dark_red">#470000</color>
     <color name="very_dark_red">#3f0000</color>
     <color name="super_dark_red">#2b0000</color>
     <color name="taupe">#592828</color>
+    <color name="taupe_elevated_1">#672e2e</color>
+    <color name="taupe_elevated_2">#743434</color>
     <color name="accent_red">#b25959</color>
     <color name="light_red">#ffebee</color>
     <color name="very_dark_pink">#6d0721</color>
@@ -27,6 +35,7 @@
     <color name="dark_gray">#FF444444</color>
     <color name="black_opacity_50">#80000000</color>
     <color name="white_opacity_66">#AAFFFFFF</color>
+    <color name="white_opacity_87">#DEFFFFFF</color>
 
     <!-- Derived Colors (e.g.; with alpha, etc.) -->
     <color name="transparent">#00000000</color>

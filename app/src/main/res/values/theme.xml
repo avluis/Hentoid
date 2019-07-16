@@ -5,14 +5,14 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/white_opacity_87</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
-        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSecondary">@color/white_opacity_87</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/window_background</item>
-        <item name="colorOnBackground">@color/white</item>
+        <item name="colorOnBackground">@color/white_opacity_87</item>
         <item name="alertDialogTheme">@style/Dialog</item>
         <item name="dialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
@@ -23,14 +23,14 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/white_opacity_87</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
-        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSecondary">@color/white_opacity_87</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/window_background</item>
-        <item name="colorOnBackground">@color/white</item>
+        <item name="colorOnBackground">@color/white_opacity_87</item>
         <item name="alertDialogTheme">@style/Dialog</item>
         <item name="dialogTheme">@style/Dialog</item>
         <item name="actionBarTheme">@style/ActionBar</item>
@@ -38,12 +38,16 @@
 
     <style name="ActionBar">
         <item name="colorSurface">@color/primary</item>
-        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurface">@color/white_opacity_87</item>
     </style>
 
     <style name="ActionBarPopup">
         <item name="android:background">@color/dark_gray</item>
         <item name="colorSurface">@color/dark_gray</item>
+    </style>
+
+    <style name="DownloadCard" parent="AppTheme">
+        <item name="colorSurface">@color/card_surface</item>
     </style>
 
     <style name="AppTheme.NoActionBar.Monochrome">
@@ -79,18 +83,18 @@
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSurface">@color/primary</item>
-        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurface">@color/white_opacity_87</item>
         <item name="android:windowBackground">@color/window_background</item>
-        <item name="android:textColor">@color/white</item>
-        <item name="android:textColorPrimary">@color/white</item>
-        <item name="android:textColorSecondary">@color/white</item>
-        <item name="android:editTextColor">@color/white</item>
-        <item name="textColorAlertDialogListItem">@color/white</item>
+        <item name="android:textColor">@color/white_opacity_87</item>
+        <item name="android:textColorPrimary">@color/white_opacity_87</item>
+        <item name="android:textColorSecondary">@color/white_opacity_87</item>
+        <item name="android:editTextColor">@color/white_opacity_87</item>
+        <item name="textColorAlertDialogListItem">@color/white_opacity_87</item>
         <item name="android:checkboxStyle">@style/DialogCheckbox</item>
     </style>
 
     <style name="DialogCheckbox" parent="Widget.AppCompat.CompoundButton.CheckBox">
-        <item name="android:textColor">@color/white</item>
+        <item name="android:textColor">@color/white_opacity_87</item>
     </style>
 
 
@@ -135,6 +139,6 @@
         <item name="colorPrimaryVariant">@color/primary_variant</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="android:windowBackground">@drawable/bg_pin_dialog</item>
-        <item name="actionMenuTextColor">@color/white</item>
+        <item name="actionMenuTextColor">@color/white_opacity_87</item>
     </style>
 </resources>

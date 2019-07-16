@@ -5,7 +5,13 @@
     <color name="secondary">@color/accent_red</color>
     <color name="secondary_variant">@color/light_red</color>
     <color name="surface">@color/dark_gray</color>
-    <color name="on_surface">@color/light_gray</color>
+    <color name="on_surface">@color/white_opacity_87</color>
     <color name="window_background">@color/taupe</color>
-    <color name="ripple">@color/light_red</color>
+    <color name="ripple">@color/medium_gray</color>
+
+    <!-- Content cards -->
+    <color name="card_surface">@color/taupe_elevated_1</color>
+    <color name="card_selected">@color/taupe_elevated_2</color>
+    <color name="card_pressed">@color/primary_variant</color>
+    <color name="card_tags">@color/white_opacity_66</color>
 </resources>

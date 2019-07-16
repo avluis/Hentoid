@@ -5,10 +5,10 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/white_opacity_87</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
-        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSecondary">@color/white_opacity_87</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/window_background</item>
@@ -23,10 +23,10 @@
         <item name="preferenceTheme">@style/PreferenceThemeOverlay.v14.Material</item>
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_variant</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorOnPrimary">@color/white_opacity_87</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSecondaryVariant">@color/secondary_variant</item>
-        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorOnSecondary">@color/white_opacity_87</item>
         <item name="colorSurface">@color/surface</item>
         <item name="colorOnSurface">@color/on_surface</item>
         <item name="android:colorBackground">@color/window_background</item>
@@ -38,7 +38,7 @@
 
     <style name="ActionBar">
         <item name="colorSurface">@color/primary</item>
-        <item name="colorOnSurface">@color/white</item>
+        <item name="colorOnSurface">@color/white_opacity_87</item>
     </style>
 
     <style name="ActionBarPopup">
@@ -46,8 +46,12 @@
         <item name="colorSurface">@color/dark_gray</item>
     </style>
 
+    <style name="DownloadCard" parent="AppTheme">
+        <item name="colorSurface">@color/card_surface</item>
+    </style>
+
     <style name="AppTheme.NoActionBar.Monochrome">
-        <item name="colorPrimary">@color/white</item>
+        <item name="colorPrimary">@color/white_opacity_87</item>
         <item name="colorPrimaryVariant">@color/black_opacity_50</item>
         <item name="colorOnPrimary">@color/light_gray</item>
         <item name="android:windowBackground">@color/cod_gray</item>

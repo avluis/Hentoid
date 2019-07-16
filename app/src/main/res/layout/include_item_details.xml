@@ -46,7 +46,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="5dp"
-            android:background="?colorSecondary" />
+            android:background="?colorPrimary" />
 
         <TextView
             android:id="@+id/tvTags"
@@ -57,7 +57,7 @@
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="5dp"
             android:textAppearance="?android:attr/textAppearanceSmall"
-            android:textColor="?colorSecondary"
+            android:textColor="@color/card_tags"
             tools:text="tag1, tag2, tag3, etc." />
     </LinearLayout>
 </LinearLayout>
