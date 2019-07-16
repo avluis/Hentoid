@@ -20,7 +20,7 @@ public class MaintenanceNotification implements Notification {
     @NonNull
     @Override
     public android.app.Notification onCreateNotification(Context context) {
-        return new NotificationCompat.Builder(context)
+        return new NotificationCompat.Builder(context, MaintenanceNotificationChannel.ID)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setContentTitle(context.getString(R.string.maintenance))
                 .setContentText(title)

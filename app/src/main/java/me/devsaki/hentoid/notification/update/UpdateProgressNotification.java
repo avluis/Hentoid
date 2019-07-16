@@ -24,6 +24,7 @@ public class UpdateProgressNotification implements Notification {
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setContentTitle("Downloading update")
                 .setProgress(100, progress, progress == INDETERMINATE)
+                .setOnlyAlertOnce(true)
                 .build();
     }
 }
