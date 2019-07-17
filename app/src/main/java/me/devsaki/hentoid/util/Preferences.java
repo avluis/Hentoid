@@ -2,12 +2,13 @@ package me.devsaki.hentoid.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
-
-import androidx.appcompat.app.AppCompatDelegate;
 
 import me.devsaki.hentoid.BuildConfig;
 import timber.log.Timber;
+
+import static android.os.Build.VERSION_CODES.P;
 
 /**
  * Created by Shiro on 2/21/2018.
@@ -314,7 +315,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
         static final int PREF_VIEWER_FLING_FACTOR = 0;
-        static final int PREF_VIEWER_DARK_MODE = Constant.DARK_MODE_DEVICE;
+        static final int PREF_VIEWER_DARK_MODE = (Build.VERSION.SDK_INT > P) ? Constant.DARK_MODE_DEVICE : Constant.DARK_MODE_OFF;
     }
 
     // IMPORTANT : Any value change must be mirrored in res/values/array_preferences.xml
