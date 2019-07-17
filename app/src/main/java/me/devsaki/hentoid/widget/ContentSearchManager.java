@@ -1,6 +1,7 @@
 package me.devsaki.hentoid.widget;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
+import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -102,12 +104,8 @@ public class ContentSearchManager {
         outState.putString(KEY_QUERY, query);
         outState.putInt(KEY_SORT_ORDER, contentSortOrder);
         outState.putInt(KEY_CURRENT_PAGE, currentPage);
-        long[] selectedTagIds = new long[tags.size()];
-        int index = 0;
-        for (Attribute a : tags) {
-            selectedTagIds[index++] = a.getId();
-        }
-        outState.putLongArray(KEY_SELECTED_TAGS, selectedTagIds);
+        String searchUri = SearchActivityBundle.Builder.buildSearchUri(tags).toString();
+        outState.putString(KEY_SELECTED_TAGS, searchUri);
     }
 
     public void loadFromBundle(@Nonnull Bundle state, Context ctx) {
@@ -116,16 +114,8 @@ public class ContentSearchManager {
         contentSortOrder = state.getInt(KEY_SORT_ORDER, Preferences.getContentSortOrder());
         currentPage = state.getInt(KEY_CURRENT_PAGE);
 
-        long[] selectedTagIds = state.getLongArray(KEY_SELECTED_TAGS);
-        ObjectBoxDB db = ObjectBoxDB.getInstance(ctx);
-        if (selectedTagIds != null) {
-            for (long i : selectedTagIds) {
-                Attribute a = db.selectAttributeById(i);
-                if (a != null) {
-                    tags.add(a);
-                }
-            }
-        }
+        String searchUri = state.getString(KEY_SELECTED_TAGS);
+        tags = SearchActivityBundle.Parser.parseSearchUri(Uri.parse(searchUri));
     }
 
     public void searchLibraryForContent(int booksPerPage, PagedResultListener<Content> listener) {
