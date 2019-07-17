@@ -39,7 +39,7 @@
         android:gravity="center"
         android:padding="8dp"
         android:textAlignment="center"
-        android:textColor="@color/white"
+        android:textColor="@color/white_opacity_87"
         android:textSize="@dimen/text_body_2"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"

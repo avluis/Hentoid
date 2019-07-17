@@ -32,7 +32,7 @@
         android:textSize="@dimen/text_body_1"
         android:gravity="center"
         android:textAlignment="center"
-        android:textColor="@color/white"
+        android:textColor="@color/white_opacity_87"
         android:clickable="false"
         android:focusable="false"
         style="@style/TextShadow"
