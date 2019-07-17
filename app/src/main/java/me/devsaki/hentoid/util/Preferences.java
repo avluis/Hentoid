@@ -347,9 +347,9 @@ public final class Preferences {
         public static final int PREF_VIEWER_DIRECTION_RTL = 1;
         public static final int PREF_VIEWER_ORIENTATION_HORIZONTAL = 0;
         public static final int PREF_VIEWER_ORIENTATION_VERTICAL = 1;
-        public static final int DARK_MODE_DEVICE = 0;
+        public static final int DARK_MODE_OFF = 0;
         public static final int DARK_MODE_ON = 1;
-        public static final int DARK_MODE_OFF = 2;
-        public static final int DARK_MODE_BATTERY = 3;
+        public static final int DARK_MODE_BATTERY = 2;
+        public static final int DARK_MODE_DEVICE = 3;
     }
 }

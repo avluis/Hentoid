@@ -81,10 +81,10 @@
     </string-array>
 
     <string-array name="pref_dark_mode_entries">
-        <item>Device settings (default)</item>
-        <item>On</item>
         <item>Off</item>
+        <item>On</item>
         <item>On when battery low</item>
+        <item>Device settings (Android Q)</item>
     </string-array>
     <string-array name="pref_dark_mode_values">
         <item>0</item>
