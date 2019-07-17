@@ -82,6 +82,7 @@
             android:layout_toStartOf="@id/ivFavourite"
             android:adjustViewBounds="true"
             android:background="?colorSecondary"
+            android:tint="@color/card_surface"
             android:clickable="true"
             android:focusable="true"
             android:padding="8dp"
