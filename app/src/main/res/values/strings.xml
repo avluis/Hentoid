@@ -168,8 +168,9 @@
     <string name="search_button">%1 Result%2 found</string>
     <string name="search_select_a_filter">Select a filter</string>
 
-    <!-- DB migration -->
+    <!-- DB migration & Maintenance -->
     <string name="migrate_db">Migrating the database</string>
+    <string name="maintenance">Performing maintenance</string>
 
     <!-- Image viewer -->
     <string name="viewer_choose_direction">Choose your reading direction</string>

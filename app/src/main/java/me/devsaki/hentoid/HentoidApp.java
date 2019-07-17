@@ -19,6 +19,7 @@ import io.fabric.sdk.android.Fabric;
 import me.devsaki.hentoid.database.DatabaseMaintenance;
 import me.devsaki.hentoid.database.HentoidDB;
 import me.devsaki.hentoid.notification.download.DownloadNotificationChannel;
+import me.devsaki.hentoid.notification.maintenance.MaintenanceNotificationChannel;
 import me.devsaki.hentoid.notification.update.UpdateNotificationChannel;
 import me.devsaki.hentoid.services.DatabaseMaintenanceService;
 import me.devsaki.hentoid.services.UpdateCheckService;
@@ -108,6 +109,7 @@ public class HentoidApp extends Application {
         // Init notifications
         UpdateNotificationChannel.init(this);
         DownloadNotificationChannel.init(this);
+        MaintenanceNotificationChannel.init(this);
         startService(UpdateCheckService.makeIntent(this, false));
 
         // Clears all previous notifications
@@ -125,6 +127,7 @@ public class HentoidApp extends Application {
     /**
      * Clean up and upgrade database
      */
+    @SuppressWarnings("deprecation")
     private void performDatabaseHousekeeping() {
         HentoidDB oldDB = HentoidDB.getInstance(this);
 

@@ -1,11 +1,12 @@
 package me.devsaki.hentoid.activities;
 
-import androidx.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.view.WindowManager;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
 
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
@@ -26,16 +27,17 @@ public class ImageViewerActivity extends AppCompatActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         Intent intent = getIntent();
-        if (intent != null && intent.getExtras() != null) {
-            ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
-
-            ImageViewerViewModel viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
-            Bundle searchParams = parser.getSearchParams();
-            if (searchParams != null) viewModel.loadFromSearchParams(searchParams);
-            else viewModel.loadFromContent(parser.getContentId());
-        } else {
+        if (null == intent || null == intent.getExtras())
             throw new RuntimeException("Required init arguments not found");
-        }
+
+        ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
+        long contentId = parser.getContentId();
+        if (0 == contentId) throw new RuntimeException("Incorrect ContentId");
+
+        ImageViewerViewModel viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
+        Bundle searchParams = parser.getSearchParams();
+        if (searchParams != null) viewModel.loadFromSearchParams(contentId, searchParams);
+        else viewModel.loadFromContent(contentId);
 
         if (!PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             ToastUtil.toast("Storage permission denied - cannot open the viewer");

@@ -60,6 +60,7 @@ import me.devsaki.hentoid.util.FileHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.NotificationManager;
+import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
 
@@ -71,7 +72,7 @@ import timber.log.Timber;
 public class ContentDownloadService extends IntentService {
 
     private ObjectBoxDB db;                                   // Hentoid database
-    private NotificationManager notificationManager;
+    private ServiceNotificationManager notificationManager;
     private NotificationManager warningNotificationManager;
     private boolean downloadCanceled;                       // True if a Cancel event has been processed; false by default
     private boolean downloadSkipped;                        // True if a Skip event has been processed; false by default
@@ -87,7 +88,7 @@ public class ContentDownloadService extends IntentService {
         super.onCreate();
         db = ObjectBoxDB.getInstance(this);
 
-        notificationManager = new NotificationManager(this, 0);
+        notificationManager = new ServiceNotificationManager(this, 0);
         notificationManager.cancel();
 
         warningNotificationManager = new NotificationManager(this, 1);
@@ -109,6 +110,7 @@ public class ContentDownloadService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         Timber.d("New intent processed");
+        notificationManager.startForeground(new DownloadProgressNotification("Starting download", 0, 0));
 
         Content content = downloadFirstInQueue();
         if (content != null) watchProgress(content);
@@ -475,12 +477,14 @@ public class ContentDownloadService extends IntentService {
         }.getType();
 
         Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
-        if (!downloadParams.containsKey("pageInfo")) throw new InvalidParameterException("No pageInfo");
+        if (!downloadParams.containsKey("pageInfo"))
+            throw new InvalidParameterException("No pageInfo");
 
         String pageInfoValue = downloadParams.get("pageInfo");
         if (null == pageInfoValue) throw new InvalidParameterException("PageInfo is null");
 
-        if (pageInfoValue.equals("unprotected")) return binaryContent; // Free content, picture is not protected
+        if (pageInfoValue.equals("unprotected"))
+            return binaryContent; // Free content, picture is not protected
 
 //        byte[] imgData = Base64.decode(binaryContent, Base64.DEFAULT);
         Bitmap sourcePicture = BitmapFactory.decodeByteArray(binaryContent, 0, binaryContent.length);

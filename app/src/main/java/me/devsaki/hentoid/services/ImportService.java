@@ -91,6 +91,8 @@ public class ImportService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        notificationManager.startForeground(new ImportStartNotification());
+
         // True if the user has asked for a cleanup when calling import from Preferences
         boolean doRename = false;
         boolean doCleanAbsent = false;
@@ -137,7 +139,6 @@ public class ImportService extends IntentService {
         Content content = null;
         List<String> log = new ArrayList<>();
 
-        notificationManager.startForeground(new ImportStartNotification());
         File rootFolder = new File(Preferences.getRootFolderName());
 
         // 1st pass : count subfolders of every site folder

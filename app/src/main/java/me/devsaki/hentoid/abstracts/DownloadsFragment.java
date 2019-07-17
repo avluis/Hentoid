@@ -64,7 +64,7 @@ import me.devsaki.hentoid.fragments.downloads.PagerFragment;
 import me.devsaki.hentoid.fragments.downloads.SearchBookIdDialogFragment;
 import me.devsaki.hentoid.fragments.downloads.UpdateSuccessDialogFragment;
 import me.devsaki.hentoid.listener.ContentClickListener.ItemSelectListener;
-import me.devsaki.hentoid.listener.ContentListener;
+import me.devsaki.hentoid.listener.PagedResultListener;
 import me.devsaki.hentoid.services.ContentQueueManager;
 import me.devsaki.hentoid.util.ConstsImport;
 import me.devsaki.hentoid.util.FileHelper;
@@ -85,7 +85,7 @@ import static com.annimon.stream.Collectors.toCollection;
  * of implementing {@link #onRequestPermissionsResult} to receive permission
  * request result
  */
-public abstract class DownloadsFragment extends BaseFragment implements ContentListener,
+public abstract class DownloadsFragment extends BaseFragment implements PagedResultListener<Content>,
         ItemSelectListener {
 
     // ======== CONSTANTS
@@ -932,7 +932,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
         }
         lastSearchParams = currentSearchParams;
 
-        searchManager.searchLibrary(booksPerPage, this);
+        searchManager.searchLibraryForContent(booksPerPage, this);
     }
 
     protected abstract void showToolbar(boolean show);
@@ -975,10 +975,10 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     /*
-    ContentListener implementation
+    PagedResultListener implementation
      */
     @Override
-    public void onContentReady(List<Content> results, long totalSelectedContent, long totalContent) {
+    public void onPagedResultReady(List<Content> results, long totalSelectedContent, long totalContent) {
         Timber.d("Content results have loaded : %s results; %s total selected count, %s total count", results.size(), totalSelectedContent, totalContent);
         isLoading = false;
 
@@ -1025,7 +1025,7 @@ public abstract class DownloadsFragment extends BaseFragment implements ContentL
     }
 
     @Override
-    public void onContentFailed(Content content, String message) {
+    public void onPagedResultFailed(Content content, String message) {
         Timber.w(message);
         isLoading = false;
 

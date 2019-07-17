@@ -8,12 +8,17 @@ import android.os.IBinder;
 import androidx.annotation.Nullable;
 
 import me.devsaki.hentoid.database.DatabaseMaintenance;
+import me.devsaki.hentoid.notification.maintenance.MaintenanceNotification;
+import me.devsaki.hentoid.util.notification.ServiceNotificationManager;
 import timber.log.Timber;
 
 /**
  * Service responsible for performing housekeeping tasks on the database
  */
 public class DatabaseMaintenanceService extends IntentService {
+
+    private ServiceNotificationManager notificationManager;
+
 
     public DatabaseMaintenanceService() {
         super(DatabaseMaintenanceService.class.getName());
@@ -26,11 +31,14 @@ public class DatabaseMaintenanceService extends IntentService {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        notificationManager = new ServiceNotificationManager(this, 0);
         Timber.i("Service created");
     }
 
     @Override
     public void onDestroy() {
+        notificationManager.cancel();
         Timber.i("Service destroyed");
 
         super.onDestroy();
@@ -44,6 +52,7 @@ public class DatabaseMaintenanceService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        notificationManager.startForeground(new MaintenanceNotification("Performing maintenance"));
         DatabaseMaintenance.performDatabaseHousekeeping(this);
     }
 }

@@ -313,7 +313,7 @@ public final class Preferences {
         static final boolean PREF_VIEWER_DISPLAY_PAGENUM = false;
         static final boolean PREF_VIEWER_TAP_TRANSITIONS = true;
         static final boolean PREF_VIEWER_OPEN_GALLERY = false;
-        static final int PREF_VIEWER_FLING_FACTOR = 50;
+        static final int PREF_VIEWER_FLING_FACTOR = 0;
         static final int PREF_VIEWER_DARK_MODE = Constant.DARK_MODE_DEVICE;
     }
 

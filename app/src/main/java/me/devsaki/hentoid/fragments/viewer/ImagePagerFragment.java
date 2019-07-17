@@ -153,6 +153,13 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         updateFavouriteDisplay();
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+        viewModel.savePosition(imageIndex);
+    }
+
+
     private void initPager(View rootView) {
         adapter = new ImagePagerAdapter();
 

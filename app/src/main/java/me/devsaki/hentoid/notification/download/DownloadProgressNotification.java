@@ -3,6 +3,7 @@ package me.devsaki.hentoid.notification.download;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
@@ -30,7 +31,7 @@ public class DownloadProgressNotification implements Notification {
     @NonNull
     @Override
     public android.app.Notification onCreateNotification(Context context) {
-        return new NotificationCompat.Builder(context)
+        return new NotificationCompat.Builder(context, DownloadNotificationChannel.ID)
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setContentTitle(context.getString(R.string.downloading))
                 .setContentText(title)
@@ -40,6 +41,7 @@ public class DownloadProgressNotification implements Notification {
                 .setContentIntent(getDefaultIntent(context))
                 .setLocalOnly(true)
                 .setOngoing(true)
+                .setOnlyAlertOnce(true)
                 .build();
     }
 
