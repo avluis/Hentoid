@@ -24,7 +24,7 @@ public class MaintenanceNotification implements Notification {
                 .setSmallIcon(R.drawable.ic_stat_hentoid)
                 .setContentTitle(context.getString(R.string.maintenance))
                 .setContentText(title)
-                .setColor(ContextCompat.getColor(context, R.color.accent))
+                .setColor(ContextCompat.getColor(context, R.color.secondary))
                 .setLocalOnly(true)
                 .setOngoing(true)
                 .build();
