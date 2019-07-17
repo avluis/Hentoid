@@ -6,7 +6,6 @@ app/**/output.json
 # Gradle files
 .gradle/
 build/
-/gradle.properties
 
 # Generated files
 bin/
