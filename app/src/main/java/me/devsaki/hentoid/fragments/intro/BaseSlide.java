@@ -1,4 +1,4 @@
-package me.devsaki.hentoid.fragments;
+package me.devsaki.hentoid.fragments.intro;
 
 import android.os.Bundle;
 import androidx.annotation.NonNull;

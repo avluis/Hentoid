@@ -2,19 +2,19 @@ package me.devsaki.hentoid.fragments.intro;
 
 import android.content.Context;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.activities.IntroActivity;
+import me.devsaki.hentoid.util.Preferences;
 
-// TODO: 6/23/2018 implement ISlidePolicy to force user to select a storage option
-public class ImportIntroFragment extends Fragment {
+public class ThemeIntroFragment extends Fragment {
 
     private IntroActivity parentActivity;
 
@@ -29,13 +29,13 @@ public class ImportIntroFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.intro_slide_05, container, false);
+        View view = inflater.inflate(R.layout.intro_slide_06, container, false);
 
-        TextView customTv = view.findViewById(R.id.tv_library_custom);
-        customTv.setOnClickListener(v -> parentActivity.onCustomStorageSelected());
+        View lightBtn = view.findViewById(R.id.intro_6_light);
+        lightBtn.setOnClickListener(v -> parentActivity.setThemePrefs(Preferences.Constant.DARK_MODE_OFF));
 
-        TextView defaultTv = view.findViewById(R.id.tv_library_default);
-        defaultTv.setOnClickListener(v -> parentActivity.onDefaultStorageSelected());
+        View darkBtn = view.findViewById(R.id.intro_6_dark);
+        darkBtn.setOnClickListener(v -> parentActivity.setThemePrefs(Preferences.Constant.DARK_MODE_ON));
 
         return view;
     }

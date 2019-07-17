@@ -15,6 +15,6 @@ public class DoneIntroFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.intro_slide_06, container, false);
+        return inflater.inflate(R.layout.intro_slide_end, container, false);
     }
 }

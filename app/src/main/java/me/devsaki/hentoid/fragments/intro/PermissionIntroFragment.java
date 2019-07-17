@@ -26,12 +26,12 @@ import static com.google.android.material.snackbar.Snackbar.LENGTH_LONG;
 
 public class PermissionIntroFragment extends Fragment implements ISlidePolicy {
 
-    public static final int PERMISSION_REQUEST_CODE = 0;
+    private static final int PERMISSION_REQUEST_CODE = 0;
 
     private IntroActivity parentActivity;
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof IntroActivity) {
             parentActivity = (IntroActivity) context;
