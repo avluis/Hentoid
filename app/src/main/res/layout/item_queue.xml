@@ -1,13 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="2dp"
+    app:cardElevation="@dimen/cardview_default_elevation">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="?colorSurface"
+        android:background="@color/card_surface"
         android:orientation="vertical"
         android:padding="10dp">
 
@@ -18,8 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
-            android:indeterminate="true"
-            android:theme="@style/AppTheme" />
+            android:indeterminate="true" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -32,8 +34,9 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:background="?colorSecondary"
+                android:tint="@color/card_surface"
                 android:padding="1dp"
-                android:scaleType="fitXY"
+                android:adjustViewBounds="true"
                 tools:ignore="ContentDescription"
                 tools:src="@drawable/ic_menu_fakku" />
 
@@ -58,7 +61,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="5dp"
-            android:background="?colorSecondary" />
+            android:background="?colorPrimary" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -106,7 +109,7 @@
                     android:layout_marginTop="5dp"
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="5dp"
-                    android:background="?colorSecondary" />
+                    android:background="?colorPrimary" />
 
                 <TextView
                     android:id="@+id/tvTags"
@@ -117,7 +120,7 @@
                     android:layout_marginEnd="10dp"
                     android:layout_marginBottom="5dp"
                     android:textAppearance="?android:attr/textAppearanceSmall"
-                    android:textColor="?colorOnSurface"
+                    android:textColor="@color/card_tags"
                     tools:text="Best Set of TAGs Ever\nToo Awesome to pass up" />
             </LinearLayout>
         </LinearLayout>
@@ -126,7 +129,7 @@
             android:layout_width="fill_parent"
             android:layout_height="1dp"
             android:layout_margin="10dp"
-            android:background="?colorSecondary" />
+            android:background="?colorPrimary" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -160,24 +163,13 @@
 
             <TextView
                 android:id="@+id/btnCancel"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="80dp"
                 android:layout_height="40dp"
                 android:text="@string/cancel"
+                android:gravity="center"
+                android:textSize="@dimen/text_body_1"
                 android:textColor="@color/black"
                 android:textStyle="bold" />
-            <!--
-            <Button
-                android:id="@+id/btnCancel"
-                style="?android:attr/borderlessButtonStyle"
-                android:backgroundTint="?colorSurface"
-                android:layout_width="80dp"
-                android:layout_height="40dp"
-                android:text="@string/cancel"
-                android:textColor="@android:color/black"
-                android:textStyle="bold"
-                tools:ignore="ButtonOrder" />
-                -->
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

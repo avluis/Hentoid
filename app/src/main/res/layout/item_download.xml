@@ -10,8 +10,7 @@
     android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="2dp"
     app:cardElevation="@dimen/cardview_default_elevation"
-    style="@style/DownloadCard"
-    >
+    style="@style/DownloadCard">
 
     <RelativeLayout
         android:id="@+id/item"
@@ -71,6 +70,7 @@
             android:paddingEnd="8dp"
             android:paddingBottom="5dp"
             tools:background="?colorPrimary"
+            android:tint="@color/card_surface"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_hitomi" />
 

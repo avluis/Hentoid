@@ -1,16 +1,16 @@
 package me.devsaki.hentoid.adapters;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -124,13 +124,13 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
      */
     private void attachCover(ViewHolder holder, Content content) {
         String coverFile = FileHelper.getThumb(content);
-        Glide.with(context).clear(holder.ivCover);
+        Glide.with(context.getApplicationContext()).clear(holder.ivCover);
 
         RequestOptions myOptions = new RequestOptions()
                 .fitCenter()
                 .error(R.drawable.ic_placeholder);
 
-        Glide.with(context)
+        Glide.with(context.getApplicationContext())
                 .load(coverFile)
                 .apply(myOptions)
                 .into(holder.ivCover);
@@ -263,7 +263,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
         btnDown.setVisibility(isLastItem ? View.INVISIBLE : View.VISIBLE);
         btnDown.setOnClickListener(v -> moveDown(content.getId()));
 
-        Button btnCancel = view.findViewById(R.id.btnCancel);
+        View btnCancel = view.findViewById(R.id.btnCancel);
         btnCancel.setOnClickListener(v -> cancel(content));
     }
 

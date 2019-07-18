@@ -1,15 +1,14 @@
 package me.devsaki.hentoid.fragments;
 
-import android.content.Context;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.FragmentActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -39,7 +38,6 @@ import timber.log.Timber;
  */
 public class QueueFragment extends BaseFragment {
 
-    private Context context;                // App context
     private QueueContentAdapter mAdapter;   // Adapter for queue management
 
     // UI ELEMENTS
@@ -61,17 +59,6 @@ public class QueueFragment extends BaseFragment {
     public void onResume() {
         super.onResume();
         update();
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        FragmentActivity activity = getActivity();
-        if (null == activity) {
-            Timber.e("Activity unreachable !");
-            return;
-        }
-        context = activity.getApplicationContext();
     }
 
     @Override
@@ -101,9 +88,9 @@ public class QueueFragment extends BaseFragment {
         btnPause.setOnClickListener(v -> EventBus.getDefault().post(new DownloadEvent(DownloadEvent.EV_PAUSE)));
         btnStats.setOnClickListener(v -> showStats());
 
-        ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+        ObjectBoxDB db = ObjectBoxDB.getInstance(requireActivity());
         List<Content> contents = db.selectQueueContents();
-        mAdapter = new QueueContentAdapter(context, contents);
+        mAdapter = new QueueContentAdapter(requireActivity(), contents);
         mListView.setAdapter(mAdapter);
 
         return rootView;
@@ -126,9 +113,9 @@ public class QueueFragment extends BaseFragment {
                 break;
             case DownloadEvent.EV_UNPAUSE:
                 ContentQueueManager.getInstance().unpauseQueue();
-                ObjectBoxDB db = ObjectBoxDB.getInstance(context);
+                ObjectBoxDB db = ObjectBoxDB.getInstance(requireActivity());
                 db.updateContentStatus(StatusContent.PAUSED, StatusContent.DOWNLOADING);
-                ContentQueueManager.getInstance().resumeQueue(context);
+                ContentQueueManager.getInstance().resumeQueue(requireActivity());
                 update(event.eventType);
                 break;
             case DownloadEvent.EV_SKIP:
@@ -204,7 +191,7 @@ public class QueueFragment extends BaseFragment {
      * @param bookTitle Book title to display
      */
     private void updateBookTitle(String bookTitle) {
-        queueStatus.setText(MessageFormat.format(context.getString(R.string.queue_dl), bookTitle));
+        queueStatus.setText(MessageFormat.format(requireActivity().getString(R.string.queue_dl), bookTitle));
     }
 
     public void update() {
