@@ -289,13 +289,13 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
      * Check write permissions on target storage and load library
      */
     private void defaultLoad() {
-
         if (MODE_LIBRARY == mode) {
             if (PermissionUtil.requestExternalStoragePermission(requireActivity(), ConstsImport.RQST_STORAGE_PERMISSION)) {
                 boolean shouldUpdate = queryPrefs();
 
                 // Run a search if prefs changes detected or first run (-1 = uninitialized)
-                if (shouldUpdate || -1 == mTotalSelectedCount || 0 == mAdapter.getItemCount()) searchLibrary();
+                if (shouldUpdate || -1 == mTotalSelectedCount || 0 == mAdapter.getItemCount())
+                    searchLibrary();
 
                 if (ContentQueueManager.getInstance().getDownloadCount() > 0) showReloadToolTip();
                 showToolbar(true);
@@ -305,7 +305,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
                 storagePermissionChecked = true;
             }
         } else if (MODE_MIKAN == mode) {
-            if (-1 == mTotalSelectedCount  || 0 == mAdapter.getItemCount()) searchLibrary();
+            if (-1 == mTotalSelectedCount || 0 == mAdapter.getItemCount()) searchLibrary();
 
             showToolbar(true);
         }
@@ -634,7 +634,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     }
 
     @Override
-    public void onCreateOptionsMenu(final Menu menu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(@NonNull final Menu menu, @NonNull MenuInflater inflater) {
         inflater.inflate(R.menu.downloads_menu, menu);
 
         MenuItem aboutMikanMenu = menu.findItem(R.id.action_about_mikan);
@@ -733,7 +733,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
      * @return true if the order has been successfully processed
      */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int contentSortOrder;
 
         switch (item.getItemId()) {
