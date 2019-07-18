@@ -36,7 +36,8 @@ import timber.log.Timber;
 public class HentoidApp extends Application {
 
     private static boolean beginImport;
-    @SuppressLint("StaticFieldLeak") // A context leak happening at app level isn't _really_ a leak, right ? ;-)
+    @SuppressLint("StaticFieldLeak")
+    // A context leak happening at app level isn't _really_ a leak, right ? ;-)
     private static Context instance;
 
     public static Context getAppContext() {
@@ -121,7 +122,9 @@ public class HentoidApp extends Application {
         }
 
         // Set Night mode
-        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(Preferences.getDarkMode()));
+        int darkMode = Preferences.getDarkMode();
+        AppCompatDelegate.setDefaultNightMode(darkModeFromPrefs(darkMode));
+        FirebaseAnalytics.getInstance(this).setUserProperty("night_mode", Integer.toString(darkMode));
     }
 
     /**
@@ -139,14 +142,16 @@ public class HentoidApp extends Application {
         startService(intent);
     }
 
-    public static int darkModeFromPrefs(int prefsMode)
-    {
-        switch(prefsMode)
-        {
-            case Preferences.Constant.DARK_MODE_ON : return AppCompatDelegate.MODE_NIGHT_YES;
-            case Preferences.Constant.DARK_MODE_OFF : return AppCompatDelegate.MODE_NIGHT_NO;
-            case Preferences.Constant.DARK_MODE_BATTERY : return AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY;
-            default : return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+    public static int darkModeFromPrefs(int prefsMode) {
+        switch (prefsMode) {
+            case Preferences.Constant.DARK_MODE_ON:
+                return AppCompatDelegate.MODE_NIGHT_YES;
+            case Preferences.Constant.DARK_MODE_OFF:
+                return AppCompatDelegate.MODE_NIGHT_NO;
+            case Preferences.Constant.DARK_MODE_BATTERY:
+                return AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY;
+            default:
+                return AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
         }
     }
 }
