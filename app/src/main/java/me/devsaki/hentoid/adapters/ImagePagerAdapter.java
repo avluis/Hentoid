@@ -34,6 +34,8 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     private static final Executor executor = new ImageLoaderThreadExecutor();
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
+    private View.OnTouchListener itemTouchListener;
+
     private List<ImageFile> images = new ArrayList<>();
 
 
@@ -44,6 +46,10 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
     public void setImages(List<ImageFile> images) {
         this.images = Collections.unmodifiableList(images);
+    }
+
+    public void setItemTouchListener(View.OnTouchListener itemTouchListener) {
+        this.itemTouchListener = itemTouchListener;
     }
 
     public boolean isFavouritePresent() {
@@ -69,6 +75,8 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
         View view;
         if (TYPE_GIF == viewType) {
             view = inflater.inflate(R.layout.item_viewer_image_glide, viewGroup, false);
+        } else if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation()) {
+            view = inflater.inflate(R.layout.item_viewer_image_subsampling_muted, viewGroup, false);
         } else {
             view = inflater.inflate(R.layout.item_viewer_image_subsampling, viewGroup, false);
         }
@@ -102,7 +110,10 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
             imgType = imageType;
             imgView = itemView;
 
-            if (TYPE_OTHER == imgType) ((SubsamplingScaleImageView) imgView).setExecutor(executor);
+            if (TYPE_OTHER == imgType) {
+                ((SubsamplingScaleImageView) imgView).setExecutor(executor);
+                imgView.setOnTouchListener(itemTouchListener);
+            }
         }
 
         void setImageUri(String uri) {

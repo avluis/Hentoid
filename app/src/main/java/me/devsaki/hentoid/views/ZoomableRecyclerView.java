@@ -131,6 +131,10 @@ public class ZoomableRecyclerView extends RecyclerView {
         return currentScale;
     }
 
+    public void resetScale() {
+        zoom(currentScale, DEFAULT_RATE, getX(), 0f, getY(), 0f);
+    }
+
     private void zoom(
             float fromRate,
             float toRate,

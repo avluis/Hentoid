@@ -33,6 +33,7 @@ import me.devsaki.hentoid.database.domains.ImageFile;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.ToastUtil;
 import me.devsaki.hentoid.viewmodels.ImageViewerViewModel;
+import me.devsaki.hentoid.views.ZoomableFrame;
 import me.devsaki.hentoid.views.ZoomableRecyclerView;
 import me.devsaki.hentoid.widget.OnZoneTapListener;
 import me.devsaki.hentoid.widget.PageSnapWidget;
@@ -44,6 +45,9 @@ import static android.content.Context.CLIPBOARD_SERVICE;
 import static androidx.core.view.ViewCompat.requireViewById;
 import static java.lang.String.format;
 
+// TODO : better document and/or encapsulate the difference between
+//   - paper roll mode (currently used for vertical display)
+//   - independent page mode (currently used for horizontal display)
 public class ImagePagerFragment extends Fragment implements GoToPageDialogFragment.Parent,
         BrowseModeDialogFragment.Parent {
 
@@ -53,6 +57,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
     private PageSnapWidget pageSnapWidget;
+    private ZoomableFrame zoomFrame;
 
     private ImageViewerViewModel viewModel;
     private SharedPreferences.OnSharedPreferenceChangeListener listener = this::onSharedPreferenceChanged;
@@ -163,12 +168,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void initPager(View rootView) {
         adapter = new ImagePagerAdapter();
 
+        zoomFrame = requireViewById(rootView, R.id.image_viewer_zoom_frame);
+
         VolumeGestureListener volumeGestureListener = new VolumeGestureListener()
                 .setOnVolumeDownListener(this::previousPage)
                 .setOnVolumeUpListener(this::nextPage)
                 .setOnBackListener(this::onBackClick);
 
-        recyclerView = requireViewById(rootView, R.id.image_viewer_recycler);
+        recyclerView = requireViewById(rootView, R.id.image_viewer_zoom_recycler);
         recyclerView.setAdapter(adapter);
         recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
@@ -187,7 +194,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
                 .setOnLeftZoneTapListener(this::onLeftTap)
                 .setOnRightZoneTapListener(this::onRightTap)
                 .setOnMiddleZoneTapListener(this::onMiddleTap);
-        recyclerView.setTapListener(onZoneTapListener);
+        recyclerView.setTapListener(onZoneTapListener);     // For paper roll mode (vertical)
+        adapter.setItemTouchListener(onZoneTapListener);    // For independent images mode (horizontal)
 
         llm = new PrefetchLinearLayoutManager(getContext());
         llm.setItemPrefetchEnabled(true);
@@ -552,6 +560,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
             currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_LTR;
         else currentLayoutDirection = Preferences.Constant.PREF_VIEWER_DIRECTION_RTL;
         llm.setReverseLayout(Preferences.getViewerDirection() != currentLayoutDirection);
+
+        // Resets the views to switch between paper roll mode (vertical) and independent page mode (horizontal)
+        recyclerView.resetScale();
+        adapter.notifyDataSetChanged();
+
+        if (Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL == Preferences.getViewerOrientation())
+            zoomFrame.enable();
+        else zoomFrame.disable();
 
         llm.setOrientation(getOrientation());
         pageSnapWidget.setPageSnapEnabled(Preferences.Constant.PREF_VIEWER_ORIENTATION_VERTICAL != Preferences.getViewerOrientation());
