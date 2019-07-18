@@ -5,14 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     app:cardCornerRadius="2dp"
-    app:cardElevation="@dimen/cardview_default_elevation">
+    app:cardElevation="@dimen/cardview_default_elevation"
+    android:theme="@style/DownloadCard">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/card_surface"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:padding="8dp">
 
         <ProgressBar
             android:id="@+id/pbDownload"
@@ -34,7 +35,7 @@
                 android:layout_width="32dp"
                 android:layout_height="32dp"
                 android:background="?colorSecondary"
-                android:tint="@color/card_surface"
+                android:tint="?colorSurface"
                 android:padding="1dp"
                 android:adjustViewBounds="true"
                 tools:ignore="ContentDescription"
@@ -131,11 +132,9 @@
             android:layout_margin="10dp"
             android:background="?colorPrimary" />
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="40dp"
-            android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:layout_height="40dp">
 
             <ImageView
                 android:id="@+id/queueTopBtn"
@@ -143,7 +142,11 @@
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_doublearrowup" />
+                tools:src="@drawable/ic_doublearrowup"
+                android:tint="?colorPrimaryVariant"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
             <ImageView
                 android:id="@+id/queueUpBtn"
@@ -151,7 +154,12 @@
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_arrow_up" />
+                tools:src="@drawable/ic_arrow_up"
+                android:tint="?colorPrimaryVariant"
+                app:layout_constraintLeft_toRightOf="@id/queueTopBtn"
+                app:layout_constraintRight_toLeftOf="@id/queueDownBtn"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
             <ImageView
                 android:id="@+id/queueDownBtn"
@@ -159,7 +167,12 @@
                 android:layout_height="40dp"
                 android:scaleType="fitXY"
                 tools:ignore="ContentDescription"
-                tools:src="@drawable/ic_arrow_down" />
+                tools:src="@drawable/ic_arrow_down"
+                android:tint="?colorPrimaryVariant"
+                app:layout_constraintLeft_toRightOf="@id/queueUpBtn"
+                app:layout_constraintRight_toLeftOf="@id/btnCancel"
+                app:layout_constraintTop_toTopOf="parent"
+                />
 
             <TextView
                 android:id="@+id/btnCancel"
@@ -168,8 +181,11 @@
                 android:text="@string/cancel"
                 android:gravity="center"
                 android:textSize="@dimen/text_body_1"
-                android:textColor="@color/black"
-                android:textStyle="bold" />
-        </LinearLayout>
+                android:textColor="?colorPrimaryVariant"
+                android:textStyle="bold"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                />
+        </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
