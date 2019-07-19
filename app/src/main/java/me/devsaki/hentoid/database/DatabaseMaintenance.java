@@ -16,6 +16,7 @@ public class DatabaseMaintenance {
      * Clean up and upgrade database
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
+    @SuppressWarnings("deprecation")
     public static void performDatabaseHousekeeping(Context context) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
@@ -103,6 +104,7 @@ public class DatabaseMaintenance {
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static boolean hasToMigrate(Context context) {
         HentoidDB oldDb = HentoidDB.getInstance(context);
         return (oldDb.countContentEntries() > 0);

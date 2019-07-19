@@ -140,7 +140,10 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
         compositeDisposable.add(MikanServer.API.getPages(getMikanCodeForSite(content.getSite()), content.getUniqueSiteId())
                 .observeOn(mainThread())
-                .subscribe((result) -> onPagesSuccess(result, content, listener), (throwable) -> listener.onPagedResultFailed(content, "Pages failed to load - " + throwable.getMessage())));
+                .subscribe(
+                        result -> onPagesSuccess(result, content, listener),
+                        throwable -> listener.onPagedResultFailed(content, "Pages failed to load - " + throwable.getMessage()))
+        );
     }
 
     @Override
@@ -182,7 +185,10 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
         compositeDisposable.add(MikanServer.API.search(getMikanCodeForSite(site) + suffix, params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onPagedResultFailed(null, "Search failed to load - " + throwable.getMessage())));
+                .subscribe(
+                        result -> onContentSuccess(result, listener),
+                        throwable -> listener.onPagedResultFailed(null, "Search failed to load - " + throwable.getMessage()))
+        );
     }
 
     @Override
