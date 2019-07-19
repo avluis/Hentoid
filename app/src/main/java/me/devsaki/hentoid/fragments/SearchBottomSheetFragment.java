@@ -108,7 +108,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NonNull Context context) {
         super.onAttach(context);
 
         Bundle bundle = getArguments();
@@ -119,7 +119,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
             currentPage = 1;
 
             if (-1 == mode || selectedAttributeTypes.isEmpty()) {
-                throw new RuntimeException("Initialization failed");
+                throw new IllegalArgumentException("Initialization failed");
             }
 
             viewModel = ViewModelProviders.of(requireActivity()).get(SearchViewModel.class);
@@ -296,7 +296,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
      */
     private static SearchableInfo getSearchableInfo(Activity activity) {
         final SearchManager searchManager = (SearchManager) activity.getSystemService(Context.SEARCH_SERVICE);
-        if (searchManager == null) throw new RuntimeException();
+        if (searchManager == null) throw new IllegalArgumentException();
         return searchManager.getSearchableInfo(activity.getComponentName());
     }
 

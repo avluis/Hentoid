@@ -8,6 +8,8 @@ import android.view.WindowManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProviders;
 
+import java.security.AccessControlException;
+
 import me.devsaki.hentoid.activities.bundles.ImageViewerActivityBundle;
 import me.devsaki.hentoid.fragments.viewer.ImagePagerFragment;
 import me.devsaki.hentoid.util.ConstsImport;
@@ -28,11 +30,11 @@ public class ImageViewerActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         if (null == intent || null == intent.getExtras())
-            throw new RuntimeException("Required init arguments not found");
+            throw new IllegalArgumentException("Required init arguments not found");
 
         ImageViewerActivityBundle.Parser parser = new ImageViewerActivityBundle.Parser(intent.getExtras());
         long contentId = parser.getContentId();
-        if (0 == contentId) throw new RuntimeException("Incorrect ContentId");
+        if (0 == contentId) throw new IllegalArgumentException("Incorrect ContentId");
 
         ImageViewerViewModel viewModel = ViewModelProviders.of(this).get(ImageViewerViewModel.class);
         Bundle searchParams = parser.getSearchParams();
@@ -41,7 +43,7 @@ public class ImageViewerActivity extends AppCompatActivity {
 
         if (!PermissionUtil.requestExternalStoragePermission(this, ConstsImport.RQST_STORAGE_PERMISSION)) {
             ToastUtil.toast("Storage permission denied - cannot open the viewer");
-            throw new RuntimeException("Storage permission denied - cannot open the viewer");
+            throw new AccessControlException("Storage permission denied - cannot open the viewer");
         }
 
         // Allows an full recolor of the status bar with the custom color defined in the activity's theme
