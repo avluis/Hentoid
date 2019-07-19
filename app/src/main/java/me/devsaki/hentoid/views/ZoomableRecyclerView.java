@@ -6,15 +6,16 @@ import android.animation.ValueAnimator;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 import android.view.ViewPropertyAnimator;
 import android.view.animation.DecelerateInterpolator;
+
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.annimon.stream.function.DoubleConsumer;
 
@@ -101,8 +102,10 @@ public class ZoomableRecyclerView extends RecyclerView {
     public void onScrolled(int dx, int dy) {
         super.onScrolled(dx, dy);
         LinearLayoutManager layoutManager = (LinearLayoutManager) getLayoutManager();
-        lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
-        firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+        if (layoutManager != null) {
+            lastVisibleItemPosition = layoutManager.findLastVisibleItemPosition();
+            firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+        }
     }
 
 
@@ -111,10 +114,12 @@ public class ZoomableRecyclerView extends RecyclerView {
     public void onScrollStateChanged(int state) {
         super.onScrollStateChanged(state);
         LayoutManager layoutManager = getLayoutManager();
-        int visibleItemCount = layoutManager.getChildCount();
-        int totalItemCount = layoutManager.getItemCount();
-        atLastPosition = visibleItemCount > 0 && lastVisibleItemPosition == totalItemCount - 1;
-        atFirstPosition = firstVisibleItemPosition == 0;
+        if (layoutManager != null) {
+            int visibleItemCount = layoutManager.getChildCount();
+            int totalItemCount = layoutManager.getItemCount();
+            atLastPosition = visibleItemCount > 0 && lastVisibleItemPosition == totalItemCount - 1;
+            atFirstPosition = firstVisibleItemPosition == 0;
+        }
     }
 
     private float getPositionX(float positionX) {
@@ -380,6 +385,7 @@ public class ZoomableRecyclerView extends RecyclerView {
                     isZoomDragging = false;
                     isDoubleTapping = false;
                     isQuickScaling = false;
+                    break;
                 }
                 case MotionEvent.ACTION_CANCEL: {
                     isZoomDragging = false;
