@@ -19,6 +19,7 @@ public class QueueActivity extends BaseActivity implements BackInterface {
     private BaseFragment baseFragment;
     private Fragment fragment;
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 

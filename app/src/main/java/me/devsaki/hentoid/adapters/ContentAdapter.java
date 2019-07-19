@@ -479,10 +479,9 @@ public class ContentAdapter extends RecyclerView.Adapter<ContentHolder> implemen
     private void downloadContent(Content item) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
-        if (StatusContent.ONLINE == item.getStatus())
-            if (item.getImageFiles() != null)
-                for (ImageFile im : item.getImageFiles())
-                    db.updateImageFileStatusAndParams(im.setStatus(StatusContent.SAVED));
+        if (StatusContent.ONLINE == item.getStatus() && item.getImageFiles() != null)
+            for (ImageFile im : item.getImageFiles())
+                db.updateImageFileStatusAndParams(im.setStatus(StatusContent.SAVED));
 
         item.setDownloadDate(new Date().getTime());
         item.setStatus(StatusContent.DOWNLOADING);

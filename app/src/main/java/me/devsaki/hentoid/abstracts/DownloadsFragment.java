@@ -1099,17 +1099,15 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == 999) {
-            if (resultCode == Activity.RESULT_OK) {
-                if (data != null && data.getExtras() != null) {
-                    Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
+        if (requestCode == 999
+                && resultCode == Activity.RESULT_OK
+                && data != null && data.getExtras() != null) {
+            Uri searchUri = new SearchActivityBundle.Parser(data.getExtras()).getUri();
 
-                    if (searchUri != null) {
-                        setQuery(searchUri.getPath());
-                        searchManager.setTags(SearchActivityBundle.Parser.parseSearchUri(searchUri));
-                        searchLibrary();
-                    }
-                }
+            if (searchUri != null) {
+                setQuery(searchUri.getPath());
+                searchManager.setTags(SearchActivityBundle.Parser.parseSearchUri(searchUri));
+                searchLibrary();
             }
         }
     }
