@@ -24,24 +24,24 @@ public class MikanAttribute {
     public String type;
 
     Attribute toAttribute() {
-        AttributeType type;
-        switch (this.type) {
+        AttributeType attrType;
+        switch (type) {
             case "language":
-                type = AttributeType.LANGUAGE;
+                attrType = AttributeType.LANGUAGE;
                 break;
             case "character":
-                type = AttributeType.CHARACTER;
+                attrType = AttributeType.CHARACTER;
                 break;
             case "artist":
-                type = AttributeType.ARTIST;
+                attrType = AttributeType.ARTIST;
                 break;
             case "group":
-                type = AttributeType.CIRCLE;
+                attrType = AttributeType.CIRCLE;
                 break;
             default:
-                type = AttributeType.TAG;
+                attrType = AttributeType.TAG;
         }
-        Attribute result = new Attribute(type, name, url, Site.HITOMI);
+        Attribute result = new Attribute(attrType, name, url, Site.HITOMI);
         result.setCount(count);
         result.setExternalId(id);
 
