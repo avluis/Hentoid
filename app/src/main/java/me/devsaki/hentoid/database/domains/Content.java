@@ -160,7 +160,7 @@ public class Content implements Serializable {
 
         switch (site) {
             case FAKKU:
-                return url.substring(url.lastIndexOf("/") + 1);
+                return url.substring(url.lastIndexOf('/') + 1);
             case EHENTAI:
             case PURURIN:
                 paths = url.split("/");
@@ -194,7 +194,7 @@ public class Content implements Serializable {
         String[] paths;
         switch (site) {
             case FAKKU:
-                return url.substring(url.lastIndexOf("/") + 1);
+                return url.substring(url.lastIndexOf('/') + 1);
             case PURURIN:
                 paths = url.split("/");
                 return paths[2].replace(".html", "") + "-" + paths[1];
@@ -250,7 +250,7 @@ public class Content implements Serializable {
 
     public String getCategory() {
         if (site == Site.FAKKU) {
-            return url.substring(1, url.lastIndexOf("/"));
+            return url.substring(1, url.lastIndexOf('/'));
         } else {
             if (attributes != null) {
                 List<Attribute> attributesList = getAttributeMap().get(AttributeType.CATEGORY);
@@ -338,17 +338,17 @@ public class Content implements Serializable {
     }
 
     public Content populateAuthor() {
-        String author = "";
+        String authorStr = "";
         AttributeMap attrMap = getAttributeMap();
         if (attrMap.containsKey(AttributeType.ARTIST) && attrMap.get(AttributeType.ARTIST).size() > 0)
-            author = attrMap.get(AttributeType.ARTIST).get(0).getName();
-        if (null == author || author.equals("")) // Try and get Circle
+            authorStr = attrMap.get(AttributeType.ARTIST).get(0).getName();
+        if (null == authorStr || authorStr.equals("")) // Try and get Circle
         {
             if (attrMap.containsKey(AttributeType.CIRCLE) && attrMap.get(AttributeType.CIRCLE).size() > 0)
-                author = attrMap.get(AttributeType.CIRCLE).get(0).getName();
+                authorStr = attrMap.get(AttributeType.CIRCLE).get(0).getName();
         }
-        if (null == author) author = "";
-        setAuthor(author);
+        if (null == authorStr) authorStr = "";
+        setAuthor(authorStr);
         return this;
     }
 
