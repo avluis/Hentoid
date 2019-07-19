@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.widget;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -11,7 +10,6 @@ import javax.annotation.Nonnull;
 
 import me.devsaki.hentoid.activities.bundles.SearchActivityBundle;
 import me.devsaki.hentoid.collection.CollectionAccessor;
-import me.devsaki.hentoid.database.ObjectBoxDB;
 import me.devsaki.hentoid.database.domains.Attribute;
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.enums.Language;
@@ -108,7 +106,7 @@ public class ContentSearchManager {
         outState.putString(KEY_SELECTED_TAGS, searchUri);
     }
 
-    public void loadFromBundle(@Nonnull Bundle state, Context ctx) {
+    public void loadFromBundle(@Nonnull Bundle state) {
         filterFavourites = state.getBoolean(KEY_FILTER_FAVOURITES, false);
         query = state.getString(KEY_QUERY, "");
         contentSortOrder = state.getInt(KEY_SORT_ORDER, Preferences.getContentSortOrder());

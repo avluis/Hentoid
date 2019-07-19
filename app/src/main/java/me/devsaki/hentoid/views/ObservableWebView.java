@@ -32,6 +32,7 @@ public class ObservableWebView extends WebView {
         super(getFixedContext(context), attrs, defStyleAttr, defStyleRes);
     }
 
+    @Deprecated
     public ObservableWebView(Context context, AttributeSet attrs, int defStyleAttr, boolean privateBrowsing) {
         super(getFixedContext(context), attrs, defStyleAttr, privateBrowsing);
     }

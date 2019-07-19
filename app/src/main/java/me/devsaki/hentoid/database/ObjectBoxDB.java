@@ -552,7 +552,7 @@ public class ObjectBoxDB {
             for (AttributeType attrType : metadataMap.keySet()) {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = metadataMap.get(attrType);
-                    if (attrs != null && attrs.size() > 0) {
+                    if (attrs != null && !attrs.isEmpty()) {
                         query.in(Content_.id, getFilteredContent(attrs, false));
                     }
                 }

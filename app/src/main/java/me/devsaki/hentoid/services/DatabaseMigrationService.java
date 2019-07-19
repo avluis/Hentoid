@@ -100,6 +100,7 @@ public class DatabaseMigrationService extends IntentService {
     /**
      * Migrate HentoidDB books to ObjectBoxDB
      */
+    @SuppressWarnings("deprecation")
     private void migrate() {
         int booksOK = 0;
         int booksKO = 0;

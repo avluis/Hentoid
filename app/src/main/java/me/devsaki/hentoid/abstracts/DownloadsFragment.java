@@ -440,7 +440,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
         if (state != null) {
             mode = state.getInt(KEY_MODE);
             plannedRefresh = state.getBoolean(KEY_PLANNED_REFRESH, false);
-            searchManager.loadFromBundle(state, requireContext());
+            searchManager.loadFromBundle(state);
         }
     }
 

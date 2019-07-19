@@ -70,7 +70,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
 
-
     public ImageViewerViewModel(@NonNull Application application) {
         super(application);
     }
@@ -115,7 +114,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         loadedContentId = contentId;
         Context ctx = getApplication().getApplicationContext();
         searchManager = new ContentSearchManager(new ObjectBoxCollectionAccessor(ctx));
-        searchManager.loadFromBundle(bundle, ctx);
+        searchManager.loadFromBundle(bundle);
         int contentIndex = bundle.getInt("contentIndex", -1);
         if (contentIndex > -1) searchManager.setCurrentPage(contentIndex);
         searchManager.searchLibraryForId(-1, this);
