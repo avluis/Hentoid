@@ -634,7 +634,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void seekToPosition(int position) {
         hideMoreMenu();
         if (View.VISIBLE == previewImage2.getVisibility()) {
-            Context ctx = previewImage2.getContext();
+            Context ctx = previewImage2.getContext().getApplicationContext();
             ImageFile img = adapter.getImageAt(position - 1);
             if (img != null) {
                 Glide.with(ctx)

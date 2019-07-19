@@ -90,7 +90,7 @@ public class ImageFileFlex extends AbstractFlexibleItem<ImageFileFlex.ImageFileV
             imageFile = item;
             pageNumberTxt.setText(String.format("Page %s", item.getOrder()));
             updateFavourite(item.isFavourite());
-            Glide.with(image.getContext())
+            Glide.with(image.getContext().getApplicationContext())
                     .load(item.getAbsolutePath())
                     .apply(glideRequestOptions)
                     .into(image);

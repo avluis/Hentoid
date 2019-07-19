@@ -120,7 +120,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
             Timber.i(">>>>IMG %s %s", imgType, uri);
             if (TYPE_GIF == imgType) {
                 ImageView view = (ImageView) imgView;
-                Glide.with(imgView.getContext())
+                Glide.with(imgView.getContext().getApplicationContext())
                         .load(uri)
                         .apply(glideRequestOptions)
                         .into(view);
