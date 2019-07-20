@@ -31,11 +31,6 @@ public final class ShortcutHelper {
         nhentaiBitmap = Helper.tintBitmap(nhentaiBitmap, tint_color);
         Icon nhentaiIcon = Icon.createWithBitmap(nhentaiBitmap);
 
-        /*
-        Intent nhentaiIntent = new Intent(context, NhentaiActivity.class);
-        nhentaiIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        nhentaiIntent.setAction(Intent.ACTION_VIEW);
-        */
         Intent nhentaiIntent = UnlockActivity.wrapIntent(context, Site.NHENTAI);
 
         ShortcutInfo nhentai = new ShortcutInfo.Builder(context, "nhentai")

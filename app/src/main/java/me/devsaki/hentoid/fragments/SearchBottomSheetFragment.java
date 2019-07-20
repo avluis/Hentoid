@@ -175,7 +175,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
                 if (MODE_MIKAN == mode && mainAttr.equals(AttributeType.TAG) && IllegalTags.isIllegal(s)) {
                     Snackbar.make(view, R.string.masterdata_illegal_tag, Snackbar.LENGTH_LONG).show();
                     searchMasterDataDebouncer.clear();
-                } else /*if (!s.isEmpty())*/ {
+                } else {
                     searchMasterDataDebouncer.submit(s);
                 }
 

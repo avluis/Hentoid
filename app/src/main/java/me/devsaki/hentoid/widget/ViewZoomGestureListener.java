@@ -31,7 +31,6 @@ public class ViewZoomGestureListener extends GestureDetector {
     /**
      * Runnable to execute when a long tap is confirmed.
      */
-//    private Runnable longTapFn = new Runnable( () -> listener.onLongTapConfirmed(lastDownEvent!!) );
     private Runnable longTapFn = new Runnable() {
         @Override
         public void run() {
