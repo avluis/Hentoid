@@ -83,9 +83,9 @@ import timber.log.Timber;
  * The source itself should contain every method it needs to function.
  * <p>
  * todo issue:
- * {@link #checkPermissions()} causes the app to reset unexpectedly. If permission is integral to
- * this activity's function, it is recommended to request for this permission and show rationale if
- * permission request is denied
+ *  {@link #checkPermissions()} causes the app to reset unexpectedly. If permission is integral to
+ *  this activity's function, it is recommended to request for this permission and show rationale if
+ *  permission request is denied
  */
 public abstract class BaseWebActivity extends BaseActivity implements ResultListener<Content> {
 
