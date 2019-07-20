@@ -77,7 +77,7 @@ public class HttpHelper {
 
         if (contentTypeValue != null) {
             if (contentTypeValue.indexOf("charset=") > 0) {
-                final String[] contentTypeAndEncoding = contentTypeValue.split("; ");
+                final String[] contentTypeAndEncoding = contentTypeValue.replace("; ", ";").split(";");
                 final String contentType = contentTypeAndEncoding[0];
                 final String charset = contentTypeAndEncoding[1].split("=")[1];
                 return new WebResourceResponse(contentType, charset, is);
