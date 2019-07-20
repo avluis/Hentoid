@@ -70,7 +70,6 @@
             android:paddingEnd="8dp"
             android:paddingBottom="5dp"
             tools:background="?colorPrimary"
-            android:tint="@color/card_surface"
             tools:ignore="ContentDescription"
             tools:src="@drawable/ic_menu_hitomi" />
 
