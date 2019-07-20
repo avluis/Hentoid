@@ -26,14 +26,14 @@ public class ObjectBoxCollectionAccessor implements CollectionAccessor {
     private final ObjectBoxDB db;
     private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
-    private final int MODE_SEARCH_CONTENT_MODULAR = 0;
-    private final int MODE_COUNT_CONTENT_MODULAR = 1;
-    private final int MODE_SEARCH_CONTENT_UNIVERSAL = 2;
-    private final int MODE_COUNT_CONTENT_UNIVERSAL = 3;
+    private static final int MODE_SEARCH_CONTENT_MODULAR = 0;
+    private static final int MODE_COUNT_CONTENT_MODULAR = 1;
+    private static final int MODE_SEARCH_CONTENT_UNIVERSAL = 2;
+    private static final int MODE_COUNT_CONTENT_UNIVERSAL = 3;
 
-    private final int MODE_SEARCH_ATTRIBUTE_TEXT = 0;
-    private final int MODE_SEARCH_ATTRIBUTE_AVAILABLE = 1;
-    private final int MODE_SEARCH_ATTRIBUTE_COMBINED = 2;
+    private static final int MODE_SEARCH_ATTRIBUTE_TEXT = 0;
+    private static final int MODE_SEARCH_ATTRIBUTE_AVAILABLE = 1;
+    private static final int MODE_SEARCH_ATTRIBUTE_COMBINED = 2;
 
     static class ContentIdQueryResult {
         long[] pagedContentIds;
