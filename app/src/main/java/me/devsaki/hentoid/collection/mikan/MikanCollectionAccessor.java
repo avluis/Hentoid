@@ -230,9 +230,8 @@ public class MikanCollectionAccessor implements CollectionAccessor {
             String endpoint = getEndpointPath(type);
             compositeDisposable.add(MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())
-                    .subscribe((result) -> {
-                        onMasterDataSuccess(result, type.name(), filter, sortOrder, listener); // TODO handle caching in computing thread
-                    }, (throwable) -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
+                    .subscribe(result -> onMasterDataSuccess(result, type.name(), filter, sortOrder, listener), // TODO handle caching in computing thread
+                               throwable -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
         } else {
             List<Attribute> result = filter(attributes, filter);
             listener.onResultReady(result, result.size());
