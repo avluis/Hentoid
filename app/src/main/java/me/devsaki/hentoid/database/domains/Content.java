@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import io.objectbox.annotation.Backlink;
 import io.objectbox.annotation.Convert;
@@ -589,12 +590,13 @@ public class Content implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Content)) {
+            return false;
+        }
 
         Content content = (Content) o;
 
-        return (url != null ? url.equals(content.url) : content.url == null) && site == content.site;
+        return this == o || Objects.equals(content.url, url) && Objects.equals(content.site, site);
     }
 
     @Override
