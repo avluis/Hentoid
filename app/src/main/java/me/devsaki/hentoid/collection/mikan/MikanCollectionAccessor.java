@@ -124,7 +124,8 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
         compositeDisposable.add(MikanServer.API.getRecent(getMikanCodeForSite(site), params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onPagedResultFailed(null, "Recent books failed to load - " + throwable.getMessage())));
+                .subscribe(result -> onContentSuccess(result, listener),
+                           throwable -> listener.onPagedResultFailed(null, "Recent books failed to load - " + throwable.getMessage())));
     }
 
     @Override
