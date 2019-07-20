@@ -337,17 +337,15 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     public void onActionFabClick(View view) {
         if (MODE_DL == fabActionMode) processDownload();
         else if (MODE_QUEUE == fabActionMode) goToQueue();
-        else if (MODE_READ == fabActionMode) {
+        else if (MODE_READ == fabActionMode && currentContent != null) {
+            currentContent = db.selectContentByUrl(currentContent.getUrl());
             if (currentContent != null) {
-                currentContent = db.selectContentByUrl(currentContent.getUrl());
-                if (currentContent != null) {
-                    if (StatusContent.DOWNLOADED == currentContent.getStatus()
-                            || StatusContent.ERROR == currentContent.getStatus()
-                            || StatusContent.MIGRATED == currentContent.getStatus()) {
-                        FileHelper.openContent(this, currentContent);
-                    } else {
-                        fabAction.hide();
-                    }
+                if (StatusContent.DOWNLOADED == currentContent.getStatus()
+                        || StatusContent.ERROR == currentContent.getStatus()
+                        || StatusContent.MIGRATED == currentContent.getStatus()) {
+                    FileHelper.openContent(this, currentContent);
+                } else {
+                    fabAction.hide();
                 }
             }
         }
