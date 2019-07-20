@@ -365,11 +365,11 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             checkStorage();
         }
 
-        booksPerPage = Preferences.getContentPageQuantity();
+        int settingsBooksPerPage = Preferences.getContentPageQuantity();
 
-        if (this.booksPerPage != booksPerPage) {
+        if (this.booksPerPage != settingsBooksPerPage) {
             Timber.d("booksPerPage updated.");
-            this.booksPerPage = booksPerPage;
+            this.booksPerPage = settingsBooksPerPage;
             setQuery("");
             shouldUpdate = true;
         }
