@@ -100,7 +100,7 @@ public class DatabaseMigrationService extends IntentService {
     /**
      * Migrate HentoidDB books to ObjectBoxDB
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private void migrate() {
         int booksOK = 0;
         int booksKO = 0;

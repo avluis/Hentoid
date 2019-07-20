@@ -60,7 +60,7 @@ public class EHentaiParser extends BaseParser {
                 doc = getOnlineDocument(s, headers, true);
                 if (doc != null) {
                     elements = doc.select("img#img");
-                    if (elements != null && elements.size() > 0) {
+                    if (elements != null && !elements.isEmpty()) {
                         e = elements.first();
                         result.add(e.attr("src"));
                     }

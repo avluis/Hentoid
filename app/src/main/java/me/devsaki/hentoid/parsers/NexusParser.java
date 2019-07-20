@@ -28,7 +28,7 @@ public class NexusParser extends BaseParser {
             Document doc = getOnlineDocument(readerUrl);
             if (doc != null) {
                 Elements elements = doc.select("a img");
-                if (elements != null && elements.size() > 0) {
+                if (elements != null && !elements.isEmpty()) {
                     Element e = elements.first();
                     result.add(e.attr("src"));
                 }

@@ -20,7 +20,7 @@ public class LibraryMatcher {
 
     public List<Content> matchContentToLibrary(List<Content> list)
     {
-        if (list != null && list.size() > 0) {
+        if (list != null && !list.isEmpty()) {
             Site site = list.get(0).getSite();
 
             List<String> uniqueIds = new ArrayList<>();

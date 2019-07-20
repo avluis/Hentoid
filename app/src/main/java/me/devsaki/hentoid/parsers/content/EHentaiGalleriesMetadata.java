@@ -13,7 +13,7 @@ public class EHentaiGalleriesMetadata {
     public List<EHentaiGalleryMetadata> gmetadata;
 
     public Content toContent(@Nonnull String url) {
-        return (gmetadata != null && gmetadata.size() > 0) ? gmetadata.get(0).toContent(url) : new Content();
+        return (gmetadata != null && !gmetadata.isEmpty()) ? gmetadata.get(0).toContent(url) : new Content();
     }
 
 }

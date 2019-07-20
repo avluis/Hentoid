@@ -124,7 +124,8 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
         compositeDisposable.add(MikanServer.API.getRecent(getMikanCodeForSite(site), params)
                 .observeOn(mainThread())
-                .subscribe((result) -> onContentSuccess(result, listener), (throwable) -> listener.onPagedResultFailed(null, "Recent books failed to load - " + throwable.getMessage())));
+                .subscribe(result -> onContentSuccess(result, listener),
+                           throwable -> listener.onPagedResultFailed(null, "Recent books failed to load - " + throwable.getMessage())));
     }
 
     @Override
@@ -168,19 +169,19 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         params.put("page", page + "");
 
         List<Long> attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
-        if (attributes.size() > 0) params.put("artist", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("artist", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CIRCLE);
-        if (attributes.size() > 0) params.put("group", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("group", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CHARACTER);
-        if (attributes.size() > 0) params.put("character", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("character", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.TAG);
-        if (attributes.size() > 0) params.put("tag", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("tag", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.LANGUAGE);
-        if (attributes.size() > 0) params.put("language", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("language", Helper.buildListAsString(attributes));
 
 
         compositeDisposable.add(MikanServer.API.search(getMikanCodeForSite(site) + suffix, params)
@@ -229,9 +230,8 @@ public class MikanCollectionAccessor implements CollectionAccessor {
             String endpoint = getEndpointPath(type);
             compositeDisposable.add(MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())
-                    .subscribe((result) -> {
-                        onMasterDataSuccess(result, type.name(), filter, sortOrder, listener); // TODO handle caching in computing thread
-                    }, (throwable) -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
+                    .subscribe(result -> onMasterDataSuccess(result, type.name(), filter, sortOrder, listener), // TODO handle caching in computing thread
+                               throwable -> listener.onResultFailed("Attributes failed to load - " + throwable.getMessage())));
         } else {
             List<Attribute> result = filter(attributes, filter);
             listener.onResultReady(result, result.size());

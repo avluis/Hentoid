@@ -83,9 +83,9 @@ import timber.log.Timber;
  * The source itself should contain every method it needs to function.
  * <p>
  * todo issue:
- * {@link #checkPermissions()} causes the app to reset unexpectedly. If permission is integral to
- * this activity's function, it is recommended to request for this permission and show rationale if
- * permission request is denied
+ *  {@link #checkPermissions()} causes the app to reset unexpectedly. If permission is integral to
+ *  this activity's function, it is recommended to request for this permission and show rationale if
+ *  permission request is denied
  */
 public abstract class BaseWebActivity extends BaseActivity implements ResultListener<Content> {
 
@@ -94,8 +94,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     protected static final int MODE_READ = 2;
 
     // UI
-    protected ObservableWebView webView;                                                // Associated webview
-    private FloatingActionButton fabAction, fabRefreshOrStop, fabHome;       // Action buttons
+    // Associated webview
+    protected ObservableWebView webView;
+    // Action buttons
+    private FloatingActionButton fabAction;
+    private FloatingActionButton fabRefreshOrStop;
+    private FloatingActionButton fabHome;
+    // Swipe layout
     private SwipeRefreshLayout swipeLayout;
 
     // Content currently viewed
@@ -332,17 +337,15 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     public void onActionFabClick(View view) {
         if (MODE_DL == fabActionMode) processDownload();
         else if (MODE_QUEUE == fabActionMode) goToQueue();
-        else if (MODE_READ == fabActionMode) {
+        else if (MODE_READ == fabActionMode && currentContent != null) {
+            currentContent = db.selectContentByUrl(currentContent.getUrl());
             if (currentContent != null) {
-                currentContent = db.selectContentByUrl(currentContent.getUrl());
-                if (currentContent != null) {
-                    if (StatusContent.DOWNLOADED == currentContent.getStatus()
-                            || StatusContent.ERROR == currentContent.getStatus()
-                            || StatusContent.MIGRATED == currentContent.getStatus()) {
-                        FileHelper.openContent(this, currentContent);
-                    } else {
-                        fabAction.hide();
-                    }
+                if (StatusContent.DOWNLOADED == currentContent.getStatus()
+                        || StatusContent.ERROR == currentContent.getStatus()
+                        || StatusContent.MIGRATED == currentContent.getStatus()) {
+                    FileHelper.openContent(this, currentContent);
+                } else {
+                    fabAction.hide();
                 }
             }
         }
@@ -387,7 +390,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         List<QueueRecord> queue = db.selectQueue();
         int lastIndex = 1;
-        if (queue.size() > 0) {
+        if (!queue.isEmpty()) {
             lastIndex = queue.get(queue.size() - 1).rank + 1;
         }
         db.insertQueue(currentContent.getId(), lastIndex);

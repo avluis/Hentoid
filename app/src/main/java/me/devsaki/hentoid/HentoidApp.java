@@ -130,7 +130,7 @@ public class HentoidApp extends Application {
     /**
      * Clean up and upgrade database
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private void performDatabaseHousekeeping() {
         HentoidDB oldDB = HentoidDB.getInstance(this);
 

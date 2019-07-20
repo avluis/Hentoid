@@ -440,10 +440,7 @@ public class QueueContentAdapter extends ArrayAdapter<Content> {
                 Completable.fromRunnable(() -> doCancel(content.getId()))
                         .subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(() -> {
-                            // Remove the content from the in-memory list and the UI
-                            super.remove(content);
-                        }));
+                        .subscribe(() -> super.remove(content))); // Remove the content from the in-memory list and the UI
     }
 
     private void doCancel(long contentId) {

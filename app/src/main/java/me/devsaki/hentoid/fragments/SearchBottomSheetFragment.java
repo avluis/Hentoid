@@ -52,7 +52,7 @@ import static me.devsaki.hentoid.abstracts.DownloadsFragment.MODE_MIKAN;
 
 /**
  * TODO: look into recyclerview.extensions.ListAdapter for a RecyclerView.Adapter that can issue
- * appropriate notify commands based on list diff
+ *  appropriate notify commands based on list diff
  */
 public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 

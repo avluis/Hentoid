@@ -82,8 +82,8 @@ import static com.annimon.stream.Collectors.toCollection;
  * Created by avluis on 08/27/2016. Common elements for use by EndlessFragment and PagerFragment
  * <p>
  * todo issue: After requesting for permission, the app is reset using {@link #resetApp()} instead
- * of implementing {@link #onRequestPermissionsResult} to receive permission
- * request result
+ *  of implementing {@link #onRequestPermissionsResult} to receive permission
+ *  request result
  */
 public abstract class DownloadsFragment extends BaseFragment implements PagedResultListener<Content>,
         ItemSelectListener {
@@ -94,8 +94,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
     protected static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
 
-    public final static int MODE_LIBRARY = 0;
-    public final static int MODE_MIKAN = 1;
+    public static final  int MODE_LIBRARY = 0;
+    public static final  int MODE_MIKAN = 1;
 
 
     // Save state constants
@@ -244,17 +244,13 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
                     return true;
                 case R.id.action_delete:
+                case R.id.action_delete_sweep:
                     mAdapter.purgeSelectedItems();
                     mode.finish();
 
                     return true;
                 case R.id.action_archive:
                     mAdapter.archiveSelectedItems();
-                    mode.finish();
-
-                    return true;
-                case R.id.action_delete_sweep:
-                    mAdapter.purgeSelectedItems();
                     mode.finish();
 
                     return true;
@@ -369,11 +365,11 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             checkStorage();
         }
 
-        int booksPerPage = Preferences.getContentPageQuantity();
+        int settingsBooksPerPage = Preferences.getContentPageQuantity();
 
-        if (this.booksPerPage != booksPerPage) {
+        if (this.booksPerPage != settingsBooksPerPage) {
             Timber.d("booksPerPage updated.");
-            this.booksPerPage = booksPerPage;
+            this.booksPerPage = settingsBooksPerPage;
             setQuery("");
             shouldUpdate = true;
         }

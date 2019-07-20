@@ -403,7 +403,7 @@ public class ImportActivity extends BaseActivity {
                         PackageManager manager = this.getPackageManager();
                         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                         List<ResolveInfo> handlers = manager.queryIntentActivities(intent, 0);
-                        if (handlers != null && handlers.size() > 0) {
+                        if (handlers != null && !handlers.isEmpty()) {
                             Timber.d("Device should be able to handle the SAF request");
                             ToastUtil.toast("Attempting SAF");
                             requestWritePermission();

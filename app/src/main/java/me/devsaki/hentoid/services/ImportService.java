@@ -276,13 +276,13 @@ public class ImportService extends IntentService {
         return null;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private static List<Attribute> from(List<URLBuilder> urlBuilders, Site site) {
         List<Attribute> attributes = null;
         if (urlBuilders == null) {
             return null;
         }
-        if (urlBuilders.size() > 0) {
+        if (!urlBuilders.isEmpty()) {
             attributes = new ArrayList<>();
             for (URLBuilder urlBuilder : urlBuilders) {
                 Attribute attribute = from(urlBuilder, AttributeType.TAG, site);
@@ -295,7 +295,7 @@ public class ImportService extends IntentService {
         return attributes;
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private static Attribute from(URLBuilder urlBuilder, AttributeType type, Site site) {
         if (urlBuilder == null) {
             return null;
@@ -313,7 +313,7 @@ public class ImportService extends IntentService {
     }
 
     @CheckResult
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     private static Content importJsonLegacy(File json) throws JSONParseException {
         try {
             DoujinBuilder doujinBuilder =
