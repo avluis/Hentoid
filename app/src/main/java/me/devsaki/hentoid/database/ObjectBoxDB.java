@@ -49,11 +49,11 @@ public class ObjectBoxDB {
 
     // TODO - put indexes
 
-    private final static int[] visibleContentStatus = new int[]{StatusContent.DOWNLOADED.getCode(),
+    private static final int[] visibleContentStatus = new int[]{StatusContent.DOWNLOADED.getCode(),
             StatusContent.ERROR.getCode(),
             StatusContent.MIGRATED.getCode()};
 
-    private final static List<Integer> visibleContentStatusAsList = Helper.getListFromPrimitiveArray(visibleContentStatus);
+    private static final List<Integer> visibleContentStatusAsList = Helper.getListFromPrimitiveArray(visibleContentStatus);
 
     private static ObjectBoxDB instance;
 
@@ -88,7 +88,8 @@ public class ObjectBoxDB {
         // Master data management managed manually
         // Ensure all known attributes are replaced by their ID before being inserted
         // Watch https://github.com/objectbox/objectbox-java/issues/509 for a lighter solution based on @Unique annotation
-        Attribute dbAttr, inputAttr;
+        Attribute dbAttr;
+        Attribute inputAttr;
         for (int i = 0; i < attributes.size(); i++) {
             inputAttr = attributes.get(i);
             dbAttr = (Attribute) attrByUniqueKey.setParameter(Attribute_.name, inputAttr.getName())
