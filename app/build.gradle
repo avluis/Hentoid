@@ -18,8 +18,8 @@ android {
         minSdkVersion 19
         //noinspection ExpiringTargetSdkVersion
         targetSdkVersion 28
-        versionCode 110
-        versionName '1.8.1'
+        versionCode 110 // is updated automatically by BitRise; only used when building locally
+        versionName '1.8.2'
 
         def fkToken =  '\"' + (System.getenv("FK_TOKEN")?: "")+'\"'
         def includeObjectBoxBrowser = System.getenv("INCLUDE_OBJECTBOX_BROWSER")?:"false"
