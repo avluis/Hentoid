@@ -67,7 +67,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
     @Override
     public int getItemViewType(int position) {
-        if ("gif".equals(FileHelper.getExtension(images.get(position).getAbsolutePath()).toLowerCase())) {
+        if ("gif".equalsIgnoreCase(FileHelper.getExtension(images.get(position).getAbsolutePath()))) {
             return TYPE_GIF;
         }
         return TYPE_OTHER;
