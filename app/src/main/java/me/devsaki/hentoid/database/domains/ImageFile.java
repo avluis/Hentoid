@@ -55,12 +55,6 @@ public class ImageFile {
         this.favourite = false;
     }
 
-/*
-    public Integer getId() {
-        return url.hashCode();
-    }
-*/
-
     public long getId() {
         return this.id;
     }

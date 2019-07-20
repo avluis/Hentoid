@@ -832,7 +832,6 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
                 mListView.setVisibility(View.GONE);
                 emptyText.setVisibility(View.GONE);
                 loadingText.setVisibility(View.VISIBLE);
-                //showToolbar(false);
                 startLoadingTextAnimation();
                 break;
             case SHOW_BLANK:

@@ -65,7 +65,6 @@ public class HentaiCafeParser extends BaseParser {
                     if (URLUtil.isValidUrl(url)) {
                         Timber.d("Chapter Links: %s", url);
                         try {
-//                            doc = Jsoup.connect(links.get(i).attr("href")).timeout(TIMEOUT).get();
                             doc = getOnlineDocument(url);
                             if (doc != null) {
                                 contents = doc.select("article#content");

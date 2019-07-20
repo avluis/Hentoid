@@ -146,10 +146,6 @@ public class DownloadsActivity extends BaseActivity implements BackInterface {
         Fragment fragment = manager.findFragmentById(R.id.content_frame);
 
         if (fragment != null) {
-            /*
-            Fragment selectedFragment = buildFragment();
-            String selectedFragmentTag = selectedFragment.getClass().getSimpleName();
-            */
             String selectedFragmentTag = getFragment().getSimpleName();
 
             if (!selectedFragmentTag.equals(fragment.getTag())) {
