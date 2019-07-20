@@ -94,8 +94,13 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     protected static final int MODE_READ = 2;
 
     // UI
-    protected ObservableWebView webView;                                                // Associated webview
-    private FloatingActionButton fabAction, fabRefreshOrStop, fabHome;       // Action buttons
+    // Associated webview
+    protected ObservableWebView webView;
+    // Action buttons
+    private FloatingActionButton fabAction;
+    private FloatingActionButton fabRefreshOrStop;
+    private FloatingActionButton fabHome;
+    // Swipe layout
     private SwipeRefreshLayout swipeLayout;
 
     // Content currently viewed
