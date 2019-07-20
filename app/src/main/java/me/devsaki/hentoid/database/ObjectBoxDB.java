@@ -279,7 +279,7 @@ public class ObjectBoxDB {
 
     private static long[] getIdsFromAttributes(@Nonnull List<Attribute> attrs) {
         long[] result = new long[attrs.size()];
-        if (attrs.size() > 0) {
+        if (!attrs.isEmpty()) {
             int index = 0;
             for (Attribute a : attrs) result[index++] = a.getId();
         }
@@ -322,7 +322,9 @@ public class ObjectBoxDB {
         metadataMap.addAll(metadata);
 
         boolean hasTitleFilter = (title != null && title.length() > 0);
-        boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE) && (metadataMap.get(AttributeType.SOURCE) != null) && (metadataMap.get(AttributeType.SOURCE).size() > 0);
+        boolean hasSiteFilter = metadataMap.containsKey(AttributeType.SOURCE)
+                                && (metadataMap.get(AttributeType.SOURCE) != null)
+                                && !(metadataMap.get(AttributeType.SOURCE).isEmpty());
         boolean hasTagFilter = metadataMap.keySet().size() > (hasSiteFilter ? 1 : 0);
 
         QueryBuilder<Content> query = store.boxFor(Content.class).query();
@@ -336,7 +338,7 @@ public class ObjectBoxDB {
             for (AttributeType attrType : metadataMap.keySet()) {
                 if (!attrType.equals(AttributeType.SOURCE)) { // Not a "real" attribute in database
                     List<Attribute> attrs = metadataMap.get(attrType);
-                    if (attrs != null && attrs.size() > 0) {
+                    if (attrs != null && !attrs.isEmpty()) {
                         query.in(Content_.id, getFilteredContent(attrs, false));
                     }
                 }
@@ -576,7 +578,7 @@ public class ObjectBoxDB {
 
     private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, List<Long> filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
-        if (filteredContent.size() > 0)
+        if (!filteredContent.isEmpty())
             query.filter((attr) -> (Stream.of(attr.contents).filter(c -> filteredContent.contains(c.getId())).filter(c -> visibleContentStatusAsList.contains(c.getStatus().getCode())).count() > 0));
 //            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus); <-- does not work for an obscure reason; need to reproduce that on a clean project and submit it to ObjectBox
         query.equal(Attribute_.type, type.getCode());

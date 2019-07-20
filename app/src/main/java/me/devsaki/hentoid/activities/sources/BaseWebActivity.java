@@ -387,7 +387,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
 
         List<QueueRecord> queue = db.selectQueue();
         int lastIndex = 1;
-        if (queue.size() > 0) {
+        if (!queue.isEmpty()) {
             lastIndex = queue.get(queue.size() - 1).rank + 1;
         }
         db.insertQueue(currentContent.getId(), lastIndex);

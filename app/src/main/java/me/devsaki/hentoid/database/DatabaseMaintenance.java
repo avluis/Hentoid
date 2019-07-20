@@ -43,7 +43,7 @@ public class DatabaseMaintenance {
         List<Content> contents = db.selectContentByStatus(StatusContent.PAUSED);
         List<Content> queueContents = db.selectQueueContents();
         contents.removeAll(queueContents);
-        if (contents.size() > 0) {
+        if (!contents.isEmpty()) {
             int queueMaxPos = (int) db.selectMaxQueueOrder();
             for (Content c : contents) db.insertQueue(c.getId(), ++queueMaxPos);
         }
@@ -78,7 +78,7 @@ public class DatabaseMaintenance {
     public static void performOldDatabaseUpdate(HentoidDB db) {
         // Update all "storage_folder" fields in CONTENT table (mandatory) (since versionCode 44 / v1.2.2)
         List<Content> contents = db.selectContentEmptyFolder();
-        if (contents != null && contents.size() > 0) {
+        if (contents != null && !contents.isEmpty()) {
             for (int i = 0; i < contents.size(); i++) {
                 Content content = contents.get(i);
                 content.setStorageFolder("/" + content.getSite().getDescription() + "/" + content.getOldUniqueSiteId()); // This line must use deprecated code, as it migrates it to newest version
@@ -90,11 +90,11 @@ public class DatabaseMaintenance {
         // Gets books that should be in the queue but aren't
         List<Integer> contentToMigrate = db.selectContentsForQueueMigration();
 
-        if (contentToMigrate.size() > 0) {
+        if (!contentToMigrate.isEmpty()) {
             // Gets last index of the queue
             List<Pair<Integer, Integer>> queue = db.selectQueue();
             int lastIndex = 1;
-            if (queue.size() > 0) {
+            if (!queue.isEmpty()) {
                 lastIndex = queue.get(queue.size() - 1).second + 1;
             }
 

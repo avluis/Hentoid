@@ -74,7 +74,7 @@ public class MusesContent implements ContentParser {
             Document doc = HttpHelper.getOnlineDocument(Site.MUSES.getUrl() + thumbLinks.get(0));
             if (doc != null) {
                 Elements elements = doc.select(".album-tags a[href*='/search/tag']");
-                if (elements.size() > 0)
+                if (!elements.isEmpty())
                     ParseHelper.parseAttributes(attributes, AttributeType.TAG, elements, true, Site.MUSES);
             }
         } catch (IOException e) {

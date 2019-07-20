@@ -255,7 +255,7 @@ public class Content implements Serializable {
         } else {
             if (attributes != null) {
                 List<Attribute> attributesList = getAttributeMap().get(AttributeType.CATEGORY);
-                if (attributesList != null && attributesList.size() > 0) {
+                if (attributesList != null && !attributesList.isEmpty()) {
                     return attributesList.get(0).getName();
                 }
             }
@@ -341,11 +341,11 @@ public class Content implements Serializable {
     public Content populateAuthor() {
         String authorStr = "";
         AttributeMap attrMap = getAttributeMap();
-        if (attrMap.containsKey(AttributeType.ARTIST) && attrMap.get(AttributeType.ARTIST).size() > 0)
+        if (attrMap.containsKey(AttributeType.ARTIST) && !attrMap.get(AttributeType.ARTIST).isEmpty())
             authorStr = attrMap.get(AttributeType.ARTIST).get(0).getName();
         if (null == authorStr || authorStr.equals("")) // Try and get Circle
         {
-            if (attrMap.containsKey(AttributeType.CIRCLE) && attrMap.get(AttributeType.CIRCLE).size() > 0)
+            if (attrMap.containsKey(AttributeType.CIRCLE) && !attrMap.get(AttributeType.CIRCLE).isEmpty())
                 authorStr = attrMap.get(AttributeType.CIRCLE).get(0).getName();
         }
         if (null == authorStr) authorStr = "";

@@ -168,19 +168,19 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         params.put("page", page + "");
 
         List<Long> attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.ARTIST);
-        if (attributes.size() > 0) params.put("artist", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("artist", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CIRCLE);
-        if (attributes.size() > 0) params.put("group", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("group", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.CHARACTER);
-        if (attributes.size() > 0) params.put("character", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("character", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.TAG);
-        if (attributes.size() > 0) params.put("tag", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("tag", Helper.buildListAsString(attributes));
 
         attributes = Helper.extractAttributeIdsByType(metadata, AttributeType.LANGUAGE);
-        if (attributes.size() > 0) params.put("language", Helper.buildListAsString(attributes));
+        if (!attributes.isEmpty()) params.put("language", Helper.buildListAsString(attributes));
 
 
         compositeDisposable.add(MikanServer.API.search(getMikanCodeForSite(site) + suffix, params)

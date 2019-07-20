@@ -71,7 +71,7 @@ public class HentaiCafeParser extends BaseParser {
                                 contents = doc.select("article#content");
                                 js = contents.select("script").last();
 
-                                if (contents.size() > 0) {
+                                if (!contents.isEmpty()) {
                                     pages += Integer.parseInt(
                                             doc.select("div.text").first().text().replace(" ⤵", ""));
                                     Timber.d("Pages: %s", pages);

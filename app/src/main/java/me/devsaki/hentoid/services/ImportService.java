@@ -282,7 +282,7 @@ public class ImportService extends IntentService {
         if (urlBuilders == null) {
             return null;
         }
-        if (urlBuilders.size() > 0) {
+        if (!urlBuilders.isEmpty()) {
             attributes = new ArrayList<>();
             for (URLBuilder urlBuilder : urlBuilders) {
                 Attribute attribute = from(urlBuilder, AttributeType.TAG, site);
