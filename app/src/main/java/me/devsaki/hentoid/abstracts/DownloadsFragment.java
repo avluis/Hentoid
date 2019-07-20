@@ -244,17 +244,13 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
                     return true;
                 case R.id.action_delete:
+                case R.id.action_delete_sweep:
                     mAdapter.purgeSelectedItems();
                     mode.finish();
 
                     return true;
                 case R.id.action_archive:
                     mAdapter.archiveSelectedItems();
-                    mode.finish();
-
-                    return true;
-                case R.id.action_delete_sweep:
-                    mAdapter.purgeSelectedItems();
                     mode.finish();
 
                     return true;
@@ -369,7 +365,7 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
             checkStorage();
         }
 
-        int booksPerPage = Preferences.getContentPageQuantity();
+        booksPerPage = Preferences.getContentPageQuantity();
 
         if (this.booksPerPage != booksPerPage) {
             Timber.d("booksPerPage updated.");
