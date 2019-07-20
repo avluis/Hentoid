@@ -197,6 +197,8 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setTapListener(onZoneTapListener);     // For paper roll mode (vertical)
         adapter.setItemTouchListener(onZoneTapListener);    // For independent images mode (horizontal)
 
+        adapter.setRecyclerView(recyclerView);
+
         llm = new PrefetchLinearLayoutManager(getContext());
         llm.setItemPrefetchEnabled(true);
         llm.setPreloadItemCount(2);
@@ -425,6 +427,11 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private void onCurrentPositionChange(int position) {
         if (this.imageIndex != position) {
             this.imageIndex = position;
+
+            // Resets zoom if we're using horizontal (independent pages) mode
+            if (Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation())
+                adapter.resetPosition(position);
+
             seekBar.setProgress(position);
             updatePageDisplay();
             updateFavouriteDisplay();

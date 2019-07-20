@@ -1,12 +1,13 @@
 package me.devsaki.hentoid.adapters;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -35,6 +36,7 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
     private final RequestOptions glideRequestOptions = new RequestOptions().centerInside();
 
     private View.OnTouchListener itemTouchListener;
+    private RecyclerView recyclerView;
 
     private List<ImageFile> images = new ArrayList<>();
 
@@ -46,6 +48,10 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
 
     public void setImages(List<ImageFile> images) {
         this.images = Collections.unmodifiableList(images);
+    }
+
+    public void setRecyclerView(RecyclerView v) {
+        recyclerView = v;
     }
 
     public void setItemTouchListener(View.OnTouchListener itemTouchListener) {
@@ -100,6 +106,13 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
         return (position >= 0 && position < images.size()) ? images.get(position) : null;
     }
 
+    public void resetPosition(int position) {
+        if (recyclerView != null) {
+            ImageViewHolder holder = (ImageViewHolder) recyclerView.findViewHolderForAdapterPosition(position);
+            if (holder != null) holder.resetScale();
+        }
+    }
+
     final class ImageViewHolder extends RecyclerView.ViewHolder {
 
         private final int imgType;
@@ -138,6 +151,14 @@ public final class ImagePagerAdapter extends RecyclerView.Adapter<ImagePagerAdap
                 return SubsamplingScaleImageView.SCALE_TYPE_START;
             } else {
                 return SubsamplingScaleImageView.SCALE_TYPE_CENTER_INSIDE;
+            }
+        }
+
+        void resetScale() {
+            if (TYPE_GIF != imgType) {
+                SubsamplingScaleImageView ssView = (SubsamplingScaleImageView) imgView;
+                if (ssView.isImageLoaded() && ssView.isReady() && ssView.isLaidOut())
+                    ssView.resetScaleAndCenter();
             }
         }
     }
