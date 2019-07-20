@@ -16,7 +16,7 @@ public class DatabaseMaintenance {
      * Clean up and upgrade database
      * NB : Heavy operations; must be performed in the background to avoid ANR at startup
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     public static void performDatabaseHousekeeping(Context context) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
 
@@ -74,7 +74,7 @@ public class DatabaseMaintenance {
     /**
      * Handles complex DB version updates at startup
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     public static void performOldDatabaseUpdate(HentoidDB db) {
         // Update all "storage_folder" fields in CONTENT table (mandatory) (since versionCode 44 / v1.2.2)
         List<Content> contents = db.selectContentEmptyFolder();
@@ -104,7 +104,7 @@ public class DatabaseMaintenance {
         }
     }
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings({"deprecation", "squid:CallToDeprecatedMethod"})
     public static boolean hasToMigrate(Context context) {
         HentoidDB oldDb = HentoidDB.getInstance(context);
         return (oldDb.countContentEntries() > 0);
