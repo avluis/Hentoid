@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,10 +49,9 @@ public class SearchActivityBundle {
             Uri.Builder searchUri = new Uri.Builder()
                     .scheme("search")
                     .authority("hentoid");
-            for (Map.Entry<AttributeType,List<Attribute>> entry : metadataMap.entrySet()) {
-                AttributeType attrType = entry.getKey();
-                List<Attribute> list = entry.getValue();
-                for (Attribute attr : list)
+            for (AttributeType attrType : metadataMap.keySet()) {
+                List<Attribute> attrs = metadataMap.get(attrType);
+                for (Attribute attr : attrs)
                     searchUri.appendQueryParameter(attrType.name(), attr.getId() + ";" + attr.getName());
             }
             return searchUri.build();
