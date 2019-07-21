@@ -19,6 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -83,14 +84,14 @@ public class TsuminoParser extends BaseParser {
             http.setRequestMethod("POST");
             http.connect();
 
-            try (OutputStream stream = http.getOutputStream(); BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, "UTF-8"))) {
+            try (OutputStream stream = http.getOutputStream(); BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(stream, StandardCharsets.UTF_8))) {
                 writer.write(dataJson);
             }
 
             StringBuilder builder = new StringBuilder();
             String line;
             try (BufferedReader br = new BufferedReader(new InputStreamReader(
-                    http.getInputStream(), "UTF-8"))) {
+                    http.getInputStream(), StandardCharsets.UTF_8))) {
                 while ((line = br.readLine()) != null) builder.append(line);
             }
             return builder.toString();
