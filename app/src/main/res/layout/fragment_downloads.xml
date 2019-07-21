@@ -73,10 +73,8 @@
                 android:layout_height="match_parent"
                 android:clipToPadding="false"
                 android:paddingStart="@dimen/default_cardview_margin"
-                android:paddingLeft="@dimen/default_cardview_margin"
                 android:paddingTop="@dimen/default_cardview_margin"
                 android:paddingEnd="@dimen/default_cardview_margin"
-                android:paddingRight="@dimen/default_cardview_margin"
                 tools:listitem="@layout/item_download" />
 
             <LinearLayout
