@@ -92,7 +92,7 @@ public class SearchBottomSheetFragment extends BottomSheetDialogFragment {
 
 
     // ======== CONSTANTS
-    private final static int ATTRS_PER_PAGE = 40;
+    private static final int ATTRS_PER_PAGE = 40;
 
 
     public static void show(FragmentManager fragmentManager, int mode, AttributeType[] types) {

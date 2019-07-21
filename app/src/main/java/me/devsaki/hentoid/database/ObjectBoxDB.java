@@ -494,7 +494,7 @@ public class ObjectBoxDB {
     }
 
     private long[] getFilteredContent(List<Attribute> attrs, boolean filterFavourites) {
-        if (null == attrs || 0 == attrs.size()) return new long[0];
+        if (null == attrs || attrs.isEmpty()) return new long[0];
 
         // Pre-build queries to reuse them efficiently within the loops
         QueryBuilder<Content> contentFromSourceQueryBuilder = store.boxFor(Content.class).query();
@@ -580,7 +580,7 @@ public class ObjectBoxDB {
     private Query<Attribute> queryAvailableAttributes(AttributeType type, String filter, List<Long> filteredContent) {
         QueryBuilder<Attribute> query = store.boxFor(Attribute.class).query();
         if (!filteredContent.isEmpty())
-            query.filter((attr) -> (Stream.of(attr.contents).filter(c -> filteredContent.contains(c.getId())).filter(c -> visibleContentStatusAsList.contains(c.getStatus().getCode())).count() > 0));
+            query.filter(attr -> (Stream.of(attr.contents).filter(c -> filteredContent.contains(c.getId())).filter(c -> visibleContentStatusAsList.contains(c.getStatus().getCode())).count() > 0));
 //            query.link(Attribute_.contents).in(Content_.id, filteredContent).in(Content_.status, visibleContentStatus); <-- does not work for an obscure reason; need to reproduce that on a clean project and submit it to ObjectBox
         query.equal(Attribute_.type, type.getCode());
         if (filter != null && !filter.trim().isEmpty())

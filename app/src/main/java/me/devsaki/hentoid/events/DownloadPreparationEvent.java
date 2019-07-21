@@ -13,7 +13,7 @@ public class DownloadPreparationEvent {
         this.total = total;
     }
 
-    public boolean IsCompleted()
+    public boolean isCompleted()
     {
         return (done == total);
     }

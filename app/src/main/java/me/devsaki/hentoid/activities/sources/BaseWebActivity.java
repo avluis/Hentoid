@@ -550,6 +550,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         @Override
+        @Deprecated
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
             String hostStr = Uri.parse(url).getHost();
             return hostStr != null && !hostStr.contains(restrictedDomainName);
@@ -578,6 +579,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
         }
 
         @Override
+        @Deprecated
         public WebResourceResponse shouldInterceptRequest(@NonNull WebView view,
                                                           @NonNull String url) {
             if (isUrlForbidden(url)) {
