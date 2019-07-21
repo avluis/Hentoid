@@ -167,7 +167,7 @@ public class ZoomableRecyclerView extends RecyclerView {
         animatorSet.addListener(new Animator.AnimatorListener() {
             @Override
             public void onAnimationStart(Animator animation) {
-
+                // No need to define any behaviour here
             }
 
             @Override
@@ -179,12 +179,12 @@ public class ZoomableRecyclerView extends RecyclerView {
 
             @Override
             public void onAnimationCancel(Animator animation) {
-
+                // No need to define any behaviour here
             }
 
             @Override
             public void onAnimationRepeat(Animator animation) {
-
+                // No need to define any behaviour here
             }
         });
     }

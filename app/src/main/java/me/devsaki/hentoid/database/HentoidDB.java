@@ -37,6 +37,7 @@ import timber.log.Timber;
  * @deprecated Replaced by {@link ObjectBoxDB}; class is kept for data migration purposes
  */
 @Deprecated
+@SuppressWarnings("squid:S1192") // Putting SQL literals into constants would be too cumbersome
 public class HentoidDB extends SQLiteOpenHelper {
 
     private static final int DATABASE_VERSION = 8;

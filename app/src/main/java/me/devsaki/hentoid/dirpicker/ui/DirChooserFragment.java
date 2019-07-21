@@ -52,8 +52,8 @@ public class DirChooserFragment extends DialogFragment {
 
     private RecyclerView recyclerView;
     private TextView textView;
-    private FloatingActionButton fabCreateDir,
-            fabRequestSD;
+    private FloatingActionButton fabCreateDir;
+    private FloatingActionButton fabRequestSD;
     private View selectDirBtn;
     private File currentRootDir;
     private DirListBuilder dirListBuilder;
@@ -122,7 +122,7 @@ public class DirChooserFragment extends DialogFragment {
         fabCreateDir.setOnClickListener(this::onClick);
         selectDirBtn.setOnClickListener(this::onClick);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSDPresent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSdPresent) {
             fabRequestSD.setOnClickListener(this::onClick);
             fabRequestSD.show();
         }
@@ -148,7 +148,7 @@ public class DirChooserFragment extends DialogFragment {
     @Subscribe
     public void onMakeDirEvent(OnMakeDirEvent event) {
         try {
-            MakeDir.TryMakeDir(event.root, event.dirName);
+            MakeDir.tryMakeDir(event.root, event.dirName);
         } catch (DirExistsException dee) {
             ToastUtil.toast(R.string.folder_already_exists);
         } catch (PermissionDeniedException dee) {
@@ -186,7 +186,7 @@ public class DirChooserFragment extends DialogFragment {
     }
 
     @Override
-    public void onCancel(DialogInterface dialog) {
+    public void onCancel(@NonNull DialogInterface dialog) {
         EventBus.getDefault().post(new OnDirCancelEvent());
         super.onCancel(dialog);
     }

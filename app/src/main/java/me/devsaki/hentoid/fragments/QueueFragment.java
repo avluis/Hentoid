@@ -145,12 +145,12 @@ public class QueueFragment extends BaseFragment {
      */
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onPrepDownloadEvent(DownloadPreparationEvent event) {
-        if (!dlPreparationProgressBar.isShown() && !event.IsCompleted() && !isPaused && !isEmpty) {
+        if (!dlPreparationProgressBar.isShown() && !event.isCompleted() && !isPaused && !isEmpty) {
             dlPreparationProgressBar.setTotal(event.total);
             dlPreparationProgressBar.setVisibility(View.VISIBLE);
             queueInfo.setText(R.string.queue_preparing);
             isPreparingDownload = true;
-        } else if (dlPreparationProgressBar.isShown() && event.IsCompleted()) {
+        } else if (dlPreparationProgressBar.isShown() && event.isCompleted()) {
             dlPreparationProgressBar.setVisibility(View.GONE);
         }
 

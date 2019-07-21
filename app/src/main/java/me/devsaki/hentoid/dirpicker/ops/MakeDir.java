@@ -6,7 +6,6 @@ import java.io.IOException;
 import me.devsaki.hentoid.dirpicker.exceptions.DirExistsException;
 import me.devsaki.hentoid.dirpicker.exceptions.PermissionDeniedException;
 import me.devsaki.hentoid.util.FileHelper;
-import timber.log.Timber;
 
 /**
  * Created by avluis on 06/12/2016.
@@ -14,7 +13,7 @@ import timber.log.Timber;
  */
 public class MakeDir {
 
-    public static void TryMakeDir(File rootDir, String dirName) throws IOException {
+    public static void tryMakeDir(File rootDir, String dirName) throws IOException {
         if (!rootDir.canWrite()) {
             throw new PermissionDeniedException();
         }
@@ -23,12 +22,8 @@ public class MakeDir {
         if (newDir.exists()) {
             throw new DirExistsException();
         } else {
-            boolean isDirCreated = FileHelper.createDirectory(newDir);
-            if (isDirCreated) {
-                return;
-            } else {
+            if (!FileHelper.createDirectory(newDir))
                 throw new IOException();
-            }
         }
     }
 }

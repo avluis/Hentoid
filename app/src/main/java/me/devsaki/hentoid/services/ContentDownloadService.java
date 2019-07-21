@@ -57,6 +57,7 @@ import me.devsaki.hentoid.notification.download.DownloadWarningNotification;
 import me.devsaki.hentoid.parsers.ContentParserFactory;
 import me.devsaki.hentoid.parsers.ImageListParser;
 import me.devsaki.hentoid.util.FileHelper;
+import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import me.devsaki.hentoid.util.Preferences;
 import me.devsaki.hentoid.util.notification.NotificationManager;
@@ -412,10 +413,10 @@ public class ContentDownloadService extends IntentService {
             }.getType();
             Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
 
-            if (downloadParams.containsKey("cookie"))
-                headers.put("cookie", downloadParams.get("cookie"));
-            if (downloadParams.containsKey("referer"))
-                headers.put("referer", downloadParams.get("referer"));
+            if (downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY))
+                headers.put(HttpHelper.HEADER_COOKIE_KEY, downloadParams.get(HttpHelper.HEADER_COOKIE_KEY));
+            if (downloadParams.containsKey(HttpHelper.HEADER_REFERER_KEY))
+                headers.put(HttpHelper.HEADER_REFERER_KEY, downloadParams.get(HttpHelper.HEADER_REFERER_KEY));
         }
 
         return new InputStreamVolleyRequest(

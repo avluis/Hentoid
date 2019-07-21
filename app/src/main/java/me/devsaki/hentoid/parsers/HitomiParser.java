@@ -11,6 +11,7 @@ import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
 import me.devsaki.hentoid.database.domains.ImageFile;
+import me.devsaki.hentoid.util.HttpHelper;
 import me.devsaki.hentoid.util.JsonHelper;
 import timber.log.Timber;
 
@@ -49,7 +50,7 @@ public class HitomiParser implements ImageListParser {
 
             Map<String, String> downloadParams = new HashMap<>();
             // Add referer information to downloadParams for future image download
-            downloadParams.put("referer", content.getReaderUrl());
+            downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
             String downloadParamsStr = JsonHelper.serializeToJson(downloadParams);
 
             int order = 1;

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.enums;
 
+import java.io.File;
+
 import io.objectbox.converter.PropertyConverter;
 import me.devsaki.hentoid.R;
 import timber.log.Timber;
@@ -112,9 +114,9 @@ public enum Site {
 
     public String getFolder() {
         if (this == FAKKU) {
-            return "/Downloads/";
+            return File.separator + "Downloads" + File.separator;
         } else {
-            return '/' + description + '/';
+            return File.separator + description + File.separator;
         }
     }
 

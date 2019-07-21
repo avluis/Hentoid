@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.database.domains;
 
+import androidx.annotation.NonNull;
+
 import com.google.gson.annotations.Expose;
 
 import java.io.DataInputStream;
@@ -27,7 +29,7 @@ import timber.log.Timber;
 @Entity
 public class Attribute {
 
-    private final static int ATTRIBUTE_FILE_VERSION = 1;
+    private static final int ATTRIBUTE_FILE_VERSION = 1;
 
     @Id
     private long id;
@@ -163,6 +165,7 @@ public class Attribute {
         }
     }
 
+    @NonNull
     @Override
     public String toString() {
         return getName();
@@ -186,9 +189,7 @@ public class Attribute {
 
     public static final Comparator<Attribute> NAME_COMPARATOR = (a, b) -> a.getName().compareTo(b.getName());
 
-    public static final Comparator<Attribute> COUNT_COMPARATOR = (a, b) -> {
-        return Long.compare(a.getCount(), b.getCount()) * -1; /* Inverted - higher count first */
-    };
+    public static final Comparator<Attribute> COUNT_COMPARATOR = (a, b) -> Long.compare(a.getCount(), b.getCount()) * -1; /* Inverted - higher count first */
 
     @Override
     public boolean equals(Object o) {
