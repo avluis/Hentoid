@@ -53,7 +53,7 @@ import static android.os.Environment.getExternalStorageState;
  */
 public class FileHelper {
     // Note that many devices will report true (there are no guarantees of this being 'external')
-    public static final boolean isSDPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
+    public static final boolean isSdPresent = getExternalStorageState().equals(MEDIA_MOUNTED);
 
     private static final String AUTHORIZED_CHARS = "[^a-zA-Z0-9.-]";
 

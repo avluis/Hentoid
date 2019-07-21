@@ -122,7 +122,7 @@ public class DirChooserFragment extends DialogFragment {
         fabCreateDir.setOnClickListener(this::onClick);
         selectDirBtn.setOnClickListener(this::onClick);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSDPresent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT && FileHelper.isSdPresent) {
             fabRequestSD.setOnClickListener(this::onClick);
             fabRequestSD.show();
         }
