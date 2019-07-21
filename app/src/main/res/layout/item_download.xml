@@ -9,7 +9,7 @@
     android:focusable="true"
     android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="2dp"
-    app:cardElevation="@dimen/cardview_default_elevation"
+    app:cardElevation="2dp"
     style="@style/DownloadCard">
 
     <RelativeLayout
