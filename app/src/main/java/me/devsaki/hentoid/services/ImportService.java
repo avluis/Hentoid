@@ -183,8 +183,8 @@ public class ImportService extends IntentService {
                     if (rename) {
                         String canonicalBookDir = FileHelper.formatDirPath(content);
 
-                        String[] currentPathParts = folder.getAbsolutePath().split("/");
-                        String currentBookDir = "/" + currentPathParts[currentPathParts.length - 2] + "/" + currentPathParts[currentPathParts.length - 1];
+                        String[] currentPathParts = folder.getAbsolutePath().split(File.separator);
+                        String currentBookDir = File.separator + currentPathParts[currentPathParts.length - 2] + File.separator + currentPathParts[currentPathParts.length - 1];
 
                         if (!canonicalBookDir.equals(currentBookDir)) {
                             String settingDir = Preferences.getRootFolderName();

@@ -140,7 +140,7 @@ class FileUtil {
         if (null == document) return null;
         if (returnRoot || null == relativePath || relativePath.isEmpty()) return document;
 
-        String[] parts = relativePath.split("/");
+        String[] parts = relativePath.split(File.separator);
         for (int i = 0; i < parts.length; i++) {
             DocumentFile nextDocument = document.findFile(parts[i]);
             // The folder might exist in its capitalized version (might happen with legacy installs from the FakkuDroid era)

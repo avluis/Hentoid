@@ -145,7 +145,7 @@ public final class Helper {
         String pathPrefix = site.getDescription().toLowerCase(Locale.US) + "/";
         String file = pathPrefix + filename;
         try {
-            File asset = new File(context.getExternalCacheDir() + "/" + file);
+            File asset = new File(context.getExternalCacheDir() + File.separator + file);
             FileInputStream stream = new FileInputStream(asset);
             return Helper.getUtf8EncodedWebResourceResponse(stream, type);
         } catch (IOException e) {

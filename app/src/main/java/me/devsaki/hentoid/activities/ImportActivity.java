@@ -249,7 +249,7 @@ public class ImportActivity extends BaseActivity {
         if (FileHelper.isOnExtSdCard(dir) && !FileHelper.isWritable(dir)) {
             Timber.d("Inaccessible: moving back to default directory.");
             downloadDir = currentRootDir = new File(Environment.getExternalStorageDirectory() +
-                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+                    File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator);
         }
         if (useDefaultFolder) {
             prevRootDir = currentRootDir;
@@ -302,7 +302,7 @@ public class ImportActivity extends BaseActivity {
         if (event.isLongClick()) {
             Timber.d("Resetting directory back to default.");
             currentRootDir = new File(Environment.getExternalStorageDirectory() +
-                    "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/");
+                    File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator);
             dirChooserFragment.dismiss();
             pickDownloadDirectory(currentRootDir);
         } else {
@@ -389,7 +389,7 @@ public class ImportActivity extends BaseActivity {
         } else {
             if (writeableDirs.size() == 1) {
                 // If we get exactly one write-able path returned, attempt to make use of it
-                String sdDir = writeableDirs.get(0) + "/" + Consts.DEFAULT_LOCAL_DIRECTORY + "/";
+                String sdDir = writeableDirs.get(0) + File.separator + Consts.DEFAULT_LOCAL_DIRECTORY + File.separator;
                 if (!FileHelper.isOnExtSdCard(writeableDirs.get(0)) && FileHelper.checkAndSetRootFolder(sdDir)) { // TODO - dirChooserFragment can't actually browse SD card : to fix later ?
                     Timber.d("Got access to SD Card.");
                     currentRootDir = new File(sdDir);

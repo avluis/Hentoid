@@ -5,6 +5,7 @@ import com.google.gson.annotations.Expose;
 
 import org.jsoup.nodes.Document;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class PururinParser extends BaseParser {
 
             // 2- Get imagePath from app.js => it is constant anyway, and app.js is 3 MB long => put it there as a const
             for (int i = 0; i < content.getQtyPages(); i++) {
-                result.add(protocol + IMAGE_PATH + info.id + "/" + (i + 1) + "." + info.image_extension);
+                result.add(protocol + IMAGE_PATH + info.id + File.separator + (i + 1) + "." + info.image_extension);
             }
         }
 

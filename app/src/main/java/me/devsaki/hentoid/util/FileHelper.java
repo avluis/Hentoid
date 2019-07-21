@@ -520,7 +520,7 @@ public class FileHelper {
         // NB : ideal would be to get the content-type of the resource behind coverUrl, but that's too time-consuming
         if (extension.isEmpty() || extension.contains("/")) extension = "jpg";
 
-        File f = new File(Preferences.getRootFolderName(), content.getStorageFolder() + "/thumb." + extension);
+        File f = new File(Preferences.getRootFolderName(), content.getStorageFolder() + File.separator + "thumb." + extension);
         return f.exists() ? f.getAbsolutePath() : coverUrl;
     }
 
