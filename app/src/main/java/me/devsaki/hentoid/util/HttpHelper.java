@@ -24,6 +24,8 @@ import okhttp3.ResponseBody;
 public class HttpHelper {
 
     private static final int TIMEOUT = 30000; // 30 seconds
+    public static final String HEADER_COOKIE_KEY = "cookie";
+    public static final String HEADER_REFERER_KEY = "referer";
 
     @Nullable
     public static Document getOnlineDocument(String url) throws IOException {

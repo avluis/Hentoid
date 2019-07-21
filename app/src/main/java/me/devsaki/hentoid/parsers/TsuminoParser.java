@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.devsaki.hentoid.database.domains.Content;
+import me.devsaki.hentoid.util.HttpHelper;
 import timber.log.Timber;
 
 import static me.devsaki.hentoid.enums.Site.TSUMINO;
@@ -80,7 +81,7 @@ public class TsuminoParser extends BaseParser {
             http.setDoOutput(true);
             http.setRequestProperty("Content-Type", "application/json");
             http.setRequestProperty("Accept", "application/json");
-            http.setRequestProperty("Cookie", cookie);
+            http.setRequestProperty(HttpHelper.HEADER_COOKIE_KEY, cookie);
             http.setRequestMethod("POST");
             http.connect();
 

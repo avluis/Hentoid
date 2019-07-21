@@ -615,7 +615,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
                     headersList.add(new Pair<>(key, headers.get(key)));
 
             String cookie = CookieManager.getInstance().getCookie(urlStr);
-            if (cookie != null) headersList.add(new Pair<>("cookie", cookie));
+            if (cookie != null) headersList.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, cookie));
 
             try {
                 Response response = HttpHelper.getOnlineResource(urlStr, headersList, getStartSite().canKnowHentoidAgent());
@@ -654,7 +654,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
             // Save cookies for future calls during download
             Map<String, String> params = new HashMap<>();
             for (Pair<String, String> p : headersList)
-                if (p.first.equals("cookie")) params.put("cookie", p.second);
+                if (p.first.equals(HttpHelper.HEADER_COOKIE_KEY)) params.put(HttpHelper.HEADER_COOKIE_KEY, p.second);
 
             content.setDownloadParams(JsonHelper.serializeToJson(params));
             isHtmlLoaded = true;

@@ -45,13 +45,13 @@ public class FakkuParser implements ImageListParser {
         }.getType();
         Map<String, String> downloadParams = new Gson().fromJson(downloadParamsStr, type);
 
-        if (!downloadParams.containsKey("cookie")) {
+        if (!downloadParams.containsKey(HttpHelper.HEADER_COOKIE_KEY)) {
             Timber.e("Download parameters do not contain any cookie");
             return result;
         }
 
         List<Pair<String, String>> headers = new ArrayList<>();
-        headers.add(new Pair<>("cookie", downloadParams.get("cookie")));
+        headers.add(new Pair<>(HttpHelper.HEADER_COOKIE_KEY, downloadParams.get(HttpHelper.HEADER_COOKIE_KEY)));
         String readUrl = content.getGalleryUrl().replace("www", "books") + "/read";
         FakkuGalleryMetadata info;
         try {
@@ -69,11 +69,11 @@ public class FakkuParser implements ImageListParser {
         progressStart(info.pages.keySet().size() + 1);
 
         // Add referer information to downloadParams for future image download
-        downloadParams.put("referer", content.getReaderUrl());
+        downloadParams.put(HttpHelper.HEADER_REFERER_KEY, content.getReaderUrl());
 
         // Process book info to get page detailed info
         String pid = null;
-        String cookie = downloadParams.get("cookie");
+        String cookie = downloadParams.get(HttpHelper.HEADER_COOKIE_KEY);
         if (cookie != null) {
             String[] cookieContent = cookie.split(";");
             for (String s : cookieContent) {
