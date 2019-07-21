@@ -45,7 +45,7 @@ public class HitomiParser implements ImageListParser {
             int referenceId = Integer.parseInt(content.getUniqueSiteId()) % 10;
             if (1 == referenceId)
                 referenceId = 0; // Yes, this is what Hitomi actually does (see common.js)
-            String imageSubdomain = Character.toString((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
+            String imageSubdomain = ((char) (HOSTNAME_PREFIX_BASE + (referenceId % NUMBER_OF_FRONTENDS))) + HOSTNAME_SUFFIX;
 
             Map<String, String> downloadParams = new HashMap<>();
             // Add referer information to downloadParams for future image download

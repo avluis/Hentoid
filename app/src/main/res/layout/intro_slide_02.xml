@@ -16,8 +16,8 @@
         android:layout_gravity="center"
         android:layout_weight="2"
         android:gravity="center"
-        android:paddingLeft="32dp"
-        android:paddingRight="32dp"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
         android:text="@string/slide_02_header"
         android:textSize="28sp"
         app:fontFamily="sans-serif-thin" />
@@ -28,8 +28,8 @@
         android:layout_gravity="center"
         android:layout_weight="3"
         android:gravity="center"
-        android:paddingLeft="64dp"
-        android:paddingRight="64dp"
+        android:paddingStart="64dp"
+        android:paddingEnd="64dp"
         android:text="@string/slide_02_text"
         android:textSize="16sp" />
 
@@ -45,8 +45,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:paddingBottom="10dp"
-            android:paddingLeft="16dp"
-            android:paddingRight="16dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:src="@drawable/ic_intro_android_marshmallow"
             tools:ignore="ContentDescription" />
     </LinearLayout>
