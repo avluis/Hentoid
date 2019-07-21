@@ -100,6 +100,7 @@
     <string name="queue_empty">Why am I empty?</string>
     <string name="downloads_empty_library">Go ahead, download something.</string>
     <string name="downloads_empty_mikan">Uh oh… how come there\'s nothing there ?!</string>
+    <string name="mikan_unsupported">Not implemented with Mikan</string>
     <string name="downloads_loading">Loading up~</string>
     <string name="masterdata_no_result">No result found :(</string>
     <string name="masterdata_too_many_results_query">Too many results for « %1 »\nPlease be more specific</string>

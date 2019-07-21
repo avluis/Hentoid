@@ -4,6 +4,8 @@ import com.google.gson.annotations.Expose;
 
 /**
  * General builder for URLs
+ *
+ * @deprecated Replaced by {@link me.devsaki.hentoid.services.ImportService} methods; class is kept for retrocompatibilty
  */
 @Deprecated
 public class URLBuilder {

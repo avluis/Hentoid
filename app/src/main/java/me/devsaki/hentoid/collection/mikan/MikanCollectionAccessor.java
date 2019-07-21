@@ -18,6 +18,8 @@ import java.util.Locale;
 import java.util.Map;
 
 import io.reactivex.disposables.CompositeDisposable;
+import me.devsaki.hentoid.HentoidApp;
+import me.devsaki.hentoid.R;
 import me.devsaki.hentoid.collection.CollectionAccessor;
 import me.devsaki.hentoid.collection.LibraryMatcher;
 import me.devsaki.hentoid.database.domains.Attribute;
@@ -41,7 +43,7 @@ import static io.reactivex.android.schedulers.AndroidSchedulers.mainThread;
 public class MikanCollectionAccessor implements CollectionAccessor {
 
     private final LibraryMatcher libraryMatcher;
-    private CompositeDisposable compositeDisposable = new CompositeDisposable();
+    private final CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     // == CONSTRUCTOR
 
@@ -130,7 +132,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void getRecentBookIdsPaged(Site site, Language language, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
@@ -194,7 +196,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void searchBookIdsPaged(String query, List<Attribute> metadata, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
@@ -211,7 +213,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void searchBookIdsUniversalPaged(String query, int page, int booksPerPage, int orderStyle, boolean favouritesOnly, PagedResultListener<Long> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
@@ -246,7 +248,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void getAttributeMasterDataPaged(List<AttributeType> types, String filter, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
@@ -261,22 +263,22 @@ public class MikanCollectionAccessor implements CollectionAccessor {
 
     @Override
     public void getAttributeMasterData(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int sortOrder, ResultListener<List<Attribute>> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
     public void getAttributeMasterDataPaged(List<AttributeType> types, String filter, List<Attribute> attrs, boolean filterFavourites, int page, int booksPerPage, int orderStyle, ResultListener<List<Attribute>> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
     public void getAvailableAttributes(List<AttributeType> types, List<Attribute> attrs, boolean filterFavourites, ResultListener<List<Attribute>> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override
     public void countAttributesPerType(List<Attribute> filter, ResultListener<SparseIntArray> listener) {
-        throw new UnsupportedOperationException("Not implemented with Mikan");
+        throw new UnsupportedOperationException(HentoidApp.getAppContext().getString(R.string.mikan_unsupported));
     }
 
     @Override

@@ -4,6 +4,7 @@ package me.devsaki.hentoid.database.constants;
  * Created by DevSaki on 10/05/2015.
  * db Image File Table
  */
+@SuppressWarnings("squid:S1192") // That's okay here
 public abstract class ImageFileTable {
 
     public static final String TABLE_NAME = "image_file";

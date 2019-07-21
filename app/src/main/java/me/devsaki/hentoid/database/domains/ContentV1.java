@@ -4,7 +4,6 @@ import com.google.gson.annotations.Expose;
 
 import java.util.List;
 
-import me.devsaki.hentoid.enums.AttributeType;
 import me.devsaki.hentoid.enums.Site;
 import me.devsaki.hentoid.enums.StatusContent;
 import me.devsaki.hentoid.util.AttributeMap;
@@ -12,6 +11,8 @@ import me.devsaki.hentoid.util.AttributeMap;
 /**
  * Created by DevSaki on 09/05/2015.
  * Content builder (legacy: kept to support older library)
+ *
+ * @deprecated Replaced by {@link Content}; class is kept for retrocompatibilty
  */
 @Deprecated
 public class ContentV1 {
