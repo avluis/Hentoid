@@ -1,6 +1,5 @@
 package me.devsaki.hentoid.viewholders;
 
-import androidx.annotation.DrawableRes;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;

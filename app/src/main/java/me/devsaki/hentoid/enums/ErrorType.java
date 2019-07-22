@@ -1,9 +1,6 @@
 package me.devsaki.hentoid.enums;
 
-import javax.annotation.Nullable;
-
 import io.objectbox.converter.PropertyConverter;
-import timber.log.Timber;
 
 public enum ErrorType {
 
