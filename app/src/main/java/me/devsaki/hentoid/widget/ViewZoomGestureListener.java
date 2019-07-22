@@ -43,32 +43,20 @@ public class ViewZoomGestureListener extends GestureDetector {
     public boolean onTouchEvent(MotionEvent ev) {
         switch (ev.getActionMasked()) {
             case MotionEvent.ACTION_DOWN: {
-                if (lastDownEvent != null) lastDownEvent.recycle();
-                lastDownEvent = MotionEvent.obtain(ev);
-
-                // This is the key difference with the built-in detector. We have to ignore the
-                // event if the last up and current down are too close in time (double tap).
-                if (ev.getDownTime() - lastUp > doubleTapTime) {
-                    downX = ev.getRawX();
-                    downY = ev.getRawY();
-                    handler.postDelayed(longTapFn, longTapTime);
-                }
+                motionActionDown(ev);
             }
             break;
             case MotionEvent.ACTION_MOVE: {
-                if (Math.abs(ev.getRawX() - downX) > scaledTouchSlopslop || Math.abs(ev.getRawY() - downY) > scaledTouchSlopslop) {
-                    handler.removeCallbacks(longTapFn);
-                }
+                motionActionMove(ev);
             }
             break;
             case MotionEvent.ACTION_UP: {
-                lastUp = ev.getEventTime();
-                handler.removeCallbacks(longTapFn);
+                motionActionUp(ev);
             }
             break;
             case MotionEvent.ACTION_CANCEL:
             case MotionEvent.ACTION_POINTER_DOWN: {
-                handler.removeCallbacks(longTapFn);
+                motionActionCancelandPointerDown();
             }
             break;
             default:
@@ -76,6 +64,34 @@ public class ViewZoomGestureListener extends GestureDetector {
         }
 
         return super.onTouchEvent(ev);
+    }
+
+    private void motionActionDown(MotionEvent ev) {
+        if (lastDownEvent != null) lastDownEvent.recycle();
+        lastDownEvent = MotionEvent.obtain(ev);
+
+        // This is the key difference with the built-in detector. We have to ignore the
+        // event if the last up and current down are too close in time (double tap).
+        if (ev.getDownTime() - lastUp > doubleTapTime) {
+            downX = ev.getRawX();
+            downY = ev.getRawY();
+            handler.postDelayed(longTapFn, longTapTime);
+        }
+    }
+
+    private void motionActionMove(MotionEvent ev) {
+        if (Math.abs(ev.getRawX() - downX) > scaledTouchSlopslop || Math.abs(ev.getRawY() - downY) > scaledTouchSlopslop) {
+            handler.removeCallbacks(longTapFn);
+        }
+    }
+
+    private void motionActionUp(MotionEvent ev) {
+        lastUp = ev.getEventTime();
+        handler.removeCallbacks(longTapFn);
+    }
+
+    private void motionActionCancelandPointerDown() {
+        handler.removeCallbacks(longTapFn);
     }
 
     /**

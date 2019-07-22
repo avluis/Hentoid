@@ -121,12 +121,12 @@ public class ErrorStatsDialogFragment extends DialogFragment {
         } else if (event.eventType == DownloadEvent.EV_CANCEL) {
             details.setText("Download cancelled");
             previousNbErrors = 0;
-        } else if (event.eventType == DownloadEvent.EV_PROGRESS) {
-            if (event.pagesKO > previousNbErrors && event.content != null) {
-                currentId = event.content.getId();
-                previousNbErrors = event.pagesKO;
-                updateStats(currentId);
-            }
+        } else if ((event.eventType == DownloadEvent.EV_PROGRESS)
+                    && (event.pagesKO > previousNbErrors)
+                    && (event.content != null)) {
+            currentId = event.content.getId();
+            previousNbErrors = event.pagesKO;
+            updateStats(currentId);
         }
     }
 

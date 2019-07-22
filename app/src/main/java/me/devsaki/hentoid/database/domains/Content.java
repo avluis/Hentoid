@@ -343,11 +343,11 @@ public class Content implements Serializable {
         AttributeMap attrMap = getAttributeMap();
         if (attrMap.containsKey(AttributeType.ARTIST) && !attrMap.get(AttributeType.ARTIST).isEmpty())
             authorStr = attrMap.get(AttributeType.ARTIST).get(0).getName();
-        if (null == authorStr || authorStr.equals("")) // Try and get Circle
-        {
-            if (attrMap.containsKey(AttributeType.CIRCLE) && !attrMap.get(AttributeType.CIRCLE).isEmpty())
-                authorStr = attrMap.get(AttributeType.CIRCLE).get(0).getName();
-        }
+        if ((null == authorStr || authorStr.equals(""))
+             && attrMap.containsKey(AttributeType.CIRCLE)
+             && !attrMap.get(AttributeType.CIRCLE).isEmpty()) // Try and get Circle
+            authorStr = attrMap.get(AttributeType.CIRCLE).get(0).getName();
+
         if (null == authorStr) authorStr = "";
         setAuthor(authorStr);
         return this;
