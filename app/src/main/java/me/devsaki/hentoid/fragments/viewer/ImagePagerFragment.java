@@ -183,6 +183,7 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
         recyclerView.setHasFixedSize(true);
         recyclerView.addOnScrollListener(new ScrollPositionListener(this::onCurrentPositionChange));
         recyclerView.setOnKeyListener(volumeGestureListener);
+        recyclerView.requestFocus();
         recyclerView.setOnScaleListener(scale -> {
             if (pageSnapWidget != null && Preferences.Constant.PREF_VIEWER_ORIENTATION_HORIZONTAL == Preferences.getViewerOrientation()) {
                 if (1.0 == scale && !pageSnapWidget.isPageSnapEnabled())
