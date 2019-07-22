@@ -51,7 +51,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     private static final String KEY_IS_SHUFFLED = "is_shuffled";
 
     // Settings
-    private boolean isShuffled;                                                      // True if images have to be shuffled; false if presented in the book order
+    private boolean isShuffled = false;                                              // True if images have to be shuffled; false if presented in the book order
     private BooleanConsumer onShuffledChangeListener;
 
     // Collection data
@@ -98,7 +98,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
     public void onRestoreState(@Nullable Bundle savedState) {
         if (savedState == null) return;
-        isShuffled = savedState.getBoolean(KEY_IS_SHUFFLED);
+        isShuffled = savedState.getBoolean(KEY_IS_SHUFFLED, false);
     }
 
     public void loadFromContent(long contentId) {
@@ -130,17 +130,13 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         ToastUtil.toast("Book list loading failed");
     }
 
-    public void setImages(List<ImageFile> imgs) {
-        List<ImageFile> list = new ArrayList<>(imgs);
-        if (isShuffled)
-            Collections.shuffle(list);
-        for (int i = 0; i < list.size(); i++)
-            list.get(i).setDisplayOrder(i);
-        images.setValue(list);
-    }
-
     public void setStartingIndex(int index) {
         startingIndex.setValue(index);
+    }
+
+    public void setImages(List<ImageFile> imgs) {
+        List<ImageFile> list = new ArrayList<>(imgs);
+        sortAndSetImages(list, isShuffled);
     }
 
     public void onShuffleClick() {
@@ -148,17 +144,19 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         onShuffledChangeListener.accept(isShuffled);
 
         List<ImageFile> imgs = getImages().getValue();
-        if (imgs != null) {
-            if (isShuffled) {
-                Collections.shuffle(imgs);
-            } else {
-                // Sort images according to their Order
-                imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).collect(toList());
-            }
-            for (int i = 0; i < imgs.size(); i++)
-                imgs.get(i).setDisplayOrder(i);
-            images.setValue(imgs);
+        if (imgs != null) sortAndSetImages(imgs, isShuffled);
+    }
+
+    private void sortAndSetImages(@Nonnull List<ImageFile> imgs, boolean shuffle)
+    {
+        if (shuffle) {
+            Collections.shuffle(imgs);
+        } else {
+            // Sort images according to their Order
+            imgs = Stream.of(imgs).sortBy(ImageFile::getOrder).collect(toList());
         }
+        for (int i = 0; i < imgs.size(); i++) imgs.get(i).setDisplayOrder(i);
+        images.setValue(imgs);
     }
 
     @Override
