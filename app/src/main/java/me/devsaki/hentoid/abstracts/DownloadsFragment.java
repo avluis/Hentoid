@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -24,7 +25,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.StringRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.FragmentActivity;
@@ -984,11 +984,10 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
                 isNewContentAvailable = false;
             }
 
-            @StringRes int textRes = totalSelectedContent > 1 ?
-                    R.string.downloads_filter_book_count_plural :
-                    R.string.downloads_filter_book_count;
+            Resources res = getResources();
+            String textRes = res.getQuantityString(R.plurals.downloads_filter_book_count_plural, (int)totalSelectedContent, (int)totalSelectedContent);
 
-            filterBookCount.setText(getString(textRes, totalSelectedContent));
+            filterBookCount.setText(textRes);
             filterBar.setVisibility(View.VISIBLE);
             if (totalSelectedContent > 0 && searchMenu != null) searchMenu.collapseActionView();
         } else {
