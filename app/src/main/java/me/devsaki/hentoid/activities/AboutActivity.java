@@ -23,7 +23,7 @@ import me.devsaki.hentoid.util.Helper;
  */
 public class AboutActivity extends BaseActivity {
 
-    TextView btnChangelog;
+    private TextView btnChangelog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

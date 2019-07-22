@@ -27,7 +27,7 @@ public enum ErrorType {
         return UNDEFINED;
     }
 
-    public int getCode() {
+    private int getCode() {
         return code;
     }
 

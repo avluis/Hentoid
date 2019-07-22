@@ -39,7 +39,7 @@ public class ObservableWebView extends WebView {
 
     // Fix for inflating on Android 5.1.1
     // https://stackoverflow.com/questions/41025200/android-view-inflateexception-error-inflating-class-android-webkit-webview
-    public static Context getFixedContext(Context context) {
+    private static Context getFixedContext(Context context) {
         return context.createConfigurationContext(new Configuration());
     }
 

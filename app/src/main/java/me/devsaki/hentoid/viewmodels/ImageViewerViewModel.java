@@ -131,7 +131,7 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         ToastUtil.toast("Book list loading failed");
     }
 
-    public void setImages(List<ImageFile> imgs) {
+    private void setImages(List<ImageFile> imgs) {
         List<ImageFile> list = new ArrayList<>(imgs);
         if (isShuffled)
             Collections.shuffle(list);

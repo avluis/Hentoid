@@ -90,8 +90,8 @@ import timber.log.Timber;
 public abstract class BaseWebActivity extends BaseActivity implements ResultListener<Content> {
 
     protected static final int MODE_DL = 0;
-    protected static final int MODE_QUEUE = 1;
-    protected static final int MODE_READ = 2;
+    private static final int MODE_QUEUE = 1;
+    private static final int MODE_READ = 2;
 
     // UI
     // Associated webview
@@ -111,7 +111,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
     protected int fabActionMode;
     private boolean fabActionEnabled;
 
-    protected CustomWebViewClient webClient;
+    private CustomWebViewClient webClient;
 
     // List of blocked content (ads or annoying images) -- will be replaced by a blank stream
     private static final List<String> universalBlockedContent = new ArrayList<>();      // Universal list (applied to all sites)
@@ -437,7 +437,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      *
      * @param content Currently displayed content
      */
-    void processContent(Content content) {
+    private void processContent(Content content) {
         if (null == content || null == content.getUrl()) {
             return;
         }
@@ -491,7 +491,7 @@ public abstract class BaseWebActivity extends BaseActivity implements ResultList
      * @param url URL to be examinated
      * @return True if URL is forbidden according to current filters; false if not
      */
-    protected boolean isUrlForbidden(String url) {
+    private boolean isUrlForbidden(String url) {
         for (String s : universalBlockedContent) {
             if (url.contains(s)) return true;
         }

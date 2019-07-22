@@ -597,7 +597,7 @@ public class ContentDownloadService extends IntentService {
         }
     }
 
-    public void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
+    private void logErrorRecord(long contentId, ErrorType type, String url, String contentPart, String description) {
         ErrorRecord record = new ErrorRecord(contentId, type, url, contentPart, description);
         if (contentId > 0) db.insertErrorRecord(record);
     }

@@ -498,7 +498,7 @@ public class Content implements Serializable {
         return this;
     }
 
-    public int getQueryOrder() {
+    private int getQueryOrder() {
         return queryOrder;
     }
 

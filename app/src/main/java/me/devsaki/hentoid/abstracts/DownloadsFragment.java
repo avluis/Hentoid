@@ -90,8 +90,8 @@ public abstract class DownloadsFragment extends BaseFragment implements PagedRes
 
     // ======== CONSTANTS
 
-    protected static final int SHOW_LOADING = 1;
-    protected static final int SHOW_BLANK = 2;
+    private static final int SHOW_LOADING = 1;
+    private static final int SHOW_BLANK = 2;
     protected static final int SHOW_RESULT = 3;
 
     public static final  int MODE_LIBRARY = 0;
