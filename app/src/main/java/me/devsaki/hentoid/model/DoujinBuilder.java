@@ -34,10 +34,10 @@ public class DoujinBuilder {
     private List<URLBuilder> lstTags;
 
     public String getId() {
-        int idxStart = url.lastIndexOf("/");
+        int idxStart = url.lastIndexOf('/');
         String id = url.substring(idxStart);
         String category = url.replace(id, "");
-        category = category.substring(category.lastIndexOf("/"));
+        category = category.substring(category.lastIndexOf('/'));
 
         return category + id;
     }

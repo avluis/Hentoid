@@ -43,12 +43,12 @@ public class MusesContent implements ContentParser {
 
         result.setSite(Site.MUSES);
         String theUrl = galleryUrl.isEmpty() ? url : galleryUrl;
-        if (theUrl.isEmpty() || 0 == thumbs.size()) return result.setStatus(StatusContent.IGNORED);
+        if (theUrl.isEmpty() || thumbs.isEmpty()) return result.setStatus(StatusContent.IGNORED);
         
         result.setUrl(theUrl.replace(Site.MUSES.getUrl(), ""));
         result.setCoverImageUrl(Site.MUSES.getUrl() + thumbs.get(0));
         if (title.contains("|"))
-            result.setTitle(title.substring(0, title.lastIndexOf("|") - 1));
+            result.setTitle(title.substring(0, title.lastIndexOf('|') - 1));
         else
             result.setTitle(title);
 
