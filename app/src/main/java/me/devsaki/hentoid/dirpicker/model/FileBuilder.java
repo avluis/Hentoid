@@ -27,6 +27,13 @@ public class FileBuilder extends File {
         return this == o || Objects.equals(fileBuilder.getName(), name);
     }
 
+    @Override
+    public int hashCode() {
+        int result = super.hashCode();
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        return result;
+    }
+
     @NonNull
     @Override
     public String getName() {
