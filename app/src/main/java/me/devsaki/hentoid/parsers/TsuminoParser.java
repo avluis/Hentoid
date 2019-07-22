@@ -49,7 +49,9 @@ public class TsuminoParser extends BaseParser {
 
             Elements contents = doc.select("#image-container");
             if (null != contents) {
-                String dataUrl, dataOpt, dataObj;
+                String dataUrl;
+                String dataOpt;
+                String dataObj;
 
                 dataUrl = contents.attr("data-url");
                 dataOpt = contents.attr("data-opt");
@@ -77,7 +79,7 @@ public class TsuminoParser extends BaseParser {
 
         HttpURLConnection http = null;
         try {
-            http = (HttpURLConnection) ((new URL(url).openConnection()));
+            http = (HttpURLConnection) (new URL(url).openConnection());
             http.setDoOutput(true);
             http.setRequestProperty("Content-Type", "application/json");
             http.setRequestProperty("Accept", "application/json");

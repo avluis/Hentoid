@@ -19,7 +19,7 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
  */
 public class PururinParser extends BaseParser {
 
-    private final static String IMAGE_PATH = "//cdn.pururin.io/assets/images/data/";
+    private static final String IMAGE_PATH = "//cdn.pururin.io/assets/images/data/";
 
     private class PururinInfo {
         @Expose

@@ -1,5 +1,7 @@
 package me.devsaki.hentoid.util;
 
+import androidx.annotation.Nullable;
+
 import com.android.volley.AuthFailureError;
 import com.android.volley.Header;
 import com.android.volley.Request;
@@ -76,6 +78,7 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
         }
     }
 
+    @Nullable
     private static RequestBody createRequestBody(Request r) throws AuthFailureError {
         final byte[] body = r.getBody();
         if (body == null) {
@@ -115,7 +118,8 @@ public class VolleyOkHttp3Stack extends BaseHttpStack {
     private List<Header> mapHeaders(Headers responseHeaders) {
         List<Header> headers = new ArrayList<>();
         for (int i = 0, len = responseHeaders.size(); i < len; i++) {
-            final String name = responseHeaders.name(i), value = responseHeaders.value(i);
+            final String name = responseHeaders.name(i);
+            final String value = responseHeaders.value(i);
             if (name != null) {
                 headers.add(new Header(name, value));
             }

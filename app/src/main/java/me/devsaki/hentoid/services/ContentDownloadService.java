@@ -253,7 +253,8 @@ public class ContentDownloadService extends IntentService {
      */
     private void watchProgress(Content content) {
         boolean isDone;
-        int pagesOK, pagesKO;
+        int pagesOK;
+        int pagesKO;
         List<ImageFile> images = content.getImageFiles();
         ContentQueueManager contentQueueManager = ContentQueueManager.getInstance();
 

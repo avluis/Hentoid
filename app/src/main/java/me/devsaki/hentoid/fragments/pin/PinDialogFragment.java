@@ -20,7 +20,7 @@ import static androidx.core.view.ViewCompat.requireViewById;
 
 public abstract class PinDialogFragment extends DialogFragment {
 
-    abstract protected void onPinAccept(String pin);
+    protected abstract void onPinAccept(String pin);
 
     private final StringBuilder pinValue = new StringBuilder(4);
 

@@ -51,8 +51,8 @@ import static java.lang.String.format;
 public class ImagePagerFragment extends Fragment implements GoToPageDialogFragment.Parent,
         BrowseModeDialogFragment.Parent {
 
-    private final static String KEY_HUD_VISIBLE = "hud_visible";
-    private final static String KEY_GALLERY_SHOWN = "gallery_shown";
+    private static final String KEY_HUD_VISIBLE = "hud_visible";
+    private static final String KEY_GALLERY_SHOWN = "gallery_shown";
 
     private ImagePagerAdapter adapter;
     private PrefetchLinearLayoutManager llm;
@@ -84,11 +84,14 @@ public class ImagePagerFragment extends Fragment implements GoToPageDialogFragme
     private TextView pageFavouriteText;
 
     // Bottom bar controls
-    private ImageView previewImage1, previewImage2, previewImage3;
+    private ImageView previewImage1;
+    private ImageView previewImage2;
+    private ImageView previewImage3;
     private SeekBar seekBar;
     private TextView pageCurrentNumber;
     private TextView pageMaxNumber;
-    private View prevBookButton, nextBookButton;
+    private View prevBookButton;
+    private View nextBookButton;
     private View favouritesGalleryBtn;
 
 

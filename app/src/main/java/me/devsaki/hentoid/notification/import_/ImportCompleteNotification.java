@@ -9,7 +9,8 @@ import me.devsaki.hentoid.util.notification.Notification;
 
 public class ImportCompleteNotification implements Notification {
 
-    private final int booksOK, booksKO;
+    private final int booksOK;
+    private final int booksKO;
 
     public ImportCompleteNotification(int booksOK, int booksKO)
     {

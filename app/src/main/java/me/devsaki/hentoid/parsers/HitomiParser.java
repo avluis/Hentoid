@@ -24,9 +24,9 @@ import static me.devsaki.hentoid.util.HttpHelper.getOnlineDocument;
 public class HitomiParser implements ImageListParser {
 
     // Reproduction of the Hitomi.la Javascript to find the hostname of the image server (see subdomain_from_url@reader.js)
-    private final static int NUMBER_OF_FRONTENDS = 2;
-    private final static String HOSTNAME_SUFFIX = "a";
-    private final static char HOSTNAME_PREFIX_BASE = 97;
+    private static final int NUMBER_OF_FRONTENDS = 2;
+    private static final  String HOSTNAME_SUFFIX = "a";
+    private static final char HOSTNAME_PREFIX_BASE = 97;
 
     public List<ImageFile> parseImageList(Content content) throws Exception {
         List<ImageFile> result = new ArrayList<>();
@@ -36,7 +36,7 @@ public class HitomiParser implements ImageListParser {
             Timber.d("Parsing: %s", content.getReaderUrl());
             Elements imgElements = doc.select(".img-url");
 
-            if (null == imgElements || 0 == imgElements.size()) {
+            if (null == imgElements || imgElements.isEmpty()) {
                 Timber.w("No images found @ %s", content.getReaderUrl());
                 return result;
             }
