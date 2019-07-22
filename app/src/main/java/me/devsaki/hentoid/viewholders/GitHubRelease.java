@@ -101,9 +101,9 @@ public class GitHubRelease extends AbstractFlexibleItem<GitHubRelease.ReleaseVie
             title = view.findViewById(R.id.changelogReleaseTitle);
 
             releaseDescriptionAdapter = new FlexibleAdapter<>(null);
-            RecyclerView description = view.findViewById(R.id.changelogReleaseDescription);
-            description.setAdapter(releaseDescriptionAdapter);
-            description.setLayoutManager(new LinearLayoutManager(view.getContext()));
+            RecyclerView releasedDescription = view.findViewById(R.id.changelogReleaseDescription);
+            releasedDescription.setAdapter(releaseDescriptionAdapter);
+            releasedDescription.setLayoutManager(new LinearLayoutManager(view.getContext()));
         }
 
         public void setTitle(String title) {
