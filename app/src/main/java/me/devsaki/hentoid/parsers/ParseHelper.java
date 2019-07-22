@@ -63,7 +63,7 @@ public class ParseHelper {
         return result;
     }
 
-    public static void signalProgress(int current, int max) {
+    static void signalProgress(int current, int max) {
         EventBus.getDefault().post(new DownloadPreparationEvent(current, max));
     }
 }
