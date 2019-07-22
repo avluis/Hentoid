@@ -36,7 +36,7 @@ public class EHentaiParser extends BaseParser {
         Document doc = getOnlineDocument(content.getGalleryUrl(), headers, true);
         if (doc != null) {
             Elements elements = doc.select("table.ptt a");
-            if (null == elements || 0 == elements.size()) return result;
+            if (null == elements || elements.isEmpty()) return result;
 
             int tabId = (1 == elements.size()) ? 0 : elements.size() - 2;
             int nbGalleryPages = Integer.parseInt(elements.get(tabId).text());

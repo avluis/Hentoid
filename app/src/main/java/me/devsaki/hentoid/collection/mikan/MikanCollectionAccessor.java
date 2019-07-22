@@ -228,7 +228,7 @@ public class MikanCollectionAccessor implements CollectionAccessor {
         List<Attribute> attributes = AttributeCache.getFromCache(type.name());
 
         // If not cached (or cache expired), get it from network
-        if (null == attributes) {
+        if (attributes.isEmpty()) {
             String endpoint = getEndpointPath(type);
             compositeDisposable.add(MikanServer.API.getMasterData(endpoint)
                     .observeOn(mainThread())

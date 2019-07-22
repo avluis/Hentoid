@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -24,8 +25,8 @@ import timber.log.Timber;
  */
 public class AttributeCache {
 
-    private final static int EXPIRY_FILE_VERSION = 1;
-    private final static int COLLECTION_FILE_VERSION = 1;
+    private static final int EXPIRY_FILE_VERSION = 1;
+    private static final int COLLECTION_FILE_VERSION = 1;
 
     private static File cacheDir;
     private static Map<String, Date> collectionExpiry;
@@ -71,7 +72,8 @@ public class AttributeCache {
                 }
             }
             return collection.get(key);
-        } else return null;
+        } else
+            return Collections.emptyList();
     }
 
     public static void setCache(String key, List<Attribute> value, Date expiryDateUTC) {
