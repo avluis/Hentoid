@@ -25,7 +25,6 @@ import java.util.List;
 
 import javax.annotation.Nonnull;
 
-import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.CompositeDisposable;
@@ -245,7 +244,6 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
         currentContentIndex = contentIds.indexOf(theContent.getId());
         theContent.setFirst(0 == currentContentIndex);
         theContent.setLast(currentContentIndex == contentIds.size() - 1);
-        content.setValue(theContent);
 
         // Load new content
         File[] pictures = FileHelper.getPictureFilesFromContent(theContent);
@@ -262,10 +260,13 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
 
             // Cache JSON and record 1 more view for the new content
             compositeDisposable.add(
-                    Completable.fromRunnable(() -> postLoadProcessing(getApplication().getApplicationContext(), theContent))
+                    Single.fromCallable(() -> postLoadProcessing(getApplication().getApplicationContext(), theContent))
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe()
+                            .subscribe(
+                                    content::setValue,
+                                    Timber::e
+                            )
             );
         } else {
             ToastUtil.toast(R.string.no_images);
@@ -292,18 +293,18 @@ public class ImageViewerViewModel extends AndroidViewModel implements PagedResul
     }
 
     @WorkerThread
-    private static void postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
-        cacheAndUpgradeJson(context, content);
-        FileHelper.updateContentReads(context, content.getId());
+    @Nullable
+    private static Content postLoadProcessing(@Nonnull Context context, @Nonnull Content content) {
+        cacheJson(context, content);
+        return FileHelper.updateContentReads(context, content.getId());
     }
 
     // Cache JSON URI in the database to speed up favouriting
     // NB : Lollipop only because it must have _full_ support for SAF
     @WorkerThread
-    private static void cacheAndUpgradeJson(@Nonnull Context context, @Nonnull Content content) {
+    private static void cacheJson(@Nonnull Context context, @Nonnull Content content) {
         if (content.getJsonUri().isEmpty() && Build.VERSION.SDK_INT >= LOLLIPOP) {
             File bookFolder = FileHelper.getContentDownloadDir(content);
-
             DocumentFile file = FileHelper.getDocumentFile(new File(bookFolder, Consts.JSON_FILE_NAME_V2), false);
             if (file != null) {
                 // Cache the URI of the JSON to the database

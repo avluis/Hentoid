@@ -433,8 +433,7 @@ public class FileHelper {
     }
 
     @SuppressWarnings("squid:S2676") // Math.abs is used for formatting purposes only
-    private static String formatBookId(Content content)
-    {
+    private static String formatBookId(Content content) {
         String id = content.getUniqueSiteId();
         // For certain sources (8muses, fakku), unique IDs are strings that may be very long
         // => shorten them by using their hashCode
@@ -565,7 +564,8 @@ public class FileHelper {
         openHentoidViewer(context, content, searchParams);
     }
 
-    public static void updateContentReads(@Nonnull Context context, long contentId) {
+    @Nullable
+    public static Content updateContentReads(@Nonnull Context context, long contentId) {
         ObjectBoxDB db = ObjectBoxDB.getInstance(context);
         Content content = db.selectContentById(contentId);
         if (content != null) {
@@ -574,7 +574,10 @@ public class FileHelper {
 
             if (!content.getJsonUri().isEmpty()) FileHelper.updateJson(context, content);
             else FileHelper.createJson(content);
+
+            return content;
         }
+        return null;
     }
 
     /**
